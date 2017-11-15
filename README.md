@@ -11,6 +11,7 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
 
 ## Texture atlas
 ![](https://i.imgur.com/ht7D3cK.png)
+
 **Texture atlas is the process of combining multiple textures into one to save processing power to render one's model**
 If you are unsure about what to do with the margin and angle setting, then leave it default. The most important setting here is texture size and target mesh.
 
@@ -34,6 +35,7 @@ Texture baking and multiple textures per material can look weird in the end resu
 
 ## Mouth visemes
 ![](https://i.imgur.com/3fCSjYK.png)
+
 **Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
 The script generates 17 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output. 
 *This is still a experimental feature and will be fine tuned over the course of time*
@@ -54,6 +56,7 @@ The name of the shape key that controls the mouth movement that looks like someo
 
 ## Eye tracking
 ![](https://i.imgur.com/LPlF6wQ.png)
+
 **Eye tracking is used to artificially track someone when they come close to you**
 It's important to note that the left eye and right eye bones need to be weight painted to each of their eye bone respectively. 
 It's also a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
