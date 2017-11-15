@@ -102,6 +102,7 @@ Script will try to verify the newly created eye bones to be located in the corre
 
 ## Roadmap
  - Armature fixing (naming, parenting, weighting)
+ - Actual plugin support (install file as addon)
 
 ## Feedback
 Send your feedback to this discord server https://discord.gg/up9Zqsu and look for givemeallyourcats ;)
