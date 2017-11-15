@@ -17,6 +17,8 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
 
 3. Check your 3d view and there should be a new menu item called **CATS** ....w00t
 
+![](https://i.imgur.com/ItJLtNJ.png)
+
 ## Texture atlas
 ![](https://i.imgur.com/ht7D3cK.png)
 
