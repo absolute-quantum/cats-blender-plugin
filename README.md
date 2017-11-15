@@ -9,6 +9,14 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
 
 *More to come!*
 
+## Installation
+1. copy the script: [cats.py](https://raw.githubusercontent.com/michaeldegroot/cats-blender-plugin/master/cats.py)
+2. paste the script into your text editor of blender like so: 
+
+![](https://i.imgur.com/UTsjtWy.gif)
+
+3. Check your 3d view and there should be a new menu item called **CATS** ....w00t
+
 ## Texture atlas
 ![](https://i.imgur.com/ht7D3cK.png)
 
