@@ -82,7 +82,7 @@ The name of the shape key that controls the mouth movement that looks like someo
 Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.
 
 ## Eye tracking
-![](https://i.imgur.com/DdleSDP.png)
+![](https://i.imgur.com/jUXoGuj.png)
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's important to note that the left eye and right eye bones need to be weight painted to each of their eye bone respectively. 
