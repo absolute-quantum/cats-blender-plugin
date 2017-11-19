@@ -14,7 +14,7 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
 1. download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/raw/master/Cats%20Blender%20Plugin.zip)
 2. Install the the addon in blender like so:
 
-![](https://i.imgur.com/eZV1zrs.gifv)
+![](https://i.imgur.com/eZV1zrs.gif)
 
 3. Check your 3d view and there should be a new menu item called **CATS** ....w00t
 
