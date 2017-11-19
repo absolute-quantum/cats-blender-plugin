@@ -20,12 +20,6 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
 
 ![](https://i.imgur.com/ItJLtNJ.png)
 
-## Updating
-There is a auto updater in the plugin so you don't have to keep checking for new version or manually re-download the zip file yourself. This is how to check for updates:
-
-![](https://i.imgur.com/LbO7Xst.gif)
-
-
 ## Changelog
 
 #### 0.0.1
@@ -40,7 +34,7 @@ There is a auto updater in the plugin so you don't have to keep checking for new
  - Started work on the translate feature
 
 ## Texture atlas
-![](https://i.imgur.com/ht7D3cK.png)
+![](https://i.imgur.com/B8Qytpl.png)
 
 **Texture atlas is the process of combining multiple textures into one to save processing power to render one's model**
 If you are unsure about what to do with the margin and angle setting, then leave it default. The most important setting here is texture size and target mesh.
@@ -64,7 +58,7 @@ Texture baking and multiple textures per material can look weird in the end resu
 **If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
 
 ## Mouth visemes
-![](https://i.imgur.com/3fCSjYK.png)
+![](https://i.imgur.com/1QaD5no.png)
 
 **Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
 The script generates 17 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output. 
@@ -88,7 +82,7 @@ The name of the shape key that controls the mouth movement that looks like someo
 Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.
 
 ## Eye tracking
-![](https://i.imgur.com/LPlF6wQ.png)
+![](https://i.imgur.com/DdleSDP.png)
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's important to note that the left eye and right eye bones need to be weight painted to each of their eye bone respectively. 
@@ -122,6 +116,11 @@ The name of the shape key that controls lowerlid right
 
 ##### Experimental eye fix
 Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head
+
+## Update Plugin
+There is a auto updater in the plugin so you don't have to keep checking for new version or manually re-download the zip file yourself. This is how to check for updates:
+
+![](https://i.imgur.com/LbO7Xst.gif)
 
 ## Roadmap
  - Translation of ALL objects/shape keys that mmd_tools misses
