@@ -20,7 +20,13 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
 
 ![](https://i.imgur.com/ItJLtNJ.png)
 
-## Updates
+## Updating
+There is a auto updater in the plugin so you don't have to keep checking for new version or manually re-download the zip file yourself. This is how to check for updates:
+
+![](https://i.imgur.com/LbO7Xst.gif)
+
+
+## Changelog
 
 #### 0.0.1
  - The plugin was born
