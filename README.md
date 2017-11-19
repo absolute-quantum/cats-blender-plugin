@@ -6,14 +6,15 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
  - Creating texture atlas
  - Creating mouth visemes
  - Creating eye tracking
+ - Auto updater
 
 *More to come!*
 
 ## Installation
-1. copy the script: [cats.py](https://raw.githubusercontent.com/michaeldegroot/cats-blender-plugin/master/cats.py)
-2. paste the script into your text editor of blender like so: 
+1. download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/blob/master/Cats%20Blender%20Plugin.zip)
+2. Install the the addon in blender like so:
 
-![](https://i.imgur.com/UTsjtWy.gif)
+![](https://i.imgur.com/eZV1zrs.gifv)
 
 3. Check your 3d view and there should be a new menu item called **CATS** ....w00t
 
@@ -64,6 +65,9 @@ The name of the shape key that controls the mouth movement that looks like someo
 ##### Viseme CH
 The name of the shape key that controls the mouth movement that looks like someone is saying CH
 
+##### Shape key mix intensity
+Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.
+
 ## Eye tracking
 ![](https://i.imgur.com/LPlF6wQ.png)
 
@@ -101,8 +105,7 @@ The name of the shape key that controls lowerlid right
 Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head
 
 ## Roadmap
- - Armature fixing (naming, parenting, weighting)
- - Actual plugin support (install file as addon)
+ - Translation of ALL objects/shape keys that mmd_tools misses
 
 ## Feedback
 Send your feedback to this discord server https://discord.gg/up9Zqsu and look for givemeallyourcats ;)
