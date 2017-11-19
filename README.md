@@ -20,6 +20,19 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
 
 ![](https://i.imgur.com/ItJLtNJ.png)
 
+## Updates
+
+#### 0.0.1
+ - The plugin was born
+ 
+#### 0.0.2
+ - Eye tracking: added a check to see if a vertex group and vertices were assigned to the eye bones before continuing
+ - UI improved
+ - Added a auto updater to easily keep track of new updates of the plugin
+ - Added plugin support (install as addon in blender)
+ - Mouth viseme: added a strength modifier for the mixing of the shapes
+ - Started work on the translate feature
+
 ## Texture atlas
 ![](https://i.imgur.com/ht7D3cK.png)
 
