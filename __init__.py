@@ -59,15 +59,6 @@ bl_options = {'REGISTER', 'UNDO'}
 root_bones = {}
 root_bones_choices = {}
 
-# 0.03 changes
-# - Added: Bone root parenting script, useful for skirt/hair and other bones that need a parent bone root for dynamic bones
-# - Added: Pack islands feature for auto atlas
-# - Fixed: Auto atlas half height bug
-# - Fixed: Experimental eye fix script error
-# - Fixed: dropdown boxes now correctly order by A-Z
-# - Changed: Auto atlas will now not error when mmd_tools is not present
-# - Removed: vrc.v_ee from auto visemes (unneeded)
-
 # updater ops import, all setup in this file
 from . import addon_updater_ops
 
@@ -613,7 +604,7 @@ class RootButton(bpy.types.Operator):
         # reset the root bone cache
         root_bones_choices = {}
 
-        self.report({'INFO'}, 'Bone rooted!')
+        self.report({'INFO'}, 'Bones parented!')
 
         return{'FINISHED'}
 
