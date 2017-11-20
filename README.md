@@ -6,6 +6,7 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
  - Creating texture atlas
  - Creating mouth visemes
  - Creating eye tracking
+ - Creating root bones for Dynamic Bones
  - Auto updater
 
 *More to come!*
@@ -26,12 +27,20 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
  - The plugin was born
  
 #### 0.0.2
- - Eye tracking: added a check to see if a vertex group and vertices were assigned to the eye bones before continuing
- - UI improved
- - Added a auto updater to easily keep track of new updates of the plugin
- - Added plugin support (install as addon in blender)
- - Mouth viseme: added a strength modifier for the mixing of the shapes
- - Started work on the translate feature
+ - Added: Eye tracking, added a check to see if a vertex group and vertices were assigned to the eye bones before continuing
+ - Added: Added a auto updater to easily keep track of new updates of the plugin
+ - Added: Mouth viseme, added a strength modifier for the mixing of the shapes
+ - Added: plugin support (install as addon in blender)
+ - Changed: UI improved
+ 
+#### 0.0.3
+ - Added: Bone root parenting script, useful for dynamic bones
+ - Added: Pack islands feature for auto atlas
+ - Fixed: Auto atlas half height bug
+ - Fixed: Experimental eye fix script error
+ - Fixed: dropdown boxes now correctly order by A-Z
+ - Changed: Auto atlas will now not error when mmd_tools is not present
+ - Removed: vrc.v_ee from auto visemes (unneeded)
 
 ## Texture atlas
 ![](https://i.imgur.com/B8Qytpl.png)
@@ -116,6 +125,22 @@ The name of the shape key that controls lowerlid right
 
 ##### Experimental eye fix
 Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head
+
+## Bone root parenting
+
+![](https://i.imgur.com/2jTVPIx.png)
+
+**Useful for Dynamic Bones where it is ideal to have one root bone full of child bones**
+This works by checking all bones and trying to figure out if they can be grouped together, which will appear in a list for you to choose from. After satisfied with the selection of this group you can then press 'Parent bones' and the child bones will be parented to a new bone named RootBone_xyz
+
+##### To parent
+This is a list of bones that look like they could be parented together to a root bone. Select a group of bones from the list and press "Parent bones"
+
+##### Refresh list
+This will clear the group bones list cache and rebuild it, useful if bones have changed or your model
+
+##### Parent bones
+This will start the parent proces
 
 ## Update Plugin
 There is a auto updater in the plugin so you don't have to keep checking for new version or manually re-download the zip file yourself. This is how to check for updates:
