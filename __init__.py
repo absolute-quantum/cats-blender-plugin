@@ -39,6 +39,7 @@ else:
     
 from math import radians
 from mathutils import Vector, Matrix
+from difflib import SequenceMatcher
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -46,7 +47,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': (0, 0, 2),
+    'version': (0, 0, 3),
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -54,6 +55,18 @@ bl_info = {
 }
 
 bl_options = {'REGISTER', 'UNDO'}
+
+root_bones = {}
+root_bones_choices = {}
+
+# 0.03 changes
+# - Added: Bone root parenting script, useful for skirt/hair and other bones that need a parent bone root for dynamic bones
+# - Added: Pack islands feature for auto atlas
+# - Fixed: Auto atlas half height bug
+# - Fixed: Experimental eye fix script error
+# - Fixed: dropdown boxes now correctly order by A-Z
+# - Changed: Auto atlas will now not error when mmd_tools is not present
+# - Removed: vrc.v_ee from auto visemes (unneeded)
 
 # updater ops import, all setup in this file
 from . import addon_updater_ops
@@ -90,16 +103,6 @@ class AutoAtlasButton(bpy.types.Operator):
                         if i is not 0:
                             bpy.data.materials[mat_slot.name].use_textures[i] = False
 
-        # Check if the texture size is divisable by 512
-        if not int(context.scene.texture_size) % 512 == 0:
-            self.report({'ERROR'}, 'The texture size: ' + str(context.scene.texture_size) + ' is not divisable by 512.')
-            return {'CANCELLED'}
-
-        # Check if the texture size is over 4096
-        if int(context.scene.texture_size) > 4096:
-            self.report({'ERROR'}, 'The texture size: ' + str(context.scene.texture_size) + ' should not be more then 4096.')
-            return {'CANCELLED'}
-
         # Add a UVMap
         bpy.ops.mesh.uv_texture_add()
 
@@ -112,32 +115,38 @@ class AutoAtlasButton(bpy.types.Operator):
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.mesh.select_all(action='SELECT')
 
-        # Try to UV smart project
-        bpy.ops.uv.smart_project(angle_limit=float(context.scene.angle_limit), island_margin=float(context.scene.island_margin))
-
-        # Get or define the image file
+        # Define the image file
         image_name = self.generateRandom('AtlasBake')
-        if image_name in bpy.data.images:
-            img = bpy.data.images[image_name]
-        else:
-            img = bpy.ops.image.new(name=image_name, alpha=True, width=int(context.scene.texture_size), height=int(context.scene.texture_size))
-
+        bpy.ops.image.new(name=image_name, alpha=True, width=int(context.scene.texture_size), height=int(context.scene.texture_size))
         img = bpy.data.images[image_name]
+
+        # Set image settings
+        filename = self.generateRandom('//GeneratedAtlasBake', '.png')
+        img.use_alpha = True
+        img.alpha_mode = 'STRAIGHT'
+        img.filepath_raw = filename
+        img.file_format = 'PNG'
+
+        # Switch to new image for the uv edit
+        bpy.data.screens['UV Editing'].areas[1].spaces[0].image = img
 
         # Set uv mapping to active image
         for uvface in bpy.context.object.data.uv_textures.active.data:
             uvface.image = img
 
+        # Try to UV smart project
+        bpy.ops.uv.smart_project(angle_limit=float(context.scene.angle_limit), island_margin=float(context.scene.island_margin))
+
+        # Pack islands
+        if context.scene.pack_islands:
+            bpy.ops.uv.pack_islands(margin=0.001)
+
         # Time to bake
         bpy.ops.object.mode_set(mode='EDIT', toggle=False)
         bpy.data.scenes["Scene"].render.bake_type = "TEXTURE"
-        bpy.data.screens['UV Editing'].areas[1].spaces[0].image = img
         bpy.ops.object.bake_image()
 
         # Lets save the generated atlas
-        filename = self.generateRandom('//GeneratedAtlasBake', '.png')
-        img.filepath_raw = filename
-        img.file_format = 'PNG'
         img.save()
 
         # Deselect all and switch to object mode
@@ -166,7 +175,10 @@ class AutoAtlasButton(bpy.types.Operator):
         uv_textures.remove(uv_textures['UVMap'])
         uv_textures[0].name = 'UVMap'
 
-        bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+        try:
+            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+        except:
+            print('mmd_tools probably not activated.')
 
         self.report({'INFO'}, 'Auto Atlas finished!')
 
@@ -270,20 +282,20 @@ class CreateEyesButton(bpy.types.Operator):
         vector_difference = Vector(np.subtract(coords_eye, eyebone.tail))
 
         # We want to have the eye bone ATLEAST behind the eye, not infront
-        if vector_difference[1] > 0.01:
+        if vector_difference[1] > 0.05:
+            # Check if the bone is infront the eye, this is always bad
+            if vector_difference[1] > 0.05:
+                eyebone.head[1] = eyebone.head[1] + 0.2
+                eyebone.tail[1] = eyebone.tail[1] + 0.2
+
+                return self.fix_eye_position(mesh_name, old_eyebone, eyebone)
+
             # Check if the bone is too much behind the eye
             if vector_difference[1] < 0.4:
                 eyebone.head[1] = eyebone.head[1] - 0.2
                 eyebone.tail[1] = eyebone.tail[1] - 0.2
 
-                return self.fix_eye_position(old_eyebone, eyebone)
-
-            # Check if the bone is infront the eye, this is always bad
-            if vector_difference[1] > 0:
-                eyebone.head[1] = eyebone.head[1] + 0.2
-                eyebone.tail[1] = eyebone.tail[1] + 0.2
-
-                return self.fix_eye_position(old_eyebone, eyebone)
+                return self.fix_eye_position(mesh_name, old_eyebone, eyebone)
 
     def execute(self, context):
         unhide_all()
@@ -307,7 +319,7 @@ class CreateEyesButton(bpy.types.Operator):
 
         # Find the existing vertex group of the right eye bone
         if self.vertex_group_exists(context.scene.mesh_name_eye, context.scene.eye_right) is False:
-            self.report({'ERROR'}, 'The right eye bone has no existing vertex group or no vertices assigned to it,, this is probably the wrong eye bone')
+            self.report({'ERROR'}, 'The right eye bone has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
             return {'CANCELLED'}
 
         # Create the new eye bones
@@ -323,6 +335,7 @@ class CreateEyesButton(bpy.types.Operator):
         self.set_to_center_mass(new_left_eye, context.scene.eye_left)
 
         # Set the eye bone up straight
+        # TODO: depending on the scale of the model, this might looked fucked: the eye bone will be too high or too low
         new_right_eye.tail[2] = new_right_eye.head[2] + 0.3
         new_left_eye.tail[2] = new_left_eye.head[2] + 0.3
 
@@ -405,29 +418,21 @@ class TranslateAllButton(bpy.types.Operator):
         unhide_all()
         
         # Shape key translation
-        translate_string = ''
+        translate_this = []
         for object in bpy.data.objects:
             if hasattr(object.data, 'shape_keys'):
                 if hasattr(object.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
-                        if index is not 0:
-                            translate_string += '\n'
-                        translate_string += shapekey.name
+                        translate_this.append(shapekey.name)
 
-        translated_str = self.translate(translate_string, 'en')
-        translated = translated_str.split('\n')
-        
-        self.report({'INFO'}, 'Translated all entities')
-        
-        return{'FINISHED'}
+        translated_str = self.translate(' - '.join(translate_this), 'en')
+        translated = translated_str.split(' - ')
         
         for object in bpy.data.objects:
             if hasattr(object.data, 'shape_keys'):
                 if hasattr(object.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
                         shapekey.name = translated[index]
-        
-        print(translated)
 
         self.report({'INFO'}, 'Translated all entities')
 
@@ -490,12 +495,6 @@ class AutoVisemeButton(bpy.types.Operator):
             [(context.scene.mouth_ch), (0.7)],
             [(context.scene.mouth_a), (0.3)]
         ], 7, 'vrc.v_dd', context.scene.shape_intensity)
-
-        # VISEME EE
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (0.7)],
-            [(context.scene.mouth_o), (0.3)]
-        ], 8, 'vrc.v_ee', context.scene.shape_intensity)
 
         # VISEME FF
         self.mix_shapekey(context.scene.mesh_name_viseme, [
@@ -569,6 +568,70 @@ class AutoVisemeButton(bpy.types.Operator):
 
         return{'FINISHED'}
 
+
+class RootButton(bpy.types.Operator):
+    bl_idname = 'root.function'
+    bl_label = 'Parent bones'
+
+    def execute(self, context):
+        global root_bones
+        global root_bones_choices
+
+        unhide_all()
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        armature = None
+        for object in bpy.data.objects:
+            if object.type == 'ARMATURE':
+                armature = object.data
+                armature_scene = object
+
+        bpy.context.scene.objects.active = armature_scene
+        armature_scene.select = True
+
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.object.mode_set(mode='EDIT')
+
+        # this is the bones that will be parented
+        child_bones = root_bones[context.scene.root_bone]
+
+        # Create the new root bone
+        new_bone_name = 'RootBone_' + child_bones[0]
+        root_bone = bpy.context.object.data.edit_bones.new(new_bone_name)
+        root_bone.parent = bpy.context.object.data.edit_bones[child_bones[0]].parent
+
+        # Parent all childs to the new root bone
+        for child_bone in child_bones:
+            bpy.context.object.data.edit_bones[child_bone].use_connect = False
+            bpy.context.object.data.edit_bones[child_bone].parent = root_bone
+
+        # Set position of new bone to parent
+        root_bone.head = root_bone.parent.head
+        root_bone.tail = root_bone.parent.tail
+
+        # reset the root bone cache
+        root_bones_choices = {}
+
+        self.report({'INFO'}, 'Bone rooted!')
+
+        return{'FINISHED'}
+
+
+class RefreshRootButton(bpy.types.Operator):
+    bl_idname = 'refresh.root'
+    bl_label = 'Refresh list'
+
+    def execute(self, context):
+        global root_bones_choices
+
+        root_bones_choices = {}
+
+        self.report({'INFO'}, 'Root bones refreshed, check the root bones list again.')
+
+        return{'FINISHED'}
+
+
 class ToolPanel(bpy.types.Panel):
     bl_label = 'Cats Blender Plugin'
     bl_idname = '3D_VIEW_TS_vrc'
@@ -598,6 +661,7 @@ class ToolPanel(bpy.types.Panel):
         row = box.row(align=True)
 
         row.prop(context.scene, 'one_texture')
+        row.prop(context.scene, 'pack_islands')
 
         row = box.row(align=True)
         row.operator('auto.atlas')
@@ -639,8 +703,23 @@ class ToolPanel(bpy.types.Panel):
         row.prop(context.scene, 'shape_intensity')
         row = box.row(align=True)
         row.operator('auto.viseme')
+
+        box = layout.box()
+        box.label('Bone root parenting')
+        row = box.row(align=True)
+        row.prop(context.scene, 'root_bone')
+
+        # NOTE: this might not be needed, but nice to have if we do.
+        # A root bone will always be parented to the parent of the first item of the bones
+        # row = box.row(align=True)
+        # row.prop(context.scene, 'root_bone_parent')
+
+        row = box.row(align=True)
+        row.operator('refresh.root')
+        row = box.row(align=True)
+        row.operator('root.function')
         
-        # Disable for now
+        # NOTE: Disabled for now until it workzz
         # box = layout.box()
         # box.label('Translate entities')
         # row = box.row(align=True)
@@ -659,12 +738,13 @@ class ToolPanel(bpy.types.Panel):
             if object.type == 'MESH':
                 choices.append((object.name, object.name, object.name))
 
-        bpy.types.Object.Enum = sorted(choices)
+        bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
         return bpy.types.Object.Enum
 
     def get_bones(self, context):
         choices = []
 
+        # Grab the armature
         armature = None
         for object in bpy.data.objects:
             if object.type == 'ARMATURE':
@@ -673,7 +753,80 @@ class ToolPanel(bpy.types.Panel):
         for bone in armature.bones:
             choices.append((bone.name, bone.name, bone.name))
 
-        bpy.types.Object.Enum = sorted(choices)
+        bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
+
+        return bpy.types.Object.Enum
+
+    def get_parent_root_bones(self, context):
+        global root_bones_choices
+        global root_bones
+
+        # Grab the armature
+        armature = None
+        for object in bpy.data.objects:
+            if object.type == 'ARMATURE':
+                armature = object.data
+
+        check_these_bones = []
+        bone_groups = {}
+        choices = []
+
+        # Get cache if exists
+        if len(root_bones_choices) >= 1:
+            return root_bones_choices
+
+        for bone in armature.bones:
+            check_these_bones.append(bone.name)
+
+        ignore_bone_names_with = [
+            'finger',
+            'chest',
+            'leg',
+            'arm',
+            'spine',
+            'shoulder',
+            'neck',
+            'knee',
+            'eye',
+            'toe',
+            'head',
+            'teeth',
+            'thumb',
+            'wrist',
+            'ankle',
+            'elbow',
+            'hips',
+            'twist',
+            'shadow',
+            'hand',
+            'rootbone'
+        ]
+
+        for rootbone in armature.bones:
+            will_ignore = False
+            for ignore_bone_name in ignore_bone_names_with:
+                if ignore_bone_name in rootbone.name.lower():
+                    will_ignore = True
+            if will_ignore is False:
+                for bone in armature.bones:
+                    if bone.name in check_these_bones:
+                        m = SequenceMatcher(None, rootbone.name, bone.name)
+                        if m.ratio() >= 0.70:
+                            check_these_bones.remove(bone.name)
+                            if rootbone.name not in bone_groups:
+                                bone_groups[rootbone.name] = []
+                            bone_groups[rootbone.name].append(bone.name)
+
+        for rootbone in bone_groups:
+            # NOTE: user probably doesn't want to parent bones together that have less then 2 bones
+            if len(bone_groups[rootbone]) >= 2:
+                choices.append((rootbone, rootbone.replace('_R', '').replace('_L', '') + ' (' + str(len(bone_groups[rootbone])) + ' bones)', rootbone))
+
+        bpy.types.Object.Enum = choices
+
+        # set cache
+        root_bones = bone_groups
+        root_bones_choices = choices
 
         return bpy.types.Object.Enum
 
@@ -683,7 +836,7 @@ class ToolPanel(bpy.types.Panel):
         for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
             choices.append((shapekey.name, shapekey.name, shapekey.name))
 
-        bpy.types.Object.Enum = sorted(choices)
+        bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
 
         return bpy.types.Object.Enum
 
@@ -699,13 +852,17 @@ class ToolPanel(bpy.types.Panel):
     bpy.types.Scene.island_margin = bpy.props.FloatProperty(
         name='Margin',
         description='Margin to reduce bleed of adjacent islands',
-        default=0.01
+        default=0.01,
+        min=0.0,
+        max=1.0,
     )
 
     bpy.types.Scene.angle_limit = bpy.props.FloatProperty(
         name='Angle',
         description='Lower for more projection groups, higher for less distortion',
-        default=82.0
+        default=82.0,
+        min=1.0,
+        max=89.0,
     )
 
     bpy.types.Scene.texture_size = bpy.props.EnumProperty(
@@ -717,6 +874,12 @@ class ToolPanel(bpy.types.Panel):
     bpy.types.Scene.one_texture = bpy.props.BoolProperty(
         name='Disable multiple textures',
         description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.',
+        default=True
+    )
+
+    bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
+        name='Pack islands',
+        description='Transform all islands so that they will fill up the UV space as much as possible.',
         default=True
     )
 
@@ -793,8 +956,8 @@ class ToolPanel(bpy.types.Panel):
     )
 
     bpy.types.Scene.mouth_o = bpy.props.EnumProperty(
-        name='Viseme O',
-        description='The name of the shape key that controls the mouth movement that looks like someone is saying O',
+        name='Viseme OH',
+        description='The name of the shape key that controls the mouth movement that looks like someone is saying OH',
         items=get_shapekeys,
     )
 
@@ -811,6 +974,19 @@ class ToolPanel(bpy.types.Panel):
         min=0.01,
         default=1,
         step=1,
+    )
+
+    bpy.types.Scene.root_bone = bpy.props.EnumProperty(
+        name='To parent',
+        description='This is a list of bones that look like they could be parented together to a root bone, this is very useful for dynamic bones. Select a group of bones from the list and press "Parent bones"',
+        items=get_parent_root_bones,
+    )
+
+    # NOTE: This might not be needed
+    bpy.types.Scene.root_bone_parent = bpy.props.EnumProperty(
+        name='Set root bone parent',
+        description='The root bone will be parented to this bone',
+        items=get_bones,
     )
 
 class DemoPreferences(bpy.types.AddonPreferences):
@@ -862,6 +1038,8 @@ def register():
     bpy.utils.register_class(CreateEyesButton)
     bpy.utils.register_class(AutoVisemeButton)
     bpy.utils.register_class(TranslateAllButton)
+    bpy.utils.register_class(RootButton)
+    bpy.utils.register_class(RefreshRootButton)
     bpy.utils.register_class(DemoPreferences)
     addon_updater_ops.register(bl_info)
 
@@ -871,6 +1049,8 @@ def unregister():
     bpy.utils.unregister_class(CreateEyesButton)
     bpy.utils.unregister_class(AutoVisemeButton)
     bpy.utils.unregister_class(TranslateAllButton)
+    bpy.utils.unregister_class(RootButton)
+    bpy.utils.unregister_class(RefreshRootButton)
     bpy.utils.unregister_class(DemoPreferences)
     addon_updater_ops.unregister()
 
