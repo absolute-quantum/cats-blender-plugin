@@ -40,6 +40,7 @@ else:
 from math import radians
 from mathutils import Vector, Matrix
 from difflib import SequenceMatcher
+from collections import OrderedDict
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -47,7 +48,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': (0, 0, 3),
+    'version': (0, 0, 4),
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -65,7 +66,7 @@ from . import addon_updater_ops
 
 class AutoAtlasButton(bpy.types.Operator):
     bl_idname = 'auto.atlas'
-    bl_label = 'Make atlas'
+    bl_label = 'Create atlas'
 
     def generateRandom(self, prefix='', suffix=''):
         return prefix + str(random.randrange(9999999999)) + suffix
@@ -77,11 +78,16 @@ class AutoAtlasButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You must save your blender file first, please save it to your assets folder so unity can discover the generated atlas file.')
             return {'CANCELLED'}
 
-        bpy.context.scene.objects.active = bpy.data.objects[context.scene.mesh_name_atlas]
-        bpy.data.objects[context.scene.mesh_name_atlas].select = True
+        atlas_mesh = bpy.data.objects[context.scene.mesh_name_atlas]
+
+        for obj in bpy.context.selected_objects:
+            obj.select = False
+
+        bpy.context.scene.objects.active = atlas_mesh
+        atlas_mesh.select = True
 
         # Check uv index
-        newUVindex = len(bpy.context.object.data.uv_textures) - 1
+        newUVindex = len(atlas_mesh.data.uv_textures) - 1
         if (newUVindex >= 1):
             self.report({'ERROR'}, 'You have more then one UVMap, please combine them.')
             return {'CANCELLED'}
@@ -98,7 +104,7 @@ class AutoAtlasButton(bpy.types.Operator):
         bpy.ops.mesh.uv_texture_add()
 
         # Active object should be rendered
-        bpy.context.object.hide_render = False
+        atlas_mesh.hide_render = False
 
         # Go into edit mode, deselect and select all
         bpy.ops.object.mode_set(mode='EDIT')
@@ -122,11 +128,11 @@ class AutoAtlasButton(bpy.types.Operator):
         bpy.data.screens['UV Editing'].areas[1].spaces[0].image = img
 
         # Set uv mapping to active image
-        for uvface in bpy.context.object.data.uv_textures.active.data:
+        for uvface in atlas_mesh.data.uv_textures.active.data:
             uvface.image = img
 
         # Try to UV smart project
-        bpy.ops.uv.smart_project(angle_limit=float(context.scene.angle_limit), island_margin=float(context.scene.island_margin))
+        bpy.ops.uv.smart_project(angle_limit=float(context.scene.angle_limit), island_margin=float(context.scene.island_margin), user_area_weight=float(context.scene.area_weight))
 
         # Pack islands
         if context.scene.pack_islands:
@@ -153,7 +159,7 @@ class AutoAtlasButton(bpy.types.Operator):
         # Create material slot
         matslot = bpy.ops.object.material_slot_add()
         new_mat = bpy.data.materials.new(name=self.generateRandom('AtlasBakedMat'))
-        bpy.context.object.active_material = new_mat
+        atlas_mesh.active_material = new_mat
 
         # Create texture slot from material slot and use generated atlas
         tex = bpy.data.textures.new(self.generateRandom('AtlasBakedTex'), 'IMAGE')
@@ -162,7 +168,7 @@ class AutoAtlasButton(bpy.types.Operator):
         slot.texture = tex
 
         # Remove orignal uv map and replace with generated
-        uv_textures = bpy.context.object.data.uv_textures
+        uv_textures = atlas_mesh.data.uv_textures
         uv_textures.remove(uv_textures['UVMap'])
         uv_textures[0].name = 'UVMap'
 
@@ -291,17 +297,22 @@ class CreateEyesButton(bpy.types.Operator):
     def execute(self, context):
         unhide_all()
 
-        # Select the armature
-        for object in bpy.context.scene.objects:
-            if object.type == 'ARMATURE':
-                armature_object = object
-
-        bpy.context.scene.objects.active = armature_object
-        armature_object.select = True
+        armature = get_armature()
+        bpy.context.scene.objects.active = armature
+        armature.select = True
 
         # Why does two times edit works?
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.object.mode_set(mode='EDIT')
+
+        # Find existing LeftEye/RightEye
+        if 'LeftEye' in bpy.context.object.data.edit_bones:
+            self.report({'ERROR'}, 'Eye tracking already exists: LeftEye bone exists')
+            return{'FINISHED'}
+
+        if 'RightEye' in bpy.context.object.data.edit_bones:
+            self.report({'ERROR'}, 'Eye tracking already exists: RightEye bone exists')
+            return{'FINISHED'}
 
         # Find the existing vertex group of the left eye bone
         if self.vertex_group_exists(context.scene.mesh_name_eye, context.scene.eye_left) is False:
@@ -312,6 +323,9 @@ class CreateEyesButton(bpy.types.Operator):
         if self.vertex_group_exists(context.scene.mesh_name_eye, context.scene.eye_right) is False:
             self.report({'ERROR'}, 'The right eye bone has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
             return {'CANCELLED'}
+
+        # Set head roll to 0 degrees
+        bpy.context.object.data.edit_bones[context.scene.head].roll = 0
 
         # Create the new eye bones
         new_left_eye = bpy.context.object.data.edit_bones.new('LeftEye')
@@ -351,81 +365,126 @@ class CreateEyesButton(bpy.types.Operator):
         self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_left, 'vrc.lowerlid_left', 3)
         self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_right, 'vrc.lowerlid_right', 4)
 
-        self.report({'INFO'}, 'Created eye tracking!')
 
-        bpy.ops.object.editmode_toggle()
+        # Remove empty objects
+        remove_empty()
+
+        # Rename armature
+        get_armature().name = 'Armature'
+
+        self.report({'INFO'}, 'Created eye tracking!')
 
         return{'FINISHED'}
 
+def get_armature():
+    armature = None
+    for object in bpy.data.objects:
+        if object.type == 'ARMATURE':
+
+            return object
 
 def unhide_all():
     for object in bpy.data.objects:
         object.hide = False
 
-class TranslateAllButton(bpy.types.Operator):
-    bl_idname = 'do.translate'
-    bl_label = 'Translate all'
+def remove_empty():
+    bpy.ops.object.editmode_toggle()
+    bpy.ops.object.mode_set(mode='OBJECT')
+    bpy.ops.object.select_all(action='DESELECT')
+    for obj in bpy.data.objects:
+        if obj.type == 'EMPTY':
+            bpy.context.scene.objects.active = bpy.data.objects[obj.name]
+            obj.select = True
+            bpy.ops.object.delete(use_global=False)
 
-    def unescape(self, text):
-        if (sys.version_info[0] < 3):
-            parser = HTMLParser.HTMLParser()
-        else:
-            parser = html.parser.HTMLParser()
-        return (parser.unescape(text))
+def unescape(text):
+    if (sys.version_info[0] < 3):
+        parser = HTMLParser.HTMLParser()
+    else:
+        parser = html.parser.HTMLParser()
+    return (parser.unescape(text))
 
 
-    def translate(self, to_translate, to_language="auto", from_language="auto"):
-        agent = {'User-Agent':
-        "Mozilla/4.0 (\
-        compatible;\
-        MSIE 6.0;\
-        Windows NT 5.1;\
-        SV1;\
-        .NET CLR 1.1.4322;\
-        .NET CLR 2.0.50727;\
-        .NET CLR 3.0.04506.30\
-        )"}
-        base_link = "http://translate.google.com/m?hl=%s&sl=%s&q=%s"
-        if (sys.version_info[0] < 3):
-            to_translate = urllib.quote_plus(to_translate)
-            link = base_link % (to_language, from_language, to_translate)
-            request = urllib2.Request(link, headers=agent)
-            raw_data = urllib2.urlopen(request).read()
-        else:
-            to_translate = urllib.parse.quote(to_translate)
-            link = base_link % (to_language, from_language, to_translate)
-            request = urllib.request.Request(link, headers=agent)
-            raw_data = urllib.request.urlopen(request).read()
-        data = raw_data.decode("utf-8")
-        expr = r'class="t0">(.*?)<'
-        re_result = re.findall(expr, data)
-        if (len(re_result) == 0):
-            result = ""
-        else:
-            result = self.unescape(re_result[0])
-        return (result)
+def translate(to_translate, to_language="auto", from_language="auto"):
+    print('Translating', to_translate)
+    agent = {'User-Agent':
+    "Mozilla/4.0 (\
+    compatible;\
+    MSIE 6.0;\
+    Windows NT 5.1;\
+    SV1;\
+    .NET CLR 1.1.4322;\
+    .NET CLR 2.0.50727;\
+    .NET CLR 3.0.04506.30\
+    )"}
+    base_link = "http://translate.google.com/m?hl=%s&sl=%s&q=%s"
+    if (sys.version_info[0] < 3):
+        to_translate = urllib.quote_plus(to_translate)
+        link = base_link % (to_language, from_language, to_translate)
+        request = urllib2.Request(link, headers=agent)
+        raw_data = urllib2.urlopen(request).read()
+    else:
+        to_translate = urllib.parse.quote(to_translate)
+        link = base_link % (to_language, from_language, to_translate)
+        request = urllib.request.Request(link, headers=agent)
+        raw_data = urllib.request.urlopen(request).read()
+
+    data = raw_data.decode("utf-8")
+    expr = r'class="t0">(.*?)<'
+    re_result = re.findall(expr, data)
+    if (len(re_result) == 0):
+        result = ""
+    else:
+        result = unescape(re_result[0])
+    return (result)
+
+
+class TranslateMeshesButton(bpy.types.Operator):
+    bl_idname = 'translate.objects'
+    bl_label = 'Objects'
 
     def execute(self, context):
         unhide_all()
         
-        # Shape key translation
-        translate_this = []
         for object in bpy.data.objects:
-            if hasattr(object.data, 'shape_keys'):
-                if hasattr(object.data.shape_keys, 'key_blocks'):
-                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
-                        translate_this.append(shapekey.name)
+            if object.type != 'ARMATURE':
+                object.name = translate(object.name, 'en')
 
-        translated_str = self.translate(' - '.join(translate_this), 'en')
-        translated = translated_str.split(' - ')
+        self.report({'INFO'}, 'Translated all objects')
+
+        return{'FINISHED'}
+
+
+
+class TranslateBonesButton(bpy.types.Operator):
+    bl_idname = 'translate.bone'
+    bl_label = 'Bones'
+
+    def execute(self, context):
+        unhide_all()
+        
+        armature = get_armature().data
+
+        for bone in armature.bones:
+            bone.name =  translate(bone.name, 'en')
+
+        self.report({'INFO'}, 'Translated all bones')
+        return{'FINISHED'}
+
+class TranslateShapekeyButton(bpy.types.Operator):
+    bl_idname = 'translate.shapekey'
+    bl_label = 'Shape keys'
+
+    def execute(self, context):
+        unhide_all()
         
         for object in bpy.data.objects:
             if hasattr(object.data, 'shape_keys'):
                 if hasattr(object.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
-                        shapekey.name = translated[index]
+                        shapekey.name = translate(shapekey.name, 'en')
 
-        self.report({'INFO'}, 'Translated all entities')
+        self.report({'INFO'}, 'Translated all shape keys')
 
         return{'FINISHED'}
 
@@ -471,89 +530,125 @@ class AutoVisemeButton(bpy.types.Operator):
         bpy.context.scene.objects.active = bpy.data.objects[context.scene.mesh_name_viseme]
         bpy.data.objects[context.scene.mesh_name_viseme].select = True
 
-        # VISEME AA
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_a), (1)]
-        ], 5, 'vrc.v_aa', context.scene.shape_intensity)
+        shapekey_data = OrderedDict()
+        shapekey_data['vrc.v_aa'] = {
+            'index': 5,
+            'mix': [
+                [(context.scene.mouth_a), (1)]
+            ],
+        }
+        shapekey_data['vrc.v_ch'] = {
+            'index': 6,
+            'mix': [
+                [(context.scene.mouth_ch), (1)]
+            ],
+        }
+        shapekey_data['vrc.v_dd'] = {
+            'index': 7,
+            'mix': [
+                [(context.scene.mouth_ch), (0.7)],
+                [(context.scene.mouth_a), (0.3)]
+            ],
+        }
+        shapekey_data['vrc.v_ff'] = {
+            'index': 8,
+            'mix': [
+                [(context.scene.mouth_ch), (0.4)],
+                [(context.scene.mouth_a), (0.2)]
+            ],
+        }
+        shapekey_data['vrc.v_ih'] = {
+            'index': 9,
+            'mix': [
+                [(context.scene.mouth_ch), (0.2)],
+                [(context.scene.mouth_a), (0.5)]
+            ],
+        }
+        shapekey_data['vrc.v_kk'] = {
+            'index': 10,
+            'mix': [
+                [(context.scene.mouth_ch), (0.1)],
+                [(context.scene.mouth_a), (0.2)]
+            ],
+        }
+        shapekey_data['vrc.v_nn'] = {
+            'index': 11,
+            'mix': [
+                [(context.scene.mouth_ch), (0.7)],
+            ],
+        }
+        shapekey_data['vrc.v_oh'] = {
+            'index': 12,
+            'mix': [
+                [(context.scene.mouth_o), (0.8)],
+                [(context.scene.mouth_a), (0.2)],
+            ],
+        }
+        shapekey_data['vrc.v_ou'] = {
+            'index': 13,
+            'mix': [
+                [(context.scene.mouth_o), (0.2)],
+                [(context.scene.mouth_a), (0.8)],
+            ],
+        }
+        shapekey_data['vrc.v_pp'] = {
+            'index': 14,
+            'mix': [
+                [(context.scene.mouth_o), (0.7)],
+            ],
+        }
+        shapekey_data['vrc.v_rr'] = {
+            'index': 15,
+            'mix': [
+                [(context.scene.mouth_o), (0.3)],
+                [(context.scene.mouth_ch), (0.5)],
+            ],
+        }
+        shapekey_data['vrc.v_sil'] = {
+            'index': 16,
+            'mix': [
+                [(context.scene.mouth_o), (0.01)],
+            ],
+        }
+        shapekey_data['vrc.v_ss'] = {
+            'index': 17,
+            'mix': [
+                [(context.scene.mouth_ch), (0.8)],
+            ],
+        }
+        shapekey_data['vrc.v_th'] = {
+            'index': 18,
+            'mix': [
+                [(context.scene.mouth_o), (0.15)],
+                [(context.scene.mouth_a), (0.4)],
+            ],
+        }
+        shapekey_data['vrc.v_e'] = {
+            'index': 19,
+            'mix': [
+                [(context.scene.mouth_ch), (0.7)],
+                [(context.scene.mouth_o), (0.3)]
+            ],
+        }
 
-        # VISEME CH
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (1)]
-        ], 6, 'vrc.v_ch', context.scene.shape_intensity)
+        # Remove any existing viseme shape key
+        for key in shapekey_data:
+            for index, shapekey in enumerate(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks):
+                obj = shapekey_data[key]
+                if shapekey.name == key:
+                    bpy.context.active_object.active_shape_key_index = index
+                    bpy.ops.object.shape_key_remove()
 
-        # VISEME DD
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (0.7)],
-            [(context.scene.mouth_a), (0.3)]
-        ], 7, 'vrc.v_dd', context.scene.shape_intensity)
+        # Add the shape keys
+        for key in shapekey_data:
+            obj = shapekey_data[key]
+            self.mix_shapekey(context.scene.mesh_name_viseme, obj['mix'], obj['index'], key, context.scene.shape_intensity)
 
-        # VISEME FF
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (0.4)],
-            [(context.scene.mouth_a), (0.2)]
-        ], 9, 'vrc.v_ff', context.scene.shape_intensity)
+        # Remove empty objects
+        remove_empty()
 
-        # VISEME IH
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (0.2)],
-            [(context.scene.mouth_a), (0.5)]
-        ], 10, 'vrc.v_ih', context.scene.shape_intensity)
-
-        # VISEME KK
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (0.1)],
-            [(context.scene.mouth_a), (0.2)]
-        ], 11, 'vrc.v_kk', context.scene.shape_intensity)
-
-        # VISEME NN
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (0.7)],
-        ], 12, 'vrc.v_nn', context.scene.shape_intensity)
-
-        # VISEME OH
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_o), (0.8)],
-            [(context.scene.mouth_a), (0.2)],
-        ], 13, 'vrc.v_oh', context.scene.shape_intensity)
-
-        # VISEME OU
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_o), (0.2)],
-            [(context.scene.mouth_a), (0.8)],
-        ], 14, 'vrc.v_ou', context.scene.shape_intensity)
-
-        # VISEME PP
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_o), (0.7)],
-        ], 15, 'vrc.v_pp', context.scene.shape_intensity)
-
-        # VISEME RR
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_o), (0.3)],
-            [(context.scene.mouth_ch), (0.5)],
-        ], 16, 'vrc.v_rr', context.scene.shape_intensity)
-
-        # VISEME SIL
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_o), (0.01)],
-        ], 17, 'vrc.v_sil', 1)
-
-        # VISEME SS
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (0.8)],
-        ], 18, 'vrc.v_ss', context.scene.shape_intensity)
-
-        # VISEME TH
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_o), (0.15)],
-            [(context.scene.mouth_a), (0.4)],
-        ], 19, 'vrc.v_th', context.scene.shape_intensity)
-
-        # VISEME E
-        self.mix_shapekey(context.scene.mesh_name_viseme, [
-            [(context.scene.mouth_ch), (0.7)],
-            [(context.scene.mouth_o), (0.3)]
-        ], 20, 'vrc.v_e', context.scene.shape_intensity)
+        # Rename armature
+        get_armature().name = 'Armature'
 
         self.report({'INFO'}, 'Created mouth visemes!')
 
@@ -572,14 +667,10 @@ class RootButton(bpy.types.Operator):
 
         bpy.ops.object.mode_set(mode='OBJECT')
 
-        armature = None
-        for object in bpy.data.objects:
-            if object.type == 'ARMATURE':
-                armature = object.data
-                armature_scene = object
+        armature = get_armature()
 
-        bpy.context.scene.objects.active = armature_scene
-        armature_scene.select = True
+        bpy.context.scene.objects.active = armature
+        armature.select = True
 
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.object.mode_set(mode='EDIT')
@@ -638,22 +729,18 @@ class ToolPanel(bpy.types.Panel):
         box = layout.box()
         box.label('Auto Atlas')
         row = box.row(align=True)
-
         row.prop(context.scene, 'island_margin')
         row = box.row(align=True)
-
         row.prop(context.scene, 'angle_limit')
         row = box.row(align=True)
-
+        row.prop(context.scene, 'area_weight')
+        row = box.row(align=True)
         row.prop(context.scene, 'texture_size')
         row = box.row(align=True)
-
         row.prop(context.scene, 'mesh_name_atlas')
         row = box.row(align=True)
-
         row.prop(context.scene, 'one_texture')
         row.prop(context.scene, 'pack_islands')
-
         row = box.row(align=True)
         row.operator('auto.atlas')
 
@@ -699,22 +786,16 @@ class ToolPanel(bpy.types.Panel):
         box.label('Bone root parenting')
         row = box.row(align=True)
         row.prop(context.scene, 'root_bone')
-
-        # NOTE: this might not be needed, but nice to have if we do.
-        # A root bone will always be parented to the parent of the first item of the bones
-        # row = box.row(align=True)
-        # row.prop(context.scene, 'root_bone_parent')
-
         row = box.row(align=True)
         row.operator('refresh.root')
-        row = box.row(align=True)
         row.operator('root.function')
         
-        # NOTE: Disabled for now until it workzz
-        # box = layout.box()
-        # box.label('Translate entities')
-        # row = box.row(align=True)
-        # row.operator('do.translate')
+        box = layout.box()
+        box.label('Translation')
+        row = box.row(align=True)
+        row.operator('translate.shapekey')
+        row.operator('translate.bone')
+        row.operator('translate.objects')
 
         addon_updater_ops.update_settings_ui(self, context)
 
@@ -734,12 +815,7 @@ class ToolPanel(bpy.types.Panel):
 
     def get_bones(self, context):
         choices = []
-
-        # Grab the armature
-        armature = None
-        for object in bpy.data.objects:
-            if object.type == 'ARMATURE':
-                armature = object.data
+        armature = get_armature().data
 
         for bone in armature.bones:
             choices.append((bone.name, bone.name, bone.name))
@@ -752,12 +828,7 @@ class ToolPanel(bpy.types.Panel):
         global root_bones_choices
         global root_bones
 
-        # Grab the armature
-        armature = None
-        for object in bpy.data.objects:
-            if object.type == 'ARMATURE':
-                armature = object.data
-
+        armature = get_armature().data
         check_these_bones = []
         bone_groups = {}
         choices = []
@@ -793,6 +864,8 @@ class ToolPanel(bpy.types.Panel):
             'rootbone'
         ]
 
+        # Find and group bones together that look alike
+        # Please do not ask how this works
         for rootbone in armature.bones:
             will_ignore = False
             for ignore_bone_name in ignore_bone_names_with:
@@ -803,10 +876,17 @@ class ToolPanel(bpy.types.Panel):
                     if bone.name in check_these_bones:
                         m = SequenceMatcher(None, rootbone.name, bone.name)
                         if m.ratio() >= 0.70:
+                            accepted = False
+                            if bone.parent is not None:
+                                for child_bone in bone.parent.children:
+                                    if child_bone.name == rootbone.name:
+                                        accepted = True
+
                             check_these_bones.remove(bone.name)
-                            if rootbone.name not in bone_groups:
-                                bone_groups[rootbone.name] = []
-                            bone_groups[rootbone.name].append(bone.name)
+                            if accepted:
+                                if rootbone.name not in bone_groups:
+                                    bone_groups[rootbone.name] = []
+                                bone_groups[rootbone.name].append(bone.name)
 
         for rootbone in bone_groups:
             # NOTE: user probably doesn't want to parent bones together that have less then 2 bones
@@ -844,6 +924,14 @@ class ToolPanel(bpy.types.Panel):
         name='Margin',
         description='Margin to reduce bleed of adjacent islands',
         default=0.01,
+        min=0.0,
+        max=1.0,
+    )
+
+    bpy.types.Scene.area_weight = bpy.props.FloatProperty(
+        name='Area weight',
+        description='Weight projections vector by faces with larger areas',
+        default=1,
         min=0.0,
         max=1.0,
     )
@@ -973,12 +1061,6 @@ class ToolPanel(bpy.types.Panel):
         items=get_parent_root_bones,
     )
 
-    # NOTE: This might not be needed
-    bpy.types.Scene.root_bone_parent = bpy.props.EnumProperty(
-        name='Set root bone parent',
-        description='The root bone will be parented to this bone',
-        items=get_bones,
-    )
 
 class DemoPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -1028,7 +1110,9 @@ def register():
     bpy.utils.register_class(AutoAtlasButton)
     bpy.utils.register_class(CreateEyesButton)
     bpy.utils.register_class(AutoVisemeButton)
-    bpy.utils.register_class(TranslateAllButton)
+    bpy.utils.register_class(TranslateShapekeyButton)
+    bpy.utils.register_class(TranslateBonesButton)
+    bpy.utils.register_class(TranslateMeshesButton)
     bpy.utils.register_class(RootButton)
     bpy.utils.register_class(RefreshRootButton)
     bpy.utils.register_class(DemoPreferences)
@@ -1039,7 +1123,9 @@ def unregister():
     bpy.utils.unregister_class(AutoAtlasButton)
     bpy.utils.unregister_class(CreateEyesButton)
     bpy.utils.unregister_class(AutoVisemeButton)
-    bpy.utils.unregister_class(TranslateAllButton)
+    bpy.utils.unregister_class(TranslateShapekeyButton)
+    bpy.utils.unregister_class(TranslateBonesButton)
+    bpy.utils.unregister_class(TranslateMeshesButton)
     bpy.utils.unregister_class(RootButton)
     bpy.utils.unregister_class(RefreshRootButton)
     bpy.utils.unregister_class(DemoPreferences)
