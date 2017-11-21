@@ -41,6 +41,16 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
  - Fixed: dropdown boxes now correctly order by A-Z
  - Changed: Auto atlas will now not error when mmd_tools is not present
  - Removed: vrc.v_ee from auto visemes (unneeded)
+ 
+#### 0.0.4
+ - Added: Translation. Translation of shape keys, bones, and objects
+ - Added: Eye tracking. Setting head roll to 0 degrees
+ - Added: Eye tracking. Removing empty object from hierachy
+ - Fixed: Mouth viseme. vrc.v_e correct index position
+ - Fixed: Bone parenting: issue fixed where child bones of a group would also been parented
+ - Changed: Mouth viseme. Will overwrite existing shape keys 
+ - Changed: Eye tracking. warns if LeftEye or RightEye already exists
+ - Possible Fix: Auto atlas. changed some context object references to the mesh you specified in the auto atlas configuration, can fix weird errors for models with multiple meshes (unconfirmed)
 
 ## Texture atlas
 ![](https://i.imgur.com/B8Qytpl.png)
@@ -141,6 +151,22 @@ This will clear the group bones list cache and rebuild it, useful if bones have 
 
 ##### Parent bones
 This will start the parent proces
+
+## Translation
+
+![](https://i.imgur.com/NpHAb73.png)
+
+**Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
+
+##### Bones
+Translate bones
+
+##### Shape keys
+Translate shape keys
+
+##### Objects
+Translate hierachy objects (meshes etc)
+
 
 ## Update Plugin
 There is a auto updater in the plugin so you don't have to keep checking for new version or manually re-download the zip file yourself. This is how to check for updates:
