@@ -259,27 +259,27 @@ class FixArmature(bpy.types.Operator):
         # Hips bone should be fixed as per specification from the SDK code
         if 'Hips' in armature.data.edit_bones:
             if 'Left leg' in armature.data.edit_bones:
-            if 'Right leg' in armature.data.edit_bones:
-                hip_bone = armature.data.edit_bones['Hips']
-                left_leg = armature.data.edit_bones['Left leg']
-                right_leg = armature.data.edit_bones['Right leg']
+                if 'Right leg' in armature.data.edit_bones:
+                    hip_bone = armature.data.edit_bones['Hips']
+                    left_leg = armature.data.edit_bones['Left leg']
+                    right_leg = armature.data.edit_bones['Right leg']
 
-                # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
-                left_leg.head[1] = right_leg.head[1]
+                    # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
+                    left_leg.head[1] = right_leg.head[1]
 
-                # Make sure the hips bone (tail and head tip) is aligned with the legs Y
-                hip_bone.head[1] = right_leg.head[1]
-                hip_bone.tail[1] = hip_bone.head[1]
+                    # Make sure the hips bone (tail and head tip) is aligned with the legs Y
+                    hip_bone.head[1] = right_leg.head[1]
+                    hip_bone.tail[1] = hip_bone.head[1]
 
-                # Make sure the hips bone is not under the legs bone
-                hip_bone.tail[2] = right_leg.head[2]
+                    # Make sure the hips bone is not under the legs bone
+                    hip_bone.tail[2] = right_leg.head[2]
 
-                left_leg_angle = tools.common.get_bone_angle(hip_bone, left_leg)
-                right_leg_angle = tools.common.get_bone_angle(hip_bone, right_leg)
+                    left_leg_angle = tools.common.get_bone_angle(hip_bone, left_leg)
+                    right_leg_angle = tools.common.get_bone_angle(hip_bone, right_leg)
 
-                # Developer print, useful for debugz
-                if (left_leg_angle < 5 and right_leg_angle < 5):
-                    print('SDK WILL ERROR:', max(left_leg_angle, right_leg_angle), ' degrees for hipbone.. should be as close to 0 as possible')
+                    # Developer print, useful for debugz
+                    if (left_leg_angle < 5 and right_leg_angle < 5):
+                        print('SDK WILL ERROR:', max(left_leg_angle, right_leg_angle), ' degrees for hipbone.. should be as close to 0 as possible')
 
         # At this point, everything should be fixed and now we validate and give errors if need be
 
