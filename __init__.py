@@ -132,43 +132,43 @@ class ToolPanel():
 
     bpy.types.Scene.head = bpy.props.EnumProperty(
         name='Head',
-        description='Head bone name',
+        description='The head bone containing the eye bones',
         items=tools.common.get_bones,
     )
 
     bpy.types.Scene.eye_left = bpy.props.EnumProperty(
         name='Left eye',
-        description='Eye bone left name',
+        description='The left eye bone',
         items=tools.common.get_bones,
     )
 
     bpy.types.Scene.eye_right = bpy.props.EnumProperty(
         name='Right eye',
-        description='Eye bone right name',
+        description='The right eye bone',
         items=tools.common.get_bones,
     )
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink right',
-        description='The name of the shape key that controls wink right',
+        description='The shape key containing a blink with the right eye',
         items=tools.common.get_shapekeys,
     )
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink left',
-        description='The name of the shape key that controls wink left',
+        description='The shape key containing a blink with the left eye',
         items=tools.common.get_shapekeys,
     )
 
     bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
         name='Lowerlid right',
-        description='The name of the shape key that controls lowerlid right',
+        description='The shape key containing a slightly raised right lower lid. Can be set to "Basis" to leave empty',
         items=tools.common.get_shapekeys,
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
         name='Lowerlid left',
-        description='The name of the shape key that controls lowerlid left',
+        description='The shape key containing a slightly raised left lower lid. Can be set to "Basis" to leave empty',
         items=tools.common.get_shapekeys,
     )
 
@@ -185,20 +185,20 @@ class ToolPanel():
     )
 
     bpy.types.Scene.mouth_a = bpy.props.EnumProperty(
-        name='Viseme A',
-        description='The name of the shape key that controls the mouth movement that looks like someone is saying A',
+        name='Viseme AA',
+        description='Shape key containing mouth movement that looks like someone is saying "aa"',
         items=tools.common.get_shapekeys,
     )
 
     bpy.types.Scene.mouth_o = bpy.props.EnumProperty(
         name='Viseme OH',
-        description='The name of the shape key that controls the mouth movement that looks like someone is saying OH',
+        description='Shape key containing mouth movement that looks like someone is saying "oh"',
         items=tools.common.get_shapekeys,
     )
 
     bpy.types.Scene.mouth_ch = bpy.props.EnumProperty(
         name='Viseme CH',
-        description='The name of the shape key that controls the mouth movement that looks like someone is saying CH',
+        description='Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth',
         items=tools.common.get_shapekeys,
     )
 
