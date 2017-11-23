@@ -52,7 +52,7 @@ class AutoVisemeButton(bpy.types.Operator):
                 if random_mix:
                     if selector is not shapekey.name:
                         if 'Basis' not in shapekey.name:
-                            shapekey.value = 0.0001
+                            shapekey.value = 0.00001
                             random_mix = False
 
                 if selector == shapekey.name:
@@ -84,100 +84,100 @@ class AutoVisemeButton(bpy.types.Operator):
             'index': 5,
             'mix': [
                 [(context.scene.mouth_a), (1)]
-            ],
+            ]
         }
         shapekey_data['vrc.v_ch'] = {
             'index': 6,
             'mix': [
                 [(context.scene.mouth_ch), (1)]
-            ],
+            ]
         }
         shapekey_data['vrc.v_dd'] = {
             'index': 7,
             'mix': [
-                [(context.scene.mouth_ch), (0.7)],
-                [(context.scene.mouth_a), (0.3)]
-            ],
-        }
-        shapekey_data['vrc.v_ff'] = {
-            'index': 8,
-            'mix': [
-                [(context.scene.mouth_ch), (0.4)],
-                [(context.scene.mouth_a), (0.2)]
-            ],
-        }
-        shapekey_data['vrc.v_ih'] = {
-            'index': 9,
-            'mix': [
-                [(context.scene.mouth_ch), (0.2)],
-                [(context.scene.mouth_a), (0.5)]
-            ],
-        }
-        shapekey_data['vrc.v_kk'] = {
-            'index': 10,
-            'mix': [
-                [(context.scene.mouth_ch), (0.1)],
-                [(context.scene.mouth_a), (0.2)]
-            ],
-        }
-        shapekey_data['vrc.v_nn'] = {
-            'index': 11,
-            'mix': [
-                [(context.scene.mouth_ch), (0.7)],
-            ],
-        }
-        shapekey_data['vrc.v_oh'] = {
-            'index': 12,
-            'mix': [
-                [(context.scene.mouth_o), (0.8)],
-                [(context.scene.mouth_a), (0.2)],
-            ],
-        }
-        shapekey_data['vrc.v_ou'] = {
-            'index': 13,
-            'mix': [
-                [(context.scene.mouth_o), (0.2)],
-                [(context.scene.mouth_a), (0.8)],
-            ],
-        }
-        shapekey_data['vrc.v_pp'] = {
-            'index': 14,
-            'mix': [
-                [(context.scene.mouth_o), (0.7)],
-            ],
-        }
-        shapekey_data['vrc.v_rr'] = {
-            'index': 15,
-            'mix': [
-                [(context.scene.mouth_o), (0.3)],
-                [(context.scene.mouth_ch), (0.5)],
-            ],
-        }
-        shapekey_data['vrc.v_sil'] = {
-            'index': 16,
-            'mix': [
-                [(context.scene.mouth_o), (0.01)],
-            ],
-        }
-        shapekey_data['vrc.v_ss'] = {
-            'index': 17,
-            'mix': [
-                [(context.scene.mouth_ch), (0.8)],
-            ],
-        }
-        shapekey_data['vrc.v_th'] = {
-            'index': 18,
-            'mix': [
-                [(context.scene.mouth_o), (0.15)],
-                [(context.scene.mouth_a), (0.4)],
-            ],
+                [(context.scene.mouth_a), (0.3)],
+                [(context.scene.mouth_ch), (0.7)]
+            ]
         }
         shapekey_data['vrc.v_e'] = {
-            'index': 19,
+            'index': 8,
             'mix': [
                 [(context.scene.mouth_ch), (0.7)],
                 [(context.scene.mouth_o), (0.3)]
-            ],
+            ]
+        }
+        shapekey_data['vrc.v_ff'] = {
+            'index': 9,
+            'mix': [
+                [(context.scene.mouth_a), (0.2)],
+                [(context.scene.mouth_ch), (0.4)]
+            ]
+        }
+        shapekey_data['vrc.v_ih'] = {
+            'index': 10,
+            'mix': [
+                [(context.scene.mouth_a), (0.5)],
+                [(context.scene.mouth_ch), (0.2)]
+            ]
+        }
+        shapekey_data['vrc.v_kk'] = {
+            'index': 11,
+            'mix': [
+                [(context.scene.mouth_a), (0.7)],
+                [(context.scene.mouth_ch), (0.4)]
+            ]
+        }
+        shapekey_data['vrc.v_nn'] = {
+            'index': 12,
+            'mix': [
+                [(context.scene.mouth_a), (0.2)],
+                [(context.scene.mouth_ch), (0.7)],
+            ]
+        }
+        shapekey_data['vrc.v_oh'] = {
+            'index': 13,
+            'mix': [
+                [(context.scene.mouth_a), (0.2)],
+                [(context.scene.mouth_o), (0.8)]
+            ]
+        }
+        shapekey_data['vrc.v_ou'] = {
+            'index': 14,
+            'mix': [
+                [(context.scene.mouth_o), (1.0)]
+            ]
+        }
+        shapekey_data['vrc.v_pp'] = {
+            'index': 15,
+            'mix': [
+                [(context.scene.mouth_a), (0.00001)],
+            ]
+        }
+        shapekey_data['vrc.v_rr'] = {
+            'index': 16,
+            'mix': [
+                [(context.scene.mouth_ch), (0.5)],
+                [(context.scene.mouth_o), (0.3)]
+            ]
+        }
+        shapekey_data['vrc.v_sil'] = {
+            'index': 17,
+            'mix': [
+                [(context.scene.mouth_o), (0.00001)],
+            ]
+        }
+        shapekey_data['vrc.v_ss'] = {
+            'index': 18,
+            'mix': [
+                [(context.scene.mouth_ch), (0.8)],
+            ]
+        }
+        shapekey_data['vrc.v_th'] = {
+            'index': 19,
+            'mix': [
+                [(context.scene.mouth_a), (0.4)],
+                [(context.scene.mouth_o), (0.15)]
+            ]
         }
 
         # Remove any existing viseme shape key
