@@ -222,10 +222,10 @@ class CreateEyesButton(bpy.types.Operator):
         self.copy_vertex_group(context.scene.mesh_name_eye, context.scene.eye_left, 'LeftEye')
 
         # Copy shape key mixes from user defined shape keys and rename them to the correct liking of VRC
-        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.wink_left, 'vrc.blink_left', 1,)
-        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.wink_right, 'vrc.blink_right', 2)
-        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_left, 'vrc.lowerlid_left', 3, 0.0001)
-        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_right, 'vrc.lowerlid_right', 4, 0.0002)
+        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.wink_left, 'vrc.blink_left', 1, 0.00001)
+        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.wink_right, 'vrc.blink_right', 2, 0.00002)
+        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_left, 'vrc.lowerlid_left', 3, 0.00003)
+        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_right, 'vrc.lowerlid_right', 4, 0.00004)
 
 
         # Remove empty objects
