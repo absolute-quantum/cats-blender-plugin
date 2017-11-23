@@ -149,6 +149,7 @@ def delete_hierarchy(obj):
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
     bl_label = 'Fix armature'
+    bl_options = {'REGISTER', 'UNDO'}
 
     dictionary = bpy.props.EnumProperty(
         name='Dictionary',
