@@ -28,6 +28,7 @@ import bpy
 import sys
 import os
 import importlib
+from . import addon_updater_ops
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
@@ -38,7 +39,6 @@ import tools.eyetracking
 import tools.rootbone
 import tools.translate
 import tools.armature
-import tools.boneweight
 import tools.common
 import globs
 
@@ -48,7 +48,6 @@ importlib.reload(tools.eyetracking)
 importlib.reload(tools.rootbone)
 importlib.reload(tools.translate)
 importlib.reload(tools.armature)
-importlib.reload(tools.boneweight)
 importlib.reload(tools.common)
 
 bl_info = {
@@ -57,7 +56,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': (0, 0, 5),
+    'version': (0, 0, 6),
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -66,8 +65,6 @@ bl_info = {
 
 bl_options = {'REGISTER', 'UNDO'}
 
-# updater ops import, all setup in this file
-from . import addon_updater_ops
 
 class ToolPanel():
     bl_label = 'Cats Blender Plugin'
@@ -217,6 +214,18 @@ class ToolPanel():
         items=tools.common.get_parent_root_bones,
     )
 
+    bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
+        name='Remove zero weight bones',
+        description='Removes zero weight bones in the proces',
+        default=True
+    )
+
+    bpy.types.Scene.remove_constraints = bpy.props.BoolProperty(
+        name='Remove bone constraints',
+        description='Removes bone constraints in the proces',
+        default=True
+    )
+
 
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature'
@@ -225,16 +234,13 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        
         box = layout.box()
         row = box.row(align=True)
-        row.operator('pmxarm_tool.fix_an_armature')
+        row.prop(context.scene, 'remove_constraints')
         row = box.row(align=True)
-        row.operator('neitri_tools.delete_zero_weight_bones_and_vertex_groups')
+        row.prop(context.scene, 'remove_zero_weight')
         row = box.row(align=True)
-        row.operator('neitri_tools.delete_bones_constraints')
-        # row = box.row(align=True)
-        # row.operator('neitri_tools.delete_bone_and_add_weights_to_parent')
+        row.operator('armature.fix', icon='BONE_DATA')
 
 
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
@@ -244,28 +250,27 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-
         box = layout.box()
         row = box.row(align=True)
-        row.prop(context.scene, 'mesh_name_eye')
+        row.prop(context.scene, 'mesh_name_eye', icon='MESH_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'head')
+        row.prop(context.scene, 'head', icon='BONE_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'eye_left')
+        row.prop(context.scene, 'eye_left', icon='BONE_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'eye_right')
+        row.prop(context.scene, 'eye_right', icon='BONE_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'wink_left')
+        row.prop(context.scene, 'wink_left', icon='SHAPEKEY_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'wink_right')
+        row.prop(context.scene, 'wink_right', icon='SHAPEKEY_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'lowerlid_left')
+        row.prop(context.scene, 'lowerlid_left', icon='SHAPEKEY_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'lowerlid_right')
+        row.prop(context.scene, 'lowerlid_right', icon='SHAPEKEY_DATA')
         row = box.row(align=True)
         row.prop(context.scene, 'experimental_eye_fix')
         row = box.row(align=True)
-        row.operator('create.eyes')
+        row.operator('create.eyes', icon='TRIA_RIGHT')
 
 
 class VisemePanel(ToolPanel, bpy.types.Panel):
@@ -275,20 +280,19 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-
         box = layout.box()
         row = box.row(align=True)
-        row.prop(context.scene, 'mesh_name_viseme')
+        row.prop(context.scene, 'mesh_name_viseme', icon='MESH_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'mouth_a')
+        row.prop(context.scene, 'mouth_a', icon='SHAPEKEY_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'mouth_o')
+        row.prop(context.scene, 'mouth_o', icon='SHAPEKEY_DATA')
         row = box.row(align=True)
-        row.prop(context.scene, 'mouth_ch')
+        row.prop(context.scene, 'mouth_ch', icon='SHAPEKEY_DATA')
         row = box.row(align=True)
         row.prop(context.scene, 'shape_intensity')
         row = box.row(align=True)
-        row.operator('auto.viseme')
+        row.operator('auto.viseme', icon='TRIA_RIGHT')
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -298,15 +302,14 @@ class TranslationPanel(ToolPanel, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        
         box = layout.box()
         row = box.row(align=True)
-        row.operator('translate.shapekey')
-        row.operator('translate.bone')
-        row.operator('translate.objects')
+        row.operator('translate.shapekeys', icon='SHAPEKEY_DATA')
+        row.operator('translate.bones', icon='BONE_DATA')
+        row.operator('translate.meshes', icon='MESH_DATA')
         row = box.row(align=True)
-        row.operator('translate.textures')
-        row.operator('translate.materials')
+        row.operator('translate.textures', icon='TEXTURE')
+        row.operator('translate.materials', icon='MATERIAL')
 
 
 class BoneRootPanel(ToolPanel, bpy.types.Panel):
@@ -316,13 +319,12 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-
         box = layout.box()
         row = box.row(align=True)
-        row.prop(context.scene, 'root_bone')
+        row.prop(context.scene, 'root_bone', icon='BONE_DATA')
         row = box.row(align=True)
-        row.operator('refresh.root')
-        row.operator('root.function')
+        row.operator('refresh.root', icon='FILE_REFRESH')
+        row.operator('root.function', icon='TRIA_RIGHT')
 
 
 class AtlasPanel(ToolPanel, bpy.types.Panel):
@@ -332,7 +334,6 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-
         box = layout.box()
         row = box.row(align=True)
         row.prop(context.scene, 'island_margin')
@@ -341,14 +342,14 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
         row = box.row(align=True)
         row.prop(context.scene, 'area_weight')
         row = box.row(align=True)
-        row.prop(context.scene, 'texture_size')
+        row.prop(context.scene, 'texture_size', icon='TEXTURE')
         row = box.row(align=True)
-        row.prop(context.scene, 'mesh_name_atlas')
+        row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
         row = box.row(align=True)
         row.prop(context.scene, 'one_texture')
         row.prop(context.scene, 'pack_islands')
         row = box.row(align=True)
-        row.operator('auto.atlas')
+        row.operator('auto.atlas', icon='TRIA_RIGHT')
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater'
@@ -361,7 +362,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_credits'
-    bl_options = {'HIDE_HEADER'}
+    bl_label = 'Credits'
 
     def draw(self, context):
         layout = self.layout
@@ -428,10 +429,7 @@ def register():
     bpy.utils.register_class(tools.translate.TranslateMaterialsButton)
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
-    bpy.utils.register_class(tools.armature.FixPMXArmature)
-    bpy.utils.register_class(tools.boneweight.DeleteZeroWeightBonesAndVertexGroups)
-    #bpy.utils.register_class(tools.boneweight.DeleteBoneAndAddWeightsToParent)
-    bpy.utils.register_class(tools.boneweight.DeleteBonesConstraints)
+    bpy.utils.register_class(tools.armature.FixArmature)
     bpy.utils.register_class(ArmaturePanel)
     bpy.utils.register_class(EyeTrackingPanel)
     bpy.utils.register_class(VisemePanel)
@@ -454,10 +452,7 @@ def unregister():
     bpy.utils.unregister_class(tools.translate.TranslateMaterialsButton)
     bpy.utils.unregister_class(tools.rootbone.RootButton)
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
-    bpy.utils.unregister_class(tools.armature.FixPMXArmature)
-    bpy.utils.unregister_class(tools.boneweight.DeleteZeroWeightBonesAndVertexGroups)
-    #bpy.utils.unregister_class(tools.boneweight.DeleteBoneAndAddWeightsToParent)
-    bpy.utils.unregister_class(tools.boneweight.DeleteBonesConstraints)
+    bpy.utils.unregister_class(tools.armature.FixArmature)
     bpy.utils.unregister_class(AtlasPanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)

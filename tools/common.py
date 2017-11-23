@@ -22,26 +22,38 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: 
+# Edits by:
 
 import bpy
 import globs
 
 from difflib import SequenceMatcher
+from math import degrees
 
 def get_armature():
-    armature = None
+    # NOTE: what if there are two armatures?
     for object in bpy.data.objects:
         if object.type == 'ARMATURE':
-
             return object
+
 
 def unhide_all():
     for object in bpy.data.objects:
         object.hide = False
 
+
+def unselect_all():
+    for object in bpy.data.objects:
+        object.select = False
+
+
+def select(obj):
+    bpy.context.scene.objects.active = obj
+    obj.select = True
+
+
 def remove_empty():
-    bpy.ops.object.editmode_toggle()
+    unhide_all()
     bpy.ops.object.mode_set(mode='OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     for obj in bpy.data.objects:
@@ -49,6 +61,12 @@ def remove_empty():
             bpy.context.scene.objects.active = bpy.data.objects[obj.name]
             obj.select = True
             bpy.ops.object.delete(use_global=False)
+
+        bpy.ops.object.select_all(action='DESELECT')
+
+def get_bone_angle(p1, p2):
+    armature = get_armature()
+    return degrees((p1.head - p1.tail).angle(p2.head - p2.tail))
 
 def get_meshes(self, context):
     choices = []
@@ -59,6 +77,7 @@ def get_meshes(self, context):
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
     return bpy.types.Object.Enum
+
 
 def get_bones(self, context):
     choices = []
@@ -71,15 +90,19 @@ def get_bones(self, context):
 
     return bpy.types.Object.Enum
 
+
 def get_shapekeys(self, context):
     choices = []
 
-    for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
-        choices.append((shapekey.name, shapekey.name, shapekey.name))
+    if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys') is True:
+        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks') is True:
+            for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
+                choices.append((shapekey.name, shapekey.name, shapekey.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
 
     return bpy.types.Object.Enum
+
 
 def get_texture_sizes(self, context):
     bpy.types.Object.Enum = [
@@ -89,6 +112,7 @@ def get_texture_sizes(self, context):
     ]
 
     return bpy.types.Object.Enum
+
 
 def get_parent_root_bones(self, context):
     armature = get_armature().data

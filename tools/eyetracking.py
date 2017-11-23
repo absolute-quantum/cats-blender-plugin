@@ -47,12 +47,12 @@ class CreateEyesButton(bpy.types.Operator):
         for v in mesh.data.vertices:
             for g in v.groups:
                 verts[group_lookup[g.group]].append(v)
-                
+
         try:
             verts[bone_name]
         except:
             return False
-                
+
         return len(verts[bone_name]) >= 1
 
     def set_to_center_mass(self, bone, center_mass_bone):
@@ -198,6 +198,7 @@ class CreateEyesButton(bpy.types.Operator):
         new_right_eye.parent = bpy.context.object.data.edit_bones[context.scene.head]
 
         # Use center of mass from old eye bone to place new eye bone in
+        # TODO: might be best to just check the vertex group of the eyes and determine location from that.
         self.set_to_center_mass(new_right_eye, context.scene.eye_right)
         self.set_to_center_mass(new_left_eye, context.scene.eye_left)
 

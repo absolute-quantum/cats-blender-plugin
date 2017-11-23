@@ -25,14 +25,14 @@
 # Edits by: Hotox
 
 import bpy
-import re
 import tools.common
 
 from googletrans import Translator
 
+
 class TranslateMeshesButton(bpy.types.Operator):
-    bl_idname = 'translate.objects'
-    bl_label = 'Objects'
+    bl_idname = 'translate.meshes'
+    bl_label = 'Meshes'
 
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -44,7 +44,6 @@ class TranslateMeshesButton(bpy.types.Operator):
         translator = Translator()
 
         objects = bpy.data.objects
-        
         for object in objects:
             if object.type != 'ARMATURE':
                 to_translate.append(object.name)
@@ -53,17 +52,16 @@ class TranslateMeshesButton(bpy.types.Operator):
         for translation in translations:
             translated.append(translation.text)
 
-        print(translated)
-        
         i = 0
         for object in objects:
             if object.type != 'ARMATURE':
                 object.name = translated[i]
                 i += 1
 
-        self.report({'INFO'}, 'Translated all objects')
+        self.report({'INFO'}, 'Translated all meshes')
 
         return{'FINISHED'}
+
 
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
@@ -101,6 +99,7 @@ class TranslateTexturesButton(bpy.types.Operator):
         self.report({'INFO'}, 'Translated all textures')
         return{'FINISHED'}
 
+
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'translate.materials'
     bl_label = 'Materials'
@@ -132,40 +131,44 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 bpy.context.object.active_material.name = translated[i]
                 i += 1
 
-
         self.report({'INFO'}, 'Translated all materials')
         return{'FINISHED'}
 
+
+def translate_bones():
+    tools.common.unhide_all()
+    armature = tools.common.get_armature().data
+
+    to_translate = []
+    translated = []
+
+    for bone in armature.bones:
+        to_translate.append(bone.name)
+
+    translator = Translator()
+    translations = translator.translate(to_translate)
+    for translation in translations:
+        translated.append(translation.text)
+
+    for i, bone in enumerate(armature.bones):
+        bone.name = translated[i]
+
+
 class TranslateBonesButton(bpy.types.Operator):
-    bl_idname = 'translate.bone'
+    bl_idname = 'translate.bones'
     bl_label = 'Bones'
 
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        tools.common.unhide_all()
-        
-        armature = tools.common.get_armature().data
-
-        to_translate = []
-        translated = []
-
-        for bone in armature.bones:
-            to_translate.append(bone.name)
-
-        translator = Translator()
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
-
-        for i, bone in enumerate(armature.bones):
-            bone.name = translated[i]
+        translate_bones()
 
         self.report({'INFO'}, 'Translated all bones')
         return{'FINISHED'}
 
+
 class TranslateShapekeyButton(bpy.types.Operator):
-    bl_idname = 'translate.shapekey'
+    bl_idname = 'translate.shapekeys'
     bl_label = 'Shape keys'
 
     bl_options = {'REGISTER', 'UNDO'}

@@ -76,8 +76,8 @@ class AutoVisemeButton(bpy.types.Operator):
     def execute(self, context):
         tools.common.unhide_all()
 
-        bpy.context.scene.objects.active = bpy.data.objects[context.scene.mesh_name_viseme]
-        bpy.data.objects[context.scene.mesh_name_viseme].select = True
+        tools.common.unselect_all()
+        tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
 
         shapekey_data = OrderedDict()
         shapekey_data['vrc.v_aa'] = {
