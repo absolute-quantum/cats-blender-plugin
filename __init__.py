@@ -63,8 +63,6 @@ bl_info = {
     'warning': '',
 }
 
-bl_options = {'REGISTER', 'UNDO'}
-
 
 class ToolPanel():
     bl_label = 'Cats Blender Plugin'
@@ -79,6 +77,9 @@ class ToolPanel():
         default=0.01,
         min=0.0,
         max=1.0,
+        step=0.1,
+        precision=2,
+        subtype='FACTOR'
     )
 
     bpy.types.Scene.area_weight = bpy.props.FloatProperty(
@@ -87,6 +88,9 @@ class ToolPanel():
         default=0.0,
         min=0.0,
         max=1.0,
+        step=0.1,
+        precision=2,
+        subtype='FACTOR'
     )
 
     bpy.types.Scene.angle_limit = bpy.props.FloatProperty(
@@ -95,6 +99,9 @@ class ToolPanel():
         default=82.0,
         min=1.0,
         max=89.0,
+        step=10.0,
+        precision=1,
+        subtype='FACTOR'
     )
 
     bpy.types.Scene.texture_size = bpy.props.EnumProperty(
@@ -202,27 +209,29 @@ class ToolPanel():
     bpy.types.Scene.shape_intensity = bpy.props.FloatProperty(
         name='Shape key mix intensity',
         description='Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.',
-        max=1,
-        min=0.01,
-        default=1,
-        step=1,
+        default=1.0,
+        min=0.0,
+        max=1.0,
+        step=0.1,
+        precision=2,
+        subtype='FACTOR'
     )
 
     bpy.types.Scene.root_bone = bpy.props.EnumProperty(
         name='To parent',
-        description='This is a list of bones that look like they could be parented together to a root bone, this is very useful for dynamic bones. Select a group of bones from the list and press "Parent bones"',
+        description='List of bones that look like they could be parented together to a root bone. This is very useful for Dynamic Bones. Select a group of bones from the list and press "Parent bones"',
         items=tools.common.get_parent_root_bones,
     )
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove zero weight bones',
-        description='Removes zero weight bones in the proces',
+        description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.",
         default=True
     )
 
     bpy.types.Scene.remove_constraints = bpy.props.BoolProperty(
         name='Remove bone constraints',
-        description='Removes bone constraints in the proces',
+        description='Deletes constraints that restrict the pose of MMD models.',
         default=True
     )
 
@@ -230,22 +239,21 @@ class ToolPanel():
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature'
     bl_label = 'Armature'
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
         row = box.row(align=True)
-        row.prop(context.scene, 'remove_constraints')
-        row = box.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
+        row = box.row(align=True)
+        row.prop(context.scene, 'remove_constraints')
         row = box.row(align=True)
         row.operator('armature.fix', icon='BONE_DATA')
 
 
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_eye'
-    bl_label = 'Eye tracking'
+    bl_label = 'Eye Tracking'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -431,10 +439,10 @@ def register():
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
     bpy.utils.register_class(tools.armature.FixArmature)
     bpy.utils.register_class(ArmaturePanel)
+    bpy.utils.register_class(TranslationPanel)
     bpy.utils.register_class(EyeTrackingPanel)
     bpy.utils.register_class(VisemePanel)
     bpy.utils.register_class(BoneRootPanel)
-    bpy.utils.register_class(TranslationPanel)
     bpy.utils.register_class(AtlasPanel)
     bpy.utils.register_class(UpdaterPanel)
     bpy.utils.register_class(CreditsPanel)
