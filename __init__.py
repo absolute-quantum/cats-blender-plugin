@@ -49,6 +49,16 @@ try:
 except ImportError:
     mmd_tools_installed = False
 
+try:
+    dictionary = bpy.props.EnumProperty(
+        name='Dictionary',
+        items=DictionaryEnum.get_dictionary_items,
+        description='Translate names from Japanese to English using selected dictionary',
+    )
+    self.__translator = DictionaryEnum.get_translator(dictionary)
+except Exception as e:
+    mmd_tools_installed = False
+
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
@@ -262,10 +272,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         row = box.row(align=True)
-        row.prop(context.scene, 'remove_zero_weight')
-        row = box.row(align=True)
-        row.prop(context.scene, 'remove_constraints')
-        row = box.row(align=True)
+        # row.prop(context.scene, 'remove_zero_weight')
+        # row = box.row(align=True)
+        # row.prop(context.scene, 'remove_constraints')
+        # row = box.row(align=True)
         row.operator('armature.fix', icon='BONE_DATA')
 
 
@@ -411,7 +421,7 @@ class DependenciesPanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         row = box.row(align=True)
-        box.label('"mmd_tools" is not installed!', icon="ERROR")
+        box.label('"mmd_tools" is not installed or activated!', icon="ERROR")
         box.label('Please download the latest version here:')
         row = box.row(align=True)
         row.operator('dependencies.download', icon='LOAD_FACTORY')

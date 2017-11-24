@@ -38,6 +38,16 @@ try:
 except ImportError:
     mmd_tools_installed = False
 
+try:
+    dictionary = bpy.props.EnumProperty(
+        name='Dictionary',
+        items=DictionaryEnum.get_dictionary_items,
+        description='Translate names from Japanese to English using selected dictionary',
+    )
+    self.__translator = DictionaryEnum.get_translator(dictionary)
+except Exception as e:
+    mmd_tools_installed = False
+
 
 bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'LowerBody2', 'Eyes', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
@@ -410,7 +420,7 @@ def delete_bone_constraints():
     armature = tools.common.get_armature()
     tools.common.select(armature)
 
-    bones = set([bone.name for bone in armature.data.edit_bones])
+    bones = set([bone.name for bone in armature.pose.bones])
 
     bpy.ops.object.mode_set(mode='POSE')
     bone_name_to_pose_bone = dict()

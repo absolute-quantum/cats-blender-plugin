@@ -36,6 +36,16 @@ try:
 except ImportError:
     mmd_tools_installed = False
 
+try:
+    dictionary = bpy.props.EnumProperty(
+        name='Dictionary',
+        items=DictionaryEnum.get_dictionary_items,
+        description='Translate names from Japanese to English using selected dictionary',
+    )
+    self.__translator = DictionaryEnum.get_translator(dictionary)
+except Exception as e:
+    mmd_tools_installed = False
+
 
 class TranslateMeshesButton(bpy.types.Operator):
     bl_idname = 'translate.meshes'

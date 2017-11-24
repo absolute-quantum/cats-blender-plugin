@@ -20,8 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
+# Code author: Hotox
 # Edits by:
 
 import bpy

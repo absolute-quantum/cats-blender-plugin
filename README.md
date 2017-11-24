@@ -32,14 +32,14 @@ You are downloading a older version of the plugin here, which is required: You w
 
 #### 0.0.1
  - The plugin was born
- 
+
 #### 0.0.2
  - Added: Eye tracking, added a check to see if a vertex group and vertices were assigned to the eye bones before continuing
  - Added: Added a auto updater to easily keep track of new updates of the plugin
  - Added: Mouth viseme, added a strength modifier for the mixing of the shapes
  - Added: plugin support (install as addon in blender)
  - Changed: UI improved
- 
+
 #### 0.0.3
  - Added: Bone root parenting script, useful for dynamic bones
  - Added: Pack islands feature for auto atlas
@@ -48,28 +48,47 @@ You are downloading a older version of the plugin here, which is required: You w
  - Fixed: dropdown boxes now correctly order by A-Z
  - Changed: Auto atlas will now not error when mmd_tools is not present
  - Removed: vrc.v_ee from auto visemes (unneeded)
- 
+
 #### 0.0.4
- - Added: Translation. Translation of shape keys, bones, and objects
- - Added: Eye tracking. Setting head roll to 0 degrees
- - Added: Eye tracking. Removing empty object from hierachy
- - Fixed: Mouth viseme. vrc.v_e correct index position
+ - Added: Translation: Translation of shape keys, bones, and objects
+ - Added: Eye tracking: Setting head roll to 0 degrees
+ - Added: Eye tracking: Removing empty object from hierachy
+ - Fixed: Mouth viseme: vrc.v_e correct index position
  - Fixed: Bone parenting: issue fixed where child bones of a group would also been parented
- - Changed: Mouth viseme. Will overwrite existing shape keys 
- - Changed: Eye tracking. warns if LeftEye or RightEye already exists
- - Possible Fix: Auto atlas. changed some context object references to the mesh you specified in the auto atlas configuration, can fix weird errors for models with multiple meshes (unconfirmed)
- 
+ - Changed: Mouth viseme: Will overwrite existing shape keys
+ - Changed: Eye tracking: warns if LeftEye or RightEye already exists
+ - Possible Fix: Auto atlas: changed some context object references to the mesh you specified in the auto atlas configuration, can fix weird errors for models with multiple meshes (unconfirmed)
+
 #### 0.0.5
- - Added: Translation. Translation of textures
- - Added: Translation. Translation of materials
- - Added: Neitri Blender Tool. a plugin from Neitri, script is now merged and will be updated by the maintainers of this project.
- - Added: PMXArmature. a plugin from Shotariya, script is now merged and will be updated by the maintainers of this project.
+ - Added: Translation: Translation of textures
+ - Added: Translation: Translation of materials
+ - Added: Neitri Blender Tool: a plugin from Neitri, script is now merged and will be updated by the maintainers of this project
+ - Added: PMXArmature: a plugin from Shotariya, script is now merged and will be updated by the maintainers of this project
  - Added: Credits tab :)
- - Changed: Translation. Using googletrans module ( = faster! thanks Hotox!)
+ - Changed: Translation: Using googletrans module ( = faster! thanks Hotox!)
  - Changed: Codebase modularised, project is more tidy now. Good for future updates
- - Changed: UI. every function has it's own collapsable panel now
- - Fixed: Mouth viseme. Adding random key shape weight to the mix with 0.0001 weight to fix a weird blender export condition (should fix open mouth)
- - Fixed: Eye tracking. Adding random key shape weight to the mix with 0.0001 weight to fix a weird blender export condition (should fix any future problems that may arise)
+ - Changed: UI: every function has it's own collapsable panel now
+ - Fixed: Mouth viseme: Adding random key shape weight to the mix with 0.0001 weight to fix a weird blender export condition (should fix open mouth)
+ - Fixed: Eye tracking: Adding random key shape weight to the mix with 0.0001 weight to fix a weird blender export condition (should fix any future problems that may arise)
+
+#### 0.0.6
+ - Added: Dependency Tab: Gives a warning if mmd_tools are not activated or installed (Thanks Hotox!)
+ - Added: Armature: A one fix it all button for MMD models (still work in progress but a good start!)
+ - Added: Armature: Fixes the hips angle VRCSDK error
+ - Added: Armature: Deletes rigidbodies and joints
+ - Added: Armature: Bone hierachy validation: Hips > Spine > Chest etc to make sure you get no problems in Unity
+ - Added: Armature: Uses MMD_TOOLS to translate bones and reparent and weight them with Shotariya's tool
+ - Added: Armature: Neitri's zero weight and bone constraint code implemented (there are some small issues with this at the moment, should be fixed soon)
+ - Fixed: Viseme: Mesh selection in visemes function would not have effect on the shape key selection list
+ - Fixed: Viseme: Script would error depending on current mode selection
+ - Fixed: Viseme & Eyetracking: After operations; the shape key index should be reset to Basis, this fixes a weird bug with models in VRC
+ - Changed: Translate: Translate does a MMD_TOOLS translate first, then google translate
+ - Changed: Viseme: Adjusted some viseme shape key definitions to be more realistic
+
+## Code contributors:
+ - Hotox
+ - Shotariya
+ - Neitri
 
 ## Texture atlas
 ![](https://i.imgur.com/qiD9jAA.png)
@@ -102,7 +121,7 @@ Texture baking and multiple textures per material can look weird in the end resu
 ![](https://i.imgur.com/XEnStln.png)
 
 **Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
-The script generates 17 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output. 
+The script generates 17 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
 *This is still a experimental feature and will be fine tuned over the course of time*
 
 ### Properties
@@ -110,14 +129,14 @@ The script generates 17 shape keys from the 3 shape keys you specified. It uses 
 ##### Mesh
 The mesh with the mouth shape keys
 
-##### Viseme A
-The name of the shape key that controls the mouth movement that looks like someone is saying A
+##### Viseme AA
+Shape key containing mouth movement that looks like someone is saying "aa"
 
 ##### Viseme OH
-The name of the shape key that controls the mouth movement that looks like someone is saying OH
+Shape key containing mouth movement that looks like someone is saying "oh"
 
 ##### Viseme CH
-The name of the shape key that controls the mouth movement that looks like someone is saying CH
+Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth
 
 ##### Shape key mix intensity
 Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.
@@ -217,8 +236,7 @@ There is a auto updater in the plugin so you don't have to keep checking for new
 ![](https://i.imgur.com/LbO7Xst.gif)
 
 ## Roadmap
- - Updates on the armature code
- - Fix hips (sdk error)
+ - MOAR Updates on the armature code
  - Texture translation should have a option to rename the filename also
 
 
