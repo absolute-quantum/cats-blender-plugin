@@ -256,7 +256,7 @@ class FixArmature(bpy.types.Operator):
         # Bone constraints should be deleted
         if context.scene.remove_constraints:
             delete_bone_constraints()
-            
+
         # Hips bone should be fixed as per specification from the SDK code
         if 'Hips' in armature.data.edit_bones:
             if 'Left leg' in armature.data.edit_bones:
@@ -272,15 +272,16 @@ class FixArmature(bpy.types.Operator):
                     hip_bone.head[1] = right_leg.head[1]
                     hip_bone.tail[1] = hip_bone.head[1]
 
-                    # Make sure the hips bone is not under the legs bone
-                    hip_bone.tail[2] = right_leg.head[2]
+                    # Flip the hips bone and make sure the hips bone is not below the legs bone
+                    hip_bone.tail[2] = hip_bone.head[2]
+                    hip_bone.head[2] = right_leg.head[2]
 
                     left_leg_angle = tools.common.get_bone_angle(hip_bone, left_leg)
                     right_leg_angle = tools.common.get_bone_angle(hip_bone, right_leg)
 
                     # Developer print, useful for debugz
                     if (left_leg_angle < 5 and right_leg_angle < 5):
-                        print('SDK WILL ERROR:', max(left_leg_angle, right_leg_angle), ' degrees for hipbone.. should be as close to 0 as possible')
+                        print('SDK WILL ERROR:', max(left_leg_angle, right_leg_angle), ' degrees for hipbone.. should be as close to 180 as possible')
 
         # At this point, everything should be fixed and now we validate and give errors if need be
 
