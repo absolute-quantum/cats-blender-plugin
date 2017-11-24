@@ -38,16 +38,6 @@ try:
 except ImportError:
     mmd_tools_installed = False
 
-try:
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-    )
-except Exception as e:
-    mmd_tools_installed = False
-
-
 bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'LowerBody2', 'Eyes', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
 bone_list_with = ['_shadow_', '_dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK', 'LegIKTip', 'ToeTipIK',
@@ -163,6 +153,13 @@ class FixArmature(bpy.types.Operator):
     bl_label = 'Fix armature'
     bl_options = {'REGISTER', 'UNDO'}
 
+    if mmd_tools_installed:
+        dictionary = bpy.props.EnumProperty(
+            name='Dictionary',
+            items=DictionaryEnum.get_dictionary_items,
+            description='Translate names from Japanese to English using selected dictionary',
+        )
+
     def execute(self, context):
         if mmd_tools_installed is False:
             self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
@@ -208,17 +205,7 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.select(armature)
 
-        try:
-            dictionary = bpy.props.EnumProperty(
-                name='Dictionary',
-                items=DictionaryEnum.get_dictionary_items,
-                description='Translate names from Japanese to English using selected dictionary',
-            )
-            self.__translator = DictionaryEnum.get_translator(dictionary)
-        except Exception as e:
-            self.report({'ERROR'}, 'Failed to load dictionary: %s'%e)
-            return {'CANCELLED'}
-
+        self.__translator = DictionaryEnum.get_translator(self.dictionary)
         for bone in armature.data.bones:
             bone.name = utils.convertNameToLR(bone.name, True)
             bone.name = self.__translator.translate(bone.name)
@@ -266,8 +253,8 @@ class FixArmature(bpy.types.Operator):
         tools.common.select(armature)
 
         # Bone constraints should be deleted
-        if context.scene.remove_constraints:
-            delete_bone_constraints()
+        #if context.scene.remove_constraints: TODO: Add back in
+            #delete_bone_constraints()
 
         # Hips bone should be fixed as per specification from the SDK code
         bpy.ops.object.mode_set(mode='EDIT')
@@ -325,6 +312,7 @@ class FixArmature(bpy.types.Operator):
         self.report({'INFO'}, 'Armature fixed.')
         return {'FINISHED'}
 
+
 def check_hierachy(correct_hierachy_array):
     armature = tools.common.get_armature()
     error = None
@@ -332,13 +320,13 @@ def check_hierachy(correct_hierachy_array):
     for correct_hierachy in correct_hierachy_array:
         for item in correct_hierachy:
             if item in armature.data.edit_bones is False:
-                error = {'result': False,  'message': item + ' was not found in the hierachy, this will cause problems!'}
+                error = {'result': False, 'message': item + ' was not found in the hierachy, this will cause problems!'}
 
         for index, item in enumerate(correct_hierachy):
             try:
                 bone = armature.data.edit_bones[item]
             except:
-                error = {'result': False,  'message': item + ' bone does not exist, this will cause problems!'}
+                error = {'result': False, 'message': item + ' bone does not exist, this will cause problems!'}
 
             # Make sure checked bones are not connected
             bone.use_connect = False
@@ -356,14 +344,17 @@ def check_hierachy(correct_hierachy_array):
                     try:
                         prevbone = armature.data.edit_bones[correct_hierachy[index - 1]]
                     except KeyError:
-                        error = {'result': False,  'message': correct_hierachy[index - 1] + ' bone does not exist, this will cause problems!'}
+                        error = {'result': False, 'message': correct_hierachy[
+                                                                 index - 1] + ' bone does not exist, this will cause problems!'}
 
                     if error is None:
                         if bone.parent is None:
-                            error = {'result': False,  'message': bone.name + ' is not parented at all, this will cause problems!'}
+                            error = {'result': False,
+                                     'message': bone.name + ' is not parented at all, this will cause problems!'}
                         else:
                             if bone.parent.name != prevbone.name:
-                                error = {'result': False,  'message': bone.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
+                                error = {'result': False,
+                                         'message': bone.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
 
     if error is None:
         return_value = {'result': True}
@@ -386,14 +377,14 @@ def delete_zero_weight():
 
     vertex_group_names_used = set()
     vertex_group_name_to_objects_having_same_named_vertex_group = dict()
-    for object in armature.children:
+    for objects in armature.children:
         vertex_group_id_to_vertex_group_name = dict()
-        for vertex_group in object.vertex_groups:
+        for vertex_group in objects.vertex_groups:
             vertex_group_id_to_vertex_group_name[vertex_group.index] = vertex_group.name
             if not vertex_group.name in vertex_group_name_to_objects_having_same_named_vertex_group:
                 vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name] = set()
-            vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name].add(object)
-        for vertex in object.data.vertices:
+            vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name].add(objects)
+        for vertex in objects.data.vertices:
             for group in vertex.groups:
                 if group.weight > 0:
                     vertex_group_names_used.add(vertex_group_id_to_vertex_group_name[group.group])
@@ -404,9 +395,10 @@ def delete_zero_weight():
         armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
         if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
             for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups
-                vertex_group = object.vertex_groups.get(bone_name)
+                vertex_group = objects.vertex_groups.get(bone_name)
                 if vertex_group is not None:
-                    object.vertex_groups.remove(vertex_group)
+                    objects.vertex_groups.remove(vertex_group)
+
 
 # TODO: Some bone constraints do not get deleted (console output):
 # Dependency cycle detected:

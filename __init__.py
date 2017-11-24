@@ -50,15 +50,6 @@ try:
 except ImportError:
     mmd_tools_installed = False
 
-try:
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-    )
-except Exception as e:
-    mmd_tools_installed = False
-
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
@@ -390,6 +381,7 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
         row = box.row(align=True)
         row.operator('auto.atlas', icon='TRIA_RIGHT')
 
+
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater'
     bl_label = 'Updater'
@@ -398,6 +390,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
     def draw(self, context):
         addon_updater_ops.check_for_update_background()
         addon_updater_ops.update_settings_ui(self, context)
+
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_credits'
@@ -412,6 +405,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
         row = box.row(align=True)
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
+
 
 class DependenciesPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_dependencies'
@@ -436,39 +430,40 @@ class DemoPreferences(bpy.types.AddonPreferences):
         name='Auto-check for Update',
         description='If enabled, auto-check for updates using an interval',
         default=False,
-        )
+    )
     updater_intrval_months = bpy.props.IntProperty(
         name='Months',
         description='Number of months between checking for updates',
         default=0,
         min=0
-        )
+    )
     updater_intrval_days = bpy.props.IntProperty(
         name='Days',
         description='Number of days between checking for updates',
         default=7,
         min=0,
-        )
+    )
     updater_intrval_hours = bpy.props.IntProperty(
         name='Hours',
         description='Number of hours between checking for updates',
         default=0,
         min=0,
         max=23
-        )
+    )
     updater_intrval_minutes = bpy.props.IntProperty(
         name='Minutes',
         description='Number of minutes between checking for updates',
         default=0,
         min=0,
         max=59
-        )
+    )
 
     def draw(self, context):
         layout = self.layout
 
         # updater draw function
         addon_updater_ops.update_settings_ui(self, context)
+
 
 def register():
     bpy.utils.register_class(tools.atlas.AutoAtlasButton)
@@ -496,6 +491,7 @@ def register():
     bpy.utils.register_class(DemoPreferences)
     addon_updater_ops.register(bl_info)
 
+
 def unregister():
     bpy.utils.unregister_class(tools.atlas.AutoAtlasButton)
     bpy.utils.unregister_class(tools.eyetracking.CreateEyesButton)
@@ -509,8 +505,7 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
     bpy.utils.unregister_class(tools.dependencies.DependenciesButton)
-    if mmd_tools_installed is False:
-        bpy.utils.register_class(DependenciesPanel)
+    bpy.utils.register_class(DependenciesPanel)
     bpy.utils.unregister_class(AtlasPanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)
@@ -521,6 +516,7 @@ def unregister():
     bpy.utils.unregister_class(CreditsPanel)
     bpy.utils.unregister_class(DemoPreferences)
     addon_updater_ops.unregister()
+
 
 if __name__ == '__main__':
     register()
