@@ -279,9 +279,9 @@ class FixArmature(bpy.types.Operator):
                     hip_bone.tail[1] = right_leg.head[1]
 
                     # Flip the hips bone and make sure the hips bone is not below the legs bone
-                    hip_bone_length = abs(hip_bone.tail[2] -  hip_bone.head[2])
-                    hip_bone.tail[2] = right_leg.head[2]
-                    hip_bone.head[2] = hip_bone.tail[2] + hip_bone_length
+                    hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
+                    hip_bone.head[2] = right_leg.head[2]
+                    hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
 
         # Removes unused vertex groups
         tools.common.remove_unused_vertex_groups()
@@ -412,19 +412,16 @@ def delete_bone_constraints():
     armature = tools.common.get_armature()
     tools.common.select(armature)
 
-    bone_names_to_work_on = set([bone.name for bone in armature.data.edit_bones])
+    bones = set([bone.name for bone in armature.data.edit_bones])
 
+    bpy.ops.object.mode_set(mode='POSE')
     bone_name_to_pose_bone = dict()
     for bone in armature.pose.bones:
         bone_name_to_pose_bone[bone.name] = bone
 
-    bones_worked_on = 0
-    constraints_deleted = 0
-
-    for bone_name in bone_names_to_work_on:
+    for bone_name in bones:
         bone = bone_name_to_pose_bone[bone_name]
         if len(bone.constraints) > 0:
-            bones_worked_on += 1
             for constraint in bone.constraints:
                 bone.constraints.remove(constraint)
-                constraints_deleted += 1
+                bpy.ops.constraint.delete()

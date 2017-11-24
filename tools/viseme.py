@@ -193,15 +193,15 @@ class AutoVisemeButton(bpy.types.Operator):
             obj = shapekey_data[key]
             self.mix_shapekey(context.scene.mesh_name_viseme, obj['mix'], obj['index'], key, context.scene.shape_intensity)
 
+        # Set shapekey index back to 0
+        bpy.context.object.active_shape_key_index = 0
+
         # Remove empty objects
         bpy.ops.object.mode_set(mode='EDIT')
         tools.common.remove_empty()
 
         # Fix armature name
         tools.common.fix_armature_name()
-
-        # Set shapekey index back to 0
-        bpy.context.object.active_shape_key_index = 0
 
         self.report({'INFO'}, 'Created mouth visemes!')
 

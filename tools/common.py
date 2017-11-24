@@ -141,7 +141,20 @@ def get_bones(self, context):
     return bpy.types.Object.Enum
 
 
-def get_shapekeys(self, context):
+def get_shapekeys_mouth(self, context):
+    choices = []
+
+    if hasattr(bpy.data.objects[context.scene.mesh_name_viseme].data, 'shape_keys'):
+        if hasattr(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys, 'key_blocks'):
+            for shapekey in bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks:
+                choices.append((shapekey.name, shapekey.name, shapekey.name))
+
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
+
+    return bpy.types.Object.Enum
+
+
+def get_shapekeys_eye(self, context):
     choices = []
 
     if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):

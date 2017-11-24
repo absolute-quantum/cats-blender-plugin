@@ -119,7 +119,7 @@ class ToolPanel():
     bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
         name='Pack islands',
         description='Transform all islands so that they will fill up the UV space as much as possible.',
-        default=True
+        default=False
     )
 
     bpy.types.Scene.mesh_name_eye = bpy.props.EnumProperty(
@@ -155,25 +155,25 @@ class ToolPanel():
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink right',
         description='The shape key containing a blink with the right eye',
-        items=tools.common.get_shapekeys,
+        items=tools.common.get_shapekeys_eye,
     )
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink left',
         description='The shape key containing a blink with the left eye',
-        items=tools.common.get_shapekeys,
+        items=tools.common.get_shapekeys_eye,
     )
 
     bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
         name='Lowerlid right',
         description='The shape key containing a slightly raised right lower lid. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys,
+        items=tools.common.get_shapekeys_eye,
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
         name='Lowerlid left',
         description='The shape key containing a slightly raised left lower lid. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys,
+        items=tools.common.get_shapekeys_eye,
     )
 
     bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
@@ -190,7 +190,7 @@ class ToolPanel():
     bpy.types.Scene.experimental_eye_fix = bpy.props.BoolProperty(
         name='Experimental eye fix',
         description='Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head',
-        default=False
+        default=True
     )
 
     bpy.types.Scene.mesh_name_viseme = bpy.props.EnumProperty(
@@ -202,19 +202,19 @@ class ToolPanel():
     bpy.types.Scene.mouth_a = bpy.props.EnumProperty(
         name='Viseme AA',
         description='Shape key containing mouth movement that looks like someone is saying "aa"',
-        items=tools.common.get_shapekeys,
+        items=tools.common.get_shapekeys_mouth,
     )
 
     bpy.types.Scene.mouth_o = bpy.props.EnumProperty(
         name='Viseme OH',
         description='Shape key containing mouth movement that looks like someone is saying "oh"',
-        items=tools.common.get_shapekeys,
+        items=tools.common.get_shapekeys_mouth,
     )
 
     bpy.types.Scene.mouth_ch = bpy.props.EnumProperty(
         name='Viseme CH',
         description='Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth',
-        items=tools.common.get_shapekeys,
+        items=tools.common.get_shapekeys_mouth,
     )
 
     bpy.types.Scene.shape_intensity = bpy.props.FloatProperty(
