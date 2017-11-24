@@ -399,11 +399,8 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        row = box.row(align=True)
         box.label('Cats Blender Plugin')
-        row = box.row(align=True)
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
-        row = box.row(align=True)
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
 
 
@@ -504,7 +501,8 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
     bpy.utils.unregister_class(tools.dependencies.DependenciesButton)
-    bpy.utils.register_class(DependenciesPanel)
+    if hasattr(bpy.types, "DependenciesPanel"):
+        bpy.utils.unregister_class(DependenciesPanel)
     bpy.utils.unregister_class(AtlasPanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)
