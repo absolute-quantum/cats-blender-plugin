@@ -154,13 +154,11 @@ class FixArmature(bpy.types.Operator):
     bl_label = 'Fix armature'
     bl_options = {'REGISTER', 'UNDO'}
 
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-    )
-
     def execute(self, context):
+        if mmd_tools_installed is False:
+            self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
+            return {'CANCELLED'}
+
         bpy.ops.object.hide_view_clear()
         tools.common.unselect_all()
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -201,13 +199,13 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.select(armature)
 
-        # Do a mmd_tools dictionary translate on the bones
-        if mmd_tools_installed is False:
-            self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
-            return {'CANCELLED'}
-
         try:
-            self.__translator = DictionaryEnum.get_translator(self.dictionary)
+            dictionary = bpy.props.EnumProperty(
+                name='Dictionary',
+                items=DictionaryEnum.get_dictionary_items,
+                description='Translate names from Japanese to English using selected dictionary',
+            )
+            self.__translator = DictionaryEnum.get_translator(dictionary)
         except Exception as e:
             self.report({'ERROR'}, 'Failed to load dictionary: %s'%e)
             return {'CANCELLED'}

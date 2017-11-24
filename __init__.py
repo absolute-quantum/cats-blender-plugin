@@ -40,7 +40,14 @@ import tools.rootbone
 import tools.translate
 import tools.armature
 import tools.common
+import tools.dependencies
 import globs
+
+mmd_tools_installed = True
+try:
+    import mmd_tools
+except ImportError:
+    mmd_tools_installed = False
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -396,6 +403,19 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row = box.row(align=True)
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
 
+class DependenciesPanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_dependencies'
+    bl_label = 'Missing dependencies!'
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        row = box.row(align=True)
+        box.label('"mmd_tools" is not installed!', icon="ERROR")
+        box.label('Please download the latest version here:')
+        row = box.row(align=True)
+        row.operator('dependencies.download', icon='LOAD_FACTORY')
+
 
 class DemoPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -452,6 +472,9 @@ def register():
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
     bpy.utils.register_class(tools.armature.FixArmature)
+    bpy.utils.register_class(tools.dependencies.DependenciesButton)
+    if mmd_tools_installed is False:
+        bpy.utils.register_class(DependenciesPanel)
     bpy.utils.register_class(ArmaturePanel)
     bpy.utils.register_class(TranslationPanel)
     bpy.utils.register_class(EyeTrackingPanel)
@@ -475,6 +498,9 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RootButton)
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
+    bpy.utils.unregister_class(tools.dependencies.DependenciesButton)
+    if mmd_tools_installed is False:
+        bpy.utils.register_class(DependenciesPanel)
     bpy.utils.unregister_class(AtlasPanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)
