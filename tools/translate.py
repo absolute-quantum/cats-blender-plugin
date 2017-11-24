@@ -42,7 +42,6 @@ try:
         items=DictionaryEnum.get_dictionary_items,
         description='Translate names from Japanese to English using selected dictionary',
     )
-    self.__translator = DictionaryEnum.get_translator(dictionary)
 except Exception as e:
     mmd_tools_installed = False
 
