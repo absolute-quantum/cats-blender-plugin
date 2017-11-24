@@ -253,8 +253,8 @@ class FixArmature(bpy.types.Operator):
         tools.common.select(armature)
 
         # Bone constraints should be deleted
-        #if context.scene.remove_constraints: TODO: Add back in
-            #delete_bone_constraints()
+        if context.scene.remove_constraints:
+            delete_bone_constraints()
 
         # Hips bone should be fixed as per specification from the SDK code
         bpy.ops.object.mode_set(mode='EDIT')
@@ -423,4 +423,5 @@ def delete_bone_constraints():
         if len(bone.constraints) > 0:
             for constraint in bone.constraints:
                 bone.constraints.remove(constraint)
-                bpy.ops.constraint.delete()
+
+    bpy.ops.object.mode_set(mode='EDIT')

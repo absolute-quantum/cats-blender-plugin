@@ -256,22 +256,22 @@ class ToolPanel():
 
 
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_armature'
+    bl_idname = 'VIEW3D_PT_armature_v1'
     bl_label = 'Armature'
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
         row = box.row(align=True)
-        # row.prop(context.scene, 'remove_zero_weight')
-        # row = box.row(align=True)
-        # row.prop(context.scene, 'remove_constraints')
-        # row = box.row(align=True)
+        row.prop(context.scene, 'remove_zero_weight')
+        row = box.row(align=True)
+        row.prop(context.scene, 'remove_constraints')
+        row = box.row(align=True)
         row.operator('armature.fix', icon='BONE_DATA')
 
 
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_eye'
+    bl_idname = 'VIEW3D_PT_eye_v1'
     bl_label = 'Eye Tracking'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -304,7 +304,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
 
 class VisemePanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_viseme'
+    bl_idname = 'VIEW3D_PT_viseme_v1'
     bl_label = 'Visemes'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -326,7 +326,7 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_translation'
+    bl_idname = 'VIEW3D_PT_translation_v1'
     bl_label = 'Translation'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -343,7 +343,7 @@ class TranslationPanel(ToolPanel, bpy.types.Panel):
 
 
 class BoneRootPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_boneroot'
+    bl_idname = 'VIEW3D_PT_boneroot_v1'
     bl_label = 'Bone Parenting'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -358,7 +358,7 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
 
 
 class AtlasPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_atlas'
+    bl_idname = 'VIEW3D_PT_atlas_v1'
     bl_label = 'Atlas'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -383,7 +383,7 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_updater'
+    bl_idname = 'VIEW3D_PT_updater_v1'
     bl_label = 'Updater'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -393,7 +393,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_credits'
+    bl_idname = 'VIEW3D_PT_credits_v1'
     bl_label = 'Credits'
 
     def draw(self, context):
@@ -405,7 +405,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
 
 
 class DependenciesPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_dependencies'
+    bl_idname = 'VIEW3D_PT_dependencies_v1'
     bl_label = 'Missing dependencies!'
 
     def draw(self, context):
