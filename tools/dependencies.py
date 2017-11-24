@@ -20,10 +20,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
+# Code author: Hotox
 # Edits by:
 
+import bpy
+import webbrowser
 
-root_bones = {}
-root_bones_choices = {}
+class DependenciesButton(bpy.types.Operator):
+    bl_idname = 'dependencies.download'
+    bl_label = 'Open "mmd_tools" download page'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/powroupi/blender_mmd_tools/tree/dev_test')
+
+        self.report({'INFO'}, 'mmd_tools download link opened')
+        return{'FINISHED'}

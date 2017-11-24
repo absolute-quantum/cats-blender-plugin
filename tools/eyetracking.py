@@ -22,16 +22,10 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: 
+# Edits by:
 
 import bpy
 import tools.common
-
-import math
-import mathutils
-import numpy as np
-from math import radians
-from mathutils import Vector, Matrix
 
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
@@ -59,29 +53,6 @@ class CreateEyesButton(bpy.types.Operator):
         bone.head = (bpy.context.object.data.edit_bones[center_mass_bone].head + bpy.context.object.data.edit_bones[center_mass_bone].tail) / 2
         bone.tail = (bpy.context.object.data.edit_bones[center_mass_bone].head + bpy.context.object.data.edit_bones[center_mass_bone].tail) / 2
 
-    def find_center_vector_of_vertex_group(self, mesh_name, vertex_group):
-        mesh = bpy.data.objects[mesh_name]
-
-        group_lookup = {g.index: g.name for g in mesh.vertex_groups}
-        verts = {name: [] for name in group_lookup.values()}
-        for v in bpy.context.object.data.vertices:
-            for g in v.groups:
-                verts[group_lookup[g.group]].append(v)
-
-        # Find the average vector point of the vertex cluster
-        divide_by = len(verts[vertex_group])
-        total = Vector()
-
-        if divide_by == 0:
-            return False
-
-        for vertice in verts[vertex_group]:
-            total += vertice.co
-
-        average = total / divide_by
-
-        return average
-
     def copy_vertex_group(self, mesh, vertex_group, rename_to):
         # iterate through the vertex group
         vertex_group_index = 0
@@ -90,7 +61,7 @@ class CreateEyesButton(bpy.types.Operator):
             if group.name == vertex_group:
                 # Copy the group and rename
                 bpy.data.objects[mesh].vertex_groups.active_index = vertex_group_index
-                new_vertex_group = bpy.ops.object.vertex_group_copy()
+                bpy.ops.object.vertex_group_copy()
                 bpy.data.objects[mesh].vertex_groups[vertex_group + '_copy'].name = rename_to
                 break
 
@@ -130,31 +101,21 @@ class CreateEyesButton(bpy.types.Operator):
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             shapekey.value = 0
 
-    def fix_eye_position(self, mesh_name, old_eyebone, eyebone):
+    def fix_eye_position(self, mesh_name, old_eyebone, eyebone, scale):
         # Verify that the new eye bone is in the correct position
         # by comparing the old eye vertex group average vector location
-        coords_eye = self.find_center_vector_of_vertex_group(mesh_name, old_eyebone)
+        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eyebone)
 
         if coords_eye is False:
             return False
 
-        vector_difference = Vector(np.subtract(coords_eye, eyebone.tail))
+        eyebone.head[0] = coords_eye[0]
+        eyebone.head[1] = coords_eye[1] + scale
+        eyebone.head[2] = coords_eye[2]
 
-        # We want to have the eye bone ATLEAST behind the eye, not infront
-        if vector_difference[1] > 0.05:
-            # Check if the bone is infront the eye, this is always bad
-            if vector_difference[1] > 0.05:
-                eyebone.head[1] = eyebone.head[1] + 0.2
-                eyebone.tail[1] = eyebone.tail[1] + 0.2
-
-                return self.fix_eye_position(mesh_name, old_eyebone, eyebone)
-
-            # Check if the bone is too much behind the eye
-            if vector_difference[1] < 0.4:
-                eyebone.head[1] = eyebone.head[1] - 0.2
-                eyebone.tail[1] = eyebone.tail[1] - 0.2
-
-                return self.fix_eye_position(mesh_name, old_eyebone, eyebone)
+        eyebone.tail[0] = coords_eye[0]
+        eyebone.tail[1] = coords_eye[1] + scale
+        eyebone.tail[2] = coords_eye[2] + 0.2
 
     def execute(self, context):
         tools.common.unhide_all()
@@ -167,22 +128,26 @@ class CreateEyesButton(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.object.mode_set(mode='EDIT')
 
-        # Find existing LeftEye/RightEye
+        # Selectors
+        left_eye_selector = context.scene.eye_left
+        right_eye_selector = context.scene.eye_right
+
+        # Find existing LeftEye/RightEye and rename
         if 'LeftEye' in bpy.context.object.data.edit_bones:
-            self.report({'ERROR'}, 'Eye tracking already exists: LeftEye bone exists')
-            return{'FINISHED'}
+            bpy.context.object.data.edit_bones['LeftEye'].name = 'OldLeftEye'
+            left_eye_selector = 'OldLeftEye'
 
         if 'RightEye' in bpy.context.object.data.edit_bones:
-            self.report({'ERROR'}, 'Eye tracking already exists: RightEye bone exists')
-            return{'FINISHED'}
+            bpy.context.object.data.edit_bones['RightEye'].name = 'OldRightEye'
+            right_eye_selector = 'OldRightEye'
 
         # Find the existing vertex group of the left eye bone
-        if self.vertex_group_exists(context.scene.mesh_name_eye, context.scene.eye_left) is False:
+        if self.vertex_group_exists(context.scene.mesh_name_eye, left_eye_selector) is False:
             self.report({'ERROR'}, 'The left eye bone has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
             return {'CANCELLED'}
 
         # Find the existing vertex group of the right eye bone
-        if self.vertex_group_exists(context.scene.mesh_name_eye, context.scene.eye_right) is False:
+        if self.vertex_group_exists(context.scene.mesh_name_eye, right_eye_selector) is False:
             self.report({'ERROR'}, 'The right eye bone has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
             return {'CANCELLED'}
 
@@ -199,8 +164,8 @@ class CreateEyesButton(bpy.types.Operator):
 
         # Use center of mass from old eye bone to place new eye bone in
         # TODO: might be best to just check the vertex group of the eyes and determine location from that.
-        self.set_to_center_mass(new_right_eye, context.scene.eye_right)
-        self.set_to_center_mass(new_left_eye, context.scene.eye_left)
+        self.set_to_center_mass(new_right_eye, right_eye_selector)
+        self.set_to_center_mass(new_left_eye, left_eye_selector)
 
         # Set the eye bone up straight
         # TODO: depending on the scale of the model, this might looked fucked: the eye bone will be too high or too low
@@ -215,12 +180,12 @@ class CreateEyesButton(bpy.types.Operator):
         # Make sure the bones are positioned correctly
         # not too far away from eye vertex (behind and infront)
         if context.scene.experimental_eye_fix:
-            self.fix_eye_position(context.scene.mesh_name_eye, context.scene.eye_right, new_right_eye)
-            self.fix_eye_position(context.scene.mesh_name_eye, context.scene.eye_left, new_left_eye)
+            self.fix_eye_position(context.scene.mesh_name_eye, right_eye_selector, new_right_eye, context.scene.eye_distance)
+            self.fix_eye_position(context.scene.mesh_name_eye, left_eye_selector, new_left_eye, context.scene.eye_distance)
 
         # Copy the existing eye vertex group to the new one
-        self.copy_vertex_group(context.scene.mesh_name_eye, context.scene.eye_right, 'RightEye')
-        self.copy_vertex_group(context.scene.mesh_name_eye, context.scene.eye_left, 'LeftEye')
+        self.copy_vertex_group(context.scene.mesh_name_eye, right_eye_selector, 'RightEye')
+        self.copy_vertex_group(context.scene.mesh_name_eye, left_eye_selector, 'LeftEye')
 
         # Copy shape key mixes from user defined shape keys and rename them to the correct liking of VRC
         self.copy_shape_key(context.scene.mesh_name_eye, context.scene.wink_left, 'vrc.blink_left', 1, 0.00001)
@@ -228,12 +193,15 @@ class CreateEyesButton(bpy.types.Operator):
         self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_left, 'vrc.lowerlid_left', 3, 0.00003)
         self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_right, 'vrc.lowerlid_right', 4, 0.00004)
 
-
         # Remove empty objects
+        bpy.ops.object.mode_set(mode='EDIT')
         tools.common.remove_empty()
 
-        # Rename armature
-        tools.common.get_armature().name = 'Armature'
+        # Fix armature name
+        tools.common.fix_armature_name()
+
+        # Set shapekey index back to 0
+        bpy.context.object.active_shape_key_index = 0
 
         self.report({'INFO'}, 'Created eye tracking!')
 
