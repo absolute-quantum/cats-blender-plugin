@@ -28,7 +28,9 @@ import bpy
 import globs
 
 from difflib import SequenceMatcher
+from mathutils import Vector
 from math import degrees
+
 
 def get_armature():
     # NOTE: what if there are two armatures?
@@ -64,9 +66,57 @@ def remove_empty():
 
         bpy.ops.object.select_all(action='DESELECT')
 
+
 def get_bone_angle(p1, p2):
-    armature = get_armature()
-    return degrees((p1.head - p1.tail).angle(p2.head - p2.tail))
+    try:
+        ret = degrees((p1.head - p1.tail).angle(p2.head - p2.tail))
+    except ValueError:
+        ret = 0
+
+    return ret
+
+
+def remove_unused_vertex_groups():
+    unselect_all()
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            ob.update_from_editmode()
+
+            vgroup_used = {i: False for i, k in enumerate(ob.vertex_groups)}
+
+            for v in ob.data.vertices:
+                for g in v.groups:
+                    if g.weight > 0.0:
+                        vgroup_used[g.group] = True
+
+            for i, used in sorted(vgroup_used.items(), reverse=True):
+                if not used:
+                    ob.vertex_groups.remove(ob.vertex_groups[i])
+
+
+def find_center_vector_of_vertex_group(mesh_name, vertex_group):
+    mesh = bpy.data.objects[mesh_name]
+
+    group_lookup = {g.index: g.name for g in mesh.vertex_groups}
+    verts = {name: [] for name in group_lookup.values()}
+    for v in bpy.context.object.data.vertices:
+        for g in v.groups:
+            verts[group_lookup[g.group]].append(v)
+
+    # Find the average vector point of the vertex cluster
+    divide_by = len(verts[vertex_group])
+    total = Vector()
+
+    if divide_by == 0:
+        return False
+
+    for vertice in verts[vertex_group]:
+        total += vertice.co
+
+    average = total / divide_by
+
+    return average
+
 
 def get_meshes(self, context):
     choices = []
@@ -94,14 +144,19 @@ def get_bones(self, context):
 def get_shapekeys(self, context):
     choices = []
 
-    if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys') is True:
-        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks') is True:
+    if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
+        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
             for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
                 choices.append((shapekey.name, shapekey.name, shapekey.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
 
     return bpy.types.Object.Enum
+
+
+def fix_armature_name():
+    get_armature().name = 'Armature'
+    get_armature().data.name = 'Armature'
 
 
 def get_texture_sizes(self, context):

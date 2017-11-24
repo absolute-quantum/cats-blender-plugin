@@ -29,6 +29,13 @@ import tools.common
 
 from googletrans import Translator
 
+mmd_tools_installed = True
+try:
+    from mmd_tools import utils
+    from mmd_tools.translations import DictionaryEnum
+except ImportError:
+    mmd_tools_installed = False
+
 
 class TranslateMeshesButton(bpy.types.Operator):
     bl_idname = 'translate.meshes'
@@ -135,33 +142,52 @@ class TranslateMaterialsButton(bpy.types.Operator):
         return{'FINISHED'}
 
 
-def translate_bones():
-    tools.common.unhide_all()
-    armature = tools.common.get_armature().data
-
-    to_translate = []
-    translated = []
-
-    for bone in armature.bones:
-        to_translate.append(bone.name)
-
-    translator = Translator()
-    translations = translator.translate(to_translate)
-    for translation in translations:
-        translated.append(translation.text)
-
-    for i, bone in enumerate(armature.bones):
-        bone.name = translated[i]
-
-
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
     bl_label = 'Bones'
 
     bl_options = {'REGISTER', 'UNDO'}
 
+    dictionary = bpy.props.EnumProperty(
+        name='Dictionary',
+        items=DictionaryEnum.get_dictionary_items,
+        description='Translate names from Japanese to English using selected dictionary',
+    )
+
     def execute(self, context):
-        translate_bones()
+        tools.common.unhide_all()
+        armature = tools.common.get_armature().data
+
+        # first mmd translate
+        if mmd_tools_installed is False:
+            self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
+            return {'CANCELLED'}
+
+        try:
+            self.__translator = DictionaryEnum.get_translator(self.dictionary)
+        except Exception as e:
+            self.report({'ERROR'}, 'Failed to load dictionary: %s'%e)
+            return {'CANCELLED'}
+
+        for bone in armature.bones:
+            bone.name = utils.convertNameToLR(bone.name, True)
+            bone.name = self.__translator.translate(bone.name)
+
+        # then translate all the bones to english just in case mmd skipped something
+        # TODO: could be optimised by only translating bones that mmd skipped
+        to_translate = []
+        translated = []
+
+        for bone in armature.bones:
+            to_translate.append(bone.name)
+
+        translator = Translator()
+        translations = translator.translate(to_translate)
+        for translation in translations:
+            translated.append(translation.text)
+
+        for i, bone in enumerate(armature.bones):
+            bone.name = translated[i]
 
         self.report({'INFO'}, 'Translated all bones')
         return{'FINISHED'}

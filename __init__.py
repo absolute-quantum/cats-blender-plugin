@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: 
+# Edits by:
 
 import bpy
 import sys
@@ -176,6 +176,17 @@ class ToolPanel():
         items=tools.common.get_shapekeys,
     )
 
+    bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
+        name='Eye bone distance from eye vertex',
+        description='This specifies the distance from the new eye bone to the old eye bone vertex group, because of difference in model scale this can be useful if the new eye bones are too far away inside the head',
+        default=0.2,
+        min=0.0,
+        max=1.0,
+        step=0.1,
+        precision=2,
+        subtype='FACTOR'
+    )
+
     bpy.types.Scene.experimental_eye_fix = bpy.props.BoolProperty(
         name='Experimental eye fix',
         description='Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head',
@@ -278,6 +289,9 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
         row = box.row(align=True)
         row.prop(context.scene, 'experimental_eye_fix')
         row = box.row(align=True)
+        if context.scene.experimental_eye_fix:
+            row.prop(context.scene, 'eye_distance')
+            row = box.row(align=True)
         row.operator('create.eyes', icon='TRIA_RIGHT')
 
 
