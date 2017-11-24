@@ -415,9 +415,8 @@ class DependenciesPanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         row = box.row(align=True)
-        box.label('"mmd_tools" is not installed or activated!', icon="ERROR")
+        box.label('"mmd_tools" is not installed!', icon="ERROR")
         box.label('Please download the latest version here:')
-        row = box.row(align=True)
         row.operator('dependencies.download', icon='LOAD_FACTORY')
 
 
