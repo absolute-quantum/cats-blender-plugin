@@ -162,13 +162,13 @@ class ToolPanel():
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink right',
-        description='The shape key containing a blink with the right eye',
+        description='The shape key containing a blink with the right eye. Can be set to "Basis" to leave empty',
         items=tools.common.get_shapekeys_eye,
     )
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink left',
-        description='The shape key containing a blink with the left eye',
+        description='The shape key containing a blink with the left eye. Can be set to "Basis" to leave empty',
         items=tools.common.get_shapekeys_eye,
     )
 

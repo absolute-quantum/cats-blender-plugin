@@ -120,6 +120,9 @@ bone_list_translate = {
     'UpperBody2': 'Chest',
     'Upper body 2': 'Chest',
     'Waist upper 2': 'Chest',
+    'UpperBody3': 'ChestRemovable',
+    'Upper body 3': 'ChestRemovable',
+    'Waist upper 3': 'ChestRemovable',
     'neck': 'Neck',
     'Shoulder_L': 'Left shoulder',
     'Shoulder_R': 'Right shoulder',
@@ -217,6 +220,40 @@ class FixArmature(bpy.types.Operator):
                 continue
             pb.name = value
 
+        # TODO Remove UpperChest3
+        bpy.ops.object.mode_set(mode='EDIT')
+        if 'ChestRemovable' in armature.data.edit_bones:
+            if 'Chest' in armature.data.edit_bones:
+                if 'Spine' in armature.data.edit_bones:
+                    new_chest = armature.data.edit_bones['ChestRemovable']
+                    old_chest = armature.data.edit_bones['Chest']
+                    spine = armature.data.edit_bones['Spine']
+
+                    # Rename chest bones
+                    old_chest.name = 'ChestOld'
+                    new_chest.name = 'Chest'
+
+                    # TODO: Delete old_chest bone and add weight painting to spine
+                    # TODO: I tried, but failed :(
+
+                    # tools.common.select(armature)
+                    # bpy.ops.object.mode_set(mode='EDIT')
+                    # armature.data.edit_bones.remove(old_chest)
+                    #
+                    # tools.common.unselect_all()
+                    # bpy.ops.object.mode_set(mode='OBJECT')
+                    # tools.common.select(mesh)
+                    #
+                    # pb = mesh.vertex_groups.get(old_chest.name)
+                    # if pb is not None:
+                    #     bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
+                    #     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = spine.name
+                    #     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = old_chest.name
+                    #     bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
+                    #     bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
+                    #     bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+                    #     mesh.vertex_groups.remove(pb)
+
         # Should reparent all bones to be correct for unity mapping and vrc itself
         bpy.ops.object.mode_set(mode='EDIT')
         for key, value in bone_list_parenting.items():
@@ -257,6 +294,7 @@ class FixArmature(bpy.types.Operator):
             delete_bone_constraints()
 
         # Hips bone should be fixed as per specification from the SDK code
+        # TODO: Somehow this doesn't work if bone constrains is ticked
         bpy.ops.object.mode_set(mode='EDIT')
         if 'Hips' in armature.data.edit_bones:
             if 'Left leg' in armature.data.edit_bones:
@@ -288,7 +326,7 @@ class FixArmature(bpy.types.Operator):
         if context.scene.remove_zero_weight:
             delete_zero_weight()
 
-        # At this point, everything should be fixed and now we validate and give errors if need be
+        # At this point, everything should be fixed and now we validate and give errors if needed
 
         # The bone hierachy needs to be validated
         bpy.ops.object.mode_set(mode='EDIT')
@@ -394,7 +432,8 @@ def delete_zero_weight():
     for bone_name in not_used_bone_names:
         armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
         if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
-            for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups
+            for objects in vertex_group_name_to_objects_having_same_named_vertex_group[
+                bone_name]:  # delete vertex groups
                 vertex_group = objects.vertex_groups.get(bone_name)
                 if vertex_group is not None:
                     objects.vertex_groups.remove(vertex_group)
@@ -423,5 +462,4 @@ def delete_bone_constraints():
         if len(bone.constraints) > 0:
             for constraint in bone.constraints:
                 bone.constraints.remove(constraint)
-
-    bpy.ops.object.mode_set(mode='EDIT')
+                # bpy.ops.constraint.delete() # TODO: This line was broken, fixed for release
