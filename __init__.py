@@ -58,6 +58,9 @@ importlib.reload(tools.translate)
 importlib.reload(tools.armature)
 importlib.reload(tools.common)
 
+# testing break
+this should give a error :D
+
 bl_info = {
     'name': 'Cats Blender Plugin',
     'category': '3D View',
