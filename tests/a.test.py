@@ -3,7 +3,7 @@ import unittest
 # import the already loaded addon
 try:
     import cats
-except Exception, e:
+except Exception as e:
     print(str(e))
     exit(1)
 
