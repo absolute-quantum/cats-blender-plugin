@@ -1,7 +1,11 @@
 import unittest
 
 # import the already loaded addon
-import cats
+try:
+    import cats
+except Exception, e:
+    print(str(e))
+    exit(1)
 
 
 class TestAddon(unittest.TestCase):
