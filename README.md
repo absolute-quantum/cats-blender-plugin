@@ -2,6 +2,9 @@
 
 A tool designed to shorten steps needed to import and optimise MMD models into VRChat
 
+Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
+Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=master)
+
 ## Features
  - Creating texture atlas
  - Creating mouth visemes
