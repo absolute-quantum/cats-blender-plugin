@@ -64,7 +64,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': (0, 0, 6),
+    'version': (0, 0, 8),
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -239,7 +239,7 @@ class ToolPanel():
     bpy.types.Scene.root_bone = bpy.props.EnumProperty(
         name='To parent',
         description='List of bones that look like they could be parented together to a root bone. This is very useful for Dynamic Bones. Select a group of bones from the list and press "Parent bones"',
-        items=tools.common.get_parent_root_bones,
+        items=tools.rootbone.get_parent_root_bones,
     )
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
@@ -385,7 +385,6 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v1'
     bl_label = 'Updater'
-    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         addon_updater_ops.check_for_update_background()
@@ -417,10 +416,8 @@ class DependenciesPanel(ToolPanel, bpy.types.Panel):
         row.operator('dependencies.download', icon='LOAD_FACTORY')
 
 
-class DemoPreferences(bpy.types.AddonPreferences):
+class UpdaterPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
-
-    # addon updater preferences
 
     auto_check_update = bpy.props.BoolProperty(
         name='Auto-check for Update',
@@ -457,7 +454,6 @@ class DemoPreferences(bpy.types.AddonPreferences):
     def draw(self, context):
         layout = self.layout
 
-        # updater draw function
         addon_updater_ops.update_settings_ui(self, context)
 
 
@@ -484,7 +480,7 @@ def register():
     bpy.utils.register_class(AtlasPanel)
     bpy.utils.register_class(UpdaterPanel)
     bpy.utils.register_class(CreditsPanel)
-    bpy.utils.register_class(DemoPreferences)
+    bpy.utils.register_class(UpdaterPreferences)
     addon_updater_ops.register(bl_info)
 
 
@@ -511,7 +507,7 @@ def unregister():
     bpy.utils.unregister_class(ArmaturePanel)
     bpy.utils.unregister_class(UpdaterPanel)
     bpy.utils.unregister_class(CreditsPanel)
-    bpy.utils.unregister_class(DemoPreferences)
+    bpy.utils.unregister_class(UpdaterPreferences)
     addon_updater_ops.unregister()
 
 

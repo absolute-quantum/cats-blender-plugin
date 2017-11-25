@@ -117,11 +117,13 @@ class CreateEyesButton(bpy.types.Operator):
         eyebone.tail[2] = coords_eye[2] + 0.2
 
     def execute(self, context):
+        PreserveState = tools.common.PreserveState()
+        PreserveState.save()
+
         tools.common.unhide_all()
 
         armature = tools.common.get_armature()
-        bpy.context.scene.objects.active = armature
-        armature.select = True
+        tools.common.select(armature)
 
         # Why does two times edit works?
         bpy.ops.object.mode_set(mode='EDIT')
@@ -162,12 +164,10 @@ class CreateEyesButton(bpy.types.Operator):
         new_right_eye.parent = bpy.context.object.data.edit_bones[context.scene.head]
 
         # Use center of mass from old eye bone to place new eye bone in
-        # TODO: might be best to just check the vertex group of the eyes and determine location from that.
         self.set_to_center_mass(new_right_eye, right_eye_selector)
         self.set_to_center_mass(new_left_eye, left_eye_selector)
 
         # Set the eye bone up straight
-        # TODO: depending on the scale of the model, this might looked fucked: the eye bone will be too high or too low
         new_right_eye.tail[2] = new_right_eye.head[2] + 0.3
         new_left_eye.tail[2] = new_left_eye.head[2] + 0.3
 
@@ -201,6 +201,8 @@ class CreateEyesButton(bpy.types.Operator):
 
         # Set shapekey index back to 0
         bpy.context.object.active_shape_key_index = 0
+
+        PreserveState.load()
 
         self.report({'INFO'}, 'Created eye tracking!')
 

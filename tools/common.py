@@ -25,9 +25,6 @@
 # Edits by:
 
 import bpy
-import globs
-
-from difflib import SequenceMatcher
 from mathutils import Vector
 from math import degrees
 
@@ -52,6 +49,50 @@ def unselect_all():
 def select(obj):
     bpy.context.scene.objects.active = obj
     obj.select = True
+
+
+class PreserveState():
+    state_data = {}
+
+    def save(self):
+        hidden = {}
+        for object in bpy.data.objects:
+            hidden[object.name] = object.hide
+
+        selected = {}
+        for object in bpy.data.objects:
+            selected[object.name] = object.select
+
+        self.state_data = {
+            'object_mode': bpy.context.active_object.mode,
+            'selection': selected,
+            'hidden': hidden,
+        }
+
+        return self.state_data
+
+    def load(self):
+        bpy.ops.object.mode_set(mode=self.state_data['object_mode'])
+
+        for object in bpy.data.objects:
+            try:
+                self.state_data['hidden'][object.name]
+            except KeyError:
+                object.hide = False
+                continue
+
+            object.hide = self.state_data['hidden'][object.name]
+
+        for object in bpy.data.objects:
+            try:
+                self.state_data['selection'][object.name]
+            except KeyError:
+                object.select = False
+                continue
+
+            object.select = self.state_data['selection'][object.name]
+
+        return self.state_data
 
 
 def remove_empty():
@@ -178,78 +219,5 @@ def get_texture_sizes(self, context):
         ("2048", "2048 (medium)", "2048"),
         ("4096", "4096 (high)", "4096")
     ]
-
-    return bpy.types.Object.Enum
-
-
-def get_parent_root_bones(self, context):
-    armature = get_armature().data
-    check_these_bones = []
-    bone_groups = {}
-    choices = []
-
-    # Get cache if exists
-    if len(globs.root_bones_choices) >= 1:
-        return globs.root_bones_choices
-
-    for bone in armature.bones:
-        check_these_bones.append(bone.name)
-
-    ignore_bone_names_with = [
-        'finger',
-        'chest',
-        'leg',
-        'arm',
-        'spine',
-        'shoulder',
-        'neck',
-        'knee',
-        'eye',
-        'toe',
-        'head',
-        'teeth',
-        'thumb',
-        'wrist',
-        'ankle',
-        'elbow',
-        'hips',
-        'twist',
-        'shadow',
-        'hand',
-        'rootbone'
-    ]
-
-    # Find and group bones together that look alike
-    # Please do not ask how this works
-    for rootbone in armature.bones:
-        for ignore_bone_name in ignore_bone_names_with:
-            if ignore_bone_name in rootbone.name.lower():
-                break
-        for bone in armature.bones:
-            if bone.name in check_these_bones:
-                m = SequenceMatcher(None, rootbone.name, bone.name)
-                if m.ratio() >= 0.70:
-                    accepted = False
-                    if bone.parent is not None:
-                        for child_bone in bone.parent.children:
-                            if child_bone.name == rootbone.name:
-                                accepted = True
-
-                    check_these_bones.remove(bone.name)
-                    if accepted:
-                        if rootbone.name not in bone_groups:
-                            bone_groups[rootbone.name] = []
-                        bone_groups[rootbone.name].append(bone.name)
-
-    for rootbone in bone_groups:
-        # NOTE: user probably doesn't want to parent bones together that have less then 2 bones
-        if len(bone_groups[rootbone]) >= 2:
-            choices.append((rootbone, rootbone.replace('_R', '').replace('_L', '') + ' (' + str(len(bone_groups[rootbone])) + ' bones)', rootbone))
-
-    bpy.types.Object.Enum = choices
-
-    # set cache
-    globs.root_bones = bone_groups
-    globs.root_bones_choices = choices
 
     return bpy.types.Object.Enum

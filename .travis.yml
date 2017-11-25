@@ -1,0 +1,43 @@
+# this is essential to make python work out of the box
+language: python
+
+# Define which python version to build against.
+# As blender comes bundled with it's own python you can use just one version if you like
+python:
+  - "2.7"
+  - "3.4"
+
+before_install:
+  # update apt-gets repository sources
+  - sudo apt-get update -qq
+
+  # install blender from official sources.
+  # This will most propably install an outdated blender version,
+  # but it will resolve all system dependencies blender has to be able to run.
+  - sudo apt-get install blender
+
+install:
+  # create temp directory where we store a recent blender version
+  - mkdir tmp && cd tmp
+
+  # download the blender version you want to test against
+  - wget http://mirror.cs.umn.edu/blender.org/release/Blender2.74/blender-2.74-linux-glibc211-x86_64.tar.bz2
+
+  # Extract the archive
+  - tar jxf blender-2.74-linux-glibc211-x86_64.tar.bz2
+
+  # rename the extracted folder to "blender" for easier reference
+  - mv blender-2.74-linux-glibc211-x86_64 blender
+
+  # remove the archive, we do not need it anymore
+  - rm blender-2.74-linux-glibc211-x86_64.tar.bz2
+
+  # go back to root directory
+  - cd ..
+
+  # now create a symlink to the addon within blenders addons directory
+  # this is important, because otherwhise blender would not be able to load the addon
+  - sudo ln -s ${PWD}/Cats Blender Plugin ${PWD}/tmp/blender/2.74/scripts/addons/Cats Blender Plugin
+
+# Finally start our test runner passing it the blender executable from the downloaded blender release
+script: python tests.py ./tmp/blender/blender

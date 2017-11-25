@@ -168,6 +168,8 @@ class FixArmature(bpy.types.Operator):
             self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
             return {'CANCELLED'}
 
+        PreserveState = tools.common.PreserveState()
+        PreserveState.save()
         bpy.ops.object.hide_view_clear()
         tools.common.unselect_all()
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -294,7 +296,7 @@ class FixArmature(bpy.types.Operator):
             delete_bone_constraints()
 
         # Hips bone should be fixed as per specification from the SDK code
-        # TODO: Somehow this doesn't work if bone constrains is ticked
+        bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.object.mode_set(mode='EDIT')
         if 'Hips' in armature.data.edit_bones:
             if 'Left leg' in armature.data.edit_bones:
@@ -344,8 +346,7 @@ class FixArmature(bpy.types.Operator):
             self.report({'WARNING'}, hierachy_check_hips['message'])
             return {'FINISHED'}
 
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.ops.object.select_all(action='DESELECT')
+        PreserveState.load()
 
         self.report({'INFO'}, 'Armature fixed.')
         return {'FINISHED'}
@@ -382,8 +383,7 @@ def check_hierachy(correct_hierachy_array):
                     try:
                         prevbone = armature.data.edit_bones[correct_hierachy[index - 1]]
                     except KeyError:
-                        error = {'result': False, 'message': correct_hierachy[
-                                                                 index - 1] + ' bone does not exist, this will cause problems!'}
+                        error = {'result': False, 'message': correct_hierachy[index - 1] + ' bone does not exist, this will cause problems!'}
 
                     if error is None:
                         if bone.parent is None:
@@ -439,12 +439,6 @@ def delete_zero_weight():
                     objects.vertex_groups.remove(vertex_group)
 
 
-# TODO: Some bone constraints do not get deleted (console output):
-# Dependency cycle detected:
-# Hair8_L depends on HairIK_L through Pose Constraint.
-# Hair9_L depends on Hair8_L through Parent Relation.
-# HairIK_L depends on Hair9_L through Parent Relation.
-
 def delete_bone_constraints():
     bpy.ops.object.mode_set(mode='EDIT')
     armature = tools.common.get_armature()
@@ -462,4 +456,3 @@ def delete_bone_constraints():
         if len(bone.constraints) > 0:
             for constraint in bone.constraints:
                 bone.constraints.remove(constraint)
-                # bpy.ops.constraint.delete() # TODO: This line was broken, fixed for release

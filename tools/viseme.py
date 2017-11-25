@@ -74,6 +74,9 @@ class AutoVisemeButton(bpy.types.Operator):
                 position_correct = True
 
     def execute(self, context):
+        PreserveState = tools.common.PreserveState()
+        PreserveState.save()
+
         tools.common.unhide_all()
 
         tools.common.unselect_all()
@@ -204,6 +207,8 @@ class AutoVisemeButton(bpy.types.Operator):
 
         # Fix armature name
         tools.common.fix_armature_name()
+
+        PreserveState.load()
 
         self.report({'INFO'}, 'Created mouth visemes!')
 
