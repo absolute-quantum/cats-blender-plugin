@@ -41,14 +41,22 @@ import tools.translate
 import tools.armature
 import tools.common
 import tools.dependencies
+import tools.credits
 import globs
 
 mmd_tools_installed = True
 try:
-    from mmd_tools import utils
-    from mmd_tools.translations import DictionaryEnum
+    import mmd_tools
 except ImportError:
     mmd_tools_installed = False
+
+mmd_tools_outdated = False
+if mmd_tools_installed:
+    try:
+        from mmd_tools import utils
+        from mmd_tools.translations import DictionaryEnum
+    except ImportError:
+        mmd_tools_outdated = True
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -383,8 +391,9 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_updater_v1'
+    bl_idname = 'VIEW3D_PT_updater_v2'
     bl_label = 'Updater'
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         addon_updater_ops.check_for_update_background()
@@ -401,6 +410,9 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         box.label('Cats Blender Plugin')
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
+        box.label('Want to give feedback or found a bug?')
+        row = box.row(align=True)
+        row.operator('credits.forum', icon='LOAD_FACTORY')
 
 
 class DependenciesPanel(ToolPanel, bpy.types.Panel):
@@ -410,7 +422,12 @@ class DependenciesPanel(ToolPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        box.label('"mmd_tools" is not installed!', icon="ERROR")
+        if not mmd_tools_installed:
+            box.label('"mmd_tools" is not installed!', icon="ERROR")
+        elif mmd_tools_outdated:
+            box.label('"mmd_tools" is outdated!', icon="ERROR")
+        else:
+            box.label('"mmd_tools" not installed or outdated!', icon="ERROR")
         box.label('Please download the latest version here:')
         row = box.row(align=True)
         row.operator('dependencies.download', icon='LOAD_FACTORY')
@@ -469,8 +486,9 @@ def register():
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
     bpy.utils.register_class(tools.armature.FixArmature)
+    bpy.utils.register_class(tools.credits.ForumButton)
     bpy.utils.register_class(tools.dependencies.DependenciesButton)
-    if mmd_tools_installed is False:
+    if not mmd_tools_installed or mmd_tools_outdated:
         bpy.utils.register_class(DependenciesPanel)
     bpy.utils.register_class(ArmaturePanel)
     bpy.utils.register_class(TranslationPanel)
@@ -496,6 +514,7 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RootButton)
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
+    bpy.utils.register_class(tools.credits.ForumButton)
     bpy.utils.unregister_class(tools.dependencies.DependenciesButton)
     if hasattr(bpy.types, "DependenciesPanel"):
         bpy.utils.unregister_class(DependenciesPanel)

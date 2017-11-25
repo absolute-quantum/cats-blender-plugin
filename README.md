@@ -7,13 +7,12 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
 Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=master)
 
 ## Features
- - Creating texture atlas
+ - Optimizing armature with one click!
  - Creating mouth visemes
  - Creating eye tracking
+ - Creating texture atlas
  - Creating root bones for Dynamic Bones
- - Translating various objects: textures, materials, bones, meshes etc
- - Fixing your armature by parenting
- - Optimising armature by removing unnecessary bones
+ - Translating shape keys, bones, textures, materials and meshes
  - Auto updater
 
 *More to come!*
@@ -91,9 +90,15 @@ You are downloading an older version of the plugin here, which is required: You 
 
 #### 0.0.7
  - Fixed: Hotfix for mmd_tools locator, this fixed a unjust error explaining mmd_tools was not present or activated
+ - Fixes: Creating visemes would be stuck indefinitely when too few shape keys existed
+ - Fixed: Updating from older version would place the panels in the wrong order
+ - Added: Armature fix now removes third upper chest (bleeding)
 
 #### 0.0.8
- - Added: Continious integration @ github: this will allow us to see errors before we make releases
+ - Added: Continuous integration @ github: this will allow us to see errors before we make releases
+ - Added: Link to the VRcat forum in credits panel
+ - Added: Dependencies tab now shows if mmd_tools is outdated or not installed
+ - Added: Armature fix when chest bone is missing
 
 ## Code contributors:
  - Hotox

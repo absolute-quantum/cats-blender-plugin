@@ -133,6 +133,13 @@ bone_list_translate = {
     'Wrist_L': 'Left wrist',
     'Wrist_R': 'Right wrist'
 }
+dont_delete_these_bones = {
+    'Hips', 'Spine', 'Chest', 'Neck', 'Head',
+    'Left leg', 'Left knee', 'Left ankle', 'Left toe',
+    'Right leg', 'Right knee', 'Right ankle', 'Right toe',
+    'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
+    'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist'
+}
 
 
 def delete_hierarchy(obj):
@@ -221,6 +228,31 @@ class FixArmature(bpy.types.Operator):
             if pb is None:
                 continue
             pb.name = value
+
+        # Create missing Chest
+        bpy.ops.object.mode_set(mode='EDIT')
+        if 'Chest' not in armature.data.edit_bones:
+            if 'Spine' in armature.data.edit_bones:
+                if 'Neck' in armature.data.edit_bones:
+                    chest = armature.data.edit_bones.new('Chest')
+                    spine = armature.data.edit_bones['Spine']
+                    neck = armature.data.edit_bones['Neck']
+
+                    # Set new Chest bone to new position
+                    chest.tail = neck.head
+                    chest.head = spine.head
+                    chest.head[2] = spine.head[2] + (neck.head[2] - spine.head[2]) / 2
+                    chest.head[1] = spine.head[1] + (neck.head[1] - spine.head[1]) / 2
+
+                    # Adjust spine bone position
+                    spine.tail = chest.head
+
+                    # Reparent bones to include new chest
+                    chest.parent = spine
+
+                    for bone in armature.data.edit_bones:
+                        if armature.data.edit_bones[bone.name].parent == spine:
+                            armature.data.edit_bones[bone.name].parent = chest
 
         # TODO Remove UpperChest3
         bpy.ops.object.mode_set(mode='EDIT')
@@ -356,7 +388,7 @@ def check_hierachy(correct_hierachy_array):
     armature = tools.common.get_armature()
     error = None
 
-    invalid syntax in a def!
+    # invalid syntax in a def!
 
     for correct_hierachy in correct_hierachy_array:
         for item in correct_hierachy:
@@ -421,7 +453,7 @@ def delete_zero_weight():
         vertex_group_id_to_vertex_group_name = dict()
         for vertex_group in objects.vertex_groups:
             vertex_group_id_to_vertex_group_name[vertex_group.index] = vertex_group.name
-            if not vertex_group.name in vertex_group_name_to_objects_having_same_named_vertex_group:
+            if vertex_group.name not in vertex_group_name_to_objects_having_same_named_vertex_group:
                 vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name] = set()
             vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name].add(objects)
         for vertex in objects.data.vertices:
@@ -432,13 +464,13 @@ def delete_zero_weight():
     not_used_bone_names = bone_names_to_work_on - vertex_group_names_used
 
     for bone_name in not_used_bone_names:
-        armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
-        if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
-            for objects in vertex_group_name_to_objects_having_same_named_vertex_group[
-                bone_name]:  # delete vertex groups
-                vertex_group = objects.vertex_groups.get(bone_name)
-                if vertex_group is not None:
-                    objects.vertex_groups.remove(vertex_group)
+        if bone_name not in dont_delete_these_bones:
+            armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
+            if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
+                for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups
+                    vertex_group = objects.vertex_groups.get(bone_name)
+                    if vertex_group is not None:
+                        objects.vertex_groups.remove(vertex_group)
 
 
 def delete_bone_constraints():
