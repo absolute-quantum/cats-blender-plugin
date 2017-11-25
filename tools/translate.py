@@ -40,7 +40,6 @@ except ImportError:
 class TranslateMeshesButton(bpy.types.Operator):
     bl_idname = 'translate.meshes'
     bl_label = 'Meshes'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -73,7 +72,6 @@ class TranslateMeshesButton(bpy.types.Operator):
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
     bl_label = 'Textures'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -190,7 +188,6 @@ class TranslateBonesButton(bpy.types.Operator):
 class TranslateShapekeyButton(bpy.types.Operator):
     bl_idname = 'translate.shapekeys'
     bl_label = 'Shape keys'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):

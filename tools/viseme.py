@@ -29,10 +29,10 @@ import tools.common
 
 from collections import OrderedDict
 
+
 class AutoVisemeButton(bpy.types.Operator):
     bl_idname = 'auto.viseme'
     bl_label = 'Create visemes'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def mix_shapekey(self, target_mesh, shapekey_data, new_index, rename_to, intensity):
@@ -68,9 +68,9 @@ class AutoVisemeButton(bpy.types.Operator):
         # Re-adjust index position
         position_correct = False
         while position_correct is False:
-            bpy.ops.object.shape_key_move(type='DOWN')
-
-            if mesh.active_shape_key_index == new_index:
+            if mesh.active_shape_key_index > new_index:
+                bpy.ops.object.shape_key_move(type='UP')
+            else:
                 position_correct = True
 
     def execute(self, context):
@@ -182,7 +182,8 @@ class AutoVisemeButton(bpy.types.Operator):
 
         # Remove any existing viseme shape key
         for key in shapekey_data:
-            for index, shapekey in enumerate(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks):
+            for index, shapekey in enumerate(
+                    bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks):
                 obj = shapekey_data[key]
                 if shapekey.name == key:
                     bpy.context.active_object.active_shape_key_index = index
@@ -191,7 +192,8 @@ class AutoVisemeButton(bpy.types.Operator):
         # Add the shape keys
         for key in shapekey_data:
             obj = shapekey_data[key]
-            self.mix_shapekey(context.scene.mesh_name_viseme, obj['mix'], obj['index'], key, context.scene.shape_intensity)
+            self.mix_shapekey(context.scene.mesh_name_viseme, obj['mix'], obj['index'], key,
+                              context.scene.shape_intensity)
 
         # Set shapekey index back to 0
         bpy.context.object.active_shape_key_index = 0
@@ -205,4 +207,4 @@ class AutoVisemeButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Created mouth visemes!')
 
-        return{'FINISHED'}
+        return {'FINISHED'}

@@ -31,7 +31,6 @@ import globs
 class RootButton(bpy.types.Operator):
     bl_idname = 'root.function'
     bl_label = 'Parent bones'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -75,7 +74,6 @@ class RootButton(bpy.types.Operator):
 class RefreshRootButton(bpy.types.Operator):
     bl_idname = 'refresh.root'
     bl_label = 'Refresh list'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):

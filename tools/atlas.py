@@ -32,7 +32,6 @@ import random
 class AutoAtlasButton(bpy.types.Operator):
     bl_idname = 'auto.atlas'
     bl_label = 'Create atlas'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def generateRandom(self, prefix='', suffix=''):
