@@ -37,7 +37,7 @@ install:
 
   # now create a symlink to the addon within blenders addons directory
   # this is important, because otherwhise blender would not be able to load the addon
-  - sudo ln -s ${PWD}/michaeldegroot/cats-blender-plugin ${PWD}/tmp/blender/2.74/scripts/addons/cats-blender-plugin
+  - sudo ln -s ${PWD} ${PWD}/tmp/blender/2.74/scripts/addons/cats-blender-plugin
 
 # Finally start our test runner passing it the blender executable from the downloaded blender release
 script: python tests.py ./tmp/blender/blender

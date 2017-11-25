@@ -11,5 +11,5 @@ if len(sys.argv) > 1:
 
 # iterate over each *.test.blend file in the "tests" directory
 # and open up blender with the .test.blend file and the corresponding .test.py python script
-for file in glob.glob('./tests/a.test.blend'):
+for file in glob.glob('tests/a.test.blend'):
     subprocess.call([blenderExecutable, '--addons', 'cats-blender-plugin', '--factory-startup', '-noaudio', '-b', file, '--python', file.replace('.blend', '.py')])
