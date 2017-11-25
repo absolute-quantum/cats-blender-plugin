@@ -89,6 +89,12 @@ You are downloading an older version of the plugin here, which is required: You 
  - Changed: Translate: Translate does a MMD_TOOLS translate first, then google translate
  - Changed: Viseme: Adjusted some viseme shape key definitions to be more realistic
 
+#### 0.0.7
+ - Fixed: Hotfix for mmd_tools locator, this fixed a unjust error explaining mmd_tools was not present or activated
+
+#### 0.0.8
+ - Added: Continious integration @ github: this will allow us to see errors before we make releases
+
 ## Code contributors:
  - Hotox
  - Shotariya

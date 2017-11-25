@@ -356,6 +356,8 @@ def check_hierachy(correct_hierachy_array):
     armature = tools.common.get_armature()
     error = None
 
+    invalid syntax in a def!
+
     for correct_hierachy in correct_hierachy_array:
         for item in correct_hierachy:
             if item in armature.data.edit_bones is False:
