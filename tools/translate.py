@@ -36,20 +36,10 @@ try:
 except ImportError:
     mmd_tools_installed = False
 
-try:
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-    )
-except Exception as e:
-    mmd_tools_installed = False
-
 
 class TranslateMeshesButton(bpy.types.Operator):
     bl_idname = 'translate.meshes'
     bl_label = 'Meshes'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -76,13 +66,12 @@ class TranslateMeshesButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Translated all meshes')
 
-        return{'FINISHED'}
+        return {'FINISHED'}
 
 
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
     bl_label = 'Textures'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -113,13 +102,12 @@ class TranslateTexturesButton(bpy.types.Operator):
                         i += 1
 
         self.report({'INFO'}, 'Translated all textures')
-        return{'FINISHED'}
+        return {'FINISHED'}
 
 
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'translate.materials'
     bl_label = 'Materials'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -148,13 +136,20 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 i += 1
 
         self.report({'INFO'}, 'Translated all materials')
-        return{'FINISHED'}
+        return {'FINISHED'}
 
 
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
     bl_label = 'Bones'
     bl_options = {'REGISTER', 'UNDO'}
+
+    if mmd_tools_installed:
+        dictionary = bpy.props.EnumProperty(
+            name='Dictionary',
+            items=DictionaryEnum.get_dictionary_items,
+            description='Translate names from Japanese to English using selected dictionary',
+        )
 
     def execute(self, context):
         if mmd_tools_installed is False:
@@ -164,17 +159,7 @@ class TranslateBonesButton(bpy.types.Operator):
         tools.common.unhide_all()
         armature = tools.common.get_armature().data
 
-        # first mmd translate
-        try:
-            dictionary = bpy.props.EnumProperty(
-                name='Dictionary',
-                items=DictionaryEnum.get_dictionary_items,
-                description='Translate names from Japanese to English using selected dictionary',
-            )
-            self.__translator = DictionaryEnum.get_translator(dictionary)
-        except Exception as e:
-            self.report({'ERROR'}, 'Failed to load dictionary: %s'%e)
-            return {'CANCELLED'}
+        self.__translator = DictionaryEnum.get_translator(self.dictionary)
 
         for bone in armature.bones:
             bone.name = utils.convertNameToLR(bone.name, True)
@@ -197,13 +182,12 @@ class TranslateBonesButton(bpy.types.Operator):
             bone.name = translated[i]
 
         self.report({'INFO'}, 'Translated all bones')
-        return{'FINISHED'}
+        return {'FINISHED'}
 
 
 class TranslateShapekeyButton(bpy.types.Operator):
     bl_idname = 'translate.shapekeys'
     bl_label = 'Shape keys'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -233,4 +217,4 @@ class TranslateShapekeyButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Translated all shape keys')
 
-        return{'FINISHED'}
+        return {'FINISHED'}

@@ -50,15 +50,6 @@ try:
 except ImportError:
     mmd_tools_installed = False
 
-try:
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-    )
-except Exception as e:
-    mmd_tools_installed = False
-
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
@@ -171,13 +162,13 @@ class ToolPanel():
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink right',
-        description='The shape key containing a blink with the right eye',
+        description='The shape key containing a blink with the right eye. Can be set to "Basis" to leave empty',
         items=tools.common.get_shapekeys_eye,
     )
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink left',
-        description='The shape key containing a blink with the left eye',
+        description='The shape key containing a blink with the left eye. Can be set to "Basis" to leave empty',
         items=tools.common.get_shapekeys_eye,
     )
 
@@ -265,22 +256,22 @@ class ToolPanel():
 
 
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_armature'
+    bl_idname = 'VIEW3D_PT_armature_v1'
     bl_label = 'Armature'
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
         row = box.row(align=True)
-        # row.prop(context.scene, 'remove_zero_weight')
-        # row = box.row(align=True)
-        # row.prop(context.scene, 'remove_constraints')
-        # row = box.row(align=True)
+        row.prop(context.scene, 'remove_zero_weight')
+        row = box.row(align=True)
+        row.prop(context.scene, 'remove_constraints')
+        row = box.row(align=True)
         row.operator('armature.fix', icon='BONE_DATA')
 
 
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_eye'
+    bl_idname = 'VIEW3D_PT_eye_v1'
     bl_label = 'Eye Tracking'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -313,7 +304,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
 
 class VisemePanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_viseme'
+    bl_idname = 'VIEW3D_PT_viseme_v1'
     bl_label = 'Visemes'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -335,7 +326,7 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_translation'
+    bl_idname = 'VIEW3D_PT_translation_v1'
     bl_label = 'Translation'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -352,7 +343,7 @@ class TranslationPanel(ToolPanel, bpy.types.Panel):
 
 
 class BoneRootPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_boneroot'
+    bl_idname = 'VIEW3D_PT_boneroot_v1'
     bl_label = 'Bone Parenting'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -367,7 +358,7 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
 
 
 class AtlasPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_atlas'
+    bl_idname = 'VIEW3D_PT_atlas_v1'
     bl_label = 'Atlas'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -390,8 +381,9 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
         row = box.row(align=True)
         row.operator('auto.atlas', icon='TRIA_RIGHT')
 
+
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_updater'
+    bl_idname = 'VIEW3D_PT_updater_v1'
     bl_label = 'Updater'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -399,29 +391,27 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         addon_updater_ops.check_for_update_background()
         addon_updater_ops.update_settings_ui(self, context)
 
+
 class CreditsPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_credits'
+    bl_idname = 'VIEW3D_PT_credits_v1'
     bl_label = 'Credits'
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        row = box.row(align=True)
         box.label('Cats Blender Plugin')
-        row = box.row(align=True)
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
-        row = box.row(align=True)
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
 
+
 class DependenciesPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_dependencies'
+    bl_idname = 'VIEW3D_PT_dependencies_v1'
     bl_label = 'Missing dependencies!'
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        row = box.row(align=True)
-        box.label('"mmd_tools" is not installed or activated!', icon="ERROR")
+        box.label('"mmd_tools" is not installed!', icon="ERROR")
         box.label('Please download the latest version here:')
         row = box.row(align=True)
         row.operator('dependencies.download', icon='LOAD_FACTORY')
@@ -436,39 +426,40 @@ class DemoPreferences(bpy.types.AddonPreferences):
         name='Auto-check for Update',
         description='If enabled, auto-check for updates using an interval',
         default=False,
-        )
+    )
     updater_intrval_months = bpy.props.IntProperty(
         name='Months',
         description='Number of months between checking for updates',
         default=0,
         min=0
-        )
+    )
     updater_intrval_days = bpy.props.IntProperty(
         name='Days',
         description='Number of days between checking for updates',
         default=7,
         min=0,
-        )
+    )
     updater_intrval_hours = bpy.props.IntProperty(
         name='Hours',
         description='Number of hours between checking for updates',
         default=0,
         min=0,
         max=23
-        )
+    )
     updater_intrval_minutes = bpy.props.IntProperty(
         name='Minutes',
         description='Number of minutes between checking for updates',
         default=0,
         min=0,
         max=59
-        )
+    )
 
     def draw(self, context):
         layout = self.layout
 
         # updater draw function
         addon_updater_ops.update_settings_ui(self, context)
+
 
 def register():
     bpy.utils.register_class(tools.atlas.AutoAtlasButton)
@@ -496,6 +487,7 @@ def register():
     bpy.utils.register_class(DemoPreferences)
     addon_updater_ops.register(bl_info)
 
+
 def unregister():
     bpy.utils.unregister_class(tools.atlas.AutoAtlasButton)
     bpy.utils.unregister_class(tools.eyetracking.CreateEyesButton)
@@ -509,8 +501,8 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
     bpy.utils.unregister_class(tools.dependencies.DependenciesButton)
-    if mmd_tools_installed is False:
-        bpy.utils.register_class(DependenciesPanel)
+    if hasattr(bpy.types, "DependenciesPanel"):
+        bpy.utils.unregister_class(DependenciesPanel)
     bpy.utils.unregister_class(AtlasPanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)
@@ -521,6 +513,7 @@ def unregister():
     bpy.utils.unregister_class(CreditsPanel)
     bpy.utils.unregister_class(DemoPreferences)
     addon_updater_ops.unregister()
+
 
 if __name__ == '__main__':
     register()

@@ -18,7 +18,7 @@ A tool designed to shorten steps needed to import and optimise MMD models into V
 1. download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/raw/downloads/Cats%20Blender%20Plugin.zip)
 
 **Important!!**
-You are downloading a older version of the plugin here, which is required: You will need to check the update tab of the plugin and update it to the latest version from there!
+You are downloading an older version of the plugin here, which is required: You will need to check the update tab of the plugin and update it to the latest version from there!
 
 2. Install the the addon in blender like so:
 
@@ -35,7 +35,7 @@ You are downloading a older version of the plugin here, which is required: You w
 
 #### 0.0.2
  - Added: Eye tracking, added a check to see if a vertex group and vertices were assigned to the eye bones before continuing
- - Added: Added a auto updater to easily keep track of new updates of the plugin
+ - Added: Added an auto updater to easily keep track of new updates of the plugin
  - Added: Mouth viseme, added a strength modifier for the mixing of the shapes
  - Added: plugin support (install as addon in blender)
  - Changed: UI improved
@@ -67,16 +67,16 @@ You are downloading a older version of the plugin here, which is required: You w
  - Added: Credits tab :)
  - Changed: Translation: Using googletrans module ( = faster! thanks Hotox!)
  - Changed: Codebase modularised, project is more tidy now. Good for future updates
- - Changed: UI: every function has it's own collapsable panel now
+ - Changed: UI: every function has it's own collapsible panel now
  - Fixed: Mouth viseme: Adding random key shape weight to the mix with 0.0001 weight to fix a weird blender export condition (should fix open mouth)
  - Fixed: Eye tracking: Adding random key shape weight to the mix with 0.0001 weight to fix a weird blender export condition (should fix any future problems that may arise)
 
 #### 0.0.6
  - Added: Dependency Tab: Gives a warning if mmd_tools are not activated or installed (Thanks Hotox!)
- - Added: Armature: A one fix it all button for MMD models (still work in progress but a good start!)
+ - Added: Armature: A fix it all button for MMD models (still work in progress but a good start!)
  - Added: Armature: Fixes the hips angle VRCSDK error
  - Added: Armature: Deletes rigidbodies and joints
- - Added: Armature: Bone hierachy validation: Hips > Spine > Chest etc to make sure you get no problems in Unity
+ - Added: Armature: Bone hierarchy validation: Hips > Spine > Chest etc to make sure you get no problems in Unity
  - Added: Armature: Uses MMD_TOOLS to translate bones and reparent and weight them with Shotariya's tool
  - Added: Armature: Neitri's zero weight and bone constraint code implemented (there are some small issues with this at the moment, should be fixed soon)
  - Fixed: Viseme: Mesh selection in visemes function would not have effect on the shape key selection list
@@ -111,7 +111,7 @@ Lower for faster bake time, higher for more detail.
 Weight projections vector by faces with larger areas
 
 ##### Target mesh
-The mesh that you want to create a atlas from
+The mesh that you want to create an atlas from
 
 ##### Disable multiple textures
 Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
@@ -122,7 +122,7 @@ Texture baking and multiple textures per material can look weird in the end resu
 
 **Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
 The script generates 17 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
-*This is still a experimental feature and will be fine tuned over the course of time*
+*This is still an experimental feature and will be fine tuned over the course of time*
 
 ### Properties
 
@@ -231,13 +231,13 @@ Removes all bone constraints
 
 
 ## Update Plugin
-There is a auto updater in the plugin so you don't have to keep checking for new version, this is actually required if you install the plugin for the first time. This is how to check for updates:
+There is an auto updater in the plugin so you don't have to keep checking for new version, this is actually required if you install the plugin for the first time. This is how to check for updates:
 
 ![](https://i.imgur.com/LbO7Xst.gif)
 
 ## Roadmap
  - MOAR Updates on the armature code
- - Texture translation should have a option to rename the filename also
+ - Texture translation should have an option to rename the filename also
 
 
 ## Feedback

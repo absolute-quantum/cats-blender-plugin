@@ -30,7 +30,6 @@ import tools.common
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
     bl_label = 'Create eye tracking'
-
     bl_options = {'REGISTER', 'UNDO'}
 
     def vertex_group_exists(self, mesh_name, bone_name):
@@ -92,9 +91,9 @@ class CreateEyesButton(bpy.types.Operator):
                 # Re-adjust index position
                 position_correct = False
                 while position_correct is False:
-                    bpy.ops.object.shape_key_move(type='DOWN')
-
-                    if mesh.active_shape_key_index == new_index:
+                    if mesh.active_shape_key_index > new_index:
+                        bpy.ops.object.shape_key_move(type='UP')
+                    else:
                         position_correct = True
 
         # reset shape values back to 0
