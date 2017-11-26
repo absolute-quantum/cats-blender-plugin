@@ -24,6 +24,5 @@ for name in download_data:
     new_file_path = os.path.join(os.path.dirname(__file__), 'tests', 'armatures', 'armature.' + str(name) + '.blend')
     if exists(new_file_path) is False:
         print('Notice: Downloaded ' + filename + ' because it didn\'t existed')
-        # TODO: travis does not like this at all:
         with urllib.request.urlopen(url) as response, open(new_file_path, 'wb') as out_file:
             shutil.copyfileobj(response, out_file)
