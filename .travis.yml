@@ -1,6 +1,8 @@
 # this is essential to make python work out of the box
 language: python
 
+cache: pip
+
 # Define which python version to build against.
 # As blender comes bundled with it's own python you can use just one version if you like
 python:
