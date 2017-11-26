@@ -4,8 +4,8 @@ cache:
   pip: true
 
 python:
-  - "2.7"
-  - "3.4"
+  # Use the Python version that comes with blender 2.79
+  - "3.5.3"
 
 before_install:
   - sudo apt-get update -qq
@@ -26,6 +26,9 @@ install:
   # Make sure to install mmd_tools plugin
   - wget https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip -o ${PWD}/tmp/mmd_tools
   - sudo ln -s ${PWD}/tmp/mmd_tools/blender_mmd_tools-dev_test/mmd_tools ${PWD}/tmp/blender/2.79/scripts/addons/mmd_tools
+
+  # Download the test models here, somehow travis doesn't like using download_armature.py to download the armatures
+  - wget https://www.dropbox.com/s/gvf33pxubugj3qe/armature.mmd1.blend?dl=1 -o ${PWD}/tests/armatures/armature.mmd1.blend
 
   # make sure to install cats plugin
   - sudo ln -s ${PWD} ${PWD}/tmp/blender/2.79/scripts/addons/cats

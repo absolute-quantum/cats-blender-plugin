@@ -210,7 +210,7 @@ class CreateEyesButton(bpy.types.Operator):
         # PreserveState.load() # TODO
 
         if not is_correct['result']:
-            self.report({'WARNING'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
+            self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
         else:
             self.report({'INFO'}, 'Created eye tracking!')
 

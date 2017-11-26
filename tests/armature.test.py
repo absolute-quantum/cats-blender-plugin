@@ -2,6 +2,7 @@ import unittest
 import sys
 import bpy
 
+
 class TestAddon(unittest.TestCase):
     def test_armature_button(self):
         bpy.context.scene.remove_constraints = True

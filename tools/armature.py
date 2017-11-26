@@ -374,7 +374,7 @@ class FixArmature(bpy.types.Operator):
         ])
 
         if hierarchy_check_hips['result'] is False:
-            self.report({'WARNING'}, hierarchy_check_hips['message'])
+            self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
         preservestate.load()
