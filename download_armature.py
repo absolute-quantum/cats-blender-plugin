@@ -24,7 +24,7 @@ download_data = {
 for name in download_data:
     url = download_data[name]
     filename = str('armature.' + str(name) + '.blend')
-    new_file_path = os.path.join(os.path.dirname(__file__), 'tests', 'armatures', 'armature.' + str(name) + '.blend')
+    new_file_path = os.path.join('tests', 'armatures', 'armature.' + str(name) + '.blend')
     if exists(new_file_path):
         print('Skipping downloading ' + filename + ' because it exists')
     else:
