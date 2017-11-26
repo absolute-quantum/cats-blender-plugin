@@ -60,9 +60,9 @@ bone_list_rename = {
     'UpperBody2': 'Chest',
     'Upper body 2': 'Chest',
     'Waist upper 2': 'Chest',
-    'UpperBody3': 'ChestRemovable',
-    'Upper body 3': 'ChestRemovable',
-    'Waist upper 3': 'ChestRemovable',
+    'UpperBody3': 'NewChest',
+    'Upper body 3': 'NewChest',
+    'Waist upper 3': 'NewChest',
     'neck': 'Neck',
     'Shoulder_L': 'Left shoulder',
     'Shoulder_R': 'Right shoulder',
@@ -211,9 +211,10 @@ class FixArmature(bpy.types.Operator):
                 ob.name = 'Body'
                 mesh = ob
 
-        # Armature should be selected
+        # Armature should be selected and in edit mode
         tools.common.unselect_all()
         tools.common.select(armature)
+        bpy.ops.object.mode_set(mode='EDIT')
 
         # Translate bones with dictionary
         translator = DictionaryEnum.get_translator(self.dictionary)
@@ -223,16 +224,20 @@ class FixArmature(bpy.types.Operator):
 
         # Rename bones
         for key, value in bone_list_rename.items():
-            if key in armature.data.edit_bones and value in armature.data.edit_bones:
-                key.name = value
+            if key in armature.data.edit_bones:
+                bone = armature.data.edit_bones.get(key)
+                bone.name = value
 
         # Remove un-needed bones
         for bone in armature.data.edit_bones:
             if bone.name in bone_list or bone.name.startswith(tuple(bone_list_with)):
                 armature.data.edit_bones.remove(bone)
 
+        # Disconnect all bones
+        for bone in armature.data.edit_bones:
+            bone.use_connect = False
+
         # == FIXING OF SPECIAL BONE CASES ==
-        bpy.ops.object.mode_set(mode='EDIT')
 
         # Create missing Chest # TODO bleeding
         if 'Chest' not in armature.data.edit_bones:
@@ -259,14 +264,14 @@ class FixArmature(bpy.types.Operator):
                             armature.data.edit_bones[bone.name].parent = chest
 
         # Remove third chest
-        if 'ChestRemovable' in armature.data.edit_bones:
+        if 'NewChest' in armature.data.edit_bones:
             if 'Chest' in armature.data.edit_bones:
                 if 'Spine' in armature.data.edit_bones:
-                    new_chest = armature.data.edit_bones['ChestRemovable']
+                    new_chest = armature.data.edit_bones['NewChest']
                     old_chest = armature.data.edit_bones['Chest']
                     spine = armature.data.edit_bones['Spine']
 
-                    # Rename chest bones
+                    # Rename chests
                     old_chest.name = 'ChestOld'
                     new_chest.name = 'Chest'
 
@@ -275,6 +280,7 @@ class FixArmature(bpy.types.Operator):
                     spine.tail[1] += old_chest.tail[1] - old_chest.head[1]
                     spine.tail[2] += old_chest.tail[2] - old_chest.head[2]
 
+                    # Move weight paint to spine
                     tools.common.unselect_all()
                     bpy.ops.object.mode_set(mode='OBJECT')
                     tools.common.select(mesh)
@@ -289,10 +295,13 @@ class FixArmature(bpy.types.Operator):
                         bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
                         mesh.vertex_groups.remove(vg)
 
+                    # Delete old chest bone
+                    # New Check is necessary because switch to object mode in between
                     tools.common.unselect_all()
                     tools.common.select(armature)
                     bpy.ops.object.mode_set(mode='EDIT')
 
+                    old_chest = armature.data.edit_bones['ChestOld']
                     armature.data.edit_bones.remove(old_chest)
 
         # Hips bone should be fixed as per specification from the SDK code

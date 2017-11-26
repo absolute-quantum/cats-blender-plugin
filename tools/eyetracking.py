@@ -207,7 +207,7 @@ class CreateEyesButton(bpy.types.Operator):
         # Check for correct bone hierarchy
         is_correct = tools.armature.check_hierachy(['Hips', 'Spine', 'Chest', 'Neck', 'Head'])
 
-        # PreserveState.load()
+        # PreserveState.load() # TODO
 
         if not is_correct['result']:
             self.report({'WARNING'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
