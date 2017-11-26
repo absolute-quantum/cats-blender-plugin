@@ -143,8 +143,6 @@ dont_delete_these_bones = {
 def delete_hierarchy(obj):
     names = {obj.name}
 
-    some invalid syntax here, please remove if found
-
     def get_child_names(objz):
         for child in objz.children:
             names.add(child.name)
