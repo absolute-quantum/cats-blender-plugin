@@ -11,8 +11,15 @@ class TestAddon(unittest.TestCase):
     def test_addon_enabled(self):
         self.assertIsNotNone(self.cats.bl_info)
 
-# we have to manually invoke the test runner here, as we cannot use the CLI
-suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
-runner = unittest.TextTestRunner()
-ret = not runner.run(suite).wasSuccessful()
-sys.exit(ret)
+def run():
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
+    runner = unittest.TextTestRunner()
+    ret = not runner.run(suite).wasSuccessful()
+    if not ret:
+        raise Exception('Tests Failed')
+
+
+try:
+    run()
+except Exception:
+    sys.exit(1)
