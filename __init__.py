@@ -469,8 +469,6 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
     )
 
     def draw(self, context):
-        layout = self.layout
-
         addon_updater_ops.update_settings_ui(self, context)
 
 

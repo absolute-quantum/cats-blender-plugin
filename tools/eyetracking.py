@@ -26,6 +26,7 @@
 
 import bpy
 import tools.common
+import tools.armature
 
 
 class CreateEyesButton(bpy.types.Operator):
@@ -204,64 +205,13 @@ class CreateEyesButton(bpy.types.Operator):
         tools.common.fix_armature_name()
 
         # Check for correct bone hierarchy
-        is_correct = check_eye_hierarchy()
+        is_correct = tools.armature.check_hierachy(['Hips', 'Spine', 'Chest', 'Neck', 'Head'])
 
         # PreserveState.load()
 
         if not is_correct['result']:
-            self.report({'WARNING'}, is_correct['message'])
+            self.report({'WARNING'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
         else:
             self.report({'INFO'}, 'Created eye tracking!')
 
         return {'FINISHED'}
-
-
-def check_eye_hierarchy():
-    correct_hierarchy = ['Hips', 'Spine', 'Chest', 'Neck', 'Head']
-
-    armature = tools.common.get_armature()
-    error = None
-
-    # invalid syntax in a def!
-
-    for index, item in enumerate(correct_hierarchy):
-        if item not in armature.data.edit_bones:
-            error = {'result': False, 'message': item + ' was not found in the hierachy.'}
-            break
-
-        bone = armature.data.edit_bones[item]
-
-        # Make sure checked bones are not connected
-        bone.use_connect = False
-
-        if error is None:
-            if item is 'Hips':
-                # Hips should always be unparented
-                if bone.parent is not None:
-                    bone.parent = None
-            elif index is 0:
-                # first level items do not need to be parent checked
-                pass
-            else:
-                prevbone = None
-                try:
-                    prevbone = armature.data.edit_bones[correct_hierarchy[index - 1]]
-                except KeyError:
-                    error = {'result': False, 'message': correct_hierarchy[index - 1] + ' bone does not exist.'}
-
-                if error is None:
-                    if bone.parent is None:
-                        error = {'result': False,
-                                 'message': bone.name + ' is not parented at all.'}
-                    else:
-                        if bone.parent.name != prevbone.name:
-                            error = {'result': False,
-                                     'message': bone.name + ' is not parented to ' + prevbone.name + '.'}
-
-    if error is None:
-        return_value = {'result': True}
-    else:
-        error['message'] = error['message'] + ' Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head'
-        return_value = error
-
-    return return_value

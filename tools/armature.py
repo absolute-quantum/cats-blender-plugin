@@ -391,36 +391,35 @@ def check_hierachy(correct_hierachy_array):
         for index, item in enumerate(correct_hierachy):
             if item not in armature.data.edit_bones:
                 error = {'result': False, 'message': item + ' was not found in the hierachy, this will cause problems!'}
-                continue
+                break
 
             bone = armature.data.edit_bones[item]
 
             # Make sure checked bones are not connected
             bone.use_connect = False
 
-            if error is None:
-                if item is 'Hips':
-                    # Hips should always be unparented
-                    if bone.parent is not None:
-                        bone.parent = None
-                elif index is 0:
-                    # first level items do not need to be parent checked
-                    pass
-                else:
-                    prevbone = None
-                    try:
-                        prevbone = armature.data.edit_bones[correct_hierachy[index - 1]]
-                    except KeyError:
-                        error = {'result': False, 'message': correct_hierachy[index - 1] + ' bone does not exist, this will cause problems!'}
+            if item is 'Hips':
+                # Hips should always be unparented
+                if bone.parent is not None:
+                    bone.parent = None
+            elif index is 0:
+                # first level items do not need to be parent checked
+                pass
+            else:
+                prevbone = None
+                try:
+                    prevbone = armature.data.edit_bones[correct_hierachy[index - 1]]
+                except KeyError:
+                    error = {'result': False, 'message': correct_hierachy[index - 1] + ' bone does not exist, this will cause problems!'}
 
-                    if error is None:
-                        if bone.parent is None:
+                if error is None:
+                    if bone.parent is None:
+                        error = {'result': False,
+                                 'message': bone.name + ' is not parented at all, this will cause problems!'}
+                    else:
+                        if bone.parent.name != prevbone.name:
                             error = {'result': False,
-                                     'message': bone.name + ' is not parented at all, this will cause problems!'}
-                        else:
-                            if bone.parent.name != prevbone.name:
-                                error = {'result': False,
-                                         'message': bone.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
+                                     'message': bone.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
 
     if error is None:
         return_value = {'result': True}
