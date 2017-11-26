@@ -4,3 +4,4 @@ cats_updater
 .idea
 .pyc
 .cache
+tmp
