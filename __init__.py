@@ -514,7 +514,7 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RootButton)
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
-    bpy.utils.register_class(tools.credits.ForumButton)
+    bpy.utils.unregister_class(tools.credits.ForumButton)
     bpy.utils.unregister_class(tools.dependencies.DependenciesButton)
     if hasattr(bpy.types, "DependenciesPanel"):
         bpy.utils.unregister_class(DependenciesPanel)

@@ -99,6 +99,8 @@ You are downloading an older version of the plugin here, which is required: You 
  - Added: Link to the VRcat forum in credits panel
  - Added: Dependencies tab now shows if mmd_tools is outdated or not installed
  - Added: Armature fix when chest bone is missing
+ - Added: Eye tracking check for bone hierarchy
+ - Fixed: Tons of bugs
 
 ## Code contributors:
  - Hotox
@@ -136,7 +138,7 @@ Texture baking and multiple textures per material can look weird in the end resu
 ![](https://i.imgur.com/XEnStln.png)
 
 **Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
-The script generates 17 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
+The script generates 15 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
 *This is still an experimental feature and will be fine tuned over the course of time*
 
 ### Properties

@@ -44,35 +44,62 @@ bone_list_with = ['_shadow_', '_dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent',
                   'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
                   'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'ArmTwist', 'HandTwist', 'LegD', 'KneeD_L',
                   'AnkleD', 'LegTipEX', 'HandTip_', 'ShoulderC_', 'SleeveShoulderIK_']
-
+bone_list_rename = {
+    'LowerBody': 'Hips',
+    'Lower body': 'Hips',
+    'Leg_L': 'Left leg',
+    'Leg_R': 'Right leg',
+    'Knee_L': 'Left knee',
+    'Knee_R': 'Right knee',
+    'Ankle_L': 'Left ankle',
+    'Ankle_R': 'Right ankle',
+    'ToeTip_L': 'Left toe',
+    'ToeTip_R': 'Right toe',
+    'UpperBody': 'Spine',
+    'Upper body': 'Spine',
+    'UpperBody2': 'Chest',
+    'Upper body 2': 'Chest',
+    'Waist upper 2': 'Chest',
+    'UpperBody3': 'ChestRemovable',
+    'Upper body 3': 'ChestRemovable',
+    'Waist upper 3': 'ChestRemovable',
+    'neck': 'Neck',
+    'Shoulder_L': 'Left shoulder',
+    'Shoulder_R': 'Right shoulder',
+    'Arm_L': 'Left arm',
+    'Arm_R': 'Right arm',
+    'Elbow_L': 'Left elbow',
+    'Elbow_R': 'Right elbow',
+    'Wrist_L': 'Left wrist',
+    'Wrist_R': 'Right wrist'
+}
 bone_list_parenting = {
-    'Head': 'Neck',
-    'Neck': 'Chest',
-    'Chest': 'Spine',
     'Spine': 'Hips',
-    'UpperBody': 'LowerBody',
-    'Shoulder_L': 'UpperBody2',
-    'Shoulder_R': 'UpperBody2',
-    'Arm_L': 'Shoulder_L',
-    'Arm_R': 'Shoulder_R',
-    'Elbow_L': 'Arm_L',
-    'Elbow_R': 'Arm_R',
-    'Wrist_L': 'Elbow_L',
-    'Wrist_R': 'Elbow_R',
-    'LegD_L': 'Leg_L',
-    'LegD_R': 'Leg_R',
-    'KneeD_L': 'Knee_L',
-    'KneeD_R': 'Knee_R',
-    'Knee_L': 'Leg_L',
-    'Knee_R': 'Leg_R',
-    'AnkleD_L': 'Ankle_L',
-    'AnkleD_R': 'Ankle_R',
-    'Ankle_L': 'Knee_L',
-    'Ankle_R': 'Knee_R',
-    'LegTipEX_L': 'ToeTip_L',
-    'LegTipEX_R': 'ToeTip_R',
-    'ToeTip_L': 'Ankle_L',
-    'ToeTip_R': 'Ankle_R'
+    'Chest': 'Spine',
+    'Neck': 'Chest',
+    'Head': 'Neck',
+    'Left shoulder': 'Chest',
+    'Right shoulder': 'Chest',
+    'Left arm': 'Left shoulder',
+    'Right arm': 'Right shoulder',
+    'Left elbow': 'Left arm',
+    'Right elbow': 'Right arm',
+    'Left wrist': 'Left elbow',
+    'Right wrist': 'Right elbow',
+    'Left knee': 'Left leg',
+    'Right knee': 'Right leg',
+    'Left ankle': 'Left knee',
+    'Right ankle': 'Right knee',
+    'Left toe': 'Left ankle',
+    'Right toe': 'Right ankle',
+    'LegTipEX_L': 'Left toe',
+    'LegTipEX_R': 'Right toe',
+    'LegD_L': 'Left leg',
+    'LegD_R': 'Right leg',
+    'KneeD_L': 'Left knee',
+    'KneeD_R': 'Right knee',
+    'AnkleD_L': 'Left ankle',
+    'AnkleD_R': 'Right ankle'
 }
 bone_list_weight = {
     'LegD_L': 'Left leg',
@@ -103,35 +130,6 @@ bone_list_weight = {
     'HandTwist2_R': 'Right elbow',
     'HandTwist3_L': 'Left elbow',
     'HandTwist3_R': 'Right elbow'
-}
-bone_list_translate = {
-    'LowerBody': 'Hips',
-    'Lower body': 'Hips',
-    'Leg_L': 'Left leg',
-    'Leg_R': 'Right leg',
-    'Knee_L': 'Left knee',
-    'Knee_R': 'Right knee',
-    'Ankle_L': 'Left ankle',
-    'Ankle_R': 'Right ankle',
-    'ToeTip_L': 'Left toe',
-    'ToeTip_R': 'Right toe',
-    'UpperBody': 'Spine',
-    'Upper body': 'Spine',
-    'UpperBody2': 'Chest',
-    'Upper body 2': 'Chest',
-    'Waist upper 2': 'Chest',
-    'UpperBody3': 'ChestRemovable',
-    'Upper body 3': 'ChestRemovable',
-    'Waist upper 3': 'ChestRemovable',
-    'neck': 'Neck',
-    'Shoulder_L': 'Left shoulder',
-    'Shoulder_R': 'Right shoulder',
-    'Arm_L': 'Left arm',
-    'Arm_R': 'Right arm',
-    'Elbow_L': 'Left elbow',
-    'Elbow_R': 'Right elbow',
-    'Wrist_L': 'Left wrist',
-    'Wrist_R': 'Right wrist'
 }
 dont_delete_these_bones = {
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
@@ -217,20 +215,26 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.select(armature)
 
-        self.__translator = DictionaryEnum.get_translator(self.dictionary)
+        # Translate bones with dictionary
+        translator = DictionaryEnum.get_translator(self.dictionary)
         for bone in armature.data.bones:
             bone.name = utils.convertNameToLR(bone.name, True)
-            bone.name = self.__translator.translate(bone.name)
+            bone.name = translator.translate(bone.name)
 
-        # Translate bones (simple)
-        for key, value in bone_list_translate.items():
-            pb = armature.pose.bones.get(key)
-            if pb is None:
-                continue
-            pb.name = value
+        # Rename bones
+        for key, value in bone_list_rename.items():
+            if key in armature.data.edit_bones and value in armature.data.edit_bones:
+                key.name = value
 
-        # Create missing Chest
+        # Remove un-needed bones
+        for bone in armature.data.edit_bones:
+            if bone.name in bone_list or bone.name.startswith(tuple(bone_list_with)):
+                armature.data.edit_bones.remove(bone)
+
+        # == FIXING OF SPECIAL BONE CASES ==
         bpy.ops.object.mode_set(mode='EDIT')
+
+        # Create missing Chest # TODO bleeding
         if 'Chest' not in armature.data.edit_bones:
             if 'Spine' in armature.data.edit_bones:
                 if 'Neck' in armature.data.edit_bones:
@@ -254,8 +258,7 @@ class FixArmature(bpy.types.Operator):
                         if armature.data.edit_bones[bone.name].parent == spine:
                             armature.data.edit_bones[bone.name].parent = chest
 
-        # TODO Remove UpperChest3
-        bpy.ops.object.mode_set(mode='EDIT')
+        # Remove third chest
         if 'ChestRemovable' in armature.data.edit_bones:
             if 'Chest' in armature.data.edit_bones:
                 if 'Spine' in armature.data.edit_bones:
@@ -267,69 +270,32 @@ class FixArmature(bpy.types.Operator):
                     old_chest.name = 'ChestOld'
                     new_chest.name = 'Chest'
 
-                    # TODO: Delete old_chest bone and add weight painting to spine
-                    # TODO: I tried, but failed :(
+                    # Adjust spine bone position
+                    spine.tail[0] += old_chest.tail[0] - old_chest.head[0]
+                    spine.tail[1] += old_chest.tail[1] - old_chest.head[1]
+                    spine.tail[2] += old_chest.tail[2] - old_chest.head[2]
 
-                    # tools.common.select(armature)
-                    # bpy.ops.object.mode_set(mode='EDIT')
-                    # armature.data.edit_bones.remove(old_chest)
-                    #
-                    # tools.common.unselect_all()
-                    # bpy.ops.object.mode_set(mode='OBJECT')
-                    # tools.common.select(mesh)
-                    #
-                    # pb = mesh.vertex_groups.get(old_chest.name)
-                    # if pb is not None:
-                    #     bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
-                    #     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = spine.name
-                    #     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = old_chest.name
-                    #     bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
-                    #     bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
-                    #     bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
-                    #     mesh.vertex_groups.remove(pb)
+                    tools.common.unselect_all()
+                    bpy.ops.object.mode_set(mode='OBJECT')
+                    tools.common.select(mesh)
 
-        # Should reparent all bones to be correct for unity mapping and vrc itself
-        bpy.ops.object.mode_set(mode='EDIT')
-        for key, value in bone_list_parenting.items():
-            pb = armature.pose.bones.get(key)
-            pb2 = armature.pose.bones.get(value)
-            if pb is None or pb2 is None:
-                continue
-            armature.data.edit_bones[key].parent = armature.data.edit_bones[value]
+                    vg = mesh.vertex_groups.get(old_chest.name)
+                    if vg is not None:
+                        bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
+                        bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = spine.name
+                        bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = old_chest.name
+                        bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
+                        bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
+                        bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+                        mesh.vertex_groups.remove(vg)
 
-        # Remove un-needed bones
-        for bone in armature.data.edit_bones:
-            if bone.name in bone_list or bone.name.startswith(tuple(bone_list_with)):
-                armature.data.edit_bones.remove(bone)
+                    tools.common.unselect_all()
+                    tools.common.select(armature)
+                    bpy.ops.object.mode_set(mode='EDIT')
 
-        # Weights should be mixed
-        bpy.ops.object.mode_set(mode='OBJECT')
-        tools.common.unselect_all()
-        tools.common.select(mesh)
-        for key, value in bone_list_weight.items():
-            pb = mesh.vertex_groups.get(key)
-            pb2 = mesh.vertex_groups.get(value)
-            if pb is None or pb2 is None:
-                continue
-            bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
-            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = value
-            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = key
-            bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
-            bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
-            bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
-            mesh.vertex_groups.remove(pb)
-
-        bpy.ops.object.mode_set(mode='EDIT')
-        tools.common.unselect_all()
-        tools.common.select(armature)
-
-        # Bone constraints should be deleted
-        if context.scene.remove_constraints:
-            delete_bone_constraints()
+                    armature.data.edit_bones.remove(old_chest)
 
         # Hips bone should be fixed as per specification from the SDK code
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.object.mode_set(mode='EDIT')
         if 'Hips' in armature.data.edit_bones:
             if 'Left leg' in armature.data.edit_bones:
                 if 'Right leg' in armature.data.edit_bones:
@@ -348,6 +314,37 @@ class FixArmature(bpy.types.Operator):
                     hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
                     hip_bone.head[2] = right_leg.head[2]
                     hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
+
+        # Reparent all bones to be correct for unity mapping and vrc itself
+        bpy.ops.object.mode_set(mode='EDIT')
+        for key, value in bone_list_parenting.items():
+            if key in armature.data.edit_bones and value in armature.data.edit_bones:
+                armature.data.edit_bones[key].parent = armature.data.edit_bones[value]
+
+        # Weights should be mixed
+        bpy.ops.object.mode_set(mode='OBJECT')
+        tools.common.unselect_all()
+        tools.common.select(mesh)
+        for key, value in bone_list_weight.items():
+            vg = mesh.vertex_groups.get(key)
+            vg2 = mesh.vertex_groups.get(value)
+            if vg is None or vg2 is None:
+                continue
+            bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
+            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = value
+            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = key
+            bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
+            bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
+            bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+            mesh.vertex_groups.remove(vg)
+
+        bpy.ops.object.mode_set(mode='EDIT')
+        tools.common.unselect_all()
+        tools.common.select(armature)
+
+        # Bone constraints should be deleted
+        if context.scene.remove_constraints:
+            delete_bone_constraints()
 
         # Removes unused vertex groups
         tools.common.remove_unused_vertex_groups()
@@ -391,15 +388,12 @@ def check_hierachy(correct_hierachy_array):
     # invalid syntax in a def!
 
     for correct_hierachy in correct_hierachy_array:
-        for item in correct_hierachy:
-            if item in armature.data.edit_bones is False:
-                error = {'result': False, 'message': item + ' was not found in the hierachy, this will cause problems!'}
-
         for index, item in enumerate(correct_hierachy):
-            try:
-                bone = armature.data.edit_bones[item]
-            except:
-                error = {'result': False, 'message': item + ' bone does not exist, this will cause problems!'}
+            if item not in armature.data.edit_bones:
+                error = {'result': False, 'message': item + ' was not found in the hierachy, this will cause problems!'}
+                continue
+
+            bone = armature.data.edit_bones[item]
 
             # Make sure checked bones are not connected
             bone.use_connect = False

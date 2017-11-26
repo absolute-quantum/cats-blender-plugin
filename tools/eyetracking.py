@@ -27,6 +27,7 @@
 import bpy
 import tools.common
 
+
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
     bl_label = 'Create eye tracking'
@@ -66,11 +67,11 @@ class CreateEyesButton(bpy.types.Operator):
 
             vertex_group_index += 1
 
-    def copy_shape_key(self, target_mesh, shapekey_name, rename_to, new_index, random_mix = False):
+    def copy_shape_key(self, target_mesh, shapekey_name, rename_to, new_index, random_mix=False): # TODO: figure out if shape keys are good
         mesh = bpy.data.objects[target_mesh]
 
         # first set value to 0 for all shape keys, so we don't mess up
-        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+        for shapekey in mesh.data.shape_keys.key_blocks:
             shapekey.value = 0
 
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
@@ -100,6 +101,8 @@ class CreateEyesButton(bpy.types.Operator):
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             shapekey.value = 0
 
+        mesh.active_shape_key_index = 0
+
     def fix_eye_position(self, mesh_name, old_eyebone, eyebone, scale):
         # Verify that the new eye bone is in the correct position
         # by comparing the old eye vertex group average vector location
@@ -117,6 +120,7 @@ class CreateEyesButton(bpy.types.Operator):
         eyebone.tail[2] = coords_eye[2] + 0.2
 
     def execute(self, context):
+
         PreserveState = tools.common.PreserveState()
         PreserveState.save()
 
@@ -199,11 +203,65 @@ class CreateEyesButton(bpy.types.Operator):
         # Fix armature name
         tools.common.fix_armature_name()
 
-        # Set shapekey index back to 0
-        bpy.context.object.active_shape_key_index = 0
+        # Check for correct bone hierarchy
+        is_correct = check_eye_hierarchy()
 
-        PreserveState.load()
+        # PreserveState.load()
 
-        self.report({'INFO'}, 'Created eye tracking!')
+        if not is_correct['result']:
+            self.report({'WARNING'}, is_correct['message'])
+        else:
+            self.report({'INFO'}, 'Created eye tracking!')
 
-        return{'FINISHED'}
+        return {'FINISHED'}
+
+
+def check_eye_hierarchy():
+    correct_hierarchy = ['Hips', 'Spine', 'Chest', 'Neck', 'Head']
+
+    armature = tools.common.get_armature()
+    error = None
+
+    # invalid syntax in a def!
+
+    for index, item in enumerate(correct_hierarchy):
+        if item not in armature.data.edit_bones:
+            error = {'result': False, 'message': item + ' was not found in the hierachy.'}
+            break
+
+        bone = armature.data.edit_bones[item]
+
+        # Make sure checked bones are not connected
+        bone.use_connect = False
+
+        if error is None:
+            if item is 'Hips':
+                # Hips should always be unparented
+                if bone.parent is not None:
+                    bone.parent = None
+            elif index is 0:
+                # first level items do not need to be parent checked
+                pass
+            else:
+                prevbone = None
+                try:
+                    prevbone = armature.data.edit_bones[correct_hierarchy[index - 1]]
+                except KeyError:
+                    error = {'result': False, 'message': correct_hierarchy[index - 1] + ' bone does not exist.'}
+
+                if error is None:
+                    if bone.parent is None:
+                        error = {'result': False,
+                                 'message': bone.name + ' is not parented at all.'}
+                    else:
+                        if bone.parent.name != prevbone.name:
+                            error = {'result': False,
+                                     'message': bone.name + ' is not parented to ' + prevbone.name + '.'}
+
+    if error is None:
+        return_value = {'result': True}
+    else:
+        error['message'] = error['message'] + ' Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head'
+        return_value = error
+
+    return return_value
