@@ -1,6 +1,9 @@
 import requests
 import zipfile
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import os
 import wget
 
