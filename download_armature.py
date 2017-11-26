@@ -24,12 +24,12 @@ download_data = {
 for name in download_data:
     url = download_data[name]
     filename = str('armature.' + str(name) + '.blend')
-    new_file_path = os.path.join('tests', 'armatures', 'armature.' + str(name) + '.blend')
+    new_file_path = os.path.join('./tests', 'armatures', 'armature.' + str(name) + '.blend')
     if exists(new_file_path):
         print('Skipping downloading ' + filename + ' because it exists')
     else:
         print('Downloading ' + filename + ' because it doesn\'t exists')
         f = urllib2.urlopen(url)
         data = f.read()
-        with open(new_file_path, "wb") as code:
+        with open(new_file_path, "w") as code:
             code.write(data)
