@@ -27,7 +27,7 @@ for file in glob.glob('./tests/' + globber + '.test.py'):
     for blend_file in glob.glob('./tests/armatures/armature.*.blend'):
         print('Testing unit: ' + file + ' with blend file: ' + blend_file)
         scripts += 1
-        p = Popen([blenderExecutable, '--addons', 'cats', '--addons', 'mmd_tools', '--factory-startup', '-noaudio', '-b', blend_file, '--python', file], shell=False, stdout=PIPE, stderr=PIPE)
+        p = Popen([blenderExecutable, '--addons', 'mmd_tools', '--addons', 'cats', '--factory-startup', '-noaudio', '-b', blend_file, '--python', file], shell=False, stdout=PIPE, stderr=PIPE)
         output = p.communicate()
 
         error_output = output[1].decode('utf_8')
