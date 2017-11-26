@@ -5,3 +5,4 @@ cats_updater
 .pyc
 .cache
 tmp
+.blend
