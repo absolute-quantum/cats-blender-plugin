@@ -389,14 +389,11 @@ def check_hierarchy(correct_hierarchy_array):
 
     for correct_hierarchy in correct_hierarchy_array:
         for index, item in enumerate(correct_hierarchy):
-            if item not in armature.data.edit_bones:
+            if item not in armature.data.bones:
                 error = {'result': False, 'message': item + ' was not found in the hierarchy, this will cause problems!'}
                 break
 
-            bone = armature.data.edit_bones.get(item)
-
-            # Make sure checked bones are not connected
-            bone.use_connect = False
+            bone = armature.data.bones.get(item)
 
             if item is 'Hips':
                 # Hips should always be unparented
@@ -408,7 +405,7 @@ def check_hierarchy(correct_hierarchy_array):
             else:
                 prevbone = None
                 try:
-                    prevbone = armature.data.edit_bones.get(correct_hierarchy[index - 1])
+                    prevbone = armature.data.bones.get(correct_hierarchy[index - 1])
                 except KeyError:
                     error = {'result': False, 'message': correct_hierarchy[index - 1] + ' bone does not exist, this will cause problems!'}
 

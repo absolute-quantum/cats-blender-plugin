@@ -6,3 +6,4 @@ cats_updater
 .cache
 tmp
 *.blend
+tests/armatures/*.png

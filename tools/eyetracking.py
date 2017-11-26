@@ -121,7 +121,6 @@ class CreateEyesButton(bpy.types.Operator):
         eyebone.tail[2] = coords_eye[2] + 0.2
 
     def execute(self, context):
-
         PreserveState = tools.common.PreserveState()
         PreserveState.save()
 
@@ -205,7 +204,7 @@ class CreateEyesButton(bpy.types.Operator):
         tools.common.fix_armature_name()
 
         # Check for correct bone hierarchy
-        is_correct = tools.armature.check_hierarchy(['Hips', 'Spine', 'Chest', 'Neck', 'Head'])
+        is_correct = tools.armature.check_hierarchy([['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
 
         # PreserveState.load() # TODO
 
