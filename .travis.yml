@@ -16,10 +16,10 @@ before_install:
 
 install:
   - mkdir tmp && cd tmp
-  - wget http://mirror.cs.umn.edu/blender.org/release/Blender2.79/blender-2.79-linux-glibc211-x86_64.tar.bz2
-  - tar jxf blender-2.79-linux-glibc211-x86_64.tar.bz2
-  - mv blender-2.79-linux-glibc211-x86_64 blender
-  - rm blender-2.79-linux-glibc211-x86_64.tar.bz2
+  - wget http://mirror.cs.umn.edu/blender.org/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2
+  - tar jxf blender-2.79-linux-glibc219-x86_64.tar.bz2
+  - mv blender-2.79-linux-glibc219-x86_64 blender
+  - rm blender-2.79-linux-glibc219-x86_64.tar.bz2
 
   - cd ..
 
