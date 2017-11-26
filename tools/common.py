@@ -25,6 +25,7 @@
 # Edits by:
 
 import bpy
+import bmesh
 from mathutils import Vector
 from math import degrees
 
@@ -221,3 +222,27 @@ def get_texture_sizes(self, context):
     ]
 
     return bpy.types.Object.Enum
+
+
+# Repair vrc shape keys
+def repair_shapekeys():
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            mesh = ob
+            bm = bmesh.new()
+            bm.from_mesh(mesh.data)
+            bm.verts.ensure_lookup_table()
+
+            for key in bm.verts.layers.shape.keys():
+                if not key.startswith('vrc'):
+                    continue
+
+                value = bm.verts.layers.shape.get(key)
+                for vert in bm.verts:
+                    shapekey = vert
+                    shapekey_coords = mesh.matrix_world * shapekey[value]
+                    shapekey_coords[2] -= 0.00001
+                    shapekey[value] = mesh.matrix_world.inverted() * shapekey_coords
+                    break
+
+            bm.to_mesh(mesh.data)

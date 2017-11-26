@@ -209,6 +209,7 @@ class FixArmature(bpy.types.Operator):
             if ob.type == 'MESH':
                 ob.name = 'Body'
                 mesh = ob
+                break
 
         # Armature should be selected and in edit mode
         tools.common.unselect_all()
