@@ -1,20 +1,17 @@
-# this is essential to make python work out of the box
 language: python
-
 cache: pip
 
-# Define which python version to build against.
 python:
   - "2.7"
   - "3.4"
 
 before_install:
   - sudo apt-get update -qq
-
   # install blender from official sources.
   # This will most propably install an outdated blender version,
   # but it will resolve all system dependencies blender has to be able to run.
   - sudo apt-get install blender
+  - pip install requests
 
 install:
   - mkdir tmp && cd tmp
