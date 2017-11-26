@@ -1,6 +1,7 @@
 import glob
 import sys
 from subprocess import Popen, PIPE
+import download_armature
 
 blenderExecutable = 'blender'
 exit_code = 0

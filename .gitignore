@@ -2,7 +2,7 @@ __pycache__
 cats blender plugin_updater
 cats_updater
 .idea
-.pyc
+*.pyc
 .cache
 tmp
-.blend
+*.blend
