@@ -6,10 +6,12 @@ import download_armature
 blenderExecutable = 'blender'
 exit_code = 0
 globber = '*'
+addons = ['--addons', ' cats']
 
 # allow override of blender executable (important for CI!)
 if len(sys.argv) > 1:
     blenderExecutable = sys.argv[1]
+    addons = ['--addons', ' cats', '--addons', ' mmd_tools']
 
 if len(sys.argv) > 2:
     globber = sys.argv[2]
@@ -18,7 +20,7 @@ if len(sys.argv) > 2:
 # and open up blender with the .test.blend file and the corresponding .test.py python script
 for file in glob.glob('./tests/' + globber + '.test.py'):
     for armature in glob.glob('./tests/armatures/armature.*.blend'):
-        p = Popen([blenderExecutable, '--addons', 'cats', '--addons', 'mmd_tools', '--factory-startup', '-noaudio', '-b', armature, '--python', file], stdout=PIPE)
+        p = Popen([blenderExecutable, addons, '--factory-startup', '-noaudio', '-b', armature, '--python', file], stdout=PIPE)
         output = p.communicate()[0]
         print(file.replace('.blend', '.py') + ' (' + armature + ') - exit code: ' + str(p.returncode))
         print('------------------------------------------------------------------')

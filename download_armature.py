@@ -1,9 +1,5 @@
-import sys
 import os
-import urllib2
-
-file_dir = os.path.dirname(__file__)
-sys.path.append(file_dir)
+import urllib
 
 
 # Test whether a path exists.  Returns False for broken symbolic links
@@ -24,12 +20,9 @@ download_data = {
 for name in download_data:
     url = download_data[name]
     filename = str('armature.' + str(name) + '.blend')
-    new_file_path = os.path.join('./tests', 'armatures', 'armature.' + str(name) + '.blend')
+    new_file_path = os.path.join(os.path.dirname(__file__), 'tests', 'armatures', 'armature.' + str(name) + '.blend')
     if exists(new_file_path):
         print('Skipping downloading ' + filename + ' because it exists')
     else:
         print('Downloading ' + filename + ' because it doesn\'t exists')
-        f = urllib2.urlopen(url)
-        data = f.read()
-        with open(new_file_path, "w") as code:
-            code.write(data)
+        urllib.urlretrieve(url, new_file_path)
