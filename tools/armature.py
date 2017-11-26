@@ -22,7 +22,7 @@
 
 # Code author: Shotariya
 # Repo: https://github.com/Grim-es/shotariya
-# Code author: Netri
+# Code author: Neitri
 # Repo: https://github.com/netri/blender_neitri_tools
 # Edits by: GiveMeAllYourCats
 
@@ -110,10 +110,10 @@ bone_list_weight = {
     'AnkleD_R': 'Right ankle',
     'LegTipEX_L': 'Left toe',
     'LegTipEX_R': 'Right toe',
-    'Shoulder_L': 'ShoulderC_L',
-    'Shoulder_R': 'ShoulderC_R',
-    'Shoulder_L': 'SleeveShoulderIK_L',
-    'Shoulder_R': 'SleeveShoulderIK_R',
+    'ShoulderC_L': 'Shoulder_L',
+    'ShoulderC_R': 'Shoulder_R',
+    'SleeveShoulderIK_L': 'Shoulder_L',
+    'SleeveShoulderIK_R': 'Shoulder_R',
     'ArmTwist_L': 'Left arm',
     'ArmTwist_R': 'Right arm',
     'ArmTwist1_L': 'Left arm',
@@ -173,12 +173,11 @@ class FixArmature(bpy.types.Operator):
             self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
             return {'CANCELLED'}
 
-        PreserveState = tools.common.PreserveState()
-        PreserveState.save()
+        preservestate = tools.common.PreserveState()
+        preservestate.save()
         bpy.ops.object.hide_view_clear()
         tools.common.unselect_all()
         bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.ops.object.select_all(action='DESELECT')
         armature = tools.common.get_armature()
         mesh = None
 
@@ -225,8 +224,7 @@ class FixArmature(bpy.types.Operator):
         # Rename bones
         for key, value in bone_list_rename.items():
             if key in armature.data.edit_bones:
-                bone = armature.data.edit_bones.get(key)
-                bone.name = value
+                armature.data.edit_bones.get(key).name = value
 
         # Remove un-needed bones
         for bone in armature.data.edit_bones:
@@ -244,8 +242,8 @@ class FixArmature(bpy.types.Operator):
             if 'Spine' in armature.data.edit_bones:
                 if 'Neck' in armature.data.edit_bones:
                     chest = armature.data.edit_bones.new('Chest')
-                    spine = armature.data.edit_bones['Spine']
-                    neck = armature.data.edit_bones['Neck']
+                    spine = armature.data.edit_bones.get('Spine')
+                    neck = armature.data.edit_bones.get('Neck')
 
                     # Set new Chest bone to new position
                     chest.tail = neck.head
@@ -260,16 +258,16 @@ class FixArmature(bpy.types.Operator):
                     chest.parent = spine
 
                     for bone in armature.data.edit_bones:
-                        if armature.data.edit_bones[bone.name].parent == spine:
-                            armature.data.edit_bones[bone.name].parent = chest
+                        if bone.parent == spine:
+                            bone.parent = chest
 
         # Remove third chest
         if 'NewChest' in armature.data.edit_bones:
             if 'Chest' in armature.data.edit_bones:
                 if 'Spine' in armature.data.edit_bones:
-                    new_chest = armature.data.edit_bones['NewChest']
-                    old_chest = armature.data.edit_bones['Chest']
-                    spine = armature.data.edit_bones['Spine']
+                    new_chest = armature.data.edit_bones.get('NewChest')
+                    old_chest = armature.data.edit_bones.get('Chest')
+                    spine = armature.data.edit_bones.get('Spine')
 
                     # Rename chests
                     old_chest.name = 'ChestOld'
@@ -295,22 +293,23 @@ class FixArmature(bpy.types.Operator):
                         bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
                         mesh.vertex_groups.remove(vg)
 
-                    # Delete old chest bone
-                    # New Check is necessary because switch to object mode in between
                     tools.common.unselect_all()
                     tools.common.select(armature)
                     bpy.ops.object.mode_set(mode='EDIT')
 
-                    old_chest = armature.data.edit_bones['ChestOld']
+                    # Delete old chest bone
+                    # New Check is necessary because switch to object mode in between
+
+                    old_chest = armature.data.edit_bones.get('ChestOld')
                     armature.data.edit_bones.remove(old_chest)
 
         # Hips bone should be fixed as per specification from the SDK code
         if 'Hips' in armature.data.edit_bones:
             if 'Left leg' in armature.data.edit_bones:
                 if 'Right leg' in armature.data.edit_bones:
-                    hip_bone = armature.data.edit_bones['Hips']
-                    left_leg = armature.data.edit_bones['Left leg']
-                    right_leg = armature.data.edit_bones['Right leg']
+                    hip_bone = armature.data.edit_bones.get('Hips')
+                    left_leg = armature.data.edit_bones.get('Left leg')
+                    right_leg = armature.data.edit_bones.get('Right leg')
 
                     # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
                     left_leg.head[1] = right_leg.head[1]
@@ -325,15 +324,15 @@ class FixArmature(bpy.types.Operator):
                     hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
 
         # Reparent all bones to be correct for unity mapping and vrc itself
-        bpy.ops.object.mode_set(mode='EDIT')
         for key, value in bone_list_parenting.items():
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
-                armature.data.edit_bones[key].parent = armature.data.edit_bones[value]
+                armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
 
         # Weights should be mixed
-        bpy.ops.object.mode_set(mode='OBJECT')
         tools.common.unselect_all()
+        bpy.ops.object.mode_set(mode='OBJECT')
         tools.common.select(mesh)
+
         for key, value in bone_list_weight.items():
             vg = mesh.vertex_groups.get(key)
             vg2 = mesh.vertex_groups.get(value)
@@ -347,9 +346,9 @@ class FixArmature(bpy.types.Operator):
             bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
             mesh.vertex_groups.remove(vg)
 
-        bpy.ops.object.mode_set(mode='EDIT')
         tools.common.unselect_all()
         tools.common.select(armature)
+        bpy.ops.object.mode_set(mode='EDIT')
 
         # Bone constraints should be deleted
         if context.scene.remove_constraints:
@@ -358,9 +357,6 @@ class FixArmature(bpy.types.Operator):
         # Removes unused vertex groups
         tools.common.remove_unused_vertex_groups()
 
-        bpy.ops.object.mode_set(mode='OBJECT')
-        bpy.ops.object.select_all(action='DESELECT')
-
         # Zero weight bones should be deleted
         # TODO: doesn't seem to be working at first glance
         if context.scene.remove_zero_weight:
@@ -368,11 +364,8 @@ class FixArmature(bpy.types.Operator):
 
         # At this point, everything should be fixed and now we validate and give errors if needed
 
-        # The bone hierachy needs to be validated
-        bpy.ops.object.mode_set(mode='EDIT')
-        tools.common.unselect_all()
-        tools.common.select(armature)
-        hierachy_check_hips = check_hierachy([
+        # The bone hierarchy needs to be validated
+        hierarchy_check_hips = check_hierarchy([
             ['Hips', 'Spine', 'Chest', 'Neck', 'Head'],
             ['Hips', 'Left leg', 'Left knee', 'Left ankle'],
             ['Hips', 'Right leg', 'Right knee', 'Right ankle'],
@@ -380,27 +373,27 @@ class FixArmature(bpy.types.Operator):
             ['Chest', 'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist'],
         ])
 
-        if hierachy_check_hips['result'] is False:
-            self.report({'WARNING'}, hierachy_check_hips['message'])
+        if hierarchy_check_hips['result'] is False:
+            self.report({'WARNING'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
-        PreserveState.load()
+        preservestate.load()
 
         self.report({'INFO'}, 'Armature fixed.')
         return {'FINISHED'}
 
 
-def check_hierachy(correct_hierachy_array):
+def check_hierarchy(correct_hierarchy_array):
     armature = tools.common.get_armature()
     error = None
 
-    for correct_hierachy in correct_hierachy_array:
-        for index, item in enumerate(correct_hierachy):
+    for correct_hierarchy in correct_hierarchy_array:
+        for index, item in enumerate(correct_hierarchy):
             if item not in armature.data.edit_bones:
-                error = {'result': False, 'message': item + ' was not found in the hierachy, this will cause problems!'}
+                error = {'result': False, 'message': item + ' was not found in the hierarchy, this will cause problems!'}
                 break
 
-            bone = armature.data.edit_bones[item]
+            bone = armature.data.edit_bones.get(item)
 
             # Make sure checked bones are not connected
             bone.use_connect = False
@@ -415,9 +408,9 @@ def check_hierachy(correct_hierachy_array):
             else:
                 prevbone = None
                 try:
-                    prevbone = armature.data.edit_bones[correct_hierachy[index - 1]]
+                    prevbone = armature.data.edit_bones.get(correct_hierarchy[index - 1])
                 except KeyError:
-                    error = {'result': False, 'message': correct_hierachy[index - 1] + ' bone does not exist, this will cause problems!'}
+                    error = {'result': False, 'message': correct_hierarchy[index - 1] + ' bone does not exist, this will cause problems!'}
 
                 if error is None:
                     if bone.parent is None:
@@ -437,9 +430,7 @@ def check_hierachy(correct_hierachy_array):
 
 
 def delete_zero_weight():
-    bpy.ops.object.mode_set(mode='EDIT')
     armature = tools.common.get_armature()
-    tools.common.select(armature)
 
     bone_names_to_work_on = set([bone.name for bone in armature.data.edit_bones])
 
@@ -474,9 +465,7 @@ def delete_zero_weight():
 
 
 def delete_bone_constraints():
-    bpy.ops.object.mode_set(mode='EDIT')
     armature = tools.common.get_armature()
-    tools.common.select(armature)
 
     bones = set([bone.name for bone in armature.pose.bones])
 
@@ -490,3 +479,5 @@ def delete_bone_constraints():
         if len(bone.constraints) > 0:
             for constraint in bone.constraints:
                 bone.constraints.remove(constraint)
+
+    bpy.ops.object.mode_set(mode='EDIT')

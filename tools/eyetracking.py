@@ -205,7 +205,7 @@ class CreateEyesButton(bpy.types.Operator):
         tools.common.fix_armature_name()
 
         # Check for correct bone hierarchy
-        is_correct = tools.armature.check_hierachy(['Hips', 'Spine', 'Chest', 'Neck', 'Head'])
+        is_correct = tools.armature.check_hierarchy(['Hips', 'Spine', 'Chest', 'Neck', 'Head'])
 
         # PreserveState.load() # TODO
 
