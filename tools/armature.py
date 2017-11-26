@@ -175,7 +175,7 @@ class FixArmature(bpy.types.Operator):
 
         preservestate = tools.common.PreserveState()
         preservestate.save()
-        bpy.ops.object.hide_view_clear()
+        # bpy.ops.object.hide_view_clear()
         tools.common.unselect_all()
         bpy.ops.object.mode_set(mode='OBJECT')
         armature = tools.common.get_armature()
