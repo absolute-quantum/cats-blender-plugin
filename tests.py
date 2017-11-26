@@ -20,7 +20,7 @@ for file in glob.glob('./tests/' + globber + '.test.py'):
     for armature in glob.glob('./tests/armatures/armature.*.blend'):
         p = Popen([blenderExecutable, '--addons', 'cats', '--addons', 'mmd_tools', '--factory-startup', '-noaudio', '-b', armature, '--python', file], stdout=PIPE)
         output = p.communicate()[0]
-        print(file.replace('.blend', '.py') + ' ('+armature+') - exit code: ' +  str(p.returncode))
+        print(file.replace('.blend', '.py') + ' (' + armature + ') - exit code: ' + str(p.returncode))
         print('------------------------------------------------------------------')
         print(output)
         print('------------------------------------------------------------------\n\n')

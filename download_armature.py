@@ -1,6 +1,6 @@
 import sys
 import os
-import wget
+import urllib2
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
@@ -29,4 +29,7 @@ for name in download_data:
         print('Skipping downloading ' + filename + ' because it exists')
     else:
         print('Downloading ' + filename + ' because it doesn\'t exists')
-        wget.download(url, new_file_path)
+        f = urllib2.urlopen(url)
+        data = f.read()
+        with open(new_file_path, "wb") as code:
+            code.write(data)

@@ -13,23 +13,22 @@ before_install:
   # This will most propably install an outdated blender version,
   # but it will resolve all system dependencies blender has to be able to run.
   - sudo apt-get install blender
-  - pip install wget
 
 install:
   - mkdir tmp && cd tmp
-  - wget http://mirror.cs.umn.edu/blender.org/release/Blender2.74/blender-2.74-linux-glibc211-x86_64.tar.bz2
-  - tar jxf blender-2.74-linux-glibc211-x86_64.tar.bz2
-  - mv blender-2.74-linux-glibc211-x86_64 blender
-  - rm blender-2.74-linux-glibc211-x86_64.tar.bz2
+  - wget http://mirror.cs.umn.edu/blender.org/release/Blender2.79/blender-2.79-linux-glibc211-x86_64.tar.bz2
+  - tar jxf blender-2.79-linux-glibc211-x86_64.tar.bz2
+  - mv blender-2.79-linux-glibc211-x86_64 blender
+  - rm blender-2.79-linux-glibc211-x86_64.tar.bz2
 
   - cd ..
 
   # Make sure to install mmd_tools plugin
   - wget https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip -o ${PWD}/tmp/mmd_tools
-  - sudo ln -s ${PWD}/tmp/mmd_tools/blender_mmd_tools-dev_test/mmd_tools ${PWD}/tmp/blender/2.74/scripts/addons/mmd_tools
+  - sudo ln -s ${PWD}/tmp/mmd_tools/blender_mmd_tools-dev_test/mmd_tools ${PWD}/tmp/blender/2.79/scripts/addons/mmd_tools
 
   # make sure to install cats plugin
-  - sudo ln -s ${PWD} ${PWD}/tmp/blender/2.74/scripts/addons/cats
+  - sudo ln -s ${PWD} ${PWD}/tmp/blender/2.79/scripts/addons/cats
 
 # Finally start our test runner passing it the blender executable from the downloaded blender release
 script: python tests.py ./tmp/blender/blender
