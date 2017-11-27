@@ -170,25 +170,25 @@ class ToolPanel():
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink left',
-        description='The shape key containing a blink with the left eye. Can be set to "Basis" to leave empty',
+        description='The shape key containing a blink with the left eye. Can be set to "Basis" to disable blinking',
         items=tools.common.get_shapekeys_eye_blink_l
     )
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink right',
-        description='The shape key containing a blink with the right eye. Can be set to "Basis" to leave empty',
+        description='The shape key containing a blink with the right eye. Can be set to "Basis" to disable blinking',
         items=tools.common.get_shapekeys_eye_blink_r
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
         name='Lowerlid left',
-        description='The shape key containing a slightly raised left lower lid. Can be set to "Basis" to leave empty',
+        description='The shape key containing a slightly raised left lower lid. Can be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_l
     )
 
     bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
         name='Lowerlid right',
-        description='The shape key containing a slightly raised right lower lid. Can be set to "Basis" to leave empty',
+        description='The shape key containing a slightly raised right lower lid. Can be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_r
     )
 
@@ -367,7 +367,7 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
 
 class AtlasPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_atlas_v1'
-    bl_label = 'Atlas'
+    bl_label = 'Texture Atlas'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):

@@ -30,6 +30,11 @@ from mathutils import Vector
 from math import degrees
 
 
+# TODO
+# - Fix errors when there is no model
+# - Add check if hips bone really needs to be rotated
+
+
 def get_armature():
     # NOTE: what if there are two armatures?
     for obj in bpy.data.objects:
