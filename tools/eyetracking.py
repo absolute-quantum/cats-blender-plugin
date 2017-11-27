@@ -76,6 +76,15 @@ class CreateEyesButton(bpy.types.Operator):
         for shapekey in mesh.data.shape_keys.key_blocks:
             shapekey.value = 0
 
+        # rename shapekey if it already exists
+        for shapekey in mesh.data.shape_keys.key_blocks:
+            if shapekey.name == rename_to:
+                shapekey.name = shapekey.name + '_old'
+                if shapekey_name == rename_to:
+                    shapekey_name = shapekey.name
+                break
+
+        # create new shape key
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
 
             if shapekey_name == shapekey.name:
@@ -95,7 +104,7 @@ class CreateEyesButton(bpy.types.Operator):
                         position_correct = True
 
         # reset shape values back to 0
-        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+        for shapekey in mesh.data.shape_keys.key_blocks:
             shapekey.value = 0
 
         mesh.active_shape_key_index = 0
@@ -117,8 +126,8 @@ class CreateEyesButton(bpy.types.Operator):
         eyebone.tail[2] = coords_eye[2] + 0.2
 
     def execute(self, context):
-        PreserveState = tools.common.PreserveState()
-        PreserveState.save()
+        # PreserveState = tools.common.PreserveState()
+        # PreserveState.save()
 
         tools.common.unhide_all()
 
@@ -186,11 +195,14 @@ class CreateEyesButton(bpy.types.Operator):
         self.copy_vertex_group(context.scene.mesh_name_eye, right_eye_selector, 'RightEye')
         self.copy_vertex_group(context.scene.mesh_name_eye, left_eye_selector, 'LeftEye')
 
+        # Store shape keys to ignore changes during copying
+        selected_shapes = [context.scene.wink_left, context.scene.wink_right, context.scene.lowerlid_left, context.scene.lowerlid_right]
+
         # Copy shape key mixes from user defined shape keys and rename them to the correct liking of VRC
-        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.wink_left, 'vrc.blink_left', 1)
-        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.wink_right, 'vrc.blink_right', 2)
-        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_left, 'vrc.lowerlid_left', 3)
-        self.copy_shape_key(context.scene.mesh_name_eye, context.scene.lowerlid_right, 'vrc.lowerlid_right', 4)
+        self.copy_shape_key(context.scene.mesh_name_eye, context.scene, 'vrc.blink_left', 1)
+        self.copy_shape_key(context.scene.mesh_name_eye, selected_shapes[1], 'vrc.blink_right', 2)
+        self.copy_shape_key(context.scene.mesh_name_eye, selected_shapes[2], 'vrc.lowerlid_left', 3)
+        self.copy_shape_key(context.scene.mesh_name_eye, selected_shapes[3], 'vrc.lowerlid_right', 4)
 
         # Remove empty objects
         bpy.ops.object.mode_set(mode='EDIT')
@@ -204,7 +216,7 @@ class CreateEyesButton(bpy.types.Operator):
 
         tools.common.repair_shapekeys()
 
-        PreserveState.load()  # TODO
+        # PreserveState.load()  # TODO
 
         # deleted = []
         # # deleted = checkshapekeys()

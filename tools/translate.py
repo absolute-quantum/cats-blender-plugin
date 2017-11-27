@@ -160,11 +160,11 @@ class TranslateBonesButton(bpy.types.Operator):
         tools.common.unhide_all()
         armature = tools.common.get_armature().data
 
-        self.__translator = DictionaryEnum.get_translator(self.dictionary)
+        translator = DictionaryEnum.get_translator(self.dictionary)
 
         for bone in armature.bones:
             bone.name = utils.convertNameToLR(bone.name, True)
-            bone.name = self.__translator.translate(bone.name)
+            bone.name = translator.translate(bone.name)
 
         # then translate all the bones to english just in case mmd skipped something
         # TODO: could be optimised by only translating bones that mmd skipped

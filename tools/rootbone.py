@@ -37,8 +37,8 @@ class RootButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        PreserveState = tools.common.PreserveState()
-        PreserveState.save()
+        # PreserveState = tools.common.PreserveState()
+        # PreserveState.save()
 
         tools.common.unhide_all()
 
@@ -72,7 +72,7 @@ class RootButton(bpy.types.Operator):
         # reset the root bone cache
         globs.root_bones_choices = {}
 
-        PreserveState.load()
+        # PreserveState.load()
 
         self.report({'INFO'}, 'Bones parented!')
 

@@ -38,8 +38,8 @@ class AutoAtlasButton(bpy.types.Operator):
         return prefix + str(random.randrange(9999999999)) + suffix
 
     def execute(self, context):
-        PreserveState = tools.common.PreserveState()
-        PreserveState.save()
+        # PreserveState = tools.common.PreserveState()
+        # PreserveState.save()
 
         tools.common.unhide_all()
 
@@ -148,6 +148,6 @@ class AutoAtlasButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Auto Atlas finished!')
 
-        PreserveState.load()
+        # PreserveState.load()
 
         return{'FINISHED'}

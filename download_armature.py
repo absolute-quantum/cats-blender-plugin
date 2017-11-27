@@ -15,6 +15,7 @@ def exists(path):
 # Add any test models you want here!
 download_data = {
     'mmd1': 'https://www.dropbox.com/s/gvf33pxubugj3qe/armature.mmd1.blend?dl=1',
+    'ryuko': 'https://www.dropbox.com/s/74fj6msbyn3c7rn/armature.ryuko.blend?dl=1'
 }
 
 # Download them

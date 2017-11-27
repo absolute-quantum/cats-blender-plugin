@@ -173,8 +173,8 @@ class FixArmature(bpy.types.Operator):
             self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
             return {'CANCELLED'}
 
-        preservestate = tools.common.PreserveState()
-        preservestate.save()
+        # preservestate = tools.common.PreserveState()
+        # preservestate.save()
         # bpy.ops.object.hide_view_clear()
         tools.common.unselect_all()
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -365,6 +365,10 @@ class FixArmature(bpy.types.Operator):
 
         # At this point, everything should be fixed and now we validate and give errors if needed
 
+        tools.common.unselect_all()
+        tools.common.select(armature)
+        bpy.ops.object.mode_set(mode='EDIT')
+
         # The bone hierarchy needs to be validated
         hierarchy_check_hips = check_hierarchy([
             ['Hips', 'Spine', 'Chest', 'Neck', 'Head'],
@@ -378,7 +382,7 @@ class FixArmature(bpy.types.Operator):
             self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
-        preservestate.load()
+        # preservestate.load()
 
         self.report({'INFO'}, 'Armature fixed.')
         return {'FINISHED'}

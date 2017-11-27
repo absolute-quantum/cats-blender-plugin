@@ -33,6 +33,9 @@ from math import degrees
 # TODO
 # - Fix errors when there is no model
 # - Add check if hips bone really needs to be rotated
+# - Visemes don't work if they are already named correctly
+# - Test if mmd_tools dictionary works for other translations too
+# - Error: https://i.imgur.com/kBnSx0I.png with model Kanna O: https://goo.gl/sJj2xL
 
 
 def get_armature():

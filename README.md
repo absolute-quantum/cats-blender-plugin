@@ -92,7 +92,6 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Added: Armature fix now removes third upper chest (bleeding)
 
 #### 0.0.8
- - Added: Autofills as much forms as possible
  - Added: Armature: Now fixes more models with one click
  - Added: Credits: Link to the unofficial VRcat forum
  - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
