@@ -153,43 +153,43 @@ class ToolPanel():
     bpy.types.Scene.head = bpy.props.EnumProperty(
         name='Head',
         description='The head bone containing the eye bones',
-        items=tools.common.get_bones,
+        items=tools.common.get_bones_head
     )
 
     bpy.types.Scene.eye_left = bpy.props.EnumProperty(
         name='Left eye',
         description='The left eye bone',
-        items=tools.common.get_bones,
+        items=tools.common.get_bones_eye_l
     )
 
     bpy.types.Scene.eye_right = bpy.props.EnumProperty(
         name='Right eye',
         description='The right eye bone',
-        items=tools.common.get_bones,
-    )
-
-    bpy.types.Scene.wink_right = bpy.props.EnumProperty(
-        name='Blink right',
-        description='The shape key containing a blink with the right eye. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys_eye,
+        items=tools.common.get_bones_eye_r
     )
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink left',
         description='The shape key containing a blink with the left eye. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys_eye,
+        items=tools.common.get_shapekeys_eye_blink_l
     )
 
-    bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
-        name='Lowerlid right',
-        description='The shape key containing a slightly raised right lower lid. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys_eye,
+    bpy.types.Scene.wink_right = bpy.props.EnumProperty(
+        name='Blink right',
+        description='The shape key containing a blink with the right eye. Can be set to "Basis" to leave empty',
+        items=tools.common.get_shapekeys_eye_blink_r
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
         name='Lowerlid left',
         description='The shape key containing a slightly raised left lower lid. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys_eye,
+        items=tools.common.get_shapekeys_eye_low_l
+    )
+
+    bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
+        name='Lowerlid right',
+        description='The shape key containing a slightly raised right lower lid. Can be set to "Basis" to leave empty',
+        items=tools.common.get_shapekeys_eye_low_r
     )
 
     bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
@@ -218,19 +218,19 @@ class ToolPanel():
     bpy.types.Scene.mouth_a = bpy.props.EnumProperty(
         name='Viseme AA',
         description='Shape key containing mouth movement that looks like someone is saying "aa"',
-        items=tools.common.get_shapekeys_mouth,
+        items=tools.common.get_shapekeys_mouth_ah
     )
 
     bpy.types.Scene.mouth_o = bpy.props.EnumProperty(
         name='Viseme OH',
         description='Shape key containing mouth movement that looks like someone is saying "oh"',
-        items=tools.common.get_shapekeys_mouth,
+        items=tools.common.get_shapekeys_mouth_oh
     )
 
     bpy.types.Scene.mouth_ch = bpy.props.EnumProperty(
         name='Viseme CH',
         description='Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth',
-        items=tools.common.get_shapekeys_mouth,
+        items=tools.common.get_shapekeys_mouth_ch
     )
 
     bpy.types.Scene.shape_intensity = bpy.props.FloatProperty(

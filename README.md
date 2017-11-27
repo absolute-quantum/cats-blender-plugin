@@ -84,7 +84,7 @@ You are downloading an older version of the plugin here, which is required: You 
  - Added: Armature: Neitri's zero weight and bone constraint code implemented (there are some small issues with this at the moment, should be fixed soon)
  - Fixed: Viseme: Mesh selection in visemes function would not have effect on the shape key selection list
  - Fixed: Viseme: Script would error depending on current mode selection
- - Fixed: Viseme & Eyetracking: After operations; the shape key index should be reset to Basis, this fixes a weird bug with models in VRC
+ - Fixed: Viseme & Eye tracking: After operations; the shape key index should be reset to Basis, this fixes a weird bug with models in VRC
  - Changed: Translate: Translate does a MMD_TOOLS translate first, then google translate
  - Changed: Viseme: Adjusted some viseme shape key definitions to be more realistic
 
@@ -96,11 +96,14 @@ You are downloading an older version of the plugin here, which is required: You 
 
 #### 0.0.8
  - Added: Continuous integration @ github: this will allow us to see errors before we make releases
- - Added: Link to the VRcat forum in credits panel
- - Added: Dependencies tab now shows if mmd_tools is outdated or not installed
- - Added: Armature fix when chest bone is missing
- - Added: Eye tracking check for bone hierarchy
- - Fixed: Tons of bugs
+ - Added: Armature: Now fixes more models with one click
+ - Added: Credits: Link to the unofficial VRcat forum
+ - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
+ - Added: Eye tracking: Warning when bone hierarchy is incorrect
+ - Added: Eye tracking & Visemes: Automatic search and fill in for fitting bones and shape keys (you should still check them)
+ - Fixed: Visemes not being exported by Blender
+ - Fixed: Panels sorted capitalized bones and shape keys first
+ - Fixed: Tons of other bugs
 
 ## Code contributors:
  - Hotox
