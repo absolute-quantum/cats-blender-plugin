@@ -7,3 +7,4 @@ cats_updater
 tmp
 *.blend
 tests/armatures/*.png
+.coverage

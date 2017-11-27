@@ -1,6 +1,7 @@
 import unittest
 import sys
 
+
 class TestAddon(unittest.TestCase):
     def test_syntax_check(self):
         try:
@@ -11,6 +12,7 @@ class TestAddon(unittest.TestCase):
     def test_bl_info(self):
         import cats
         self.assertIsNotNone(cats.bl_info)
+
 
 def run():
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
