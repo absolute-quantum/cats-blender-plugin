@@ -26,6 +26,7 @@
 
 import bpy
 import tools.common
+import logging
 
 from googletrans import Translator
 

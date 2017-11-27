@@ -41,14 +41,22 @@ import tools.translate
 import tools.armature
 import tools.common
 import tools.dependencies
+import tools.credits
 import globs
 
 mmd_tools_installed = True
 try:
-    from mmd_tools import utils
-    from mmd_tools.translations import DictionaryEnum
+    import mmd_tools
 except ImportError:
     mmd_tools_installed = False
+
+mmd_tools_outdated = False
+if mmd_tools_installed:
+    try:
+        from mmd_tools import utils
+        from mmd_tools.translations import DictionaryEnum
+    except ImportError:
+        mmd_tools_outdated = True
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -64,7 +72,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': (0, 0, 6),
+    'version': (0, 0, 8),
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -145,43 +153,43 @@ class ToolPanel():
     bpy.types.Scene.head = bpy.props.EnumProperty(
         name='Head',
         description='The head bone containing the eye bones',
-        items=tools.common.get_bones,
+        items=tools.common.get_bones_head
     )
 
     bpy.types.Scene.eye_left = bpy.props.EnumProperty(
         name='Left eye',
         description='The left eye bone',
-        items=tools.common.get_bones,
+        items=tools.common.get_bones_eye_l
     )
 
     bpy.types.Scene.eye_right = bpy.props.EnumProperty(
         name='Right eye',
         description='The right eye bone',
-        items=tools.common.get_bones,
-    )
-
-    bpy.types.Scene.wink_right = bpy.props.EnumProperty(
-        name='Blink right',
-        description='The shape key containing a blink with the right eye. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys_eye,
+        items=tools.common.get_bones_eye_r
     )
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink left',
-        description='The shape key containing a blink with the left eye. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys_eye,
+        description='The shape key containing a blink with the left eye. Can be set to "Basis" to disable blinking',
+        items=tools.common.get_shapekeys_eye_blink_l
     )
 
-    bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
-        name='Lowerlid right',
-        description='The shape key containing a slightly raised right lower lid. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys_eye,
+    bpy.types.Scene.wink_right = bpy.props.EnumProperty(
+        name='Blink right',
+        description='The shape key containing a blink with the right eye. Can be set to "Basis" to disable blinking',
+        items=tools.common.get_shapekeys_eye_blink_r
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
         name='Lowerlid left',
-        description='The shape key containing a slightly raised left lower lid. Can be set to "Basis" to leave empty',
-        items=tools.common.get_shapekeys_eye,
+        description='The shape key containing a slightly raised left lower lid. Can be set to "Basis" to disable lower lid movement',
+        items=tools.common.get_shapekeys_eye_low_l
+    )
+
+    bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
+        name='Lowerlid right',
+        description='The shape key containing a slightly raised right lower lid. Can be set to "Basis" to disable lower lid movement',
+        items=tools.common.get_shapekeys_eye_low_r
     )
 
     bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
@@ -210,19 +218,19 @@ class ToolPanel():
     bpy.types.Scene.mouth_a = bpy.props.EnumProperty(
         name='Viseme AA',
         description='Shape key containing mouth movement that looks like someone is saying "aa"',
-        items=tools.common.get_shapekeys_mouth,
+        items=tools.common.get_shapekeys_mouth_ah
     )
 
     bpy.types.Scene.mouth_o = bpy.props.EnumProperty(
         name='Viseme OH',
         description='Shape key containing mouth movement that looks like someone is saying "oh"',
-        items=tools.common.get_shapekeys_mouth,
+        items=tools.common.get_shapekeys_mouth_oh
     )
 
     bpy.types.Scene.mouth_ch = bpy.props.EnumProperty(
         name='Viseme CH',
         description='Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth',
-        items=tools.common.get_shapekeys_mouth,
+        items=tools.common.get_shapekeys_mouth_ch
     )
 
     bpy.types.Scene.shape_intensity = bpy.props.FloatProperty(
@@ -239,7 +247,7 @@ class ToolPanel():
     bpy.types.Scene.root_bone = bpy.props.EnumProperty(
         name='To parent',
         description='List of bones that look like they could be parented together to a root bone. This is very useful for Dynamic Bones. Select a group of bones from the list and press "Parent bones"',
-        items=tools.common.get_parent_root_bones,
+        items=tools.rootbone.get_parent_root_bones,
     )
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
@@ -359,7 +367,7 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
 
 class AtlasPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_atlas_v1'
-    bl_label = 'Atlas'
+    bl_label = 'Texture Atlas'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -383,7 +391,7 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_updater_v1'
+    bl_idname = 'VIEW3D_PT_updater_v2'
     bl_label = 'Updater'
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -402,6 +410,9 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         box.label('Cats Blender Plugin')
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
+        box.label('Want to give feedback or found a bug?')
+        row = box.row(align=True)
+        row.operator('credits.forum', icon='LOAD_FACTORY')
 
 
 class DependenciesPanel(ToolPanel, bpy.types.Panel):
@@ -411,16 +422,19 @@ class DependenciesPanel(ToolPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        box.label('"mmd_tools" is not installed!', icon="ERROR")
+        if not mmd_tools_installed:
+            box.label('"mmd_tools" is not installed!', icon="ERROR")
+        elif mmd_tools_outdated:
+            box.label('"mmd_tools" is outdated!', icon="ERROR")
+        else:
+            box.label('"mmd_tools" not installed or outdated!', icon="ERROR")
         box.label('Please download the latest version here:')
         row = box.row(align=True)
         row.operator('dependencies.download', icon='LOAD_FACTORY')
 
 
-class DemoPreferences(bpy.types.AddonPreferences):
+class UpdaterPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
-
-    # addon updater preferences
 
     auto_check_update = bpy.props.BoolProperty(
         name='Auto-check for Update',
@@ -455,9 +469,6 @@ class DemoPreferences(bpy.types.AddonPreferences):
     )
 
     def draw(self, context):
-        layout = self.layout
-
-        # updater draw function
         addon_updater_ops.update_settings_ui(self, context)
 
 
@@ -473,8 +484,9 @@ def register():
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
     bpy.utils.register_class(tools.armature.FixArmature)
+    bpy.utils.register_class(tools.credits.ForumButton)
     bpy.utils.register_class(tools.dependencies.DependenciesButton)
-    if mmd_tools_installed is False:
+    if not mmd_tools_installed or mmd_tools_outdated:
         bpy.utils.register_class(DependenciesPanel)
     bpy.utils.register_class(ArmaturePanel)
     bpy.utils.register_class(TranslationPanel)
@@ -484,7 +496,7 @@ def register():
     bpy.utils.register_class(AtlasPanel)
     bpy.utils.register_class(UpdaterPanel)
     bpy.utils.register_class(CreditsPanel)
-    bpy.utils.register_class(DemoPreferences)
+    bpy.utils.register_class(UpdaterPreferences)
     addon_updater_ops.register(bl_info)
 
 
@@ -500,6 +512,7 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RootButton)
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
+    bpy.utils.unregister_class(tools.credits.ForumButton)
     bpy.utils.unregister_class(tools.dependencies.DependenciesButton)
     if hasattr(bpy.types, "DependenciesPanel"):
         bpy.utils.unregister_class(DependenciesPanel)
@@ -511,7 +524,7 @@ def unregister():
     bpy.utils.unregister_class(ArmaturePanel)
     bpy.utils.unregister_class(UpdaterPanel)
     bpy.utils.unregister_class(CreditsPanel)
-    bpy.utils.unregister_class(DemoPreferences)
+    bpy.utils.unregister_class(UpdaterPreferences)
     addon_updater_ops.unregister()
 
 

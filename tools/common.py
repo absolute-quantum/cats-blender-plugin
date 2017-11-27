@@ -25,33 +25,80 @@
 # Edits by:
 
 import bpy
-import globs
-
-from difflib import SequenceMatcher
+import bmesh
 from mathutils import Vector
 from math import degrees
 
 
+# TODO
+# - Fix errors when there is no model
+# - Add check if hips bone really needs to be rotated
+
+
 def get_armature():
     # NOTE: what if there are two armatures?
-    for object in bpy.data.objects:
-        if object.type == 'ARMATURE':
-            return object
+    for obj in bpy.data.objects:
+        if obj.type == 'ARMATURE':
+            return obj
 
 
 def unhide_all():
-    for object in bpy.data.objects:
-        object.hide = False
+    for obj in bpy.data.objects:
+        obj.hide = False
 
 
 def unselect_all():
-    for object in bpy.data.objects:
-        object.select = False
+    for obj in bpy.data.objects:
+        obj.select = False
 
 
 def select(obj):
     bpy.context.scene.objects.active = obj
     obj.select = True
+
+
+class PreserveState():
+    state_data = {}
+
+    def save(self):
+        hidden = {}
+        for object in bpy.data.objects:
+            hidden[object.name] = object.hide
+
+        selected = {}
+        for object in bpy.data.objects:
+            selected[object.name] = object.select
+
+        self.state_data = {
+            'object_mode': bpy.context.active_object.mode,
+            'selection': selected,
+            'hidden': hidden,
+        }
+
+        return self.state_data
+
+    def load(self):
+        bpy.ops.object.mode_set(mode=self.state_data['object_mode'])
+
+        for object in bpy.data.objects:
+            try:
+                self.state_data['hidden'][object.name]
+            except KeyError:
+                object.hide = False
+                continue
+
+            object.hide = self.state_data['hidden'][object.name]
+
+        for object in bpy.data.objects:
+            try:
+                self.state_data['selection'][object.name]
+            except KeyError:
+                object.select = False
+                continue
+
+            object.select = self.state_data['selection'][object.name]
+
+        return self.state_data
 
 
 def remove_empty():
@@ -125,36 +172,73 @@ def get_meshes(self, context):
         if object.type == 'MESH':
             choices.append((object.name, object.name, object.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
 
 
-def get_bones(self, context):
-    choices = []
-    armature = get_armature().data
+def get_bones_head(self, context):
+    return get_bones(['Head'])
 
+
+def get_bones_eye_l(self, context):
+    return get_bones(['Eye_L'])
+
+
+def get_bones_eye_r(self, context):
+    return get_bones(['Eye_R'])
+
+
+def get_bones(names):
+    choices = []
+
+    armature = get_armature().data
     for bone in armature.bones:
         choices.append((bone.name, bone.name, bone.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
+    choices.sort(key=lambda x: tuple(x[0].lower()))
+
+    choices2 = []
+    for name in names:
+        if name in armature.bones and choices[0][0] != name:
+            choices2.append((name, name, name))
+
+    for choice in choices:
+        choices2.append(choice)
+
+    bpy.types.Object.Enum = choices2
 
     return bpy.types.Object.Enum
 
 
-def get_shapekeys_mouth(self, context):
-    choices = []
-
-    if hasattr(bpy.data.objects[context.scene.mesh_name_viseme].data, 'shape_keys'):
-        if hasattr(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys, 'key_blocks'):
-            for shapekey in bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks:
-                choices.append((shapekey.name, shapekey.name, shapekey.name))
-
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
-
-    return bpy.types.Object.Enum
+def get_shapekeys_mouth_ah(self, context):
+    return get_shapekeys(context, ['Ah'])
 
 
-def get_shapekeys_eye(self, context):
+def get_shapekeys_mouth_oh(self, context):
+    return get_shapekeys(context, ['Your'])
+
+
+def get_shapekeys_mouth_ch(self, context):
+    return get_shapekeys(context, ['Glue', 'There'])
+
+
+def get_shapekeys_eye_blink_l(self, context):
+    return get_shapekeys(context, ['Wink 2', 'Wink', 'Basis'])
+
+
+def get_shapekeys_eye_blink_r(self, context):
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right', 'Basis'])
+
+
+def get_shapekeys_eye_low_l(self, context):
+    return get_shapekeys(context, ['Basis'])
+
+
+def get_shapekeys_eye_low_r(self, context):
+    return get_shapekeys(context, ['Basis'])
+
+
+def get_shapekeys(context, names):
     choices = []
 
     if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
@@ -162,7 +246,19 @@ def get_shapekeys_eye(self, context):
             for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
                 choices.append((shapekey.name, shapekey.name, shapekey.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
+    choices.sort(key=lambda x: tuple(x[0].lower()))
+
+    choices2 = []
+    for name in names:
+        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
+            if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
+                if name in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks and choices[0][0] != name:
+                        choices2.append((name, name, name))
+
+    for choice in choices:
+        choices2.append(choice)
+
+    bpy.types.Object.Enum = choices2
 
     return bpy.types.Object.Enum
 
@@ -182,74 +278,25 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-def get_parent_root_bones(self, context):
-    armature = get_armature().data
-    check_these_bones = []
-    bone_groups = {}
-    choices = []
+# Repair vrc shape keys
+def repair_shapekeys():
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            mesh = ob
+            bm = bmesh.new()
+            bm.from_mesh(mesh.data)
+            bm.verts.ensure_lookup_table()
 
-    # Get cache if exists
-    if len(globs.root_bones_choices) >= 1:
-        return globs.root_bones_choices
+            for key in bm.verts.layers.shape.keys():
+                if not key.startswith('vrc'):
+                    continue
 
-    for bone in armature.bones:
-        check_these_bones.append(bone.name)
+                value = bm.verts.layers.shape.get(key)
+                for vert in bm.verts:
+                    shapekey = vert
+                    shapekey_coords = mesh.matrix_world * shapekey[value]
+                    shapekey_coords[2] -= 0.00001
+                    shapekey[value] = mesh.matrix_world.inverted() * shapekey_coords
+                    break
 
-    ignore_bone_names_with = [
-        'finger',
-        'chest',
-        'leg',
-        'arm',
-        'spine',
-        'shoulder',
-        'neck',
-        'knee',
-        'eye',
-        'toe',
-        'head',
-        'teeth',
-        'thumb',
-        'wrist',
-        'ankle',
-        'elbow',
-        'hips',
-        'twist',
-        'shadow',
-        'hand',
-        'rootbone'
-    ]
-
-    # Find and group bones together that look alike
-    # Please do not ask how this works
-    for rootbone in armature.bones:
-        for ignore_bone_name in ignore_bone_names_with:
-            if ignore_bone_name in rootbone.name.lower():
-                break
-        for bone in armature.bones:
-            if bone.name in check_these_bones:
-                m = SequenceMatcher(None, rootbone.name, bone.name)
-                if m.ratio() >= 0.70:
-                    accepted = False
-                    if bone.parent is not None:
-                        for child_bone in bone.parent.children:
-                            if child_bone.name == rootbone.name:
-                                accepted = True
-
-                    check_these_bones.remove(bone.name)
-                    if accepted:
-                        if rootbone.name not in bone_groups:
-                            bone_groups[rootbone.name] = []
-                        bone_groups[rootbone.name].append(bone.name)
-
-    for rootbone in bone_groups:
-        # NOTE: user probably doesn't want to parent bones together that have less then 2 bones
-        if len(bone_groups[rootbone]) >= 2:
-            choices.append((rootbone, rootbone.replace('_R', '').replace('_L', '') + ' (' + str(len(bone_groups[rootbone])) + ' bones)', rootbone))
-
-    bpy.types.Object.Enum = choices
-
-    # set cache
-    globs.root_bones = bone_groups
-    globs.root_bones_choices = choices
-
-    return bpy.types.Object.Enum
+            bm.to_mesh(mesh.data)

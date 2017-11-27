@@ -1,0 +1,46 @@
+language: python
+cache:
+  apt: true
+  pip: true
+
+python:
+  # Use the Python version that comes with blender 2.79
+  - "3.5.3"
+
+before_install:
+  - sudo apt-get update -qq
+  # install blender from official sources.
+  # This will most propably install an outdated blender version,
+  # but it will resolve all system dependencies blender has to be able to run.
+  - sudo apt-get install blender
+  - sudo apt-get install unzip
+  - pip install coveralls
+  - pip install coverage
+  # - printf 'import coverage\ncoverage.process_startup()\n' > "/home/travis/virtualenv/python${TRAVIS_PYTHON_VERSION}/lib/python${TRAVIS_PYTHON_VERSION}/sitecustomize.py"
+
+install:
+  # Then update blender
+  - mkdir tmp && cd tmp
+  - wget http://mirror.cs.umn.edu/blender.org/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2
+  - tar jxf blender-2.79-linux-glibc219-x86_64.tar.bz2
+  - mv blender-2.79-linux-glibc219-x86_64 blender
+  - rm blender-2.79-linux-glibc219-x86_64.tar.bz2
+
+  - cd ..
+
+  # Make sure to install mmd_tools plugin
+  - wget https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip
+  - unzip dev_test.zip
+  - rm dev_test.zip
+  - cd blender_mmd_tools-dev_test
+  - mv mmd_tools/ ../tmp/blender/2.79/scripts/addons
+
+  - cd ..
+
+  # make sure to install cats plugin
+  - sudo ln -s ${PWD} ${PWD}/tmp/blender/2.79/scripts/addons/cats
+
+# Start unit testing and coverage
+script:
+  - coverage run --source=. tests.py ./tmp/blender/blender
+  - coverage report -m

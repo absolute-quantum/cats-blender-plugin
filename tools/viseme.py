@@ -74,6 +74,9 @@ class AutoVisemeButton(bpy.types.Operator):
                 position_correct = True
 
     def execute(self, context):
+        PreserveState = tools.common.PreserveState()
+        PreserveState.save()
+
         tools.common.unhide_all()
 
         tools.common.unselect_all()
@@ -149,9 +152,7 @@ class AutoVisemeButton(bpy.types.Operator):
         }
         shapekey_data['vrc.v_pp'] = {
             'index': 15,
-            'mix': [
-                [(context.scene.mouth_a), (0.00001)],
-            ]
+            'mix': []
         }
         shapekey_data['vrc.v_rr'] = {
             'index': 16,
@@ -162,9 +163,7 @@ class AutoVisemeButton(bpy.types.Operator):
         }
         shapekey_data['vrc.v_sil'] = {
             'index': 17,
-            'mix': [
-                [(context.scene.mouth_o), (0.00001)],
-            ]
+            'mix': []
         }
         shapekey_data['vrc.v_ss'] = {
             'index': 18,
@@ -204,6 +203,10 @@ class AutoVisemeButton(bpy.types.Operator):
 
         # Fix armature name
         tools.common.fix_armature_name()
+
+        tools.common.repair_shapekeys()
+
+        PreserveState.load()
 
         self.report({'INFO'}, 'Created mouth visemes!')
 
