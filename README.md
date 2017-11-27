@@ -101,8 +101,8 @@ You are downloading an older version of the plugin here, which is required: You 
  - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
  - Added: Eye tracking: Warning when bone hierarchy is incorrect
  - Added: Eye tracking & Visemes: Automatic search and fill in for fitting bones and shape keys (you should still check them)
+ - Added: Panels: Improved bone and shape key sorting
  - Fixed: Visemes not being exported by Blender
- - Fixed: Panels sorted capitalized bones and shape keys first
  - Fixed: Tons of other bugs
 
 ## Code contributors:
