@@ -16,7 +16,7 @@ before_install:
   - sudo apt-get install unzip
   - pip install coveralls
   - pip install coverage
-  - printf 'import coverage\ncoverage.process_startup()\n' > "/home/travis/virtualenv/python${TRAVIS_PYTHON_VERSION}/lib/python${TRAVIS_PYTHON_VERSION}/sitecustomize.py"
+  # - printf 'import coverage\ncoverage.process_startup()\n' > "/home/travis/virtualenv/python${TRAVIS_PYTHON_VERSION}/lib/python${TRAVIS_PYTHON_VERSION}/sitecustomize.py"
 
 install:
   # Then update blender
