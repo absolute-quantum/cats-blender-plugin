@@ -30,21 +30,26 @@ from mathutils import Vector
 from math import degrees
 
 
+# TODO
+# - Fix errors when there is no model
+# - Add check if hips bone really needs to be rotated
+
+
 def get_armature():
     # NOTE: what if there are two armatures?
-    for object in bpy.data.objects:
-        if object.type == 'ARMATURE':
-            return object
+    for obj in bpy.data.objects:
+        if obj.type == 'ARMATURE':
+            return obj
 
 
 def unhide_all():
-    for object in bpy.data.objects:
-        object.hide = False
+    for obj in bpy.data.objects:
+        obj.hide = False
 
 
 def unselect_all():
-    for object in bpy.data.objects:
-        object.select = False
+    for obj in bpy.data.objects:
+        obj.select = False
 
 
 def select(obj):
@@ -167,36 +172,73 @@ def get_meshes(self, context):
         if object.type == 'MESH':
             choices.append((object.name, object.name, object.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
 
 
-def get_bones(self, context):
-    choices = []
-    armature = get_armature().data
+def get_bones_head(self, context):
+    return get_bones(['Head'])
 
+
+def get_bones_eye_l(self, context):
+    return get_bones(['Eye_L'])
+
+
+def get_bones_eye_r(self, context):
+    return get_bones(['Eye_R'])
+
+
+def get_bones(names):
+    choices = []
+
+    armature = get_armature().data
     for bone in armature.bones:
         choices.append((bone.name, bone.name, bone.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
+    choices.sort(key=lambda x: tuple(x[0].lower()))
+
+    choices2 = []
+    for name in names:
+        if name in armature.bones and choices[0][0] != name:
+            choices2.append((name, name, name))
+
+    for choice in choices:
+        choices2.append(choice)
+
+    bpy.types.Object.Enum = choices2
 
     return bpy.types.Object.Enum
 
 
-def get_shapekeys_mouth(self, context):
-    choices = []
-
-    if hasattr(bpy.data.objects[context.scene.mesh_name_viseme].data, 'shape_keys'):
-        if hasattr(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys, 'key_blocks'):
-            for shapekey in bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks:
-                choices.append((shapekey.name, shapekey.name, shapekey.name))
-
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
-
-    return bpy.types.Object.Enum
+def get_shapekeys_mouth_ah(self, context):
+    return get_shapekeys(context, ['Ah'])
 
 
-def get_shapekeys_eye(self, context):
+def get_shapekeys_mouth_oh(self, context):
+    return get_shapekeys(context, ['Your'])
+
+
+def get_shapekeys_mouth_ch(self, context):
+    return get_shapekeys(context, ['Glue', 'There'])
+
+
+def get_shapekeys_eye_blink_l(self, context):
+    return get_shapekeys(context, ['Wink 2', 'Wink', 'Basis'])
+
+
+def get_shapekeys_eye_blink_r(self, context):
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right', 'Basis'])
+
+
+def get_shapekeys_eye_low_l(self, context):
+    return get_shapekeys(context, ['Basis'])
+
+
+def get_shapekeys_eye_low_r(self, context):
+    return get_shapekeys(context, ['Basis'])
+
+
+def get_shapekeys(context, names):
     choices = []
 
     if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
@@ -204,7 +246,19 @@ def get_shapekeys_eye(self, context):
             for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
                 choices.append((shapekey.name, shapekey.name, shapekey.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: x[0])
+    choices.sort(key=lambda x: tuple(x[0].lower()))
+
+    choices2 = []
+    for name in names:
+        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
+            if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
+                if name in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks and choices[0][0] != name:
+                        choices2.append((name, name, name))
+
+    for choice in choices:
+        choices2.append(choice)
+
+    bpy.types.Object.Enum = choices2
 
     return bpy.types.Object.Enum
 

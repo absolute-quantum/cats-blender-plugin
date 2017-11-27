@@ -18,7 +18,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 *More to come!*
 
 ## Installation
-1. download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/raw/downloads/Cats%20Blender%20Plugin.zip)
+1. download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
 
 **Important!!**
 You are downloading an older version of the plugin here, which is required: You will need to check the update tab of the plugin and update it to the latest version from there!
@@ -84,7 +84,7 @@ You are downloading an older version of the plugin here, which is required: You 
  - Added: Armature: Neitri's zero weight and bone constraint code implemented (there are some small issues with this at the moment, should be fixed soon)
  - Fixed: Viseme: Mesh selection in visemes function would not have effect on the shape key selection list
  - Fixed: Viseme: Script would error depending on current mode selection
- - Fixed: Viseme & Eyetracking: After operations; the shape key index should be reset to Basis, this fixes a weird bug with models in VRC
+ - Fixed: Viseme & Eye tracking: After operations; the shape key index should be reset to Basis, this fixes a weird bug with models in VRC
  - Changed: Translate: Translate does a MMD_TOOLS translate first, then google translate
  - Changed: Viseme: Adjusted some viseme shape key definitions to be more realistic
 
@@ -96,70 +96,42 @@ You are downloading an older version of the plugin here, which is required: You 
 
 #### 0.0.8
  - Added: Continuous integration @ github: this will allow us to see errors before we make releases
- - Added: Link to the VRcat forum in credits panel
- - Added: Dependencies tab now shows if mmd_tools is outdated or not installed
- - Added: Armature fix when chest bone is missing
- - Added: Eye tracking check for bone hierarchy
- - Fixed: Tons of bugs
+ - Added: Armature: Now fixes more models with one click
+ - Added: Credits: Link to the unofficial VRcat forum
+ - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
+ - Added: Eye tracking: Warning when bone hierarchy is incorrect
+ - Added: Eye tracking & Visemes: Automatic search and fill in for fitting bones and shape keys (you should still check them)
+ - Added: Panels: Improved bone and shape key sorting
+ - Fixed: Visemes not being exported by Blender
+ - Fixed: Tons of other bugs
 
 ## Code contributors:
  - Hotox
  - Shotariya
  - Neitri
 
-## Texture atlas
-![](https://i.imgur.com/qiD9jAA.png)
+## Armature
+![](https://i.imgur.com/wJGaxot.png)
 
-**Texture atlas is the process of combining multiple textures into one to save processing power to render one's model**
-If you are unsure about what to do with the margin and angle setting, then leave it default. The most important setting here is texture size and target mesh.
+A combination of Neitri and Shotariya's blender plugins, it deals with fixing and optimising your armature
 
-### Properties
+##### Delete zero weight bones
+Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.
 
-##### Margin
-Margin to reduce bleed of adjacent islands
+##### Delete bone constraints
+Deletes constraints that restrict the pose of MMD models.
 
-##### Angle
-Lower for more projection groups, higher for less distortion
+##### Fix armature
+Fixes your armature by correctly parenting the bones together.
 
-##### Texture size
-Lower for faster bake time, higher for more detail.
+## Translation
 
-##### Area Weight
-Weight projections vector by faces with larger areas
+![](https://i.imgur.com/fkZRIry.png)
 
-##### Target mesh
-The mesh that you want to create an atlas from
-
-##### Disable multiple textures
-Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
-**If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
-
-## Mouth visemes
-![](https://i.imgur.com/XEnStln.png)
-
-**Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
-The script generates 15 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
-*This is still an experimental feature and will be fine tuned over the course of time*
-
-### Properties
-
-##### Mesh
-The mesh with the mouth shape keys
-
-##### Viseme AA
-Shape key containing mouth movement that looks like someone is saying "aa"
-
-##### Viseme OH
-Shape key containing mouth movement that looks like someone is saying "oh"
-
-##### Viseme CH
-Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth
-
-##### Shape key mix intensity
-Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.
+**Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
 
 ## Eye tracking
-![](https://i.imgur.com/HNkxN4p.png)
+![](https://i.imgur.com/x9NqvUO.png)
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
@@ -193,9 +165,33 @@ The name of the shape key that controls lowerlid right
 ##### Experimental eye fix
 Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head
 
+## Mouth visemes
+![](https://i.imgur.com/z6imAYn.png)
+
+**Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
+The script generates 15 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
+*This is still an experimental feature and will be fine tuned over the course of time*
+
+### Properties
+
+##### Mesh
+The mesh with the mouth shape keys
+
+##### Viseme AA
+Shape key containing mouth movement that looks like someone is saying "aa"
+
+##### Viseme OH
+Shape key containing mouth movement that looks like someone is saying "oh"
+
+##### Viseme CH
+Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth
+
+##### Shape key mix intensity
+Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.
+
 ## Bone parenting
 
-![](https://i.imgur.com/xErA2QW.png)
+![](https://i.imgur.com/mgadT4R.png)
 
 **Useful for Dynamic Bones where it is ideal to have one root bone full of child bones**
 This works by checking all bones and trying to figure out if they can be grouped together, which will appear in a list for you to choose from. After satisfied with the selection of this group you can then press 'Parent bones' and the child bones will be parented to a new bone named RootBone_xyz
@@ -209,43 +205,32 @@ This will clear the group bones list cache and rebuild it, useful if bones have 
 ##### Parent bones
 This will start the parent proces
 
-## Translation
+## Texture atlas
+![](https://i.imgur.com/qiD9jAA.png)
 
-![](https://i.imgur.com/DPY7byw.png)
-
-**Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
-
-##### Bones
-Translate bones
-
-##### Shape keys
-Translate shape keys
-
-##### Objects
-Translate hierachy objects (meshes etc)
-
-##### Textures
-Translate textures
-
-##### Materials
-Translate materials
-
-## Armature
-![](https://i.imgur.com/pQPZzlZ.png)
-
-A combination of Neitri and Shotariya's blender plugins, it deals with fixing and optimising your armature
+**Texture atlas is the process of combining multiple textures into one to save processing power to render one's model**
+If you are unsure about what to do with the margin and angle setting, then leave it default. The most important setting here is texture size and target mesh.
 
 ### Properties
 
-##### Fix bone parenting
-Fixes your armature by correctly parenting the bones together
+##### Margin
+Margin to reduce bleed of adjacent islands
 
-##### Delete zero weight bones / vertex groups
-Delete zero weight bones and vertex groups
+##### Angle
+Lower for more projection groups, higher for less distortion
 
-##### Delete bone constraints
-Removes all bone constraints
+##### Texture size
+Lower for faster bake time, higher for more detail.
 
+##### Area Weight
+Weight projections vector by faces with larger areas
+
+##### Target mesh
+The mesh that you want to create an atlas from
+
+##### Disable multiple textures
+Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
+**If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
 
 ## Update Plugin
 There is an auto updater in the plugin so you don't have to keep checking for new version, this is actually required if you install the plugin for the first time. This is how to check for updates:
@@ -255,7 +240,9 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Roadmap
  - MOAR Updates on the armature code
  - Texture translation should have an option to rename the filename also
+ - Automatic lower lid creation for eye tracking
 
 
 ## Feedback
-Send your feedback to this discord server https://discord.gg/up9Zqsu and look for givemeallyourcats ;)
+Do you love this plugin or have you found a bug?
+Post a response in this thread or send your feedback to this discord server https://discord.gg/up9Zqsu and look for givemeallyourcats ;)
