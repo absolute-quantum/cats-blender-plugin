@@ -20,9 +20,6 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 ## Installation
 1. download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
 
-**Important!!**
-You are downloading an older version of the plugin here, which is required: You will need to check the update tab of the plugin and update it to the latest version from there!
-
 2. Install the the addon in blender like so:
 
 ![](https://i.imgur.com/eZV1zrs.gif)
@@ -95,13 +92,14 @@ You are downloading an older version of the plugin here, which is required: You 
  - Added: Armature fix now removes third upper chest (bleeding)
 
 #### 0.0.8
- - Added: Continuous integration @ github: this will allow us to see errors before we make releases
+ - Added: Autofills as much forms as possible
  - Added: Armature: Now fixes more models with one click
  - Added: Credits: Link to the unofficial VRcat forum
  - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
  - Added: Eye tracking: Warning when bone hierarchy is incorrect
  - Added: Eye tracking & Visemes: Automatic search and fill in for fitting bones and shape keys (you should still check them)
  - Added: Panels: Improved bone and shape key sorting
+ - Added: Continuous integration @ github: this will allow us to see errors before we make releases
  - Fixed: Visemes not being exported by Blender
  - Fixed: Tons of other bugs
 
@@ -233,7 +231,7 @@ Texture baking and multiple textures per material can look weird in the end resu
 **If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
 
 ## Update Plugin
-There is an auto updater in the plugin so you don't have to keep checking for new version, this is actually required if you install the plugin for the first time. This is how to check for updates:
+There is an auto updater in the plugin so you don't have to keep checking for new version. This is how to check for updates:
 
 ![](https://i.imgur.com/LbO7Xst.gif)
 
