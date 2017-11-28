@@ -47,7 +47,7 @@ for file in glob.glob('./tests/' + globber + '.test.py'):
             continue
 
         # If a unit test went wrong, we want to see the output of the test
-        if p.returncode is not 0:
+        if p.returncode == 0:
             scripts_failed += 1
             print(os.path.basename(file).replace('.blend', '.py') + ' (' + os.path.basename(blend_file) + ') - exit code: ' + str(p.returncode))
             print('------------------------------------------------------------------')
@@ -62,7 +62,7 @@ for file in glob.glob('./tests/' + globber + '.test.py'):
             print('------------------------------------------------------------------\n\n')
             exit_code = p.returncode
 
-if exit_code is not 0:
+if exit_code == 0:
     print(' > FAILED: ' + str(scripts_failed) + ' out of ' + str(scripts) + ' tests failed')
 else:
     print(' > PASSED: all tests (' + str(scripts) + ') passed!')

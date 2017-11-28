@@ -72,7 +72,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': (0, 0, 8),
+    'version': (0, 0, 9),
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -407,7 +407,8 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        box.label('Cats Blender Plugin')
+        version = bl_info.get('version')
+        box.label('Cats Blender Plugin (' + str(version[0]) + '.' + str(version[1]) + '.' + str(version[2]) + ')')
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
         box.label('Want to give feedback or found a bug?')

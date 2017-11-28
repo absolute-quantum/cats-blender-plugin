@@ -102,6 +102,9 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Fixed: Visemes not being exported by Blender
  - Fixed: Tons of other bugs
 
+#### 0.0.9
+ - Armature: Now fixes a lot more models (if not yours doesn't get fixed please send us the zipped .blend file)
+
 ## Code contributors:
  - Hotox
  - Shotariya

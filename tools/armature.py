@@ -42,13 +42,23 @@ bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Wais
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
 bone_list_with = ['_shadow_', '_dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK', 'LegIKTip', 'ToeTipIK',
                   'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
-                  'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'ArmTwist', 'HandTwist', 'LegD', 'KneeD_L',
-                  'AnkleD', 'LegTipEX', 'HandTip_', 'ShoulderC_', 'SleeveShoulderIK_']
+                  'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'HandTip_', 'ShoulderC_', 'SleeveShoulderIK_']
 bone_list_rename = {
+    'hips': 'Hips',
+    'spine': 'Spine',
+    'chest': 'Chest',
+    'neck': 'Neck',
+    'head': 'Head',
     'LowerBody': 'Hips',
+    'Lowerbody': 'Hips',
     'Lower body': 'Hips',
+    'Lower Body': 'Hips',
     'Leg_L': 'Left leg',
+    'left foot': 'Left leg',
+    'Left foot': 'Left leg',
     'Leg_R': 'Right leg',
+    'right foot': 'Right leg',
+    'Right foot': 'Right leg',
     'Knee_L': 'Left knee',
     'Knee_R': 'Right knee',
     'Ankle_L': 'Left ankle',
@@ -56,14 +66,20 @@ bone_list_rename = {
     'ToeTip_L': 'Left toe',
     'ToeTip_R': 'Right toe',
     'UpperBody': 'Spine',
+    'Upperbody': 'Spine',
     'Upper body': 'Spine',
+    'Upper Body': 'Spine',
     'UpperBody2': 'Chest',
+    'Upperbody2': 'Chest',
     'Upper body 2': 'Chest',
+    'Upper Body 2': 'Chest',
     'Waist upper 2': 'Chest',
+    'Waist Upper 2': 'Chest',
     'UpperBody3': 'NewChest',
+    'Upperbody3': 'NewChest',
     'Upper body 3': 'NewChest',
+    'Upper Body 3': 'NewChest',
     'Waist upper 3': 'NewChest',
-    'neck': 'Neck',
     'Shoulder_L': 'Left shoulder',
     'Shoulder_R': 'Right shoulder',
     'Arm_L': 'Left arm',
@@ -72,6 +88,10 @@ bone_list_rename = {
     'Elbow_R': 'Right elbow',
     'Wrist_L': 'Left wrist',
     'Wrist_R': 'Right wrist'
+}
+bone_list_rename_unknown_side = {
+    'Shoulder': 'shoulder',
+    'Shoulder_001': 'shoulder'
 }
 bone_list_parenting = {
     'Spine': 'Hips',
@@ -92,14 +112,6 @@ bone_list_parenting = {
     'Right ankle': 'Right knee',
     'Left toe': 'Left ankle',
     'Right toe': 'Right ankle',
-    'LegTipEX_L': 'Left toe',
-    'LegTipEX_R': 'Right toe',
-    'LegD_L': 'Left leg',
-    'LegD_R': 'Right leg',
-    'KneeD_L': 'Left knee',
-    'KneeD_R': 'Right knee',
-    'AnkleD_L': 'Left ankle',
-    'AnkleD_R': 'Right ankle'
 }
 bone_list_weight = {
     'LegD_L': 'Left leg',
@@ -110,26 +122,74 @@ bone_list_weight = {
     'AnkleD_R': 'Right ankle',
     'LegTipEX_L': 'Left toe',
     'LegTipEX_R': 'Right toe',
-    'ShoulderC_L': 'Shoulder_L',
-    'ShoulderC_R': 'Shoulder_R',
-    'SleeveShoulderIK_L': 'Shoulder_L',
-    'SleeveShoulderIK_R': 'Shoulder_R',
-    'ArmTwist_L': 'Left arm',
+    'Left foot D': 'Left leg',
+    'Right foot D': 'Right leg',
+    'Left knee D': 'Left knee',
+    'Right knee D': 'Right knee',
+
+    'ShoulderC_R': 'Right shoulder',
+    'SleeveShoulderIK_R': 'Right shoulder',
+    'Right shoulder weight': 'Right shoulder',
+
+    'ShoulderC_L': 'Left shoulder',
+    'SleeveShoulderIK_L': 'Left shoulder',
+    'Left shoulder weight': 'Left shoulder',
+
     'ArmTwist_R': 'Right arm',
-    'ArmTwist1_L': 'Left arm',
     'ArmTwist1_R': 'Right arm',
-    'ArmTwist2_L': 'Left arm',
     'ArmTwist2_R': 'Right arm',
-    'ArmTwist3_L': 'Left arm',
     'ArmTwist3_R': 'Right arm',
-    'HandTwist_L': 'Left elbow',
+    'Right arm twist': 'Right arm',
+    'Right arm torsion': 'Right arm',
+    'Right arm torsion 1': 'Right arm',
+    'Right arm tight': 'Right arm',
+    'Right arm tight 1': 'Right arm',
+    'Right arm tight 2': 'Right arm',
+    'Right arm tight 3': 'Right arm',
+
+    'ArmTwist_L': 'Left arm',
+    'ArmTwist1_L': 'Left arm',
+    'ArmTwist2_L': 'Left arm',
+    'ArmTwist3_L': 'Left arm',
+    'Left arm twist': 'Left arm',
+    'Left arm torsion': 'Left arm',
+    'Left arm torsion 1': 'Left arm',
+    'Left arm tight': 'Left arm',
+    'Left arm tight 1': 'Left arm',
+    'Left arm tight 2': 'Left arm',
+    'Left arm tight 3': 'Left arm',
+    'ElbowAux+_L': 'Left arm',
+
     'HandTwist_R': 'Right elbow',
-    'HandTwist1_L': 'Left elbow',
     'HandTwist1_R': 'Right elbow',
-    'HandTwist2_L': 'Left elbow',
     'HandTwist2_R': 'Right elbow',
+    'HandTwist3_R': 'Right elbow',
+    'Right Hand 1': 'Right elbow',
+    'Right Hand 2': 'Right elbow',
+    'Right Hand 3': 'Right elbow',
+    'Right hand 1': 'Right elbow',
+    'Right hand 2': 'Right elbow',
+    'Right hand 3': 'Right elbow',
+    'Right hand twist': 'Right elbow',
+    'Right hand twist 1': 'Right elbow',
+    'Right hand twist 2': 'Right elbow',
+    'Right Hand Thread 3': 'Right elbow',
+    'ElbowAux+_R': 'Left arm',
+
+    'HandTwist_L': 'Left elbow',
+    'HandTwist1_L': 'Left elbow',
+    'HandTwist2_L': 'Left elbow',
     'HandTwist3_L': 'Left elbow',
-    'HandTwist3_R': 'Right elbow'
+    'Left Hand 1': 'Left elbow',
+    'Left Hand 2': 'Left elbow',
+    'Left Hand 3': 'Left elbow',
+    'Left hand 1': 'Left elbow',
+    'Left hand 2': 'Left elbow',
+    'Left hand 3': 'Left elbow',
+    'Left hand twist': 'Left elbow',
+    'Left hand twist 1': 'Left elbow',
+    'Left hand twist 2': 'Left elbow',
+    'Left Hand Thread 3': 'Left elbow',
 }
 dont_delete_these_bones = {
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
@@ -159,6 +219,16 @@ def delete_hierarchy(obj):
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
     bl_label = 'Fix armature'
+    bl_description = "Fixes the armature by:\n" \
+                     + "- Reparenting bones\n" \
+                     + "- Removing unnecessary bones\n" \
+                     + "- Renaming objects and bones\n" \
+                     + "- Mixing weight paints\n" \
+                     + "- Rotating the hips\n" \
+                     + "- Joining all meshes\n" \
+                     + "- Removing rigidbodies and joints\n" \
+                     + "- Deleting unused vertex groups"
+
     bl_options = {'REGISTER', 'UNDO'}
 
     if mmd_tools_installed:
@@ -175,6 +245,7 @@ class FixArmature(bpy.types.Operator):
 
         # preservestate = tools.common.PreserveState()
         # preservestate.save()
+
         # bpy.ops.object.hide_view_clear()
         tools.common.unselect_all()
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -222,10 +293,36 @@ class FixArmature(bpy.types.Operator):
             bone.name = utils.convertNameToLR(bone.name, True)
             bone.name = translator.translate(bone.name)
 
+
         # Rename bones
         for key, value in bone_list_rename.items():
             if key in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).name = value
+
+        # Rename bones which don't have a side and try to detect it automatically
+        for key, value in bone_list_rename_unknown_side.items():
+            for bone in armature.data.edit_bones:
+                parent = bone.parent
+                if parent is None:
+                    continue
+                if parent.name == key:
+                    if 'right' in bone.name.lower():
+                        parent.name = 'Right ' + value
+                        break
+                    elif 'left' in bone.name.lower():
+                        parent.name = 'Left ' + value
+                        break
+
+                parent = parent.parent
+                if parent is None:
+                    continue
+                if parent.name == key:
+                    if 'right' in bone.name.lower():
+                        parent.name = 'Right ' + value
+                        break
+                    elif 'left' in bone.name.lower():
+                        parent.name = 'Left ' + value
+                        break
 
         # Remove un-needed bones
         for bone in armature.data.edit_bones:
@@ -235,6 +332,14 @@ class FixArmature(bpy.types.Operator):
         # Disconnect all bones
         for bone in armature.data.edit_bones:
             bone.use_connect = False
+
+        # Make Hips top parent and reparent other top bones to hips
+        if 'Hips' in armature.data.edit_bones:
+            hips = armature.data.edit_bones.get('Hips')
+            hips.parent = None
+            for bone in armature.data.edit_bones:
+                if bone.parent is None:
+                    bone.parent = hips
 
         # == FIXING OF SPECIAL BONE CASES ==
 
@@ -365,17 +470,13 @@ class FixArmature(bpy.types.Operator):
 
         # At this point, everything should be fixed and now we validate and give errors if needed
 
-        tools.common.unselect_all()
-        tools.common.select(armature)
-        bpy.ops.object.mode_set(mode='EDIT')
-
         # The bone hierarchy needs to be validated
         hierarchy_check_hips = check_hierarchy([
             ['Hips', 'Spine', 'Chest', 'Neck', 'Head'],
             ['Hips', 'Left leg', 'Left knee', 'Left ankle'],
             ['Hips', 'Right leg', 'Right knee', 'Right ankle'],
             ['Chest', 'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist'],
-            ['Chest', 'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist'],
+            ['Chest', 'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist']
         ])
 
         if hierarchy_check_hips['result'] is False:
@@ -394,34 +495,33 @@ def check_hierarchy(correct_hierarchy_array):
 
     for correct_hierarchy in correct_hierarchy_array:
         for index, item in enumerate(correct_hierarchy):
-            if item not in armature.data.bones:
+            if item not in armature.data.edit_bones:
                 error = {'result': False, 'message': item + ' was not found in the hierarchy, this will cause problems!'}
                 break
 
-            bone = armature.data.bones.get(item)
+            bone = armature.data.edit_bones.get(item)
 
-            if item is 'Hips':
-                # Hips should always be unparented
-                if bone.parent is not None:
-                    bone.parent = None
-            elif index is 0:
+            if index == 0:
                 # first level items do not need to be parent checked
+                pass
+            if bone.name == 'Hips':
+                # Hips don't have to be checked
                 pass
             else:
                 prevbone = None
                 try:
-                    prevbone = armature.data.bones.get(correct_hierarchy[index - 1])
+                    prevbone = armature.data.edit_bones.get(correct_hierarchy[index - 1])
                 except KeyError:
-                    error = {'result': False, 'message': correct_hierarchy[index - 1] + ' bone does not exist, this will cause problems!'}
+                    error = {'result': False, 'message': correct_hierarchy[index - 1] + ' bone does not exist, this might cause problems!'}
 
                 if error is None:
                     if bone.parent is None:
-                        error = {'result': False,
-                                 'message': bone.name + ' is not parented at all, this will cause problems!'}
-                    else:
-                        if bone.parent.name != prevbone.name:
-                            error = {'result': False,
-                                     'message': bone.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
+                        error = {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
+                    # else: # TODO this part is buggy, should be fixed!
+                    #     print("Debug: " + bone.parent.name + " " + prevbone.name)
+                    #     if bone.parent.name != prevbone.name:
+                    #         error = {'result': False, 'message': bone.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
+                    #         print("Debug2: " + bone.parent.name + " " + prevbone.name)
 
     if error is None:
         return_value = {'result': True}

@@ -132,8 +132,7 @@ class addon_updater_install_popup(bpy.types.Operator):
 class addon_updater_check_now(bpy.types.Operator):
     bl_label = "Check now for "+updater.addon+" update"
     bl_idname = updater.addon+".updater_check_now"
-    bl_description = "Check now for an update to the {x} addon".format(
-                                                        x=updater.addon)
+    bl_description = "Check now for Cats update"
 
     def execute(self,context):
 
@@ -167,8 +166,7 @@ class addon_updater_check_now(bpy.types.Operator):
 class addon_updater_update_now(bpy.types.Operator):
     bl_label = "Update "+updater.addon+" addon now"
     bl_idname = updater.addon+".updater_update_now"
-    bl_description = "Update to the latest version of the {x} addon".format(
-                                                        x=updater.addon)
+    bl_description = "Update to latest Cats version"
 
     # if true, run clean install - ie remove all files before adding new
     # equivalent to deleting the addon and reinstalling, except the
