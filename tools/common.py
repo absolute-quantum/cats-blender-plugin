@@ -34,7 +34,7 @@ from math import degrees
 # - Fix errors when there is no model
 # - Add check if hips bone really needs to be rotated
 # - Visemes don't work if they are already named correctly
-# - Test if mmd_tools dictionary works for other translations too
+# - Visemes can be deleted when decimated
 # - Error: https://i.imgur.com/kBnSx0I.png with model Kanna O: https://goo.gl/sJj2xL
 
 
@@ -214,7 +214,7 @@ def get_bones(names):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah'])
+    return get_shapekeys(context, ['Ah', ])
 
 
 def get_shapekeys_mouth_oh(self, context):
