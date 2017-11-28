@@ -64,5 +64,4 @@ install:
 
 # Start unit testing and coverage
 script:
-  - coverage run --source=. tests/run.py -b ./tmp/blender/blender
-  - coverage report -m
+  - python tests/run.py -b ./tmp/blender/blender
