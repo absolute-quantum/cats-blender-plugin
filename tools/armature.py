@@ -506,11 +506,12 @@ def check_hierarchy(correct_hierarchy_array):
 
     for correct_hierarchy in correct_hierarchy_array:
         for index, item in enumerate(correct_hierarchy):
-            if item not in armature.data.edit_bones:
+            # NOTE:  armature.data.bones is being used instead of armature.data.edit_bones because of a failed test (edit_bones array empty for some reason)
+            if item not in armature.data.bones:
                 error = {'result': False, 'message': item + ' was not found in the hierarchy, this will cause problems!'}
                 break
 
-            bone = armature.data.edit_bones.get(item)
+            bone = armature.data.bones.get(item)
 
             if index == 0:
                 # first level items do not need to be parent checked
@@ -521,7 +522,7 @@ def check_hierarchy(correct_hierarchy_array):
             else:
                 prevbone = None
                 try:
-                    prevbone = armature.data.edit_bones.get(correct_hierarchy[index - 1])
+                    prevbone = armature.data.bones.get(correct_hierarchy[index - 1])
                 except KeyError:
                     error = {'result': False, 'message': correct_hierarchy[index - 1] + ' bone does not exist, this might cause problems!'}
 
@@ -531,7 +532,7 @@ def check_hierarchy(correct_hierarchy_array):
                     # else: # TODO this part is buggy, should be fixed!
                     #     print("Debug: " + bone.parent.name + " " + prevbone.name)
                     #     if bone.parent.name != prevbone.name:
-                    #         error = {'result': False, 'message': bone.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
+                    #         error = {'result': False, 'message': bone.parent.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
                     #         print("Debug2: " + bone.parent.name + " " + prevbone.name)
 
     if error is None:

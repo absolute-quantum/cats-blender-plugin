@@ -26,7 +26,8 @@ globber_armature = options.globber_armature
 exit_code = 0
 scripts_failed = 0
 scripts = 0
-
+scripts_only_executed_once = ['atlas.test.py', 'syntax.test.py']
+scripts_executed = []
 
 def show_time(time):
     rounded = round(time, 2)
@@ -49,6 +50,11 @@ def show_time(time):
 # and open up blender with the armature files found in 'tests/armatures' directory
 for file in glob.glob('./tests/' + globber_test + '.test.py'):
     for blend_file in glob.glob('./tests/armatures/armature.' + globber_armature + '.blend'):
+        if os.path.basename(file) in scripts_only_executed_once:
+            if os.path.basename(file) in scripts_executed:
+                continue # skips already executed test
+
+        scripts_executed.append(os.path.basename(file))
         scripts += 1
         start_time_unit = time.time()
         p = Popen([blender_exec, '--addons', 'mmd_tools', '--addons', 'cats', '--factory-startup', '-noaudio', '-b', blend_file, '--python', file], shell=False, stdout=PIPE, stderr=PIPE)
@@ -72,7 +78,7 @@ for file in glob.glob('./tests/' + globber_test + '.test.py'):
             continue
 
         # If a unit test went wrong, we want to see the output of the test
-        if p.returncode is not 0:
+        if p.returncode != 0:
             scripts_failed += 1
             print(os.path.basename(file).replace('.blend', '.py') + ' (' + os.path.basename(blend_file) + ') - exit code: ' + str(p.returncode))
             print('------------------------------------------------------------------')
@@ -87,9 +93,7 @@ for file in glob.glob('./tests/' + globber_test + '.test.py'):
             print('------------------------------------------------------------------\n\n')
             exit_code = p.returncode
 
-        time.sleep(2)
-
-if exit_code is not 0:
+if exit_code != 0:
     print(' > ' + colored('FAILED', 'red', attrs=['bold']) + ': ' + str(scripts_failed) + ' out of ' + str(scripts) + ' tests failed')
 else:
     print(' > ' + colored('PASSED', 'green', attrs=['bold']) + ': all tests (' + str(scripts) + ') passed!')

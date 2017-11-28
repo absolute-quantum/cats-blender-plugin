@@ -226,7 +226,7 @@ class CreateEyesButton(bpy.types.Operator):
         #     for key in deleted:
         #         text += key + ', '
         #     self.report({'WARNING'}, text)
-        if not is_correct['result']:
+        if is_correct['result'] == False:
             self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
         else:
             self.report({'INFO'}, 'Created eye tracking!')
