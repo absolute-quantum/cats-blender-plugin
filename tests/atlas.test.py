@@ -5,19 +5,21 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_atlas_button(self):
-        # Context failures, figure out why :(
-        # bpy.ops.auto.atlas()
-        pass
+        bpy.ops.armature.fix()
+
+        bpy.context.scene.mesh_name_atlas = 'Body'
+        bpy.context.scene.texture_size = '1024'
+        bpy.context.scene.one_texture = True
+        bpy.context.scene.pack_islands = False
+        bpy.context.scene.angle_limit = 82.0
+        bpy.context.scene.area_weight = 0.0
+        bpy.context.scene.island_margin = 0.01
+
+        result = bpy.ops.auto.atlas()
+        self.assertEqual(result == {'FINISHED'}, True)
 
 
-def run():
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
-    runner = unittest.TextTestRunner()
-    ret = not runner.run(suite).wasSuccessful()
-    sys.exit(ret)
-
-
-try:
-    run()
-except Exception:
-    sys.exit(1)
+suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
+runner = unittest.TextTestRunner()
+ret = not runner.run(suite).wasSuccessful()
+sys.exit(ret)

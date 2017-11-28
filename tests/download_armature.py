@@ -23,7 +23,7 @@ download_data = {
 for name in download_data:
     url = download_data[name]
     filename = str('armature.' + str(name) + '.blend')
-    new_file_path = os.path.join(os.path.dirname(__file__), 'tests', 'armatures', 'armature.' + str(name) + '.blend')
+    new_file_path = os.path.join(os.path.dirname(__file__), 'armatures', 'armature.' + str(name) + '.blend')
     if exists(new_file_path) is False:
         print('Notice: Downloaded ' + filename + ' because it didn\'t existed')
         with urllib.request.urlopen(url) as response, open(new_file_path, 'wb') as out_file:

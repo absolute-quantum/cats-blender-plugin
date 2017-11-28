@@ -161,6 +161,8 @@ class FixArmature(bpy.types.Operator):
     bl_label = 'Fix armature'
     bl_options = {'REGISTER', 'UNDO'}
 
+    tries = 0
+
     if mmd_tools_installed:
         dictionary = bpy.props.EnumProperty(
             name='Dictionary',
@@ -169,6 +171,8 @@ class FixArmature(bpy.types.Operator):
         )
 
     def execute(self, context):
+        self.tries += 1
+
         if mmd_tools_installed is False:
             self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
             return {'CANCELLED'}
@@ -379,6 +383,13 @@ class FixArmature(bpy.types.Operator):
         ])
 
         if hierarchy_check_hips['result'] is False:
+            # if this is first try with an error then retry. This fixes the bonetranslation.blend error
+            # TODO: figure out why?
+            if self.tries == 1:
+                return self.execute(context)
+            elif self.tries == 2:
+                self.tries = 0
+
             self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
