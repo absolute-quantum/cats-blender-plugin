@@ -40,13 +40,7 @@ import tools.rootbone
 import tools.translate
 import tools.armature
 import tools.common
-import tools.dependencies
 import tools.credits
-import globs
-
-import mmd_tools_local
-from mmd_tools_local import utils
-from mmd_tools_local.translations import DictionaryEnum
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)

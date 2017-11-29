@@ -66,16 +66,19 @@ class AutoVisemeButton(bpy.types.Operator):
         # Select the created shapekey
         mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
 
-        # TODO: This takes too long too complete, find a alternative
-        # Might be best to keep this commented as it's just for aesthetic reasons.
-
         # Re-adjust index position
-        # position_correct = False
-        # while position_correct is False:
-        #     if mesh.active_shape_key_index != new_index:
-        #         bpy.ops.object.shape_key_move(type='UP')
-        #     else:
-        #         position_correct = True
+        too_long = len(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks) > 9
+        position_correct = False
+        if too_long:
+            bpy.ops.object.shape_key_move(type='TOP')
+        while position_correct is False:
+            if mesh.active_shape_key_index != new_index:
+                if too_long:
+                    bpy.ops.object.shape_key_move(type='DOWN')
+                else:
+                    bpy.ops.object.shape_key_move(type='UP')
+            else:
+                position_correct = True
 
         # Reset context scenes
         context.scene.mouth_a = shapes[0]

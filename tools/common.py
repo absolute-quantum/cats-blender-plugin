@@ -32,11 +32,10 @@ import time
 
 
 # TODO
-# - Fix errors when there is no model
 # - Add check if hips bone really needs to be rotated
-# - Visemes don't work if they are already named correctly
-# - Visemes can be deleted when decimated
 # - Error: https://i.imgur.com/kBnSx0I.png with model Kanna O: https://goo.gl/sJj2xL
+# - Error: Open Model, go into edit mode, select a bone and press Fix Armature: https://i.imgur.com/IJHsP0o.png
+# - Reset Pivot
 
 
 def get_armature():

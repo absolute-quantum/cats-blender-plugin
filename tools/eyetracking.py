@@ -102,9 +102,10 @@ class CreateEyesButton(bpy.types.Operator):
 
                 # Re-adjust index position
                 position_correct = False
+                bpy.ops.object.shape_key_move(type='TOP')
                 while position_correct is False:
                     if mesh.active_shape_key_index > new_index:
-                        bpy.ops.object.shape_key_move(type='UP')
+                        bpy.ops.object.shape_key_move(type='DOWN')
                     else:
                         position_correct = True
 

@@ -192,7 +192,8 @@ dont_delete_these_bones = {
     'Left leg', 'Left knee', 'Left ankle', 'Left toe',
     'Right leg', 'Right knee', 'Right ankle', 'Right toe',
     'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
-    'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist'
+    'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist',
+    'OldRightEye', 'OldLeftEye'
 }
 
 
@@ -238,7 +239,14 @@ class FixArmature(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return checkFixArmatureBotton()
+        if tools.common.get_armature() is None:
+            return False
+        i = 0
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                i += 1
+        return i > 0
+
 
     def execute(self, context):
         self.tries += 1
@@ -283,7 +291,7 @@ class FixArmature(bpy.types.Operator):
 
         # Rename bones
         for key, value in bone_list_rename.items():
-            if key in armature.data.edit_bones:
+            if key in armature.data.edit_bones or key.lower() in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).name = value
 
         # Rename bones which don't have a side and try to detect it automatically
@@ -292,7 +300,7 @@ class FixArmature(bpy.types.Operator):
                 parent = bone.parent
                 if parent is None:
                     continue
-                if parent.name == key:
+                if parent.name == key or parent.name == key.lower():
                     if 'right' in bone.name.lower():
                         parent.name = 'Right ' + value
                         break
@@ -303,7 +311,7 @@ class FixArmature(bpy.types.Operator):
                 parent = parent.parent
                 if parent is None:
                     continue
-                if parent.name == key:
+                if parent.name == key or parent.name == key.lower():
                     if 'right' in bone.name.lower():
                         parent.name = 'Right ' + value
                         break
@@ -617,7 +625,19 @@ class WeightToParent(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return checkWeightToParentBotton()
+        if bpy.context.active_object is None:
+            return False
+
+        # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
+        #     return True
+
+        if bpy.context.active_object.mode == 'EDIT' and len(bpy.context.selected_editable_bones) > 0:
+            return True
+
+        if bpy.context.active_object.mode == 'POSE' and len(bpy.context.selected_pose_bones) > 0:
+            return True
+
+        return False
 
     def execute(self, context):
 
@@ -633,7 +653,8 @@ class WeightToParent(bpy.types.Operator):
             bone_name_to_edit_bone[edit_bone.name] = edit_bone
 
         for bone_name_to_remove in self._bone_names_to_work_on:
-
+            if bone_name_to_edit_bone[bone_name_to_remove].parent is None:
+                continue
             bone_name_to_add_weights_to = bone_name_to_edit_bone[bone_name_to_remove].parent.name
             self._armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name_to_remove])  # delete bone
 
@@ -750,44 +771,14 @@ class JoinMeshes(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return checkJoinMeshesBotton()
+        i = 0
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                i += 1
+        return i > 0
 
     def execute(self, context):
         join_meshes()
 
         self.report({'INFO'}, 'Meshes joined.')
         return {'FINISHED'}
-
-
-def checkWeightToParentBotton():
-    if bpy.context.active_object is None:
-        return False
-
-    # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
-    #     return True
-
-    if bpy.context.active_object.mode == 'EDIT' and len(bpy.context.selected_editable_bones) > 0:
-        return True
-
-    if bpy.context.active_object.mode == 'POSE' and len(bpy.context.selected_pose_bones) > 0:
-        return True
-
-    return False
-
-
-def checkJoinMeshesBotton():
-    i = 0
-    for ob in bpy.data.objects:
-        if ob.type == 'MESH':
-            i += 1
-    return i > 0
-
-
-def checkFixArmatureBotton():
-    if tools.common.get_armature() is None:
-        return False
-    i = 0
-    for ob in bpy.data.objects:
-        if ob.type == 'MESH':
-            i += 1
-    return i > 0
