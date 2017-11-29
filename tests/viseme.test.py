@@ -5,19 +5,19 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_viseme_button(self):
-        # Context failures, figure out why :(
-        # bpy.ops.auto.viseme()
-        pass
+        # first fix armature
+        bpy.ops.armature.fix()
+
+        # Then translate shapekeys
+        bpy.ops.translate.shapekeys()
+
+        bpy.context.scene.mesh_name_viseme = 'Body'
+
+        result = bpy.ops.auto.viseme()
+        self.assertEqual(result == {'FINISHED'}, True)
 
 
-def run():
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
-    runner = unittest.TextTestRunner()
-    ret = not runner.run(suite).wasSuccessful()
-    sys.exit(ret)
-
-
-try:
-    run()
-except Exception:
-    sys.exit(1)
+suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
+runner = unittest.TextTestRunner()
+ret = not runner.run(suite).wasSuccessful()
+sys.exit(ret)

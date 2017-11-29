@@ -184,11 +184,11 @@ def get_bones_head(self, context):
 
 
 def get_bones_eye_l(self, context):
-    return get_bones(['Eye_L'])
+    return get_bones(['EyeReturn_L', 'Eye_L'])
 
 
 def get_bones_eye_r(self, context):
-    return get_bones(['Eye_R'])
+    return get_bones(['EyeReturn_R', 'Eye_R'])
 
 
 def get_bones(names):

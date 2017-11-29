@@ -6,5 +6,6 @@ cats_updater
 .cache
 tmp
 *.blend
+*.blend1
 tests/armatures/*.png
 .coverage

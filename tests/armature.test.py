@@ -4,20 +4,26 @@ import bpy
 
 
 class TestAddon(unittest.TestCase):
-    def test_armature_button(self):
-        bpy.context.scene.remove_constraints = True
+    def test_armature(self):
         bpy.context.scene.remove_zero_weight = True
-        bpy.ops.armature.fix()
+        bpy.context.scene.remove_constraints = True
+        result = bpy.ops.armature.fix()
+        self.assertEqual(result == {'FINISHED'}, True)
+
+    def test_armature_with_zero_weights_off(self):
+        bpy.context.scene.remove_zero_weight = False
+        bpy.context.scene.remove_constraints = True
+        result = bpy.ops.armature.fix()
+        self.assertEqual(result == {'FINISHED'}, True)
+
+    def test_armature_with_constraints_off(self):
+        bpy.context.scene.remove_zero_weight = True
+        bpy.context.scene.remove_constraints = False
+        result = bpy.ops.armature.fix()
+        self.assertEqual(result == {'FINISHED'}, True)
 
 
-def run():
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
-    runner = unittest.TextTestRunner()
-    ret = not runner.run(suite).wasSuccessful()
-    sys.exit(ret)
-
-
-try:
-    run()
-except Exception:
-    sys.exit(1)
+suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
+runner = unittest.TextTestRunner()
+ret = not runner.run(suite).wasSuccessful()
+sys.exit(ret)
