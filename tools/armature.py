@@ -225,7 +225,7 @@ class FixArmature(bpy.types.Operator):
                      + "- Renaming objects and bones\n" \
                      + "- Mixing weight paints\n" \
                      + "- Rotating the hips\n" \
-                     + "- Joining all meshes\n" \
+                     + "- Joining meshes\n" \
                      + "- Removing rigidbodies and joints\n" \
                      + "- Deleting unused vertex groups"
 
@@ -492,6 +492,10 @@ class FixArmature(bpy.types.Operator):
 def check_hierarchy(correct_hierarchy_array):
     armature = tools.common.get_armature()
     error = None
+
+    tools.common.unselect_all()
+    tools.common.select(armature)
+    bpy.ops.object.mode_set(mode='EDIT')
 
     for correct_hierarchy in correct_hierarchy_array:
         for index, item in enumerate(correct_hierarchy):
