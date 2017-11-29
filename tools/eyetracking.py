@@ -32,7 +32,7 @@ import tools.armature
 
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
-    bl_label = 'Create eye tracking'
+    bl_label = 'Create Eye Tracking'
     bl_options = {'REGISTER', 'UNDO'}
 
     def vertex_group_exists(self, mesh_name, bone_name):

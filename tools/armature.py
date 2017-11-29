@@ -218,16 +218,17 @@ def delete_hierarchy(obj):
 
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
-    bl_label = 'Fix armature'
-    bl_description = "Fixes the armature by:\n" \
-                     + "- Reparenting bones\n" \
-                     + "- Removing unnecessary bones\n" \
-                     + "- Renaming objects and bones\n" \
-                     + "- Mixing weight paints\n" \
-                     + "- Rotating the hips\n" \
-                     + "- Joining meshes\n" \
-                     + "- Removing rigidbodies and joints\n" \
-                     + "- Deleting unused vertex groups"
+    bl_label = 'Fix Armature'
+    bl_description = "Automatically:\n" \
+                     + "- Reparents bones\n" \
+                     + "- Removes unnecessary bones\n" \
+                     + "- Renames objects and bones\n" \
+                     + "- Mixes weight paints\n" \
+                     + "- Rotates the hips\n" \
+                     + "- Joins meshes\n" \
+                     + "- Removes rigidbodies and joints\n" \
+                     + "- Removes bone constraints\n" \
+                     + "- Deletes unused vertex groups"
 
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -239,6 +240,10 @@ class FixArmature(bpy.types.Operator):
             items=DictionaryEnum.get_dictionary_items,
             description='Translate names from Japanese to English using selected dictionary',
         )
+
+    @classmethod
+    def poll(cls, context):
+        return checkFixArmatureBotton()
 
     def execute(self, context):
         self.tries += 1
@@ -254,7 +259,6 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         bpy.ops.object.mode_set(mode='OBJECT')
         armature = tools.common.get_armature()
-        mesh = None
 
         # Empty objects should be removed
         tools.common.remove_empty()
@@ -272,19 +276,8 @@ class FixArmature(bpy.types.Operator):
         armature.name = 'Armature'
         armature.data.name = 'Armature'
 
-        # Meshes should be combined
-        tools.common.unselect_all()
-        for ob in bpy.data.objects:
-            if ob.type == 'MESH':
-                tools.common.select(ob)
-        bpy.ops.object.join()
-
-        # Mesh should be renamed to Body
-        for ob in bpy.data.objects:
-            if ob.type == 'MESH':
-                ob.name = 'Body'
-                mesh = ob
-                break
+        # Joins meshes into one and calls it 'Body'
+        mesh = join_meshes()
 
         # Armature should be selected and in edit mode
         tools.common.unselect_all()
@@ -296,7 +289,6 @@ class FixArmature(bpy.types.Operator):
         for bone in armature.data.bones:
             bone.name = utils.convertNameToLR(bone.name, True)
             bone.name = translator.translate(bone.name)
-
 
         # Rename bones
         for key, value in bone_list_rename.items():
@@ -461,8 +453,8 @@ class FixArmature(bpy.types.Operator):
         bpy.ops.object.mode_set(mode='EDIT')
 
         # Bone constraints should be deleted
-        if context.scene.remove_constraints:
-            delete_bone_constraints()
+        # if context.scene.remove_constraints:
+        delete_bone_constraints()
 
         # Removes unused vertex groups
         tools.common.remove_unused_vertex_groups()
@@ -533,11 +525,11 @@ def check_hierarchy(correct_hierarchy_array):
                 if error is None:
                     if bone.parent is None:
                         error = {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
-                    # else: # TODO this part is buggy, should be fixed!
-                    #     print("Debug: " + bone.parent.name + " " + prevbone.name)
-                    #     if bone.parent.name != prevbone.name:
-                    #         error = {'result': False, 'message': bone.parent.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
-                    #         print("Debug2: " + bone.parent.name + " " + prevbone.name)
+                        # else: # TODO this part is buggy, should be fixed!
+                        #     print("Debug: " + bone.parent.name + " " + prevbone.name)
+                        #     if bone.parent.name != prevbone.name:
+                        #         error = {'result': False, 'message': bone.parent.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
+                        #         print("Debug2: " + bone.parent.name + " " + prevbone.name)
 
     if error is None:
         return_value = {'result': True}
@@ -599,3 +591,212 @@ def delete_bone_constraints():
                 bone.constraints.remove(constraint)
 
     bpy.ops.object.mode_set(mode='EDIT')
+
+
+def join_meshes():
+    # Combines Meshes
+    tools.common.unselect_all()
+    bpy.ops.object.mode_set(mode='OBJECT')
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            tools.common.select(ob)
+    bpy.ops.object.join()
+
+    # Renames it to Body
+    mesh = None
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            ob.name = 'Body'
+            mesh = ob
+            break
+
+    return mesh
+
+
+class WeightToParent(bpy.types.Operator):
+    bl_idname = "armature.weight_to_parents"
+    bl_label = "Delete Bones and Add Weights to Parents"
+    bl_description = "Deletes the selected bones and adds their weight to their respective parents.\n" \
+                     + "Only available in Edit or Pose Mode!\n"
+    bl_options = {"REGISTER", "UNDO"}
+
+    _armature = None
+    _bone_names_to_work_on = None
+    _objects_to_work_on = None
+
+    @classmethod
+    def poll(cls, context):
+        return checkWeightToParentBotton()
+
+    def execute(self, context):
+
+        error = self.mustSelectBones()
+        if error:
+            return error
+
+        armature_edit_mode = ArmatureEditMode(self._armature)
+
+        # create lookup table
+        bone_name_to_edit_bone = dict()
+        for edit_bone in self._armature.data.edit_bones:
+            bone_name_to_edit_bone[edit_bone.name] = edit_bone
+
+        for bone_name_to_remove in self._bone_names_to_work_on:
+
+            bone_name_to_add_weights_to = bone_name_to_edit_bone[bone_name_to_remove].parent.name
+            self._armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name_to_remove])  # delete bone
+
+            for object in self._objects_to_work_on:
+
+                vertex_group_to_remove = object.vertex_groups.get(bone_name_to_remove)
+                vertex_group_to_add_weights_to = object.vertex_groups.get(bone_name_to_add_weights_to)
+
+                if vertex_group_to_remove is not None:
+
+                    if vertex_group_to_add_weights_to is None:
+                        vertex_group_to_add_weights_to = object.vertex_groups.new(bone_name_to_add_weights_to)
+
+                    for vertex in object.data.vertices:  # transfer weight for each vertex
+                        weight_to_transfer = 0
+                        for group in vertex.groups:
+                            if group.group == vertex_group_to_remove.index:
+                                weight_to_transfer = group.weight
+                                break
+                        if weight_to_transfer > 0:
+                            vertex_group_to_add_weights_to.add([vertex.index], weight_to_transfer, "ADD")
+
+                    object.vertex_groups.remove(vertex_group_to_remove)  # delete vertex group
+
+        armature_edit_mode.restore()
+
+        self.report({"INFO"}, "Deleted " + str(len(self._bone_names_to_work_on)) + " bones and added their weights to their parents")
+
+        return {"FINISHED"}
+
+    def optionallySelectBones(self):
+
+        armature = bpy.context.object
+        if armature is None:
+            self.report({"ERROR"}, "Select something")
+            return {"CANCELLED"}
+
+        # find armature, try to select parent
+        if armature is not None and armature.type != "ARMATURE" and armature.parent is not None:
+            armature = armature.parent
+            if armature is not None and armature.type != "ARMATURE" and armature.parent is not None:
+                armature = armature.parent
+
+        # find armature, try to select first and only child
+        if armature is not None and armature.type != "ARMATURE" and len(armature.children) == 1:
+            armature = armature.children[0]
+            if armature is not None and armature.type != "ARMATURE" and len(armature.children) == 1:
+                armature = armature.children[0]
+
+        if armature is None or armature.type != "ARMATURE":
+            self.report({"ERROR"}, "Select armature, it's child or it's parent")
+            return {"CANCELLED"}
+
+        # find which bones to work on
+        if bpy.context.selected_editable_bones is not None and len(bpy.context.selected_editable_bones) > 0:
+            bones_to_work_on = bpy.context.selected_editable_bones
+        elif bpy.context.selected_pose_bones is not None and len(bpy.context.selected_pose_bones) > 0:
+            bones_to_work_on = bpy.context.selected_pose_bones
+        else:
+            bones_to_work_on = armature.data.bones
+        bone_names_to_work_on = set([bone.name for bone in bones_to_work_on])  # grab names only
+
+        self._armature = armature
+        self._bone_names_to_work_on = bone_names_to_work_on
+        self._objects_to_work_on = armature.children
+
+    def mustSelectBones(self):
+
+        armature = bpy.context.object
+
+        if armature is None or armature.type != "ARMATURE":
+            self.report({"ERROR"}, "Select bones in armature edit or pose mode")
+            return {"CANCELLED"}
+
+        # find which bones to work on
+        if bpy.context.selected_editable_bones is not None and len(bpy.context.selected_editable_bones) > 0:
+            bones_to_work_on = bpy.context.selected_editable_bones
+        else:
+            bones_to_work_on = bpy.context.selected_pose_bones
+        bone_names_to_work_on = set([bone.name for bone in bones_to_work_on])  # grab names only
+
+        if len(bone_names_to_work_on) == 0:
+            self.report({"ERROR"}, "Select at least one bone")
+            return {"CANCELLED"}
+
+        self._armature = armature
+        self._bone_names_to_work_on = bone_names_to_work_on
+        self._objects_to_work_on = armature.children
+
+
+class ArmatureEditMode:
+    def __init__(self, armature):
+        # save user state, select armature, go to armature edit mode
+        self._armature = armature
+        self._active_object = bpy.context.scene.objects.active
+        bpy.context.scene.objects.active = self._armature
+        self._armature_hide = self._armature.hide
+        self._armature.hide = False
+        self._armature_mode = self._armature.mode
+        bpy.ops.object.mode_set(mode="EDIT")
+
+    def restore(self):
+        # restore user state
+        bpy.ops.object.mode_set(mode=self._armature_mode)
+        self._armature.hide = self._armature_hide
+        bpy.context.scene.objects.active = self._active_object
+
+
+class JoinMeshes(bpy.types.Operator):
+    bl_idname = "armature.join_meshes"
+    bl_label = "Join Meshes"
+    bl_description = "Joins all meshes."
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return checkJoinMeshesBotton()
+
+    def execute(self, context):
+        join_meshes()
+
+        self.report({'INFO'}, 'Meshes joined.')
+        return {'FINISHED'}
+
+
+def checkWeightToParentBotton():
+    if bpy.context.active_object is None:
+        return False
+
+    # if bpy.context.active_object.mode == "OBJECT" and len(bpy.context.selected_bones) > 0:
+    #     return True
+
+    if bpy.context.active_object.mode == "EDIT" and len(bpy.context.selected_editable_bones) > 0:
+        return True
+
+    if bpy.context.active_object.mode == "POSE" and len(bpy.context.selected_pose_bones) > 0:
+        return True
+
+    return False
+
+
+def checkJoinMeshesBotton():
+    i = 0
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            i += 1
+    return i > 0
+
+
+def checkFixArmatureBotton():
+    if tools.common.get_armature() is None:
+        return False
+    i = 0
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            i += 1
+    return i > 0

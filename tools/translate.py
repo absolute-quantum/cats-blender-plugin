@@ -38,9 +38,10 @@ except ImportError:
     mmd_tools_installed = False
 
 
-class TranslateMeshesButton(bpy.types.Operator):
-    bl_idname = 'translate.meshes'
-    bl_label = 'Meshes'
+class TranslateShapekeyButton(bpy.types.Operator):
+    bl_idname = 'translate.shapekeys'
+    bl_label = 'Shape Keys'
+    bl_description = "Translates all shape keys with Google Translate."
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -48,101 +49,35 @@ class TranslateMeshesButton(bpy.types.Operator):
 
         to_translate = []
         translated = []
+
+        for object in bpy.data.objects:
+            if hasattr(object.data, 'shape_keys'):
+                if hasattr(object.data.shape_keys, 'key_blocks'):
+                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
+                        to_translate.append(shapekey.name)
+
         translator = Translator()
-
-        objects = bpy.data.objects
-        for object in objects:
-            if object.type != 'ARMATURE':
-                to_translate.append(object.name)
-
         translations = translator.translate(to_translate)
         for translation in translations:
             translated.append(translation.text)
 
         i = 0
-        for object in objects:
-            if object.type != 'ARMATURE':
-                object.name = translated[i]
-                i += 1
-
-        self.report({'INFO'}, 'Translated all meshes')
-
-        return {'FINISHED'}
-
-
-class TranslateTexturesButton(bpy.types.Operator):
-    bl_idname = 'translate.textures'
-    bl_label = 'Textures'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        tools.common.unhide_all()
-
-        to_translate = []
-
-        objects = bpy.context.selected_editable_objects
-
-        for ob in objects:
-            for matslot in ob.material_slots:
-                for texslot in bpy.data.materials[matslot.name].texture_slots:
-                    if texslot is not None:
-                        to_translate.append(texslot.name)
-
-        translator = Translator()
-        translated = []
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
-
-        i = 0
-        for ob in objects:
-            for matslot in ob.material_slots:
-                for texslot in bpy.data.materials[matslot.name].texture_slots:
-                    if texslot is not None:
-                        bpy.data.textures[texslot.name].name = translated[i]
+        for object in bpy.data.objects:
+            if hasattr(object.data, 'shape_keys'):
+                if hasattr(object.data.shape_keys, 'key_blocks'):
+                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
+                        shapekey.name = translated[i]
                         i += 1
 
-        self.report({'INFO'}, 'Translated all textures')
-        return {'FINISHED'}
+        self.report({'INFO'}, 'Translated all shape keys')
 
-
-class TranslateMaterialsButton(bpy.types.Operator):
-    bl_idname = 'translate.materials'
-    bl_label = 'Materials'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        tools.common.unhide_all()
-
-        to_translate = []
-
-        objects = bpy.context.selected_editable_objects
-
-        for ob in objects:
-            ob.active_material_index = 0
-            for matslot in ob.material_slots:
-                to_translate.append(matslot.name)
-
-        translator = Translator()
-        translated = []
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
-
-        i = 0
-        for ob in objects:
-            for index, matslot in enumerate(ob.material_slots):
-                ob.active_material_index = index
-                bpy.context.object.active_material.name = translated[i]
-                i += 1
-
-        self.report({'INFO'}, 'Translated all materials')
         return {'FINISHED'}
 
 
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
     bl_label = 'Bones'
+    bl_description = "Translates all bones with Google Translate."
     bl_options = {'REGISTER', 'UNDO'}
 
     if mmd_tools_installed:
@@ -186,9 +121,10 @@ class TranslateBonesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class TranslateShapekeyButton(bpy.types.Operator):
-    bl_idname = 'translate.shapekeys'
-    bl_label = 'Shape keys'
+class TranslateMeshesButton(bpy.types.Operator):
+    bl_idname = 'translate.meshes'
+    bl_label = 'Meshes'
+    bl_description = "Translates all meshes with Google Translate."
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -196,26 +132,95 @@ class TranslateShapekeyButton(bpy.types.Operator):
 
         to_translate = []
         translated = []
-
-        for object in bpy.data.objects:
-            if hasattr(object.data, 'shape_keys'):
-                if hasattr(object.data.shape_keys, 'key_blocks'):
-                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
-                        to_translate.append(shapekey.name)
-
         translator = Translator()
+
+        objects = bpy.data.objects
+        for object in objects:
+            if object.type != 'ARMATURE':
+                to_translate.append(object.name)
+
         translations = translator.translate(to_translate)
         for translation in translations:
             translated.append(translation.text)
 
         i = 0
-        for object in bpy.data.objects:
-            if hasattr(object.data, 'shape_keys'):
-                if hasattr(object.data.shape_keys, 'key_blocks'):
-                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
-                        shapekey.name = translated[i]
+        for object in objects:
+            if object.type != 'ARMATURE':
+                object.name = translated[i]
+                i += 1
+
+        self.report({'INFO'}, 'Translated all meshes')
+
+        return {'FINISHED'}
+
+
+class TranslateTexturesButton(bpy.types.Operator):
+    bl_idname = 'translate.textures'
+    bl_label = 'Textures'
+    bl_description = "Translates all textures with Google Translate."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        tools.common.unhide_all()
+
+        to_translate = []
+
+        objects = bpy.context.selected_editable_objects
+
+        for ob in objects:
+            for matslot in ob.material_slots:
+                for texslot in bpy.data.materials[matslot.name].texture_slots:
+                    if texslot is not None:
+                        to_translate.append(texslot.name)
+
+        translator = Translator()
+        translated = []
+        translations = translator.translate(to_translate)
+        for translation in translations:
+            translated.append(translation.text)
+
+        i = 0
+        for ob in objects:
+            for matslot in ob.material_slots:
+                for texslot in bpy.data.materials[matslot.name].texture_slots:
+                    if texslot is not None:
+                        bpy.data.textures[texslot.name].name = translated[i]
                         i += 1
 
-        self.report({'INFO'}, 'Translated all shape keys')
+        self.report({'INFO'}, 'Translated all textures')
+        return {'FINISHED'}
 
+
+class TranslateMaterialsButton(bpy.types.Operator):
+    bl_idname = 'translate.materials'
+    bl_label = 'Materials'
+    bl_description = "Translates all materials with Google Translate."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        tools.common.unhide_all()
+
+        to_translate = []
+
+        objects = bpy.context.selected_editable_objects
+
+        for ob in objects:
+            ob.active_material_index = 0
+            for matslot in ob.material_slots:
+                to_translate.append(matslot.name)
+
+        translator = Translator()
+        translated = []
+        translations = translator.translate(to_translate)
+        for translation in translations:
+            translated.append(translation.text)
+
+        i = 0
+        for ob in objects:
+            for index, matslot in enumerate(ob.material_slots):
+                ob.active_material_index = index
+                bpy.context.object.active_material.name = translated[i]
+                i += 1
+
+        self.report({'INFO'}, 'Translated all materials')
         return {'FINISHED'}
