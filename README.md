@@ -103,7 +103,14 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Fixed: Tons of other bugs
 
 #### 0.0.9
- - Armature: Now fixes a lot more models (if not yours doesn't get fixed please send us the zipped .blend file)
+ - Added: Armature: Now fixes a lot more models (if not yours doesn't get fixed please send us privately the zipped .blend file)
+ - Added: Armature: Added "Fix Armature" button description
+ - Added: Armature: Added "Join meshes" button
+ - Added: Armature: Added "Delete Bones and add Weights to Parents" Button
+ - Fixed: Visemes and Eye Tracking: Created shape keys were empty when the selected ones were already correctly named
+ - Fixed: Visemes and Eye Tracking: Shape keys could be deleted on Blender export if decimation was done afterwards
+ -
+ Added Neitris Weight To Parents Button, Added Join Meshes Button, made armature buttons disableable
 
 ## Code contributors:
  - Hotox
