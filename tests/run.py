@@ -24,10 +24,13 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by:
 
+# encoding: utf-16
+
 import time
 import glob
 import sys
 import os
+import itertools
 from subprocess import Popen, PIPE
 from optparse import OptionParser
 from termcolor import colored
@@ -42,21 +45,23 @@ parser = OptionParser()
 parser.add_option('-b', '--blend', dest='blender_exec', help='sets the blender executable', metavar='BLENDER', default='blender')
 parser.add_option('-t', '--test', dest='globber_test', help='sets the unit to test', metavar='TEST', default='*')
 parser.add_option('-a', '--armature', dest='globber_armature', help='sets the armature blend file to test', metavar='ARMATURE', default='*')
+parser.add_option('-v', '--verbose', dest='verbosity', help='verbosity unit tests', metavar='VERBOSE', default=False)
 
 (options, args) = parser.parse_args()
 
 blender_exec = options.blender_exec
 globber_test = options.globber_test
 globber_armature = options.globber_armature
+verbosity = options.verbosity
 
-exit_code = 0
-scripts_failed = 0
 scripts = 0
+exit_code = 0
 scripts_only_executed_once = ['atlas.test.py', 'syntax.test.py']
 scripts_executed = []
 
+
 def show_time(time):
-    rounded = round(time, 2)
+    rounded = round(time)
     string = str(rounded)
     color = 'grey'
 
@@ -72,57 +77,76 @@ def show_time(time):
     return colored(string, color, attrs=['bold'])
 
 
+spinner = itertools.cycle(['-', '/', '|', '\\'])
+
+
+def exit_test():
+    end_message = ' > '
+    if exit_code != 0:
+        end_message += 'Test ' + colored('FAILED', 'red', attrs=['bold'])
+    else:
+        end_message += 'Test ' + colored('PASSED', 'green', attrs=['bold'])
+    end_message += ' in ' + str(round((time.time() - start_time))) + ' seconds'
+    print(end_message)
+    sys.exit(exit_code)
+
+
+def print_output(raw, output):
+    try:
+        print(output)
+    except UnicodeEncodeError:
+        print(raw)
+
+
 # iterate over each *.test.py file in the 'tests' directory
 # and open up blender with the armature files found in 'tests/armatures' directory
-for file in glob.glob('./tests/' + globber_test + '.test.py'):
-    for blend_file in glob.glob('./tests/armatures/armature.' + globber_armature + '.blend'):
+for blend_file in glob.glob('./tests/armatures/armature.' + globber_armature + '.blend'):
+    for file in glob.glob('./tests/' + globber_test + '.test.py'):
         if os.path.basename(file) in scripts_only_executed_once:
             if os.path.basename(file) in scripts_executed:
-                continue # skips already executed test
+                continue  # skips already executed test
 
         scripts_executed.append(os.path.basename(file))
         scripts += 1
         start_time_unit = time.time()
         p = Popen([blender_exec, '--addons', 'mmd_tools', '--addons', 'cats', '--factory-startup', '-noaudio', '-b', blend_file, '--python', file], shell=False, stdout=PIPE, stderr=PIPE)
-        output = p.communicate()
+        while p.poll() is None:
+            nextline = p.stdout.readline()
+            if nextline == '' and p.poll() is not None:
+                break
+            do_print = ' ' + next(spinner) + ' UNIT ' + os.path.basename(file).ljust(22) + ' > BLEND ' + os.path.basename(blend_file).ljust(40) + ' > ' + show_time(time.time() - start_time_unit) + 's '
+            sys.stdout.write(do_print)
+            sys.stdout.flush()
+            [sys.stdout.write('\b') for i in range(len(do_print))]
 
-        error_output = output[1].decode('utf_8')
-        std_output = output[0].decode('utf_8')
+        sys.stdout.flush()
+        (stdout, stderr) = p.communicate()
+
+        error_output = str(stderr, 'utf-8')
+        std_output = str(stdout, 'utf-8')
         print(' > UNIT ' + os.path.basename(file).ljust(22) + ' > BLEND ' + os.path.basename(blend_file).ljust(40) + ' > ' + show_time(time.time() - start_time_unit) + 's')
 
         # This will detect invalid syntax in the unit test itself
         if 'SyntaxError' in error_output or 'IndentationError' in error_output or 'NameError' in error_output:
-            scripts_failed += 1
             print('ERROR: SyntaxError found in ' + os.path.basename(file))
             print('------------------------------------------------------------------')
-            try:
-                print(error_output)
-            except UnicodeEncodeError:
-                print(output[1])
+            print_output(stderr, error_output)
             print('------------------------------------------------------------------\n\n')
             exit_code = 1
-            continue
+            exit_test()
 
         # If a unit test went wrong, we want to see the output of the test
         if p.returncode != 0:
-            scripts_failed += 1
             print(os.path.basename(file).replace('.blend', '.py') + ' (' + os.path.basename(blend_file) + ') - exit code: ' + str(p.returncode))
             print('------------------------------------------------------------------')
-            try:
-                print(std_output)
-            except UnicodeEncodeError:
-                print(output[0])
-            try:
-                print(error_output)
-            except UnicodeEncodeError:
-                print(output[1])
+            print_output(stdout, std_output)
+            print_output(stderr, error_output)
             print('------------------------------------------------------------------\n\n')
             exit_code = p.returncode
+            exit_test()
+        else:
+            if verbosity:
+                print_output(stdout, std_output)
 
-if exit_code != 0:
-    print(' > ' + colored('FAILED', 'red', attrs=['bold']) + ': ' + str(scripts_failed) + ' out of ' + str(scripts) + ' tests failed')
-else:
-    print(' > ' + colored('PASSED', 'green', attrs=['bold']) + ': all tests (' + str(scripts) + ') passed!')
 
-print(' > FINISHED in ' + str(round((time.time() - start_time), 2)) + ' seconds')
-sys.exit(exit_code)
+exit_test()

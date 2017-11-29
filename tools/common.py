@@ -28,6 +28,7 @@ import bpy
 import bmesh
 from mathutils import Vector
 from math import degrees
+import time
 
 
 # TODO
@@ -59,6 +60,11 @@ def select(obj):
     bpy.context.scene.objects.active = obj
     obj.select = True
 
+def switch(new_mode):
+    if bpy.ops.object.mode_set.poll():
+        bpy.ops.object.mode_set(mode=new_mode)
+
+
 
 class PreserveState():
     state_data = {}
@@ -81,8 +87,7 @@ class PreserveState():
         return self.state_data
 
     def load(self):
-        bpy.ops.object.mode_set(mode=self.state_data['object_mode'])
-
+        switch(self.state_data['object_mode'])
         for object in bpy.data.objects:
             try:
                 self.state_data['hidden'][object.name]
@@ -106,7 +111,7 @@ class PreserveState():
 
 def remove_empty():
     unhide_all()
-    bpy.ops.object.mode_set(mode='OBJECT')
+    switch('OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     for obj in bpy.data.objects:
         if obj.type == 'EMPTY':
@@ -303,3 +308,10 @@ def repair_shapekeys():
                     break
 
             bm.to_mesh(mesh.data)
+
+
+class Timer():
+    start_time = time.time()
+
+    def stop(self):
+        return str(round((time.time() - self.start_time), 2))

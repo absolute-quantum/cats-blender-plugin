@@ -24,6 +24,9 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by:
 
-
+# for bone root parenting
 root_bones = {}
 root_bones_choices = {}
+
+# Keeps track of operations done for unit testing
+testing = []

@@ -66,13 +66,16 @@ class AutoVisemeButton(bpy.types.Operator):
         # Select the created shapekey
         mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
 
+        # TODO: This takes too long too complete, find a alternative
+        # Might be best to keep this commented as it's just for aesthetic reasons.
+
         # Re-adjust index position
-        position_correct = False
-        while position_correct is False:
-            if mesh.active_shape_key_index > new_index:
-                bpy.ops.object.shape_key_move(type='UP')
-            else:
-                position_correct = True
+        # position_correct = False
+        # while position_correct is False:
+        #     if mesh.active_shape_key_index != new_index:
+        #         bpy.ops.object.shape_key_move(type='UP')
+        #     else:
+        #         position_correct = True
 
         # Reset context scenes
         context.scene.mouth_a = shapes[0]
@@ -87,7 +90,7 @@ class AutoVisemeButton(bpy.types.Operator):
 
         tools.common.unselect_all()
         tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
-        bpy.ops.object.mode_set(mode='OBJECT')
+        tools.common.switch('OBJECT')
 
         # Rename selected shapes and rename them back at the end
         shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
@@ -256,7 +259,7 @@ class AutoVisemeButton(bpy.types.Operator):
         bpy.context.object.active_shape_key_index = 0
 
         # Remove empty objects
-        bpy.ops.object.mode_set(mode='EDIT')
+        tools.common.switch('EDIT')
         tools.common.remove_empty()
 
         # Fix armature name

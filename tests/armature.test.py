@@ -34,19 +34,19 @@ class TestAddon(unittest.TestCase):
         bpy.context.scene.remove_zero_weight = True
         bpy.context.scene.remove_constraints = True
         result = bpy.ops.armature.fix()
-        self.assertEqual(result == {'FINISHED'}, True)
+        self.assertTrue(result == {'FINISHED'})
 
     def test_armature_with_zero_weights_off(self):
         bpy.context.scene.remove_zero_weight = False
         bpy.context.scene.remove_constraints = True
         result = bpy.ops.armature.fix()
-        self.assertEqual(result == {'FINISHED'}, True)
+        self.assertTrue(result == {'FINISHED'})
 
     def test_armature_with_constraints_off(self):
         bpy.context.scene.remove_zero_weight = True
         bpy.context.scene.remove_constraints = False
         result = bpy.ops.armature.fix()
-        self.assertEqual(result == {'FINISHED'}, True)
+        self.assertTrue(result == {'FINISHED'})
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

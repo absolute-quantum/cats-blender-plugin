@@ -42,15 +42,15 @@ class RootButton(bpy.types.Operator):
 
         tools.common.unhide_all()
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+        tools.common.switch('OBJECT')
 
         armature = tools.common.get_armature()
 
         bpy.context.scene.objects.active = armature
         armature.select = True
 
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.object.mode_set(mode='EDIT')
+        tools.common.switch('EDIT')
+        tools.common.switch('EDIT')
 
         # this is the bones that will be parented
         child_bones = globs.root_bones[context.scene.root_bone]

@@ -37,10 +37,8 @@ class TestAddon(unittest.TestCase):
         # Then translate shapekeys
         bpy.ops.translate.shapekeys()
 
-        bpy.context.scene.mesh_name_viseme = 'Body'
-
         result = bpy.ops.auto.viseme()
-        self.assertEqual(result == {'FINISHED'}, True)
+        self.assertTrue(result == {'FINISHED'})
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

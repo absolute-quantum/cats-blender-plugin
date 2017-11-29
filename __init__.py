@@ -44,19 +44,9 @@ import tools.dependencies
 import tools.credits
 import globs
 
-mmd_tools_installed = True
-try:
-    import mmd_tools
-except ImportError:
-    mmd_tools_installed = False
-
-mmd_tools_outdated = False
-if mmd_tools_installed:
-    try:
-        from mmd_tools import utils
-        from mmd_tools.translations import DictionaryEnum
-    except ImportError:
-        mmd_tools_outdated = True
+import mmd_tools_local
+from mmd_tools_local import utils
+from mmd_tools_local.translations import DictionaryEnum
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -89,7 +79,7 @@ class ToolPanel():
 
     # Armature
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
-        name='Remove Zero Weight Bones',
+        name='Remove zero weight bones',
         description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.",
         default=True
     )
@@ -114,43 +104,43 @@ class ToolPanel():
     )
 
     bpy.types.Scene.eye_left = bpy.props.EnumProperty(
-        name='Left Eye',
+        name='Left eye',
         description='The left eye bone',
         items=tools.common.get_bones_eye_l
     )
 
     bpy.types.Scene.eye_right = bpy.props.EnumProperty(
-        name='Right Eye',
+        name='Right eye',
         description='The right eye bone',
         items=tools.common.get_bones_eye_r
     )
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
-        name='Blink Left',
+        name='Blink left',
         description='The shape key containing a blink with the left eye.\nCan be set to "Basis" to disable blinking',
         items=tools.common.get_shapekeys_eye_blink_l
     )
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
-        name='Blink Right',
+        name='Blink right',
         description='The shape key containing a blink with the right eye.\nCan be set to "Basis" to disable blinking',
         items=tools.common.get_shapekeys_eye_blink_r
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
-        name='Lowerlid Left',
+        name='Lowerlid left',
         description='The shape key containing a slightly raised left lower lid.\nCan be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_l
     )
 
     bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
-        name='Lowerlid Right',
+        name='Lowerlid right',
         description='The shape key containing a slightly raised right lower lid.\nCan be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_r
     )
 
     bpy.types.Scene.experimental_eye_fix = bpy.props.BoolProperty(
-        name='Experimental Eye Fix',
+        name='Experimental eye fix',
         description='Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head',
         default=True
     )
@@ -204,7 +194,7 @@ class ToolPanel():
 
     # Bone Parenting
     bpy.types.Scene.root_bone = bpy.props.EnumProperty(
-        name='To Parent',
+        name='To parent',
         description='List of bones that look like they could be parented together to a root bone. This is very useful for Dynamic Bones. Select a group of bones from the list and press "Parent bones"',
         items=tools.rootbone.get_parent_root_bones,
     )
@@ -244,7 +234,7 @@ class ToolPanel():
     )
 
     bpy.types.Scene.texture_size = bpy.props.EnumProperty(
-        name='Texture Size',
+        name='Texture size',
         description='Lower for faster bake time, higher for more detail.',
         items=tools.common.get_texture_sizes
     )
@@ -256,13 +246,13 @@ class ToolPanel():
     )
 
     bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
-        name='Pack Islands',
+        name='Pack islands',
         description='Transform all islands so that they will fill up the UV space as much as possible.',
         default=False
     )
 
     bpy.types.Scene.mesh_name_atlas = bpy.props.EnumProperty(
-        name='Target Mesh',
+        name='Target mesh',
         description='The mesh that you want to create a atlas from',
         items=tools.common.get_meshes
     )
@@ -420,15 +410,20 @@ class AtlasPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         row = box.row(align=True)
         row.prop(context.scene, 'island_margin')
+        row.scale_y = 0.9
         row = box.row(align=True)
         row.prop(context.scene, 'angle_limit')
+        row.scale_y = 0.9
         row = box.row(align=True)
         row.prop(context.scene, 'area_weight')
+        row.scale_y = 0.9
         row = box.row(align=True)
         row.prop(context.scene, 'texture_size', icon='TEXTURE')
         row = box.row(align=True)
+        row.scale_y = 1.1
         row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
         row = box.row(align=True)
+        row.scale_y = 1.1
         row.prop(context.scene, 'one_texture')
         row.prop(context.scene, 'pack_islands')
         row = box.row(align=True)
@@ -459,24 +454,6 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         box.label('Want to give feedback or found a bug?')
         row = box.row(align=True)
         row.operator('credits.forum', icon='LOAD_FACTORY')
-
-
-class DependenciesPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_dependencies_v1'
-    bl_label = 'Missing dependencies!'
-
-    def draw(self, context):
-        layout = self.layout
-        box = layout.box()
-        if not mmd_tools_installed:
-            box.label('"mmd_tools" is not installed!', icon="ERROR")
-        elif mmd_tools_outdated:
-            box.label('"mmd_tools" is outdated!', icon="ERROR")
-        else:
-            box.label('"mmd_tools" not installed or outdated!', icon="ERROR")
-        box.label('Please download the latest version here:')
-        row = box.row(align=True)
-        row.operator('dependencies.download', icon='LOAD_FACTORY')
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -533,9 +510,6 @@ def register():
     bpy.utils.register_class(tools.armature.WeightToParent)
     bpy.utils.register_class(tools.armature.JoinMeshes)
     bpy.utils.register_class(tools.credits.ForumButton)
-    bpy.utils.register_class(tools.dependencies.DependenciesButton)
-    if not mmd_tools_installed or mmd_tools_outdated:
-        bpy.utils.register_class(DependenciesPanel)
     bpy.utils.register_class(ArmaturePanel)
     bpy.utils.register_class(TranslationPanel)
     bpy.utils.register_class(EyeTrackingPanel)
@@ -563,9 +537,6 @@ def unregister():
     bpy.utils.unregister_class(tools.armature.WeightToParent)
     bpy.utils.unregister_class(tools.armature.JoinMeshes)
     bpy.utils.unregister_class(tools.credits.ForumButton)
-    bpy.utils.unregister_class(tools.dependencies.DependenciesButton)
-    if hasattr(bpy.types, "DependenciesPanel"):
-        bpy.utils.unregister_class(DependenciesPanel)
     bpy.utils.unregister_class(AtlasPanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)

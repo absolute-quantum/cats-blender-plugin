@@ -26,16 +26,10 @@
 
 import bpy
 import tools.common
-import logging
 
 from googletrans import Translator
-
-mmd_tools_installed = True
-try:
-    from mmd_tools import utils
-    from mmd_tools.translations import DictionaryEnum
-except ImportError:
-    mmd_tools_installed = False
+from mmd_tools_local import utils
+from mmd_tools_local.translations import DictionaryEnum
 
 
 class TranslateShapekeyButton(bpy.types.Operator):
@@ -80,18 +74,13 @@ class TranslateBonesButton(bpy.types.Operator):
     bl_description = "Translates all bones with Google Translate."
     bl_options = {'REGISTER', 'UNDO'}
 
-    if mmd_tools_installed:
-        dictionary = bpy.props.EnumProperty(
-            name='Dictionary',
-            items=DictionaryEnum.get_dictionary_items,
-            description='Translate names from Japanese to English using selected dictionary',
-        )
+    dictionary = bpy.props.EnumProperty(
+        name='Dictionary',
+        items=DictionaryEnum.get_dictionary_items,
+        description='Translate names from Japanese to English using selected dictionary',
+    )
 
     def execute(self, context):
-        if mmd_tools_installed is False:
-            self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
-            return {'CANCELLED'}
-
         tools.common.unhide_all()
         armature = tools.common.get_armature().data
 

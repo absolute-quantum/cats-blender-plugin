@@ -32,7 +32,7 @@ import tools.armature
 
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
-    bl_label = 'Create Eye Tracking'
+    bl_label = 'Create eye tracking'
     bl_options = {'REGISTER', 'UNDO'}
 
     def vertex_group_exists(self, mesh_name, bone_name):
@@ -141,8 +141,8 @@ class CreateEyesButton(bpy.types.Operator):
         tools.common.select(armature)
 
         # Why does two times edit works?
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.object.mode_set(mode='EDIT')
+        tools.common.switch('EDIT')
+        tools.common.switch('EDIT')
 
         # Selectors
         left_eye_selector = context.scene.eye_left
@@ -189,7 +189,7 @@ class CreateEyesButton(bpy.types.Operator):
         # Switch to mesh
         bpy.context.scene.objects.active = bpy.data.objects[context.scene.mesh_name_eye]
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+        tools.common.switch('OBJECT')
 
         # Make sure the bones are positioned correctly
         # not too far away from eye vertex (behind and infront)
@@ -221,7 +221,7 @@ class CreateEyesButton(bpy.types.Operator):
         context.scene.lowerlid_right = shapes[3]
 
         # Remove empty objects
-        bpy.ops.object.mode_set(mode='EDIT')
+        tools.common.switch('EDIT')
         tools.common.remove_empty()
 
         # Fix armature name

@@ -76,8 +76,8 @@ class AutoAtlasButton(bpy.types.Operator):
         atlas_mesh.hide_render = False
 
         # Go into edit mode, deselect and select all
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.object.mode_set(mode='EDIT')
+        tools.common.switch('EDIT')
+        tools.common.switch('EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.mesh.select_all(action='SELECT')
 
@@ -108,7 +108,7 @@ class AutoAtlasButton(bpy.types.Operator):
             bpy.ops.uv.pack_islands(margin=0.001)
 
         # Time to bake
-        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        tools.common.switch('EDIT')
         bpy.data.scenes["Scene"].render.bake_type = "TEXTURE"
         bpy.ops.object.bake_image()
 
@@ -117,7 +117,7 @@ class AutoAtlasButton(bpy.types.Operator):
 
         # Deselect all and switch to object mode
         bpy.ops.mesh.select_all(action='DESELECT')
-        bpy.ops.object.mode_set(mode='OBJECT')
+        tools.common.switch('OBJECT')
 
         # Delete all materials
         for ob in bpy.context.selected_editable_objects:
