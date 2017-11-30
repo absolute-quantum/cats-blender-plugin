@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
 import tools.common
@@ -33,24 +33,32 @@ from difflib import SequenceMatcher
 
 class RootButton(bpy.types.Operator):
     bl_idname = 'root.function'
-    bl_label = 'Parent bones'
+    bl_label = 'Parent Bones'
+    bl_description = 'This will duplicate the parent of the bones and reparent them to the duplicate.\n' \
+                     'Very useful for Dynamic Bones.'
     bl_options = {'REGISTER', 'UNDO'}
 
+    @classmethod
+    def poll(cls, context):
+        if context.scene.root_bone == "":
+            return False
+        return True
+
     def execute(self, context):
-        PreserveState = tools.common.PreserveState()
-        PreserveState.save()
+        # PreserveState = tools.common.PreserveState()
+        # PreserveState.save()
 
         tools.common.unhide_all()
 
-        bpy.ops.object.mode_set(mode='OBJECT')
+        tools.common.switch('OBJECT')
 
         armature = tools.common.get_armature()
 
         bpy.context.scene.objects.active = armature
         armature.select = True
 
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.object.mode_set(mode='EDIT')
+        tools.common.switch('EDIT')
+        tools.common.switch('EDIT')
 
         # this is the bones that will be parented
         child_bones = globs.root_bones[context.scene.root_bone]
@@ -60,7 +68,7 @@ class RootButton(bpy.types.Operator):
         root_bone = bpy.context.object.data.edit_bones.new(new_bone_name)
         root_bone.parent = bpy.context.object.data.edit_bones[child_bones[0]].parent
 
-        # Parent all childs to the new root bone
+        # Parent all children to the new root bone
         for child_bone in child_bones:
             bpy.context.object.data.edit_bones[child_bone].use_connect = False
             bpy.context.object.data.edit_bones[child_bone].parent = root_bone
@@ -72,7 +80,7 @@ class RootButton(bpy.types.Operator):
         # reset the root bone cache
         globs.root_bones_choices = {}
 
-        PreserveState.load()
+        # PreserveState.load()
 
         self.report({'INFO'}, 'Bones parented!')
 
@@ -154,7 +162,8 @@ def get_parent_root_bones(self, context):
 
 class RefreshRootButton(bpy.types.Operator):
     bl_idname = 'refresh.root'
-    bl_label = 'Refresh list'
+    bl_label = 'Refresh List'
+    bl_description = 'This will clear the group bones list cache and rebuild it, useful if bones have changed or your model.'
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):

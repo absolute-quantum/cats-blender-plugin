@@ -22,25 +22,98 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: Hotox
+# Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
 import tools.common
-import logging
 
 from googletrans import Translator
+from mmd_tools_local import utils
+from mmd_tools_local.translations import DictionaryEnum
 
-mmd_tools_installed = True
-try:
-    from mmd_tools import utils
-    from mmd_tools.translations import DictionaryEnum
-except ImportError:
-    mmd_tools_installed = False
+
+class TranslateShapekeyButton(bpy.types.Operator):
+    bl_idname = 'translate.shapekeys'
+    bl_label = 'Shape Keys'
+    bl_description = "Translates all shape keys with Google Translate."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        tools.common.unhide_all()
+
+        to_translate = []
+        translated = []
+
+        for object in bpy.data.objects:
+            if hasattr(object.data, 'shape_keys'):
+                if hasattr(object.data.shape_keys, 'key_blocks'):
+                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
+                        to_translate.append(shapekey.name)
+
+        translator = Translator()
+        translations = translator.translate(to_translate)
+        for translation in translations:
+            translated.append(translation.text)
+
+        i = 0
+        for object in bpy.data.objects:
+            if hasattr(object.data, 'shape_keys'):
+                if hasattr(object.data.shape_keys, 'key_blocks'):
+                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
+                        shapekey.name = translated[i]
+                        i += 1
+
+        self.report({'INFO'}, 'Translated all shape keys')
+
+        return {'FINISHED'}
+
+
+class TranslateBonesButton(bpy.types.Operator):
+    bl_idname = 'translate.bones'
+    bl_label = 'Bones'
+    bl_description = "Translates all bones with Google Translate."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    dictionary = bpy.props.EnumProperty(
+        name='Dictionary',
+        items=DictionaryEnum.get_dictionary_items,
+        description='Translate names from Japanese to English using selected dictionary',
+    )
+
+    def execute(self, context):
+        tools.common.unhide_all()
+        armature = tools.common.get_armature().data
+
+        translator = DictionaryEnum.get_translator(self.dictionary)
+
+        for bone in armature.bones:
+            bone.name = utils.convertNameToLR(bone.name, True)
+            bone.name = translator.translate(bone.name)
+
+        # then translate all the bones to english just in case mmd skipped something
+        # TODO: could be optimised by only translating bones that mmd skipped
+        to_translate = []
+        translated = []
+
+        for bone in armature.bones:
+            to_translate.append(bone.name)
+
+        translator = Translator()
+        translations = translator.translate(to_translate)
+        for translation in translations:
+            translated.append(translation.text)
+
+        for i, bone in enumerate(armature.bones):
+            bone.name = translated[i]
+
+        self.report({'INFO'}, 'Translated all bones')
+        return {'FINISHED'}
 
 
 class TranslateMeshesButton(bpy.types.Operator):
     bl_idname = 'translate.meshes'
     bl_label = 'Meshes'
+    bl_description = "Translates all meshes with Google Translate."
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
@@ -73,34 +146,42 @@ class TranslateMeshesButton(bpy.types.Operator):
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
     bl_label = 'Textures'
+    bl_description = "Translates all textures with Google Translate."
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
+
+        # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
+        self.report({'INFO'}, 'Translated all textures')
+        return {'FINISHED'}
+
         tools.common.unhide_all()
 
-        to_translate = []
+        translator = Translator()
 
-        objects = bpy.context.selected_editable_objects
+        for mesh in tools.common.get_meshes_objects():
+            to_translate = []
+            tools.common.select(mesh)
 
-        for ob in objects:
-            for matslot in ob.material_slots:
+            for matslot in mesh.material_slots:
                 for texslot in bpy.data.materials[matslot.name].texture_slots:
                     if texslot is not None:
+                        print(texslot.name)
                         to_translate.append(texslot.name)
 
-        translator = Translator()
-        translated = []
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
+            translated = []
+            translations = translator.translate(to_translate)
+            for translation in translations:
+                translated.append(translation.text)
 
-        i = 0
-        for ob in objects:
-            for matslot in ob.material_slots:
+            i = 0
+            for matslot in mesh.material_slots:
                 for texslot in bpy.data.materials[matslot.name].texture_slots:
                     if texslot is not None:
                         bpy.data.textures[texslot.name].name = translated[i]
                         i += 1
+
+        tools.common.unselect_all()
 
         self.report({'INFO'}, 'Translated all textures')
         return {'FINISHED'}
@@ -109,113 +190,34 @@ class TranslateTexturesButton(bpy.types.Operator):
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'translate.materials'
     bl_label = 'Materials'
+    bl_description = "Translates all materials with Google Translate."
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         tools.common.unhide_all()
 
-        to_translate = []
+        translator = Translator()
 
-        objects = bpy.context.selected_editable_objects
+        for mesh in tools.common.get_meshes_objects():
+            to_translate = []
+            tools.common.select(mesh)
+            mesh.active_material_index = 0
 
-        for ob in objects:
-            ob.active_material_index = 0
-            for matslot in ob.material_slots:
+            for matslot in mesh.material_slots:
                 to_translate.append(matslot.name)
 
-        translator = Translator()
-        translated = []
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
+            translated = []
+            translations = translator.translate(to_translate)
+            for translation in translations:
+                translated.append(translation.text)
 
-        i = 0
-        for ob in objects:
-            for index, matslot in enumerate(ob.material_slots):
-                ob.active_material_index = index
+            i = 0
+            for index, matslot in enumerate(mesh.material_slots):
+                mesh.active_material_index = index
                 bpy.context.object.active_material.name = translated[i]
                 i += 1
 
+        tools.common.unselect_all()
+
         self.report({'INFO'}, 'Translated all materials')
-        return {'FINISHED'}
-
-
-class TranslateBonesButton(bpy.types.Operator):
-    bl_idname = 'translate.bones'
-    bl_label = 'Bones'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    if mmd_tools_installed:
-        dictionary = bpy.props.EnumProperty(
-            name='Dictionary',
-            items=DictionaryEnum.get_dictionary_items,
-            description='Translate names from Japanese to English using selected dictionary',
-        )
-
-    def execute(self, context):
-        if mmd_tools_installed is False:
-            self.report({'ERROR'}, 'mmd_tools is not installed, this feature is disabled')
-            return {'CANCELLED'}
-
-        tools.common.unhide_all()
-        armature = tools.common.get_armature().data
-
-        self.__translator = DictionaryEnum.get_translator(self.dictionary)
-
-        for bone in armature.bones:
-            bone.name = utils.convertNameToLR(bone.name, True)
-            bone.name = self.__translator.translate(bone.name)
-
-        # then translate all the bones to english just in case mmd skipped something
-        # TODO: could be optimised by only translating bones that mmd skipped
-        to_translate = []
-        translated = []
-
-        for bone in armature.bones:
-            to_translate.append(bone.name)
-
-        translator = Translator()
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
-
-        for i, bone in enumerate(armature.bones):
-            bone.name = translated[i]
-
-        self.report({'INFO'}, 'Translated all bones')
-        return {'FINISHED'}
-
-
-class TranslateShapekeyButton(bpy.types.Operator):
-    bl_idname = 'translate.shapekeys'
-    bl_label = 'Shape keys'
-    bl_options = {'REGISTER', 'UNDO'}
-
-    def execute(self, context):
-        tools.common.unhide_all()
-
-        to_translate = []
-        translated = []
-
-        for object in bpy.data.objects:
-            if hasattr(object.data, 'shape_keys'):
-                if hasattr(object.data.shape_keys, 'key_blocks'):
-                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
-                        to_translate.append(shapekey.name)
-
-        translator = Translator()
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
-
-        i = 0
-        for object in bpy.data.objects:
-            if hasattr(object.data, 'shape_keys'):
-                if hasattr(object.data.shape_keys, 'key_blocks'):
-                    for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
-                        shapekey.name = translated[i]
-                        i += 1
-
-        self.report({'INFO'}, 'Translated all shape keys')
-
         return {'FINISHED'}

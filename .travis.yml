@@ -1,3 +1,25 @@
+# MIT License
+
+# Copyright (c) 2017 GiveMeAllYourCats
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the 'Software'), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
 language: python
 cache:
   apt: true
@@ -14,9 +36,6 @@ before_install:
   # but it will resolve all system dependencies blender has to be able to run.
   - sudo apt-get install blender
   - sudo apt-get install unzip
-  - pip install coveralls
-  - pip install coverage
-  # - printf 'import coverage\ncoverage.process_startup()\n' > "/home/travis/virtualenv/python${TRAVIS_PYTHON_VERSION}/lib/python${TRAVIS_PYTHON_VERSION}/sitecustomize.py"
 
 install:
   # Then update blender
@@ -24,14 +43,12 @@ install:
   - wget http://mirror.cs.umn.edu/blender.org/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2
   - tar jxf blender-2.79-linux-glibc219-x86_64.tar.bz2
   - mv blender-2.79-linux-glibc219-x86_64 blender
-  - rm blender-2.79-linux-glibc219-x86_64.tar.bz2
 
   - cd ..
 
   # Make sure to install mmd_tools plugin
   - wget https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip
   - unzip dev_test.zip
-  - rm dev_test.zip
   - cd blender_mmd_tools-dev_test
   - mv mmd_tools/ ../tmp/blender/2.79/scripts/addons
 
@@ -40,7 +57,6 @@ install:
   # make sure to install cats plugin
   - sudo ln -s ${PWD} ${PWD}/tmp/blender/2.79/scripts/addons/cats
 
-# Start unit testing and coverage
+# Start unit testing
 script:
-  - coverage run --source=. tests.py ./tmp/blender/blender
-  - coverage report -m
+  - python tests/run.py -b ./tmp/blender/blender -c True

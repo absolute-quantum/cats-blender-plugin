@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats
 
 import bpy
 import tools.common
@@ -31,15 +31,21 @@ import random
 
 class AutoAtlasButton(bpy.types.Operator):
     bl_idname = 'auto.atlas'
-    bl_label = 'Create atlas'
+    bl_label = 'Create Atlas'
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.mesh_name_atlas == "":
+            return False
+        return True
 
     def generateRandom(self, prefix='', suffix=''):
         return prefix + str(random.randrange(9999999999)) + suffix
 
     def execute(self, context):
-        PreserveState = tools.common.PreserveState()
-        PreserveState.save()
+        # PreserveState = tools.common.PreserveState()
+        # PreserveState.save()
 
         tools.common.unhide_all()
 
@@ -76,8 +82,8 @@ class AutoAtlasButton(bpy.types.Operator):
         atlas_mesh.hide_render = False
 
         # Go into edit mode, deselect and select all
-        bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.object.mode_set(mode='EDIT')
+        tools.common.switch('EDIT')
+        tools.common.switch('EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.mesh.select_all(action='SELECT')
 
@@ -108,7 +114,7 @@ class AutoAtlasButton(bpy.types.Operator):
             bpy.ops.uv.pack_islands(margin=0.001)
 
         # Time to bake
-        bpy.ops.object.mode_set(mode='EDIT', toggle=False)
+        tools.common.switch('EDIT')
         bpy.data.scenes["Scene"].render.bake_type = "TEXTURE"
         bpy.ops.object.bake_image()
 
@@ -117,7 +123,7 @@ class AutoAtlasButton(bpy.types.Operator):
 
         # Deselect all and switch to object mode
         bpy.ops.mesh.select_all(action='DESELECT')
-        bpy.ops.object.mode_set(mode='OBJECT')
+        tools.common.switch('OBJECT')
 
         # Delete all materials
         for ob in bpy.context.selected_editable_objects:
@@ -126,7 +132,7 @@ class AutoAtlasButton(bpy.types.Operator):
                 bpy.ops.object.material_slot_remove({'object': ob})
 
         # Create material slot
-        matslot = bpy.ops.object.material_slot_add()
+        bpy.ops.object.material_slot_add()
         new_mat = bpy.data.materials.new(name=self.generateRandom('AtlasBakedMat'))
         atlas_mesh.active_material = new_mat
 
@@ -148,6 +154,6 @@ class AutoAtlasButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Auto Atlas finished!')
 
-        PreserveState.load()
+        # PreserveState.load()
 
         return{'FINISHED'}

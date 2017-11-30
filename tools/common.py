@@ -22,17 +22,20 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
 import bmesh
 from mathutils import Vector
 from math import degrees
+import time
 
 
 # TODO
-# - Fix errors when there is no model
 # - Add check if hips bone really needs to be rotated
+# - Error: https://i.imgur.com/kBnSx0I.png with model Kanna O: https://goo.gl/sJj2xL
+# - Error: Open Model, go into edit mode, select a bone and press Fix Armature: https://i.imgur.com/IJHsP0o.png
+# - Reset Pivot
 
 
 def get_armature():
@@ -57,6 +60,11 @@ def select(obj):
     obj.select = True
 
 
+def switch(new_mode):
+    if bpy.ops.object.mode_set.poll():
+        bpy.ops.object.mode_set(mode=new_mode)
+
+
 class PreserveState():
     state_data = {}
 
@@ -78,8 +86,7 @@ class PreserveState():
         return self.state_data
 
     def load(self):
-        bpy.ops.object.mode_set(mode=self.state_data['object_mode'])
-
+        switch(self.state_data['object_mode'])
         for object in bpy.data.objects:
             try:
                 self.state_data['hidden'][object.name]
@@ -103,7 +110,7 @@ class PreserveState():
 
 def remove_empty():
     unhide_all()
-    bpy.ops.object.mode_set(mode='OBJECT')
+    switch('OBJECT')
     bpy.ops.object.select_all(action='DESELECT')
     for obj in bpy.data.objects:
         if obj.type == 'EMPTY':
@@ -181,11 +188,11 @@ def get_bones_head(self, context):
 
 
 def get_bones_eye_l(self, context):
-    return get_bones(['Eye_L'])
+    return get_bones(['EyeReturn_L', 'Eye_L'])
 
 
 def get_bones_eye_r(self, context):
-    return get_bones(['Eye_R'])
+    return get_bones(['EyeReturn_R', 'Eye_R'])
 
 
 def get_bones(names):
@@ -211,7 +218,7 @@ def get_bones(names):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah'])
+    return get_shapekeys(context, ['Ah', ])
 
 
 def get_shapekeys_mouth_oh(self, context):
@@ -300,3 +307,30 @@ def repair_shapekeys():
                     break
 
             bm.to_mesh(mesh.data)
+
+
+def get_meshes_objects():
+    meshes = []
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            meshes.append(ob)
+    return meshes
+
+
+def join_meshes():
+    # Combines Meshes
+    unselect_all()
+    switch('OBJECT')
+    for mesh in get_meshes_objects():
+        select(mesh)
+    bpy.ops.object.join()
+
+    # Renames it to Body
+    mesh = None
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            ob.name = 'Body'
+            mesh = ob
+            break
+
+    return mesh
