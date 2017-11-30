@@ -59,10 +59,10 @@ def select(obj):
     bpy.context.scene.objects.active = obj
     obj.select = True
 
+
 def switch(new_mode):
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode=new_mode)
-
 
 
 class PreserveState():
@@ -314,3 +314,30 @@ class Timer():
 
     def stop(self):
         return str(round((time.time() - self.start_time), 2))
+
+
+def get_meshes_objects():
+    meshes = []
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            meshes.append(ob)
+    return meshes
+
+
+def join_meshes():
+    # Combines Meshes
+    unselect_all()
+    switch('OBJECT')
+    for mesh in get_meshes_objects():
+        select(mesh)
+    bpy.ops.object.join()
+
+    # Renames it to Body
+    mesh = None
+    for ob in bpy.data.objects:
+        if ob.type == 'MESH':
+            ob.name = 'Body'
+            mesh = ob
+            break
+
+    return mesh

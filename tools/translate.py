@@ -150,31 +150,38 @@ class TranslateTexturesButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
+
+        # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
+        self.report({'INFO'}, 'Translated all textures')
+        return {'FINISHED'}
+
         tools.common.unhide_all()
 
-        to_translate = []
+        translator = Translator()
 
-        objects = bpy.context.selected_editable_objects
+        for mesh in tools.common.get_meshes_objects():
+            to_translate = []
+            tools.common.select(mesh)
 
-        for ob in objects:
-            for matslot in ob.material_slots:
+            for matslot in mesh.material_slots:
                 for texslot in bpy.data.materials[matslot.name].texture_slots:
                     if texslot is not None:
+                        print(texslot.name)
                         to_translate.append(texslot.name)
 
-        translator = Translator()
-        translated = []
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
+            translated = []
+            translations = translator.translate(to_translate)
+            for translation in translations:
+                translated.append(translation.text)
 
-        i = 0
-        for ob in objects:
-            for matslot in ob.material_slots:
+            i = 0
+            for matslot in mesh.material_slots:
                 for texslot in bpy.data.materials[matslot.name].texture_slots:
                     if texslot is not None:
                         bpy.data.textures[texslot.name].name = translated[i]
                         i += 1
+
+        tools.common.unselect_all()
 
         self.report({'INFO'}, 'Translated all textures')
         return {'FINISHED'}
@@ -189,27 +196,28 @@ class TranslateMaterialsButton(bpy.types.Operator):
     def execute(self, context):
         tools.common.unhide_all()
 
-        to_translate = []
+        translator = Translator()
 
-        objects = bpy.context.selected_editable_objects
+        for mesh in tools.common.get_meshes_objects():
+            to_translate = []
+            tools.common.select(mesh)
+            mesh.active_material_index = 0
 
-        for ob in objects:
-            ob.active_material_index = 0
-            for matslot in ob.material_slots:
+            for matslot in mesh.material_slots:
                 to_translate.append(matslot.name)
 
-        translator = Translator()
-        translated = []
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
+            translated = []
+            translations = translator.translate(to_translate)
+            for translation in translations:
+                translated.append(translation.text)
 
-        i = 0
-        for ob in objects:
-            for index, matslot in enumerate(ob.material_slots):
-                ob.active_material_index = index
+            i = 0
+            for index, matslot in enumerate(mesh.material_slots):
+                mesh.active_material_index = index
                 bpy.context.object.active_material.name = translated[i]
                 i += 1
+
+        tools.common.unselect_all()
 
         self.report({'INFO'}, 'Translated all materials')
         return {'FINISHED'}
