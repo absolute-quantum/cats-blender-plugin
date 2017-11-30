@@ -207,7 +207,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
  - Fixed: Visemes not being exported by Blender
  - Fixed: Tons of other bugs
 
-See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip).
+See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
 
 ## Roadmap
