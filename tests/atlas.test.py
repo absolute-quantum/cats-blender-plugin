@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats
 
 import unittest
 import sys
@@ -42,7 +42,7 @@ class TestAddon(unittest.TestCase):
         bpy.context.scene.island_margin = 0.01
 
         result = bpy.ops.auto.atlas()
-        self.assertEqual(result == {'FINISHED'}, True)
+        self.assertTrue(result == {'FINISHED'})
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

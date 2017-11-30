@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 # Code author: Hotox
-# Edits by:
+# Edits by: Hotox
 
 import bpy
 import webbrowser

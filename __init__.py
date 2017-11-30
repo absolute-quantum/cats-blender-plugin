@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
 import sys
@@ -75,12 +75,6 @@ class ToolPanel():
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove zero weight bones',
         description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.",
-        default=True
-    )
-
-    bpy.types.Scene.remove_constraints = bpy.props.BoolProperty(
-        name='Remove bone constraints',
-        description='Deletes constraints that restrict the pose of MMD models.',
         default=True
     )
 
@@ -261,8 +255,6 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         row = box.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
-        # row = box.row(align=True)
-        # row.prop(context.scene, 'remove_constraints')
         row = box.row(align=True)
         row.scale_y = 1.4
         row.operator('armature.fix', icon='BONE_DATA')

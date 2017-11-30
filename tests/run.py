@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by GiveMeAllYourCats
 
 # encoding: utf-16
 
@@ -44,11 +44,13 @@ start_time = time.time()
 parser = OptionParser()
 parser.add_option('-b', '--blend', dest='blender_exec', help='sets the blender executable', metavar='BLENDER', default='blender')
 parser.add_option('-t', '--test', dest='globber_test', help='sets the unit to test', metavar='TEST', default='*')
+parser.add_option('-c', '--ci', dest='ci', help='is travis running this test?', metavar='CI', default=False)
 parser.add_option('-a', '--armature', dest='globber_armature', help='sets the armature blend file to test', metavar='ARMATURE', default='*')
 parser.add_option('-v', '--verbose', dest='verbosity', help='verbosity unit tests', metavar='VERBOSE', default=False)
 
 (options, args) = parser.parse_args()
 
+ci = options.ci
 blender_exec = options.blender_exec
 globber_test = options.globber_test
 globber_armature = options.globber_armature
@@ -110,14 +112,15 @@ for blend_file in glob.glob('./tests/armatures/armature.' + globber_armature + '
         scripts += 1
         start_time_unit = time.time()
         p = Popen([blender_exec, '--addons', 'mmd_tools', '--addons', 'cats', '--factory-startup', '-noaudio', '-b', blend_file, '--python', file], shell=False, stdout=PIPE, stderr=PIPE)
-        while p.poll() is None:
-            nextline = p.stdout.readline()
-            if nextline == '' and p.poll() is not None:
-                break
-            do_print = ' ' + next(spinner) + ' UNIT ' + os.path.basename(file).ljust(22) + ' > BLEND ' + os.path.basename(blend_file).ljust(40) + ' > ' + show_time(time.time() - start_time_unit) + 's '
-            sys.stdout.write(do_print)
-            sys.stdout.flush()
-            [sys.stdout.write('\b') for i in range(len(do_print))]
+        if ci is False:
+            while p.poll() is None:
+                nextline = p.stdout.readline()
+                if nextline == '' and p.poll() is not None:
+                    break
+                do_print = ' ' + next(spinner) + ' UNIT ' + os.path.basename(file).ljust(22) + ' > BLEND ' + os.path.basename(blend_file).ljust(40) + ' > ' + show_time(time.time() - start_time_unit) + 's '
+                sys.stdout.write(do_print)
+                sys.stdout.flush()
+                [sys.stdout.write('\b') for i in range(len(do_print))]
 
         sys.stdout.flush()
         (stdout, stderr) = p.communicate()

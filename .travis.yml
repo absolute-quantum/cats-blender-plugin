@@ -57,6 +57,6 @@ install:
   # make sure to install cats plugin
   - sudo ln -s ${PWD} ${PWD}/tmp/blender/2.79/scripts/addons/cats
 
-# Start unit testing and coverage
+# Start unit testing
 script:
-  - python tests/run.py -b ./tmp/blender/blender
+  - python tests/run.py -b ./tmp/blender/blender -c True

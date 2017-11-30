@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
 import bmesh
@@ -307,13 +307,6 @@ def repair_shapekeys():
                     break
 
             bm.to_mesh(mesh.data)
-
-
-class Timer():
-    start_time = time.time()
-
-    def stop(self):
-        return str(round((time.time() - self.start_time), 2))
 
 
 def get_meshes_objects():

@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats
 
 import unittest
 import sys
@@ -32,7 +32,7 @@ import bpy
 class TestAddon(unittest.TestCase):
     def test_translate_shapekeys(self):
         result = bpy.ops.translate.shapekeys()
-        self.assertEqual(result == {'FINISHED'}, True)
+        self.assertTrue(result == {'FINISHED'})
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

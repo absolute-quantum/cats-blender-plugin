@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: Hotox
+# Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
 import tools.common

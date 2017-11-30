@@ -107,11 +107,12 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Added: Armature: Added "Fix Armature" button description
  - Added: Armature: Added "Join meshes" button
  - Added: Armature: Added "Delete Bones and add Weights to Parents" Button
- - Changed: The plugin "mmd_tools" is no longer required
- - Changed: Visemes and Eye Tracking: Reduced time for shape key creation significantly for models with high shape key count
+ - Fixed: Armature: weird issue where pressing the fix armature button two times would actually work instead of once
  - Fixed: Visemes and Eye Tracking: Created shape keys were empty when the selected ones were already correctly named
  - Fixed: Visemes and Eye Tracking: Shape keys could be deleted on Blender export if decimation was done afterwards
  - Fixed: A whole bucket full of bugs
+ - Changed: The plugin "mmd_tools" is no longer required
+ - Changed: Visemes and Eye Tracking: Reduced time for shape key creation significantly for models with high shape key count
 
 ## Code contributors:
  - Hotox

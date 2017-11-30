@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats
 
 import unittest
 import sys
@@ -36,24 +36,33 @@ class TestAddon(unittest.TestCase):
         # first fix armature
         bpy.ops.armature.fix()
 
-        # Try with experimental eye fix
         if self.filename == 'armature.mmd1.blend':
             bpy.context.scene.eye_left = 'EyeReturn_L'
             bpy.context.scene.eye_right = 'EyeReturn_R'
-            bpy.context.scene.experimental_eye_fix = True
+
+        if self.filename == 'armature.bonetranslationerror.blend':
+            bpy.context.scene.eye_left = 'Eye_L'
+            bpy.context.scene.eye_right = 'Eye_R'
+
+        bpy.context.scene.experimental_eye_fix = True
 
         result = bpy.ops.create.eyes()
-        self.assertEqual(result == {'FINISHED'}, True)
+        self.assertTrue(result == {'FINISHED'})
 
     def test_eye_tracking(self):
         # Try without experimental eye fix
         if self.filename == 'armature.mmd1.blend':
             bpy.context.scene.eye_left = 'EyeReturn_L'
             bpy.context.scene.eye_right = 'EyeReturn_R'
-            bpy.context.scene.experimental_eye_fix = False
+
+        if self.filename == 'armature.bonetranslationerror.blend':
+            bpy.context.scene.eye_left = 'Eye_L'
+            bpy.context.scene.eye_right = 'Eye_R'
+
+        bpy.context.scene.experimental_eye_fix = False
 
         result = bpy.ops.create.eyes()
-        self.assertEqual(result == {'FINISHED'}, True)
+        self.assertTrue(result == {'FINISHED'})
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

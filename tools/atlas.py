@@ -22,7 +22,7 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# Edits by: GiveMeAllYourCats
 
 import bpy
 import tools.common
@@ -126,7 +126,7 @@ class AutoAtlasButton(bpy.types.Operator):
                 bpy.ops.object.material_slot_remove({'object': ob})
 
         # Create material slot
-        matslot = bpy.ops.object.material_slot_add()
+        bpy.ops.object.material_slot_add()
         new_mat = bpy.data.materials.new(name=self.generateRandom('AtlasBakedMat'))
         atlas_mesh.active_material = new_mat
 

@@ -24,10 +24,9 @@
 # Repo: https://github.com/Grim-es/shotariya
 # Code author: Neitri
 # Repo: https://github.com/netri/blender_neitri_tools
-# Edits by: GiveMeAllYourCats
+# Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
-
 import tools.common
 import tools.translate
 
@@ -286,8 +285,7 @@ class FixArmature(bpy.types.Operator):
         # Translate bones with dictionary
         translator = DictionaryEnum.get_translator(self.dictionary)
         for bone in armature.data.bones:
-            bone.name = utils.convertNameToLR(bone.name, True)
-            bone.name = translator.translate(bone.name)
+            bone.name = translator.translate(utils.convertNameToLR(bone.name, True))
 
         # Rename bones
         for key, value in bone_list_rename.items():
@@ -475,13 +473,6 @@ class FixArmature(bpy.types.Operator):
         ])
 
         if hierarchy_check_hips['result'] is False:
-            # if this is first try with an error then retry. This fixes the bonetranslation.blend error
-            # TODO: figure out why?
-            if self.tries == 1:
-                return self.execute(context)
-            elif self.tries == 2:
-                self.tries = 0
-
             self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
@@ -493,49 +484,33 @@ class FixArmature(bpy.types.Operator):
 
 def check_hierarchy(correct_hierarchy_array):
     armature = tools.common.get_armature()
-    error = None
 
     tools.common.unselect_all()
     tools.common.select(armature)
     tools.common.switch('EDIT')
 
-    for correct_hierarchy in correct_hierarchy_array:
-        for index, item in enumerate(correct_hierarchy):
-            # NOTE:  armature.data.bones is being used instead of armature.data.edit_bones because of a failed test (edit_bones array empty for some reason)
-            if item not in armature.data.bones:
-                error = {'result': False, 'message': item + ' was not found in the hierarchy, this will cause problems!'}
-                break
+    for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
+        previous = None
+        for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
+            if index > 0:
+                previous = correct_hierarchy[index - 1]
 
-            bone = armature.data.bones.get(item)
+            # NOTE: armature.data.bones is being used instead of armature.data.edit_bones because of a failed test (edit_bones array empty for some reason)
+            if bone not in armature.data.bones:
+                return {'result': False, 'message': bone + ' was not found in the hierarchy, this will cause problems!'}
 
-            if index == 0:
-                # first level items do not need to be parent checked
-                pass
-            if bone.name == 'Hips':
-                # Hips don't have to be checked
-                pass
-            else:
-                prevbone = None
-                try:
-                    prevbone = armature.data.bones.get(correct_hierarchy[index - 1])
-                except KeyError:
-                    error = {'result': False, 'message': correct_hierarchy[index - 1] + ' bone does not exist, this might cause problems!'}
+            bone = armature.data.bones[bone]
 
-                if error is None:
-                    if bone.parent is None:
-                        error = {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
-                        # else: # TODO this part is buggy, should be fixed!
-                        #     print('Debug: ' + bone.parent.name + ' ' + prevbone.name)
-                        #     if bone.parent.name != prevbone.name:
-                        #         error = {'result': False, 'message': bone.parent.name + ' is not parented to ' + prevbone.name + ', this will cause problems!'}
-                        #         print('Debug2: ' + bone.parent.name + ' ' + prevbone.name)
+            # If a previous item was found
+            if previous is not None:
+                # And there is no parent, then we have a problem mkay
+                if bone.parent is None:
+                    return {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
+                # Previous needs to be the parent of the current item
+                if previous != bone.parent.name:
+                    return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
 
-    if error is None:
-        return_value = {'result': True}
-    else:
-        return_value = error
-
-    return return_value
+    return {'result': True}
 
 
 def delete_zero_weight():
@@ -614,7 +589,7 @@ def join_meshes():
 
 class WeightToParent(bpy.types.Operator):
     bl_idname = 'armature.weight_to_parents'
-    bl_label = 'Delete Bones and Add Weights to Parents'
+    bl_label = 'Delete bones, add weights to parents'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.\n' \
                      + 'Only available in Edit or Pose Mode!\n'
     bl_options = {'REGISTER', 'UNDO'}
