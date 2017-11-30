@@ -32,8 +32,24 @@ import tools.armature
 
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
-    bl_label = 'Create eye tracking'
+    bl_label = 'Create Eye Tracking'
+    bl_description = 'This will let you track someone when they come close to you and it enables blinking.\n' \
+                     "You should check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation."
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.mesh_name_eye == "" \
+                or context.scene.head == "" \
+                or context.scene.eye_left == "" \
+                or context.scene.eye_right == "" \
+                or context.scene.wink_left == "" \
+                or context.scene.wink_right == "" \
+                or context.scene.lowerlid_left == "" \
+                or context.scene.lowerlid_right == "":
+            return False
+
+        return True
 
     def vertex_group_exists(self, mesh_name, bone_name):
         mesh = bpy.data.objects[mesh_name]
@@ -204,8 +220,6 @@ class CreateEyesButton(bpy.types.Operator):
 
         # Store shape keys to ignore changes during copying
         selected_shapes = [context.scene.wink_left, context.scene.wink_right, context.scene.lowerlid_left, context.scene.lowerlid_right]
-
-
 
         # Copy shape key mixes from user defined shape keys and rename them to the correct liking of VRC
         mesh_name = context.scene.mesh_name_eye

@@ -31,8 +31,14 @@ import random
 
 class AutoAtlasButton(bpy.types.Operator):
     bl_idname = 'auto.atlas'
-    bl_label = 'Create atlas'
+    bl_label = 'Create Atlas'
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.mesh_name_atlas == "":
+            return False
+        return True
 
     def generateRandom(self, prefix='', suffix=''):
         return prefix + str(random.randrange(9999999999)) + suffix

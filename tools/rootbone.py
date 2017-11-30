@@ -33,8 +33,16 @@ from difflib import SequenceMatcher
 
 class RootButton(bpy.types.Operator):
     bl_idname = 'root.function'
-    bl_label = 'Parent bones'
+    bl_label = 'Parent Bones'
+    bl_description = 'This will duplicate the parent of the bones and reparent them to the duplicate.\n' \
+                     'Very useful for Dynamic Bones.'
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.root_bone == "":
+            return False
+        return True
 
     def execute(self, context):
         # PreserveState = tools.common.PreserveState()
@@ -60,7 +68,7 @@ class RootButton(bpy.types.Operator):
         root_bone = bpy.context.object.data.edit_bones.new(new_bone_name)
         root_bone.parent = bpy.context.object.data.edit_bones[child_bones[0]].parent
 
-        # Parent all childs to the new root bone
+        # Parent all children to the new root bone
         for child_bone in child_bones:
             bpy.context.object.data.edit_bones[child_bone].use_connect = False
             bpy.context.object.data.edit_bones[child_bone].parent = root_bone
@@ -154,7 +162,8 @@ def get_parent_root_bones(self, context):
 
 class RefreshRootButton(bpy.types.Operator):
     bl_idname = 'refresh.root'
-    bl_label = 'Refresh list'
+    bl_label = 'Refresh List'
+    bl_description = 'This will clear the group bones list cache and rebuild it, useful if bones have changed or your model.'
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):

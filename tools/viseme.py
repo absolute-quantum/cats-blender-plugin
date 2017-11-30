@@ -32,8 +32,20 @@ from collections import OrderedDict
 
 class AutoVisemeButton(bpy.types.Operator):
     bl_idname = 'auto.viseme'
-    bl_label = 'Create visemes'
+    bl_label = 'Create Visemes'
+    bl_description = 'This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.\n' \
+                     'It will generate 15 shape keys from the 3 shape keys you specify.'
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.mesh_name_viseme == "" \
+                or context.scene.mouth_a == "" \
+                or context.scene.mouth_o == "" \
+                or context.scene.mouth_ch == "":
+            return False
+
+        return True
 
     def mix_shapekey(self, context, shapes, shapekey_data, new_index, rename_to, intensity):
         mesh = bpy.data.objects[context.scene.mesh_name_viseme]

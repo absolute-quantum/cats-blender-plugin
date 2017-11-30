@@ -28,116 +28,46 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 ![](https://i.imgur.com/ItJLtNJ.png)
 
-## Changelog
-
-#### 0.0.1
- - The plugin was born
-
-#### 0.0.2
- - Added: Eye tracking, added a check to see if a vertex group and vertices were assigned to the eye bones before continuing
- - Added: Added an auto updater to easily keep track of new updates of the plugin
- - Added: Mouth viseme, added a strength modifier for the mixing of the shapes
- - Added: plugin support (install as addon in blender)
- - Changed: UI improved
-
-#### 0.0.3
- - Added: Bone root parenting script, useful for dynamic bones
- - Added: Pack islands feature for auto atlas
- - Fixed: Auto atlas half height bug
- - Fixed: Experimental eye fix script error
- - Fixed: dropdown boxes now correctly order by A-Z
- - Changed: Auto atlas will now not error when mmd_tools is not present
- - Removed: vrc.v_ee from auto visemes (unneeded)
-
-#### 0.0.4
- - Added: Translation: Translation of shape keys, bones, and objects
- - Added: Eye tracking: Setting head roll to 0 degrees
- - Added: Eye tracking: Removing empty object from hierachy
- - Fixed: Mouth viseme: vrc.v_e correct index position
- - Fixed: Bone parenting: issue fixed where child bones of a group would also been parented
- - Changed: Mouth viseme: Will overwrite existing shape keys
- - Changed: Eye tracking: warns if LeftEye or RightEye already exists
- - Possible Fix: Auto atlas: changed some context object references to the mesh you specified in the auto atlas configuration, can fix weird errors for models with multiple meshes (unconfirmed)
-
-#### 0.0.5
- - Added: Translation: Translation of textures
- - Added: Translation: Translation of materials
- - Added: Neitri Blender Tool: a plugin from Neitri, script is now merged and will be updated by the maintainers of this project
- - Added: PMXArmature: a plugin from Shotariya, script is now merged and will be updated by the maintainers of this project
- - Added: Credits tab :)
- - Changed: Translation: Using googletrans module ( = faster! thanks Hotox!)
- - Changed: Codebase modularised, project is more tidy now. Good for future updates
- - Changed: UI: every function has it's own collapsible panel now
- - Fixed: Mouth viseme: Adding random key shape weight to the mix with 0.0001 weight to fix a weird blender export condition (should fix open mouth)
- - Fixed: Eye tracking: Adding random key shape weight to the mix with 0.0001 weight to fix a weird blender export condition (should fix any future problems that may arise)
-
-#### 0.0.6
- - Added: Dependency Tab: Gives a warning if mmd_tools are not activated or installed (Thanks Hotox!)
- - Added: Armature: A fix it all button for MMD models (still work in progress but a good start!)
- - Added: Armature: Fixes the hips angle VRCSDK error
- - Added: Armature: Deletes rigidbodies and joints
- - Added: Armature: Bone hierarchy validation: Hips > Spine > Chest etc to make sure you get no problems in Unity
- - Added: Armature: Uses MMD_TOOLS to translate bones and reparent and weight them with Shotariya's tool
- - Added: Armature: Neitri's zero weight and bone constraint code implemented (there are some small issues with this at the moment, should be fixed soon)
- - Fixed: Viseme: Mesh selection in visemes function would not have effect on the shape key selection list
- - Fixed: Viseme: Script would error depending on current mode selection
- - Fixed: Viseme & Eye tracking: After operations; the shape key index should be reset to Basis, this fixes a weird bug with models in VRC
- - Changed: Translate: Translate does a MMD_TOOLS translate first, then google translate
- - Changed: Viseme: Adjusted some viseme shape key definitions to be more realistic
-
-#### 0.0.7
- - Fixed: Hotfix for mmd_tools locator, this fixed a unjust error explaining mmd_tools was not present or activated
- - Fixes: Creating visemes would be stuck indefinitely when too few shape keys existed
- - Fixed: Updating from older version would place the panels in the wrong order
- - Added: Armature fix now removes third upper chest (bleeding)
-
-#### 0.0.8
- - Added: Armature: Now fixes more models with one click
- - Added: Credits: Link to the unofficial VRcat forum
- - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
- - Added: Eye tracking: Warning when bone hierarchy is incorrect
- - Added: Eye tracking & Visemes: Automatic search and fill in for fitting bones and shape keys (you should still check them)
- - Added: Panels: Improved bone and shape key sorting
- - Added: Continuous integration @ github: this will allow us to see errors before we make releases
- - Fixed: Visemes not being exported by Blender
- - Fixed: Tons of other bugs
-
-#### 0.0.9
- - Added: Armature: Now fixes a lot more models (if not yours doesn't get fixed please send us privately the zipped .blend file)
- - Added: Armature: Added "Fix Armature" button description
- - Added: Armature: Added "Join meshes" button
- - Added: Armature: Added "Delete Bones and add Weights to Parents" Button
- - Fixed: Armature: weird issue where pressing the fix armature button two times would actually work instead of once
- - Fixed: Visemes and Eye Tracking: Created shape keys were empty when the selected ones were already correctly named
- - Fixed: Visemes and Eye Tracking: Shape keys could be deleted on Blender export if decimation was done afterwards
- - Fixed: A whole bucket full of bugs
- - Changed: The plugin "mmd_tools" is no longer required
- - Changed: Visemes and Eye Tracking: Reduced time for shape key creation significantly for models with high shape key count
 
 ## Code contributors:
  - Hotox
  - Shotariya
  - Neitri
 
-## Armature
-![](https://i.imgur.com/wJGaxot.png)
 
-A combination of Neitri and Shotariya's blender plugins, it deals with fixing and optimising your armature
+## Armature
+![](https://i.imgur.com/tZowHzK.png)
+
+A vastly improved combination of Neitri and Shotariya's blender plugins, it tries to fix and optimize the armature with one click.
+
+##### Fix armature
+Fixes your armature automatically by:
+ - Reparenting bones
+ - Removing unnecessary bones
+ - Renaming objects and bones
+ - Mixing weight paints
+ - Rotating the hips
+ - Joining meshes
+ - Removing rigidbodies and joints
+ - Removing bone constraints
+ - Deleting unused vertex groups
 
 ##### Delete zero weight bones
 Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.
 
-##### Delete bone constraints
-Deletes constraints that restrict the pose of MMD models.
+##### Join meshes
+Joins all meshes
 
-##### Fix armature
-Fixes your armature by correctly parenting the bones together.
+##### Mix weights
+Deletes the selected bones and adds their weight to their respective parents.
+
 
 ## Translation
 
 ![](https://i.imgur.com/fkZRIry.png)
 
 **Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
+
 
 ## Eye tracking
 ![](https://i.imgur.com/x9NqvUO.png)
@@ -174,6 +104,7 @@ The name of the shape key that controls lowerlid right
 ##### Experimental eye fix
 Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head
 
+
 ## Mouth visemes
 ![](https://i.imgur.com/z6imAYn.png)
 
@@ -198,6 +129,7 @@ Shape key containing mouth movement that looks like someone is saying "ch". Open
 ##### Shape key mix intensity
 Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.
 
+
 ## Bone parenting
 
 ![](https://i.imgur.com/mgadT4R.png)
@@ -212,7 +144,8 @@ This is a list of bones that look like they could be parented together to a root
 This will clear the group bones list cache and rebuild it, useful if bones have changed or your model
 
 ##### Parent bones
-This will start the parent proces
+This will start the parent process
+
 
 ## Texture atlas
 ![](https://i.imgur.com/qiD9jAA.png)
@@ -241,15 +174,47 @@ The mesh that you want to create an atlas from
 Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
 **If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
 
+
 ## Update Plugin
 There is an auto updater in the plugin so you don't have to keep checking for new version. This is how to check for updates:
 
 ![](https://i.imgur.com/LbO7Xst.gif)
 
+
+## Changelog
+
+#### 0.0.9
+ - Added: Armature: Now fixes a lot more models (if not yours doesn't get fixed please send us privately the zipped .blend file)
+ - Added: Armature: Added some button descriptions
+ - Added: Armature: Added "Join meshes" button
+ - Added: Armature: Added "Delete Bones and add Weights to Parents" button
+ - Fixed: Armature: Weird issue where pressing the fix armature button two times would actually work instead of once
+ - Fixed: Visemes and Eye Tracking: Created shape keys were empty when the selected ones were already correctly named
+ - Fixed: Visemes and Eye Tracking: Shape keys could be deleted on Blender export if decimation was done afterwards
+ - Fixed: A whole bucket full of bugs
+ - Changed: The plugin "mmd_tools" is no longer required
+ - Changed: Translation: Temporarily removed "Textures" button as it's translations currently have no effect
+ - Changed: Visemes and Eye Tracking: Reduced time for shape key creation significantly for models with high shape key count
+
+#### 0.0.8
+ - Added: Armature: Now fixes more models with one click
+ - Added: Credits: Link to the unofficial VRcat forum
+ - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
+ - Added: Eye tracking: Warning when bone hierarchy is incorrect
+ - Added: Eye tracking & Visemes: Automatic search and fill in for fitting bones and shape keys (you should still check them)
+ - Added: Panels: Improved bone and shape key sorting
+ - Added: Continuous integration @ github: this will allow us to see errors before we make releases
+ - Fixed: Visemes not being exported by Blender
+ - Fixed: Tons of other bugs
+
+See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip).
+
+
 ## Roadmap
  - MOAR Updates on the armature code
  - Texture translation should have an option to rename the filename also
  - Automatic lower lid creation for eye tracking
+ - Manual bone selection for root bones
 
 
 ## Feedback

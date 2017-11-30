@@ -39,6 +39,7 @@ import tools.eyetracking
 import tools.rootbone
 import tools.translate
 import tools.armature
+import tools.armature_manual
 import tools.common
 import tools.credits
 
@@ -64,7 +65,7 @@ bl_info = {
 }
 
 
-class ToolPanel():
+class ToolPanel:
     bl_label = 'Cats Blender Plugin'
     bl_idname = '3D_VIEW_TS_vrc'
     bl_space_type = 'VIEW_3D'
@@ -73,7 +74,7 @@ class ToolPanel():
 
     # Armature
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
-        name='Remove zero weight bones',
+        name='Remove Zero Weight Bones',
         description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.",
         default=True
     )
@@ -92,50 +93,52 @@ class ToolPanel():
     )
 
     bpy.types.Scene.eye_left = bpy.props.EnumProperty(
-        name='Left eye',
+        name='Left Eye',
         description='The left eye bone',
         items=tools.common.get_bones_eye_l
     )
 
     bpy.types.Scene.eye_right = bpy.props.EnumProperty(
-        name='Right eye',
+        name='Right Eye',
         description='The right eye bone',
         items=tools.common.get_bones_eye_r
     )
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
-        name='Blink left',
+        name='Blink Left',
         description='The shape key containing a blink with the left eye.\nCan be set to "Basis" to disable blinking',
         items=tools.common.get_shapekeys_eye_blink_l
     )
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
-        name='Blink right',
+        name='Blink Right',
         description='The shape key containing a blink with the right eye.\nCan be set to "Basis" to disable blinking',
         items=tools.common.get_shapekeys_eye_blink_r
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
-        name='Lowerlid left',
+        name='Lowerlid Left',
         description='The shape key containing a slightly raised left lower lid.\nCan be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_l
     )
 
     bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
-        name='Lowerlid right',
+        name='Lowerlid Right',
         description='The shape key containing a slightly raised right lower lid.\nCan be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_r
     )
 
     bpy.types.Scene.experimental_eye_fix = bpy.props.BoolProperty(
-        name='Experimental eye fix',
-        description='Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head',
+        name='Experimental Eye Fix',
+        description='Very useful for models that have over-extended eye bones that point out of the head.\n' \
+                    'The script will try to verify the newly created eye bones to be located in the correct position by checking the location of the old eye vertex group.',
         default=True
     )
 
     bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
-        name='Eye bone distance from eye vertex',
-        description='This specifies the distance from the new eye bone to the old eye bone vertex group, because of difference in model scale this can be useful if the new eye bones are too far away inside the head',
+        name='Eye Bone Distance from Eye Vertex',
+        description='This specifies the distance from the new eye bone to the old eye bone vertex group.\n' \
+                    'Useful if the new eye bones are too far away inside the head.',
         default=0.2,
         min=0.0,
         max=1.0,
@@ -170,7 +173,7 @@ class ToolPanel():
     )
 
     bpy.types.Scene.shape_intensity = bpy.props.FloatProperty(
-        name='Shape key mix intensity',
+        name='Shape Key Mix Intensity',
         description='Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.',
         default=1.0,
         min=0.0,
@@ -182,8 +185,8 @@ class ToolPanel():
 
     # Bone Parenting
     bpy.types.Scene.root_bone = bpy.props.EnumProperty(
-        name='To parent',
-        description='List of bones that look like they could be parented together to a root bone. This is very useful for Dynamic Bones. Select a group of bones from the list and press "Parent bones"',
+        name='To Parent',
+        description='List of bones that look like they could be parented together to a root bone.',
         items=tools.rootbone.get_parent_root_bones,
     )
 
@@ -200,7 +203,7 @@ class ToolPanel():
     )
 
     bpy.types.Scene.area_weight = bpy.props.FloatProperty(
-        name='Area weight',
+        name='Area Weight',
         description='Weight projections vector by faces with larger areas',
         default=0.0,
         min=0.0,
@@ -222,25 +225,25 @@ class ToolPanel():
     )
 
     bpy.types.Scene.texture_size = bpy.props.EnumProperty(
-        name='Texture size',
+        name='Texture Size',
         description='Lower for faster bake time, higher for more detail.',
         items=tools.common.get_texture_sizes
     )
 
     bpy.types.Scene.one_texture = bpy.props.BoolProperty(
-        name='Disable multiple textures',
+        name='Disable Multiple Textures',
         description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.',
         default=True
     )
 
     bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
-        name='Pack islands',
+        name='Pack Islands',
         description='Transform all islands so that they will fill up the UV space as much as possible.',
         default=False
     )
 
     bpy.types.Scene.mesh_name_atlas = bpy.props.EnumProperty(
-        name='Target mesh',
+        name='Target Mesh',
         description='The mesh that you want to create a atlas from',
         items=tools.common.get_meshes
     )
@@ -263,12 +266,18 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         col.label('Manual Armature Fixing:')
         col.separator()
+        # row = col.row(align=True)
+        # row.scale_y = 1.1
+        # row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
+        # row = col.row(align=True)
+        # row.scale_y = 1.1
+        # row.operator('armature_manual.join_meshes2', icon='MESH_DATA')
         row = col.row(align=True)
         row.scale_y = 1.1
-        row.operator('armature.join_meshes', icon='MESH_DATA')
+        row.operator('armature_manual.join_meshes', icon='MESH_DATA')
         row = col.row(align=True)
         row.scale_y = 1.1
-        row.operator('armature.weight_to_parents', icon='BONE_DATA')
+        row.operator('armature_manual.mix_weights', icon='BONE_DATA')
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -281,11 +290,13 @@ class TranslationPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
         row = col.row(align=True)
+        row.scale_y = 1
         row.operator('translate.shapekeys', icon='SHAPEKEY_DATA')
         row.operator('translate.bones', icon='BONE_DATA')
-        row.operator('translate.meshes', icon='MESH_DATA')
         row = col.row(align=True)
-        row.operator('translate.textures', icon='TEXTURE')
+        row.scale_y = 1
+        row.operator('translate.meshes', icon='MESH_DATA')
+        # row.operator('translate.textures', icon='TEXTURE')
         row.operator('translate.materials', icon='MATERIAL')
 
 
@@ -493,8 +504,10 @@ def register():
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
     bpy.utils.register_class(tools.armature.FixArmature)
-    bpy.utils.register_class(tools.armature.WeightToParent)
-    bpy.utils.register_class(tools.armature.JoinMeshes)
+    # bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
+    # bpy.utils.register_class(tools.armature_manual.JoinMeshesTest)
+    bpy.utils.register_class(tools.armature_manual.JoinMeshes)
+    bpy.utils.register_class(tools.armature_manual.MixWeights)
     bpy.utils.register_class(tools.credits.ForumButton)
     bpy.utils.register_class(ArmaturePanel)
     bpy.utils.register_class(TranslationPanel)
@@ -520,8 +533,10 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RootButton)
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
-    bpy.utils.unregister_class(tools.armature.WeightToParent)
-    bpy.utils.unregister_class(tools.armature.JoinMeshes)
+    bpy.utils.unregister_class(tools.armature_manual.MixWeights)
+    bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
+    # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)
+    # bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.unregister_class(tools.credits.ForumButton)
     bpy.utils.unregister_class(AtlasPanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
