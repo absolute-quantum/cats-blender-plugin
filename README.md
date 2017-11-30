@@ -36,7 +36,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 
 ## Armature
-![](https://i.imgur.com/tZowHzK.png)
+![](https://i.imgur.com/iGiTotp.png)
 
 A vastly improved combination of Neitri and Shotariya's blender plugins, it tries to fix and optimize the armature with one click.
 
@@ -211,10 +211,10 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
 
 
 ## Roadmap
- - MOAR Updates on the armature code
+ - MOAR updates on the armature code
  - Texture translation should have an option to rename the filename also
  - Automatic lower lid creation for eye tracking
- - Manual bone selection for root bones
+ - Manual bone selection button for root bones
 
 
 ## Feedback
