@@ -299,7 +299,9 @@ class FixArmature(bpy.types.Operator):
         # Rename bones
         for key, value in bone_list_rename.items():
             if key in armature.data.edit_bones or key.lower() in armature.data.edit_bones:
-                armature.data.edit_bones.get(key).name = value
+                bone = armature.data.edit_bones.get(key)
+                if bone is not None:
+                    bone.name = value
 
         # Rename bones which don't have a side and try to detect it automatically
         for key, value in bone_list_rename_unknown_side.items():
