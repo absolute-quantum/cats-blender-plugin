@@ -107,23 +107,23 @@ class CreateEyesButton(bpy.types.Operator):
 
         # create new shape key
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-
             if from_shape == shapekey.name:
                 mesh.active_shape_key_index = index
                 shapekey.value = 1
                 mesh.shape_key_add(name=new_name, from_mix=True)
+                break
 
-                # Select the created shapekey
-                mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
+        # Select the created shapekey
+        mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
 
-                # Re-adjust index position
-                position_correct = False
-                bpy.ops.object.shape_key_move(type='TOP')
-                while position_correct is False:
-                    if mesh.active_shape_key_index > new_index:
-                        bpy.ops.object.shape_key_move(type='DOWN')
-                    else:
-                        position_correct = True
+        # Re-adjust index position
+        position_correct = False
+        bpy.ops.object.shape_key_move(type='TOP')
+        while position_correct is False:
+            if mesh.active_shape_key_index != new_index:
+                bpy.ops.object.shape_key_move(type='DOWN')
+            else:
+                position_correct = True
 
         # reset shape values back to 0
         for shapekey in mesh.data.shape_keys.key_blocks:
