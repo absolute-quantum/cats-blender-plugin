@@ -323,7 +323,10 @@ def join_meshes():
     switch('OBJECT')
     for mesh in get_meshes_objects():
         select(mesh)
-    bpy.ops.object.join()
+
+    # Joins the meshes
+    if bpy.ops.object.join.poll():
+        bpy.ops.object.join()
 
     # Renames it to Body
     mesh = None
