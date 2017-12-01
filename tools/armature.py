@@ -148,6 +148,8 @@ bone_list_weight = {
     'Right arm tight 1': 'Right arm',
     'Right arm tight 2': 'Right arm',
     'Right arm tight 3': 'Right arm',
+    'ElbowAux_R': 'Right arm',
+    'ElbowAux+_R': 'Right arm',
 
     'ArmTwist_L': 'Left arm',
     'ArmTwist1_L': 'Left arm',
@@ -160,6 +162,7 @@ bone_list_weight = {
     'Left arm tight 1': 'Left arm',
     'Left arm tight 2': 'Left arm',
     'Left arm tight 3': 'Left arm',
+    'ElbowAux_L': 'Left arm',
     'ElbowAux+_L': 'Left arm',
 
     'HandTwist_R': 'Right elbow',
@@ -176,7 +179,6 @@ bone_list_weight = {
     'Right hand twist 1': 'Right elbow',
     'Right hand twist 2': 'Right elbow',
     'Right Hand Thread 3': 'Right elbow',
-    'ElbowAux+_R': 'Left arm',
 
     'HandTwist_L': 'Left elbow',
     'HandTwist1_L': 'Left elbow',
@@ -297,7 +299,9 @@ class FixArmature(bpy.types.Operator):
         # Rename bones
         for key, value in bone_list_rename.items():
             if key in armature.data.edit_bones or key.lower() in armature.data.edit_bones:
-                armature.data.edit_bones.get(key).name = value
+                bone = armature.data.edit_bones.get(key)
+                if bone is not None:
+                    bone.name = value
 
         # Rename bones which don't have a side and try to detect it automatically
         for key, value in bone_list_rename_unknown_side.items():

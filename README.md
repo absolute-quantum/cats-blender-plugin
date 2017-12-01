@@ -183,6 +183,12 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.1.0
+- Changed: New versioning scheme in order to better handle hotfixes
+- Fixed: Eye tracking shape keys being in the wrong order
+- Fixed: One bone being weight mixed incorrectly
+- Fixed: Two more bugs
+
 #### 0.0.9
  - Added: Armature: Now fixes a lot more models (if not yours doesn't get fixed please send us privately the zipped .blend file)
  - Added: Armature: Added some button descriptions
