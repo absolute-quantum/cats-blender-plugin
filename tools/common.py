@@ -26,6 +26,7 @@
 
 import bpy
 import bmesh
+import numpy as np
 from mathutils import Vector
 from math import degrees
 import time
@@ -36,6 +37,10 @@ import time
 # - Error: https://i.imgur.com/kBnSx0I.png with model Kanna O: https://goo.gl/sJj2xL
 # - Error: Open Model, go into edit mode, select a bone and press Fix Armature: https://i.imgur.com/IJHsP0o.png
 # - Reset Pivot
+# - Manual bone selection button for root bones
+# - Checkbox for eye blinking/moving
+# - Translate progress bar
+# - Add error dialog: At the bottom here: https://wiki.blender.org/index.php/Dev:Py/Scripts/Cookbook/Code_snippets/Interface
 
 
 def get_armature():
@@ -62,7 +67,16 @@ def select(obj):
 
 def switch(new_mode):
     if bpy.ops.object.mode_set.poll():
-        bpy.ops.object.mode_set(mode=new_mode)
+        bpy.ops.object.mode_set(mode=new_mode, toggle=False)
+
+
+def set_default_stage():
+    switch('OBJECT')
+    unhide_all()
+    unselect_all()
+    armature = get_armature()
+    select(armature)
+    return armature
 
 
 class PreserveState():
@@ -109,16 +123,16 @@ class PreserveState():
 
 
 def remove_empty():
-    unhide_all()
-    switch('OBJECT')
-    bpy.ops.object.select_all(action='DESELECT')
+    switch('EDIT')  # This fixes an error apparently
+    set_default_stage()
+    unselect_all()
     for obj in bpy.data.objects:
         if obj.type == 'EMPTY':
             bpy.context.scene.objects.active = bpy.data.objects[obj.name]
             obj.select = True
             bpy.ops.object.delete(use_global=False)
 
-        bpy.ops.object.select_all(action='DESELECT')
+        unselect_all()
 
 
 def get_bone_angle(p1, p2):
@@ -151,21 +165,28 @@ def remove_unused_vertex_groups():
 def find_center_vector_of_vertex_group(mesh_name, vertex_group):
     mesh = bpy.data.objects[mesh_name]
 
-    group_lookup = {g.index: g.name for g in mesh.vertex_groups}
-    verts = {name: [] for name in group_lookup.values()}
-    for v in bpy.context.object.data.vertices:
-        for g in v.groups:
-            verts[group_lookup[g.group]].append(v)
+    data = mesh.data
+    verts = data.vertices
+    verts_in_group = []
+
+    for vert in verts:
+        i = vert.index
+        try:
+            mesh.vertex_groups[vertex_group].weight(i)
+            verts_in_group.append(vert)
+        except RuntimeError:
+            # vertex is not in the group
+            pass
 
     # Find the average vector point of the vertex cluster
-    divide_by = len(verts[vertex_group])
+    divide_by = len(verts_in_group)
     total = Vector()
 
     if divide_by == 0:
         return False
 
-    for vertice in verts[vertex_group]:
-        total += vertice.co
+    for vert in verts_in_group:
+        total += vert.co
 
     average = total / divide_by
 
@@ -188,13 +209,14 @@ def get_bones_head(self, context):
 
 
 def get_bones_eye_l(self, context):
-    return get_bones(['EyeReturn_L', 'Eye_L'])
+    return get_bones(['Eye_L', 'EyeReturn_L'])
 
 
 def get_bones_eye_r(self, context):
-    return get_bones(['EyeReturn_R', 'Eye_R'])
+    return get_bones(['Eye_R', 'EyeReturn_R'])
 
 
+# names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
 def get_bones(names):
     choices = []
 
@@ -218,39 +240,43 @@ def get_bones(names):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah', ])
+    return get_shapekeys(context, ['Ah', 'Wow'], False)
 
 
 def get_shapekeys_mouth_oh(self, context):
-    return get_shapekeys(context, ['Your'])
+    return get_shapekeys(context, ['Your'], False)
 
 
 def get_shapekeys_mouth_ch(self, context):
-    return get_shapekeys(context, ['Glue', 'There'])
+    return get_shapekeys(context, ['Glue', 'There'], False)
 
 
 def get_shapekeys_eye_blink_l(self, context):
-    return get_shapekeys(context, ['Wink 2', 'Wink', 'Basis'])
+    return get_shapekeys(context, ['Wink 2', 'Wink'], True)
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right', 'Basis'])
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right'], True)
 
 
 def get_shapekeys_eye_low_l(self, context):
-    return get_shapekeys(context, ['Basis'])
+    return get_shapekeys(context, ['Basis'], False)
 
 
 def get_shapekeys_eye_low_r(self, context):
-    return get_shapekeys(context, ['Basis'])
+    return get_shapekeys(context, ['Basis'], False)
 
 
-def get_shapekeys(context, names):
+# names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
+# no_basis - If this is true the Basis will not be available in the list
+def get_shapekeys(context, names, no_basis):
     choices = []
 
     if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
         if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
             for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
+                if no_basis and shapekey.name == 'Basis':
+                    continue
                 choices.append((shapekey.name, shapekey.name, shapekey.name))
 
     choices.sort(key=lambda x: tuple(x[0].lower()))
@@ -260,7 +286,7 @@ def get_shapekeys(context, names):
         if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
             if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
                 if name in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks and choices[0][0] != name:
-                        choices2.append((name, name, name))
+                    choices2.append((name, name, name))
 
     for choice in choices:
         choices2.append(choice)
@@ -319,8 +345,8 @@ def get_meshes_objects():
 
 def join_meshes():
     # Combines Meshes
+    set_default_stage()
     unselect_all()
-    switch('OBJECT')
     for mesh in get_meshes_objects():
         select(mesh)
 
@@ -337,3 +363,72 @@ def join_meshes():
             break
 
     return mesh
+
+
+def LLHtoECEF(lat, lon, alt):
+    # see http://www.mathworks.de/help/toolbox/aeroblks/llatoecefposition.html
+
+    rad = np.float64(6378137.0)  # Radius of the Earth (in meters)
+    f = np.float64(1.0 / 298.257223563)  # Flattening factor WGS84 Model
+    cosLat = np.cos(lat)
+    sinLat = np.sin(lat)
+    FF = (1.0 - f) ** 2
+    C = 1 / np.sqrt(cosLat ** 2 + FF * sinLat ** 2)
+    S = C * FF
+
+    x = (rad * C + alt) * cosLat * np.cos(lon)
+    y = (rad * C + alt) * cosLat * np.sin(lon)
+    z = (rad * S + alt) * sinLat
+
+    return [x, y, z]
+
+# === THIS CODE COULD BE USEFUL ===
+
+# def addvertex(meshname, shapekey_name):
+#     mesh = bpy.data.objects[meshname].data
+#     bm = bmesh.new()
+#     bm.from_mesh(mesh)
+#     bm.verts.ensure_lookup_table()
+#
+#     print(" ")
+#     if shapekey_name in bm.verts.layers.shape.keys():
+#         val = bm.verts.layers.shape.get(shapekey_name)
+#         print("%s = %s" % (shapekey_name, val))
+#         sk = mesh.shape_keys.key_blocks[shapekey_name]
+#         print("v=%f, f=%f" % (sk.value, sk.frame))
+#         for i in range(len(bm.verts)):
+#             v = bm.verts[i]
+#             delta = v[val] - v.co
+#             if (delta.length > 0):
+#                 print("v[%d]+%s" % (i, delta))
+#
+#     print(" ")
+
+# === THIS CODE COULD BE USEFUL ===
+
+# Check which shape keys will be deleted on export by Blender
+# def checkshapekeys():
+#     for ob in bpy.data.objects:
+#         if ob.type == 'MESH':
+#             mesh = ob
+#     bm = bmesh.new()
+#     bm.from_mesh(mesh.data)
+#     bm.verts.ensure_lookup_table()
+#
+#     deleted_shapes = []
+#     for key in bm.verts.layers.shape.keys():
+#         if key == 'Basis':
+#             continue
+#         val = bm.verts.layers.shape.get(key)
+#         delete = True
+#         for vert in bm.verts:
+#             delta = vert[val] - vert.co
+#             if delta.length > 0:
+#                 delete = False
+#                 break
+#         if delete:
+#             deleted_shapes.append(key)
+#
+#     return deleted_shapes
+
+# === THIS CODE COULD BE USEFUL ===

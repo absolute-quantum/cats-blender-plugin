@@ -48,16 +48,8 @@ class RootButton(bpy.types.Operator):
         # PreserveState = tools.common.PreserveState()
         # PreserveState.save()
 
-        tools.common.unhide_all()
+        tools.common.set_default_stage()
 
-        tools.common.switch('OBJECT')
-
-        armature = tools.common.get_armature()
-
-        bpy.context.scene.objects.active = armature
-        armature.select = True
-
-        tools.common.switch('EDIT')
         tools.common.switch('EDIT')
 
         # this is the bones that will be parented

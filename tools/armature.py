@@ -55,7 +55,9 @@ bone_list_rename = {
     'Ankle_L': 'Left ankle',
     'Ankle_R': 'Right ankle',
     'ToeTip_L': 'Left toe',
+    'LegTipEX_L': 'Left toe',
     'ToeTip_R': 'Right toe',
+    'LegTipEX_R': 'Right toe',
     'LowerBody': 'Hips',
     'Lowerbody': 'Hips',
     'Lower body': 'Hips',
@@ -117,13 +119,17 @@ bone_list_parenting = {
 }
 bone_list_weight = {
     'LegD_L': 'Left leg',
+    'Left foot complement': 'Left leg',
+    'Left foot supplement': 'Left leg',
+
     'LegD_R': 'Right leg',
+    'Right foot complement': 'Right leg',
+    'Right foot supplement': 'Right leg',
+
     'KneeD_L': 'Left knee',
     'KneeD_R': 'Right knee',
     'AnkleD_L': 'Left ankle',
     'AnkleD_R': 'Right ankle',
-    'LegTipEX_L': 'Left toe',
-    'LegTipEX_R': 'Right toe',
     'Left foot D': 'Left leg',
     'Right foot D': 'Right leg',
     'Left knee D': 'Left knee',
@@ -263,9 +269,7 @@ class FixArmature(bpy.types.Operator):
         # preservestate.save()
 
         # bpy.ops.object.hide_view_clear()
-        tools.common.unselect_all()
-        tools.common.switch('OBJECT')
-        armature = tools.common.get_armature()
+        armature = tools.common.set_default_stage()
 
         # Empty objects should be removed
         tools.common.remove_empty()
@@ -344,6 +348,10 @@ class FixArmature(bpy.types.Operator):
             for bone in armature.data.edit_bones:
                 if bone.parent is None:
                     bone.parent = hips
+
+        # Set head roll to 0 degrees for eye tracking
+        if 'Head' in armature.data.edit_bones:
+            armature.data.edit_bones.get('Head').roll = 0
 
         # == FIXING OF SPECIAL BONE CASES ==
 
@@ -494,11 +502,7 @@ class FixArmature(bpy.types.Operator):
 
 
 def check_hierarchy(correct_hierarchy_array):
-    armature = tools.common.get_armature()
-
-    tools.common.unselect_all()
-    tools.common.select(armature)
-    tools.common.switch('EDIT')
+    armature = tools.common.set_default_stage()
 
     for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
         previous = None
@@ -526,6 +530,7 @@ def check_hierarchy(correct_hierarchy_array):
 
 def delete_zero_weight():
     armature = tools.common.get_armature()
+    tools.common.switch('EDIT')
 
     bone_names_to_work_on = set([bone.name for bone in armature.data.edit_bones])
 
@@ -545,7 +550,7 @@ def delete_zero_weight():
         for vertex in objects.data.vertices:
             for group in vertex.groups:
                 if group.weight > 0:
-                    vertex_group_names_used.add(vertex_group_id_to_vertex_group_name[group.group])
+                    vertex_group_names_used.add(vertex_group_id_to_vertex_group_name.get(group.group))
 
     not_used_bone_names = bone_names_to_work_on - vertex_group_names_used
 

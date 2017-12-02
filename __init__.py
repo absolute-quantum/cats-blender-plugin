@@ -57,12 +57,28 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': [0, 1, 0],
+    'version': [0, 2, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
+
+
+class ListItem(bpy.types.PropertyGroup):
+    """ Group of properties representing an item in the list """
+
+    name = bpy.props.StringProperty(
+        name="Name",
+        description="A name for this item",
+        default="Untitled"
+    )
+
+    random_prop = bpy.props.StringProperty(
+        name="Any other property you want",
+        description="",
+        default=""
+    )
 
 
 class ToolPanel:
@@ -80,6 +96,15 @@ class ToolPanel:
     )
 
     # Eye Tracking
+    bpy.types.Scene.eye_mode = bpy.props.EnumProperty(
+        name="Eye Mode",
+        description="Mode",
+        items=[
+            ("CREATION", "Eye Creation", "Here you can create eye tracking."),
+            ("TESTING", "Eye Testing", "Here you can test how eye tracking will look ingame.")
+        ]
+    )
+
     bpy.types.Scene.mesh_name_eye = bpy.props.EnumProperty(
         name='Mesh',
         description='The mesh with the eyes vertex groups',
@@ -106,43 +131,58 @@ class ToolPanel:
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink Left',
-        description='The shape key containing a blink with the left eye.\nCan be set to "Basis" to disable blinking',
+        description='The shape key containing a blink with the left eye.\n'
+                    'IMPORTANT: Do not set this to "Basis"! Disable Eye Blinking instead!',
         items=tools.common.get_shapekeys_eye_blink_l
     )
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink Right',
-        description='The shape key containing a blink with the right eye.\nCan be set to "Basis" to disable blinking',
+        description='The shape key containing a blink with the right eye.\n'
+                    'IMPORTANT: Do not set this to "Basis"! Disable Eye Blinking instead!',
         items=tools.common.get_shapekeys_eye_blink_r
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
         name='Lowerlid Left',
-        description='The shape key containing a slightly raised left lower lid.\nCan be set to "Basis" to disable lower lid movement',
+        description='The shape key containing a slightly raised left lower lid.\n'
+                    'Can be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_l
     )
 
     bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
         name='Lowerlid Right',
-        description='The shape key containing a slightly raised right lower lid.\nCan be set to "Basis" to disable lower lid movement',
+        description='The shape key containing a slightly raised right lower lid.\n'
+                    'Can be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_r
     )
 
-    bpy.types.Scene.experimental_eye_fix = bpy.props.BoolProperty(
-        name='Experimental Eye Fix',
-        description='Very useful for models that have over-extended eye bones that point out of the head.\n' \
-                    'The script will try to verify the newly created eye bones to be located in the correct position by checking the location of the old eye vertex group.',
-        default=True
+    bpy.types.Scene.disable_eye_movement = bpy.props.BoolProperty(
+        name='Disable Eye Movement',
+        description='IMPORTANT: Do your decimation first if you check this!\n'
+                    '\n'
+                    'Disables eye movement. Useful if you only want blinking.\n'
+                    'This creates eye bones with no movement bound to them.\n'
+                    'You still have to correctly assign the eye bones in Unity.',
+        subtype='DISTANCE'
+    )
+
+    bpy.types.Scene.disable_eye_blinking = bpy.props.BoolProperty(
+        name='Disable Eye Blinking',
+        description='Disables eye blinking. Useful if you only want eye movement.\n'
+                    'This will create the necessary shape keys but leaves them empty.',
+        subtype='NONE'
     )
 
     bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
-        name='Eye Bone Distance from Eye Vertex',
-        description='This specifies the distance from the new eye bone to the old eye bone vertex group.\n' \
-                    'Useful if the new eye bones are too far away inside the head.',
-        default=0.2,
+        name='Distance from Pupil',
+        description='Distance between the new eye bones and the center of the eyes vertex group.\n'
+                    'Lower this if the eyes move out of the eye socket.\n'
+                    'Increase this if the eyes move rotate too quickly.',
+        default=0.8,
         min=0.0,
-        max=1.0,
-        step=0.1,
+        max=2.0,
+        step=1.0,
         precision=2,
         subtype='FACTOR'
     )
@@ -311,45 +351,75 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'mesh_name_eye', icon='MESH_DATA')
+        row.prop(context.scene, 'eye_mode', expand=True)
 
-        col.separator()
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'head', icon='BONE_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'eye_left', icon='BONE_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'eye_right', icon='BONE_DATA')
+        if context.scene.eye_mode == 'CREATION':
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'mesh_name_eye', icon='MESH_DATA')
 
-        col.separator()
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'wink_left', icon='SHAPEKEY_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'wink_right', icon='SHAPEKEY_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'lowerlid_left', icon='SHAPEKEY_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'lowerlid_right', icon='SHAPEKEY_DATA')
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'head', icon='BONE_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_movement:
+                row.active = False
+            row.prop(context.scene, 'eye_left', icon='BONE_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_movement:
+                row.active = False
+            row.prop(context.scene, 'eye_right', icon='BONE_DATA')
 
-        col.separator()
-        row = col.row(align=True)
-        row.prop(context.scene, 'experimental_eye_fix')
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_blinking:
+                row.active = False
+            row.prop(context.scene, 'wink_left', icon='SHAPEKEY_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_blinking:
+                row.active = False
+            row.prop(context.scene, 'wink_right', icon='SHAPEKEY_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_blinking:
+                row.active = False
+            row.prop(context.scene, 'lowerlid_left', icon='SHAPEKEY_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_blinking:
+                row.active = False
+            row.prop(context.scene, 'lowerlid_right', icon='SHAPEKEY_DATA')
 
-        col = box.column(align=True)
-        row = col.row(align=True)
-        if context.scene.experimental_eye_fix:
-            row.prop(context.scene, 'eye_distance')
+            col.separator()
+            row = col.row(align=True)
+            row.prop(context.scene, 'disable_eye_movement')
+
+            row = col.row(align=True)
+            row.prop(context.scene, 'disable_eye_blinking')
+
+            if not context.scene.disable_eye_movement:
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_distance')
+
             col = box.column(align=True)
             row = col.row(align=True)
-        row.operator('create.eyes', icon='TRIA_RIGHT')
+            row.operator('create.eyes', icon='TRIA_RIGHT')
+
+            # armature = tools.common.get_armature()
+            # if "RightEye" in armature.pose.bones:
+            #     row = col.row(align=True)
+            #     row.label('Eye Bone Tweaking:')
+        else:
+            col.separator()
+            row = col.row(align=True)
+            row.label('Coming soon!')
 
 
 class VisemePanel(ToolPanel, bpy.types.Panel):

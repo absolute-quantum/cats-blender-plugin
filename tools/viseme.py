@@ -101,11 +101,8 @@ class AutoVisemeButton(bpy.types.Operator):
         # PreserveState = tools.common.PreserveState()
         # PreserveState.save()
 
-        tools.common.unhide_all()
-
-        tools.common.unselect_all()
+        tools.common.set_default_stage()
         tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
-        tools.common.switch('OBJECT')
 
         # Rename selected shapes and rename them back at the end
         shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
