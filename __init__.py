@@ -64,6 +64,8 @@ bl_info = {
     'warning': '',
 }
 
+slider_z = 0
+
 
 class ListItem(bpy.types.PropertyGroup):
     """ Group of properties representing an item in the list """
@@ -175,15 +177,36 @@ class ToolPanel:
     )
 
     bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
-        name='Distance from Pupil',
-        description='Distance between the new eye bones and the center of the eyes vertex group.\n'
-                    'Lower this if the eyes move out of the eye socket.\n'
-                    'Increase this if the eyes move rotate too quickly.',
+        name='Eye Movement Speed',
+        description='Higher = more eye movement\n'
+                    'Lower = less eye movement\n'
+                    'Warning: Too little or too much speed can glitch the eyes.\n'
+                    'Test your results in the "Eye Testing"-Tab!',
         default=0.8,
         min=0.0,
         max=2.0,
         step=1.0,
         precision=2,
+        subtype='FACTOR'
+    )
+
+    bpy.types.Scene.eye_rotation_x = bpy.props.IntProperty(
+        name='Up - Down',
+        description='Rotate the eye bones on the vertical axis.',
+        default=0,
+        min=-22,
+        max=25,
+        step=1,
+        subtype='FACTOR'
+    )
+
+    bpy.types.Scene.eye_rotation_y = bpy.props.IntProperty(
+        name='Left - Right',
+        description='Rotate the eye bones on the horizontal axis.',
+        default=0,
+        min=-19,
+        max=19,
+        step=1,
         subtype='FACTOR'
     )
 
@@ -417,9 +440,30 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
             #     row = col.row(align=True)
             #     row.label('Eye Bone Tweaking:')
         else:
-            col.separator()
-            row = col.row(align=True)
-            row.label('Coming soon!')
+            mode = bpy.context.active_object.mode
+            if mode != 'POSE':
+                col.separator()
+                row = col.row(align=True)
+                row.operator('eyes.test', icon='TRIA_RIGHT')
+            else:
+                col.separator()
+                row = col.row(align=True)
+                row.operator('eyes.test_stop', icon='TRIA_RIGHT')
+
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_rotation_x', icon='FILE_PARENT')
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_rotation_y', icon='ARROW_LEFTRIGHT')
+
+                # global slider_z
+                # if context.scene.eye_rotation_z != slider_z:
+                #     slider_z = context.scene.eye_rotation_z
+                #     tools.eyetracking.update_bones(slider_z)
+
+                col.separator()
+                row = col.row(align=True)
+                row.operator('eyes.set_rotation', icon='TRIA_RIGHT')
 
 
 class VisemePanel(ToolPanel, bpy.types.Panel):
@@ -573,6 +617,9 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
 def register():
     bpy.utils.register_class(tools.atlas.AutoAtlasButton)
     bpy.utils.register_class(tools.eyetracking.CreateEyesButton)
+    bpy.utils.register_class(tools.eyetracking.StartTestingButton)
+    bpy.utils.register_class(tools.eyetracking.StopTestingButton)
+    bpy.utils.register_class(tools.eyetracking.SetRotationButton)
     bpy.utils.register_class(tools.viseme.AutoVisemeButton)
     bpy.utils.register_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.register_class(tools.translate.TranslateBonesButton)
@@ -602,6 +649,9 @@ def register():
 def unregister():
     bpy.utils.unregister_class(tools.atlas.AutoAtlasButton)
     bpy.utils.unregister_class(tools.eyetracking.CreateEyesButton)
+    bpy.utils.unregister_class(tools.eyetracking.StartTestingButton)
+    bpy.utils.unregister_class(tools.eyetracking.StopTestingButton)
+    bpy.utils.unregister_class(tools.eyetracking.SetRotationButton)
     bpy.utils.unregister_class(tools.viseme.AutoVisemeButton)
     bpy.utils.unregister_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.unregister_class(tools.translate.TranslateBonesButton)

@@ -30,6 +30,8 @@ import math
 import numpy as np
 import time
 
+from mathutils import Quaternion
+
 import tools.common
 import tools.armature
 
@@ -380,3 +382,102 @@ def repair_shapekeys_mouth(mesh_name, shapekey_name):  # TODO Add vertex repairi
 
     if i == 0:
         print('Error: Random shapekey repairing failed for some reason! Canceling!')
+
+
+class StartTestingButton(bpy.types.Operator):
+    bl_idname = 'eyes.test'
+    bl_label = 'Start eye testing'
+    bl_description = 'Starts the testing process.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        armature = tools.common.get_armature()
+        if 'LeftEye' in armature.pose.bones:
+            if 'RightEye' in armature.pose.bones:
+                return True
+        return False
+
+    def execute(self, context):
+        armature = tools.common.set_default_stage()
+        tools.common.switch('POSE')
+        armature.data.pose_position = 'POSE'
+
+        eye_left = armature.data.bones.get('LeftEye')
+        eye_right = armature.data.bones.get('RightEye')
+
+        if eye_left is None or eye_right is None:
+            return
+
+        eye_left.select = True
+        eye_right.select = True
+
+        return {'FINISHED'}
+
+
+class StopTestingButton(bpy.types.Operator):
+    bl_idname = 'eyes.test_stop'
+    bl_label = 'Stop eye testing'
+    bl_description = 'Stops the testing process.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        for pb in tools.common.get_armature().data.bones:
+            pb.select = True
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+        for pb in tools.common.get_armature().data.bones:
+            pb.select = False
+        armature = tools.common.set_default_stage()
+        armature.data.pose_position = 'REST'
+        return {'FINISHED'}
+
+
+class SetRotationButton(bpy.types.Operator):
+    bl_idname = 'eyes.set_rotation'
+    bl_label = 'Set Rotation'
+    bl_description = 'Sets the roation.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        armature = tools.common.get_armature()
+        eye_left = armature.pose.bones.get('LeftEye')
+        eye_right = armature.pose.bones.get('RightEye')
+
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+
+        eye_left.rotation_mode = 'XYZ'
+        eye_left.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
+        eye_left.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+
+        eye_right.rotation_mode = 'XYZ'
+        eye_right.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
+        eye_right.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+
+        return {'FINISHED'}
+
+
+# Update via slider
+def update_bones(degrees):
+    armature = tools.common.get_armature()
+    eye_left = armature.pose.bones.get('LeftEye')
+    eye_right = armature.pose.bones.get('RightEye')
+
+    eye_left.rotation_mode = 'XYZ'
+    eye_right.rotation_mode = 'XYZ'
+
+    eye_left.rotation_euler.rotate_axis('Z', math.radians(degrees))
+    eye_right.rotation_euler.rotate_axis('Z', math.radians(degrees))
+
+    if eye_left is None or eye_right is None:
+        return
+
+
+
+
+
+
+
