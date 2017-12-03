@@ -258,7 +258,8 @@ class FixArmature(bpy.types.Operator):
         i = 0
         for ob in bpy.data.objects:
             if ob.type == 'MESH':
-                i += 1
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
         return i > 0
 
 

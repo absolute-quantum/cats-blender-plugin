@@ -183,6 +183,10 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.2
+- Changed: Completely reworked eye tracking!
+- Fixed: A stash full of bugs
+
 #### 0.1.0
 - Changed: New versioning scheme in order to better handle hotfixes
 - Fixed: Eye tracking shape keys being in the wrong order

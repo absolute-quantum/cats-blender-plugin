@@ -387,7 +387,8 @@ def repair_shapekeys_mouth(mesh_name, shapekey_name):  # TODO Add vertex repairi
 class StartTestingButton(bpy.types.Operator):
     bl_idname = 'eyes.test'
     bl_label = 'Start eye testing'
-    bl_description = 'Starts the testing process.'
+    bl_description = 'Starts the testing process.\n' \
+                     'Bones "EyeLeft" and "EyeRight" are required.'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -429,6 +430,7 @@ class StopTestingButton(bpy.types.Operator):
         bpy.ops.pose.transforms_clear()
         for pb in tools.common.get_armature().data.bones:
             pb.select = False
+
         armature = tools.common.set_default_stage()
         armature.data.pose_position = 'REST'
         return {'FINISHED'}

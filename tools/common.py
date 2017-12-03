@@ -198,7 +198,8 @@ def get_meshes(self, context):
 
     for object in bpy.context.scene.objects:
         if object.type == 'MESH':
-            choices.append((object.name, object.name, object.name))
+            if object.parent is not None and object.parent.type == 'ARMATURE':
+                choices.append((object.name, object.name, object.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
@@ -339,7 +340,8 @@ def get_meshes_objects():
     meshes = []
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            meshes.append(ob)
+            if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                meshes.append(ob)
     return meshes
 
 
@@ -358,9 +360,10 @@ def join_meshes():
     mesh = None
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            ob.name = 'Body'
-            mesh = ob
-            break
+            if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                ob.name = 'Body'
+                mesh = ob
+                break
 
     return mesh
 

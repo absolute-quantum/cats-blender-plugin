@@ -57,7 +57,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': [0, 2, 0],
+    'version': [0, 1, 1],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -102,8 +102,8 @@ class ToolPanel:
         name="Eye Mode",
         description="Mode",
         items=[
-            ("CREATION", "Eye Creation", "Here you can create eye tracking."),
-            ("TESTING", "Eye Testing", "Here you can test how eye tracking will look ingame.")
+            ("CREATION", "Creation", "Here you can create eye tracking."),
+            ("TESTING", "Testing", "Here you can test how eye tracking will look ingame.")
         ]
     )
 
@@ -440,6 +440,10 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
             #     row = col.row(align=True)
             #     row.label('Eye Bone Tweaking:')
         else:
+            if tools.common.get_armature() is None:
+                box.label('No model found!', icon='ERROR')
+                return
+
             mode = bpy.context.active_object.mode
             if mode != 'POSE':
                 col.separator()
