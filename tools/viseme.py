@@ -51,7 +51,7 @@ class AutoVisemeButton(bpy.types.Operator):
         mesh = bpy.data.objects[context.scene.mesh_name_viseme]
 
         # Remove existing shapekey
-        for index, shapekey in enumerate(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks):
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if shapekey.name == rename_to:
                 bpy.context.active_object.active_shape_key_index = index
                 bpy.ops.object.shape_key_remove()
@@ -79,16 +79,21 @@ class AutoVisemeButton(bpy.types.Operator):
         mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
 
         # Re-adjust index position
-        too_long = len(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks) > 9
+        too_long = len(mesh.data.shape_keys.key_blocks) > 9
         position_correct = False
         if too_long:
             bpy.ops.object.shape_key_move(type='TOP')
         while position_correct is False:
             if mesh.active_shape_key_index != new_index:
                 if too_long:
-                    bpy.ops.object.shape_key_move(type='DOWN')
-                else:
+                    if mesh.active_shape_key_index == len(mesh.data.shape_keys.key_blocks)-1:
+                        position_correct = True
+                    else:
+                        bpy.ops.object.shape_key_move(type='DOWN')
+                elif mesh.active_shape_key_index >= new_index:
                     bpy.ops.object.shape_key_move(type='UP')
+                else:
+                    position_correct = True
             else:
                 position_correct = True
 

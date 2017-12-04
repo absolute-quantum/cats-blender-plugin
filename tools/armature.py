@@ -308,12 +308,11 @@ class FixArmature(bpy.types.Operator):
     bl_label = 'Fix Armature'
     bl_description = 'Automatically:\n' \
                      '- Reparents bones\n' \
-                     '- Removes unnecessary bones\n' \
-                     '- Renames objects and bones\n' \
+                     '- Removes unnecessary bones & objects\n' \
+                     '- Translates and renames bones & objects\n' \
                      '- Mixes weight paints\n' \
                      '- Rotates the hips\n' \
                      '- Joins meshes\n' \
-                     '- Removes rigidbodies and joints\n' \
                      '- Removes bone constraints\n' \
                      '- Deletes unused vertex groups'
 
@@ -369,6 +368,9 @@ class FixArmature(bpy.types.Operator):
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
+
+        # Reorders vrc shape keys to the correct order
+        tools.common.repair_viseme_order(mesh.name)
 
         # Armature should be selected and in edit mode
         tools.common.unselect_all()

@@ -29,6 +29,7 @@ import bmesh
 import numpy as np
 from mathutils import Vector
 from math import degrees
+from collections import OrderedDict
 import time
 
 
@@ -366,6 +367,60 @@ def join_meshes():
                 break
 
     return mesh
+
+
+def repair_viseme_order(mesh_name):
+    mesh = bpy.data.objects[mesh_name]
+    order = OrderedDict()
+    order['vrc.blink_left'] = 1
+    order['vrc.blink_right'] = 2
+    order['vrc.lowerlid_left'] = 3
+    order['vrc.lowerlid_right'] = 4
+    order['vrc.v_aa'] = 5
+    order['vrc.v_ch'] = 6
+    order['vrc.v_dd'] = 7
+    order['vrc.v_e'] = 8
+    order['vrc.v_ff'] = 9
+    order['vrc.v_ih'] = 10
+    order['vrc.v_kk'] = 11
+    order['vrc.v_nn'] = 12
+    order['vrc.v_oh'] = 13
+    order['vrc.v_ou'] = 14
+    order['vrc.v_pp'] = 15
+    order['vrc.v_rr'] = 16
+    order['vrc.v_sil'] = 17
+    order['vrc.v_ss'] = 18
+    order['vrc.v_th'] = 19
+
+    for name in order.keys():
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if shapekey.name == name:
+                mesh.active_shape_key_index = index
+                new_index = order.get(shapekey.name)
+                index_diff = (index - new_index)
+
+                if new_index >= len(mesh.data.shape_keys.key_blocks):
+                    bpy.ops.object.shape_key_move(type='BOTTOM')
+                    break
+
+                position_correct = False
+                if 0 <= index_diff <= (new_index - 1):
+                    while position_correct is False:
+                        if mesh.active_shape_key_index != new_index:
+                                bpy.ops.object.shape_key_move(type='UP')
+                        else:
+                            position_correct = True
+                else:
+                    if mesh.active_shape_key_index > new_index:
+                        bpy.ops.object.shape_key_move(type='TOP')
+
+                    position_correct = False
+                    while position_correct is False:
+                        if mesh.active_shape_key_index != new_index:
+                            bpy.ops.object.shape_key_move(type='DOWN')
+                        else:
+                            position_correct = True
+                break
 
 
 def LLHtoECEF(lat, lon, alt):

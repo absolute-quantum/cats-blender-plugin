@@ -29,6 +29,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 ![](https://i.imgur.com/ItJLtNJ.png)
 
 4. If you need help figuring out how to use the tool:
+
 [![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
 
@@ -194,10 +195,15 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Changelog
 
 #### 0.2
-- Added: Armature: More models are now compatible  (if not yours doesn't get fixed please send us privately the zipped .blend file)
+- Added: Armature: More models are now compatible (if not yours doesn't get fixed please send us privately the zipped .blend file)
+- Added: New Material category in the panel Optimization
+- Added: Material: New "Combine Same Materials" button. This significantly reduced draw calls on some models
+- Added: Material: New "One Material Texture" button. This disables unused texture slots on the same material
 - Changed: Completely reworked eye tracking! You can now test how eye tracking will look like
-- Changed: Completely reworked bone translation, it's faster and better now!
+- Changed: Reworked bone translation, it's much faster and better now!
 - Changed: Armature: Now deletes bone groups (they are a color function, nobody's using that)
+- Changed: Armature: Joining meshes now correctly reorders existing vrc shape keys
+- Fixed: A bug where the mouth would open and close in certain positions in VRChat
 - Fixed: A stash full of bugs
 
 #### 0.1.0
@@ -218,17 +224,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
  - Changed: The plugin "mmd_tools" is no longer required
  - Changed: Translation: Temporarily removed "Textures" button as it's translations currently have no effect
  - Changed: Visemes and Eye Tracking: Reduced time for shape key creation significantly for models with high shape key count
-
-#### 0.0.8
- - Added: Armature: Now fixes more models with one click
- - Added: Credits: Link to the unofficial VRcat forum
- - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
- - Added: Eye tracking: Warning when bone hierarchy is incorrect
- - Added: Eye tracking & Visemes: Automatic search and fill in for fitting bones and shape keys (you should still check them)
- - Added: Panels: Improved bone and shape key sorting
- - Added: Continuous integration @ github: this will allow us to see errors before we make releases
- - Fixed: Visemes not being exported by Blender
- - Fixed: Tons of other bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
