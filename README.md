@@ -70,7 +70,8 @@ Deletes the selected bones and adds their weight to their respective parents.
 
 
 ## Eye tracking
-![](https://i.imgur.com/x9NqvUO.png)
+![](https://i.imgur.com/yw8INDO.png)
+![](https://i.imgur.com/n0tECB0.png)
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
@@ -101,8 +102,14 @@ The name of the shape key that controls lowerlid left
 ##### Lowerlid right
 The name of the shape key that controls lowerlid right
 
-##### Experimental eye fix
-Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head
+##### Disable Eye Blinking
+Disables eye blinking. Useful if you only want eye movement.
+
+##### Disable Eye Movement
+Disables eye movement. Useful if you only want blinking. **IMPORTANT:** Do your decimation first if you check this!
+
+##### Eye Movement Speed
+Configure eye movement speed
 
 
 ## Mouth visemes
@@ -184,7 +191,10 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Changelog
 
 #### 0.2
-- Changed: Completely reworked eye tracking!
+- Added: Armature: More models are now compatible  (if not yours doesn't get fixed please send us privately the zipped .blend file)
+- Changed: Completely reworked eye tracking! You can now test how eye tracking will look like
+- Changed: Completely reworked bone translation, it's faster and better now!
+- Changed: Armature: Now deletes bone groups (they are a color function, nobody's using that)
 - Fixed: A stash full of bugs
 
 #### 0.1.0
