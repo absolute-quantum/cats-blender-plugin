@@ -414,7 +414,8 @@ class FixArmature(bpy.types.Operator):
         for bone in armature.data.edit_bones:
             if bone.name in bone_list or bone.name.startswith(tuple(bone_list_with)):
                 armature.data.edit_bones.remove(bone)
-            bone.use_connect = False
+            else:
+                bone.use_connect = False
 
         # Make Hips top parent and reparent other top bones to hips
         if 'Hips' in armature.data.edit_bones:
