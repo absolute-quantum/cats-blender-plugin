@@ -40,6 +40,7 @@ import tools.rootbone
 import tools.translate
 import tools.armature
 import tools.armature_manual
+import tools.material
 import tools.common
 import tools.credits
 
@@ -49,7 +50,10 @@ importlib.reload(tools.eyetracking)
 importlib.reload(tools.rootbone)
 importlib.reload(tools.translate)
 importlib.reload(tools.armature)
+importlib.reload(tools.armature_manual)
+importlib.reload(tools.material)
 importlib.reload(tools.common)
+importlib.reload(tools.credits)
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -65,23 +69,6 @@ bl_info = {
 }
 
 slider_z = 0
-
-
-class ListItem(bpy.types.PropertyGroup):
-    """ Group of properties representing an item in the list """
-
-    name = bpy.props.StringProperty(
-        name="Name",
-        description="A name for this item",
-        default="Untitled"
-    )
-
-    random_prop = bpy.props.StringProperty(
-        name="Any other property you want",
-        description="",
-        default=""
-    )
-
 
 class ToolPanel:
     bl_label = 'Cats Blender Plugin'
@@ -253,7 +240,16 @@ class ToolPanel:
         items=tools.rootbone.get_parent_root_bones,
     )
 
-    # Auto Atlas
+    # Optimise
+    bpy.types.Scene.optimise_mode = bpy.props.EnumProperty(
+        name="Optimise Mode",
+        description="Mode",
+        items=[
+            ("ATLAS", "Atlas", "Allows you to make a texture atlas."),
+            ("MATERIAL", "Material", "Some various options on material manipulation.")
+        ]
+    )
+
     bpy.types.Scene.island_margin = bpy.props.FloatProperty(
         name='Margin',
         description='Margin to reduce bleed of adjacent islands',
@@ -515,34 +511,51 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
         row.operator('root.function', icon='TRIA_RIGHT')
 
 
-class AtlasPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_atlas_v1'
-    bl_label = 'Texture Atlas'
+class OptimisePanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_optimise_v1'
+    bl_label = 'Optimise'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
+
         layout = self.layout
         box = layout.box()
-        row = box.row(align=True)
-        row.prop(context.scene, 'island_margin')
-        row.scale_y = 0.9
-        row = box.row(align=True)
-        row.prop(context.scene, 'angle_limit')
-        row.scale_y = 0.9
-        row = box.row(align=True)
-        row.prop(context.scene, 'area_weight')
-        row.scale_y = 0.9
-        row = box.row(align=True)
-        row.prop(context.scene, 'texture_size', icon='TEXTURE')
-        row = box.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
-        row = box.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'one_texture')
-        row.prop(context.scene, 'pack_islands')
-        row = box.row(align=True)
-        row.operator('auto.atlas', icon='TRIA_RIGHT')
+        col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.prop(context.scene, 'optimise_mode', expand=True)
+
+        if context.scene.optimise_mode == 'ATLAS':
+            col.separator()
+            row = box.row(align=True)
+            row.prop(context.scene, 'island_margin')
+            row.scale_y = 0.9
+            row = box.row(align=True)
+            row.prop(context.scene, 'angle_limit')
+            row.scale_y = 0.9
+            row = box.row(align=True)
+            row.prop(context.scene, 'area_weight')
+            row.scale_y = 0.9
+            row = box.row(align=True)
+            row.prop(context.scene, 'texture_size', icon='TEXTURE')
+            row = box.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
+            row = box.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'one_texture')
+            row.prop(context.scene, 'pack_islands')
+            row = box.row(align=True)
+            row.operator('auto.atlas', icon='TRIA_RIGHT')
+
+        if context.scene.optimise_mode == 'MATERIAL':
+            col = box.column(align=True)
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.operator('combine.mats', icon='MATERIAL')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.operator('one.tex', icon='TEXTURE')
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
@@ -633,6 +646,8 @@ def register():
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
     bpy.utils.register_class(tools.armature.FixArmature)
+    bpy.utils.register_class(tools.material.CombineMaterialsButton)
+    bpy.utils.register_class(tools.material.OneTexPerMatButton)
     # bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     # bpy.utils.register_class(tools.armature_manual.JoinMeshesTest)
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
@@ -643,7 +658,7 @@ def register():
     bpy.utils.register_class(EyeTrackingPanel)
     bpy.utils.register_class(VisemePanel)
     bpy.utils.register_class(BoneRootPanel)
-    bpy.utils.register_class(AtlasPanel)
+    bpy.utils.register_class(OptimisePanel)
     bpy.utils.register_class(UpdaterPanel)
     bpy.utils.register_class(CreditsPanel)
     bpy.utils.register_class(UpdaterPreferences)
@@ -667,10 +682,12 @@ def unregister():
     bpy.utils.unregister_class(tools.armature.FixArmature)
     bpy.utils.unregister_class(tools.armature_manual.MixWeights)
     bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
+    bpy.utils.unregister_class(tools.material.CombineMaterialsButton)
+    bpy.utils.unregister_class(tools.material.OneTexPerMatButton)
     # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)
     # bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.unregister_class(tools.credits.ForumButton)
-    bpy.utils.unregister_class(AtlasPanel)
+    bpy.utils.unregister_class(OptimisePanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)
     bpy.utils.unregister_class(BoneRootPanel)
