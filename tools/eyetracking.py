@@ -325,8 +325,12 @@ def repair_shapekeys(mesh_name, vertex_group):
     bm.from_mesh(mesh.data)
     bm.verts.ensure_lookup_table()
 
-    # Get a vertex from the eye vertex group
-    gi = mesh.vertex_groups.get(vertex_group).index
+    # Get a vertex from the eye vertex group # TODO https://i.imgur.com/tWi8lk6.png after many times resetting the eyes
+    group = mesh.vertex_groups.get(vertex_group)
+    if group is None:
+        repair_shapekeys_mouth(mesh_name)
+        return
+    gi = group.index
     for v in mesh.data.vertices:
         for g in v.groups:
             if g.group == gi:

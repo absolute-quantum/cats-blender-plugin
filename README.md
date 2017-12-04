@@ -184,7 +184,9 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Changelog
 
 #### 0.2
-- Changed: Completely reworked eye tracking!
+- Added: Armature: More models are now compatible  (if not yours doesn't get fixed please send us privately the zipped .blend file)
+- Changed: Completely reworked eye tracking! You can now test how eye tracking will look like
+- Changed: Completely reworked bone translation, it's faster and better now!
 - Fixed: A stash full of bugs
 
 #### 0.1.0
