@@ -28,6 +28,9 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 ![](https://i.imgur.com/ItJLtNJ.png)
 
+4. If you need help figuring out how to use the tool:
+[![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
+
 
 ## Code contributors:
  - Hotox

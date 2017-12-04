@@ -480,10 +480,3 @@ def update_bones(degrees):
 
     if eye_left is None or eye_right is None:
         return
-
-
-
-
-
-
-
