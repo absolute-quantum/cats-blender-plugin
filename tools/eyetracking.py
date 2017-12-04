@@ -390,7 +390,7 @@ def repair_shapekeys_mouth(mesh_name, shapekey_name):  # TODO Add vertex repairi
 
 class StartTestingButton(bpy.types.Operator):
     bl_idname = 'eyes.test'
-    bl_label = 'Start eye testing'
+    bl_label = 'Start Eye Testing'
     bl_description = 'Starts the testing process.\n' \
                      'Bones "EyeLeft" and "EyeRight" are required.'
     bl_options = {'REGISTER', 'UNDO'}
@@ -422,7 +422,7 @@ class StartTestingButton(bpy.types.Operator):
 
 class StopTestingButton(bpy.types.Operator):
     bl_idname = 'eyes.test_stop'
-    bl_label = 'Stop eye testing'
+    bl_label = 'Stop Eye Testing'
     bl_description = 'Stops the testing process.'
     bl_options = {'REGISTER', 'UNDO'}
 

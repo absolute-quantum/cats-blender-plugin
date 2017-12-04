@@ -133,15 +133,13 @@ class ToolPanel:
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink Left',
-        description='The shape key containing a blink with the left eye.\n'
-                    'IMPORTANT: Do not set this to "Basis"! Disable Eye Blinking instead!',
+        description='The shape key containing a blink with the left eye.',
         items=tools.common.get_shapekeys_eye_blink_l
     )
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink Right',
-        description='The shape key containing a blink with the right eye.\n'
-                    'IMPORTANT: Do not set this to "Basis"! Disable Eye Blinking instead!',
+        description='The shape key containing a blink with the right eye.',
         items=tools.common.get_shapekeys_eye_blink_r
     )
 
@@ -421,10 +419,10 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
             col.separator()
             row = col.row(align=True)
-            row.prop(context.scene, 'disable_eye_movement')
+            row.prop(context.scene, 'disable_eye_blinking')
 
             row = col.row(align=True)
-            row.prop(context.scene, 'disable_eye_blinking')
+            row.prop(context.scene, 'disable_eye_movement')
 
             if not context.scene.disable_eye_movement:
                 col.separator()

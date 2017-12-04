@@ -348,14 +348,17 @@ class FixArmature(bpy.types.Operator):
         # bpy.ops.object.hide_view_clear()
         armature = tools.common.set_default_stage()
 
-        # Empty objects should be removed
+        # Remove empty objects
         tools.common.remove_empty()
 
-        # Rigidbodies and joints should be removed
+        # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
-            if obj.name == 'rigidbodies' or obj.name == 'joints' or obj.name == 'Bone Groups':
+            if obj.name == 'rigidbodies' or obj.name == 'joints':
                 delete_hierarchy(obj)
-                bpy.data.objects.remove(obj)
+
+        # Remove Bone Groups
+        for group in armature.pose.bone_groups:
+            armature.pose.bone_groups.remove(group)
 
         # Model should be in rest position
         armature.data.pose_position = 'REST'
@@ -407,13 +410,10 @@ class FixArmature(bpy.types.Operator):
                         parent.name = 'Left ' + value
                         break
 
-        # Remove un-needed bones
+        # Remove un-needed bones and disconnect them
         for bone in armature.data.edit_bones:
             if bone.name in bone_list or bone.name.startswith(tuple(bone_list_with)):
                 armature.data.edit_bones.remove(bone)
-
-        # Disconnect all bones
-        for bone in armature.data.edit_bones:
             bone.use_connect = False
 
         # Make Hips top parent and reparent other top bones to hips
