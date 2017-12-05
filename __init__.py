@@ -61,7 +61,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 2],
+    'version': [0, 2, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -163,10 +163,10 @@ class ToolPanel:
     )
 
     bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
-        name='Eye Movement Speed',
+        name='Eye Movement Range',
         description='Higher = more eye movement\n'
                     'Lower = less eye movement\n'
-                    'Warning: Too little or too much speed can glitch the eyes.\n'
+                    'Warning: Too little or too much range can glitch the eyes.\n'
                     'Test your results in the "Eye Testing"-Tab!',
         default=0.8,
         min=0.0,
@@ -443,12 +443,14 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
             if mode != 'POSE':
                 col.separator()
                 row = col.row(align=True)
+                row.scale_y = 1.5
                 row.operator('eyes.test', icon='TRIA_RIGHT')
             else:
-                col.separator()
-                row = col.row(align=True)
-                row.operator('eyes.test_stop', icon='TRIA_RIGHT')
+                # col.separator()
+                # row = col.row(align=True)
+                # row.operator('eyes.test_stop', icon='PAUSE')
 
+                col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_rotation_x', icon='FILE_PARENT')
@@ -460,9 +462,22 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 #     slider_z = context.scene.eye_rotation_z
                 #     tools.eyetracking.update_bones(slider_z)
 
+                row = col.row(align=True)
+                row.operator('eyes.set_rotation', icon='MAN_ROT')
+
+                col.separator()
                 col.separator()
                 row = col.row(align=True)
-                row.operator('eyes.set_rotation', icon='TRIA_RIGHT')
+                row.prop(context.scene, 'eye_distance')
+
+                row = col.row(align=True)
+                row.operator('eyes.adjust_eyes', icon='CURVE_NCIRCLE')
+
+                col.separator()
+                col.separator()
+                row = col.row(align=True)
+                row.scale_y = 1.5
+                row.operator('eyes.test_stop', icon='PAUSE')
 
 
 class VisemePanel(ToolPanel, bpy.types.Panel):
@@ -636,6 +651,7 @@ def register():
     bpy.utils.register_class(tools.eyetracking.StartTestingButton)
     bpy.utils.register_class(tools.eyetracking.StopTestingButton)
     bpy.utils.register_class(tools.eyetracking.SetRotationButton)
+    bpy.utils.register_class(tools.eyetracking.AdjustEyesButton)
     bpy.utils.register_class(tools.viseme.AutoVisemeButton)
     bpy.utils.register_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.register_class(tools.translate.TranslateBonesButton)
@@ -670,6 +686,7 @@ def unregister():
     bpy.utils.unregister_class(tools.eyetracking.StartTestingButton)
     bpy.utils.unregister_class(tools.eyetracking.StopTestingButton)
     bpy.utils.unregister_class(tools.eyetracking.SetRotationButton)
+    bpy.utils.unregister_class(tools.eyetracking.AdjustEyesButton)
     bpy.utils.unregister_class(tools.viseme.AutoVisemeButton)
     bpy.utils.unregister_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.unregister_class(tools.translate.TranslateBonesButton)

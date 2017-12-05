@@ -35,8 +35,19 @@ import hashlib
 class OneTexPerMatButton(bpy.types.Operator):
     bl_idname = 'one.tex'
     bl_label = 'One Material Texture'
-    bl_description = 'Have all material slots ignore extra texture slots'
+    bl_description = 'Have all material slots ignore extra texture slots. These are not used in VRChat.'
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature() is None:
+            return False
+        i = 0
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
+        return i > 0
 
     def execute(self, context):
         tools.common.set_default_stage()
@@ -59,6 +70,17 @@ class CombineMaterialsButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     combined_tex = {}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature() is None:
+            return False
+        i = 0
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
+        return i > 0
 
     def assignmatslots(self, ob, matlist):
         scn = bpy.context.scene

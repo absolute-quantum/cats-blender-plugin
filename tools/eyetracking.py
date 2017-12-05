@@ -193,14 +193,12 @@ class CreateEyesButton(bpy.types.Operator):
     def execute(self, context):
         # PreserveState = tools.common.PreserveState()
         # PreserveState.save()
-        mesh_name = context.scene.mesh_name_eye
-
-        start_time_unit = time.time()
-        print(time.time() - start_time_unit)
 
         # Set the stage
         armature = tools.common.set_default_stage()
         tools.common.switch('EDIT')
+
+        mesh_name = context.scene.mesh_name_eye
 
         # Set up old bones
         head = armature.data.edit_bones.get(context.scene.head)
@@ -255,8 +253,8 @@ class CreateEyesButton(bpy.types.Operator):
         new_right_eye.parent = bpy.context.object.data.edit_bones[context.scene.head]
 
         # Calculate their new positions
-        self.fix_eye_position(context, old_eye_left, new_left_eye, head)
-        self.fix_eye_position(context, old_eye_right, new_right_eye, head)
+        fix_eye_position(context, old_eye_left, new_left_eye, head)
+        fix_eye_position(context, old_eye_right, new_right_eye, head)
 
         # Switch to mesh
         bpy.context.scene.objects.active = bpy.data.objects[mesh_name]
@@ -305,15 +303,12 @@ class CreateEyesButton(bpy.types.Operator):
         # Check for correct bone hierarchy
         is_correct = tools.armature.check_hierarchy([['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
 
-        print(time.time() - start_time_unit)
         if context.scene.disable_eye_movement:
-            # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
             repair_shapekeys_mouth(mesh_name)
+            # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
         else:
             print('Repair "' + new_right_eye.name + '".')
             repair_shapekeys(mesh_name, new_right_eye.name)
-
-        print(time.time() - start_time_unit)
 
         # PreserveState.load()  # TODO
 
@@ -413,11 +408,56 @@ def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
     if i == 0:
         print('Error: Random shapekey repairing failed for some reason! Canceling!')
 
+def fix_eye_position(context, old_eye, new_eye, head):
+    # Verify that the new eye bone is in the correct position
+    # by comparing the old eye vertex group average vector location
+    mesh_name = context.scene.mesh_name_eye
+    scale = -context.scene.eye_distance + 1
+
+    if head is not None:
+        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eye.name)
+    else:
+        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, new_eye.name)
+
+    if coords_eye is False:
+        return
+
+    if head is not None:
+        mesh = bpy.data.objects[mesh_name]
+        p1 = mesh.matrix_world * head.head
+        p2 = mesh.matrix_world * coords_eye
+        length = (p1 - p2).length
+        print(length)  # TODO calculate scale if bone is too close to center of the eye
+
+    # dist = math.sqrt((coords_eye[0] - head.head[0]) ** 2 + (coords_eye[1] - head.head[1]) ** 2 + (coords_eye[2] - head.head[2]) ** 2)
+    # dist2 = np.linalg.norm(coords_eye - head.head)
+    # dist3 = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 + (p1[2] - p2[2]) ** 2)
+    #dist4 = np.linalg.norm(p1 - p2)
+    # print(dist)
+    # print(dist2)
+    # print(2 ** 2)
+    #print(dist4)
+
+    if context.scene.disable_eye_movement:
+        if head is not None:
+            new_eye.head[0] = head.head[0]
+            new_eye.head[1] = head.head[1]
+            new_eye.head[2] = head.head[2]
+    else:
+        new_eye.head[0] = old_eye.head[0] + scale * (coords_eye[0] - old_eye.head[0])
+        new_eye.head[1] = old_eye.head[1] + scale * (coords_eye[1] - old_eye.head[1])
+        new_eye.head[2] = old_eye.head[2] + scale * (coords_eye[2] - old_eye.head[2])
+
+    new_eye.tail[0] = new_eye.head[0]
+    new_eye.tail[1] = new_eye.head[1]
+    new_eye.tail[2] = new_eye.head[2] + 0.2
+
 
 class StartTestingButton(bpy.types.Operator):
     bl_idname = 'eyes.test'
     bl_label = 'Start Eye Testing'
-    bl_description = 'Starts the testing process.\n' \
+    bl_description = 'This will let you test how the eye movement will look ingame.\n' \
+                     "Don't forget to stop the Testing process afterwards.\n" \
                      'Bones "EyeLeft" and "EyeRight" are required.'
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -468,9 +508,17 @@ class StopTestingButton(bpy.types.Operator):
 
 class SetRotationButton(bpy.types.Operator):
     bl_idname = 'eyes.set_rotation'
-    bl_label = 'Set Rotation'
-    bl_description = 'Sets the roation.'
+    bl_label = 'Test Rotation'
+    bl_description = "This let's you test how the eye movement will look ingame."
     bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        armature = tools.common.get_armature()
+        if 'LeftEye' in armature.pose.bones:
+            if 'RightEye' in armature.pose.bones:
+                return True
+        return False
 
     def execute(self, context):
         armature = tools.common.get_armature()
@@ -489,6 +537,38 @@ class SetRotationButton(bpy.types.Operator):
         eye_right.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
         eye_right.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
 
+        return {'FINISHED'}
+
+
+class AdjustEyesButton(bpy.types.Operator):
+    bl_idname = 'eyes.adjust_eyes'
+    bl_label = 'Set Range'
+    bl_description = "Let's you readjust the movement range of the eyes.\n" \
+                     "This get's saved."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        armature = tools.common.get_armature()
+        if 'LeftEye' in armature.pose.bones:
+            if 'RightEye' in armature.pose.bones:
+                return True
+        return False
+
+    def execute(self, context):
+
+        armature = tools.common.set_default_stage()
+        tools.common.switch('EDIT')
+
+        eye_left = armature.data.edit_bones.get('LeftEye')
+        eye_right = armature.data.edit_bones.get('RightEye')
+        old_eye_left = armature.pose.bones.get(context.scene.eye_left)
+        old_eye_right = armature.pose.bones.get(context.scene.eye_right)
+
+        fix_eye_position(context, old_eye_left, eye_left, None)
+        fix_eye_position(context, old_eye_right, eye_right, None)
+
+        tools.common.switch('POSE')
         return {'FINISHED'}
 
 

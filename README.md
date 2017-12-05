@@ -1,4 +1,4 @@
-# cats-blender-plugin
+# Cats Blender Plugin (0.2.0)
 
 A tool designed to shorten steps needed to import and optimise MMD models into VRChat
 
@@ -12,7 +12,8 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Creating eye tracking
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
- - Translating shape keys, bones, textures, materials and meshes
+ - Optimizing materials
+ - Translating shape keys, bones, materials and meshes
  - Auto updater
 
 *More to come!*
@@ -48,11 +49,11 @@ A vastly improved combination of Neitri and Shotariya's blender plugins, it trie
 Fixes your armature automatically by:
  - Reparenting bones
  - Removing unnecessary bones
- - Renaming objects and bones
+ - Renaming and translating objects and bones
  - Mixing weight paints
  - Rotating the hips
  - Joining meshes
- - Removing rigidbodies and joints
+ - Removing rigidbodies, joints and bone groups
  - Removing bone constraints
  - Deleting unused vertex groups
 
@@ -75,7 +76,7 @@ Deletes the selected bones and adds their weight to their respective parents.
 
 ## Eye tracking
 ![](https://i.imgur.com/yw8INDO.png)
-![](https://i.imgur.com/n0tECB0.png)
+![](https://i.imgur.com/8lPgiQ8.png)
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
@@ -194,7 +195,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
-#### 0.2
+#### 0.2.0
 - Added: Armature: More models are now compatible (if not yours doesn't get fixed please send us privately the zipped .blend file)
 - Added: New Material category in the panel Optimization
 - Added: Material: New "Combine Same Materials" button. This significantly reduced draw calls on some models
