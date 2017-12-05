@@ -55,7 +55,9 @@ bone_list_rename = {
     'Ankle_L': 'Left ankle',
     'Ankle_R': 'Right ankle',
     'ToeTip_L': 'Left toe',
+    'LegTipEX_L': 'Left toe',
     'ToeTip_R': 'Right toe',
+    'LegTipEX_R': 'Right toe',
     'LowerBody': 'Hips',
     'Lowerbody': 'Hips',
     'Lower body': 'Hips',
@@ -116,24 +118,96 @@ bone_list_parenting = {
     'Right toe': 'Right ankle',
 }
 bone_list_weight = {
+    'UpperBodyx': 'Spine',
+    'UpperBodyx2': 'Chest',
+    'Neckx': 'Neck',
+    'Neckx2': 'Head',
+
     'LegD_L': 'Left leg',
-    'LegD_R': 'Right leg',
-    'KneeD_L': 'Left knee',
-    'KneeD_R': 'Right knee',
-    'AnkleD_L': 'Left ankle',
-    'AnkleD_R': 'Right ankle',
-    'LegTipEX_L': 'Left toe',
-    'LegTipEX_R': 'Right toe',
     'Left foot D': 'Left leg',
+    'Left foot complement': 'Left leg',
+    'Left foot supplement': 'Left leg',
+    'Legcnt連_L': 'Left leg',
+    'L腿Twist1': 'Left leg',
+    'L腿Twist2': 'Left leg',
+    'L腿Twist3': 'Left leg',
+    'LegcntEven_L': 'Left leg',
+    'LLegTwist1': 'Left leg',
+    'LLegTwist2': 'Left leg',
+    'LLegTwist3': 'Left leg',
+
+    'LegD_R': 'Right leg',
     'Right foot D': 'Right leg',
+    'Right foot complement': 'Right leg',
+    'Right foot supplement': 'Right leg',
+    'Legcnt連_R': 'Right leg',
+    'R腿Twist1': 'Right leg',
+    'R腿Twist2': 'Right leg',
+    'R腿Twist3': 'Right leg',
+    'LegcntEven_R': 'Right leg',
+    'RLegTwist1': 'Right leg',
+    'RLegTwist2': 'Right leg',
+    'RLegTwist3': 'Right leg',
+
+    'KneeD_L': 'Left knee',
     'Left knee D': 'Left knee',
+    'Kneecnt連_L': 'Left knee',
+    'L脛Twist1': 'Left knee',
+    'L脛Twist2': 'Left knee',
+    'L脛Twist3': 'Left knee',
+    'KneecntEven_L': 'Left knee',
+    'LTibiaTwist1': 'Left knee',
+    'LTibiaTwist2': 'Left knee',
+    'LTibiaTwist3': 'Left knee',
+
+    'KneeD_R': 'Right knee',
     'Right knee D': 'Right knee',
+    'Kneecnt連_R': 'Right knee',
+    'R脛Twist1': 'Right knee',
+    'R脛Twist2': 'Right knee',
+    'R脛Twist3': 'Right knee',
+    'KneecntEven_R': 'Right knee',
+    'RTibiaTwist1': 'Right knee',
+    'RTibiaTwist2': 'Right knee',
+    'RTibiaTwist3': 'Right knee',
+
+    'AnkleD_L': 'Left ankle',
+    'Left ankle D': 'Left ankle',
+    'Ankle連_L': 'Left ankle',
+    'AnkleEven_L': 'Left ankle',
+
+    'AnkleD_R': 'Right ankle',
+    'Right ankle D': 'Right ankle',
+    'Ankle連_R': 'Right ankle',
+    'AnkleEven_R': 'Right ankle',
+
+    '爪TipEX_L': 'Left toe',
+    '爪TipEX2_L': 'Left toe',
+    '爪TipThumbEX_L': 'Left toe',
+    '爪TipThumbEX2_L': 'Left toe',
+    'ClawTipEX_L': 'Left toe',
+    'ClawTipEX2_L': 'Left toe',
+    'ClawTipThumbEX_L': 'Left toe',
+    'ClawTipThumbEX2_L': 'Left toe',
+
+    '爪TipEX_R': 'Right toe',
+    '爪TipEX2_R': 'Right toe',
+    '爪TipThumbEX_R': 'Right toe',
+    '爪TipThumbEX2_R': 'Right toe',
+    'ClawTipEX_R': 'Right toe',
+    'ClawTipEX2_R': 'Right toe',
+    'ClawTipThumbEX_R': 'Right toe',
+    'ClawTipThumbEX2_R': 'Right toe',
 
     'ShoulderC_R': 'Right shoulder',
+    'Shoulder2_R': 'Right shoulder',
+    'ShoulderSleeve_R': 'Right shoulder',
     'SleeveShoulderIK_R': 'Right shoulder',
     'Right shoulder weight': 'Right shoulder',
 
     'ShoulderC_L': 'Left shoulder',
+    'Shoulder2_L': 'Left shoulder',
+    'ShoulderSleeve_L': 'Left shoulder',
     'SleeveShoulderIK_L': 'Left shoulder',
     'Left shoulder weight': 'Left shoulder',
 
@@ -150,6 +224,7 @@ bone_list_weight = {
     'Right arm tight 3': 'Right arm',
     'ElbowAux_R': 'Right arm',
     'ElbowAux+_R': 'Right arm',
+    'ArmSleeve_R': 'Right arm',
 
     'ArmTwist_L': 'Left arm',
     'ArmTwist1_L': 'Left arm',
@@ -164,6 +239,7 @@ bone_list_weight = {
     'Left arm tight 3': 'Left arm',
     'ElbowAux_L': 'Left arm',
     'ElbowAux+_L': 'Left arm',
+    'ArmSleeve_L': 'Left arm',
 
     'HandTwist_R': 'Right elbow',
     'HandTwist1_R': 'Right elbow',
@@ -179,6 +255,7 @@ bone_list_weight = {
     'Right hand twist 1': 'Right elbow',
     'Right hand twist 2': 'Right elbow',
     'Right Hand Thread 3': 'Right elbow',
+    'ElbowSleeve_R': 'Right elbow',
 
     'HandTwist_L': 'Left elbow',
     'HandTwist1_L': 'Left elbow',
@@ -194,6 +271,11 @@ bone_list_weight = {
     'Left hand twist 1': 'Left elbow',
     'Left hand twist 2': 'Left elbow',
     'Left Hand Thread 3': 'Left elbow',
+    'ElbowSleeve_L': 'Left elbow',
+
+    'WristSleeve_L': 'Left wrist',
+    'WristSleeve_R': 'Right wrist',
+
 }
 dont_delete_these_bones = {
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
@@ -219,6 +301,7 @@ def delete_hierarchy(obj):
     [setattr(objects[n], 'select', True) for n in names]
 
     bpy.ops.object.delete()
+    bpy.data.objects.remove(obj)
 
 
 class FixArmature(bpy.types.Operator):
@@ -226,24 +309,23 @@ class FixArmature(bpy.types.Operator):
     bl_label = 'Fix Armature'
     bl_description = 'Automatically:\n' \
                      '- Reparents bones\n' \
-                     '- Removes unnecessary bones\n' \
-                     '- Renames objects and bones\n' \
+                     '- Removes unnecessary bones & objects\n' \
+                     '- Translates and renames bones & objects\n' \
                      '- Mixes weight paints\n' \
                      '- Rotates the hips\n' \
                      '- Joins meshes\n' \
-                     '- Removes rigidbodies and joints\n' \
                      '- Removes bone constraints\n' \
                      '- Deletes unused vertex groups'
 
     bl_options = {'REGISTER', 'UNDO'}
-
-    tries = 0
 
     dictionary = bpy.props.EnumProperty(
         name='Dictionary',
         items=DictionaryEnum.get_dictionary_items,
         description='Translate names from Japanese to English using selected dictionary',
     )
+
+    tries = 0
 
     @classmethod
     def poll(cls, context):
@@ -252,7 +334,8 @@ class FixArmature(bpy.types.Operator):
         i = 0
         for ob in bpy.data.objects:
             if ob.type == 'MESH':
-                i += 1
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
         return i > 0
 
 
@@ -263,18 +346,19 @@ class FixArmature(bpy.types.Operator):
         # preservestate.save()
 
         # bpy.ops.object.hide_view_clear()
-        tools.common.unselect_all()
-        tools.common.switch('OBJECT')
-        armature = tools.common.get_armature()
+        armature = tools.common.set_default_stage()
 
-        # Empty objects should be removed
+        # Remove empty objects
         tools.common.remove_empty()
 
-        # Rigidbodies and joints should be removed
+        # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
             if obj.name == 'rigidbodies' or obj.name == 'joints':
                 delete_hierarchy(obj)
-                bpy.data.objects.remove(obj)
+
+        # Remove Bone Groups
+        for group in armature.pose.bone_groups:
+            armature.pose.bone_groups.remove(group)
 
         # Model should be in rest position
         armature.data.pose_position = 'REST'
@@ -286,15 +370,16 @@ class FixArmature(bpy.types.Operator):
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
 
+        # Reorders vrc shape keys to the correct order
+        tools.common.repair_viseme_order(mesh.name)
+
         # Armature should be selected and in edit mode
         tools.common.unselect_all()
         tools.common.select(armature)
         tools.common.switch('EDIT')
 
         # Translate bones with dictionary
-        translator = DictionaryEnum.get_translator(self.dictionary)
-        for bone in armature.data.bones:
-            bone.name = translator.translate(utils.convertNameToLR(bone.name, True))
+        tools.translate.translate_bones(self.dictionary)
 
         # Rename bones
         for key, value in bone_list_rename.items():
@@ -328,14 +413,12 @@ class FixArmature(bpy.types.Operator):
                         parent.name = 'Left ' + value
                         break
 
-        # Remove un-needed bones
+        # Remove un-needed bones and disconnect them
         for bone in armature.data.edit_bones:
             if bone.name in bone_list or bone.name.startswith(tuple(bone_list_with)):
                 armature.data.edit_bones.remove(bone)
-
-        # Disconnect all bones
-        for bone in armature.data.edit_bones:
-            bone.use_connect = False
+            else:
+                bone.use_connect = False
 
         # Make Hips top parent and reparent other top bones to hips
         if 'Hips' in armature.data.edit_bones:
@@ -344,6 +427,10 @@ class FixArmature(bpy.types.Operator):
             for bone in armature.data.edit_bones:
                 if bone.parent is None:
                     bone.parent = hips
+
+        # Set head roll to 0 degrees for eye tracking
+        if 'Head' in armature.data.edit_bones:
+            armature.data.edit_bones.get('Head').roll = 0
 
         # == FIXING OF SPECIAL BONE CASES ==
 
@@ -494,11 +581,7 @@ class FixArmature(bpy.types.Operator):
 
 
 def check_hierarchy(correct_hierarchy_array):
-    armature = tools.common.get_armature()
-
-    tools.common.unselect_all()
-    tools.common.select(armature)
-    tools.common.switch('EDIT')
+    armature = tools.common.set_default_stage()
 
     for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
         previous = None
@@ -526,6 +609,7 @@ def check_hierarchy(correct_hierarchy_array):
 
 def delete_zero_weight():
     armature = tools.common.get_armature()
+    tools.common.switch('EDIT')
 
     bone_names_to_work_on = set([bone.name for bone in armature.data.edit_bones])
 
@@ -545,7 +629,7 @@ def delete_zero_weight():
         for vertex in objects.data.vertices:
             for group in vertex.groups:
                 if group.weight > 0:
-                    vertex_group_names_used.add(vertex_group_id_to_vertex_group_name[group.group])
+                    vertex_group_names_used.add(vertex_group_id_to_vertex_group_name.get(group.group))
 
     not_used_bone_names = bone_names_to_work_on - vertex_group_names_used
 

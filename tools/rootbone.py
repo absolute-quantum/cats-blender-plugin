@@ -48,23 +48,15 @@ class RootButton(bpy.types.Operator):
         # PreserveState = tools.common.PreserveState()
         # PreserveState.save()
 
-        tools.common.unhide_all()
+        tools.common.set_default_stage()
 
-        tools.common.switch('OBJECT')
-
-        armature = tools.common.get_armature()
-
-        bpy.context.scene.objects.active = armature
-        armature.select = True
-
-        tools.common.switch('EDIT')
         tools.common.switch('EDIT')
 
         # this is the bones that will be parented
         child_bones = globs.root_bones[context.scene.root_bone]
 
         # Create the new root bone
-        new_bone_name = 'RootBone_' + child_bones[0]
+        new_bone_name = 'Root_' + child_bones[0]
         root_bone = bpy.context.object.data.edit_bones.new(new_bone_name)
         root_bone.parent = bpy.context.object.data.edit_bones[child_bones[0]].parent
 
@@ -120,16 +112,22 @@ def get_parent_root_bones(self, context):
         'hips',
         'twist',
         'shadow',
+        'dummy',
         'hand',
-        'rootbone'
+        'waistcancel',
+        'root_'
     ]
 
     # Find and group bones together that look alike
     # Please do not ask how this works
     for rootbone in armature.bones:
+        ignore = False
         for ignore_bone_name in ignore_bone_names_with:
             if ignore_bone_name in rootbone.name.lower():
+                ignore = True
                 break
+        if ignore:
+            continue
         for bone in armature.bones:
             if bone.name in check_these_bones:
                 m = SequenceMatcher(None, rootbone.name, bone.name)

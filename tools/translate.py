@@ -24,6 +24,7 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 
+import re
 import bpy
 import tools.common
 
@@ -71,7 +72,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
     bl_label = 'Bones'
-    bl_description = "Translates all bones with Google Translate."
+    bl_description = "Translates all bones with the build-in dictionary and the untranslated parts with Google Translate."
     bl_options = {'REGISTER', 'UNDO'}
 
     dictionary = bpy.props.EnumProperty(
@@ -82,31 +83,8 @@ class TranslateBonesButton(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.unhide_all()
-        armature = tools.common.get_armature().data
+        translate_bones(self.dictionary)
 
-        translator = DictionaryEnum.get_translator(self.dictionary)
-
-        for bone in armature.bones:
-            bone.name = utils.convertNameToLR(bone.name, True)
-            bone.name = translator.translate(bone.name)
-
-        # then translate all the bones to english just in case mmd skipped something
-        # TODO: could be optimised by only translating bones that mmd skipped
-        to_translate = []
-        translated = []
-
-        for bone in armature.bones:
-            to_translate.append(bone.name)
-
-        translator = Translator()
-        translations = translator.translate(to_translate)
-        for translation in translations:
-            translated.append(translation.text)
-
-        for i, bone in enumerate(armature.bones):
-            bone.name = translated[i]
-
-        self.report({'INFO'}, 'Translated all bones')
         return {'FINISHED'}
 
 
@@ -221,3 +199,44 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Translated all materials')
         return {'FINISHED'}
+
+
+def translate_bones(dictionary):
+    armature = tools.common.get_armature().data
+    translator = DictionaryEnum.get_translator(dictionary)
+    regex = u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+'  # Regex to look for japanese chars
+
+    google_input = []
+    google_output = []
+
+    # Translate with the local mmd_tools dictionary
+    for bone in armature.bones:
+        translated_name = utils.convertNameToLR(bone.name, True)
+        translated_name = translator.translate(translated_name)
+        bone.name = translated_name
+
+        # Check if name contains untranslated chars and add them to the list
+        match = re.findall(regex, translated_name)
+        if match is not None:
+            for name in match:
+                if name not in google_input:
+                    google_input.append(name)
+
+    # Translate the list with google translate
+    try:
+        translator = Translator()
+        translations = translator.translate(google_input)
+    except:
+        return
+
+    for translation in translations:
+        google_output.append(translation.text.capitalize())
+
+    # Replace all untranslated parts in the bones with translations
+    for bone in armature.bones:
+        bone_name = bone.name
+        match = re.findall(regex, bone_name)
+        if match is not None:
+            for index, name in enumerate(google_input):
+                if name in match:
+                    bone.name = bone_name.replace(name, google_output[index])
