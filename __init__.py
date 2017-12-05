@@ -80,7 +80,8 @@ class ToolPanel:
     # Armature
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove Zero Weight Bones',
-        description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.",
+        description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.\n"
+                    'Uncheck this if bones you want to keep got deleted.',
         default=True
     )
 
@@ -179,7 +180,7 @@ class ToolPanel:
         name='Up - Down',
         description='Rotate the eye bones on the vertical axis.',
         default=0,
-        min=-22,
+        min=-19,
         max=25,
         step=1,
         subtype='FACTOR'
@@ -511,7 +512,7 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
 
 class OptimizePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_optimize_v1'
-    bl_label = 'Optimize'
+    bl_label = 'Optimization'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
