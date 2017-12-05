@@ -200,11 +200,12 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: New Material category in the panel Optimization
 - Added: Material: New "Combine Same Materials" button. This significantly reduced draw calls on some models
 - Added: Material: New "One Material Texture" button. This disables unused texture slots on the same material
+- Added: Credits: New "Join our Discord" button
 - Changed: Completely reworked eye tracking! You can now test how eye tracking will look like
 - Changed: Reworked bone translation, it's much faster and better now!
 - Changed: Armature: Now deletes bone groups (they are a color function, nobody's using that)
 - Changed: Armature: Joining meshes now correctly reorders existing vrc shape keys
-- Fixed: A bug where the mouth would open and close in certain positions in VRChat
+- Fixed: Eye Tracking: A bug where the mouth would open and close in certain positions in VRChat
 - Fixed: A stash full of bugs
 
 #### 0.1.0

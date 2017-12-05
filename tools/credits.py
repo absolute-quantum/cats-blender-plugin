@@ -29,10 +29,21 @@ import webbrowser
 
 class ForumButton(bpy.types.Operator):
     bl_idname = 'credits.forum'
-    bl_label = 'Go to the forums'
+    bl_label = 'Go to the Forums'
 
     def execute(self, context):
         webbrowser.open('https://vrcat.club/threads/cats-blender-plugin.6/')
 
         self.report({'INFO'}, 'Forum opened')
+        return {'FINISHED'}
+
+
+class DiscordButton(bpy.types.Operator):
+    bl_idname = 'credits.discord'
+    bl_label = 'Join our Discord'
+
+    def execute(self, context):
+        webbrowser.open('https://discord.gg/f8yZGnv')
+
+        self.report({'INFO'}, 'Discord opened')
         return {'FINISHED'}

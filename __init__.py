@@ -602,8 +602,12 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
         box.label('Want to give feedback or found a bug?')
-        row = box.row(align=True)
+
+        col = box.column(align=True)
+        row = col.row(align=True)
         row.operator('credits.forum', icon='LOAD_FACTORY')
+        row = col.row(align=True)
+        row.operator('credits.discord', icon='LOAD_FACTORY')
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -668,6 +672,7 @@ def register():
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
     bpy.utils.register_class(tools.credits.ForumButton)
+    bpy.utils.register_class(tools.credits.DiscordButton)
     bpy.utils.register_class(ArmaturePanel)
     bpy.utils.register_class(TranslationPanel)
     bpy.utils.register_class(EyeTrackingPanel)
@@ -703,6 +708,7 @@ def unregister():
     # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)
     # bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.unregister_class(tools.credits.ForumButton)
+    bpy.utils.unregister_class(tools.credits.DiscordButton)
     bpy.utils.unregister_class(OptimizePanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)
