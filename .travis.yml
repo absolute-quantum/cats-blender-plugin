@@ -60,3 +60,13 @@ install:
 # Start unit testing
 script:
   - python tests/run.py -b ./tmp/blender/blender -c True
+  
+notifications:
+  webhooks:
+    urls:
+      - http://165.227.184.114:7778/webhook
+    on_success: always # default: always
+    on_failure: always # default: always
+    on_start: never   # default: never
+    on_cancel: always # default: always
+    on_error: always # default: always
