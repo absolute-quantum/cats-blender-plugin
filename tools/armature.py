@@ -288,7 +288,7 @@ dont_delete_these_bones = {
 
 
 def delete_hierarchy(obj):
-    names = {obj.name}
+    names = {}
 
     def get_child_names(objz):
         for child in objz.children:
@@ -301,6 +301,7 @@ def delete_hierarchy(obj):
     [setattr(objects[n], 'select', True) for n in names]
 
     bpy.ops.object.delete()
+    bpy.data.objects.remove(obj)
 
 
 class FixArmature(bpy.types.Operator):
