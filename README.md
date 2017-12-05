@@ -1,6 +1,6 @@
 # cats-blender-plugin
 
-A tool designed to shorten steps needed to import and optimise MMD models into VRChat
+A tool designed to shorten steps needed to import and optimize MMD models into VRChat
 
 Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
 
@@ -193,7 +193,9 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
-#### 0.2
+#### 0.2.0
+- Added: Optimize: A new panel that includes a material and atlassing sub menu
+- Added: Optimize: Material sub menu; here you can combine the same materials into one and enable one texture per material
 - Added: Armature: More models are now compatible  (if not yours doesn't get fixed please send us privately the zipped .blend file)
 - Changed: Completely reworked eye tracking! You can now test how eye tracking will look like
 - Changed: Completely reworked bone translation, it's faster and better now!
@@ -242,4 +244,4 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
 
 ## Feedback
 Do you love this plugin or have you found a bug?
-Post a response in this thread or send your feedback to this discord server https://discord.gg/up9Zqsu and look for givemeallyourcats ;)
+Post a response in this thread or send your feedback to the official discord server of the plugin for real-time communication: https://discord.gg/f8yZGnv and look for people with the developer role ;)

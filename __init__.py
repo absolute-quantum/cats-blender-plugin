@@ -60,7 +60,7 @@ bl_info = {
     'category': '3D View',
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
-    'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
+    'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
     'version': [0, 2],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
@@ -238,9 +238,9 @@ class ToolPanel:
         items=tools.rootbone.get_parent_root_bones,
     )
 
-    # Optimise
-    bpy.types.Scene.optimise_mode = bpy.props.EnumProperty(
-        name="Optimise Mode",
+    # Optimize
+    bpy.types.Scene.optimize_mode = bpy.props.EnumProperty(
+        name="Optimize Mode",
         description="Mode",
         items=[
             ("ATLAS", "Atlas", "Allows you to make a texture atlas."),
@@ -509,9 +509,9 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
         row.operator('root.function', icon='TRIA_RIGHT')
 
 
-class OptimisePanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_optimise_v1'
-    bl_label = 'Optimise'
+class OptimizePanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_optimize_v1'
+    bl_label = 'Optimize'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -521,9 +521,9 @@ class OptimisePanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
-        row.prop(context.scene, 'optimise_mode', expand=True)
+        row.prop(context.scene, 'optimize_mode', expand=True)
 
-        if context.scene.optimise_mode == 'ATLAS':
+        if context.scene.optimize_mode == 'ATLAS':
             col.separator()
             row = box.row(align=True)
             row.prop(context.scene, 'island_margin')
@@ -546,7 +546,7 @@ class OptimisePanel(ToolPanel, bpy.types.Panel):
             row = box.row(align=True)
             row.operator('auto.atlas', icon='TRIA_RIGHT')
 
-        if context.scene.optimise_mode == 'MATERIAL':
+        if context.scene.optimize_mode == 'MATERIAL':
             col = box.column(align=True)
             row = col.row(align=True)
             row.scale_y = 1.1
@@ -656,7 +656,7 @@ def register():
     bpy.utils.register_class(EyeTrackingPanel)
     bpy.utils.register_class(VisemePanel)
     bpy.utils.register_class(BoneRootPanel)
-    bpy.utils.register_class(OptimisePanel)
+    bpy.utils.register_class(OptimizePanel)
     bpy.utils.register_class(UpdaterPanel)
     bpy.utils.register_class(CreditsPanel)
     bpy.utils.register_class(UpdaterPreferences)
@@ -685,7 +685,7 @@ def unregister():
     # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)
     # bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.unregister_class(tools.credits.ForumButton)
-    bpy.utils.unregister_class(OptimisePanel)
+    bpy.utils.unregister_class(OptimizePanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)
     bpy.utils.unregister_class(BoneRootPanel)
