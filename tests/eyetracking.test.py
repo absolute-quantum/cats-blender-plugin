@@ -32,8 +32,7 @@ import bpy
 class TestAddon(unittest.TestCase):
     filename = bpy.path.basename(bpy.context.blend_data.filepath)
 
-    def test_experimental_eye_fix(self):
-        # first fix armature
+    def test_eye_tracking(self):
         bpy.ops.armature.fix()
 
         if self.filename == 'armature.mmd1.blend':
@@ -44,13 +43,13 @@ class TestAddon(unittest.TestCase):
             bpy.context.scene.eye_left = 'Eye_L'
             bpy.context.scene.eye_right = 'Eye_R'
 
-        bpy.context.scene.experimental_eye_fix = True
+        bpy.context.scene.disable_eye_movement = False
+        bpy.context.scene.disable_eye_blinking = False
 
         result = bpy.ops.create.eyes()
         self.assertTrue(result == {'FINISHED'})
 
-    def test_eye_tracking(self):
-        # Try without experimental eye fix
+    def test_eye_tracking_no_movement(self):
         if self.filename == 'armature.mmd1.blend':
             bpy.context.scene.eye_left = 'EyeReturn_L'
             bpy.context.scene.eye_right = 'EyeReturn_R'
@@ -59,7 +58,23 @@ class TestAddon(unittest.TestCase):
             bpy.context.scene.eye_left = 'Eye_L'
             bpy.context.scene.eye_right = 'Eye_R'
 
-        bpy.context.scene.experimental_eye_fix = False
+        bpy.context.scene.disable_eye_movement = True
+        bpy.context.scene.disable_eye_blinking = False
+
+        result = bpy.ops.create.eyes()
+        self.assertTrue(result == {'FINISHED'})
+
+    def test_eye_tracking_no_blinking(self):
+        if self.filename == 'armature.mmd1.blend':
+            bpy.context.scene.eye_left = 'EyeReturn_L'
+            bpy.context.scene.eye_right = 'EyeReturn_R'
+
+        if self.filename == 'armature.bonetranslationerror.blend':
+            bpy.context.scene.eye_left = 'Eye_L'
+            bpy.context.scene.eye_right = 'Eye_R'
+
+        bpy.context.scene.disable_eye_movement = False
+        bpy.context.scene.disable_eye_blinking = True
 
         result = bpy.ops.create.eyes()
         self.assertTrue(result == {'FINISHED'})

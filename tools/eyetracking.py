@@ -26,6 +26,12 @@
 
 import bpy
 import bmesh
+import math
+import numpy as np
+import time
+
+from mathutils import Quaternion
+
 import tools.common
 import tools.armature
 
@@ -34,7 +40,8 @@ class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
     bl_label = 'Create Eye Tracking'
     bl_description = 'This will let you track someone when they come close to you and it enables blinking.\n' \
-                     "You should check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation."
+                     "You should do decimation before this operation.\n" \
+                     "Test the resulting eye movement in the 'Testing' tab."
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -49,27 +56,46 @@ class CreateEyesButton(bpy.types.Operator):
                 or context.scene.lowerlid_right == "":
             return False
 
+        if not context.scene.disable_eye_blinking:
+            if context.scene.wink_left == 'Basis' or context.scene.wink_right == 'Basis':
+                return False
+
+        if context.scene.disable_eye_blinking and context.scene.disable_eye_movement:
+            return False
+
         return True
 
-    def vertex_group_exists(self, mesh_name, bone_name):
+    def vertex_group_exists_old(self, mesh_name, bone_name):
         mesh = bpy.data.objects[mesh_name]
 
         group_lookup = {g.index: g.name for g in mesh.vertex_groups}
         verts = {name: [] for name in group_lookup.values()}
+
         for v in mesh.data.vertices:
             for g in v.groups:
-                verts[group_lookup[g.group]].append(v)
+                vert = verts.get(group_lookup.get(g.group)).append(v)
 
         try:
-            verts[bone_name]
+            verts.get(bone_name)
         except:
             return False
 
         return len(verts[bone_name]) >= 1
 
-    def set_to_center_mass(self, bone, center_mass_bone):
-        bone.head = (bpy.context.object.data.edit_bones[center_mass_bone].head + bpy.context.object.data.edit_bones[center_mass_bone].tail) / 2
-        bone.tail = (bpy.context.object.data.edit_bones[center_mass_bone].head + bpy.context.object.data.edit_bones[center_mass_bone].tail) / 2
+    def vertex_group_exists(self, mesh_name, bone_name):
+        mesh = bpy.data.objects[mesh_name]
+        data = mesh.data
+        verts = data.vertices
+
+        for vert in verts:
+            i = vert.index
+            try:
+                mesh.vertex_groups[bone_name].weight(i)
+                return True
+            except:
+                pass
+
+        return False
 
     def copy_vertex_group(self, mesh, vertex_group, rename_to):
         # iterate through the vertex group
@@ -85,17 +111,10 @@ class CreateEyesButton(bpy.types.Operator):
 
             vertex_group_index += 1
 
-    def get_vertex_group(self, mesh, vertex_group):
-        # iterate through the vertex group
-        for group in bpy.data.objects[mesh].vertex_groups:
-            # Find the vertex group
-            if group.name == vertex_group:
-                # Return the group
-                return bpy.data.objects[mesh].vertex_groups[vertex_group]
-
-    # self.copy_shape_key(context, shapes[0], 'vrc.blink_left', 1)
-    def copy_shape_key(self, mesh_name, from_shape, new_name, new_index):
-        mesh = bpy.data.objects[mesh_name]
+    def copy_shape_key(self, context, from_shape, new_names, new_index):
+        mesh = bpy.data.objects[context.scene.mesh_name_eye]
+        blinking = not context.scene.disable_eye_blinking
+        new_name = new_names[new_index-1]
 
         # rename shapekey if it already exists and set all values to 0
         for shapekey in mesh.data.shape_keys.key_blocks:
@@ -110,7 +129,7 @@ class CreateEyesButton(bpy.types.Operator):
             if from_shape == shapekey.name:
                 mesh.active_shape_key_index = index
                 shapekey.value = 1
-                mesh.shape_key_add(name=new_name, from_mix=True)
+                mesh.shape_key_add(name=new_name, from_mix=blinking)
                 break
 
         # Select the created shapekey
@@ -132,57 +151,95 @@ class CreateEyesButton(bpy.types.Operator):
         mesh.active_shape_key_index = 0
         return from_shape
 
-    def fix_eye_position(self, mesh_name, old_eyebone, eyebone, scale):
+    def fix_eye_position(self, context, old_eye, new_eye, head):
         # Verify that the new eye bone is in the correct position
         # by comparing the old eye vertex group average vector location
-        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eyebone)
+        mesh_name = context.scene.mesh_name_eye
+        scale = -context.scene.eye_distance + 1
+
+        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eye.name)
 
         if coords_eye is False:
-            return False
+            return
 
-        eyebone.head[0] = coords_eye[0]
-        eyebone.head[1] = coords_eye[1] + scale
-        eyebone.head[2] = coords_eye[2]
+        mesh = bpy.data.objects[mesh_name]
+        p1 = mesh.matrix_world * head.head
+        p2 = mesh.matrix_world * coords_eye
+        length = (p1 - p2).length
+        print(length)  # TODO calculate scale if bone is too close to center of the eye
 
-        eyebone.tail[0] = coords_eye[0]
-        eyebone.tail[1] = coords_eye[1] + scale
-        eyebone.tail[2] = coords_eye[2] + 0.2
+        # dist = math.sqrt((coords_eye[0] - head.head[0]) ** 2 + (coords_eye[1] - head.head[1]) ** 2 + (coords_eye[2] - head.head[2]) ** 2)
+        # dist2 = np.linalg.norm(coords_eye - head.head)
+        # dist3 = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 + (p1[2] - p2[2]) ** 2)
+        #dist4 = np.linalg.norm(p1 - p2)
+        # print(dist)
+        # print(dist2)
+        # print(2 ** 2)
+        #print(dist4)
+
+        if context.scene.disable_eye_movement:
+            new_eye.head[0] = head.head[0]
+            new_eye.head[1] = head.head[1]
+            new_eye.head[2] = head.head[2]
+        else:
+            new_eye.head[0] = old_eye.head[0] + scale * (coords_eye[0] - old_eye.head[0])
+            new_eye.head[1] = old_eye.head[1] + scale * (coords_eye[1] - old_eye.head[1])
+            new_eye.head[2] = old_eye.head[2] + scale * (coords_eye[2] - old_eye.head[2])
+
+        new_eye.tail[0] = new_eye.head[0]
+        new_eye.tail[1] = new_eye.head[1]
+        new_eye.tail[2] = new_eye.head[2] + 0.2
 
     def execute(self, context):
         # PreserveState = tools.common.PreserveState()
         # PreserveState.save()
 
-        tools.common.unhide_all()
-
-        armature = tools.common.get_armature()
-        tools.common.select(armature)
-
-        # Why does two times edit works?
-        tools.common.switch('EDIT')
+        # Set the stage
+        armature = tools.common.set_default_stage()
         tools.common.switch('EDIT')
 
-        # Selectors
-        left_eye_selector = context.scene.eye_left
-        right_eye_selector = context.scene.eye_right
+        mesh_name = context.scene.mesh_name_eye
 
-        # Find existing LeftEye/RightEye and rename
-        if 'LeftEye' in bpy.context.object.data.edit_bones:
-            bpy.context.object.data.edit_bones['LeftEye'].name = 'OldLeftEye'
-            left_eye_selector = 'OldLeftEye'
+        # Set up old bones
+        head = armature.data.edit_bones.get(context.scene.head)
+        old_eye_left = armature.data.edit_bones.get(context.scene.eye_left)
+        old_eye_right = armature.data.edit_bones.get(context.scene.eye_right)
 
-        if 'RightEye' in bpy.context.object.data.edit_bones:
-            bpy.context.object.data.edit_bones['RightEye'].name = 'OldRightEye'
-            right_eye_selector = 'OldRightEye'
+        # Check for errors
+        if head is None:
+            self.report({'ERROR'}, 'The bone "' + context.scene.head + '" does not exist.')
+            return {'CANCELLED'}
+
+        if old_eye_left is None:
+            self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" does not exist.')
+            return {'CANCELLED'}
+
+        if old_eye_right is None:
+            self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" does not exist.')
+            return {'CANCELLED'}
 
         # Find the existing vertex group of the left eye bone
-        if self.vertex_group_exists(context.scene.mesh_name_eye, left_eye_selector) is False:
-            self.report({'ERROR'}, 'The left eye bone has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
+        if self.vertex_group_exists(mesh_name, old_eye_left.name) is False:
+            self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
             return {'CANCELLED'}
 
         # Find the existing vertex group of the right eye bone
-        if self.vertex_group_exists(context.scene.mesh_name_eye, right_eye_selector) is False:
-            self.report({'ERROR'}, 'The right eye bone has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
+        if self.vertex_group_exists(mesh_name, old_eye_right.name) is False:
+            self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
             return {'CANCELLED'}
+
+        # Find existing LeftEye/RightEye and rename or delete
+        if 'LeftEye' in armature.data.edit_bones:
+            if old_eye_left.name == 'LeftEye':
+                old_eye_left.name = 'OldLeftEye'
+            else:
+                armature.data.edit_bones.remove(armature.data.edit_bones.get('LeftEye'))
+
+        if 'RightEye' in armature.data.edit_bones:
+            if old_eye_right.name == 'RightEye':
+                old_eye_right.name = 'OldRightEye'
+            else:
+                armature.data.edit_bones.remove(armature.data.edit_bones.get('RightEye'))
 
         # Set head roll to 0 degrees
         bpy.context.object.data.edit_bones[context.scene.head].roll = 0
@@ -195,48 +252,49 @@ class CreateEyesButton(bpy.types.Operator):
         new_left_eye.parent = bpy.context.object.data.edit_bones[context.scene.head]
         new_right_eye.parent = bpy.context.object.data.edit_bones[context.scene.head]
 
-        # Use center of mass from old eye bone to place new eye bone in
-        self.set_to_center_mass(new_right_eye, right_eye_selector)
-        self.set_to_center_mass(new_left_eye, left_eye_selector)
-
-        # Set the eye bone up straight
-        new_right_eye.tail[2] = new_right_eye.head[2] + 0.3
-        new_left_eye.tail[2] = new_left_eye.head[2] + 0.3
+        # Calculate their new positions
+        fix_eye_position(context, old_eye_left, new_left_eye, head)
+        fix_eye_position(context, old_eye_right, new_right_eye, head)
 
         # Switch to mesh
-        bpy.context.scene.objects.active = bpy.data.objects[context.scene.mesh_name_eye]
-
+        bpy.context.scene.objects.active = bpy.data.objects[mesh_name]
         tools.common.switch('OBJECT')
 
-        # Make sure the bones are positioned correctly
-        # not too far away from eye vertex (behind and infront)
-        if context.scene.experimental_eye_fix:
-            self.fix_eye_position(context.scene.mesh_name_eye, right_eye_selector, new_right_eye, context.scene.eye_distance)
-            self.fix_eye_position(context.scene.mesh_name_eye, left_eye_selector, new_left_eye, context.scene.eye_distance)
-
-        # Copy the existing eye vertex group to the new one
-        self.copy_vertex_group(context.scene.mesh_name_eye, right_eye_selector, 'RightEye')
-        self.copy_vertex_group(context.scene.mesh_name_eye, left_eye_selector, 'LeftEye')
+        # Copy the existing eye vertex group to the new one if eye movement is activated
+        if not context.scene.disable_eye_movement:
+            self.copy_vertex_group(mesh_name, old_eye_left.name, 'LeftEye')
+            self.copy_vertex_group(mesh_name, old_eye_right.name, 'RightEye')
 
         # Store shape keys to ignore changes during copying
-        selected_shapes = [context.scene.wink_left, context.scene.wink_right, context.scene.lowerlid_left, context.scene.lowerlid_right]
+        shapes = [context.scene.wink_left, context.scene.wink_right, context.scene.lowerlid_left, context.scene.lowerlid_right]
+        new_shapes = ['vrc.blink_left', 'vrc.blink_right', 'vrc.lowerlid_left', 'vrc.lowerlid_right']
+
+        # Remove existing shapekeys
+        for new_shape in new_shapes:
+            for index, shapekey in enumerate(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks):
+                if shapekey.name == new_shape and new_shape not in shapes:
+                    bpy.context.active_object.active_shape_key_index = index
+                    bpy.ops.object.shape_key_remove()
+                    break
 
         # Copy shape key mixes from user defined shape keys and rename them to the correct liking of VRC
-        mesh_name = context.scene.mesh_name_eye
-        shapes = [context.scene.wink_left, context.scene.wink_right, context.scene.lowerlid_left, context.scene.lowerlid_right]
-        shapes[0] = self.copy_shape_key(mesh_name, shapes[0], 'vrc.blink_left', 1)
-        shapes[1] = self.copy_shape_key(mesh_name, shapes[1], 'vrc.blink_right', 2)
-        shapes[2] = self.copy_shape_key(mesh_name, shapes[2], 'vrc.lowerlid_left', 3)
-        shapes[3] = self.copy_shape_key(mesh_name, shapes[3], 'vrc.lowerlid_right', 4)
+        shapes[0] = self.copy_shape_key(context, shapes[0], new_shapes, 1)
+        shapes[1] = self.copy_shape_key(context, shapes[1], new_shapes, 2)
+        shapes[2] = self.copy_shape_key(context, shapes[2], new_shapes, 3)
+        shapes[3] = self.copy_shape_key(context, shapes[3], new_shapes, 4)
+
+        tools.common.repair_viseme_order(mesh_name)
 
         # Reset the scenes in case they were changed
+        context.scene.head = head.name
+        context.scene.eye_left = old_eye_left.name
+        context.scene.eye_right = old_eye_right.name
         context.scene.wink_left = shapes[0]
         context.scene.wink_right = shapes[1]
         context.scene.lowerlid_left = shapes[2]
         context.scene.lowerlid_right = shapes[3]
 
         # Remove empty objects
-        tools.common.switch('EDIT')
         tools.common.remove_empty()
 
         # Fix armature name
@@ -245,7 +303,12 @@ class CreateEyesButton(bpy.types.Operator):
         # Check for correct bone hierarchy
         is_correct = tools.armature.check_hierarchy([['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
 
-        repair_shapekeys(context.scene.mesh_name_eye, 'RightEye')
+        if context.scene.disable_eye_movement:
+            repair_shapekeys_mouth(mesh_name)
+            # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
+        else:
+            print('Repair "' + new_right_eye.name + '".')
+            repair_shapekeys(mesh_name, new_right_eye.name)
 
         # PreserveState.load()  # TODO
 
@@ -266,53 +329,6 @@ class CreateEyesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def addvertex(meshname, shapekey_name):
-    mesh = bpy.data.objects[meshname].data
-    bm = bmesh.new()
-    bm.from_mesh(mesh)
-    bm.verts.ensure_lookup_table()
-
-    print(" ")
-    if shapekey_name in bm.verts.layers.shape.keys():
-        val = bm.verts.layers.shape.get(shapekey_name)
-        print("%s = %s" % (shapekey_name, val))
-        sk = mesh.shape_keys.key_blocks[shapekey_name]
-        print("v=%f, f=%f" % (sk.value, sk.frame))
-        for i in range(len(bm.verts)):
-            v = bm.verts[i]
-            delta = v[val] - v.co
-            if (delta.length > 0):
-                print("v[%d]+%s" % (i, delta))
-
-    print(" ")
-
-
-# Check which shape keys will be deleted on export by Blender
-def checkshapekeys():
-    for ob in bpy.data.objects:
-        if ob.type == 'MESH':
-            mesh = ob
-    bm = bmesh.new()
-    bm.from_mesh(mesh.data)
-    bm.verts.ensure_lookup_table()
-
-    deleted_shapes = []
-    for key in bm.verts.layers.shape.keys():
-        if key == 'Basis':
-            continue
-        val = bm.verts.layers.shape.get(key)
-        delete = True
-        for vert in bm.verts:
-            delta = vert[val] - vert.co
-            if delta.length > 0:
-                delete = False
-                break
-        if delete:
-            deleted_shapes.append(key)
-
-    return deleted_shapes
-
-
 # Repair vrc shape keys
 def repair_shapekeys(mesh_name, vertex_group):
     mesh = bpy.data.objects[mesh_name]
@@ -320,8 +336,15 @@ def repair_shapekeys(mesh_name, vertex_group):
     bm.from_mesh(mesh.data)
     bm.verts.ensure_lookup_table()
 
-    # Get a vertex from the eye vertex group
-    gi = mesh.vertex_groups[vertex_group].index
+    # Get a vertex from the eye vertex group # TODO https://i.imgur.com/tWi8lk6.png after many times resetting the eyes
+    print('DEBUG: Group: ' + vertex_group)
+    group = mesh.vertex_groups.get(vertex_group)
+    if group is None:
+        print('DEBUG: Group: ' + vertex_group + ' not found!')
+        repair_shapekeys_mouth(mesh_name)
+        return
+    print('DEBUG: Group: ' + vertex_group + ' found!')
+    gi = group.index
     for v in mesh.data.vertices:
         for g in v.groups:
             if g.group == gi:
@@ -330,17 +353,236 @@ def repair_shapekeys(mesh_name, vertex_group):
     if vcoords is None:
         return
 
+    print('DEBUG: Repairing shapes!')
     # Move that vertex by a tiny amount
+    i = 0
     for key in bm.verts.layers.shape.keys():
         if not key.startswith('vrc'):
             continue
+        print('DEBUG: Repairing shape: ' + key)
         value = bm.verts.layers.shape.get(key)
         for vert in bm.verts:
             if vert.co.xyz == vcoords:
                 shapekey = vert
                 shapekey_coords = mesh.matrix_world * shapekey[value]
-                shapekey_coords[2] -= 0.00001
+                shapekey_coords[0] -= 0.00005
+                shapekey_coords[1] -= 0.00005
+                shapekey_coords[2] -= 0.00005
                 shapekey[value] = mesh.matrix_world.inverted() * shapekey_coords
+                print('DEBUG: Repaired shape: ' + key)
+                i += 1
                 break
 
     bm.to_mesh(mesh.data)
+
+    if i == 0:
+        print('Error: Shapekey repairing failed for some reason! Using random shapekey method now.')
+        repair_shapekeys_mouth(mesh_name)
+
+
+# Repair vrc shape keys with random vertex
+def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
+    mesh = bpy.data.objects[mesh_name]
+    bm = bmesh.new()
+    bm.from_mesh(mesh.data)
+    bm.verts.ensure_lookup_table()
+
+    # Move that vertex by a tiny amount
+    i = 0
+    for key in bm.verts.layers.shape.keys():
+        if not key.startswith('vrc'):
+            continue
+        value = bm.verts.layers.shape.get(key)
+        for vert in bm.verts:
+            shapekey = vert
+            shapekey_coords = mesh.matrix_world * shapekey[value]
+            shapekey_coords[0] -= 0.00005
+            shapekey_coords[1] -= 0.00005
+            shapekey_coords[2] -= 0.00005
+            shapekey[value] = mesh.matrix_world.inverted() * shapekey_coords
+            i += 1
+            break
+
+    bm.to_mesh(mesh.data)
+
+    if i == 0:
+        print('Error: Random shapekey repairing failed for some reason! Canceling!')
+
+def fix_eye_position(context, old_eye, new_eye, head):
+    # Verify that the new eye bone is in the correct position
+    # by comparing the old eye vertex group average vector location
+    mesh_name = context.scene.mesh_name_eye
+    scale = -context.scene.eye_distance + 1
+
+    if head is not None:
+        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eye.name)
+    else:
+        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, new_eye.name)
+
+    if coords_eye is False:
+        return
+
+    if head is not None:
+        mesh = bpy.data.objects[mesh_name]
+        p1 = mesh.matrix_world * head.head
+        p2 = mesh.matrix_world * coords_eye
+        length = (p1 - p2).length
+        print(length)  # TODO calculate scale if bone is too close to center of the eye
+
+    # dist = math.sqrt((coords_eye[0] - head.head[0]) ** 2 + (coords_eye[1] - head.head[1]) ** 2 + (coords_eye[2] - head.head[2]) ** 2)
+    # dist2 = np.linalg.norm(coords_eye - head.head)
+    # dist3 = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 + (p1[2] - p2[2]) ** 2)
+    #dist4 = np.linalg.norm(p1 - p2)
+    # print(dist)
+    # print(dist2)
+    # print(2 ** 2)
+    #print(dist4)
+
+    if context.scene.disable_eye_movement:
+        if head is not None:
+            new_eye.head[0] = head.head[0]
+            new_eye.head[1] = head.head[1]
+            new_eye.head[2] = head.head[2]
+    else:
+        new_eye.head[0] = old_eye.head[0] + scale * (coords_eye[0] - old_eye.head[0])
+        new_eye.head[1] = old_eye.head[1] + scale * (coords_eye[1] - old_eye.head[1])
+        new_eye.head[2] = old_eye.head[2] + scale * (coords_eye[2] - old_eye.head[2])
+
+    new_eye.tail[0] = new_eye.head[0]
+    new_eye.tail[1] = new_eye.head[1]
+    new_eye.tail[2] = new_eye.head[2] + 0.2
+
+
+class StartTestingButton(bpy.types.Operator):
+    bl_idname = 'eyes.test'
+    bl_label = 'Start Eye Testing'
+    bl_description = 'This will let you test how the eye movement will look ingame.\n' \
+                     "Don't forget to stop the Testing process afterwards.\n" \
+                     'Bones "EyeLeft" and "EyeRight" are required.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        armature = tools.common.get_armature()
+        if 'LeftEye' in armature.pose.bones:
+            if 'RightEye' in armature.pose.bones:
+                return True
+        return False
+
+    def execute(self, context):
+        armature = tools.common.set_default_stage()
+        tools.common.switch('POSE')
+        armature.data.pose_position = 'POSE'
+
+        eye_left = armature.data.bones.get('LeftEye')
+        eye_right = armature.data.bones.get('RightEye')
+
+        if eye_left is None or eye_right is None:
+            return
+
+        eye_left.select = True
+        eye_right.select = True
+
+        return {'FINISHED'}
+
+
+class StopTestingButton(bpy.types.Operator):
+    bl_idname = 'eyes.test_stop'
+    bl_label = 'Stop Eye Testing'
+    bl_description = 'Stops the testing process.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        for pb in tools.common.get_armature().data.bones:
+            pb.select = True
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+        for pb in tools.common.get_armature().data.bones:
+            pb.select = False
+
+        armature = tools.common.set_default_stage()
+        armature.data.pose_position = 'REST'
+        return {'FINISHED'}
+
+
+class SetRotationButton(bpy.types.Operator):
+    bl_idname = 'eyes.set_rotation'
+    bl_label = 'Test Rotation'
+    bl_description = "This let's you test how the eye movement will look ingame."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        armature = tools.common.get_armature()
+        if 'LeftEye' in armature.pose.bones:
+            if 'RightEye' in armature.pose.bones:
+                return True
+        return False
+
+    def execute(self, context):
+        armature = tools.common.get_armature()
+        eye_left = armature.pose.bones.get('LeftEye')
+        eye_right = armature.pose.bones.get('RightEye')
+
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+
+        eye_left.rotation_mode = 'XYZ'
+        eye_left.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
+        eye_left.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+
+        eye_right.rotation_mode = 'XYZ'
+        eye_right.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
+        eye_right.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+
+        return {'FINISHED'}
+
+
+class AdjustEyesButton(bpy.types.Operator):
+    bl_idname = 'eyes.adjust_eyes'
+    bl_label = 'Set Range'
+    bl_description = "Let's you readjust the movement range of the eyes.\n" \
+                     "This get's saved."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        armature = tools.common.get_armature()
+        if 'LeftEye' in armature.pose.bones:
+            if 'RightEye' in armature.pose.bones:
+                return True
+        return False
+
+    def execute(self, context):
+
+        armature = tools.common.set_default_stage()
+        tools.common.switch('EDIT')
+
+        eye_left = armature.data.edit_bones.get('LeftEye')
+        eye_right = armature.data.edit_bones.get('RightEye')
+        old_eye_left = armature.pose.bones.get(context.scene.eye_left)
+        old_eye_right = armature.pose.bones.get(context.scene.eye_right)
+
+        fix_eye_position(context, old_eye_left, eye_left, None)
+        fix_eye_position(context, old_eye_right, eye_right, None)
+
+        tools.common.switch('POSE')
+        return {'FINISHED'}
+
+
+# Update via slider, doesn't work :(
+def update_bones(degrees):
+    armature = tools.common.get_armature()
+    eye_left = armature.pose.bones.get('LeftEye')
+    eye_right = armature.pose.bones.get('RightEye')
+
+    eye_left.rotation_mode = 'XYZ'
+    eye_right.rotation_mode = 'XYZ'
+
+    eye_left.rotation_euler.rotate_axis('Z', math.radians(degrees))
+    eye_right.rotation_euler.rotate_axis('Z', math.radians(degrees))
+
+    if eye_left is None or eye_right is None:
+        return

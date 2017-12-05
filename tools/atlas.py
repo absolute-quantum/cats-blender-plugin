@@ -47,7 +47,7 @@ class AutoAtlasButton(bpy.types.Operator):
         # PreserveState = tools.common.PreserveState()
         # PreserveState.save()
 
-        tools.common.unhide_all()
+        tools.common.set_default_stage()
 
         if not bpy.data.is_saved:
             self.report({'ERROR'}, 'You must save your blender file first, please save it to your assets folder so unity can discover the generated atlas file.')

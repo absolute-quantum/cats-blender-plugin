@@ -40,6 +40,7 @@ import tools.rootbone
 import tools.translate
 import tools.armature
 import tools.armature_manual
+import tools.material
 import tools.common
 import tools.credits
 
@@ -49,21 +50,25 @@ importlib.reload(tools.eyetracking)
 importlib.reload(tools.rootbone)
 importlib.reload(tools.translate)
 importlib.reload(tools.armature)
+importlib.reload(tools.armature_manual)
+importlib.reload(tools.material)
 importlib.reload(tools.common)
+importlib.reload(tools.credits)
 
 bl_info = {
     'name': 'Cats Blender Plugin',
     'category': '3D View',
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
-    'description': 'A tool designed to shorten steps needed to import and optimise MMD models into VRChat',
-    'version': [0, 1, 0],
+    'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
+    'version': [0, 2, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
 
+slider_z = 0
 
 class ToolPanel:
     bl_label = 'Cats Blender Plugin'
@@ -75,11 +80,21 @@ class ToolPanel:
     # Armature
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove Zero Weight Bones',
-        description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.",
+        description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.\n"
+                    'Uncheck this if bones you want to keep got deleted.',
         default=True
     )
 
     # Eye Tracking
+    bpy.types.Scene.eye_mode = bpy.props.EnumProperty(
+        name="Eye Mode",
+        description="Mode",
+        items=[
+            ("CREATION", "Creation", "Here you can create eye tracking."),
+            ("TESTING", "Testing", "Here you can test how eye tracking will look ingame.")
+        ]
+    )
+
     bpy.types.Scene.mesh_name_eye = bpy.props.EnumProperty(
         name='Mesh',
         description='The mesh with the eyes vertex groups',
@@ -106,44 +121,78 @@ class ToolPanel:
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink Left',
-        description='The shape key containing a blink with the left eye.\nCan be set to "Basis" to disable blinking',
+        description='The shape key containing a blink with the left eye.',
         items=tools.common.get_shapekeys_eye_blink_l
     )
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink Right',
-        description='The shape key containing a blink with the right eye.\nCan be set to "Basis" to disable blinking',
+        description='The shape key containing a blink with the right eye.',
         items=tools.common.get_shapekeys_eye_blink_r
     )
 
     bpy.types.Scene.lowerlid_left = bpy.props.EnumProperty(
         name='Lowerlid Left',
-        description='The shape key containing a slightly raised left lower lid.\nCan be set to "Basis" to disable lower lid movement',
+        description='The shape key containing a slightly raised left lower lid.\n'
+                    'Can be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_l
     )
 
     bpy.types.Scene.lowerlid_right = bpy.props.EnumProperty(
         name='Lowerlid Right',
-        description='The shape key containing a slightly raised right lower lid.\nCan be set to "Basis" to disable lower lid movement',
+        description='The shape key containing a slightly raised right lower lid.\n'
+                    'Can be set to "Basis" to disable lower lid movement',
         items=tools.common.get_shapekeys_eye_low_r
     )
 
-    bpy.types.Scene.experimental_eye_fix = bpy.props.BoolProperty(
-        name='Experimental Eye Fix',
-        description='Very useful for models that have over-extended eye bones that point out of the head.\n' \
-                    'The script will try to verify the newly created eye bones to be located in the correct position by checking the location of the old eye vertex group.',
-        default=True
+    bpy.types.Scene.disable_eye_movement = bpy.props.BoolProperty(
+        name='Disable Eye Movement',
+        description='IMPORTANT: Do your decimation first if you check this!\n'
+                    '\n'
+                    'Disables eye movement. Useful if you only want blinking.\n'
+                    'This creates eye bones with no movement bound to them.\n'
+                    'You still have to correctly assign the eye bones in Unity.',
+        subtype='DISTANCE'
+    )
+
+    bpy.types.Scene.disable_eye_blinking = bpy.props.BoolProperty(
+        name='Disable Eye Blinking',
+        description='Disables eye blinking. Useful if you only want eye movement.\n'
+                    'This will create the necessary shape keys but leaves them empty.',
+        subtype='NONE'
     )
 
     bpy.types.Scene.eye_distance = bpy.props.FloatProperty(
-        name='Eye Bone Distance from Eye Vertex',
-        description='This specifies the distance from the new eye bone to the old eye bone vertex group.\n' \
-                    'Useful if the new eye bones are too far away inside the head.',
-        default=0.2,
+        name='Eye Movement Range',
+        description='Higher = more eye movement\n'
+                    'Lower = less eye movement\n'
+                    'Warning: Too little or too much range can glitch the eyes.\n'
+                    'Test your results in the "Eye Testing"-Tab!',
+        default=0.8,
         min=0.0,
-        max=1.0,
-        step=0.1,
+        max=2.0,
+        step=1.0,
         precision=2,
+        subtype='FACTOR'
+    )
+
+    bpy.types.Scene.eye_rotation_x = bpy.props.IntProperty(
+        name='Up - Down',
+        description='Rotate the eye bones on the vertical axis.',
+        default=0,
+        min=-19,
+        max=25,
+        step=1,
+        subtype='FACTOR'
+    )
+
+    bpy.types.Scene.eye_rotation_y = bpy.props.IntProperty(
+        name='Left - Right',
+        description='Rotate the eye bones on the horizontal axis.',
+        default=0,
+        min=-19,
+        max=19,
+        step=1,
         subtype='FACTOR'
     )
 
@@ -190,7 +239,16 @@ class ToolPanel:
         items=tools.rootbone.get_parent_root_bones,
     )
 
-    # Auto Atlas
+    # Optimize
+    bpy.types.Scene.optimize_mode = bpy.props.EnumProperty(
+        name="Optimize Mode",
+        description="Mode",
+        items=[
+            ("ATLAS", "Atlas", "Allows you to make a texture atlas."),
+            ("MATERIAL", "Material", "Some various options on material manipulation.")
+        ]
+    )
+
     bpy.types.Scene.island_margin = bpy.props.FloatProperty(
         name='Margin',
         description='Margin to reduce bleed of adjacent islands',
@@ -311,45 +369,115 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'mesh_name_eye', icon='MESH_DATA')
+        row.prop(context.scene, 'eye_mode', expand=True)
 
-        col.separator()
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'head', icon='BONE_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'eye_left', icon='BONE_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'eye_right', icon='BONE_DATA')
+        if context.scene.eye_mode == 'CREATION':
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'mesh_name_eye', icon='MESH_DATA')
 
-        col.separator()
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'wink_left', icon='SHAPEKEY_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'wink_right', icon='SHAPEKEY_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'lowerlid_left', icon='SHAPEKEY_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'lowerlid_right', icon='SHAPEKEY_DATA')
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'head', icon='BONE_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_movement:
+                row.active = False
+            row.prop(context.scene, 'eye_left', icon='BONE_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_movement:
+                row.active = False
+            row.prop(context.scene, 'eye_right', icon='BONE_DATA')
 
-        col.separator()
-        row = col.row(align=True)
-        row.prop(context.scene, 'experimental_eye_fix')
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_blinking:
+                row.active = False
+            row.prop(context.scene, 'wink_left', icon='SHAPEKEY_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_blinking:
+                row.active = False
+            row.prop(context.scene, 'wink_right', icon='SHAPEKEY_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_blinking:
+                row.active = False
+            row.prop(context.scene, 'lowerlid_left', icon='SHAPEKEY_DATA')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            if context.scene.disable_eye_blinking:
+                row.active = False
+            row.prop(context.scene, 'lowerlid_right', icon='SHAPEKEY_DATA')
 
-        col = box.column(align=True)
-        row = col.row(align=True)
-        if context.scene.experimental_eye_fix:
-            row.prop(context.scene, 'eye_distance')
+            col.separator()
+            row = col.row(align=True)
+            row.prop(context.scene, 'disable_eye_blinking')
+
+            row = col.row(align=True)
+            row.prop(context.scene, 'disable_eye_movement')
+
+            if not context.scene.disable_eye_movement:
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_distance')
+
             col = box.column(align=True)
             row = col.row(align=True)
-        row.operator('create.eyes', icon='TRIA_RIGHT')
+            row.operator('create.eyes', icon='TRIA_RIGHT')
+
+            # armature = tools.common.get_armature()
+            # if "RightEye" in armature.pose.bones:
+            #     row = col.row(align=True)
+            #     row.label('Eye Bone Tweaking:')
+        else:
+            if tools.common.get_armature() is None:
+                box.label('No model found!', icon='ERROR')
+                return
+
+            mode = bpy.context.active_object.mode
+            if mode != 'POSE':
+                col.separator()
+                row = col.row(align=True)
+                row.scale_y = 1.5
+                row.operator('eyes.test', icon='TRIA_RIGHT')
+            else:
+                # col.separator()
+                # row = col.row(align=True)
+                # row.operator('eyes.test_stop', icon='PAUSE')
+
+                col.separator()
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_rotation_x', icon='FILE_PARENT')
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_rotation_y', icon='ARROW_LEFTRIGHT')
+
+                # global slider_z
+                # if context.scene.eye_rotation_z != slider_z:
+                #     slider_z = context.scene.eye_rotation_z
+                #     tools.eyetracking.update_bones(slider_z)
+
+                row = col.row(align=True)
+                row.operator('eyes.set_rotation', icon='MAN_ROT')
+
+                col.separator()
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_distance')
+
+                row = col.row(align=True)
+                row.operator('eyes.adjust_eyes', icon='CURVE_NCIRCLE')
+
+                col.separator()
+                col.separator()
+                row = col.row(align=True)
+                row.scale_y = 1.5
+                row.operator('eyes.test_stop', icon='PAUSE')
 
 
 class VisemePanel(ToolPanel, bpy.types.Panel):
@@ -397,34 +525,51 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
         row.operator('root.function', icon='TRIA_RIGHT')
 
 
-class AtlasPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_atlas_v1'
-    bl_label = 'Texture Atlas'
+class OptimizePanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_optimize_v1'
+    bl_label = 'Optimization'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
+
         layout = self.layout
         box = layout.box()
-        row = box.row(align=True)
-        row.prop(context.scene, 'island_margin')
-        row.scale_y = 0.9
-        row = box.row(align=True)
-        row.prop(context.scene, 'angle_limit')
-        row.scale_y = 0.9
-        row = box.row(align=True)
-        row.prop(context.scene, 'area_weight')
-        row.scale_y = 0.9
-        row = box.row(align=True)
-        row.prop(context.scene, 'texture_size', icon='TEXTURE')
-        row = box.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
-        row = box.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'one_texture')
-        row.prop(context.scene, 'pack_islands')
-        row = box.row(align=True)
-        row.operator('auto.atlas', icon='TRIA_RIGHT')
+        col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.prop(context.scene, 'optimize_mode', expand=True)
+
+        if context.scene.optimize_mode == 'ATLAS':
+            col.separator()
+            row = box.row(align=True)
+            row.prop(context.scene, 'island_margin')
+            row.scale_y = 0.9
+            row = box.row(align=True)
+            row.prop(context.scene, 'angle_limit')
+            row.scale_y = 0.9
+            row = box.row(align=True)
+            row.prop(context.scene, 'area_weight')
+            row.scale_y = 0.9
+            row = box.row(align=True)
+            row.prop(context.scene, 'texture_size', icon='TEXTURE')
+            row = box.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
+            row = box.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'one_texture')
+            row.prop(context.scene, 'pack_islands')
+            row = box.row(align=True)
+            row.operator('auto.atlas', icon='TRIA_RIGHT')
+
+        if context.scene.optimize_mode == 'MATERIAL':
+            col = box.column(align=True)
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.operator('combine.mats', icon='MATERIAL')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.operator('one.tex', icon='TEXTURE')
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
@@ -457,8 +602,12 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
         box.label('Want to give feedback or found a bug?')
-        row = box.row(align=True)
+
+        col = box.column(align=True)
+        row = col.row(align=True)
         row.operator('credits.forum', icon='LOAD_FACTORY')
+        row = col.row(align=True)
+        row.operator('credits.discord', icon='LOAD_FACTORY')
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -503,6 +652,10 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
 def register():
     bpy.utils.register_class(tools.atlas.AutoAtlasButton)
     bpy.utils.register_class(tools.eyetracking.CreateEyesButton)
+    bpy.utils.register_class(tools.eyetracking.StartTestingButton)
+    bpy.utils.register_class(tools.eyetracking.StopTestingButton)
+    bpy.utils.register_class(tools.eyetracking.SetRotationButton)
+    bpy.utils.register_class(tools.eyetracking.AdjustEyesButton)
     bpy.utils.register_class(tools.viseme.AutoVisemeButton)
     bpy.utils.register_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.register_class(tools.translate.TranslateBonesButton)
@@ -512,17 +665,20 @@ def register():
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
     bpy.utils.register_class(tools.armature.FixArmature)
+    bpy.utils.register_class(tools.material.CombineMaterialsButton)
+    bpy.utils.register_class(tools.material.OneTexPerMatButton)
     # bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     # bpy.utils.register_class(tools.armature_manual.JoinMeshesTest)
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
     bpy.utils.register_class(tools.credits.ForumButton)
+    bpy.utils.register_class(tools.credits.DiscordButton)
     bpy.utils.register_class(ArmaturePanel)
     bpy.utils.register_class(TranslationPanel)
     bpy.utils.register_class(EyeTrackingPanel)
     bpy.utils.register_class(VisemePanel)
     bpy.utils.register_class(BoneRootPanel)
-    bpy.utils.register_class(AtlasPanel)
+    bpy.utils.register_class(OptimizePanel)
     bpy.utils.register_class(UpdaterPanel)
     bpy.utils.register_class(CreditsPanel)
     bpy.utils.register_class(UpdaterPreferences)
@@ -532,6 +688,10 @@ def register():
 def unregister():
     bpy.utils.unregister_class(tools.atlas.AutoAtlasButton)
     bpy.utils.unregister_class(tools.eyetracking.CreateEyesButton)
+    bpy.utils.unregister_class(tools.eyetracking.StartTestingButton)
+    bpy.utils.unregister_class(tools.eyetracking.StopTestingButton)
+    bpy.utils.unregister_class(tools.eyetracking.SetRotationButton)
+    bpy.utils.unregister_class(tools.eyetracking.AdjustEyesButton)
     bpy.utils.unregister_class(tools.viseme.AutoVisemeButton)
     bpy.utils.unregister_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.unregister_class(tools.translate.TranslateBonesButton)
@@ -543,10 +703,13 @@ def unregister():
     bpy.utils.unregister_class(tools.armature.FixArmature)
     bpy.utils.unregister_class(tools.armature_manual.MixWeights)
     bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
+    bpy.utils.unregister_class(tools.material.CombineMaterialsButton)
+    bpy.utils.unregister_class(tools.material.OneTexPerMatButton)
     # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)
     # bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.unregister_class(tools.credits.ForumButton)
-    bpy.utils.unregister_class(AtlasPanel)
+    bpy.utils.unregister_class(tools.credits.DiscordButton)
+    bpy.utils.unregister_class(OptimizePanel)
     bpy.utils.unregister_class(EyeTrackingPanel)
     bpy.utils.unregister_class(VisemePanel)
     bpy.utils.unregister_class(BoneRootPanel)

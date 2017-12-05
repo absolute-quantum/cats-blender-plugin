@@ -1,6 +1,6 @@
-# cats-blender-plugin
+# Cats Blender Plugin (0.2.0)
 
-A tool designed to shorten steps needed to import and optimise MMD models into VRChat
+A tool designed to shorten steps needed to import and optimize MMD models into VRChat
 
 Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
 
@@ -12,7 +12,8 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Creating eye tracking
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
- - Translating shape keys, bones, textures, materials and meshes
+ - Optimizing materials
+ - Translating shape keys, bones, materials and meshes
  - Auto updater
 
 *More to come!*
@@ -27,6 +28,10 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 3. Check your 3d view and there should be a new menu item called **CATS** ....w00t
 
 ![](https://i.imgur.com/ItJLtNJ.png)
+
+4. If you need help figuring out how to use the tool:
+
+[![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
 
 ## Code contributors:
@@ -44,11 +49,11 @@ A vastly improved combination of Neitri and Shotariya's blender plugins, it trie
 Fixes your armature automatically by:
  - Reparenting bones
  - Removing unnecessary bones
- - Renaming objects and bones
+ - Renaming and translating objects and bones
  - Mixing weight paints
  - Rotating the hips
  - Joining meshes
- - Removing rigidbodies and joints
+ - Removing rigidbodies, joints and bone groups
  - Removing bone constraints
  - Deleting unused vertex groups
 
@@ -70,7 +75,8 @@ Deletes the selected bones and adds their weight to their respective parents.
 
 
 ## Eye tracking
-![](https://i.imgur.com/x9NqvUO.png)
+![](https://i.imgur.com/yw8INDO.png)
+![](https://i.imgur.com/8lPgiQ8.png)
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
@@ -101,8 +107,14 @@ The name of the shape key that controls lowerlid left
 ##### Lowerlid right
 The name of the shape key that controls lowerlid right
 
-##### Experimental eye fix
-Script will try to verify the newly created eye bones to be located in the correct position, this works by checking the location of the old eye vertex group. It is very useful for models that have over-extended eye bones that point out of the head
+##### Disable Eye Blinking
+Disables eye blinking. Useful if you only want eye movement.
+
+##### Disable Eye Movement
+Disables eye movement. Useful if you only want blinking. **IMPORTANT:** Do your decimation first if you check this!
+
+##### Eye Movement Speed
+Configure eye movement speed
 
 
 ## Mouth visemes
@@ -183,6 +195,19 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.2.0
+- Added: Armature: More models are now compatible (if not yours doesn't get fixed please send us privately the zipped .blend file)
+- Added: New Material category in the panel Optimization
+- Added: Material: New "Combine Same Materials" button. This significantly reduced draw calls on some models
+- Added: Material: New "One Material Texture" button. This disables unused texture slots on the same material
+- Added: Credits: New "Join our Discord" button
+- Changed: Completely reworked eye tracking! You can now test how eye tracking will look like
+- Changed: Reworked bone translation, it's much faster and better now!
+- Changed: Armature: Now deletes bone groups (they are a color function, nobody's using that)
+- Changed: Armature: Joining meshes now correctly reorders existing vrc shape keys
+- Fixed: Eye Tracking: A bug where the mouth would open and close in certain positions in VRChat
+- Fixed: A stash full of bugs
+
 #### 0.1.0
 - Changed: New versioning scheme in order to better handle hotfixes
 - Fixed: Eye tracking shape keys being in the wrong order
@@ -202,17 +227,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
  - Changed: Translation: Temporarily removed "Textures" button as it's translations currently have no effect
  - Changed: Visemes and Eye Tracking: Reduced time for shape key creation significantly for models with high shape key count
 
-#### 0.0.8
- - Added: Armature: Now fixes more models with one click
- - Added: Credits: Link to the unofficial VRcat forum
- - Added: Dependencies: Now shows whether mmd_tools is outdated or not installed
- - Added: Eye tracking: Warning when bone hierarchy is incorrect
- - Added: Eye tracking & Visemes: Automatic search and fill in for fitting bones and shape keys (you should still check them)
- - Added: Panels: Improved bone and shape key sorting
- - Added: Continuous integration @ github: this will allow us to see errors before we make releases
- - Fixed: Visemes not being exported by Blender
- - Fixed: Tons of other bugs
-
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
 
@@ -225,4 +239,4 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
 
 ## Feedback
 Do you love this plugin or have you found a bug?
-Post a response in this thread or send your feedback to this discord server https://discord.gg/up9Zqsu and look for givemeallyourcats ;)
+Post a response in this thread or send your feedback to the official discord server of the plugin for real-time communication: https://discord.gg/f8yZGnv and look for people with the developer role ;)
