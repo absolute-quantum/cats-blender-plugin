@@ -288,7 +288,7 @@ dont_delete_these_bones = {
 
 
 def delete_hierarchy(obj):
-    names = {}
+    names = {obj.name}
 
     def get_child_names(objz):
         for child in objz.children:
