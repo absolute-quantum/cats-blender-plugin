@@ -1,6 +1,6 @@
 # Cats Blender Plugin (0.2.0)
 
-A tool designed to shorten steps needed to import and optimise MMD models into VRChat
+A tool designed to shorten steps needed to import and optimize MMD models into VRChat
 
 Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
 
@@ -238,4 +238,4 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
 
 ## Feedback
 Do you love this plugin or have you found a bug?
-Post a response in this thread or send your feedback to this discord server https://discord.gg/up9Zqsu and look for givemeallyourcats ;)
+Post a response in this thread or send your feedback to the official discord server of the plugin for real-time communication: https://discord.gg/f8yZGnv and look for people with the developer role ;)
