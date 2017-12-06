@@ -289,7 +289,7 @@ class ToolPanel:
     )
 
     bpy.types.Scene.one_texture = bpy.props.BoolProperty(
-        name='Disable Multiple Textures',
+        name='One Texture Material',
         description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.',
         default=True
     )

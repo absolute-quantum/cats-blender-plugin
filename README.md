@@ -182,7 +182,7 @@ Weight projections vector by faces with larger areas
 ##### Target mesh
 The mesh that you want to create an atlas from
 
-##### Disable multiple textures
+##### One Texture Material
 Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
 **If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
 
