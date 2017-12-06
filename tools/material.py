@@ -155,8 +155,10 @@ class CombineMaterialsButton(bpy.types.Operator):
                 for tex_index, mtex_slot in enumerate(mat_slot.material.texture_slots):
                     if mtex_slot:
                         if hasattr(mtex_slot.texture, 'image') and bpy.data.materials[mat_slot.name].use_textures[tex_index]:
-                            hash_this += mtex_slot.texture.image.filepath  # Filepaths makes the hash unique
-                            hash_this += str(mat_slot.material.alpha)      # Alpha setting on material makes the hash unique
+                            hash_this += mtex_slot.texture.image.filepath   # Filepaths makes the hash unique
+                        hash_this += str(mat_slot.material.alpha)           # Alpha setting on material makes the hash unique
+                        hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique
+                        hash_this += str(mat_slot.material.diffuse_color)   # Diffuse color makes the hash unique
 
                 # Hash the unique values of this material slot
                 hash_val = hashlib.md5(hash_this.encode('utf-8')).hexdigest()
