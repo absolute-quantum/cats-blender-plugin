@@ -325,8 +325,6 @@ class FixArmature(bpy.types.Operator):
         description='Translate names from Japanese to English using selected dictionary',
     )
 
-    tries = 0
-
     @classmethod
     def poll(cls, context):
         if tools.common.get_armature() is None:
@@ -340,8 +338,6 @@ class FixArmature(bpy.types.Operator):
 
 
     def execute(self, context):
-        self.tries += 1
-
         # preservestate = tools.common.PreserveState()
         # preservestate.save()
 

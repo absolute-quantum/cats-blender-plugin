@@ -70,6 +70,7 @@ bl_info = {
 
 slider_z = 0
 
+
 class ToolPanel:
     bl_label = 'Cats Blender Plugin'
     bl_idname = '3D_VIEW_TS_vrc'
