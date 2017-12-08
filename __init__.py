@@ -42,6 +42,7 @@ import tools.armature
 import tools.armature_manual
 import tools.material
 import tools.common
+import tools.supporter
 import tools.credits
 
 importlib.reload(tools.viseme)
@@ -53,6 +54,7 @@ importlib.reload(tools.armature)
 importlib.reload(tools.armature_manual)
 importlib.reload(tools.material)
 importlib.reload(tools.common)
+importlib.reload(tools.supporter)
 importlib.reload(tools.credits)
 
 bl_info = {
@@ -583,6 +585,22 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         addon_updater_ops.update_settings_ui(self, context)
 
 
+class SupporterPanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_supporter_v1'
+    bl_label = 'Supporters'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        box.label('<3 Thank you for supporting us on Patreon:')
+        box.label(' - Xeverian')
+
+        col = box.column(align=True)
+        row = col.row(align=True)
+        row.operator('supporter.patreon', icon='LOAD_FACTORY')
+
+
 class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_credits_v1'
     bl_label = 'Credits'
@@ -672,6 +690,7 @@ def register():
     # bpy.utils.register_class(tools.armature_manual.JoinMeshesTest)
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
+    bpy.utils.register_class(tools.supporter.PatreonButton)
     bpy.utils.register_class(tools.credits.ForumButton)
     bpy.utils.register_class(tools.credits.DiscordButton)
     bpy.utils.register_class(ArmaturePanel)
@@ -681,6 +700,7 @@ def register():
     bpy.utils.register_class(BoneRootPanel)
     bpy.utils.register_class(OptimizePanel)
     bpy.utils.register_class(UpdaterPanel)
+    bpy.utils.register_class(SupporterPanel)
     bpy.utils.register_class(CreditsPanel)
     bpy.utils.register_class(UpdaterPreferences)
     addon_updater_ops.register(bl_info)
@@ -717,6 +737,7 @@ def unregister():
     bpy.utils.unregister_class(TranslationPanel)
     bpy.utils.unregister_class(ArmaturePanel)
     bpy.utils.unregister_class(UpdaterPanel)
+    bpy.utils.unregister_class(SupporterPanel)
     bpy.utils.unregister_class(CreditsPanel)
     bpy.utils.unregister_class(UpdaterPreferences)
     addon_updater_ops.unregister()

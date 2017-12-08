@@ -198,6 +198,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Changelog
 
 #### 0.2.1
+- Added: Supporters (donators) tab
 - Fixed: Atlas: Alpha values are restored after atlassing (thanks Tupper!)
 - Fixed: Combine Meshes: Error 'NoneType attribute has no key_blocks' fixed
 - Fixed: Combine Materials: Now also checks for uniqueness on specular and diffuse color
