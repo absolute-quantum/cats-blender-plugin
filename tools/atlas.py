@@ -147,6 +147,15 @@ class AutoAtlasButton(bpy.types.Operator):
         uv_textures.remove(uv_textures['UVMap'])
         uv_textures[0].name = 'UVMap'
 
+        # Make sure alpha works, thanks Tupper :D!
+        for mat_slot in atlas_mesh.material_slots:
+            if mat_slot is not None:
+                for tex_slot in bpy.data.materials[mat_slot.name].texture_slots:
+                    if tex_slot is not None:
+                        tex_slot.use_map_alpha = True
+                mat_slot.material.transparency_method = 'MASK'
+                mat_slot.material.alpha = 1
+
         try:
             bpy.ops.mmd_tools.set_shadeless_glsl_shading()
         except:

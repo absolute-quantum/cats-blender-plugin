@@ -1,10 +1,12 @@
-# Cats Blender Plugin (0.2.0)
+# Cats Blender Plugin (0.2.1)
 
 A tool designed to shorten steps needed to import and optimize MMD models into VRChat
 
 Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
 
 Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=master)
+
+[![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
 ## Features
  - Optimizing armature with one click!
@@ -19,17 +21,17 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 *More to come!*
 
 ## Installation
-1. download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
+ - download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
 
-2. Install the the addon in blender like so:
+ - Install the the addon in blender like so:
 
 ![](https://i.imgur.com/eZV1zrs.gif)
 
-3. Check your 3d view and there should be a new menu item called **CATS** ....w00t
+ - Check your 3d view and there should be a new menu item called **CATS** ....w00t
 
 ![](https://i.imgur.com/ItJLtNJ.png)
 
-4. If you need help figuring out how to use the tool:
+ - If you need help figuring out how to use the tool:
 
 [![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
@@ -182,7 +184,7 @@ Weight projections vector by faces with larger areas
 ##### Target mesh
 The mesh that you want to create an atlas from
 
-##### Disable multiple textures
+##### One Texture Material
 Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
 **If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
 
@@ -194,6 +196,12 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 
 ## Changelog
+
+#### 0.2.1
+- Added: Supporters (donators) tab
+- Fixed: Atlas: Alpha values are restored after atlassing (thanks Tupper!)
+- Fixed: Combine Meshes: Error 'NoneType attribute has no key_blocks' fixed
+- Fixed: Combine Materials: Now also checks for uniqueness on specular and diffuse color
 
 #### 0.2.0
 - Added: Armature: More models are now compatible (if not yours doesn't get fixed please send us privately the zipped .blend file)
@@ -213,19 +221,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Eye tracking shape keys being in the wrong order
 - Fixed: One bone being weight mixed incorrectly
 - Fixed: Two more bugs
-
-#### 0.0.9
- - Added: Armature: Now fixes a lot more models (if not yours doesn't get fixed please send us privately the zipped .blend file)
- - Added: Armature: Added some button descriptions
- - Added: Armature: Added "Join meshes" button
- - Added: Armature: Added "Delete Bones and add Weights to Parents" button
- - Fixed: Armature: Weird issue where pressing the fix armature button two times would actually work instead of once
- - Fixed: Visemes and Eye Tracking: Created shape keys were empty when the selected ones were already correctly named
- - Fixed: Visemes and Eye Tracking: Shape keys could be deleted on Blender export if decimation was done afterwards
- - Fixed: A whole bucket full of bugs
- - Changed: The plugin "mmd_tools" is no longer required
- - Changed: Translation: Temporarily removed "Textures" button as it's translations currently have no effect
- - Changed: Visemes and Eye Tracking: Reduced time for shape key creation significantly for models with high shape key count
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

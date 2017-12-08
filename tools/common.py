@@ -393,34 +393,36 @@ def repair_viseme_order(mesh_name):
     order['vrc.v_th'] = 19
 
     for name in order.keys():
-        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if shapekey.name == name:
-                mesh.active_shape_key_index = index
-                new_index = order.get(shapekey.name)
-                index_diff = (index - new_index)
+        if mesh.data.shape_keys is not None:
+            if hasattr(mesh.data.shape_keys, 'key_blocks'):
+                for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                    if shapekey.name == name:
+                        mesh.active_shape_key_index = index
+                        new_index = order.get(shapekey.name)
+                        index_diff = (index - new_index)
 
-                if new_index >= len(mesh.data.shape_keys.key_blocks):
-                    bpy.ops.object.shape_key_move(type='BOTTOM')
-                    break
+                        if new_index >= len(mesh.data.shape_keys.key_blocks):
+                            bpy.ops.object.shape_key_move(type='BOTTOM')
+                            break
 
-                position_correct = False
-                if 0 <= index_diff <= (new_index - 1):
-                    while position_correct is False:
-                        if mesh.active_shape_key_index != new_index:
-                                bpy.ops.object.shape_key_move(type='UP')
+                        position_correct = False
+                        if 0 <= index_diff <= (new_index - 1):
+                            while position_correct is False:
+                                if mesh.active_shape_key_index != new_index:
+                                        bpy.ops.object.shape_key_move(type='UP')
+                                else:
+                                    position_correct = True
                         else:
-                            position_correct = True
-                else:
-                    if mesh.active_shape_key_index > new_index:
-                        bpy.ops.object.shape_key_move(type='TOP')
+                            if mesh.active_shape_key_index > new_index:
+                                bpy.ops.object.shape_key_move(type='TOP')
 
-                    position_correct = False
-                    while position_correct is False:
-                        if mesh.active_shape_key_index != new_index:
-                            bpy.ops.object.shape_key_move(type='DOWN')
-                        else:
-                            position_correct = True
-                break
+                            position_correct = False
+                            while position_correct is False:
+                                if mesh.active_shape_key_index != new_index:
+                                    bpy.ops.object.shape_key_move(type='DOWN')
+                                else:
+                                    position_correct = True
+                        break
 
 
 def LLHtoECEF(lat, lon, alt):
