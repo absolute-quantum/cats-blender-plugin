@@ -27,6 +27,7 @@
 import bpy
 import bmesh
 import math
+from collections import OrderedDict
 import numpy as np
 import time
 
@@ -466,7 +467,8 @@ class StartTestingButton(bpy.types.Operator):
         armature = tools.common.get_armature()
         if 'LeftEye' in armature.pose.bones:
             if 'RightEye' in armature.pose.bones:
-                return True
+                if bpy.data.objects.get(context.scene.mesh_name_eye) is not None:
+                    return True
         return False
 
     def execute(self, context):
@@ -482,6 +484,9 @@ class StartTestingButton(bpy.types.Operator):
 
         eye_left.select = True
         eye_right.select = True
+
+        for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
+            shape_key.value = 0
 
         return {'FINISHED'}
 
@@ -503,6 +508,9 @@ class StopTestingButton(bpy.types.Operator):
 
         armature = tools.common.set_default_stage()
         armature.data.pose_position = 'REST'
+
+        for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
+            shape_key.value = 0
         return {'FINISHED'}
 
 
@@ -572,17 +580,82 @@ class AdjustEyesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class TestBlinking(bpy.types.Operator):
+    bl_idname = 'eyes.test_blink'
+    bl_label = 'Test'
+    bl_description = "This let's you see how eye blinking will look ingame."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        mesh = bpy.data.objects[context.scene.mesh_name_eye]
+        if hasattr(mesh.data, 'shape_keys'):
+            if hasattr(mesh.data.shape_keys, 'key_blocks'):
+                if 'vrc.blink_left' in mesh.data.shape_keys.key_blocks:
+                    if 'vrc.blink_right' in mesh.data.shape_keys.key_blocks:
+                        return True
+        return False
+
+    def execute(self, context):
+        mesh = bpy.data.objects[context.scene.mesh_name_eye]
+        shapes = ['vrc.blink_left', 'vrc.blink_right']
+
+        for shape_key in mesh.data.shape_keys.key_blocks:
+            if shape_key.name in shapes:
+                mesh.data.shape_keys.key_blocks[shape_key.name].value = context.scene.eye_blink_shape
+            else:
+                mesh.data.shape_keys.key_blocks[shape_key.name].value = 0
+        context.scene.eye_lowerlid_shape = 0
+
+        return {'FINISHED'}
+
+
+class TestLowerlid(bpy.types.Operator):
+    bl_idname = 'eyes.test_lowerlid'
+    bl_label = 'Test'
+    bl_description = "This let's you see how lowerlids will look ingame."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        mesh = bpy.data.objects[context.scene.mesh_name_eye]
+        if hasattr(mesh.data, 'shape_keys'):
+            if hasattr(mesh.data.shape_keys, 'key_blocks'):
+                if 'vrc.lowerlid_left' in mesh.data.shape_keys.key_blocks:
+                    if 'vrc.lowerlid_right' in mesh.data.shape_keys.key_blocks:
+                        return True
+        return False
+
+    def execute(self, context):
+        mesh = bpy.data.objects[context.scene.mesh_name_eye]
+        shapes = OrderedDict()
+        shapes['vrc.lowerlid_left'] = context.scene.eye_lowerlid_shape
+        shapes['vrc.lowerlid_right'] = context.scene.eye_lowerlid_shape
+
+        for shape_key in mesh.data.shape_keys.key_blocks:
+            if shape_key.name in shapes:
+                mesh.data.shape_keys.key_blocks[shape_key.name].value = context.scene.eye_lowerlid_shape
+            else:
+                mesh.data.shape_keys.key_blocks[shape_key.name].value = 0
+        context.scene.eye_blink_shape = 0
+
+        return {'FINISHED'}
+
+
 # Update via slider, doesn't work :(
-def update_bones(degrees):
-    armature = tools.common.get_armature()
-    eye_left = armature.pose.bones.get('LeftEye')
-    eye_right = armature.pose.bones.get('RightEye')
+def update_bones(context, degrees):
+    print(degrees)
+    context.scene.eye_lowerlid_shape = 0.0
 
-    eye_left.rotation_mode = 'XYZ'
-    eye_right.rotation_mode = 'XYZ'
-
-    eye_left.rotation_euler.rotate_axis('Z', math.radians(degrees))
-    eye_right.rotation_euler.rotate_axis('Z', math.radians(degrees))
-
-    if eye_left is None or eye_right is None:
-        return
+    # armature = tools.common.get_armature()
+    # eye_left = armature.pose.bones.get('LeftEye')
+    # eye_right = armature.pose.bones.get('RightEye')
+    #
+    # eye_left.rotation_mode = 'XYZ'
+    # eye_right.rotation_mode = 'XYZ'
+    #
+    # eye_left.rotation_euler.rotate_axis('Z', math.radians(degrees))
+    # eye_right.rotation_euler.rotate_axis('Z', math.radians(degrees))
+    #
+    # if eye_left is None or eye_right is None:
+    #     return

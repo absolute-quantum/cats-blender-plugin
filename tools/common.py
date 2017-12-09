@@ -36,12 +36,12 @@ import time
 # TODO
 # - Add check if hips bone really needs to be rotated
 # - Error: https://i.imgur.com/kBnSx0I.png with model Kanna O: https://goo.gl/sJj2xL
-# - Error: Open Model, go into edit mode, select a bone and press Fix Armature: https://i.imgur.com/IJHsP0o.png
 # - Reset Pivot
 # - Manual bone selection button for root bones
 # - Checkbox for eye blinking/moving
 # - Translate progress bar
 # - Add error dialog: At the bottom here: https://wiki.blender.org/index.php/Dev:Py/Scripts/Cookbook/Code_snippets/Interface
+# - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
 
 
 def get_armature():
@@ -372,6 +372,7 @@ def join_meshes():
 def repair_viseme_order(mesh_name):
     mesh = bpy.data.objects[mesh_name]
     order = OrderedDict()
+    order['Basis'] = 0
     order['vrc.blink_left'] = 1
     order['vrc.blink_right'] = 2
     order['vrc.lowerlid_left'] = 3
@@ -423,6 +424,28 @@ def repair_viseme_order(mesh_name):
                                 else:
                                     position_correct = True
                         break
+
+
+def removeEmptyGroups(obj, thres=0):
+    z = []
+    for v in obj.data.vertices:
+        for g in v.groups:
+            if g.weight > thres:
+                if g not in z:
+                    z.append(obj.vertex_groups[g.group])
+    for r in obj.vertex_groups:
+        if r not in z:
+            obj.vertex_groups.remove(r)
+
+
+def removeZeroVerts(obj, thres=0):
+    for v in obj.data.vertices:
+        z = []
+        for g in v.groups:
+            if not g.weight > thres:
+                z.append(g)
+        for r in z:
+            obj.vertex_groups[g.group].remove([v.index])
 
 
 def LLHtoECEF(lat, lon, alt):
