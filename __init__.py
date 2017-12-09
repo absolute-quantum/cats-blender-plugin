@@ -199,6 +199,28 @@ class ToolPanel:
         subtype='FACTOR'
     )
 
+    bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
+        name='Blink Strenght',
+        description='Test the blinking of the eye.',
+        default=0.0,
+        min=0.0,
+        max=1.0,
+        step=1.0,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    bpy.types.Scene.eye_lowerlid_shape = bpy.props.FloatProperty(
+        name='Lowerlid Strenght',
+        description='Test the lowerlid blinking of the eye.',
+        default=0.0,
+        min=0.0,
+        max=1.0,
+        step=1.0,
+        precision=2,
+        subtype='FACTOR'
+    )
+
     # Visemes
     bpy.types.Scene.mesh_name_viseme = bpy.props.EnumProperty(
         name='Mesh',
@@ -433,7 +455,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.operator('create.eyes', icon='TRIA_RIGHT')
 
-            # armature = tools.common.get_armature()
+            # armature = common.get_armature()
             # if "RightEye" in armature.pose.bones:
             #     row = col.row(align=True)
             #     row.label('Eye Bone Tweaking:')
@@ -459,22 +481,29 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row.prop(context.scene, 'eye_rotation_x', icon='FILE_PARENT')
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_rotation_y', icon='ARROW_LEFTRIGHT')
-
-                # global slider_z
-                # if context.scene.eye_rotation_z != slider_z:
-                #     slider_z = context.scene.eye_rotation_z
-                #     tools.eyetracking.update_bones(slider_z)
-
                 row = col.row(align=True)
                 row.operator('eyes.set_rotation', icon='MAN_ROT')
+
+                # global slider_z
+                # if context.scene.eye_blink_shape != slider_z:
+                #     slider_z = context.scene.eye_blink_shape
+                #     eyetracking.update_bones(context, slider_z)
 
                 col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_distance')
-
                 row = col.row(align=True)
                 row.operator('eyes.adjust_eyes', icon='CURVE_NCIRCLE')
+
+                col.separator()
+                col.separator()
+                row = col.split(0.75)
+                row.prop(context.scene, 'eye_blink_shape')
+                row.operator('eyes.test_blink', icon='RESTRICT_VIEW_OFF')
+                row = col.split(0.75)
+                row.prop(context.scene, 'eye_lowerlid_shape')
+                row.operator('eyes.test_lowerlid', icon='RESTRICT_VIEW_OFF')
 
                 col.separator()
                 col.separator()
@@ -675,6 +704,8 @@ def register():
     bpy.utils.register_class(tools.eyetracking.StopTestingButton)
     bpy.utils.register_class(tools.eyetracking.SetRotationButton)
     bpy.utils.register_class(tools.eyetracking.AdjustEyesButton)
+    bpy.utils.register_class(tools.eyetracking.TestBlinking)
+    bpy.utils.register_class(tools.eyetracking.TestLowerlid)
     bpy.utils.register_class(tools.viseme.AutoVisemeButton)
     bpy.utils.register_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.register_class(tools.translate.TranslateBonesButton)
@@ -713,6 +744,8 @@ def unregister():
     bpy.utils.unregister_class(tools.eyetracking.StopTestingButton)
     bpy.utils.unregister_class(tools.eyetracking.SetRotationButton)
     bpy.utils.unregister_class(tools.eyetracking.AdjustEyesButton)
+    bpy.utils.unregister_class(tools.eyetracking.TestBlinking)
+    bpy.utils.unregister_class(tools.eyetracking.TestLowerlid)
     bpy.utils.unregister_class(tools.viseme.AutoVisemeButton)
     bpy.utils.unregister_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.unregister_class(tools.translate.TranslateBonesButton)
