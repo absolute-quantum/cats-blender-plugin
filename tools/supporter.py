@@ -37,3 +37,12 @@ class PatreonButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Patreon page opened')
         return {'FINISHED'}
+
+
+class PersonButton(bpy.types.Operator):
+    bl_idname = 'supporter.person'
+    bl_label = 'Supporter'
+    bl_description = 'This is an awesome supporter!'
+
+    def execute(self, context):
+        return {'FINISHED'}

@@ -28,6 +28,7 @@ import bpy
 import sys
 import os
 import importlib
+import bpy.utils.previews
 from . import addon_updater_ops
 
 file_dir = os.path.dirname(__file__)
@@ -71,6 +72,9 @@ bl_info = {
 }
 
 slider_z = 0
+
+# global variable to store icons in
+preview_collections = {}
 
 
 class ToolPanel:
@@ -329,6 +333,17 @@ class ToolPanel:
         name='Target Mesh',
         description='The mesh that you want to create a atlas from',
         items=tools.common.get_meshes
+    )
+
+    # Supporter
+    bpy.types.Scene.supporters = bpy.props.EnumProperty(
+        name="Supporters",
+        description="These are our wonderful patrons <3",
+        items=[
+            ("A", "Jazneo", "Thank you, Jazneo <3"),
+            ("B", "Tupper", "Thank you, Tupper <3"),
+            ("C", "Xeverian", "Thank you, Xeverian <3")
+        ]
     )
 
 
@@ -617,17 +632,40 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 class SupporterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_supporter_v1'
     bl_label = 'Supporters'
-    bl_options = {'DEFAULT_CLOSED'}
+    # bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        box.label('<3 Thank you for supporting us on Patreon:')
-        box.label(' - Xeverian')
-
         col = box.column(align=True)
         row = col.row(align=True)
-        row.operator('supporter.patreon', icon='LOAD_FACTORY')
+        row.label('Thank you for supporting us on Patreon:   <3')
+        row = col.row(align=True)
+        row.label(' - Jazneo')
+        row = col.row(align=True)
+        row.label(' - Tupper')
+        row = col.row(align=True)
+        row.label(' - Xeverian')
+
+        row = col.row(align=True)
+        row.prop(context.scene, 'supporters', expand=True, emboss=False)
+
+        row = col.row(align=True)
+        row.scale_y = 0.9
+        row.operator('supporter.person', text='Jazneo', emboss=False)
+        row.operator('supporter.person', text='Tupper', emboss=False)
+        row.operator('supporter.person', text='Xeverian', emboss=False)
+        row = col.row(align=True)
+        row.scale_y = 0.9
+        row = col.split(0.05)
+        row.operator('supporter.person', text='', emboss=False)
+        row.operator('supporter.person', text='Jazneo', emboss=False)
+        row.operator('supporter.person', text='Tupper', emboss=False)
+        row.operator('supporter.person', text='Xeverian', emboss=False)
+        col.separator()
+
+        row = col.row(align=True)
+        row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
 
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
@@ -635,6 +673,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_label = 'Credits'
 
     def draw(self, context):
+        global custom_icons
         layout = self.layout
         box = layout.box()
         version = bl_info.get('version')
@@ -646,16 +685,22 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
                     continue
                 version_str += '.' + str(version[index])
         version_str += ')'
-        box.label(version_str)
+        box.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
         box.label('Created by GiveMeAllYourCats for the VRC community <3')
         box.label('Special thanks to: Shotariya, Hotox and Neitri!')
         box.label('Want to give feedback or found a bug?')
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart2"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart3"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart4"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord2"].icon_id)
 
         col = box.column(align=True)
         row = col.row(align=True)
-        row.operator('credits.forum', icon='LOAD_FACTORY')
+        row.operator('credits.forum', icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
         row = col.row(align=True)
-        row.operator('credits.discord', icon='LOAD_FACTORY')
+        row.operator('credits.discord', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -697,7 +742,37 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
         addon_updater_ops.update_settings_ui(self, context)
 
 
+def load_icons():
+    # Note that preview collections returned by bpy.utils.previews
+    # are regular py objects - you can use them to store custom data.
+    pcoll = bpy.utils.previews.new()
+
+    # path to the folder where the icon is
+    # the path is calculated relative to this py file inside the addon folder
+    my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
+
+    # load a preview thumbnail of a file and store in the previews collection
+    pcoll.load("heart1", os.path.join(my_icons_dir, "heart1.png"), 'IMAGE')
+    pcoll.load("heart2", os.path.join(my_icons_dir, "heart2.png"), 'IMAGE')
+    pcoll.load("heart3", os.path.join(my_icons_dir, "heart3.png"), 'IMAGE')
+    pcoll.load("heart4", os.path.join(my_icons_dir, "heart4.png"), 'IMAGE')
+    pcoll.load("discord1", os.path.join(my_icons_dir, "discord1.png"), 'IMAGE')
+    pcoll.load("discord2", os.path.join(my_icons_dir, "discord2.png"), 'IMAGE')
+    pcoll.load("cats1", os.path.join(my_icons_dir, "cats1.png"), 'IMAGE')
+    pcoll.load("patreon1", os.path.join(my_icons_dir, "patreon1.png"), 'IMAGE')
+    pcoll.load("patreon2", os.path.join(my_icons_dir, "patreon2.png"), 'IMAGE')
+
+    preview_collections["custom_icons"] = pcoll
+
+
+def unload_icons():
+    for pcoll in preview_collections.values():
+        bpy.utils.previews.remove(pcoll)
+    preview_collections.clear()
+
+
 def register():
+    load_icons()
     bpy.utils.register_class(tools.atlas.AutoAtlasButton)
     bpy.utils.register_class(tools.eyetracking.CreateEyesButton)
     bpy.utils.register_class(tools.eyetracking.StartTestingButton)
@@ -722,6 +797,7 @@ def register():
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
     bpy.utils.register_class(tools.supporter.PatreonButton)
+    bpy.utils.register_class(tools.supporter.PersonButton)
     bpy.utils.register_class(tools.credits.ForumButton)
     bpy.utils.register_class(tools.credits.DiscordButton)
     bpy.utils.register_class(ArmaturePanel)
@@ -761,6 +837,8 @@ def unregister():
     bpy.utils.unregister_class(tools.material.OneTexPerMatButton)
     # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)
     # bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
+    bpy.utils.unregister_class(tools.supporter.PatreonButton)
+    bpy.utils.unregister_class(tools.supporter.PersonButton)
     bpy.utils.unregister_class(tools.credits.ForumButton)
     bpy.utils.unregister_class(tools.credits.DiscordButton)
     bpy.utils.unregister_class(OptimizePanel)
@@ -774,6 +852,7 @@ def unregister():
     bpy.utils.unregister_class(CreditsPanel)
     bpy.utils.unregister_class(UpdaterPreferences)
     addon_updater_ops.unregister()
+    unload_icons()
 
 
 if __name__ == '__main__':
