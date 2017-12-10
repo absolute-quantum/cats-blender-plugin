@@ -464,39 +464,43 @@ class FixArmature(bpy.types.Operator):
                     old_chest = armature.data.edit_bones.get('Chest')
                     spine = armature.data.edit_bones.get('Spine')
 
-                    # Rename chests
-                    old_chest.name = 'ChestOld'
-                    new_chest.name = 'Chest'
+                    # Check if NewChest is empty
+                    if tools.common.isEmptyGroup(new_chest.name):
+                        armature.data.edit_bones.remove(new_chest)
+                    else:
+                        # Rename chests
+                        old_chest.name = 'ChestOld'
+                        new_chest.name = 'Chest'
 
-                    # Adjust spine bone position
-                    spine.tail[0] += old_chest.tail[0] - old_chest.head[0]
-                    spine.tail[1] += old_chest.tail[1] - old_chest.head[1]
-                    spine.tail[2] += old_chest.tail[2] - old_chest.head[2]
+                        # Adjust spine bone position
+                        spine.tail[0] += old_chest.tail[0] - old_chest.head[0]
+                        spine.tail[1] += old_chest.tail[1] - old_chest.head[1]
+                        spine.tail[2] += old_chest.tail[2] - old_chest.head[2]
 
-                    # Move weight paint to spine
-                    tools.common.unselect_all()
-                    tools.common.switch('OBJECT')
-                    tools.common.select(mesh)
+                        # Move weight paint to spine
+                        tools.common.unselect_all()
+                        tools.common.switch('OBJECT')
+                        tools.common.select(mesh)
 
-                    vg = mesh.vertex_groups.get(old_chest.name)
-                    if vg is not None:
-                        bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
-                        bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = spine.name
-                        bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = old_chest.name
-                        bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
-                        bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
-                        bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
-                        mesh.vertex_groups.remove(vg)
+                        vg = mesh.vertex_groups.get(old_chest.name)
+                        if vg is not None:
+                            bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
+                            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = spine.name
+                            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = old_chest.name
+                            bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
+                            bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
+                            bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+                            mesh.vertex_groups.remove(vg)
 
-                    tools.common.unselect_all()
-                    tools.common.select(armature)
-                    tools.common.switch('EDIT')
+                        tools.common.unselect_all()
+                        tools.common.select(armature)
+                        tools.common.switch('EDIT')
 
-                    # Delete old chest bone
-                    # New Check is necessary because switch to object mode in between
+                        # Delete old chest bone
+                        # New Check is necessary because switch to object mode in between
 
-                    old_chest = armature.data.edit_bones.get('ChestOld')
-                    armature.data.edit_bones.remove(old_chest)
+                        old_chest = armature.data.edit_bones.get('ChestOld')
+                        armature.data.edit_bones.remove(old_chest)
 
         # Hips bone should be fixed as per specification from the SDK code
         if 'Hips' in armature.data.edit_bones:

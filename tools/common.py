@@ -426,6 +426,23 @@ def repair_viseme_order(mesh_name):
                         break
 
 
+def isEmptyGroup(group_name):
+    mesh = bpy.data.objects.get('Body')
+    if mesh is None:
+        return True
+    vgroup = mesh.vertex_groups.get(group_name)
+    if vgroup is None:
+        return True
+
+    for vert in mesh.data.vertices:
+        for group in vert.groups:
+            if group.group == vgroup.index:
+                if group.weight > 0:
+                    return False
+
+    return True
+
+
 def removeEmptyGroups(obj, thres=0):
     z = []
     for v in obj.data.vertices:
