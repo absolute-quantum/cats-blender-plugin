@@ -42,6 +42,8 @@ import time
 # - Translate progress bar
 # - Add error dialog: At the bottom here: https://wiki.blender.org/index.php/Dev:Py/Scripts/Cookbook/Code_snippets/Interface
 # - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
+# - Eye tracking test add reset blink
+# - Eye tracking test set subcol like in updater
 
 
 def get_armature():

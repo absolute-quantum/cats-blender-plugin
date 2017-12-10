@@ -625,7 +625,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        addon_updater_ops.check_for_update_background()
+        # addon_updater_ops.check_for_update_background()
         addon_updater_ops.update_settings_ui(self, context)
 
 
@@ -709,7 +709,7 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
     auto_check_update = bpy.props.BoolProperty(
         name='Auto-check for Update',
         description='If enabled, auto-check for updates using an interval',
-        default=False,
+        default=True,
     )
     updater_intrval_months = bpy.props.IntProperty(
         name='Months',
@@ -720,7 +720,7 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
     updater_intrval_days = bpy.props.IntProperty(
         name='Days',
         description='Number of days between checking for updates',
-        default=7,
+        default=1,
         min=0,
     )
     updater_intrval_hours = bpy.props.IntProperty(
@@ -811,6 +811,7 @@ def register():
     bpy.utils.register_class(CreditsPanel)
     bpy.utils.register_class(UpdaterPreferences)
     addon_updater_ops.register(bl_info)
+    addon_updater_ops.check_for_update_background()
 
 
 def unregister():

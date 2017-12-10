@@ -200,7 +200,8 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)
 - Added: Eye Tracking: Testing of blink and lowerlid shapes
-- Fixed: Armature: Fixed multiple toe bug
+- Added: Updater: New popup when update is available
+- Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
 
 #### 0.2.1
