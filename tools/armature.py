@@ -509,6 +509,22 @@ class FixArmature(bpy.types.Operator):
                     hip_bone = armature.data.edit_bones.get('Hips')
                     left_leg = armature.data.edit_bones.get('Left leg')
                     right_leg = armature.data.edit_bones.get('Right leg')
+                    right_knee = armature.data.edit_bones.get('Right knee')
+                    left_knee = armature.data.edit_bones.get('Left knee')
+
+                    # Hips should have x value of 0 in both head and tail
+                    hip_bone.head[0] = 0
+                    hip_bone.tail[0] = 0
+
+                    # Make sure the upper legs tail are the same x/y values as the lower leg tail x/y
+                    right_leg.tail[0] = right_knee.head[0]
+                    left_leg.tail[0] = left_knee.head[0]
+                    right_leg.head[1] = right_knee.head[1]
+                    left_leg.head[1] = left_knee.head[1]
+
+                    # Make sure the leg bones are setup straight. (head should be same X as tail)
+                    left_leg.head[0] = left_leg.tail[0]
+                    right_leg.head[0] = right_leg.tail[0]
 
                     # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
                     left_leg.head[1] = right_leg.head[1]
@@ -521,6 +537,13 @@ class FixArmature(bpy.types.Operator):
                     hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
                     hip_bone.head[2] = right_leg.head[2]
                     hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
+
+                    # Roll should be disabled on legs
+                    left_leg.roll = 0
+                    right_leg.roll = 0
+
+                    # Roll should be disabled on hips
+                    hip_bone.roll = 0
 
         # Reparent all bones to be correct for unity mapping and vrc itself
         for key, value in bone_list_parenting.items():

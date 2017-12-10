@@ -640,29 +640,17 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
         row = col.row(align=True)
         row.label('Thank you for supporting us on Patreon:   <3')
-        row = col.row(align=True)
-        row.label(' - Jazneo')
-        row = col.row(align=True)
-        row.label(' - Tupper')
-        row = col.row(align=True)
-        row.label(' - Xeverian')
-
-        row = col.row(align=True)
-        row.prop(context.scene, 'supporters', expand=True, emboss=False)
 
         row = col.row(align=True)
         row.scale_y = 0.9
-        row.operator('supporter.person', text='Jazneo', emboss=False)
-        row.operator('supporter.person', text='Tupper', emboss=False)
-        row.operator('supporter.person', text='Xeverian', emboss=False)
         row = col.row(align=True)
         row.scale_y = 0.9
-        row = col.split(0.05)
-        row.operator('supporter.person', text='', emboss=False)
-        row.operator('supporter.person', text='Jazneo', emboss=False)
-        row.operator('supporter.person', text='Tupper', emboss=False)
-        row.operator('supporter.person', text='Xeverian', emboss=False)
-        col.separator()
+        row.operator('supporter.person', text='Jazneo', emboss=False, icon_value=preview_collections["custom_icons"]["jazneo"].icon_id)
+        row.operator('supporter.person', text='Tupper', emboss=False, icon_value=preview_collections["custom_icons"]["tupper"].icon_id)
+        row.operator('supporter.person', text='Xeverian', emboss=False, icon_value=preview_collections["custom_icons"]["xeverian"].icon_id)
+        row = col.row(align=True)
+        row.scale_y = 0.9
+        row.label('')
 
         row = col.row(align=True)
         row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
@@ -761,6 +749,9 @@ def load_icons():
     pcoll.load("cats1", os.path.join(my_icons_dir, "cats1.png"), 'IMAGE')
     pcoll.load("patreon1", os.path.join(my_icons_dir, "patreon1.png"), 'IMAGE')
     pcoll.load("patreon2", os.path.join(my_icons_dir, "patreon2.png"), 'IMAGE')
+    pcoll.load("tupper", os.path.join(my_icons_dir, "tupper.png"), 'IMAGE')
+    pcoll.load("xeverian", os.path.join(my_icons_dir, "xeverian.png"), 'IMAGE')
+    pcoll.load("jazneo", os.path.join(my_icons_dir, "jazneo.png"), 'IMAGE')
 
     preview_collections["custom_icons"] = pcoll
 
