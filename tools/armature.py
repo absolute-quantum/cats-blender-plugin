@@ -54,10 +54,10 @@ bone_list_rename = {
     'Knee_R': 'Right knee',
     'Ankle_L': 'Left ankle',
     'Ankle_R': 'Right ankle',
-    'ToeTip_L': 'Left toe',
     'LegTipEX_L': 'Left toe',
-    'ToeTip_R': 'Right toe',
+    'ClawTipEX_L': 'Left toe',
     'LegTipEX_R': 'Right toe',
+    'ClawTipEX_R': 'Right toe',
     'LowerBody': 'Hips',
     'Lowerbody': 'Hips',
     'Lower body': 'Hips',
@@ -256,6 +256,7 @@ bone_list_weight = {
     'Right hand twist 2': 'Right elbow',
     'Right Hand Thread 3': 'Right elbow',
     'ElbowSleeve_R': 'Right elbow',
+    'WristAux_R': 'Right elbow',
 
     'HandTwist_L': 'Left elbow',
     'HandTwist1_L': 'Left elbow',
@@ -272,6 +273,7 @@ bone_list_weight = {
     'Left hand twist 2': 'Left elbow',
     'Left Hand Thread 3': 'Left elbow',
     'ElbowSleeve_L': 'Left elbow',
+    'WristAux_L': 'Left elbow',
 
     'WristSleeve_L': 'Left wrist',
     'WristSleeve_R': 'Right wrist',

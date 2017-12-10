@@ -50,7 +50,8 @@ class JoinMeshes(bpy.types.Operator):
 
     def execute(self, context):
         mesh = tools.common.join_meshes()
-        tools.common.repair_viseme_order(mesh.name)
+        if mesh is not None:
+            tools.common.repair_viseme_order(mesh.name)
 
         self.report({'INFO'}, 'Meshes joined.')
         return {'FINISHED'}
