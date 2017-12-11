@@ -256,11 +256,11 @@ def get_shapekeys_mouth_ch(self, context):
 
 
 def get_shapekeys_eye_blink_l(self, context):
-    return get_shapekeys(context, ['Wink 2', 'Wink'], True)
+    return get_shapekeys(context, ['Wink 2', 'Wink', 'Basis'], False)
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right'], True)
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Basis'], False)
 
 
 def get_shapekeys_eye_low_l(self, context):

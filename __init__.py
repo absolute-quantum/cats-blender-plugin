@@ -206,7 +206,7 @@ class ToolPanel:
     bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
         name='Blink Strenght',
         description='Test the blinking of the eye.',
-        default=0.0,
+        default=1.0,
         min=0.0,
         max=1.0,
         step=1.0,
@@ -217,7 +217,7 @@ class ToolPanel:
     bpy.types.Scene.eye_lowerlid_shape = bpy.props.FloatProperty(
         name='Lowerlid Strenght',
         description='Test the lowerlid blinking of the eye.',
-        default=0.0,
+        default=1.0,
         min=0.0,
         max=1.0,
         step=1.0,
@@ -352,30 +352,34 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_label = 'Armature'
 
     def draw(self, context):
+        addon_updater_ops.check_for_update_background()
         layout = self.layout
         box = layout.box()
-        row = box.row(align=True)
+        col = box.column(align=True)
+        row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
-        row = box.row(align=True)
+        row = col.row(align=True)
         row.scale_y = 1.4
         row.operator('armature.fix', icon='BONE_DATA')
 
-        col = box.column(align=True)
-
-        col.label('Manual Armature Fixing:')
         col.separator()
-        # row = col.row(align=True)
-        # row.scale_y = 1.1
-        # row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
-        # row = col.row(align=True)
-        # row.scale_y = 1.1
-        # row.operator('armature_manual.join_meshes2', icon='MESH_DATA')
+        col.separator()
+        col.label('Manual Armature Fixing:')
+        row = col.row(align=True)
+        row.scale_y = 1.1
+        row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
         row = col.row(align=True)
         row.scale_y = 1.1
         row.operator('armature_manual.join_meshes', icon='MESH_DATA')
         row = col.row(align=True)
         row.scale_y = 1.1
         row.operator('armature_manual.mix_weights', icon='BONE_DATA')
+        # row = col.row(align=True)
+        # row.scale_y = 1.1
+        # row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
+        # row = col.row(align=True)
+        # row.scale_y = 1.1
+        # row.operator('armature_manual.join_meshes2', icon='MESH_DATA')
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -513,12 +517,14 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
                 col.separator()
                 col.separator()
-                row = col.split(0.75)
+                row = col.row(align=True)
                 row.prop(context.scene, 'eye_blink_shape')
                 row.operator('eyes.test_blink', icon='RESTRICT_VIEW_OFF')
-                row = col.split(0.75)
+                row = col.row(align=True)
                 row.prop(context.scene, 'eye_lowerlid_shape')
                 row.operator('eyes.test_lowerlid', icon='RESTRICT_VIEW_OFF')
+                row = col.row(align=True)
+                row.operator('eyes.reset_blink_test', icon='FILE_REFRESH')
 
                 col.separator()
                 col.separator()
@@ -630,7 +636,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 
 
 class SupporterPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_supporter_v1'
+    bl_idname = 'VIEW3D_PT_supporter_v2'
     bl_label = 'Supporters'
     # bl_options = {'DEFAULT_CLOSED'}
 
@@ -639,19 +645,19 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
         row = col.row(align=True)
-        row.label('Thank you for supporting us on Patreon:   <3')
+        row.label('Thanks to our awesome supporters! <3')
 
-        row = col.row(align=True)
-        row.scale_y = 0.9
+        col.separator()
         row = col.row(align=True)
         row.scale_y = 0.9
         row.operator('supporter.person', text='Jazneo', emboss=False, icon_value=preview_collections["custom_icons"]["jazneo"].icon_id)
         row.operator('supporter.person', text='Tupper', emboss=False, icon_value=preview_collections["custom_icons"]["tupper"].icon_id)
         row.operator('supporter.person', text='Xeverian', emboss=False, icon_value=preview_collections["custom_icons"]["xeverian"].icon_id)
-        row = col.row(align=True)
-        row.scale_y = 0.9
-        row.label('')
 
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.label('Do you like this plugin and want to support us too?')
         row = col.row(align=True)
         row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
 
@@ -770,6 +776,7 @@ def register():
     bpy.utils.register_class(tools.eyetracking.StopTestingButton)
     bpy.utils.register_class(tools.eyetracking.SetRotationButton)
     bpy.utils.register_class(tools.eyetracking.AdjustEyesButton)
+    bpy.utils.register_class(tools.eyetracking.ResetBlinkTest)
     bpy.utils.register_class(tools.eyetracking.TestBlinking)
     bpy.utils.register_class(tools.eyetracking.TestLowerlid)
     bpy.utils.register_class(tools.viseme.AutoVisemeButton)
@@ -785,6 +792,7 @@ def register():
     bpy.utils.register_class(tools.material.OneTexPerMatButton)
     # bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     # bpy.utils.register_class(tools.armature_manual.JoinMeshesTest)
+    bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
     bpy.utils.register_class(tools.supporter.PatreonButton)
@@ -802,7 +810,6 @@ def register():
     bpy.utils.register_class(CreditsPanel)
     bpy.utils.register_class(UpdaterPreferences)
     addon_updater_ops.register(bl_info)
-    addon_updater_ops.check_for_update_background()
 
 
 def unregister():
@@ -812,6 +819,7 @@ def unregister():
     bpy.utils.unregister_class(tools.eyetracking.StopTestingButton)
     bpy.utils.unregister_class(tools.eyetracking.SetRotationButton)
     bpy.utils.unregister_class(tools.eyetracking.AdjustEyesButton)
+    bpy.utils.unregister_class(tools.eyetracking.ResetBlinkTest)
     bpy.utils.unregister_class(tools.eyetracking.TestBlinking)
     bpy.utils.unregister_class(tools.eyetracking.TestLowerlid)
     bpy.utils.unregister_class(tools.viseme.AutoVisemeButton)
@@ -825,6 +833,7 @@ def unregister():
     bpy.utils.unregister_class(tools.armature.FixArmature)
     bpy.utils.unregister_class(tools.armature_manual.MixWeights)
     bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
+    bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.unregister_class(tools.material.CombineMaterialsButton)
     bpy.utils.unregister_class(tools.material.OneTexPerMatButton)
     # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)

@@ -199,8 +199,10 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)
+- Added: Armature: Added "Separate by Materials" button
 - Added: Eye Tracking: Testing of blink and lowerlid shapes
 - Added: Updater: New popup when update is available
+- Changed: Eye Tracking: Made "Basis" usable again (for models with a single shape containing both blinks)
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
 

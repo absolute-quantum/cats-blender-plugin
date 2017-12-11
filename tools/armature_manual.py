@@ -37,7 +37,7 @@ from collections import OrderedDict
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
-    bl_description = 'Joins all meshes.'
+    bl_description = 'Join the Model meshes into a single one.'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -54,6 +54,59 @@ class JoinMeshes(bpy.types.Operator):
             tools.common.repair_viseme_order(mesh.name)
 
         self.report({'INFO'}, 'Meshes joined.')
+        return {'FINISHED'}
+
+
+class SeparateByMaterials(bpy.types.Operator):
+    bl_idname = 'armature_manual.separate_by_materials'
+    bl_label = 'Separate by Materials'
+    bl_description = 'Separates selected mesh by materials.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        return obj and obj.type == 'MESH'
+
+    @staticmethod
+    def __can_remove(key_block):
+        if key_block.relative_key == key_block:
+            return False  # Basis
+        for v0, v1 in zip(key_block.relative_key.data, key_block.data):
+            if v0.co != v1.co:
+                return False
+        return True
+
+    def __shape_key_clean(self, context, obj, key_blocks):
+        for kb in key_blocks:
+            if self.__can_remove(kb):
+                obj.shape_key_remove(kb)
+
+    def __shape_key_clean_old(self, context, obj, key_blocks):
+        context.scene.objects.active = obj
+        for i in reversed(range(len(key_blocks))):
+            kb = key_blocks[i]
+            if self.__can_remove(kb):
+                obj.active_shape_key_index = i
+                bpy.ops.object.shape_key_remove()
+
+    __do_shape_key_clean = __shape_key_clean_old if bpy.app.version < (2, 75, 0) else __shape_key_clean
+
+    def execute(self, context):
+        obj = context.active_object
+        utils.separateByMaterials(obj)
+
+        for ob in context.selected_objects:
+            if ob.type != 'MESH' or ob.data.shape_keys is None:
+                continue
+            if not ob.data.shape_keys.use_relative:
+                continue  # not be considered yet
+            key_blocks = ob.data.shape_keys.key_blocks
+            counts = len(key_blocks)
+            self.__do_shape_key_clean(context, ob, key_blocks)
+            counts -= len(key_blocks)
+
+        utils.clearUnusedMeshes()
         return {'FINISHED'}
 
 
@@ -211,7 +264,7 @@ class ArmatureEditMode:
         bpy.context.scene.objects.active = self._active_object
 
 
-class SeparateByMaterials(bpy.types.Operator):
+class SeparateByMaterialsCustom(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_materials'
     bl_label = 'Separate By Materials'
     bl_description = 'Separate by materials'
