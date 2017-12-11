@@ -31,6 +31,15 @@ import importlib
 import bpy.utils.previews
 from . import addon_updater_ops
 
+mmd_tools_installed = False
+try:
+    import mmd_tools
+    mmd_tools_installed = True
+    print("mmd_tools found!")
+except:
+    print("mmd_tools not found!")
+    pass
+
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
 
@@ -349,13 +358,21 @@ class ToolPanel:
 
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature_v1'
-    bl_label = 'Armature'
+    bl_label = 'Model'
 
     def draw(self, context):
         addon_updater_ops.check_for_update_background()
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
+
+        if mmd_tools_installed:
+            row = col.row(align=True)
+            row.scale_y = 1.4
+            row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
+            col.separator()
+
+
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
         row = col.row(align=True)
@@ -363,8 +380,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row.operator('armature.fix', icon='BONE_DATA')
 
         col.separator()
-        col.separator()
-        col.label('Manual Armature Fixing:')
+        col.label('Manual Model Fixing:')
         row = col.row(align=True)
         row.scale_y = 1.1
         row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
@@ -657,7 +673,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         col.separator()
         row = col.row(align=True)
-        row.label('Do you like this plugin and want to support us too?')
+        row.label('Do you like this plugin and want to support us?')
         row = col.row(align=True)
         row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
 
@@ -800,9 +816,13 @@ def register():
     bpy.utils.register_class(tools.material.OneTexPerMatButton)
     # bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     # bpy.utils.register_class(tools.armature_manual.JoinMeshesTest)
+    # bpy.utils.register_class(tools.armature_manual.Import)
+    # bpy.utils.register_class(tools.armature_manual.Finalize)
+    # bpy.utils.register_class(tools.armature_manual.Test)
     bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
+    bpy.utils.register_class(tools.armature_manual.ImportModel)
     bpy.utils.register_class(tools.supporter.PatreonButton)
     bpy.utils.register_class(tools.supporter.PersonButton)
     bpy.utils.register_class(tools.credits.ForumButton)
@@ -839,9 +859,13 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RootButton)
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
+    bpy.utils.unregister_class(tools.armature_manual.ImportModel)
     bpy.utils.unregister_class(tools.armature_manual.MixWeights)
     bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
     bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
+    # bpy.utils.unregister_class(tools.armature_manual.Import)
+    # bpy.utils.unregister_class(tools.armature_manual.Finalize)
+    # bpy.utils.unregister_class(tools.armature_manual.Test)
     bpy.utils.unregister_class(tools.material.CombineMaterialsButton)
     bpy.utils.unregister_class(tools.material.OneTexPerMatButton)
     # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)

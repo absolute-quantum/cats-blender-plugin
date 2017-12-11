@@ -33,6 +33,69 @@ from mmd_tools_local import utils
 from mmd_tools_local.core.material import FnMaterial
 from collections import OrderedDict
 
+mmd_tools_installed = False
+try:
+    import mmd_tools
+    mmd_tools_installed = True
+except:
+    pass
+
+
+class ImportModel(bpy.types.Operator):
+    bl_idname = 'armature_manual.import_model'
+    bl_label = 'Import Model'
+    bl_description = 'Import a MMD model (.pmx, .pmd)\n' \
+                     '\n' \
+                     'Only available when mmd_tools is installed.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        if not mmd_tools_installed:
+            self.report({'ERROR'}, 'mmd_tools not installed!')
+            return {'FINISHED'}
+
+        bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
+
+
+# # Our finalizing operator, shall run after transform
+# class Finalize(bpy.types.Operator):
+#     bl_idname = "test.finalize"
+#     bl_label = "Finalize"
+#
+#     def execute(self, context):
+#         bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+#
+#         for obj in bpy.data.objects:
+#             if obj.parent is not None:
+#                 continue
+#             try:
+#                 obj.mmd_root.use_toon_texture = False
+#                 obj.mmd_root.use_sphere_texture = False
+#                 break
+#             except:
+#                 pass
+#         print("DONE!")
+#         return {'FINISHED'}
+#
+#
+# # Our finalizing operator, shall run after transform
+# class Import(bpy.types.Operator):
+#     bl_idname = "test.import"
+#     bl_label = "Import"
+#
+#     def execute(self, context):
+#         bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+#         print("IMPORTED!")
+#         return {'FINISHED'}
+#
+#
+# # Macro operator to concatenate transform and our finalization
+# class Test(bpy.types.Macro):
+#     bl_idname = "TEST_OT_Test"
+#     bl_label = "Test"
+
 
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'

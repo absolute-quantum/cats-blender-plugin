@@ -199,11 +199,14 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)
-- Added: Armature: Added "Separate by Materials" button
+- Added: Armature: Added "Import Model" button (shortcut to the mmd_tools button)
+- Added: Armature: Added "Separate by Materials" button (shortcut to the mmd_tools button)
+- Added: Armature: Fixing Armature now correctly sets the shading
 - Added: Eye Tracking: Testing of blink and lowerlid shapes
 - Added: Updater: New popup when update is available
 - Changed: Eye Tracking: Made "Basis" usable again (useful for models with a single shape containing both blinks)
 - Changed: Supporter: Improved design
+- Changed: Armature Panel renamed to Model
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
 

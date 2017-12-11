@@ -29,8 +29,14 @@
 import bpy
 import tools.common
 import tools.translate
-
 from mmd_tools_local.translations import DictionaryEnum
+
+mmd_tools_installed = False
+try:
+    import mmd_tools
+    mmd_tools_installed = True
+except:
+    pass
 
 bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'LowerBody2', 'Eyes', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
@@ -307,16 +313,16 @@ def delete_hierarchy(obj):
 
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
-    bl_label = 'Fix Armature'
+    bl_label = 'Fix Model'
     bl_description = 'Automatically:\n' \
                      '- Reparents bones\n' \
-                     '- Removes unnecessary bones & objects\n' \
+                     '- Removes unnecessary bones, objects & groups\n' \
                      '- Translates and renames bones & objects\n' \
                      '- Mixes weight paints\n' \
-                     '- Rotates the hips\n' \
+                     '- Corrects the hips\n' \
                      '- Joins meshes\n' \
                      '- Removes bone constraints\n' \
-                     '- Deletes unused vertex groups'
+                     '- Corrects shading'
 
     bl_options = {'REGISTER', 'UNDO'}
 
@@ -344,6 +350,19 @@ class FixArmature(bpy.types.Operator):
 
         # bpy.ops.object.hide_view_clear()
         armature = tools.common.set_default_stage()
+
+        # Set correct mmd shading
+        if mmd_tools_installed:
+            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+            for obj in bpy.data.objects:
+                if obj.parent is not None or obj.type != 'EMPTY':
+                    continue
+                try:
+                    obj.mmd_root.use_toon_texture = False
+                    obj.mmd_root.use_sphere_texture = False
+                    break
+                except:
+                    pass
 
         # Remove empty objects
         tools.common.remove_empty()
@@ -600,7 +619,7 @@ class FixArmature(bpy.types.Operator):
 
         # preservestate.load()
 
-        self.report({'INFO'}, 'Armature fixed.')
+        self.report({'INFO'}, 'Model fixed.')
         return {'FINISHED'}
 
 
