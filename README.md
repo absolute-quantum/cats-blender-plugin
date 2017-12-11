@@ -199,8 +199,11 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)
+- Added: Armature: Fix hips now adjust the upperleg parts to be placed more correctly for full body tracking
+- Added: UI: Custom icons!
 - Added: Eye Tracking: Testing of blink and lowerlid shapes
 - Added: Updater: New popup when update is available
+- Fixed: Optimization: Combine same materials now ignores unactive texture slots in it's unique identification
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
 
