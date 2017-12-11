@@ -670,6 +670,9 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         global custom_icons
         layout = self.layout
         box = layout.box()
+        col = box.column(align=True)
+        row = col.row(align=True)
+
         version = bl_info.get('version')
         version_str = 'Cats Blender Plugin ('
         if len(version) > 0:
@@ -679,10 +682,16 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
                     continue
                 version_str += '.' + str(version[index])
         version_str += ')'
-        box.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
-        box.label('Created by GiveMeAllYourCats for the VRC community <3')
-        box.label('Special thanks to: Shotariya, Hotox and Neitri!')
-        box.label('Want to give feedback or found a bug?')
+
+        row.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
+        col.separator()
+        row = col.row(align=True)
+        row.label('Created by GiveMeAllYourCats for the VRC community <3')
+        row.scale_y = 0.5
+        row = col.row(align=True)
+        row.label('Special thanks to: Shotariya, Hotox and Neitri!')
+        row = col.row(align=True)
+        row.label('Want to give feedback or found a bug?')
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart2"].icon_id)
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart3"].icon_id)
@@ -690,7 +699,6 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord2"].icon_id)
 
-        col = box.column(align=True)
         row = col.row(align=True)
         row.operator('credits.forum', icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
         row = col.row(align=True)

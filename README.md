@@ -202,7 +202,8 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Armature: Added "Separate by Materials" button
 - Added: Eye Tracking: Testing of blink and lowerlid shapes
 - Added: Updater: New popup when update is available
-- Changed: Eye Tracking: Made "Basis" usable again (for models with a single shape containing both blinks)
+- Changed: Eye Tracking: Made "Basis" usable again (useful for models with a single shape containing both blinks)
+- Changed: Supporter: Improved design
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
 
