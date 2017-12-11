@@ -30,7 +30,6 @@ import bpy
 import tools.common
 import tools.translate
 
-from mmd_tools_local import utils
 from mmd_tools_local.translations import DictionaryEnum
 
 bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'LowerBody2', 'Eyes', 'EyesTip',
@@ -285,7 +284,7 @@ dont_delete_these_bones = {
     'Right leg', 'Right knee', 'Right ankle', 'Right toe',
     'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
     'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist',
-    'OldRightEye', 'OldLeftEye'
+    'OldRightEye', 'OldLeftEye', 'LeftEye', 'RightEye', 'Eye_L', 'Eye_R'
 }
 
 
