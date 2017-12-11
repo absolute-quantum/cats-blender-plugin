@@ -201,9 +201,15 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Armature: More models are now compatible (if not please report it to us)
 - Added: Armature: Fix hips now adjust the upperleg parts to be placed more correctly for full body tracking
 - Added: UI: Custom icons!
+- Fixed: Optimization: Combine same materials now ignores unactive texture slots in it's unique identification
+- Added: Armature: Added "Import Model" button (shortcut to the mmd_tools button)
+- Added: Armature: Added "Separate by Materials" button (shortcut to the mmd_tools button)
+- Added: Armature: Fixing Armature now correctly sets the shading
 - Added: Eye Tracking: Testing of blink and lowerlid shapes
 - Added: Updater: New popup when update is available
-- Fixed: Optimization: Combine same materials now ignores unactive texture slots in it's unique identification
+- Changed: Eye Tracking: Made "Basis" usable again (useful for models with a single shape containing both blinks)
+- Changed: Supporter: Improved design
+- Changed: Armature Panel renamed to Model
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
 

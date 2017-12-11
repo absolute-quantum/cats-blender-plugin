@@ -36,7 +36,6 @@ from mathutils import Quaternion
 import tools.common
 import tools.armature
 
-
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
     bl_label = 'Create Eye Tracking'
@@ -57,9 +56,9 @@ class CreateEyesButton(bpy.types.Operator):
                 or context.scene.lowerlid_right == "":
             return False
 
-        if not context.scene.disable_eye_blinking:
-            if context.scene.wink_left == 'Basis' or context.scene.wink_right == 'Basis':
-                return False
+        # if not context.scene.disable_eye_blinking:
+        #     if context.scene.wink_left == 'Basis' or context.scene.wink_right == 'Basis':
+        #         return False
 
         if context.scene.disable_eye_blinking and context.scene.disable_eye_movement:
             return False
@@ -605,7 +604,6 @@ class TestBlinking(bpy.types.Operator):
                 mesh.data.shape_keys.key_blocks[shape_key.name].value = context.scene.eye_blink_shape
             else:
                 mesh.data.shape_keys.key_blocks[shape_key.name].value = 0
-        context.scene.eye_lowerlid_shape = 0
 
         return {'FINISHED'}
 
@@ -637,7 +635,21 @@ class TestLowerlid(bpy.types.Operator):
                 mesh.data.shape_keys.key_blocks[shape_key.name].value = context.scene.eye_lowerlid_shape
             else:
                 mesh.data.shape_keys.key_blocks[shape_key.name].value = 0
-        context.scene.eye_blink_shape = 0
+
+        return {'FINISHED'}
+
+
+class ResetBlinkTest(bpy.types.Operator):
+    bl_idname = 'eyes.reset_blink_test'
+    bl_label = 'Reset Shapes'
+    bl_description = "This resets the blink testing."
+    bl_options = {'REGISTER', 'UNDO'}
+
+    def execute(self, context):
+        for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
+            shape_key.value = 0
+        context.scene.eye_blink_shape = 1
+        context.scene.eye_lowerlid_shape = 1
 
         return {'FINISHED'}
 

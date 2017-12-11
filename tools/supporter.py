@@ -30,7 +30,7 @@ import webbrowser
 
 class PatreonButton(bpy.types.Operator):
     bl_idname = 'supporter.patreon'
-    bl_label = 'Check our Patreon'
+    bl_label = 'Become a Patron'
 
     def execute(self, context):
         webbrowser.open('https://www.patreon.com/catsblenderplugin')
