@@ -54,7 +54,10 @@ class ImportModel(bpy.types.Operator):
             self.report({'ERROR'}, 'mmd_tools not installed!')
             return {'FINISHED'}
 
-        bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+        try:
+            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+        except:
+            self.report({'ERROR'}, 'mmd_tools not enabled! Please enable mmd_tools.')
 
         return {'FINISHED'}
 
