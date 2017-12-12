@@ -130,7 +130,7 @@ class addon_updater_install_popup(bpy.types.Operator):
 
 # User preference check-now operator
 class addon_updater_check_now(bpy.types.Operator):
-    bl_label = "Check now for "+updater.addon+" update"
+    bl_label = "Check now for update"
     bl_idname = updater.addon+".updater_check_now"
     bl_description = "Check now for Cats update"
 
@@ -745,7 +745,7 @@ def update_notice_box_ui(self, context):
 
 # create a function that can be run inside user preferences panel for prefs UI
 # place inside UI draw using: addon_updater_ops.updaterSettingsUI(self, context)
-# or by: addon_updater_ops.updaterSettingsUI(context)
+# or by:                      addon_updater_ops.updaterSettingsUI(context)
 def update_settings_ui(self, context):
 
     layout = self.layout
@@ -856,8 +856,9 @@ def update_settings_ui(self, context):
             col.operator(addon_updater_update_target.bl_idname,
                     "Install latest {} / old version".format(branch))
         else:
+            col.scale_y = 2
             col.operator(addon_updater_update_target.bl_idname,
-                    "Reinstall / install old version")
+                    "Select Version")
         lastdate = "none found"
         backuppath = os.path.join(updater.stage_path,"backup")
         if "backup_date" in updater.json and os.path.isdir(backuppath):
@@ -866,7 +867,7 @@ def update_settings_ui(self, context):
             else:
                 lastdate = updater.json["backup_date"]
         backuptext = "Restore addon backup ({})".format(lastdate)
-        col.operator(addon_updater_restore_backup.bl_idname, backuptext)
+        # col.operator(addon_updater_restore_backup.bl_idname, backuptext)
 
     row = box.row()
     row.scale_y = 0.7
@@ -978,7 +979,7 @@ def register(bl_info):
     #           /addons/{__package__}/{__package__}_updater
 
     # auto create a backup of the addon when installing other versions
-    updater.backup_current = True # True by default
+    updater.backup_current = False # True by default
 
     # Sample ignore patterns for when creating backup of current during update
     updater.backup_ignore_patterns = ["__pycache__"]
@@ -1025,7 +1026,7 @@ def register(bl_info):
     # but the user has the option from user preferences to directly
     # update to the master branch or any other branches specified using
     # the "install {branch}/older version" operator.
-    updater.include_branches = True
+    updater.include_branches = False
 
     # if using "include_branches",
     # updater.include_branch_list defaults to ['master'] branch if set to none
@@ -1048,7 +1049,7 @@ def register(bl_info):
     # Set the min and max versions allowed to install.
     # Optional, default None
     # min install (>=) will install this and higher
-    updater.version_min_update = (0,0,0)
+    updater.version_min_update = (0,0,2)
     # updater.version_min_update = None  # if not wanting to define a min
 
     # max install (<) will install strictly anything lower

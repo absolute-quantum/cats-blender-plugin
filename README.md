@@ -42,13 +42,13 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Neitri
 
 
-## Armature
-![](https://i.imgur.com/iGiTotp.png)
+## Model
+![](https://i.imgur.com/qMVb5AB.png)
 
 A vastly improved combination of Neitri and Shotariya's blender plugins, it tries to fix and optimize the armature with one click.
 
-##### Fix armature
-Fixes your armature automatically by:
+##### Fix model
+Fixes your model automatically by:
  - Reparenting bones
  - Removing unnecessary bones
  - Renaming and translating objects and bones
@@ -58,12 +58,19 @@ Fixes your armature automatically by:
  - Removing rigidbodies, joints and bone groups
  - Removing bone constraints
  - Deleting unused vertex groups
+ - Using the correct shading
 
 ##### Delete zero weight bones
 Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.
 
+##### Import model
+Imports a mmd model (.pmx, .pmd). This requires mmd_tools in order to work.
+
+##### Separate by material
+Separatres a mesh by materials
+
 ##### Join meshes
-Joins all meshes
+Joins all meshes into one
 
 ##### Mix weights
 Deletes the selected bones and adds their weight to their respective parents.
@@ -71,14 +78,14 @@ Deletes the selected bones and adds their weight to their respective parents.
 
 ## Translation
 
-![](https://i.imgur.com/fkZRIry.png)
+![](https://i.imgur.com/SCyhVn1.png)
 
 **Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
 
 
 ## Eye tracking
 ![](https://i.imgur.com/yw8INDO.png)
-![](https://i.imgur.com/8lPgiQ8.png)
+![](https://i.imgur.com/VHw73zM.png)
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
@@ -197,6 +204,21 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.3.0
+- Added: Armature: More models are now compatible (if not please report it to us)
+- Added: Armature: Fix hips now adjusts the upper leg bones to be placed more correctly for full body tracking
+- Added: Eye Tracking: Testing of blink and lowerlid shapes
+- Added: UI: Custom icons!
+- Added: Armature: Added "Import Model" button (shortcut to the mmd_tools button)
+- Added: Armature: Added "Separate by Materials" button (shortcut to the mmd_tools button)
+- Added: Armature: Fixing Armature now correctly sets the shading
+- Added: Updater: New popup when update is available
+- Changed: Eye Tracking: Made "Basis" usable again (useful for models with a single shape containing both blinks)
+- Changed: Armature Panel renamed to Model
+- Fixed: Optimization: Combine same materials now ignores unactive texture slots in it's unique identification
+- Fixed: Armature: Fixed multiple toes bug
+- Fixed: Even more bugs
+
 #### 0.2.1
 - Added: Supporters (donators) tab
 - Fixed: Atlas: Alpha values are restored after atlassing (thanks Tupper!)
@@ -215,12 +237,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Changed: Armature: Joining meshes now correctly reorders existing vrc shape keys
 - Fixed: Eye Tracking: A bug where the mouth would open and close in certain positions in VRChat
 - Fixed: A stash full of bugs
-
-#### 0.1.0
-- Changed: New versioning scheme in order to better handle hotfixes
-- Fixed: Eye tracking shape keys being in the wrong order
-- Fixed: One bone being weight mixed incorrectly
-- Fixed: Two more bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

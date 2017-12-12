@@ -28,7 +28,17 @@ import bpy
 import sys
 import os
 import importlib
+import bpy.utils.previews
 from . import addon_updater_ops
+
+mmd_tools_installed = False
+try:
+    import mmd_tools
+    mmd_tools_installed = True
+    print("mmd_tools found!")
+except:
+    print("mmd_tools not found!")
+    pass
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
@@ -44,6 +54,10 @@ import tools.material
 import tools.common
 import tools.supporter
 import tools.credits
+
+# Disabled for now, cya next version
+# import tools.error
+# importlib.reload(tools.error)
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -63,7 +77,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 2, 1],
+    'version': [0, 3, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -71,6 +85,9 @@ bl_info = {
 }
 
 slider_z = 0
+
+# global variable to store icons in
+preview_collections = {}
 
 
 class ToolPanel:
@@ -199,6 +216,28 @@ class ToolPanel:
         subtype='FACTOR'
     )
 
+    bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
+        name='Blink Strenght',
+        description='Test the blinking of the eye.',
+        default=1.0,
+        min=0.0,
+        max=1.0,
+        step=1.0,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    bpy.types.Scene.eye_lowerlid_shape = bpy.props.FloatProperty(
+        name='Lowerlid Strenght',
+        description='Test the lowerlid blinking of the eye.',
+        default=1.0,
+        min=0.0,
+        max=1.0,
+        step=1.0,
+        precision=2,
+        subtype='FACTOR'
+    )
+
     # Visemes
     bpy.types.Scene.mesh_name_viseme = bpy.props.EnumProperty(
         name='Mesh',
@@ -309,36 +348,60 @@ class ToolPanel:
         items=tools.common.get_meshes
     )
 
+    # Supporter
+    bpy.types.Scene.supporters = bpy.props.EnumProperty(
+        name="Supporters",
+        description="These are our wonderful patrons <3",
+        items=[
+            ("A", "Jazneo", "Thank you, Jazneo <3"),
+            ("B", "Tupper", "Thank you, Tupper <3"),
+            ("C", "Xeverian", "Thank you, Xeverian <3"),
+            ("D", "Idea", "Thank you, Idea <3"),
+            ("E", "RadaruS", "Thank you, RaderuS")
+        ]
+    )
+
 
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature_v1'
-    bl_label = 'Armature'
+    bl_label = 'Model'
 
     def draw(self, context):
+        addon_updater_ops.check_for_update_background()
         layout = self.layout
         box = layout.box()
-        row = box.row(align=True)
+        col = box.column(align=True)
+
+        if mmd_tools_installed:
+            row = col.row(align=True)
+            row.scale_y = 1.4
+            row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
+            col.separator()
+
+
+        row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
-        row = box.row(align=True)
+        row = col.row(align=True)
         row.scale_y = 1.4
         row.operator('armature.fix', icon='BONE_DATA')
 
-        col = box.column(align=True)
-
-        col.label('Manual Armature Fixing:')
         col.separator()
-        # row = col.row(align=True)
-        # row.scale_y = 1.1
-        # row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
-        # row = col.row(align=True)
-        # row.scale_y = 1.1
-        # row.operator('armature_manual.join_meshes2', icon='MESH_DATA')
+        col.label('Manual Model Fixing:')
+        row = col.row(align=True)
+        row.scale_y = 1.1
+        row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
         row = col.row(align=True)
         row.scale_y = 1.1
         row.operator('armature_manual.join_meshes', icon='MESH_DATA')
         row = col.row(align=True)
         row.scale_y = 1.1
         row.operator('armature_manual.mix_weights', icon='BONE_DATA')
+        # row = col.row(align=True)
+        # row.scale_y = 1.1
+        # row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
+        # row = col.row(align=True)
+        # row.scale_y = 1.1
+        # row.operator('armature_manual.join_meshes2', icon='MESH_DATA')
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -433,7 +496,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.operator('create.eyes', icon='TRIA_RIGHT')
 
-            # armature = tools.common.get_armature()
+            # armature = common.get_armature()
             # if "RightEye" in armature.pose.bones:
             #     row = col.row(align=True)
             #     row.label('Eye Bone Tweaking:')
@@ -459,22 +522,31 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row.prop(context.scene, 'eye_rotation_x', icon='FILE_PARENT')
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_rotation_y', icon='ARROW_LEFTRIGHT')
-
-                # global slider_z
-                # if context.scene.eye_rotation_z != slider_z:
-                #     slider_z = context.scene.eye_rotation_z
-                #     tools.eyetracking.update_bones(slider_z)
-
                 row = col.row(align=True)
                 row.operator('eyes.set_rotation', icon='MAN_ROT')
+
+                # global slider_z
+                # if context.scene.eye_blink_shape != slider_z:
+                #     slider_z = context.scene.eye_blink_shape
+                #     eyetracking.update_bones(context, slider_z)
 
                 col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_distance')
-
                 row = col.row(align=True)
                 row.operator('eyes.adjust_eyes', icon='CURVE_NCIRCLE')
+
+                col.separator()
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_blink_shape')
+                row.operator('eyes.test_blink', icon='RESTRICT_VIEW_OFF')
+                row = col.row(align=True)
+                row.prop(context.scene, 'eye_lowerlid_shape')
+                row.operator('eyes.test_lowerlid', icon='RESTRICT_VIEW_OFF')
+                row = col.row(align=True)
+                row.operator('eyes.reset_blink_test', icon='FILE_REFRESH')
 
                 col.separator()
                 col.separator()
@@ -581,24 +653,40 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        addon_updater_ops.check_for_update_background()
+        # addon_updater_ops.check_for_update_background()
         addon_updater_ops.update_settings_ui(self, context)
 
 
 class SupporterPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_supporter_v1'
+    bl_idname = 'VIEW3D_PT_supporter_v2'
     bl_label = 'Supporters'
-    bl_options = {'DEFAULT_CLOSED'}
+    # bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
         box = layout.box()
-        box.label('<3 Thank you for supporting us on Patreon:')
-        box.label(' - Xeverian')
-
         col = box.column(align=True)
         row = col.row(align=True)
-        row.operator('supporter.patreon', icon='LOAD_FACTORY')
+        row.label('Thanks to our awesome supporters! <3')
+
+        col.separator()
+        row = col.row(align=True)
+        row.scale_y = 0.9
+        row.operator('supporter.person', text='Jazneo', emboss=False, icon_value=preview_collections["custom_icons"]["jazneo"].icon_id)
+        row.operator('supporter.person', text='Tupper', emboss=False, icon_value=preview_collections["custom_icons"]["tupper"].icon_id)
+        row.operator('supporter.person', text='Xeverian', emboss=False, icon_value=preview_collections["custom_icons"]["xeverian"].icon_id)
+        row.scale_y = 1.4
+        row = col.row(align=True)
+        row.operator('supporter.person', text='Idea', emboss=False, icon_value=preview_collections["custom_icons"]["idea"].icon_id)
+        row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
+        row.label('')
+        row = col.row(align=True)
+        row.scale_y = 1.2
+        row.separator()
+        row = col.row(align=True)
+        row.label('Do you like this plugin and want to support us?')
+        row = col.row(align=True)
+        row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
 
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
@@ -606,8 +694,12 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_label = 'Credits'
 
     def draw(self, context):
+        global custom_icons
         layout = self.layout
         box = layout.box()
+        col = box.column(align=True)
+        row = col.row(align=True)
+
         version = bl_info.get('version')
         version_str = 'Cats Blender Plugin ('
         if len(version) > 0:
@@ -617,16 +709,27 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
                     continue
                 version_str += '.' + str(version[index])
         version_str += ')'
-        box.label(version_str)
-        box.label('Created by GiveMeAllYourCats for the VRC community <3')
-        box.label('Special thanks to: Shotariya, Hotox and Neitri!')
-        box.label('Want to give feedback or found a bug?')
 
-        col = box.column(align=True)
+        row.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
+        col.separator()
         row = col.row(align=True)
-        row.operator('credits.forum', icon='LOAD_FACTORY')
+        row.label('Created by GiveMeAllYourCats for the VRC community <3')
+        row.scale_y = 0.5
         row = col.row(align=True)
-        row.operator('credits.discord', icon='LOAD_FACTORY')
+        row.label('Special thanks to: Shotariya, Hotox and Neitri!')
+        row = col.row(align=True)
+        row.label('Want to give feedback or found a bug?')
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart2"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart3"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart4"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
+        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord2"].icon_id)
+
+        row = col.row(align=True)
+        row.operator('credits.forum', icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
+        row = col.row(align=True)
+        row.operator('credits.discord', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -635,7 +738,7 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
     auto_check_update = bpy.props.BoolProperty(
         name='Auto-check for Update',
         description='If enabled, auto-check for updates using an interval',
-        default=False,
+        default=True,
     )
     updater_intrval_months = bpy.props.IntProperty(
         name='Months',
@@ -646,7 +749,7 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
     updater_intrval_days = bpy.props.IntProperty(
         name='Days',
         description='Number of days between checking for updates',
-        default=7,
+        default=1,
         min=0,
     )
     updater_intrval_hours = bpy.props.IntProperty(
@@ -668,13 +771,51 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
         addon_updater_ops.update_settings_ui(self, context)
 
 
+def load_icons():
+    # Note that preview collections returned by bpy.utils.previews
+    # are regular py objects - you can use them to store custom data.
+    pcoll = bpy.utils.previews.new()
+
+    # path to the folder where the icon is
+    # the path is calculated relative to this py file inside the addon folder
+    my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
+
+    # load a preview thumbnail of a file and store in the previews collection
+    pcoll.load("heart1", os.path.join(my_icons_dir, "heart1.png"), 'IMAGE')
+    pcoll.load("heart2", os.path.join(my_icons_dir, "heart2.png"), 'IMAGE')
+    pcoll.load("heart3", os.path.join(my_icons_dir, "heart3.png"), 'IMAGE')
+    pcoll.load("heart4", os.path.join(my_icons_dir, "heart4.png"), 'IMAGE')
+    pcoll.load("discord1", os.path.join(my_icons_dir, "discord1.png"), 'IMAGE')
+    pcoll.load("discord2", os.path.join(my_icons_dir, "discord2.png"), 'IMAGE')
+    pcoll.load("cats1", os.path.join(my_icons_dir, "cats1.png"), 'IMAGE')
+    pcoll.load("patreon1", os.path.join(my_icons_dir, "patreon1.png"), 'IMAGE')
+    pcoll.load("patreon2", os.path.join(my_icons_dir, "patreon2.png"), 'IMAGE')
+    pcoll.load("tupper", os.path.join(my_icons_dir, "supporters/tupper.png"), 'IMAGE')
+    pcoll.load("xeverian", os.path.join(my_icons_dir, "supporters/xeverian.png"), 'IMAGE')
+    pcoll.load("jazneo", os.path.join(my_icons_dir, "supporters/jazneo.png"), 'IMAGE')
+    pcoll.load("idea", os.path.join(my_icons_dir, "supporters/idea.png"), 'IMAGE')
+    pcoll.load("radarus", os.path.join(my_icons_dir, "supporters/radarus.png"), 'IMAGE')
+
+    preview_collections["custom_icons"] = pcoll
+
+
+def unload_icons():
+    for pcoll in preview_collections.values():
+        bpy.utils.previews.remove(pcoll)
+    preview_collections.clear()
+
+
 def register():
+    load_icons()
     bpy.utils.register_class(tools.atlas.AutoAtlasButton)
     bpy.utils.register_class(tools.eyetracking.CreateEyesButton)
     bpy.utils.register_class(tools.eyetracking.StartTestingButton)
     bpy.utils.register_class(tools.eyetracking.StopTestingButton)
     bpy.utils.register_class(tools.eyetracking.SetRotationButton)
     bpy.utils.register_class(tools.eyetracking.AdjustEyesButton)
+    bpy.utils.register_class(tools.eyetracking.ResetBlinkTest)
+    bpy.utils.register_class(tools.eyetracking.TestBlinking)
+    bpy.utils.register_class(tools.eyetracking.TestLowerlid)
     bpy.utils.register_class(tools.viseme.AutoVisemeButton)
     bpy.utils.register_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.register_class(tools.translate.TranslateBonesButton)
@@ -688,9 +829,15 @@ def register():
     bpy.utils.register_class(tools.material.OneTexPerMatButton)
     # bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     # bpy.utils.register_class(tools.armature_manual.JoinMeshesTest)
+    # bpy.utils.register_class(tools.armature_manual.Import)
+    # bpy.utils.register_class(tools.armature_manual.Finalize)
+    # bpy.utils.register_class(tools.armature_manual.Test)
+    bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
+    bpy.utils.register_class(tools.armature_manual.ImportModel)
     bpy.utils.register_class(tools.supporter.PatreonButton)
+    bpy.utils.register_class(tools.supporter.PersonButton)
     bpy.utils.register_class(tools.credits.ForumButton)
     bpy.utils.register_class(tools.credits.DiscordButton)
     bpy.utils.register_class(ArmaturePanel)
@@ -713,6 +860,9 @@ def unregister():
     bpy.utils.unregister_class(tools.eyetracking.StopTestingButton)
     bpy.utils.unregister_class(tools.eyetracking.SetRotationButton)
     bpy.utils.unregister_class(tools.eyetracking.AdjustEyesButton)
+    bpy.utils.unregister_class(tools.eyetracking.ResetBlinkTest)
+    bpy.utils.unregister_class(tools.eyetracking.TestBlinking)
+    bpy.utils.unregister_class(tools.eyetracking.TestLowerlid)
     bpy.utils.unregister_class(tools.viseme.AutoVisemeButton)
     bpy.utils.unregister_class(tools.translate.TranslateShapekeyButton)
     bpy.utils.unregister_class(tools.translate.TranslateBonesButton)
@@ -722,12 +872,19 @@ def unregister():
     bpy.utils.unregister_class(tools.rootbone.RootButton)
     bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
     bpy.utils.unregister_class(tools.armature.FixArmature)
+    bpy.utils.unregister_class(tools.armature_manual.ImportModel)
     bpy.utils.unregister_class(tools.armature_manual.MixWeights)
     bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
+    bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
+    # bpy.utils.unregister_class(tools.armature_manual.Import)
+    # bpy.utils.unregister_class(tools.armature_manual.Finalize)
+    # bpy.utils.unregister_class(tools.armature_manual.Test)
     bpy.utils.unregister_class(tools.material.CombineMaterialsButton)
     bpy.utils.unregister_class(tools.material.OneTexPerMatButton)
     # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)
     # bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
+    bpy.utils.unregister_class(tools.supporter.PatreonButton)
+    bpy.utils.unregister_class(tools.supporter.PersonButton)
     bpy.utils.unregister_class(tools.credits.ForumButton)
     bpy.utils.unregister_class(tools.credits.DiscordButton)
     bpy.utils.unregister_class(OptimizePanel)
@@ -741,6 +898,7 @@ def unregister():
     bpy.utils.unregister_class(CreditsPanel)
     bpy.utils.unregister_class(UpdaterPreferences)
     addon_updater_ops.unregister()
+    unload_icons()
 
 
 if __name__ == '__main__':
