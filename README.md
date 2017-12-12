@@ -66,8 +66,8 @@ Cleans up the bones hierarchy, because MMD models usually come with a lot of ext
 ##### Import model
 Imports a mmd model (.pmx, .pmd). This requires mmd_tools in order to work.
 
-##### Seperate by material
-Seperatres a mesh by materials
+##### Separate by material
+Separatres a mesh by materials
 
 ##### Join meshes
 Joins all meshes into one
