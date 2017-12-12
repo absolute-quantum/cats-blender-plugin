@@ -230,6 +230,7 @@ bone_list_weight = {
     'ElbowAux_R': 'Right arm',
     'ElbowAux+_R': 'Right arm',
     'ArmSleeve_R': 'Right arm',
+    'ShoulderTwist_R': 'Right arm',
 
     'ArmTwist_L': 'Left arm',
     'ArmTwist1_L': 'Left arm',
@@ -245,6 +246,7 @@ bone_list_weight = {
     'ElbowAux_L': 'Left arm',
     'ElbowAux+_L': 'Left arm',
     'ArmSleeve_L': 'Left arm',
+    'ShoulderTwist_L': 'Left arm',
 
     'HandTwist_R': 'Right elbow',
     'HandTwist1_R': 'Right elbow',
@@ -262,6 +264,8 @@ bone_list_weight = {
     'Right Hand Thread 3': 'Right elbow',
     'ElbowSleeve_R': 'Right elbow',
     'WristAux_R': 'Right elbow',
+    'ElbowTwist_R': 'Right elbow',
+    'ElbowTwist2_R': 'Right elbow',
 
     'HandTwist_L': 'Left elbow',
     'HandTwist1_L': 'Left elbow',
@@ -279,6 +283,8 @@ bone_list_weight = {
     'Left Hand Thread 3': 'Left elbow',
     'ElbowSleeve_L': 'Left elbow',
     'WristAux_L': 'Left elbow',
+    'ElbowTwist_L': 'Left elbow',
+    'ElbowTwist2_L': 'Left elbow',
 
     'WristSleeve_L': 'Left wrist',
     'WristSleeve_R': 'Right wrist',
@@ -353,23 +359,22 @@ class FixArmature(bpy.types.Operator):
 
         # Set correct mmd shading
         if mmd_tools_installed:
-            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-            for obj in bpy.data.objects:
-                if obj.parent is not None or obj.type != 'EMPTY':
-                    continue
-                try:
-                    obj.mmd_root.use_toon_texture = False
-                    obj.mmd_root.use_sphere_texture = False
-                    break
-                except:
-                    pass
+            try:
+                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                for obj in bpy.data.objects:
+                    if obj.parent is None and obj.type == 'EMPTY':
+                            obj.mmd_root.use_toon_texture = False
+                            obj.mmd_root.use_sphere_texture = False
+                            break
+            except:
+                pass
 
         # Remove empty objects
         tools.common.remove_empty()
 
         # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
-            if obj.name == 'rigidbodies' or obj.name == 'joints':
+            if obj.name == 'rigidbodies' or obj.name == 'rigidbodies.001' or obj.name == 'joints' or obj.name == 'joints.001':
                 delete_hierarchy(obj)
 
         # Remove Bone Groups
@@ -398,6 +403,8 @@ class FixArmature(bpy.types.Operator):
         tools.translate.translate_bones(self.dictionary)
 
         # Rename bones
+        for bone in armature.data.edit_bones:
+            bone.name = bone.name[:1].upper() + bone.name[1:]
         for key, value in bone_list_rename.items():
             if key in armature.data.edit_bones or key.lower() in armature.data.edit_bones:
                 bone = armature.data.edit_bones.get(key)
@@ -575,8 +582,12 @@ class FixArmature(bpy.types.Operator):
 
         for key, value in bone_list_weight.items():
             vg = mesh.vertex_groups.get(key)
+            if vg is None:
+                vg = mesh.vertex_groups.get(key.lower())
+                if vg is None:
+                    continue
             vg2 = mesh.vertex_groups.get(value)
-            if vg is None or vg2 is None:
+            if vg2 is None:
                 continue
             bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
             bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = value

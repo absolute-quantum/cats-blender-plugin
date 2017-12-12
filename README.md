@@ -42,13 +42,13 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Neitri
 
 
-## Armature
-![](https://i.imgur.com/iGiTotp.png)
+## Model
+![](https://i.imgur.com/qMVb5AB.png)
 
 A vastly improved combination of Neitri and Shotariya's blender plugins, it tries to fix and optimize the armature with one click.
 
-##### Fix armature
-Fixes your armature automatically by:
+##### Fix model
+Fixes your model automatically by:
  - Reparenting bones
  - Removing unnecessary bones
  - Renaming and translating objects and bones
@@ -58,9 +58,13 @@ Fixes your armature automatically by:
  - Removing rigidbodies, joints and bone groups
  - Removing bone constraints
  - Deleting unused vertex groups
+ - Using the correct shading
 
 ##### Delete zero weight bones
 Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.
+
+##### Import model
+Imports a mmd model (.pmx, .pmd). This requires mmd_tools int order to work.
 
 ##### Join meshes
 Joins all meshes
@@ -71,14 +75,14 @@ Deletes the selected bones and adds their weight to their respective parents.
 
 ## Translation
 
-![](https://i.imgur.com/fkZRIry.png)
+![](https://i.imgur.com/SCyhVn1.png)
 
 **Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
 
 
 ## Eye tracking
 ![](https://i.imgur.com/yw8INDO.png)
-![](https://i.imgur.com/8lPgiQ8.png)
+![](https://i.imgur.com/VHw73zM.png)
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
