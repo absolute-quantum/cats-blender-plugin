@@ -55,6 +55,10 @@ import tools.common
 import tools.supporter
 import tools.credits
 
+# Disabled for now, cya next version
+# import tools.error
+# importlib.reload(tools.error)
+
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
@@ -351,7 +355,9 @@ class ToolPanel:
         items=[
             ("A", "Jazneo", "Thank you, Jazneo <3"),
             ("B", "Tupper", "Thank you, Tupper <3"),
-            ("C", "Xeverian", "Thank you, Xeverian <3")
+            ("C", "Xeverian", "Thank you, Xeverian <3"),
+            ("D", "Idea", "Thank you, Idea <3"),
+            ("E", "RadaruS", "Thank you, RaderuS")
         ]
     )
 
@@ -669,9 +675,14 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.operator('supporter.person', text='Jazneo', emboss=False, icon_value=preview_collections["custom_icons"]["jazneo"].icon_id)
         row.operator('supporter.person', text='Tupper', emboss=False, icon_value=preview_collections["custom_icons"]["tupper"].icon_id)
         row.operator('supporter.person', text='Xeverian', emboss=False, icon_value=preview_collections["custom_icons"]["xeverian"].icon_id)
-
-        col.separator()
-        col.separator()
+        row.scale_y = 1.4
+        row = col.row(align=True)
+        row.operator('supporter.person', text='Idea', emboss=False, icon_value=preview_collections["custom_icons"]["idea"].icon_id)
+        row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
+        row.label('')
+        row = col.row(align=True)
+        row.scale_y = 1.2
+        row.separator()
         row = col.row(align=True)
         row.label('Do you like this plugin and want to support us?')
         row = col.row(align=True)
@@ -779,9 +790,11 @@ def load_icons():
     pcoll.load("cats1", os.path.join(my_icons_dir, "cats1.png"), 'IMAGE')
     pcoll.load("patreon1", os.path.join(my_icons_dir, "patreon1.png"), 'IMAGE')
     pcoll.load("patreon2", os.path.join(my_icons_dir, "patreon2.png"), 'IMAGE')
-    pcoll.load("tupper", os.path.join(my_icons_dir, "tupper.png"), 'IMAGE')
-    pcoll.load("xeverian", os.path.join(my_icons_dir, "xeverian.png"), 'IMAGE')
-    pcoll.load("jazneo", os.path.join(my_icons_dir, "jazneo.png"), 'IMAGE')
+    pcoll.load("tupper", os.path.join(my_icons_dir, "supporters/tupper.png"), 'IMAGE')
+    pcoll.load("xeverian", os.path.join(my_icons_dir, "supporters/xeverian.png"), 'IMAGE')
+    pcoll.load("jazneo", os.path.join(my_icons_dir, "supporters/jazneo.png"), 'IMAGE')
+    pcoll.load("idea", os.path.join(my_icons_dir, "supporters/idea.png"), 'IMAGE')
+    pcoll.load("radarus", os.path.join(my_icons_dir, "supporters/radarus.png"), 'IMAGE')
 
     preview_collections["custom_icons"] = pcoll
 

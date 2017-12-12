@@ -30,12 +30,9 @@ import numpy as np
 from mathutils import Vector
 from math import degrees
 from collections import OrderedDict
-import time
-
 
 # TODO
 # - Add check if hips bone really needs to be rotated
-# - Error: https://i.imgur.com/kBnSx0I.png with model Kanna O: https://goo.gl/sJj2xL
 # - Reset Pivot
 # - Manual bone selection button for root bones
 # - Checkbox for eye blinking/moving
