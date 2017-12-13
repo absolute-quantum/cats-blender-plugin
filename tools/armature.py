@@ -229,6 +229,7 @@ bone_list_weight = {
     'Right arm tight 3': 'Right arm',
     'ElbowAux_R': 'Right arm',
     'ElbowAux+_R': 'Right arm',
+    '+ElbowAux_R': 'Right arm',
     'ArmSleeve_R': 'Right arm',
     'ShoulderTwist_R': 'Right arm',
 
@@ -245,6 +246,7 @@ bone_list_weight = {
     'Left arm tight 3': 'Left arm',
     'ElbowAux_L': 'Left arm',
     'ElbowAux+_L': 'Left arm',
+    '+ElbowAux_L': 'Left arm',
     'ArmSleeve_L': 'Left arm',
     'ShoulderTwist_L': 'Left arm',
 

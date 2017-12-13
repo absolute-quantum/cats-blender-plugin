@@ -77,7 +77,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 3, 0],
+    'version': [0, 4, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -681,7 +681,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
         row.label('')
         row = col.row(align=True)
-        row.scale_y = 1.2
         row.separator()
         row = col.row(align=True)
         row.label('Do you like this plugin and want to support us?')
