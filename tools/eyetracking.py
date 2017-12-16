@@ -468,11 +468,19 @@ class StartTestingButton(bpy.types.Operator):
         if eye_left is None or eye_right is None:
             return
 
-        eye_left.select = True
-        eye_right.select = True
-
         for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
             shape_key.value = 0
+
+        for pb in tools.common.get_armature().data.bones:
+            pb.select = True
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+        for pb in tools.common.get_armature().data.bones:
+            pb.select = False
+
+        eye_left.select = True
+        eye_right.select = True
 
         return {'FINISHED'}
 

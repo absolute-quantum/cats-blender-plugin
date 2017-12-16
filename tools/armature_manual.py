@@ -62,6 +62,88 @@ class ImportModel(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class StartPoseMode(bpy.types.Operator):
+    bl_idname = 'armature_manual.start_pose_mode'
+    bl_label = 'Start Pose Mode'
+    bl_description = 'Start the pose mode.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature() is None:
+            return False
+        return True
+
+    def execute(self, context):
+        current = ""
+        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and len(bpy.context.selected_editable_bones) > 0:
+            current = bpy.context.selected_editable_bones[0].name
+
+        armature = tools.common.set_default_stage()
+        tools.common.switch('POSE')
+        armature.data.pose_position = 'POSE'
+
+        for mesh in tools.common.get_meshes_objects():
+            if mesh.data.shape_keys is not None:
+                for shape_key in mesh.data.shape_keys.key_blocks:
+                    shape_key.value = 0
+
+        for pb in armature.data.bones:
+            pb.select = True
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+
+        bone = armature.data.bones.get(current)
+        if bone is not None:
+            for pb in armature.data.bones:
+                if bone.name != pb.name:
+                    pb.select = False
+        else:
+            for index, pb in enumerate(armature.data.bones):
+                if index != 0:
+                    pb.select = False
+
+        bpy.context.space_data.transform_manipulators = {'ROTATE'}
+
+        return {'FINISHED'}
+
+
+class StopPoseMode(bpy.types.Operator):
+    bl_idname = 'armature_manual.stop_pose_mode'
+    bl_label = 'Stop Pose Mode'
+    bl_description = 'Stop the pose mode and reset the pose to normal.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature() is None:
+            return False
+        return True
+
+    def execute(self, context):
+        armature = tools.common.get_armature()
+        for pb in armature.data.bones:
+            pb.select = True
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+        for pb in armature.data.bones:
+            pb.select = False
+
+        armature = tools.common.set_default_stage()
+        armature.data.pose_position = 'REST'
+
+        for mesh in tools.common.get_meshes_objects():
+            if mesh.data.shape_keys is not None:
+                for shape_key in mesh.data.shape_keys.key_blocks:
+                    shape_key.value = 0
+
+        bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
+
+        return {'FINISHED'}
+
+
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
