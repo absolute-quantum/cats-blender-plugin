@@ -721,7 +721,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
         row.operator('supporter.person', text='Kry10', emboss=False, icon_value=preview_collections["custom_icons"]["kry10"].icon_id)
         row = col.row(align=True)
-        row.scale_y = 1.2
         row.separator()
         row = col.row(align=True)
         row.label('Do you like this plugin and want to support us?')

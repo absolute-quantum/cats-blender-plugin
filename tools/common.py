@@ -353,23 +353,37 @@ def get_meshes_objects():
 
 
 def join_meshes():
-    # Combines Meshes
     set_default_stage()
     unselect_all()
+
+    # Apply existing decimation modifiers
+    for mesh in get_meshes_objects():
+        select(mesh)
+        for mod in mesh.modifiers:
+            if mod.name == 'Decimate' and mesh.data.shape_keys is not None:
+                for key in mesh.data.shape_keys.key_blocks:
+                    mesh.shape_key_remove(key)
+                bpy.ops.object.modifier_apply(apply_as='DATA', modifier="Decimate")
+                break
+        unselect_all()
+
+    # Select all meshes
     for mesh in get_meshes_objects():
         select(mesh)
 
-    # Joins the meshes
+    # Join the meshes
     if bpy.ops.object.join.poll():
         bpy.ops.object.join()
 
-    # Renames it to Body
+    # Rename result to Body
     mesh = None
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
             if ob.parent is not None and ob.parent.type == 'ARMATURE':
                 ob.name = 'Body'
                 mesh = ob
+                for mod in mesh.modifiers:
+                    bpy.context.object.modifiers[mod.name].show_expanded = False
                 break
 
     return mesh

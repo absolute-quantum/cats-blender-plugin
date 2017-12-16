@@ -208,6 +208,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Bone Merging: A new feature that can reduce tree childs from a group set of bones
 - Added: Progress notification on serveral operations
 - Changed: Functions that need UI context are now excluded from the spacebar menu
+- Added: Model: Joining meshes now applies all unapplied decimation modifiers
 
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)
@@ -220,7 +221,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Updater: New popup when update is available
 - Changed: Eye Tracking: Made "Basis" usable again (useful for models with a single shape containing both blinks)
 - Changed: Armature Panel renamed to Model
-- Fixed: Optimization: Combine same materials now ignores unactive texture slots in it's unique identification
+- Fixed: Optimization: Combine same materials now ignores inactive texture slots in it's unique identification
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
 
