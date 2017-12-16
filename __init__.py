@@ -385,8 +385,9 @@ class ToolPanel:
             ("B", "Tupper", "Thank you, Tupper <3"),
             ("C", "Xeverian", "Thank you, Xeverian <3"),
             ("D", "Idea", "Thank you, Idea <3"),
-            ("E", "RadaruS", "Thank you, RaderuS"),
-            ("F", "Kry10", "Thank you, Kry10"),
+            ("E", "RadaruS", "Thank you, RaderuS <3"),
+            ("F", "Kry10", "Thank you, Kry10 <3"),
+            ("G", "smead", "Thank you, smead <3")
         ]
     )
 
@@ -734,6 +735,9 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
         row.operator('supporter.person', text='Kry10', emboss=False, icon_value=preview_collections["custom_icons"]["kry10"].icon_id)
         row = col.row(align=True)
+        row.operator('supporter.person', text='smead', emboss=False, icon_value=preview_collections["custom_icons"]["smead"].icon_id)
+        row.label('')
+        row.label('')
         row.separator()
         row = col.row(align=True)
         row.label('Do you like this plugin and want to support us?')
@@ -849,6 +853,7 @@ def load_icons():
     pcoll.load('idea', os.path.join(my_icons_dir, 'supporters/idea.png'), 'IMAGE')
     pcoll.load('radarus', os.path.join(my_icons_dir, 'supporters/radarus.png'), 'IMAGE')
     pcoll.load('kry10', os.path.join(my_icons_dir, 'supporters/kry10.png'), 'IMAGE')
+    pcoll.load('smead', os.path.join(my_icons_dir, 'supporters/smead.png'), 'IMAGE')
 
     preview_collections['custom_icons'] = pcoll
 
