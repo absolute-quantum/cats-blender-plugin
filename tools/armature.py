@@ -339,6 +339,8 @@ bone_list_weight = {
     'WristW_R': 'Right wrist',
     'WristS_R': 'Right wrist',
 
+    'Dummy_R': 'Right arm',
+    'Dummy_L': 'Left arm',
 }
 dont_delete_these_bones = {
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',

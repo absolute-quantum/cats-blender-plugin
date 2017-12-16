@@ -34,10 +34,9 @@ class TestAddon(unittest.TestCase):
 
     def test_eye_tracking(self):
         bpy.ops.armature.fix()
-
         if self.filename == 'armature.mmd1.blend':
-            bpy.context.scene.eye_left = 'EyeReturn_L'
-            bpy.context.scene.eye_right = 'EyeReturn_R'
+            bpy.context.scene.eye_left = 'Eye_L'
+            bpy.context.scene.eye_right = 'Eye_R'
 
         if self.filename == 'armature.bonetranslationerror.blend':
             bpy.context.scene.eye_left = 'Eye_L'
@@ -50,10 +49,6 @@ class TestAddon(unittest.TestCase):
         self.assertTrue(result == {'FINISHED'})
 
     def test_eye_tracking_no_movement(self):
-        if self.filename == 'armature.mmd1.blend':
-            bpy.context.scene.eye_left = 'EyeReturn_L'
-            bpy.context.scene.eye_right = 'EyeReturn_R'
-
         if self.filename == 'armature.bonetranslationerror.blend':
             bpy.context.scene.eye_left = 'Eye_L'
             bpy.context.scene.eye_right = 'Eye_R'
@@ -65,10 +60,6 @@ class TestAddon(unittest.TestCase):
         self.assertTrue(result == {'FINISHED'})
 
     def test_eye_tracking_no_blinking(self):
-        if self.filename == 'armature.mmd1.blend':
-            bpy.context.scene.eye_left = 'EyeReturn_L'
-            bpy.context.scene.eye_right = 'EyeReturn_R'
-
         if self.filename == 'armature.bonetranslationerror.blend':
             bpy.context.scene.eye_left = 'Eye_L'
             bpy.context.scene.eye_right = 'Eye_R'
