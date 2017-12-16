@@ -388,14 +388,27 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         col.label('Manual Model Fixing:')
         row = col.row(align=True)
-        row.scale_y = 1.1
+        row.scale_y = 1.05
         row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
         row = col.row(align=True)
-        row.scale_y = 1.1
+        row.scale_y = 1.05
         row.operator('armature_manual.join_meshes', icon='MESH_DATA')
         row = col.row(align=True)
-        row.scale_y = 1.1
+        row.scale_y = 1.05
         row.operator('armature_manual.mix_weights', icon='BONE_DATA')
+
+        ob = bpy.context.active_object
+        if bpy.context.active_object  is None or ob.mode != 'POSE':
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')
+        else:
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.operator('armature_manual.stop_pose_mode', icon='POSE_DATA')
+
+
+
         # row = col.row(align=True)
         # row.scale_y = 1.1
         # row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
@@ -831,6 +844,8 @@ def register():
     # bpy.utils.register_class(tools.armature_manual.Import)
     # bpy.utils.register_class(tools.armature_manual.Finalize)
     # bpy.utils.register_class(tools.armature_manual.Test)
+    bpy.utils.register_class(tools.armature_manual.StopPoseMode)
+    bpy.utils.register_class(tools.armature_manual.StartPoseMode)
     bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
@@ -875,6 +890,8 @@ def unregister():
     bpy.utils.unregister_class(tools.armature_manual.MixWeights)
     bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
     bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
+    bpy.utils.unregister_class(tools.armature_manual.StartPoseMode)
+    bpy.utils.unregister_class(tools.armature_manual.StopPoseMode)
     # bpy.utils.unregister_class(tools.armature_manual.Import)
     # bpy.utils.unregister_class(tools.armature_manual.Finalize)
     # bpy.utils.unregister_class(tools.armature_manual.Test)

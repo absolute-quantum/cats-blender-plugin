@@ -205,7 +205,10 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Changelog
 
 #### 0.4.0
+- Added: Model: A lot more models are now compatible (if not please report it to us)
 - Added: Model: Joining meshes now applies all unapplied decimation modifiers
+- Added: Model: New "Start/Stop Pose Mode" button
+- Fixed: Buggy things
 
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)

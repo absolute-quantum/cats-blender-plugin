@@ -123,10 +123,23 @@ bone_list_parenting = {
     'Right toe': 'Right ankle',
 }
 bone_list_weight = {
+    'LowerBody1': 'Hips',
+    'LowerBody2': 'Hips',
+
     'UpperBodyx': 'Spine',
     'UpperBodyx2': 'Chest',
+
     'Neckx': 'Neck',
+    'NeckW': 'Neck',
+    'NeckW2': 'Neck',
+
     'Neckx2': 'Head',
+
+    'EyeReturn_L': 'Eye_L',
+    'EyeW_L': 'Eye_L',
+
+    'EyeReturn_R': 'Eye_R',
+    'EyeW_R': 'Eye_R',
 
     'LegD_L': 'Left leg',
     'Left foot D': 'Left leg',
@@ -140,6 +153,9 @@ bone_list_weight = {
     'LLegTwist1': 'Left leg',
     'LLegTwist2': 'Left leg',
     'LLegTwist3': 'Left leg',
+    'LegW_L': 'Left leg',
+    'LegW2_L': 'Left leg',
+    'KneeS_L': 'Left leg',
 
     'LegD_R': 'Right leg',
     'Right foot D': 'Right leg',
@@ -153,6 +169,9 @@ bone_list_weight = {
     'RLegTwist1': 'Right leg',
     'RLegTwist2': 'Right leg',
     'RLegTwist3': 'Right leg',
+    'LegW_R': 'Right leg',
+    'LegW2_R': 'Right leg',
+    'KneeS_R': 'Right leg',
 
     'KneeD_L': 'Left knee',
     'Left knee D': 'Left knee',
@@ -164,6 +183,8 @@ bone_list_weight = {
     'LTibiaTwist1': 'Left knee',
     'LTibiaTwist2': 'Left knee',
     'LTibiaTwist3': 'Left knee',
+    'KneeW1_L': 'Left knee',
+    'KneeW2_L': 'Left knee',
 
     'KneeD_R': 'Right knee',
     'Right knee D': 'Right knee',
@@ -175,16 +196,22 @@ bone_list_weight = {
     'RTibiaTwist1': 'Right knee',
     'RTibiaTwist2': 'Right knee',
     'RTibiaTwist3': 'Right knee',
+    'KneeW1_R': 'Right knee',
+    'KneeW2_R': 'Right knee',
 
     'AnkleD_L': 'Left ankle',
     'Left ankle D': 'Left ankle',
     'Ankle連_L': 'Left ankle',
     'AnkleEven_L': 'Left ankle',
+    'AnkleW1_L': 'Left ankle',
+    'AnkleW2_L': 'Left ankle',
 
     'AnkleD_R': 'Right ankle',
     'Right ankle D': 'Right ankle',
     'Ankle連_R': 'Right ankle',
     'AnkleEven_R': 'Right ankle',
+    'AnkleW1_R': 'Right ankle',
+    'AnkleW2_R': 'Right ankle',
 
     '爪TipEX_L': 'Left toe',
     '爪TipEX2_L': 'Left toe',
@@ -209,17 +236,22 @@ bone_list_weight = {
     'ShoulderSleeve_R': 'Right shoulder',
     'SleeveShoulderIK_R': 'Right shoulder',
     'Right shoulder weight': 'Right shoulder',
+    'ShoulderS_R': 'Right shoulder',
+    'ShoulderW_R': 'Right shoulder',
 
     'ShoulderC_L': 'Left shoulder',
     'Shoulder2_L': 'Left shoulder',
     'ShoulderSleeve_L': 'Left shoulder',
     'SleeveShoulderIK_L': 'Left shoulder',
     'Left shoulder weight': 'Left shoulder',
+    'ShoulderS_L': 'Left shoulder',
+    'ShoulderW_L': 'Left shoulder',
 
     'ArmTwist_R': 'Right arm',
     'ArmTwist1_R': 'Right arm',
     'ArmTwist2_R': 'Right arm',
     'ArmTwist3_R': 'Right arm',
+    'ArmTwist4_R': 'Right arm',
     'Right arm twist': 'Right arm',
     'Right arm torsion': 'Right arm',
     'Right arm torsion 1': 'Right arm',
@@ -232,11 +264,14 @@ bone_list_weight = {
     '+ElbowAux_R': 'Right arm',
     'ArmSleeve_R': 'Right arm',
     'ShoulderTwist_R': 'Right arm',
+    'ArmW_R': 'Right arm',
+    'ArmW2_R': 'Right arm',
 
     'ArmTwist_L': 'Left arm',
     'ArmTwist1_L': 'Left arm',
     'ArmTwist2_L': 'Left arm',
     'ArmTwist3_L': 'Left arm',
+    'ArmTwist4_L': 'Left arm',
     'Left arm twist': 'Left arm',
     'Left arm torsion': 'Left arm',
     'Left arm torsion 1': 'Left arm',
@@ -249,11 +284,14 @@ bone_list_weight = {
     '+ElbowAux_L': 'Left arm',
     'ArmSleeve_L': 'Left arm',
     'ShoulderTwist_L': 'Left arm',
+    'ArmW_L': 'Left arm',
+    'ArmW2_L': 'Left arm',
 
     'HandTwist_R': 'Right elbow',
     'HandTwist1_R': 'Right elbow',
     'HandTwist2_R': 'Right elbow',
     'HandTwist3_R': 'Right elbow',
+    'HandTwist4_R': 'Right elbow',
     'Right Hand 1': 'Right elbow',
     'Right Hand 2': 'Right elbow',
     'Right Hand 3': 'Right elbow',
@@ -268,11 +306,14 @@ bone_list_weight = {
     'WristAux_R': 'Right elbow',
     'ElbowTwist_R': 'Right elbow',
     'ElbowTwist2_R': 'Right elbow',
+    'ElbowW_R': 'Right elbow',
+    'ElbowW2_R': 'Right elbow',
 
     'HandTwist_L': 'Left elbow',
     'HandTwist1_L': 'Left elbow',
     'HandTwist2_L': 'Left elbow',
     'HandTwist3_L': 'Left elbow',
+    'HandTwist4_L': 'Left elbow',
     'Left Hand 1': 'Left elbow',
     'Left Hand 2': 'Left elbow',
     'Left Hand 3': 'Left elbow',
@@ -287,9 +328,16 @@ bone_list_weight = {
     'WristAux_L': 'Left elbow',
     'ElbowTwist_L': 'Left elbow',
     'ElbowTwist2_L': 'Left elbow',
+    'ElbowW_L': 'Left elbow',
+    'ElbowW2_L': 'Left elbow',
 
     'WristSleeve_L': 'Left wrist',
+    'WristW_L': 'Left wrist',
+    'WristS_L': 'Left wrist',
+
     'WristSleeve_R': 'Right wrist',
+    'WristW_R': 'Right wrist',
+    'WristS_R': 'Right wrist',
 
 }
 dont_delete_these_bones = {
@@ -441,7 +489,10 @@ class FixArmature(bpy.types.Operator):
         # Remove un-needed bones and disconnect them
         for bone in armature.data.edit_bones:
             if bone.name in bone_list or bone.name.startswith(tuple(bone_list_with)):
-                armature.data.edit_bones.remove(bone)
+                if bone.parent is not None:
+                    bone_list_weight[bone.name] = bone.parent.name
+                else:
+                    armature.data.edit_bones.remove(bone)
             else:
                 bone.use_connect = False
 
@@ -538,38 +589,54 @@ class FixArmature(bpy.types.Operator):
                     right_leg = armature.data.edit_bones.get('Right leg')
                     right_knee = armature.data.edit_bones.get('Right knee')
                     left_knee = armature.data.edit_bones.get('Left knee')
+                    spine = armature.data.edit_bones.get('Spine')
+                    chest = armature.data.edit_bones.get('Chest')
+                    neck = armature.data.edit_bones.get('Neck')
+                    head = armature.data.edit_bones.get('Head')
 
-                    # Hips should have x value of 0 in both head and tail
-                    hip_bone.head[0] = 0
-                    hip_bone.tail[0] = 0
+                    full_body_tracking = False
 
-                    # Make sure the upper legs tail are the same x/y values as the lower leg tail x/y
-                    right_leg.tail[0] = right_knee.head[0]
-                    left_leg.tail[0] = left_knee.head[0]
-                    right_leg.head[1] = right_knee.head[1]
-                    left_leg.head[1] = left_knee.head[1]
+                    # Fixing the hips
+                    if not full_body_tracking:
+                        # Hips should have x value of 0 in both head and tail
+                        hip_bone.head[0] = 0
+                        hip_bone.tail[0] = 0
 
-                    # Make sure the leg bones are setup straight. (head should be same X as tail)
-                    left_leg.head[0] = left_leg.tail[0]
-                    right_leg.head[0] = right_leg.tail[0]
+                        # Make sure the hips bone (tail and head tip) is aligned with the legs Y
+                        hip_bone.head[1] = right_leg.head[1]
+                        hip_bone.tail[1] = right_leg.head[1]
 
-                    # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
-                    left_leg.head[1] = right_leg.head[1]
+                        # Flip the hips bone and make sure the hips bone is not below the legs bone
+                        hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
+                        hip_bone.head[2] = right_leg.head[2]
+                        hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
 
-                    # Make sure the hips bone (tail and head tip) is aligned with the legs Y
-                    hip_bone.head[1] = right_leg.head[1]
-                    hip_bone.tail[1] = right_leg.head[1]
+                    elif spine is not None and chest is not None and neck is not None and head is not None:
+                        bones = [hip_bone, spine, chest, neck, head]
+                        for bone in bones:
+                            bone_length = abs(bone.tail[2] - bone.head[2])
+                            bone.tail[0] = bone.head[0]
+                            bone.tail[1] = bone.head[1]
+                            bone.tail[2] = bone.head[2] + bone_length
 
-                    # Flip the hips bone and make sure the hips bone is not below the legs bone
-                    hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
-                    hip_bone.head[2] = right_leg.head[2]
-                    hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
+                    # Fixing legs
+                    if right_knee is not None and left_knee is not None:
+                        # Make sure the upper legs tail are the same x/y values as the lower leg tail x/y
+                        right_leg.tail[0] = right_knee.head[0]
+                        left_leg.tail[0] = left_knee.head[0]
+                        right_leg.head[1] = right_knee.head[1]
+                        left_leg.head[1] = left_knee.head[1]
 
-                    # Roll should be disabled on legs
+                        # Make sure the leg bones are setup straight. (head should be same X as tail)
+                        left_leg.head[0] = left_leg.tail[0]
+                        right_leg.head[0] = right_leg.tail[0]
+
+                        # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
+                        left_leg.head[1] = right_leg.head[1]
+
+                    # Roll should be disabled on legs and hips
                     left_leg.roll = 0
                     right_leg.roll = 0
-
-                    # Roll should be disabled on hips
                     hip_bone.roll = 0
 
         # Reparent all bones to be correct for unity mapping and vrc itself
