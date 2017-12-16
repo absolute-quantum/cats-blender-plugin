@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.2.1)
+# Cats Blender Plugin (0.4.0)
 
 A tool designed to shorten steps needed to import and optimize MMD models into VRChat
 
@@ -204,6 +204,11 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.4.0
+- Added: Bone Merging: A new feature that can reduce tree childs from a group set of bones
+- Added: Progress notification on serveral operations
+- Changed: Functions that need UI context are now excluded from the spacebar menu
+
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)
 - Added: Armature: Fix hips now adjusts the upper leg bones to be placed more correctly for full body tracking
@@ -224,19 +229,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Atlas: Alpha values are restored after atlassing (thanks Tupper!)
 - Fixed: Combine Meshes: Error 'NoneType attribute has no key_blocks' fixed
 - Fixed: Combine Materials: Now also checks for uniqueness on specular and diffuse color
-
-#### 0.2.0
-- Added: Armature: More models are now compatible (if not yours doesn't get fixed please send us privately the zipped .blend file)
-- Added: New Material category in the panel Optimization
-- Added: Material: New "Combine Same Materials" button. This significantly reduced draw calls on some models
-- Added: Material: New "One Material Texture" button. This disables unused texture slots on the same material
-- Added: Credits: New "Join our Discord" button
-- Changed: Completely reworked eye tracking! You can now test how eye tracking will look like
-- Changed: Reworked bone translation, it's much faster and better now!
-- Changed: Armature: Now deletes bone groups (they are a color function, nobody's using that)
-- Changed: Armature: Joining meshes now correctly reorders existing vrc shape keys
-- Fixed: Eye Tracking: A bug where the mouth would open and close in certain positions in VRChat
-- Fixed: A stash full of bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

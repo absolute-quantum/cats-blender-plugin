@@ -37,7 +37,6 @@ from collections import OrderedDict
 # - Manual bone selection button for root bones
 # - Checkbox for eye blinking/moving
 # - Translate progress bar
-# - Add error dialog: At the bottom here: https://wiki.blender.org/index.php/Dev:Py/Scripts/Cookbook/Code_snippets/Interface
 # - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
 # - Eye tracking test add reset blink
 # - Eye tracking test set subcol like in updater
@@ -120,6 +119,14 @@ class PreserveState():
             object.select = self.state_data['selection'][object.name]
 
         return self.state_data
+
+
+def remove_bone(find_bone):
+    armature = get_armature()
+    switch('EDIT')
+    for bone in armature.data.edit_bones:
+        if bone.name == find_bone:
+            armature.data.edit_bones.remove(bone)
 
 
 def remove_empty():

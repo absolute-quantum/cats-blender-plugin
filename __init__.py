@@ -46,6 +46,7 @@ sys.path.append(file_dir)
 import tools.viseme
 import tools.atlas
 import tools.eyetracking
+import tools.bonemerge
 import tools.rootbone
 import tools.translate
 import tools.armature
@@ -62,6 +63,7 @@ import tools.credits
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
+importlib.reload(tools.bonemerge)
 importlib.reload(tools.rootbone)
 importlib.reload(tools.translate)
 importlib.reload(tools.armature)
@@ -77,7 +79,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 3, 0],
+    'version': [0, 4, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -287,7 +289,8 @@ class ToolPanel:
         description="Mode",
         items=[
             ("ATLAS", "Atlas", "Allows you to make a texture atlas."),
-            ("MATERIAL", "Material", "Some various options on material manipulation.")
+            ("MATERIAL", "Material", "Some various options on material manipulation."),
+            ("BONEMERGING", "Bone Merging", "Allows child bones to be merged and mixed in their above parents."),
         ]
     )
 
@@ -348,6 +351,31 @@ class ToolPanel:
         items=tools.common.get_meshes
     )
 
+    # Bone Merging
+    bpy.types.Scene.merge_ratio = bpy.props.FloatProperty(
+        name='Merge Ratio',
+        description='Higher = more bones will be merged\n'
+                    'Lower = less bones will be merged\n',
+        default=0.7,
+        min=0.0,
+        max=1.0,
+        step=0.1,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    bpy.types.Scene.merge_mesh = bpy.props.EnumProperty(
+        name='Mesh',
+        description='The mesh with the bones vertex groups',
+        items=tools.common.get_meshes
+    )
+
+    bpy.types.Scene.merge_bone = bpy.props.EnumProperty(
+        name='To Merge',
+        description='List of bones that look like they could be marged together to reduce overall bones.',
+        items=tools.rootbone.get_parent_root_bones,
+    )
+
     # Supporter
     bpy.types.Scene.supporters = bpy.props.EnumProperty(
         name="Supporters",
@@ -357,7 +385,8 @@ class ToolPanel:
             ("B", "Tupper", "Thank you, Tupper <3"),
             ("C", "Xeverian", "Thank you, Xeverian <3"),
             ("D", "Idea", "Thank you, Idea <3"),
-            ("E", "RadaruS", "Thank you, RaderuS")
+            ("E", "RadaruS", "Thank you, RaderuS"),
+            ("F", "Kry10", "Thank you, Kry10"),
         ]
     )
 
@@ -377,7 +406,6 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.4
             row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
             col.separator()
-
 
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
@@ -646,6 +674,18 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.1
             row.operator('one.tex', icon='TEXTURE')
 
+        if context.scene.optimize_mode == 'BONEMERGING':
+            col.separator()
+            row = box.row(align=True)
+            row.prop(context.scene, 'merge_mesh')
+            row = box.row(align=True)
+            row.prop(context.scene, 'merge_bone')
+            row = box.row(align=True)
+            row.prop(context.scene, 'merge_ratio')
+            row = box.row(align=True)
+            col.separator()
+            row.operator('bone.merge', icon_value=preview_collections["custom_icons"]["merge"].icon_id)
+
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v2'
@@ -679,7 +719,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.operator('supporter.person', text='Idea', emboss=False, icon_value=preview_collections["custom_icons"]["idea"].icon_id)
         row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
-        row.label('')
+        row.operator('supporter.person', text='Kry10', emboss=False, icon_value=preview_collections["custom_icons"]["kry10"].icon_id)
         row = col.row(align=True)
         row.scale_y = 1.2
         row.separator()
@@ -781,22 +821,24 @@ def load_icons():
     my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
 
     # load a preview thumbnail of a file and store in the previews collection
-    pcoll.load("heart1", os.path.join(my_icons_dir, "heart1.png"), 'IMAGE')
-    pcoll.load("heart2", os.path.join(my_icons_dir, "heart2.png"), 'IMAGE')
-    pcoll.load("heart3", os.path.join(my_icons_dir, "heart3.png"), 'IMAGE')
-    pcoll.load("heart4", os.path.join(my_icons_dir, "heart4.png"), 'IMAGE')
-    pcoll.load("discord1", os.path.join(my_icons_dir, "discord1.png"), 'IMAGE')
-    pcoll.load("discord2", os.path.join(my_icons_dir, "discord2.png"), 'IMAGE')
-    pcoll.load("cats1", os.path.join(my_icons_dir, "cats1.png"), 'IMAGE')
-    pcoll.load("patreon1", os.path.join(my_icons_dir, "patreon1.png"), 'IMAGE')
-    pcoll.load("patreon2", os.path.join(my_icons_dir, "patreon2.png"), 'IMAGE')
-    pcoll.load("tupper", os.path.join(my_icons_dir, "supporters/tupper.png"), 'IMAGE')
-    pcoll.load("xeverian", os.path.join(my_icons_dir, "supporters/xeverian.png"), 'IMAGE')
-    pcoll.load("jazneo", os.path.join(my_icons_dir, "supporters/jazneo.png"), 'IMAGE')
-    pcoll.load("idea", os.path.join(my_icons_dir, "supporters/idea.png"), 'IMAGE')
-    pcoll.load("radarus", os.path.join(my_icons_dir, "supporters/radarus.png"), 'IMAGE')
+    pcoll.load('heart1', os.path.join(my_icons_dir, 'heart1.png'), 'IMAGE')
+    pcoll.load('heart2', os.path.join(my_icons_dir, 'heart2.png'), 'IMAGE')
+    pcoll.load('heart3', os.path.join(my_icons_dir, 'heart3.png'), 'IMAGE')
+    pcoll.load('heart4', os.path.join(my_icons_dir, 'heart4.png'), 'IMAGE')
+    pcoll.load('discord1', os.path.join(my_icons_dir, 'discord1.png'), 'IMAGE')
+    pcoll.load('discord2', os.path.join(my_icons_dir, 'discord2.png'), 'IMAGE')
+    pcoll.load('cats1', os.path.join(my_icons_dir, 'cats1.png'), 'IMAGE')
+    pcoll.load('patreon1', os.path.join(my_icons_dir, 'patreon1.png'), 'IMAGE')
+    pcoll.load('patreon2', os.path.join(my_icons_dir, 'patreon2.png'), 'IMAGE')
+    pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
+    pcoll.load('tupper', os.path.join(my_icons_dir, 'supporters/tupper.png'), 'IMAGE')
+    pcoll.load('xeverian', os.path.join(my_icons_dir, 'supporters/xeverian.png'), 'IMAGE')
+    pcoll.load('jazneo', os.path.join(my_icons_dir, 'supporters/jazneo.png'), 'IMAGE')
+    pcoll.load('idea', os.path.join(my_icons_dir, 'supporters/idea.png'), 'IMAGE')
+    pcoll.load('radarus', os.path.join(my_icons_dir, 'supporters/radarus.png'), 'IMAGE')
+    pcoll.load('kry10', os.path.join(my_icons_dir, 'supporters/kry10.png'), 'IMAGE')
 
-    preview_collections["custom_icons"] = pcoll
+    preview_collections['custom_icons'] = pcoll
 
 
 def unload_icons():
@@ -824,6 +866,7 @@ def register():
     bpy.utils.register_class(tools.translate.TranslateMaterialsButton)
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
+    bpy.utils.register_class(tools.bonemerge.BoneMergeButton)
     bpy.utils.register_class(tools.armature.FixArmature)
     bpy.utils.register_class(tools.material.CombineMaterialsButton)
     bpy.utils.register_class(tools.material.OneTexPerMatButton)

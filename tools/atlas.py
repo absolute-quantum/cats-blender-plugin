@@ -32,7 +32,7 @@ import random
 class AutoAtlasButton(bpy.types.Operator):
     bl_idname = 'auto.atlas'
     bl_label = 'Create Atlas'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):

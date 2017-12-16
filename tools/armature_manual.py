@@ -47,7 +47,7 @@ class ImportModel(bpy.types.Operator):
     bl_description = 'Import a MMD model (.pmx, .pmd)\n' \
                      '\n' \
                      'Only available when mmd_tools is installed.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         if not mmd_tools_installed:
@@ -104,7 +104,7 @@ class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
     bl_description = 'Join the Model meshes into a single one.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -127,7 +127,7 @@ class SeparateByMaterials(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_materials'
     bl_label = 'Separate by Materials'
     bl_description = 'Separates selected mesh by materials.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -181,7 +181,7 @@ class MixWeights(bpy.types.Operator):
     bl_label = 'Mix Weights'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.\n' \
                      'Only available in Edit or Pose Mode with bones selected!\n'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     _armature = None
     _bone_names_to_work_on = None
@@ -384,7 +384,7 @@ class JoinMeshesTest(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes_test'
     bl_label = 'Join Meshes Test'
     bl_description = 'Joins all meshes.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):

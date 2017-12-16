@@ -330,7 +330,7 @@ class FixArmature(bpy.types.Operator):
                      '- Removes bone constraints\n' \
                      '- Corrects shading'
 
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     dictionary = bpy.props.EnumProperty(
         name='Dictionary',
