@@ -211,6 +211,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Changed: Functions that need UI context are now excluded from the spacebar menu
 - Added: Model: Joining meshes now applies all unapplied decimation modifiers
 - Added: Model: New "Start/Stop Pose Mode" button
+- Fixed: Undo now works a lot better
 - Fixed: Buggy things
 
 #### 0.3.0

@@ -159,7 +159,7 @@ class JoinMeshes(bpy.types.Operator):
         return i > 0
 
     def execute(self, context):
-        mesh = tools.common.join_meshes()
+        mesh = tools.common.join_meshes(context)
         if mesh is not None:
             tools.common.repair_viseme_order(mesh.name)
 

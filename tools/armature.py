@@ -38,7 +38,7 @@ try:
 except:
     pass
 
-bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'LowerBody2', 'Eyes', 'EyesTip',
+bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'Eyes', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
 bone_list_with = ['_shadow_', '_dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK', 'LegIKTip', 'ToeTipIK',
                   'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
@@ -461,7 +461,7 @@ class FixArmature(bpy.types.Operator):
         armature.data.name = 'Armature'
 
         # Joins meshes into one and calls it 'Body'
-        mesh = tools.common.join_meshes()
+        mesh = tools.common.join_meshes(context)
 
         # Reorders vrc shape keys to the correct order
         tools.common.repair_viseme_order(mesh.name)

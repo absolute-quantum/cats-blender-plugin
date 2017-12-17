@@ -38,6 +38,8 @@ import bpy
 class BoneMergeButton(bpy.types.Operator):
     bl_idname = 'bone.merge'
     bl_label = 'Merge Bones'
+    bl_description = 'Merges the bones'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     # used internally for get_all_childs only because get_all_childs is a recursive function
     child_bones = []
