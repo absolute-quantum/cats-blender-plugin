@@ -30,6 +30,7 @@ import os
 import importlib
 import bpy.utils.previews
 from . import addon_updater_ops
+from collections import OrderedDict
 
 mmd_tools_installed = False
 try:
@@ -722,21 +723,37 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
         row = col.row(align=True)
-        row.label('Thanks to our awesome supporters! <3')
 
-        col.separator()
-        row = col.row(align=True)
-        row.operator('supporter.person', text='Xeverian', emboss=False, icon_value=preview_collections["custom_icons"]["xeverian"].icon_id)
-        row.operator('supporter.person', text='Tupper', emboss=False, icon_value=preview_collections["custom_icons"]["tupper"].icon_id)
-        row.operator('supporter.person', text='Jazneo', emboss=False, icon_value=preview_collections["custom_icons"]["jazneo"].icon_id)
-        row = col.row(align=True)
-        row.operator('supporter.person', text='Idea', emboss=False, icon_value=preview_collections["custom_icons"]["idea"].icon_id)
-        row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
-        row.operator('supporter.person', text='Kry10', emboss=False, icon_value=preview_collections["custom_icons"]["kry10"].icon_id)
-        row = col.row(align=True)
-        row.operator('supporter.person', text='smead', emboss=False, icon_value=preview_collections["custom_icons"]["smead"].icon_id)
-        row.operator('supporter.person', text='kohai.istool', emboss=False, icon_value=preview_collections["custom_icons"]["kohai"].icon_id)
-        row.label('')
+        supporters = OrderedDict()
+        supporters['Xeverian'] = 'xeverian'
+        supporters['Tupper'] = 'tupper'
+        supporters['Jazneo'] = 'jazneo'
+        supporters['Idea'] = 'idea'
+        supporters['RadaruS'] = 'radarus'
+        supporters['Kry10'] = 'kry10'
+        supporters['smead'] = 'smead'
+        supporters['kohai.istool'] = 'kohai'
+
+        i = 0
+        cont = True
+        items = list(supporters.items())
+        while cont:
+            try:
+                items[i]
+                if i == 0:
+                    row.label('Thanks to our awesome supporters! <3')
+                    col.separator()
+                if i % 3 == 0:
+                    row = col.row(align=True)
+                row.operator('supporter.person', text=items[i][0], emboss=False, icon_value=preview_collections["custom_icons"][items[i][1]].icon_id)
+                i += 1
+            except IndexError:
+                if i % 3 == 0:
+                    cont = False
+                    continue
+                row.label('')
+                i += 1
+
         row = col.row(align=True)
         row.separator()
         row = col.row(align=True)

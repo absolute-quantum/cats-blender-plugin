@@ -216,7 +216,7 @@ class addon_updater_update_now(bpy.types.Operator):
 
 
 class addon_updater_update_target(bpy.types.Operator):
-    bl_label = updater.addon+" addon version target"
+    bl_label = updater.addon+" version target"
     bl_idname = updater.addon+".updater_update_target"
     bl_description = "Install a targeted version of the {x} addon".format(
                                                         x=updater.addon)
@@ -267,6 +267,17 @@ class addon_updater_update_target(bpy.types.Operator):
         subcol.label("Select install version")
         subcol = split.column()
         subcol.prop(self, "target", text="")
+
+        subcol = layout.row(align=True)
+        subcol.scale_y = 0.1
+        subcol.separator()
+        subcol = layout.row(align=True)
+        subcol.scale_y = 0.5
+        subcol.label("Warning: Development version might be unstable.")
+        subcol = layout.row(align=True)
+        subcol.scale_y = 0.5
+        subcol.label("Only choose this if you know what you do.")
+
 
 
     def execute(self,context):
