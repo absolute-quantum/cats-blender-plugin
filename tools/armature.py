@@ -266,6 +266,10 @@ bone_list_weight = {
     'ShoulderTwist_R': 'Right arm',
     'ArmW_R': 'Right arm',
     'ArmW2_R': 'Right arm',
+    '袖腕.R': 'Right arm',
+    'SleeveArm_R': 'Right arm',
+    '袖ひじ補助.R': 'Right arm',
+    'SleeveElbowAux_R': 'Right arm',
 
     'ArmTwist_L': 'Left arm',
     'ArmTwist1_L': 'Left arm',
@@ -286,6 +290,10 @@ bone_list_weight = {
     'ShoulderTwist_L': 'Left arm',
     'ArmW_L': 'Left arm',
     'ArmW2_L': 'Left arm',
+    'エプロンArm': 'Left arm',
+    'SleeveArm_L': 'Left arm',
+    '袖ひじ補助.L': 'Left arm',
+    'SleeveElbowAux_L': 'Left arm',
 
     'HandTwist_R': 'Right elbow',
     'HandTwist1_R': 'Right elbow',
@@ -308,6 +316,10 @@ bone_list_weight = {
     'ElbowTwist2_R': 'Right elbow',
     'ElbowW_R': 'Right elbow',
     'ElbowW2_R': 'Right elbow',
+    '袖ひじ.R': 'Right elbow',
+    'SleeveElbow_R': 'Right elbow',
+    'Sleeve口_R': 'Right elbow',
+    'SleeveMouth_R': 'Right elbow',
 
     'HandTwist_L': 'Left elbow',
     'HandTwist1_L': 'Left elbow',
@@ -330,14 +342,20 @@ bone_list_weight = {
     'ElbowTwist2_L': 'Left elbow',
     'ElbowW_L': 'Left elbow',
     'ElbowW2_L': 'Left elbow',
+    '袖ひじ.L': 'Left elbow',
+    'SleeveElbow_L': 'Left elbow',
+    'Sleeve口_L': 'Left elbow',
+    'SleeveMouth_L': 'Left elbow',
 
     'WristSleeve_L': 'Left wrist',
     'WristW_L': 'Left wrist',
     'WristS_L': 'Left wrist',
+    'HandTwist5_L': 'Left wrist',
 
     'WristSleeve_R': 'Right wrist',
     'WristW_R': 'Right wrist',
     'WristS_R': 'Right wrist',
+    'HandTwist5_R': 'Right wrist',
 }
 dont_delete_these_bones = {
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
@@ -400,11 +418,12 @@ class FixArmature(bpy.types.Operator):
 
 
     def execute(self, context):
-        # preservestate = tools.common.PreserveState()
-        # preservestate.save()
-
-        # bpy.ops.object.hide_view_clear()
+        wm = bpy.context.window_manager
         armature = tools.common.set_default_stage()
+
+        steps = len(bpy.data.objects) + len(armature.pose.bone_groups) + len(bone_list_rename_unknown_side) + len(bone_list_parenting) + len(bone_list_weight) + 1
+        current_step = 0
+        wm.progress_begin(current_step, steps)
 
         # Set correct mmd shading
         if mmd_tools_installed:
@@ -423,11 +442,15 @@ class FixArmature(bpy.types.Operator):
 
         # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
+            current_step += 1
+            wm.progress_update(current_step)
             if obj.name == 'rigidbodies' or obj.name == 'rigidbodies.001' or obj.name == 'joints' or obj.name == 'joints.001':
                 delete_hierarchy(obj)
 
         # Remove Bone Groups
         for group in armature.pose.bone_groups:
+            current_step += 1
+            wm.progress_update(current_step)
             armature.pose.bone_groups.remove(group)
 
         # Model should be in rest position
@@ -462,6 +485,9 @@ class FixArmature(bpy.types.Operator):
 
         # Rename bones which don't have a side and try to detect it automatically
         for key, value in bone_list_rename_unknown_side.items():
+            current_step += 1
+            wm.progress_update(current_step)
+
             for bone in armature.data.edit_bones:
                 parent = bone.parent
                 if parent is None:
@@ -640,6 +666,9 @@ class FixArmature(bpy.types.Operator):
 
         # Reparent all bones to be correct for unity mapping and vrc itself
         for key, value in bone_list_parenting.items():
+            current_step += 1
+            wm.progress_update(current_step)
+
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
 
@@ -649,6 +678,8 @@ class FixArmature(bpy.types.Operator):
         tools.common.select(mesh)
 
         for key, value in bone_list_weight.items():
+            current_step += 1
+            wm.progress_update(current_step)
             vg = mesh.vertex_groups.get(key)
             if vg is None:
                 vg = mesh.vertex_groups.get(key.lower())
@@ -677,7 +708,6 @@ class FixArmature(bpy.types.Operator):
         tools.common.remove_unused_vertex_groups()
 
         # Zero weight bones should be deleted
-        # TODO: doesn't seem to be working at first glance
         if context.scene.remove_zero_weight:
             delete_zero_weight()
 
@@ -692,11 +722,14 @@ class FixArmature(bpy.types.Operator):
             ['Chest', 'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist']
         ])
 
+        current_step += 1
+        wm.progress_update(current_step)
+
+        wm.progress_end()
+
         if hierarchy_check_hips['result'] is False:
             self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
-
-        # preservestate.load()
 
         self.report({'INFO'}, 'Model fixed.')
         return {'FINISHED'}

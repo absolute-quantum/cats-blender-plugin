@@ -64,8 +64,6 @@ class CreateEyesButton(bpy.types.Operator):
 
     def execute(self, context):
         wm = bpy.context.window_manager
-        # PreserveState = tools.common.PreserveState()
-        # PreserveState.save()
 
         # Set the stage
         armature = tools.common.set_default_stage()
@@ -187,8 +185,6 @@ class CreateEyesButton(bpy.types.Operator):
         else:
             print('Repair "' + new_right_eye.name + '".')
             repair_shapekeys(mesh_name, new_right_eye.name)
-
-        # PreserveState.load()  # TODO
 
         # deleted = []
         # # deleted = checkshapekeys()

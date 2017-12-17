@@ -40,15 +40,17 @@ class TranslateShapekeyButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        has_to_do = 0
+        steps = 0
         for object in bpy.data.objects:
             if hasattr(object.data, 'shape_keys'):
                 if hasattr(object.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
-                        has_to_do += 2
+                        steps += 2
 
         wm = bpy.context.window_manager
-        wm.progress_begin(0, has_to_do)
+        current_step = 0
+        wm.progress_begin(current_step, steps)
+
         tools.common.unhide_all()
 
         to_translate = []
@@ -59,7 +61,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
                 if hasattr(object.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
                         to_translate.append(shapekey.name)
-                        wm.progress_update(index)
+                        current_step += 1
+                        wm.progress_update(current_step)
 
         translator = Translator()
         translations = translator.translate(to_translate)
@@ -72,7 +75,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
                 if hasattr(object.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(object.data.shape_keys.key_blocks):
                         shapekey.name = translated[i]
-                        wm.progress_update(index)
+                        current_step += 1
+                        wm.progress_update(current_step)
                         i += 1
 
         wm.progress_end()
@@ -118,15 +122,23 @@ class TranslateMeshesButton(bpy.types.Operator):
             if object.type != 'ARMATURE':
                 to_translate.append(object.name)
 
+        wm = bpy.context.window_manager
+        current_step = 0
         translations = translator.translate(to_translate)
+        steps = len(translations)
+        wm.progress_begin(current_step, steps)
         for translation in translations:
             translated.append(translation.text)
+            current_step += 1
+            wm.progress_update(current_step)
 
         i = 0
         for object in objects:
             if object.type != 'ARMATURE':
                 object.name = translated[i]
                 i += 1
+
+        wm.progress_end()
 
         self.report({'INFO'}, 'Translated all meshes')
 
@@ -161,8 +173,14 @@ class TranslateTexturesButton(bpy.types.Operator):
 
             translated = []
             translations = translator.translate(to_translate)
+            steps = len(translations)
+            wm = bpy.context.window_manager
+            current_step = 0
+            wm.progress_begin(current_step, steps)
             for translation in translations:
                 translated.append(translation.text)
+                current_step += 1
+                wm.progress_update(current_step)
 
             i = 0
             for matslot in mesh.material_slots:
@@ -173,6 +191,7 @@ class TranslateTexturesButton(bpy.types.Operator):
 
         tools.common.unselect_all()
 
+        wm.progress_end()
         self.report({'INFO'}, 'Translated all textures')
         return {'FINISHED'}
 
@@ -198,8 +217,14 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
             translated = []
             translations = translator.translate(to_translate)
+            steps = len(translations)
+            wm = bpy.context.window_manager
+            current_step = 0
+            wm.progress_begin(current_step, steps)
             for translation in translations:
                 translated.append(translation.text)
+                current_step += 1
+                wm.progress_update(current_step)
 
             i = 0
             for index, matslot in enumerate(mesh.material_slots):
@@ -209,6 +234,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
         tools.common.unselect_all()
 
+        wm.progress_end()
         self.report({'INFO'}, 'Translated all materials')
         return {'FINISHED'}
 
@@ -221,8 +247,15 @@ def translate_bones(dictionary):
     google_input = []
     google_output = []
 
+    steps = len(armature.bones)
+    wm = bpy.context.window_manager
+    current_step = 0
+    wm.progress_begin(current_step, steps)
+
     # Translate with the local mmd_tools dictionary
     for bone in armature.bones:
+        current_step += 1
+        wm.progress_update(current_step)
         translated_name = utils.convertNameToLR(bone.name, True)
         translated_name = translator.translate(translated_name)
         bone.name = translated_name
@@ -252,3 +285,5 @@ def translate_bones(dictionary):
             for index, name in enumerate(google_input):
                 if name in match:
                     bone.name = bone_name.replace(name, google_output[index])
+
+    wm.progress_end()

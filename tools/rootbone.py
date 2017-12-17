@@ -45,9 +45,6 @@ class RootButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        # PreserveState = tools.common.PreserveState()
-        # PreserveState.save()
-
         tools.common.set_default_stage()
 
         tools.common.switch('EDIT')
@@ -71,8 +68,6 @@ class RootButton(bpy.types.Operator):
 
         # reset the root bone cache
         globs.root_bones_choices = {}
-
-        # PreserveState.load()
 
         self.report({'INFO'}, 'Bones parented!')
 

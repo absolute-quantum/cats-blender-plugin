@@ -78,49 +78,6 @@ def set_default_stage():
     return armature
 
 
-class PreserveState():
-    state_data = {}
-
-    def save(self):
-        hidden = {}
-        for object in bpy.data.objects:
-            hidden[object.name] = object.hide
-
-        selected = {}
-        for object in bpy.data.objects:
-            selected[object.name] = object.select
-
-        self.state_data = {
-            'object_mode': bpy.context.active_object.mode,
-            'selection': selected,
-            'hidden': hidden,
-        }
-
-        return self.state_data
-
-    def load(self):
-        switch(self.state_data['object_mode'])
-        for object in bpy.data.objects:
-            try:
-                self.state_data['hidden'][object.name]
-            except KeyError:
-                object.hide = False
-                continue
-
-            object.hide = self.state_data['hidden'][object.name]
-
-        for object in bpy.data.objects:
-            try:
-                self.state_data['selection'][object.name]
-            except KeyError:
-                object.select = False
-                continue
-
-            object.select = self.state_data['selection'][object.name]
-
-        return self.state_data
-
-
 def remove_bone(find_bone):
     armature = get_armature()
     switch('EDIT')

@@ -103,6 +103,33 @@ class AutoVisemeButton(bpy.types.Operator):
         context.scene.mouth_ch = shapes[2]
 
     def execute(self, context):
+        wm = bpy.context.window_manager
+        tools.common.set_default_stage()
+        tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
+
+        # Rename selected shapes and rename them back at the end
+        renamed_shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
+        mesh = bpy.data.objects[context.scene.mesh_name_viseme]
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if shapekey.name == context.scene.mouth_a:
+                print(shapekey.name + " " + context.scene.mouth_a)
+                shapekey.name = shapekey.name + "_old"
+                context.scene.mouth_a = shapekey.name
+                renamed_shapes[0] = shapekey.name
+            if shapekey.name == context.scene.mouth_o:
+                print(shapekey.name + " " + context.scene.mouth_a)
+                if context.scene.mouth_a != context.scene.mouth_o:
+                    shapekey.name = shapekey.name + "_old"
+                context.scene.mouth_o = shapekey.name
+                renamed_shapes[1] = shapekey.name
+            if shapekey.name == context.scene.mouth_ch:
+                print(shapekey.name + " " + context.scene.mouth_a)
+                if context.scene.mouth_a != context.scene.mouth_ch and context.scene.mouth_o != context.scene.mouth_ch:
+                    shapekey.name = shapekey.name + "_old"
+                context.scene.mouth_ch = shapekey.name
+                renamed_shapes[2] = shapekey.name
+            wm.progress_update(index)
+
         shape_a = context.scene.mouth_a
         shape_o = context.scene.mouth_o
         shape_ch = context.scene.mouth_ch
@@ -211,37 +238,11 @@ class AutoVisemeButton(bpy.types.Operator):
             ]
         }
 
-        wm = bpy.context.window_manager
-        tools.common.set_default_stage()
-        tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
-
-        # Rename selected shapes and rename them back at the end
-        renamed_shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
-        mesh = bpy.data.objects[context.scene.mesh_name_viseme]
-        total_fors = len(mesh.data.shape_keys.key_blocks) + len(shapekey_data)
+        total_fors = len(shapekey_data)
         wm.progress_begin(0, total_fors)
-        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if shapekey.name == context.scene.mouth_a:
-                print(shapekey.name + " " + context.scene.mouth_a)
-                shapekey.name = shapekey.name + "_old"
-                context.scene.mouth_a = shapekey.name
-                renamed_shapes[0] = shapekey.name
-            if shapekey.name == context.scene.mouth_o:
-                print(shapekey.name + " " + context.scene.mouth_a)
-                if context.scene.mouth_a != context.scene.mouth_o:
-                    shapekey.name = shapekey.name + "_old"
-                context.scene.mouth_o = shapekey.name
-                renamed_shapes[1] = shapekey.name
-            if shapekey.name == context.scene.mouth_ch:
-                print(shapekey.name + " " + context.scene.mouth_a)
-                if context.scene.mouth_a != context.scene.mouth_ch and context.scene.mouth_o != context.scene.mouth_ch:
-                    shapekey.name = shapekey.name + "_old"
-                context.scene.mouth_ch = shapekey.name
-                renamed_shapes[2] = shapekey.name
-            wm.progress_update(index)
 
         # Add the shape keys
-        for key in shapekey_data:
+        for index, key in enumerate(shapekey_data):
             obj = shapekey_data[key]
             wm.progress_update(index)
             self.mix_shapekey(context, renamed_shapes, obj['mix'], obj['index'], key, context.scene.shape_intensity)
@@ -286,7 +287,6 @@ class AutoVisemeButton(bpy.types.Operator):
 
         # tools.common.repair_shapekeys()
 
-        # PreserveState.load()
         wm.progress_end()
 
         self.report({'INFO'}, 'Created mouth visemes!')

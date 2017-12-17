@@ -56,10 +56,6 @@ import tools.common
 import tools.supporter
 import tools.credits
 
-# Disabled for now, cya next version
-# import tools.error
-# importlib.reload(tools.error)
-
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
