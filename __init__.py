@@ -35,6 +35,7 @@ from collections import OrderedDict
 mmd_tools_installed = False
 try:
     import mmd_tools
+
     mmd_tools_installed = True
     print("mmd_tools found!")
 except:
@@ -353,12 +354,12 @@ class ToolPanel:
         name='Merge Ratio',
         description='Higher = more bones will be merged\n'
                     'Lower = less bones will be merged\n',
-        default=0.7,
-        min=0.0,
-        max=1.0,
-        step=0.1,
-        precision=2,
-        subtype='FACTOR'
+        default=50,
+        min=1,
+        max=100,
+        step=1,
+        precision=0,
+        subtype='PERCENTAGE'
     )
 
     bpy.types.Scene.merge_mesh = bpy.props.EnumProperty(
@@ -425,7 +426,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row.operator('armature_manual.mix_weights', icon='BONE_DATA')
 
         ob = bpy.context.active_object
-        if bpy.context.active_object  is None or ob.mode != 'POSE':
+        if bpy.context.active_object is None or ob.mode != 'POSE':
             row = col.row(align=True)
             row.scale_y = 1.05
             row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')
@@ -433,8 +434,6 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.05
             row.operator('armature_manual.stop_pose_mode', icon='POSE_DATA')
-
-
 
         # row = col.row(align=True)
         # row.scale_y = 1.1
@@ -696,6 +695,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'merge_ratio')
             row = box.row(align=True)
             col.separator()
+            row.operator('refresh.root', icon='FILE_REFRESH')
             row.operator('bone.merge', icon="AUTOMERGE_ON")
 
 
@@ -721,6 +721,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
 
         supporters = OrderedDict()
+        #       'Display name' = 'Icon name'
         supporters['Xeverian'] = 'xeverian'
         supporters['Tupper'] = 'tupper'
         supporters['Jazneo'] = 'jazneo'
@@ -735,13 +736,13 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         items = list(supporters.items())
         while cont:
             try:
-                items[i]
+                item = items[i]
                 if i == 0:
                     row.label('Thanks to our awesome supporters! <3')
                     col.separator()
                 if i % 3 == 0:
                     row = col.row(align=True)
-                row.operator('supporter.person', text=items[i][0], emboss=False, icon_value=preview_collections["custom_icons"][items[i][1]].icon_id)
+                row.operator('supporter.person', text=item[0], emboss=False, icon_value=preview_collections["custom_icons"][item[1]].icon_id)
                 i += 1
             except IndexError:
                 if i % 3 == 0:

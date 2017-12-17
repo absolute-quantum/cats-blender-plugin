@@ -43,7 +43,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 
 ## Model
-![](https://i.imgur.com/qMVb5AB.png)
+![](https://i.imgur.com/gw66CMj.png)
 
 A vastly improved combination of Neitri and Shotariya's blender plugins, it tries to fix and optimize the armature with one click.
 
@@ -206,13 +206,14 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 #### 0.4.0
 - Added: Model: A lot more models are now compatible (if not please report it to us)
-- Added: Bone Merging: A new feature that can reduce tree childs from a group set of bones
+- Added: Bone Merging: A new feature that can reduce huge groups of bones (useful for Dynamic Bones)
 - Added: Progress notification on serveral operations
-- Changed: Functions that need UI context are now excluded from the spacebar menu
 - Added: Model: Joining meshes now applies all unapplied decimation modifiers
 - Added: Model: New "Start/Stop Pose Mode" button
+- Changed: Functions that need UI context are now excluded from the spacebar menu
+- Changed: Separate by Materials: Improved search for the mesh
 - Fixed: Undo now works a lot better
-- Fixed: Buggy things
+- Fixed: Bugs, bugs and bugs
 
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)

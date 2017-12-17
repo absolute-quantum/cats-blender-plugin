@@ -27,7 +27,6 @@
 import bpy
 import globs
 import tools.common
-import bpy
 
 # wm = bpy.context.window_manager
 # wm.progress_begin(0, len(bone_merge))
@@ -40,6 +39,98 @@ class BoneMergeButton(bpy.types.Operator):
     bl_label = 'Merge Bones'
     bl_description = 'Merges the bones'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.merge_mesh == "" or context.scene.merge_bone == "":
+            return False
+        return True
+
+    def execute(self, context):
+        armature = tools.common.set_default_stage()
+
+        parent_bones = globs.root_bones[context.scene.merge_bone]
+        mesh = bpy.data.objects[context.scene.merge_mesh]
+        ratio = context.scene.merge_ratio
+        print(ratio)
+
+        # Start the bone check for every parent
+        for bone_name in parent_bones:
+            bone = armature.data.bones.get(bone_name)
+            if bone is None:
+                continue
+
+            for child in bone.children:
+                self.check_bone(mesh, child, ratio, ratio)
+
+        self.report({'INFO'}, 'Merged bones.')
+        return {'FINISHED'}
+
+    # Go through this until the last child is reached
+    def check_bone(self, mesh, bone, ratio, i):
+        if bone is None:
+            print('END FOUND')
+            return
+
+        # Increase number by the ratio
+        i += ratio
+        bone_name = bone.name
+
+        # Get all children names
+        children = []
+        for child in bone.children:
+            children.append(child.name)
+
+        # Check if bone will be merged
+        if i >= 100:
+            i -= 100
+
+            if bone.parent is not None:
+                parent_name = bone.parent.name
+
+                print('Merging ' + bone_name + ' into ' + parent_name+ ' with ratio ' + str(i) )
+
+                # # Set new parent bone position
+                # armature = tools.common.set_default_stage()
+                # tools.common.switch('EDIT')
+                #
+                # child = armature.data.edit_bones.get(bone_name)
+                # parent = armature.data.edit_bones.get(parent_name)
+                # parent.tail = child.tail
+
+                # Mix the weights
+                tools.common.set_default_stage()
+                tools.common.select(mesh)
+
+                vg = mesh.vertex_groups.get(bone_name)
+                if vg is not None:
+                    # NOTE: Mixes B into A
+                    bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
+                    bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = parent_name
+                    bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = bone_name
+                    bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
+                    bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
+                    bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+                    mesh.vertex_groups.remove(vg)
+
+                tools.common.set_default_stage()
+
+                # We are done, remove the bone
+                tools.common.remove_bone(bone_name)
+
+        armature = tools.common.set_default_stage()
+        for child in children:
+            bone = armature.data.bones.get(child)
+            if bone is not None:
+                self.check_bone(mesh, bone, ratio, i)
+
+
+
+
+
+
+
+
 
     # used internally for get_all_childs only because get_all_childs is a recursive function
     child_bones = []
@@ -62,7 +153,7 @@ class BoneMergeButton(bpy.types.Operator):
         self.child_bones = []
         return for_now
 
-    def execute(self, context):
+    def execute2(self, context):
         wm = bpy.context.window_manager
 
         parent_bones = globs.root_bones[context.scene.merge_bone]

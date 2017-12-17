@@ -317,12 +317,18 @@ def join_meshes(context):
     for mesh in get_meshes_objects():
         select(mesh)
         for mod in mesh.modifiers:
-            if mod.name == 'Decimate':
+            if 'Decimate' in mod.name:
+                if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
+                    bpy.ops.object.modifier_remove(modifier=mod.name)
+                    continue
+                if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
+                    bpy.ops.object.modifier_remove(modifier=mod.name)
+                    continue
+
                 if mesh.data.shape_keys is not None:
                     for key in mesh.data.shape_keys.key_blocks:
                         mesh.shape_key_remove(key)
-                bpy.ops.object.modifier_apply(apply_as='DATA', modifier="Decimate")
-                break
+                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
         unselect_all()
 
     # Select all meshes
@@ -341,7 +347,7 @@ def join_meshes(context):
                 ob.name = 'Body'
                 mesh = ob
                 for mod in mesh.modifiers:
-                    bpy.context.object.modifiers[mod.name].show_expanded = False
+                    mod.show_expanded = False
                 break
 
     reset_context_scenes(context)

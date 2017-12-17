@@ -155,7 +155,8 @@ class JoinMeshes(bpy.types.Operator):
         i = 0
         for ob in bpy.data.objects:
             if ob.type == 'MESH':
-                i += 1
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
         return i > 0
 
     def execute(self, context):
@@ -178,7 +179,16 @@ class SeparateByMaterials(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         obj = context.active_object
-        return obj and obj.type == 'MESH'
+
+        if obj and obj.type == 'MESH':
+            return True
+
+        i = 0
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
+        return i == 1
 
     @staticmethod
     def __can_remove(key_block):
@@ -206,8 +216,24 @@ class SeparateByMaterials(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.active_object
-        utils.separateByMaterials(obj)
 
+        if obj and obj.type != 'MESH':
+            tools.common.unselect_all()
+            meshes = tools.common.get_meshes_objects()
+            if len(meshes) == 0:
+                return {'FINISHED'}
+            obj = meshes[0]
+            tools.common.select(obj)
+
+        for mod in obj.modifiers:
+            if 'Decimate' in mod.name:
+                bpy.ops.object.modifier_remove(modifier=mod.name)
+            else:
+                mod.show_expanded = False
+
+        tools.common.set_default_stage()
+
+        utils.separateByMaterials(obj)
         for ob in context.selected_objects:
             if ob.type != 'MESH' or ob.data.shape_keys is None:
                 continue
