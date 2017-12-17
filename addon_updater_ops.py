@@ -853,8 +853,9 @@ def update_settings_ui(self, context):
         #col.operator(addon_updater_update_target.bl_idname,
         if updater.include_branches == True and len(updater.include_branch_list)>0:
             branch = updater.include_branch_list[0]
+            col.scale_y = 2
             col.operator(addon_updater_update_target.bl_idname,
-                    "Install latest {} / old version".format(branch))
+                    "Select Version".format(branch))
         else:
             col.scale_y = 2
             col.operator(addon_updater_update_target.bl_idname,
@@ -946,7 +947,7 @@ def register(bl_info):
     # **WARNING** Depending on the engine, this token can act like a password!!
     # Only provide a token if the project is *non-public*, see readme for
     # other considerations and suggestions from a security standpoint
-    updater.private_token = None # "tokenstring"
+    updater.private_token = None  # "tokenstring"
 
     # choose your own username, must match website (not needed for GitLab)
     updater.user = "michaeldegroot"
@@ -954,7 +955,7 @@ def register(bl_info):
     # choose your own repository, must match git name
     updater.repo = "cats-blender-plugin"
 
-    #updater.addon = # define at top of module, MUST be done first
+    # updater.addon = # define at top of module, MUST be done first
 
     # Website for manual addon download, optional but recommended to set
     updater.website = "https://github.com/michaeldegroot/cats-blender-plugin"
@@ -964,12 +965,11 @@ def register(bl_info):
 
     # Optional, to hard-set update frequency, use this here - however,
     # this demo has this set via UI properties.
-    # updater.set_check_interval(
-    #       enable=False,months=0,days=0,hours=0,minutes=2)
+    updater.set_check_interval(enable=True, months=0, days=1, hours=0, minutes=0)
 
     # Optional, consider turning off for production or allow as an option
     # This will print out additional debugging info to the console
-    updater.verbose = True # make False for production default
+    updater.verbose = True  # make False for production default
 
     # Optional, customize where the addon updater processing subfolder is,
     # essentially a staging folder used by the updater on its own
@@ -979,12 +979,12 @@ def register(bl_info):
     #           /addons/{__package__}/{__package__}_updater
 
     # auto create a backup of the addon when installing other versions
-    updater.backup_current = False # True by default
+    updater.backup_current = False  # True by default
 
     # Sample ignore patterns for when creating backup of current during update
-    updater.backup_ignore_patterns = ["__pycache__"]
     # Alternate example patterns
     # updater.backup_ignore_patterns = [".git", "__pycache__", "*.bat", ".gitignore", "*.exe"]
+    updater.backup_ignore_patterns = ["*"]
 
     # Patterns for files to actively overwrite if found in new update
     # file and are also found in the currently installed addon. Note that
@@ -994,7 +994,7 @@ def register(bl_info):
     # if you want to automatically update resources/non py files, add them
     # as a part of the pattern list below so they will always be overwritten
     # If a pattern file is not found in new update, no action is taken
-    updater.overwrite_patterns = ["*.png","README.md","LICENSE.txt"]
+    updater.overwrite_patterns = ["*"]
     # updater.overwrite_patterns = []
     # other examples:
     # ["*"] means ALL files/folders will be overwritten by update, was the behavior pre updater v1.0.4
@@ -1011,7 +1011,7 @@ def register(bl_info):
     # file name removed exists in the update, then it acts as if pattern
     # is placed in the overwrite_patterns property. Note this is effectively
     # ignored if clean=True in the run_update method
-    updater.remove_pre_update_patterns = ["*.py", "*.pyc"]
+    updater.remove_pre_update_patterns = ["*"]
     # Note setting ["*"] here is equivalent to always running updates with
     # clean = True in the run_update method, ie the equivalent of a fresh,
     # new install. This would also delete any resources or user-made/modified
@@ -1026,13 +1026,13 @@ def register(bl_info):
     # but the user has the option from user preferences to directly
     # update to the master branch or any other branches specified using
     # the "install {branch}/older version" operator.
-    updater.include_branches = False
+    updater.include_branches = True
 
     # if using "include_branches",
     # updater.include_branch_list defaults to ['master'] branch if set to none
     # example targeting another multiple branches allowed to pull from
     # updater.include_branch_list = ['master', 'dev'] # example with two branches
-    updater.include_branch_list = None  # is the equivalent to setting ['master']
+    updater.include_branch_list = ['development']  # is the equivalent to setting ['master']
 
     # Only allow manual install, thus prompting the user to open
     # the addon's web page to download, specifically: updater.website
@@ -1042,21 +1042,21 @@ def register(bl_info):
 
     # Used for development only, "pretend" to install an update to test
     # reloading conditions
-    updater.fake_install = False # Set to true to test callback/reloading
+    updater.fake_install = False  # Set to true to test callback/reloading
 
     # Override with a custom function on what tags
     # to skip showing for updater; see code for function above.
     # Set the min and max versions allowed to install.
     # Optional, default None
     # min install (>=) will install this and higher
-    updater.version_min_update = (0,0,2)
+    updater.version_min_update = (0, 0, 2)
     # updater.version_min_update = None  # if not wanting to define a min
 
     # max install (<) will install strictly anything lower
     # updater.version_max_update = (9,9,9)
     updater.version_max_update = None  # if not wanting to define a max
 
-    updater.skip_tag = skip_tag_function # min and max used in this function
+    updater.skip_tag = skip_tag_function  # min and max used in this function
 
     # The register line items for all operators/panels
     # If using bpy.utils.register_module(__name__) to register elsewhere

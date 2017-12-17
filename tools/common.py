@@ -352,7 +352,7 @@ def get_meshes_objects():
     return meshes
 
 
-def join_meshes():
+def join_meshes(context):
     set_default_stage()
     unselect_all()
 
@@ -387,7 +387,21 @@ def join_meshes():
                     bpy.context.object.modifiers[mod.name].show_expanded = False
                 break
 
+    reset_context_scenes(context)
+
     return mesh
+
+
+def reset_context_scenes(context):
+    context.scene.head = get_bones_head(None, context)[0][0]
+    context.scene.eye_left = get_bones_eye_l(None, context)[0][0]
+    context.scene.eye_right = get_bones_eye_r(None, context)[0][0]
+
+    mesh = get_meshes(None, context)[0][0]
+    context.scene.mesh_name_eye = mesh
+    context.scene.mesh_name_viseme = mesh
+    context.scene.mesh_name_atlas = mesh
+    context.scene.merge_mesh = mesh
 
 
 def repair_viseme_order(mesh_name):

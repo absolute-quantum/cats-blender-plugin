@@ -699,7 +699,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'merge_ratio')
             row = box.row(align=True)
             col.separator()
-            row.operator('bone.merge', icon_value=preview_collections["custom_icons"]["merge"].icon_id)
+            row.operator('bone.merge', icon="AUTOMERGE_ON")
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
@@ -726,11 +726,9 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         row = col.row(align=True)
-        row.scale_y = 0.9
-        row.operator('supporter.person', text='Jazneo', emboss=False, icon_value=preview_collections["custom_icons"]["jazneo"].icon_id)
-        row.operator('supporter.person', text='Tupper', emboss=False, icon_value=preview_collections["custom_icons"]["tupper"].icon_id)
         row.operator('supporter.person', text='Xeverian', emboss=False, icon_value=preview_collections["custom_icons"]["xeverian"].icon_id)
-        row.scale_y = 1.4
+        row.operator('supporter.person', text='Tupper', emboss=False, icon_value=preview_collections["custom_icons"]["tupper"].icon_id)
+        row.operator('supporter.person', text='Jazneo', emboss=False, icon_value=preview_collections["custom_icons"]["jazneo"].icon_id)
         row = col.row(align=True)
         row.operator('supporter.person', text='Idea', emboss=False, icon_value=preview_collections["custom_icons"]["idea"].icon_id)
         row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
@@ -741,6 +739,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.label('')
         row = col.row(align=True)
         row.separator()
+        row = col.row(align=True)
         row.label('Do you like this plugin and want to support us?')
         row = col.row(align=True)
         row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
@@ -784,9 +783,9 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord2"].icon_id)
 
         row = col.row(align=True)
-        row.operator('credits.forum', icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
-        row = col.row(align=True)
         row.operator('credits.discord', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
+        row = col.row(align=True)
+        row.operator('credits.forum', icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
