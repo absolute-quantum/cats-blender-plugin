@@ -88,7 +88,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
     bl_label = 'Bones'
-    bl_description = "Translates all bones with the build-in dictionary and the untranslated parts with Google Translate."
+    bl_description = 'Translates all bones with the build-in dictionary and the untranslated parts with Google Translate.\n' \
+                     'Only available if there is Armature.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     dictionary = bpy.props.EnumProperty(
@@ -96,6 +97,12 @@ class TranslateBonesButton(bpy.types.Operator):
         items=DictionaryEnum.get_dictionary_items,
         description='Translate names from Japanese to English using selected dictionary',
     )
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature() is None:
+            return False
+        return True
 
     def execute(self, context):
         tools.common.unhide_all()
