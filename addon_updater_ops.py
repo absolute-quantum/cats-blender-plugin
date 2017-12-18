@@ -969,7 +969,7 @@ def register(bl_info):
     # updater.addon = # define at top of module, MUST be done first
 
     # Website for manual addon download, optional but recommended to set
-    updater.website = "https://github.com/michaeldegroot/cats-blender-plugin"
+    updater.website = "https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip"
 
     # used to check/compare versions
     updater.current_version = bl_info["version"]
