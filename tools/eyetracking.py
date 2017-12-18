@@ -124,8 +124,8 @@ class CreateEyesButton(bpy.types.Operator):
         new_right_eye.parent = bpy.context.object.data.edit_bones[context.scene.head]
 
         # Calculate their new positions
-        fix_eye_position(context, old_eye_left, new_left_eye, head)
-        fix_eye_position(context, old_eye_right, new_right_eye, head)
+        fix_eye_position(context, old_eye_left, new_left_eye, head, False)
+        fix_eye_position(context, old_eye_right, new_right_eye, head, True)
 
         # Switch to mesh
         bpy.context.scene.objects.active = bpy.data.objects[mesh_name]
@@ -135,6 +135,14 @@ class CreateEyesButton(bpy.types.Operator):
         if not context.scene.disable_eye_movement:
             self.copy_vertex_group(mesh_name, old_eye_left.name, 'LeftEye')
             self.copy_vertex_group(mesh_name, old_eye_right.name, 'RightEye')
+        else:
+            # Remove the vertex groups if no blink is enabled
+            mesh = bpy.data.objects[mesh_name]
+            bones = ['LeftEye', 'RightEye']
+            for bone in bones:
+                group = mesh.vertex_groups.get(bone)
+                if group is not None:
+                    mesh.vertex_groups.remove(group)
 
         # Store shape keys to ignore changes during copying
         shapes = [context.scene.wink_left, context.scene.wink_right, context.scene.lowerlid_left, context.scene.lowerlid_right]
@@ -272,45 +280,6 @@ class CreateEyesButton(bpy.types.Operator):
         mesh.active_shape_key_index = 0
         return from_shape
 
-    def fix_eye_position(self, context, old_eye, new_eye, head):
-        # Verify that the new eye bone is in the correct position
-        # by comparing the old eye vertex group average vector location
-        mesh_name = context.scene.mesh_name_eye
-        scale = -context.scene.eye_distance + 1
-
-        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eye.name)
-
-        if coords_eye is False:
-            return
-
-        mesh = bpy.data.objects[mesh_name]
-        p1 = mesh.matrix_world * head.head
-        p2 = mesh.matrix_world * coords_eye
-        length = (p1 - p2).length
-        print(length)  # TODO calculate scale if bone is too close to center of the eye
-
-        # dist = math.sqrt((coords_eye[0] - head.head[0]) ** 2 + (coords_eye[1] - head.head[1]) ** 2 + (coords_eye[2] - head.head[2]) ** 2)
-        # dist2 = np.linalg.norm(coords_eye - head.head)
-        # dist3 = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 + (p1[2] - p2[2]) ** 2)
-        #dist4 = np.linalg.norm(p1 - p2)
-        # print(dist)
-        # print(dist2)
-        # print(2 ** 2)
-        #print(dist4)
-
-        if context.scene.disable_eye_movement:
-            new_eye.head[0] = head.head[0]
-            new_eye.head[1] = head.head[1]
-            new_eye.head[2] = head.head[2]
-        else:
-            new_eye.head[0] = old_eye.head[0] + scale * (coords_eye[0] - old_eye.head[0])
-            new_eye.head[1] = old_eye.head[1] + scale * (coords_eye[1] - old_eye.head[1])
-            new_eye.head[2] = old_eye.head[2] + scale * (coords_eye[2] - old_eye.head[2])
-
-        new_eye.tail[0] = new_eye.head[0]
-        new_eye.tail[1] = new_eye.head[1]
-        new_eye.tail[2] = new_eye.head[2] + 0.2
-
 
 # Repair vrc shape keys
 def repair_shapekeys(mesh_name, vertex_group):
@@ -391,7 +360,7 @@ def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
     if i == 0:
         print('Error: Random shapekey repairing failed for some reason! Canceling!')
 
-def fix_eye_position(context, old_eye, new_eye, head):
+def fix_eye_position(context, old_eye, new_eye, head, right_side):
     # Verify that the new eye bone is in the correct position
     # by comparing the old eye vertex group average vector location
     mesh_name = context.scene.mesh_name_eye
@@ -423,7 +392,10 @@ def fix_eye_position(context, old_eye, new_eye, head):
 
     if context.scene.disable_eye_movement:
         if head is not None:
-            new_eye.head[0] = head.head[0]
+            if right_side:
+                new_eye.head[0] = head.head[0] + 0.05
+            else:
+                new_eye.head[0] = head.head[0] - 0.05
             new_eye.head[1] = head.head[1]
             new_eye.head[2] = head.head[2]
     else:
@@ -554,6 +526,8 @@ class AdjustEyesButton(bpy.types.Operator):
         return False
 
     def execute(self, context):
+        if context.scene.disable_eye_movement:
+            return {'FINISHED'}
 
         armature = tools.common.set_default_stage()
         tools.common.switch('EDIT')
@@ -563,8 +537,8 @@ class AdjustEyesButton(bpy.types.Operator):
         old_eye_left = armature.pose.bones.get(context.scene.eye_left)
         old_eye_right = armature.pose.bones.get(context.scene.eye_right)
 
-        fix_eye_position(context, old_eye_left, eye_left, None)
-        fix_eye_position(context, old_eye_right, eye_right, None)
+        fix_eye_position(context, old_eye_left, eye_left, None, False)
+        fix_eye_position(context, old_eye_right, eye_right, None, True)
 
         tools.common.switch('POSE')
         return {'FINISHED'}
