@@ -16,6 +16,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Creating root bones for Dynamic Bones
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
+ - Merging bone groups to reduce overall bone count
  - Auto updater
 
 *More to come!*
@@ -194,6 +195,23 @@ The mesh that you want to create an atlas from
 ##### One Texture Material
 Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
 **If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
+
+
+## Bone merging
+
+![](https://i.imgur.com/S88JLJd.png)
+
+**Lets you reduce overall bone count in a group set of bones**
+This works by checking all bones and trying to figure out if they can be grouped together, which will appear in a list for you to choose from. After satisfied with the selection of this group you can then set a percentage value how much bones you would like to merge together in itself and press 'Merge bones'
+
+##### To merge
+This is a list of bones that look like they could be merged together. Select a group of bones from the list and press "Merge bones"
+
+##### Refresh list
+This will clear the group bones list cache and rebuild it, useful if bones have changed or your model
+
+##### Merge bones
+This will start the merge process
 
 
 ## Update Plugin
