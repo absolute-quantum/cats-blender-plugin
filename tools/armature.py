@@ -96,7 +96,37 @@ bone_list_rename = {
     'Elbow_L': 'Left elbow',
     'Elbow_R': 'Right elbow',
     'Wrist_L': 'Left wrist',
-    'Wrist_R': 'Right wrist'
+    'Wrist_R': 'Right wrist',
+
+    # Typical Mixamo Rig
+    'Mixamorig:Hips': 'Hips',
+    'Mixamorig:Spine': 'Spine',
+    'Mixamorig:Spine1': 'Chest',
+    'Mixamorig:Spine2': 'NewChest',
+    'Mixamorig:Neck': 'Neck',
+    'Mixamorig:Head': 'Head',
+    'Mixamorig:LeftEye': 'Eye_L',
+    'Mixamorig:RightEye': 'Eye_R',
+
+    'Mixamorig:LeftShoulder': 'Left shoulder',
+    'Mixamorig:LeftArm': 'Left arm',
+    'Mixamorig:LeftForeArm': 'Left elbow',
+    'Mixamorig:LeftHand': 'Left wrist',
+
+    'Mixamorig:RightShoulder': 'Right shoulder',
+    'Mixamorig:RightArm': 'Right arm',
+    'Mixamorig:RightForeArm': 'Right elbow',
+    'Mixamorig:RightHand': 'Right wrist',
+
+    'Mixamorig:LeftUpLeg': 'Left leg',
+    'Mixamorig:LeftLeg': 'Left knee',
+    'Mixamorig:LeftFoot': 'Left ankle',
+    'Mixamorig:LeftToeBase': 'Left toe',
+
+    'Mixamorig:RightUpLeg': 'Right leg',
+    'Mixamorig:RightLeg': 'Right knee',
+    'Mixamorig:RightFoot': 'Right ankle',
+    'Mixamorig:RightToeBase': 'Right toe'
 }
 bone_list_rename_unknown_side = {
     'Shoulder': 'shoulder',
@@ -115,12 +145,14 @@ bone_list_parenting = {
     'Right elbow': 'Right arm',
     'Left wrist': 'Left elbow',
     'Right wrist': 'Right elbow',
+    'Left leg': 'Hips',
+    'Right leg': 'Hips',
     'Left knee': 'Left leg',
     'Right knee': 'Right leg',
     'Left ankle': 'Left knee',
     'Right ankle': 'Right knee',
     'Left toe': 'Left ankle',
-    'Right toe': 'Right ankle',
+    'Right toe': 'Right ankle'
 }
 bone_list_weight = {
     'LowerBody1': 'Hips',
@@ -483,6 +515,13 @@ class FixArmature(bpy.types.Operator):
                 if bone is not None:
                     bone.name = value
 
+        # Check if it is a mixamo model
+        mixamo = False
+        for bone in armature.data.edit_bones:
+            if not mixamo and 'Mixamo' in bone.name:
+                mixamo = True
+                break
+
         # Rename bones which don't have a side and try to detect it automatically
         for key, value in bone_list_rename_unknown_side.items():
             current_step += 1
@@ -606,63 +645,64 @@ class FixArmature(bpy.types.Operator):
                         armature.data.edit_bones.remove(old_chest)
 
         # Hips bone should be fixed as per specification from the SDK code
-        if 'Hips' in armature.data.edit_bones:
-            if 'Left leg' in armature.data.edit_bones:
-                if 'Right leg' in armature.data.edit_bones:
-                    hip_bone = armature.data.edit_bones.get('Hips')
-                    left_leg = armature.data.edit_bones.get('Left leg')
-                    right_leg = armature.data.edit_bones.get('Right leg')
-                    right_knee = armature.data.edit_bones.get('Right knee')
-                    left_knee = armature.data.edit_bones.get('Left knee')
-                    spine = armature.data.edit_bones.get('Spine')
-                    chest = armature.data.edit_bones.get('Chest')
-                    neck = armature.data.edit_bones.get('Neck')
-                    head = armature.data.edit_bones.get('Head')
+        if not mixamo:
+            if 'Hips' in armature.data.edit_bones:
+                if 'Left leg' in armature.data.edit_bones:
+                    if 'Right leg' in armature.data.edit_bones:
+                        hip_bone = armature.data.edit_bones.get('Hips')
+                        left_leg = armature.data.edit_bones.get('Left leg')
+                        right_leg = armature.data.edit_bones.get('Right leg')
+                        right_knee = armature.data.edit_bones.get('Right knee')
+                        left_knee = armature.data.edit_bones.get('Left knee')
+                        spine = armature.data.edit_bones.get('Spine')
+                        chest = armature.data.edit_bones.get('Chest')
+                        neck = armature.data.edit_bones.get('Neck')
+                        head = armature.data.edit_bones.get('Head')
 
-                    full_body_tracking = False
+                        full_body_tracking = False
 
-                    # Fixing the hips
-                    if not full_body_tracking:
-                        # Hips should have x value of 0 in both head and tail
-                        hip_bone.head[0] = 0
-                        hip_bone.tail[0] = 0
+                        # Fixing the hips
+                        if not full_body_tracking:
+                            # Hips should have x value of 0 in both head and tail
+                            hip_bone.head[0] = 0
+                            hip_bone.tail[0] = 0
 
-                        # Make sure the hips bone (tail and head tip) is aligned with the legs Y
-                        hip_bone.head[1] = right_leg.head[1]
-                        hip_bone.tail[1] = right_leg.head[1]
+                            # Make sure the hips bone (tail and head tip) is aligned with the legs Y
+                            hip_bone.head[1] = right_leg.head[1]
+                            hip_bone.tail[1] = right_leg.head[1]
 
-                        # Flip the hips bone and make sure the hips bone is not below the legs bone
-                        hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
-                        hip_bone.head[2] = right_leg.head[2]
-                        hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
+                            # Flip the hips bone and make sure the hips bone is not below the legs bone
+                            hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
+                            hip_bone.head[2] = right_leg.head[2]
+                            hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
 
-                    elif spine is not None and chest is not None and neck is not None and head is not None:
-                        bones = [hip_bone, spine, chest, neck, head]
-                        for bone in bones:
-                            bone_length = abs(bone.tail[2] - bone.head[2])
-                            bone.tail[0] = bone.head[0]
-                            bone.tail[1] = bone.head[1]
-                            bone.tail[2] = bone.head[2] + bone_length
+                        elif spine is not None and chest is not None and neck is not None and head is not None:
+                            bones = [hip_bone, spine, chest, neck, head]
+                            for bone in bones:
+                                bone_length = abs(bone.tail[2] - bone.head[2])
+                                bone.tail[0] = bone.head[0]
+                                bone.tail[1] = bone.head[1]
+                                bone.tail[2] = bone.head[2] + bone_length
 
-                    # Fixing legs
-                    if right_knee is not None and left_knee is not None:
-                        # Make sure the upper legs tail are the same x/y values as the lower leg tail x/y
-                        right_leg.tail[0] = right_knee.head[0]
-                        left_leg.tail[0] = left_knee.head[0]
-                        right_leg.head[1] = right_knee.head[1]
-                        left_leg.head[1] = left_knee.head[1]
+                        # Fixing legs
+                        if right_knee is not None and left_knee is not None:
+                            # Make sure the upper legs tail are the same x/y values as the lower leg tail x/y
+                            right_leg.tail[0] = right_knee.head[0]
+                            left_leg.tail[0] = left_knee.head[0]
+                            right_leg.head[1] = right_knee.head[1]
+                            left_leg.head[1] = left_knee.head[1]
 
-                        # Make sure the leg bones are setup straight. (head should be same X as tail)
-                        left_leg.head[0] = left_leg.tail[0]
-                        right_leg.head[0] = right_leg.tail[0]
+                            # Make sure the leg bones are setup straight. (head should be same X as tail)
+                            left_leg.head[0] = left_leg.tail[0]
+                            right_leg.head[0] = right_leg.tail[0]
 
-                        # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
-                        left_leg.head[1] = right_leg.head[1]
+                            # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
+                            left_leg.head[1] = right_leg.head[1]
 
-                    # Roll should be disabled on legs and hips
-                    left_leg.roll = 0
-                    right_leg.roll = 0
-                    hip_bone.roll = 0
+                        # Roll should be disabled on legs and hips
+                        left_leg.roll = 0
+                        right_leg.roll = 0
+                        hip_bone.roll = 0
 
         # Reparent all bones to be correct for unity mapping and vrc itself
         for key, value in bone_list_parenting.items():

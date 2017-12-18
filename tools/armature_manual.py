@@ -65,7 +65,8 @@ class ImportModel(bpy.types.Operator):
 class StartPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.start_pose_mode'
     bl_label = 'Start Pose Mode'
-    bl_description = 'Start the pose mode.'
+    bl_description = 'Starts the pose mode.\n' \
+                     'This lets you test how bones will move.'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -112,7 +113,7 @@ class StartPoseMode(bpy.types.Operator):
 class StopPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.stop_pose_mode'
     bl_label = 'Stop Pose Mode'
-    bl_description = 'Stop the pose mode and reset the pose to normal.'
+    bl_description = 'Stops the pose mode and resets the pose to normal.'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod

@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Code author: GiveMeAllYourCats
+# Code author: Hotox
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats
 
@@ -37,7 +37,8 @@ import tools.common
 class BoneMergeButton(bpy.types.Operator):
     bl_idname = 'bone.merge'
     bl_label = 'Merge Bones'
-    bl_description = 'Merges the bones'
+    bl_description = 'Merges the given percentage of bones together.\n' \
+                     'This is useful to reduce the amount of bones used by Dynamic Bones.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -103,7 +104,8 @@ class BoneMergeButton(bpy.types.Operator):
                 tools.common.select(mesh)
 
                 vg = mesh.vertex_groups.get(bone_name)
-                if vg is not None:
+                vg2 = mesh.vertex_groups.get(parent_name)
+                if vg is not None and vg2 is not None:
                     # NOTE: Mixes B into A
                     bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
                     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = parent_name

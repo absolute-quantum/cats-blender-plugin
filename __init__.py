@@ -89,6 +89,18 @@ slider_z = 0
 # global variable to store icons in
 preview_collections = {}
 
+# List all the supporters here
+supporters = OrderedDict()
+#       'Display name' = 'Icon name'
+supporters['Xeverian'] = 'xeverian'
+supporters['Tupper'] = 'tupper'
+supporters['Jazneo'] = 'jazneo'
+supporters['Idea'] = 'idea'
+supporters['RadaruS'] = 'radarus'
+supporters['Kry10'] = 'kry10'
+supporters['smead'] = 'smead'
+supporters['kohai.istool'] = 'kohai'
+
 
 class ToolPanel:
     bl_label = 'Cats Blender Plugin'
@@ -686,7 +698,6 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.operator('one.tex', icon='TEXTURE')
 
         if context.scene.optimize_mode == 'BONEMERGING':
-            col.separator()
             row = box.row(align=True)
             row.prop(context.scene, 'merge_mesh')
             row = box.row(align=True)
@@ -719,17 +730,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
         row = col.row(align=True)
-
-        supporters = OrderedDict()
-        #       'Display name' = 'Icon name'
-        supporters['Xeverian'] = 'xeverian'
-        supporters['Tupper'] = 'tupper'
-        supporters['Jazneo'] = 'jazneo'
-        supporters['Idea'] = 'idea'
-        supporters['RadaruS'] = 'radarus'
-        supporters['Kry10'] = 'kry10'
-        supporters['smead'] = 'smead'
-        supporters['kohai.istool'] = 'kohai'
 
         i = 0
         cont = True
@@ -861,14 +861,13 @@ def load_icons():
     pcoll.load('patreon1', os.path.join(my_icons_dir, 'patreon1.png'), 'IMAGE')
     pcoll.load('patreon2', os.path.join(my_icons_dir, 'patreon2.png'), 'IMAGE')
     pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
-    pcoll.load('tupper', os.path.join(my_icons_dir, 'supporters/tupper.png'), 'IMAGE')
-    pcoll.load('xeverian', os.path.join(my_icons_dir, 'supporters/xeverian.png'), 'IMAGE')
-    pcoll.load('jazneo', os.path.join(my_icons_dir, 'supporters/jazneo.png'), 'IMAGE')
-    pcoll.load('idea', os.path.join(my_icons_dir, 'supporters/idea.png'), 'IMAGE')
-    pcoll.load('radarus', os.path.join(my_icons_dir, 'supporters/radarus.png'), 'IMAGE')
-    pcoll.load('kry10', os.path.join(my_icons_dir, 'supporters/kry10.png'), 'IMAGE')
-    pcoll.load('smead', os.path.join(my_icons_dir, 'supporters/smead.png'), 'IMAGE')
-    pcoll.load('kohai', os.path.join(my_icons_dir, 'supporters/kohai.png'), 'IMAGE')
+
+    # load the supporters icons
+    for key, value in supporters.items():
+        try:
+            pcoll.load(value, os.path.join(my_icons_dir, 'supporters/' + value + '.png'), 'IMAGE')
+        except KeyError:
+            pass
 
     preview_collections['custom_icons'] = pcoll
 
