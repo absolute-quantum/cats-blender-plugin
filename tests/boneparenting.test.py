@@ -30,9 +30,9 @@ import bpy
 
 
 class TestAddon(unittest.TestCase):
-    def test_bonemerging(self):
+    def test_boneparenting(self):
         bpy.ops.refresh.root()
-        bpy.ops.bone.merge()
+        bpy.ops.root.function()
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)
