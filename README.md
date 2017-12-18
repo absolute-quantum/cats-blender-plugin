@@ -229,6 +229,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Progress notification on serveral operations
 - Added: Model: Joining meshes now applies all unapplied decimation modifiers
 - Added: Model: New "Start/Stop Pose Mode" button
+- Added: Updater: Development branch added to version selection
 - Changed: Functions that need UI context are now excluded from the spacebar menu
 - Changed: Separate by Materials: Improved search for the mesh
 - Fixed: Undo now works better
