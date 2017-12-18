@@ -207,12 +207,13 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 #### 0.4.0
 - Added: Model: A lot more models are now compatible (if not please report it to us)
 - Added: Bone Merging: A new feature that can reduce huge groups of bones (useful for Dynamic Bones)
+- Added: Model: Mixamo models are now fixable!
 - Added: Progress notification on serveral operations
 - Added: Model: Joining meshes now applies all unapplied decimation modifiers
 - Added: Model: New "Start/Stop Pose Mode" button
 - Changed: Functions that need UI context are now excluded from the spacebar menu
 - Changed: Separate by Materials: Improved search for the mesh
-- Fixed: Undo now works a lot better
+- Fixed: Undo now works better
 - Fixed: Bugs, bugs and bugs
 
 #### 0.3.0
