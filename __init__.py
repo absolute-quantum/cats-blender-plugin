@@ -100,6 +100,7 @@ supporters['RadaruS'] = 'radarus'
 supporters['Kry10'] = 'kry10'
 supporters['smead'] = 'smead'
 supporters['kohai.istool'] = 'kohai'
+supporters['Str4fe'] = 'Str4fe'
 
 
 class ToolPanel:
@@ -384,22 +385,6 @@ class ToolPanel:
         name='To Merge',
         description='List of bones that look like they could be marged together to reduce overall bones.',
         items=tools.rootbone.get_parent_root_bones,
-    )
-
-    # Supporter
-    bpy.types.Scene.supporters = bpy.props.EnumProperty(
-        name="Supporters",
-        description="These are our wonderful patrons <3",
-        items=[
-            ("A", "Jazneo", "Thank you, Jazneo <3"),
-            ("B", "Tupper", "Thank you, Tupper <3"),
-            ("C", "Xeverian", "Thank you, Xeverian <3"),
-            ("D", "Idea", "Thank you, Idea <3"),
-            ("E", "RadaruS", "Thank you, RaderuS <3"),
-            ("F", "Kry10", "Thank you, Kry10 <3"),
-            ("G", "smead", "Thank you, smead <3"),
-            ("H", "kohai.istool", "Thank you, kohai.istool <3"),
-        ]
     )
 
 

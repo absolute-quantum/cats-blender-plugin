@@ -302,6 +302,10 @@ bone_list_weight = {
     'SleeveArm_R': 'Right arm',
     '袖ひじ補助.R': 'Right arm',
     'SleeveElbowAux_R': 'Right arm',
+    'DEF-upper_arm_02_R': 'Right arm',
+    'DEF-upper_arm_twist_25_R': 'Right arm',
+    'DEF-upper_arm_twist_50_R': 'Right arm',
+    'DEF-upper_arm_twist_75_R': 'Right arm',
 
     'ArmTwist_L': 'Left arm',
     'ArmTwist1_L': 'Left arm',
@@ -326,6 +330,10 @@ bone_list_weight = {
     'SleeveArm_L': 'Left arm',
     '袖ひじ補助.L': 'Left arm',
     'SleeveElbowAux_L': 'Left arm',
+    'DEF-upper_arm_02_L': 'Left arm',
+    'DEF-upper_arm_twist_25_L': 'Left arm',
+    'DEF-upper_arm_twist_50_L': 'Left arm',
+    'DEF-upper_arm_twist_75_L': 'Left arm',
 
     'HandTwist_R': 'Right elbow',
     'HandTwist1_R': 'Right elbow',
@@ -352,6 +360,10 @@ bone_list_weight = {
     'SleeveElbow_R': 'Right elbow',
     'Sleeve口_R': 'Right elbow',
     'SleeveMouth_R': 'Right elbow',
+    'DEF-upper_arm_elbow_R': 'Right elbow',
+    'DEF-forearm_twist_75_R': 'Right elbow',
+    'DEF-forearm_twist_50_R': 'Right elbow',
+    'DEF-forearm_twist_25_R': 'Right elbow',
 
     'HandTwist_L': 'Left elbow',
     'HandTwist1_L': 'Left elbow',
@@ -378,6 +390,10 @@ bone_list_weight = {
     'SleeveElbow_L': 'Left elbow',
     'Sleeve口_L': 'Left elbow',
     'SleeveMouth_L': 'Left elbow',
+    'DEF-upper_arm_elbow_L': 'Left elbow',
+    'DEF-forearm_twist_75_L': 'Left elbow',
+    'DEF-forearm_twist_50_L': 'Left elbow',
+    'DEF-forearm_twist_25_L': 'Left elbow',
 
     'WristSleeve_L': 'Left wrist',
     'WristW_L': 'Left wrist',
@@ -388,6 +404,89 @@ bone_list_weight = {
     'WristW_R': 'Right wrist',
     'WristS_R': 'Right wrist',
     'HandTwist5_R': 'Right wrist',
+
+    # Some weird model exception here
+    'DEF-palm_01_R': 'IndexFinger0_R',
+    'DEF-palm_02_R': 'MiddleFinger0_R',
+    'DEF-palm_03_R': 'RingFinger0_R',
+    'DEF-palm_04_R': 'LittleFinger0_R',
+
+    'DEF-f_ring_01_R_02': 'RingFinger1_R',
+    'DEF-f_ring_01_R_01': 'RingFinger1_R',
+    'DEF-f_ring_02_R': 'RingFinger2_R',
+    'DEF-f_ring_03_R': 'RingFinger3_R',
+    'DEF-f_middle_01_R_01': 'MiddleFinger1_R',
+    'DEF-f_middle_01_R_02': 'MiddleFinger1_R',
+    'DEF-f_middle_02_R': 'MiddleFinger2_R',
+    'DEF-f_middle_03_R': 'MiddleFinger3_R',
+
+    'DEF-f_index_03_R': 'IndexFinger3_R',
+    'DEF-f_index_02_R': 'IndexFinger2_R',
+    'DEF-f_index_01_R_02': 'IndexFinger1_R',
+    'DEF-f_index_01_R_01': 'IndexFinger1_R',
+
+    'DEF-f_pinky_03_R': 'LittleFinger3_R',
+    'DEF-f_pinky_02_R': 'LittleFinger2_R',
+    'DEF-f_pinky_01_R_02': 'LittleFinger1_R',
+    'DEF-f_pinky_01_R_01': 'LittleFinger1_R',
+
+    'DEF-thumb_01_R_01': 'Thumb0_R',
+    'DEF-thumb_01_R_02': 'Thumb0_R',
+    'DEF-thumb_02_R': 'Thumb1_R',
+    'DEF-thumb_03_R': 'Thumb2_R',
+
+    'Thumb0_R': 'Right wrist',
+    'IndexFinger0_R': 'Right wrist',
+    'MiddleFinger0_R': 'Right wrist',
+    'RingFinger0_R': 'Right wrist',
+    'LittleFinger0_R': 'Right wrist',
+
+    'DEF-thumb_01_R_02': 'Right wrist',
+    'DEF-hand_R': 'Right wrist',
+    'DEF-thumb_01_R_01': 'Right wrist',
+    'DEF-palm_01_R': 'Right wrist',
+    'DEF-palm_02_R': 'Right wrist',
+
+    'DEF-palm_01_L': 'IndexFinger0_L',
+    'DEF-palm_02_L': 'MiddleFinger0_L',
+    'DEF-palm_03_L': 'RingFinger0_L',
+    'DEF-palm_04_L': 'LittleFinger0_L',
+
+    'DEF-f_Ling_01_L_02': 'RingFinger1_L',
+    'DEF-f_Ling_01_L_01': 'RingFinger1_L',
+    'DEF-f_Ling_02_L': 'RingFinger2_L',
+    'DEF-f_Ling_03_L': 'RingFinger3_L',
+    'DEF-f_middle_01_L_01': 'MiddleFinger1_L',
+    'DEF-f_middle_01_L_02': 'MiddleFinger1_L',
+    'DEF-f_middle_02_L': 'MiddleFinger2_L',
+    'DEF-f_middle_03_L': 'MiddleFinger3_L',
+
+    'DEF-f_index_03_L': 'IndexFinger3_L',
+    'DEF-f_index_02_L': 'IndexFinger2_L',
+    'DEF-f_index_01_L_02': 'IndexFinger1_L',
+    'DEF-f_index_01_L_01': 'IndexFinger1_L',
+
+    'DEF-f_pinky_03_L': 'LittleFinger3_L',
+    'DEF-f_pinky_02_L': 'LittleFinger2_L',
+    'DEF-f_pinky_01_L_02': 'LittleFinger1_L',
+    'DEF-f_pinky_01_L_01': 'LittleFinger1_L',
+
+    'DEF-thumb_01_L_01': 'Thumb0_L',
+    'DEF-thumb_01_L_02': 'Thumb0_L',
+    'DEF-thumb_02_L': 'Thumb1_L',
+    'DEF-thumb_03_L': 'Thumb2_L',
+
+    'Thumb0_L': 'Left wrist',
+    'IndexFinger0_L': 'Left wrist',
+    'MiddleFinger0_L': 'Left wrist',
+    'RingFinger0_L': 'Left wrist',
+    'LittleFinger0_L': 'Left wrist',
+
+    'DEF-thumb_01_L_02': 'Left wrist',
+    'DEF-hand_L': 'Left wrist',
+    'DEF-thumb_01_L_01': 'Left wrist',
+    'DEF-palm_01_L': 'Left wrist',
+    'DEF-palm_02_L': 'Left wrist',
 }
 dont_delete_these_bones = {
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',

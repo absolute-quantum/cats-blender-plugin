@@ -108,12 +108,12 @@ class BoneMergeButton(bpy.types.Operator):
                 print('Merging ' + bone_name + ' into ' + parent_name+ ' with ratio ' + str(i) )
 
                 # Set new parent bone position
-                armature = tools.common.set_default_stage()
-                tools.common.switch('EDIT')
+                # armature = tools.common.set_default_stage()
+                # tools.common.switch('EDIT')
 
-                child = armature.data.edit_bones.get(bone_name)
-                parent = armature.data.edit_bones.get(parent_name)
-                parent.tail = child.tail
+                # child = armature.data.edit_bones.get(bone_name)
+                # parent = armature.data.edit_bones.get(parent_name)
+                # parent.tail = child.tail
 
                 # Mix the weights
                 tools.common.set_default_stage()
