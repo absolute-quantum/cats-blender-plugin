@@ -31,6 +31,7 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_bonemerging(self):
+        bpy.ops.armature.fix()
         bpy.ops.refresh.root()
         bpy.ops.bone.merge()
 
