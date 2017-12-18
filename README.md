@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.2.1)
+# Cats Blender Plugin (0.4.0)
 
 A tool designed to shorten steps needed to import and optimize MMD models into VRChat
 
@@ -16,6 +16,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Creating root bones for Dynamic Bones
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
+ - Merging bone groups to reduce overall bone count
  - Auto updater
 
 *More to come!*
@@ -43,7 +44,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 
 ## Model
-![](https://i.imgur.com/qMVb5AB.png)
+![](https://i.imgur.com/gw66CMj.png)
 
 A vastly improved combination of Neitri and Shotariya's blender plugins, it tries to fix and optimize the armature with one click.
 
@@ -196,6 +197,23 @@ Texture baking and multiple textures per material can look weird in the end resu
 **If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
 
 
+## Bone merging
+
+![](https://i.imgur.com/S88JLJd.png)
+
+**Lets you reduce overall bone count in a group set of bones**
+This works by checking all bones and trying to figure out if they can be grouped together, which will appear in a list for you to choose from. After satisfied with the selection of this group you can then set a percentage value how much bones you would like to merge together in itself and press 'Merge bones'
+
+##### To merge
+This is a list of bones that look like they could be merged together. Select a group of bones from the list and press "Merge bones"
+
+##### Refresh list
+This will clear the group bones list cache and rebuild it, useful if bones have changed or your model
+
+##### Merge bones
+This will start the merge process
+
+
 ## Update Plugin
 There is an auto updater in the plugin so you don't have to keep checking for new version. This is how to check for updates:
 
@@ -203,6 +221,19 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 
 ## Changelog
+
+#### 0.4.0
+- Added: Model: A lot more models are now compatible (if not please report it to us)
+- Added: Bone Merging: A new feature that can reduce huge groups of bones (useful for Dynamic Bones)
+- Added: Model: Mixamo models are now fixable!
+- Added: Progress notification on serveral operations
+- Added: Model: Joining meshes now applies all unapplied decimation modifiers
+- Added: Model: New "Start/Stop Pose Mode" button
+- Added: Updater: Development branch added to version selection
+- Changed: Functions that need UI context are now excluded from the spacebar menu
+- Changed: Separate by Materials: Improved search for the mesh
+- Fixed: Undo now works better
+- Fixed: Bugs, bugs and bugs
 
 #### 0.3.0
 - Added: Armature: More models are now compatible (if not please report it to us)
@@ -215,7 +246,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Updater: New popup when update is available
 - Changed: Eye Tracking: Made "Basis" usable again (useful for models with a single shape containing both blinks)
 - Changed: Armature Panel renamed to Model
-- Fixed: Optimization: Combine same materials now ignores unactive texture slots in it's unique identification
+- Fixed: Optimization: Combine same materials now ignores inactive texture slots in it's unique identification
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
 
@@ -224,19 +255,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Atlas: Alpha values are restored after atlassing (thanks Tupper!)
 - Fixed: Combine Meshes: Error 'NoneType attribute has no key_blocks' fixed
 - Fixed: Combine Materials: Now also checks for uniqueness on specular and diffuse color
-
-#### 0.2.0
-- Added: Armature: More models are now compatible (if not yours doesn't get fixed please send us privately the zipped .blend file)
-- Added: New Material category in the panel Optimization
-- Added: Material: New "Combine Same Materials" button. This significantly reduced draw calls on some models
-- Added: Material: New "One Material Texture" button. This disables unused texture slots on the same material
-- Added: Credits: New "Join our Discord" button
-- Changed: Completely reworked eye tracking! You can now test how eye tracking will look like
-- Changed: Reworked bone translation, it's much faster and better now!
-- Changed: Armature: Now deletes bone groups (they are a color function, nobody's using that)
-- Changed: Armature: Joining meshes now correctly reorders existing vrc shape keys
-- Fixed: Eye Tracking: A bug where the mouth would open and close in certain positions in VRChat
-- Fixed: A stash full of bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

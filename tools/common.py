@@ -37,7 +37,6 @@ from collections import OrderedDict
 # - Manual bone selection button for root bones
 # - Checkbox for eye blinking/moving
 # - Translate progress bar
-# - Add error dialog: At the bottom here: https://wiki.blender.org/index.php/Dev:Py/Scripts/Cookbook/Code_snippets/Interface
 # - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
 # - Eye tracking test add reset blink
 # - Eye tracking test set subcol like in updater
@@ -79,47 +78,12 @@ def set_default_stage():
     return armature
 
 
-class PreserveState():
-    state_data = {}
-
-    def save(self):
-        hidden = {}
-        for object in bpy.data.objects:
-            hidden[object.name] = object.hide
-
-        selected = {}
-        for object in bpy.data.objects:
-            selected[object.name] = object.select
-
-        self.state_data = {
-            'object_mode': bpy.context.active_object.mode,
-            'selection': selected,
-            'hidden': hidden,
-        }
-
-        return self.state_data
-
-    def load(self):
-        switch(self.state_data['object_mode'])
-        for object in bpy.data.objects:
-            try:
-                self.state_data['hidden'][object.name]
-            except KeyError:
-                object.hide = False
-                continue
-
-            object.hide = self.state_data['hidden'][object.name]
-
-        for object in bpy.data.objects:
-            try:
-                self.state_data['selection'][object.name]
-            except KeyError:
-                object.select = False
-                continue
-
-            object.select = self.state_data['selection'][object.name]
-
-        return self.state_data
+def remove_bone(find_bone):
+    armature = get_armature()
+    switch('EDIT')
+    for bone in armature.data.edit_bones:
+        if bone.name == find_bone:
+            armature.data.edit_bones.remove(bone)
 
 
 def remove_empty():
@@ -345,27 +309,62 @@ def get_meshes_objects():
     return meshes
 
 
-def join_meshes():
-    # Combines Meshes
+def join_meshes(context):
     set_default_stage()
     unselect_all()
+
+    # Apply existing decimation modifiers
+    for mesh in get_meshes_objects():
+        select(mesh)
+        for mod in mesh.modifiers:
+            if 'Decimate' in mod.name:
+                if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
+                    bpy.ops.object.modifier_remove(modifier=mod.name)
+                    continue
+                if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
+                    bpy.ops.object.modifier_remove(modifier=mod.name)
+                    continue
+
+                if mesh.data.shape_keys is not None:
+                    for key in mesh.data.shape_keys.key_blocks:
+                        mesh.shape_key_remove(key)
+                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+        unselect_all()
+
+    # Select all meshes
     for mesh in get_meshes_objects():
         select(mesh)
 
-    # Joins the meshes
+    # Join the meshes
     if bpy.ops.object.join.poll():
         bpy.ops.object.join()
 
-    # Renames it to Body
+    # Rename result to Body
     mesh = None
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
             if ob.parent is not None and ob.parent.type == 'ARMATURE':
                 ob.name = 'Body'
                 mesh = ob
+                for mod in mesh.modifiers:
+                    mod.show_expanded = False
                 break
 
+    reset_context_scenes(context)
+
     return mesh
+
+
+def reset_context_scenes(context):
+    context.scene.head = get_bones_head(None, context)[0][0]
+    context.scene.eye_left = get_bones_eye_l(None, context)[0][0]
+    context.scene.eye_right = get_bones_eye_r(None, context)[0][0]
+
+    mesh = get_meshes(None, context)[0][0]
+    context.scene.mesh_name_eye = mesh
+    context.scene.mesh_name_viseme = mesh
+    context.scene.mesh_name_atlas = mesh
+    context.scene.merge_mesh = mesh
 
 
 def repair_viseme_order(mesh_name):

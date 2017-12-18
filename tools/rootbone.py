@@ -36,7 +36,7 @@ class RootButton(bpy.types.Operator):
     bl_label = 'Parent Bones'
     bl_description = 'This will duplicate the parent of the bones and reparent them to the duplicate.\n' \
                      'Very useful for Dynamic Bones.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -45,9 +45,6 @@ class RootButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        # PreserveState = tools.common.PreserveState()
-        # PreserveState.save()
-
         tools.common.set_default_stage()
 
         tools.common.switch('EDIT')
@@ -71,8 +68,6 @@ class RootButton(bpy.types.Operator):
 
         # reset the root bone cache
         globs.root_bones_choices = {}
-
-        # PreserveState.load()
 
         self.report({'INFO'}, 'Bones parented!')
 
@@ -162,7 +157,7 @@ class RefreshRootButton(bpy.types.Operator):
     bl_idname = 'refresh.root'
     bl_label = 'Refresh List'
     bl_description = 'This will clear the group bones list cache and rebuild it, useful if bones have changed or your model.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         globs.root_bones_choices = {}

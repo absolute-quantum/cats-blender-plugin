@@ -47,7 +47,7 @@ class ImportModel(bpy.types.Operator):
     bl_description = 'Import a MMD model (.pmx, .pmd)\n' \
                      '\n' \
                      'Only available when mmd_tools is installed.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         if not mmd_tools_installed:
@@ -62,60 +62,106 @@ class ImportModel(bpy.types.Operator):
         return {'FINISHED'}
 
 
-# # Our finalizing operator, shall run after transform
-# class Finalize(bpy.types.Operator):
-#     bl_idname = "test.finalize"
-#     bl_label = "Finalize"
-#
-#     def execute(self, context):
-#         bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-#
-#         for obj in bpy.data.objects:
-#             if obj.parent is not None:
-#                 continue
-#             try:
-#                 obj.mmd_root.use_toon_texture = False
-#                 obj.mmd_root.use_sphere_texture = False
-#                 break
-#             except:
-#                 pass
-#         print("DONE!")
-#         return {'FINISHED'}
-#
-#
-# # Our finalizing operator, shall run after transform
-# class Import(bpy.types.Operator):
-#     bl_idname = "test.import"
-#     bl_label = "Import"
-#
-#     def execute(self, context):
-#         bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
-#         print("IMPORTED!")
-#         return {'FINISHED'}
-#
-#
-# # Macro operator to concatenate transform and our finalization
-# class Test(bpy.types.Macro):
-#     bl_idname = "TEST_OT_Test"
-#     bl_label = "Test"
+class StartPoseMode(bpy.types.Operator):
+    bl_idname = 'armature_manual.start_pose_mode'
+    bl_label = 'Start Pose Mode'
+    bl_description = 'Starts the pose mode.\n' \
+                     'This lets you test how bones will move.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature() is None:
+            return False
+        return True
+
+    def execute(self, context):
+        current = ""
+        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and len(bpy.context.selected_editable_bones) > 0:
+            current = bpy.context.selected_editable_bones[0].name
+
+        armature = tools.common.set_default_stage()
+        tools.common.switch('POSE')
+        armature.data.pose_position = 'POSE'
+
+        for mesh in tools.common.get_meshes_objects():
+            if mesh.data.shape_keys is not None:
+                for shape_key in mesh.data.shape_keys.key_blocks:
+                    shape_key.value = 0
+
+        for pb in armature.data.bones:
+            pb.select = True
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+
+        bone = armature.data.bones.get(current)
+        if bone is not None:
+            for pb in armature.data.bones:
+                if bone.name != pb.name:
+                    pb.select = False
+        else:
+            for index, pb in enumerate(armature.data.bones):
+                if index != 0:
+                    pb.select = False
+
+        bpy.context.space_data.transform_manipulators = {'ROTATE'}
+
+        return {'FINISHED'}
+
+
+class StopPoseMode(bpy.types.Operator):
+    bl_idname = 'armature_manual.stop_pose_mode'
+    bl_label = 'Stop Pose Mode'
+    bl_description = 'Stops the pose mode and resets the pose to normal.'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature() is None:
+            return False
+        return True
+
+    def execute(self, context):
+        armature = tools.common.get_armature()
+        for pb in armature.data.bones:
+            pb.select = True
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+        for pb in armature.data.bones:
+            pb.select = False
+
+        armature = tools.common.set_default_stage()
+        armature.data.pose_position = 'REST'
+
+        for mesh in tools.common.get_meshes_objects():
+            if mesh.data.shape_keys is not None:
+                for shape_key in mesh.data.shape_keys.key_blocks:
+                    shape_key.value = 0
+
+        bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
+
+        return {'FINISHED'}
 
 
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
-    bl_description = 'Join the Model meshes into a single one.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = 'Join the Model meshes into a single one.\n'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
         i = 0
         for ob in bpy.data.objects:
             if ob.type == 'MESH':
-                i += 1
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
         return i > 0
 
     def execute(self, context):
-        mesh = tools.common.join_meshes()
+        mesh = tools.common.join_meshes(context)
         if mesh is not None:
             tools.common.repair_viseme_order(mesh.name)
 
@@ -126,13 +172,24 @@ class JoinMeshes(bpy.types.Operator):
 class SeparateByMaterials(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_materials'
     bl_label = 'Separate by Materials'
-    bl_description = 'Separates selected mesh by materials.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_description = 'Separates selected mesh by materials.\n' \
+                     '\n' \
+                     'Warning: Never decimate something where you might need the shape keys later (face, mouth, eyes..)'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
         obj = context.active_object
-        return obj and obj.type == 'MESH'
+
+        if obj and obj.type == 'MESH':
+            return True
+
+        i = 0
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
+        return i == 1
 
     @staticmethod
     def __can_remove(key_block):
@@ -160,8 +217,24 @@ class SeparateByMaterials(bpy.types.Operator):
 
     def execute(self, context):
         obj = context.active_object
-        utils.separateByMaterials(obj)
 
+        if obj and obj.type != 'MESH':
+            tools.common.unselect_all()
+            meshes = tools.common.get_meshes_objects()
+            if len(meshes) == 0:
+                return {'FINISHED'}
+            obj = meshes[0]
+            tools.common.select(obj)
+
+        for mod in obj.modifiers:
+            if 'Decimate' in mod.name:
+                bpy.ops.object.modifier_remove(modifier=mod.name)
+            else:
+                mod.show_expanded = False
+
+        tools.common.set_default_stage()
+
+        utils.separateByMaterials(obj)
         for ob in context.selected_objects:
             if ob.type != 'MESH' or ob.data.shape_keys is None:
                 continue
@@ -181,7 +254,7 @@ class MixWeights(bpy.types.Operator):
     bl_label = 'Mix Weights'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.\n' \
                      'Only available in Edit or Pose Mode with bones selected!\n'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     _armature = None
     _bone_names_to_work_on = None
@@ -384,7 +457,7 @@ class JoinMeshesTest(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes_test'
     bl_label = 'Join Meshes Test'
     bl_description = 'Joins all meshes.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):

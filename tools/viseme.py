@@ -35,7 +35,7 @@ class AutoVisemeButton(bpy.types.Operator):
     bl_label = 'Create Visemes'
     bl_description = 'This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.\n' \
                      'It will generate 15 shape keys from the 3 shape keys you specify.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -103,17 +103,14 @@ class AutoVisemeButton(bpy.types.Operator):
         context.scene.mouth_ch = shapes[2]
 
     def execute(self, context):
-        # PreserveState = tools.common.PreserveState()
-        # PreserveState.save()
-
+        wm = bpy.context.window_manager
         tools.common.set_default_stage()
         tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
 
         # Rename selected shapes and rename them back at the end
-        shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
         renamed_shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
         mesh = bpy.data.objects[context.scene.mesh_name_viseme]
-        for shapekey in mesh.data.shape_keys.key_blocks:
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if shapekey.name == context.scene.mouth_a:
                 print(shapekey.name + " " + context.scene.mouth_a)
                 shapekey.name = shapekey.name + "_old"
@@ -131,6 +128,7 @@ class AutoVisemeButton(bpy.types.Operator):
                     shapekey.name = shapekey.name + "_old"
                 context.scene.mouth_ch = shapekey.name
                 renamed_shapes[2] = shapekey.name
+            wm.progress_update(index)
 
         shape_a = context.scene.mouth_a
         shape_o = context.scene.mouth_o
@@ -240,12 +238,17 @@ class AutoVisemeButton(bpy.types.Operator):
             ]
         }
 
+        total_fors = len(shapekey_data)
+        wm.progress_begin(0, total_fors)
+
         # Add the shape keys
-        for key in shapekey_data:
+        for index, key in enumerate(shapekey_data):
             obj = shapekey_data[key]
+            wm.progress_update(index)
             self.mix_shapekey(context, renamed_shapes, obj['mix'], obj['index'], key, context.scene.shape_intensity)
 
         # Rename shapes back
+        shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
         if shapes[0] not in mesh.data.shape_keys.key_blocks:
             shapekey = mesh.data.shape_keys.key_blocks.get(renamed_shapes[0])
             shapekey.name = shapes[0]
@@ -284,7 +287,7 @@ class AutoVisemeButton(bpy.types.Operator):
 
         # tools.common.repair_shapekeys()
 
-        # PreserveState.load()
+        wm.progress_end()
 
         self.report({'INFO'}, 'Created mouth visemes!')
 

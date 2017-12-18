@@ -30,45 +30,10 @@ import bpy
 
 
 class TestAddon(unittest.TestCase):
-    filename = bpy.path.basename(bpy.context.blend_data.filepath)
-
-    def test_eye_tracking(self):
+    def test_boneparenting(self):
         bpy.ops.armature.fix()
-        if self.filename == 'armature.mmd1.blend':
-            bpy.context.scene.eye_left = 'Eye_L'
-            bpy.context.scene.eye_right = 'Eye_R'
-
-        if self.filename == 'armature.bonetranslationerror.blend':
-            bpy.context.scene.eye_left = 'Eye_L'
-            bpy.context.scene.eye_right = 'Eye_R'
-
-        bpy.context.scene.disable_eye_movement = False
-        bpy.context.scene.disable_eye_blinking = False
-
-        result = bpy.ops.create.eyes()
-        self.assertTrue(result == {'FINISHED'})
-
-    def test_eye_tracking_no_movement(self):
-        if self.filename == 'armature.bonetranslationerror.blend':
-            bpy.context.scene.eye_left = 'Eye_L'
-            bpy.context.scene.eye_right = 'Eye_R'
-
-        bpy.context.scene.disable_eye_movement = True
-        bpy.context.scene.disable_eye_blinking = False
-
-        result = bpy.ops.create.eyes()
-        self.assertTrue(result == {'FINISHED'})
-
-    def test_eye_tracking_no_blinking(self):
-        if self.filename == 'armature.bonetranslationerror.blend':
-            bpy.context.scene.eye_left = 'Eye_L'
-            bpy.context.scene.eye_right = 'Eye_R'
-
-        bpy.context.scene.disable_eye_movement = False
-        bpy.context.scene.disable_eye_blinking = True
-
-        result = bpy.ops.create.eyes()
-        self.assertTrue(result == {'FINISHED'})
+        bpy.ops.refresh.root()
+        bpy.ops.root.function()
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

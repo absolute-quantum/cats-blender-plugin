@@ -30,10 +30,12 @@ import os
 import importlib
 import bpy.utils.previews
 from . import addon_updater_ops
+from collections import OrderedDict
 
 mmd_tools_installed = False
 try:
     import mmd_tools
+
     mmd_tools_installed = True
     print("mmd_tools found!")
 except:
@@ -46,6 +48,7 @@ sys.path.append(file_dir)
 import tools.viseme
 import tools.atlas
 import tools.eyetracking
+import tools.bonemerge
 import tools.rootbone
 import tools.translate
 import tools.armature
@@ -55,13 +58,10 @@ import tools.common
 import tools.supporter
 import tools.credits
 
-# Disabled for now, cya next version
-# import tools.error
-# importlib.reload(tools.error)
-
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
+importlib.reload(tools.bonemerge)
 importlib.reload(tools.rootbone)
 importlib.reload(tools.translate)
 importlib.reload(tools.armature)
@@ -77,7 +77,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 3, 0],
+    'version': [0, 4, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -88,6 +88,19 @@ slider_z = 0
 
 # global variable to store icons in
 preview_collections = {}
+
+# List all the supporters here
+supporters = OrderedDict()
+#       'Display name' = 'Icon name'
+supporters['Xeverian'] = 'xeverian'
+supporters['Tupper'] = 'tupper'
+supporters['Jazneo'] = 'jazneo'
+supporters['Idea'] = 'idea'
+supporters['RadaruS'] = 'radarus'
+supporters['Kry10'] = 'kry10'
+supporters['smead'] = 'smead'
+supporters['kohai.istool'] = 'kohai'
+supporters['Str4fe'] = 'Str4fe'
 
 
 class ToolPanel:
@@ -287,7 +300,8 @@ class ToolPanel:
         description="Mode",
         items=[
             ("ATLAS", "Atlas", "Allows you to make a texture atlas."),
-            ("MATERIAL", "Material", "Some various options on material manipulation.")
+            ("MATERIAL", "Material", "Some various options on material manipulation."),
+            ("BONEMERGING", "Bone Merging", "Allows child bones to be merged and mixed in their above parents."),
         ]
     )
 
@@ -348,17 +362,29 @@ class ToolPanel:
         items=tools.common.get_meshes
     )
 
-    # Supporter
-    bpy.types.Scene.supporters = bpy.props.EnumProperty(
-        name="Supporters",
-        description="These are our wonderful patrons <3",
-        items=[
-            ("A", "Jazneo", "Thank you, Jazneo <3"),
-            ("B", "Tupper", "Thank you, Tupper <3"),
-            ("C", "Xeverian", "Thank you, Xeverian <3"),
-            ("D", "Idea", "Thank you, Idea <3"),
-            ("E", "RadaruS", "Thank you, RaderuS")
-        ]
+    # Bone Merging
+    bpy.types.Scene.merge_ratio = bpy.props.FloatProperty(
+        name='Merge Ratio',
+        description='Higher = more bones will be merged\n'
+                    'Lower = less bones will be merged\n',
+        default=50,
+        min=1,
+        max=100,
+        step=1,
+        precision=0,
+        subtype='PERCENTAGE'
+    )
+
+    bpy.types.Scene.merge_mesh = bpy.props.EnumProperty(
+        name='Mesh',
+        description='The mesh with the bones vertex groups',
+        items=tools.common.get_meshes
+    )
+
+    bpy.types.Scene.merge_bone = bpy.props.EnumProperty(
+        name='To Merge',
+        description='List of bones that look like they could be marged together to reduce overall bones.',
+        items=tools.rootbone.get_parent_root_bones,
     )
 
 
@@ -378,7 +404,6 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
             col.separator()
 
-
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
         row = col.row(align=True)
@@ -388,14 +413,25 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         col.label('Manual Model Fixing:')
         row = col.row(align=True)
-        row.scale_y = 1.1
+        row.scale_y = 1.05
         row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
         row = col.row(align=True)
-        row.scale_y = 1.1
+        row.scale_y = 1.05
         row.operator('armature_manual.join_meshes', icon='MESH_DATA')
         row = col.row(align=True)
-        row.scale_y = 1.1
+        row.scale_y = 1.05
         row.operator('armature_manual.mix_weights', icon='BONE_DATA')
+
+        ob = bpy.context.active_object
+        if bpy.context.active_object is None or ob.mode != 'POSE':
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')
+        else:
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.operator('armature_manual.stop_pose_mode', icon='POSE_DATA')
+
         # row = col.row(align=True)
         # row.scale_y = 1.1
         # row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
@@ -646,6 +682,18 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.1
             row.operator('one.tex', icon='TEXTURE')
 
+        if context.scene.optimize_mode == 'BONEMERGING':
+            row = box.row(align=True)
+            row.prop(context.scene, 'merge_mesh')
+            row = box.row(align=True)
+            row.prop(context.scene, 'merge_bone')
+            row = box.row(align=True)
+            row.prop(context.scene, 'merge_ratio')
+            row = box.row(align=True)
+            col.separator()
+            row.operator('refresh.root', icon='FILE_REFRESH')
+            row.operator('bone.merge', icon="AUTOMERGE_ON")
+
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v2'
@@ -667,21 +715,28 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
         row = col.row(align=True)
-        row.label('Thanks to our awesome supporters! <3')
 
-        col.separator()
+        i = 0
+        cont = True
+        items = list(supporters.items())
+        while cont:
+            try:
+                item = items[i]
+                if i == 0:
+                    row.label('Thanks to our awesome supporters! <3')
+                    col.separator()
+                if i % 3 == 0:
+                    row = col.row(align=True)
+                row.operator('supporter.person', text=item[0], emboss=False, icon_value=preview_collections["custom_icons"][item[1]].icon_id)
+                i += 1
+            except IndexError:
+                if i % 3 == 0:
+                    cont = False
+                    continue
+                row.label('')
+                i += 1
+
         row = col.row(align=True)
-        row.scale_y = 0.9
-        row.operator('supporter.person', text='Jazneo', emboss=False, icon_value=preview_collections["custom_icons"]["jazneo"].icon_id)
-        row.operator('supporter.person', text='Tupper', emboss=False, icon_value=preview_collections["custom_icons"]["tupper"].icon_id)
-        row.operator('supporter.person', text='Xeverian', emboss=False, icon_value=preview_collections["custom_icons"]["xeverian"].icon_id)
-        row.scale_y = 1.4
-        row = col.row(align=True)
-        row.operator('supporter.person', text='Idea', emboss=False, icon_value=preview_collections["custom_icons"]["idea"].icon_id)
-        row.operator('supporter.person', text='RadaruS', emboss=False, icon_value=preview_collections["custom_icons"]["radarus"].icon_id)
-        row.label('')
-        row = col.row(align=True)
-        row.scale_y = 1.2
         row.separator()
         row = col.row(align=True)
         row.label('Do you like this plugin and want to support us?')
@@ -727,9 +782,9 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord2"].icon_id)
 
         row = col.row(align=True)
-        row.operator('credits.forum', icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
-        row = col.row(align=True)
         row.operator('credits.discord', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
+        row = col.row(align=True)
+        row.operator('credits.forum', icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -781,22 +836,25 @@ def load_icons():
     my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
 
     # load a preview thumbnail of a file and store in the previews collection
-    pcoll.load("heart1", os.path.join(my_icons_dir, "heart1.png"), 'IMAGE')
-    pcoll.load("heart2", os.path.join(my_icons_dir, "heart2.png"), 'IMAGE')
-    pcoll.load("heart3", os.path.join(my_icons_dir, "heart3.png"), 'IMAGE')
-    pcoll.load("heart4", os.path.join(my_icons_dir, "heart4.png"), 'IMAGE')
-    pcoll.load("discord1", os.path.join(my_icons_dir, "discord1.png"), 'IMAGE')
-    pcoll.load("discord2", os.path.join(my_icons_dir, "discord2.png"), 'IMAGE')
-    pcoll.load("cats1", os.path.join(my_icons_dir, "cats1.png"), 'IMAGE')
-    pcoll.load("patreon1", os.path.join(my_icons_dir, "patreon1.png"), 'IMAGE')
-    pcoll.load("patreon2", os.path.join(my_icons_dir, "patreon2.png"), 'IMAGE')
-    pcoll.load("tupper", os.path.join(my_icons_dir, "supporters/tupper.png"), 'IMAGE')
-    pcoll.load("xeverian", os.path.join(my_icons_dir, "supporters/xeverian.png"), 'IMAGE')
-    pcoll.load("jazneo", os.path.join(my_icons_dir, "supporters/jazneo.png"), 'IMAGE')
-    pcoll.load("idea", os.path.join(my_icons_dir, "supporters/idea.png"), 'IMAGE')
-    pcoll.load("radarus", os.path.join(my_icons_dir, "supporters/radarus.png"), 'IMAGE')
+    pcoll.load('heart1', os.path.join(my_icons_dir, 'heart1.png'), 'IMAGE')
+    pcoll.load('heart2', os.path.join(my_icons_dir, 'heart2.png'), 'IMAGE')
+    pcoll.load('heart3', os.path.join(my_icons_dir, 'heart3.png'), 'IMAGE')
+    pcoll.load('heart4', os.path.join(my_icons_dir, 'heart4.png'), 'IMAGE')
+    pcoll.load('discord1', os.path.join(my_icons_dir, 'discord1.png'), 'IMAGE')
+    pcoll.load('discord2', os.path.join(my_icons_dir, 'discord2.png'), 'IMAGE')
+    pcoll.load('cats1', os.path.join(my_icons_dir, 'cats1.png'), 'IMAGE')
+    pcoll.load('patreon1', os.path.join(my_icons_dir, 'patreon1.png'), 'IMAGE')
+    pcoll.load('patreon2', os.path.join(my_icons_dir, 'patreon2.png'), 'IMAGE')
+    pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
 
-    preview_collections["custom_icons"] = pcoll
+    # load the supporters icons
+    for key, value in supporters.items():
+        try:
+            pcoll.load(value, os.path.join(my_icons_dir, 'supporters/' + value + '.png'), 'IMAGE')
+        except KeyError:
+            pass
+
+    preview_collections['custom_icons'] = pcoll
 
 
 def unload_icons():
@@ -824,6 +882,7 @@ def register():
     bpy.utils.register_class(tools.translate.TranslateMaterialsButton)
     bpy.utils.register_class(tools.rootbone.RootButton)
     bpy.utils.register_class(tools.rootbone.RefreshRootButton)
+    bpy.utils.register_class(tools.bonemerge.BoneMergeButton)
     bpy.utils.register_class(tools.armature.FixArmature)
     bpy.utils.register_class(tools.material.CombineMaterialsButton)
     bpy.utils.register_class(tools.material.OneTexPerMatButton)
@@ -832,6 +891,8 @@ def register():
     # bpy.utils.register_class(tools.armature_manual.Import)
     # bpy.utils.register_class(tools.armature_manual.Finalize)
     # bpy.utils.register_class(tools.armature_manual.Test)
+    bpy.utils.register_class(tools.armature_manual.StopPoseMode)
+    bpy.utils.register_class(tools.armature_manual.StartPoseMode)
     bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
     bpy.utils.register_class(tools.armature_manual.JoinMeshes)
     bpy.utils.register_class(tools.armature_manual.MixWeights)
@@ -876,6 +937,8 @@ def unregister():
     bpy.utils.unregister_class(tools.armature_manual.MixWeights)
     bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
     bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
+    bpy.utils.unregister_class(tools.armature_manual.StartPoseMode)
+    bpy.utils.unregister_class(tools.armature_manual.StopPoseMode)
     # bpy.utils.unregister_class(tools.armature_manual.Import)
     # bpy.utils.unregister_class(tools.armature_manual.Finalize)
     # bpy.utils.unregister_class(tools.armature_manual.Test)

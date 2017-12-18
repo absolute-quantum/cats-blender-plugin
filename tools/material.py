@@ -36,7 +36,7 @@ class OneTexPerMatButton(bpy.types.Operator):
     bl_idname = 'one.tex'
     bl_label = 'One Material Texture'
     bl_description = 'Have all material slots ignore extra texture slots. These are not used in VRChat.'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -67,7 +67,7 @@ class CombineMaterialsButton(bpy.types.Operator):
     bl_idname = 'combine.mats'
     bl_label = 'Combine Same Materials'
     bl_description = 'Combines similair materials into one, saving draw calls'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     combined_tex = {}
 
@@ -178,7 +178,10 @@ class CombineMaterialsButton(bpy.types.Operator):
         tools.common.set_default_stage()
         self.generate_combined_tex()
         tools.common.switch('OBJECT')
-        for object in bpy.context.scene.objects:  # for each scene object
+        wm = bpy.context.window_manager
+        wm.progress_begin(0, len(bpy.context.scene.objects))
+        for index, object in enumerate(bpy.context.scene.objects):  # for each scene object
+            wm.progress_update(index)
             if object.type == 'MESH':
                 tools.common.select(object)
                 for file in self.combined_tex:  # for each combined mat slot of scene object
@@ -208,6 +211,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                 self.cleanmatslots()
                 print('CLEANED MAT SLOTS')
 
+        wm.progress_end()
         self.report({'INFO'}, 'Materials Combined!')
 
         return{'FINISHED'}

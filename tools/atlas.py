@@ -32,7 +32,7 @@ import random
 class AutoAtlasButton(bpy.types.Operator):
     bl_idname = 'auto.atlas'
     bl_label = 'Create Atlas'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -44,9 +44,6 @@ class AutoAtlasButton(bpy.types.Operator):
         return prefix + str(random.randrange(9999999999)) + suffix
 
     def execute(self, context):
-        # PreserveState = tools.common.PreserveState()
-        # PreserveState.save()
-
         tools.common.set_default_stage()
 
         if not bpy.data.is_saved:
@@ -162,7 +159,5 @@ class AutoAtlasButton(bpy.types.Operator):
             print('mmd_tools probably not activated.')
 
         self.report({'INFO'}, 'Auto Atlas finished!')
-
-        # PreserveState.load()
 
         return{'FINISHED'}
