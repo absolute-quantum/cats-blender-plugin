@@ -89,15 +89,16 @@ class CreateEyesButton(bpy.types.Operator):
             self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" does not exist.')
             return {'CANCELLED'}
 
-        # Find the existing vertex group of the left eye bone
-        if self.vertex_group_exists(mesh_name, old_eye_left.name) is False:
-            self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
-            return {'CANCELLED'}
+        if not context.scene.disable_eye_movement:
+            # Find the existing vertex group of the left eye bone
+            if self.vertex_group_exists(mesh_name, old_eye_left.name) is False:
+                self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
+                return {'CANCELLED'}
 
-        # Find the existing vertex group of the right eye bone
-        if self.vertex_group_exists(mesh_name, old_eye_right.name) is False:
-            self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
-            return {'CANCELLED'}
+            # Find the existing vertex group of the right eye bone
+            if self.vertex_group_exists(mesh_name, old_eye_right.name) is False:
+                self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
+                return {'CANCELLED'}
 
         # Find existing LeftEye/RightEye and rename or delete
         if 'LeftEye' in armature.data.edit_bones:
@@ -366,29 +367,30 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
     mesh_name = context.scene.mesh_name_eye
     scale = -context.scene.eye_distance + 1
 
-    if head is not None:
-        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eye.name)
-    else:
-        coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, new_eye.name)
+    if not context.scene.disable_eye_movement:
+        if head is not None:
+            coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eye.name)
+        else:
+            coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, new_eye.name)
 
-    if coords_eye is False:
-        return
+        if coords_eye is False:
+            return
 
-    if head is not None:
-        mesh = bpy.data.objects[mesh_name]
-        p1 = mesh.matrix_world * head.head
-        p2 = mesh.matrix_world * coords_eye
-        length = (p1 - p2).length
-        print(length)  # TODO calculate scale if bone is too close to center of the eye
+        if head is not None:
+            mesh = bpy.data.objects[mesh_name]
+            p1 = mesh.matrix_world * head.head
+            p2 = mesh.matrix_world * coords_eye
+            length = (p1 - p2).length
+            print(length)  # TODO calculate scale if bone is too close to center of the eye
 
     # dist = math.sqrt((coords_eye[0] - head.head[0]) ** 2 + (coords_eye[1] - head.head[1]) ** 2 + (coords_eye[2] - head.head[2]) ** 2)
     # dist2 = np.linalg.norm(coords_eye - head.head)
     # dist3 = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 + (p1[2] - p2[2]) ** 2)
-    #dist4 = np.linalg.norm(p1 - p2)
+    # dist4 = np.linalg.norm(p1 - p2)
     # print(dist)
     # print(dist2)
     # print(2 ** 2)
-    #print(dist4)
+    # print(dist4)
 
     if context.scene.disable_eye_movement:
         if head is not None:
