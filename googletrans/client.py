@@ -6,6 +6,7 @@ You can translate text using this module.
 """
 import requests
 import random
+import bpy
 
 from . import urls, utils
 from .compat import PY3
@@ -122,10 +123,17 @@ class Translator(object):
                 raise ValueError('invalid destination language')
 
         if isinstance(text, list):
+            wm = bpy.context.window_manager
+            current_step = 0
+            wm.progress_begin(current_step, len(text))
+
             result = []
             for item in text:
                 translated = self.translate(item, dest=dest, src=src)
                 result.append(translated)
+                current_step += 1
+                wm.progress_update(current_step)
+            wm.progress_end()
             return result
 
         origin = text

@@ -865,62 +865,71 @@ def unload_icons():
 
 classesToRegister = [
     ArmaturePanel,
-    BoneRootPanel,
-    CreditsPanel,
-    EyeTrackingPanel,
-    OptimizePanel,
-    SupporterPanel,
-    TranslationPanel,
-    UpdaterPanel,
-    UpdaterPreferences,
-    VisemePanel,
-    tools.armature.FixArmature,
-    # tools.armature_manual.Finalize,
-    # tools.armature_manual.Import,
     tools.armature_manual.ImportModel,
-    tools.armature_manual.JoinMeshes,
-    # tools.armature_manual.JoinMeshesTest,
-    tools.armature_manual.MixWeights,
+    tools.armature.FixArmature,
     tools.armature_manual.SeparateByMaterials,
-    # tools.armature_manual.SeparateByMaterials,
+    tools.armature_manual.JoinMeshes,
+    tools.armature_manual.MixWeights,
     tools.armature_manual.StartPoseMode,
     tools.armature_manual.StopPoseMode,
     # tools.armature_manual.Test,
-    tools.atlas.AutoAtlasButton,
-    tools.bonemerge.BoneMergeButton,
-    tools.credits.DiscordButton,
-    tools.credits.ForumButton,
-    tools.eyetracking.AdjustEyesButton,
+    # tools.armature_manual.Import,
+    # tools.armature_manual.SeparateByMaterials,
+    # tools.armature_manual.JoinMeshesTest,
+    # tools.armature_manual.Finalize,
+
+    TranslationPanel,
+    tools.translate.TranslateShapekeyButton,
+    tools.translate.TranslateBonesButton,
+    tools.translate.TranslateMeshesButton,
+    tools.translate.TranslateMaterialsButton,
+    # tools.translate.TranslateTexturesButton,
+
+    EyeTrackingPanel,
     tools.eyetracking.CreateEyesButton,
-    tools.eyetracking.ResetBlinkTest,
-    tools.eyetracking.SetRotationButton,
     tools.eyetracking.StartTestingButton,
     tools.eyetracking.StopTestingButton,
+    tools.eyetracking.SetRotationButton,
+    tools.eyetracking.AdjustEyesButton,
     tools.eyetracking.TestBlinking,
     tools.eyetracking.TestLowerlid,
-    tools.material.CombineMaterialsButton,
-    tools.material.OneTexPerMatButton,
+    tools.eyetracking.ResetBlinkTest,
+
+    VisemePanel,
+    tools.viseme.AutoVisemeButton,
+
+    BoneRootPanel,
     tools.rootbone.RefreshRootButton,
     tools.rootbone.RootButton,
-    tools.supporter.PatreonButton,
+
+    OptimizePanel,
+    tools.atlas.AutoAtlasButton,
+    tools.material.CombineMaterialsButton,
+    tools.material.OneTexPerMatButton,
+    tools.bonemerge.BoneMergeButton,
+
+    UpdaterPanel,
+    UpdaterPreferences,
+
+    SupporterPanel,
     tools.supporter.PersonButton,
-    tools.translate.TranslateBonesButton,
-    tools.translate.TranslateMaterialsButton,
-    tools.translate.TranslateMeshesButton,
-    tools.translate.TranslateShapekeyButton,
-    tools.translate.TranslateTexturesButton,
-    tools.viseme.AutoVisemeButton,
+    tools.supporter.PatreonButton,
+
+    CreditsPanel,
+    tools.credits.DiscordButton,
+    tools.credits.ForumButton,
 ]
+
 
 def register():
     load_icons()
-    for value in classesToRegister:        
-        bpy.utils.register_class(value)
     addon_updater_ops.register(bl_info)
+    for value in classesToRegister:
+        bpy.utils.register_class(value)
 
 
 def unregister():
-    for value in classesToRegister:        
+    for value in classesToRegister:
         bpy.utils.unregister_class(value)
     addon_updater_ops.unregister()
     unload_icons()

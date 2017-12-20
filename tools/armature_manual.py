@@ -66,8 +66,7 @@ class StartPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.start_pose_mode'
     bl_label = 'Start Pose Mode'
     bl_description = 'Starts the pose mode.\n' \
-                     'This lets you test how bones will move.\n' \
-                     'Only available if there is Armature.'
+                     'This lets you test how bones will move.\n'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -114,8 +113,7 @@ class StartPoseMode(bpy.types.Operator):
 class StopPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.stop_pose_mode'
     bl_label = 'Stop Pose Mode'
-    bl_description = 'Stops the pose mode and resets the pose to normal.\n' \
-                     'Only available if there is Armature.'
+    bl_description = 'Stops the pose mode and resets the pose to normal.\n'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -150,8 +148,7 @@ class StopPoseMode(bpy.types.Operator):
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
-    bl_description = 'Join the Model meshes into a single one.\n' \
-                     'Only available if there is more than one Model mesh.'
+    bl_description = 'Join the Model meshes into a single one.\n'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -256,7 +253,8 @@ class MixWeights(bpy.types.Operator):
     bl_idname = 'armature_manual.mix_weights'
     bl_label = 'Mix Weights'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.\n' \
-                     'Only available in Edit or Pose Mode with bones selected!\n'
+                     '\n' \
+                     'Only available in Edit or Pose Mode with bones selected.\n'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     _armature = None

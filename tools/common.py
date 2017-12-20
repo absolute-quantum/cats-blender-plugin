@@ -184,8 +184,13 @@ def get_bones_eye_r(self, context):
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
 def get_bones(names):
     choices = []
+    armature = get_armature()
 
-    armature = get_armature().data
+    if armature is None:
+        bpy.types.Object.Enum = choices
+        return bpy.types.Object.Enum
+
+    armature = armature.data
     for bone in armature.bones:
         choices.append((bone.name, bone.name, bone.name))
 
@@ -237,21 +242,22 @@ def get_shapekeys_eye_low_r(self, context):
 def get_shapekeys(context, names, no_basis):
     choices = []
 
-    if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
-        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
-            for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
-                if no_basis and shapekey.name == 'Basis':
-                    continue
-                choices.append((shapekey.name, shapekey.name, shapekey.name))
+    mesh = bpy.data.objects.get(context.scene.mesh_name_eye)
+    if mesh is None or not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
+        bpy.types.Object.Enum = choices
+        return bpy.types.Object.Enum
+
+    for shapekey in mesh.data.shape_keys.key_blocks:
+        if no_basis and shapekey.name == 'Basis':
+            continue
+        choices.append((shapekey.name, shapekey.name, shapekey.name))
 
     choices.sort(key=lambda x: tuple(x[0].lower()))
 
     choices2 = []
     for name in names:
-        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
-            if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
-                if name in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks and choices[0][0] != name:
-                    choices2.append((name, name, name))
+        if name in mesh.data.shape_keys.key_blocks and choices[0][0] != name:
+            choices2.append((name, name, name))
 
     for choice in choices:
         choices2.append(choice)

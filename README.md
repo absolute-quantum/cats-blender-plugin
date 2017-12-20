@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.4.0)
+# Cats Blender Plugin (0.5.0)
 
 A tool designed to shorten steps needed to import and optimize MMD models into VRChat
 
@@ -222,6 +222,11 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.5.0
+- Added: Translations: Now shows how many objects were translated
+- Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"
+- Fixed: UI: Improved some loading bars
+
 #### 0.4.0
 - Added: Model: A lot more models are now compatible (if not please report it to us)
 - Added: Bone Merging: A new feature that can reduce huge groups of bones (useful for Dynamic Bones)
@@ -249,12 +254,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Optimization: Combine same materials now ignores inactive texture slots in it's unique identification
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
-
-#### 0.2.1
-- Added: Supporters (donators) tab
-- Fixed: Atlas: Alpha values are restored after atlassing (thanks Tupper!)
-- Fixed: Combine Meshes: Error 'NoneType attribute has no key_blocks' fixed
-- Fixed: Combine Materials: Now also checks for uniqueness on specular and diffuse color
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
