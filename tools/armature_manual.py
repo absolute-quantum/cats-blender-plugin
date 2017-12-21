@@ -148,7 +148,7 @@ class StopPoseMode(bpy.types.Operator):
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
-    bl_description = 'Join the Model meshes into a single one.\n'
+    bl_description = 'Joins the model meshes into a single one and applies all unapplied decimation modifiers.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod

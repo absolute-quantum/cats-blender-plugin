@@ -44,35 +44,18 @@ bone_list_with = ['_shadow_', '_dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent',
                   'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
                   'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'HandTip_', 'ShoulderC_', 'SleeveShoulderIK_']
 bone_list_rename = {
-    'hips': 'Hips',
-    'spine': 'Spine',
-    'chest': 'Chest',
-    'neck': 'Neck',
-    'head': 'Head',
-    'Leg_L': 'Left leg',
-    'left foot': 'Left leg',
-    'Left foot': 'Left leg',
-    'Leg_R': 'Right leg',
-    'right foot': 'Right leg',
-    'Right foot': 'Right leg',
-    'Knee_L': 'Left knee',
-    'Knee_R': 'Right knee',
-    'Ankle_L': 'Left ankle',
-    'Ankle_R': 'Right ankle',
-    'LegTipEX_L': 'Left toe',
-    'ClawTipEX_L': 'Left toe',
-    'LegTipEX_R': 'Right toe',
-    'ClawTipEX_R': 'Right toe',
     'LowerBody': 'Hips',
     'Lowerbody': 'Hips',
     'Lower body': 'Hips',
     'Lower Body': 'Hips',
+
     'UpperBody': 'Spine',
     'Upperbody': 'Spine',
     'Upper body': 'Spine',
     'Upper Body': 'Spine',
     'Upper waist': 'Spine',
     'Upper Waist': 'Spine',
+
     'UpperBody2': 'Chest',
     'Upperbody2': 'Chest',
     'Upper body 2': 'Chest',
@@ -81,6 +64,7 @@ bone_list_rename = {
     'Upper Waist 2': 'Chest',
     'Waist upper 2': 'Chest',
     'Waist Upper 2': 'Chest',
+
     'UpperBody3': 'NewChest',
     'Upperbody3': 'NewChest',
     'Upper body 3': 'NewChest',
@@ -89,13 +73,75 @@ bone_list_rename = {
     'Upper Waist 3': 'NewChest',
     'Waist upper 3': 'NewChest',
     'Waist Upper 3': 'NewChest',
+
+    'Left Leg': 'Left leg',
+    'LeftLeg': 'Left leg',
+    'Leg_L': 'Left leg',
+    'left foot': 'Left leg',
+    'Left foot': 'Left leg',
+
+    'Right Leg': 'Right leg',
+    'RightLeg': 'Right leg',
+    'Leg_R': 'Right leg',
+    'right foot': 'Right leg',
+    'Right foot': 'Right leg',
+
+    'Left Knee': 'Left knee',
+    'LeftKnee': 'Left knee',
+    'Knee_L': 'Left knee',
+
+    'Right Knee': 'Right knee',
+    'RightKnee': 'Right knee',
+    'Knee_R': 'Right knee',
+
+    'Left Ankle': 'Left ankle',
+    'LeftAnkle': 'Left ankle',
+    'Ankle_L': 'Left ankle',
+
+    'Right Ankle': 'Right ankle',
+    'RightAnkle': 'Right ankle',
+    'Ankle_R': 'Right ankle',
+
+    'Left Toe': 'Left toe',
+    'LeftToe': 'Left toe',
+    'LegTipEX_L': 'Left toe',
+    'ClawTipEX_L': 'Left toe',
+
+    'Right Toe': 'Right toe',
+    'RightToe': 'Right toe',
+    'LegTipEX_R': 'Right toe',
+    'ClawTipEX_R': 'Right toe',
+
+    'Left Shoulder': 'Left shoulder',
+    'LeftShoulder': 'Left shoulder',
     'Shoulder_L': 'Left shoulder',
+
+    'Right Shoulder': 'Right shoulder',
+    'RightShoulder': 'Right shoulder',
     'Shoulder_R': 'Right shoulder',
+
+    'Left Arm': 'Left arm',
+    'LeftArm': 'Left arm',
     'Arm_L': 'Left arm',
+
+    'Right Arm': 'Right arm',
+    'RightArm': 'Right arm',
     'Arm_R': 'Right arm',
+
+    'Left Elbow': 'Left elbow',
+    'LeftElbow': 'Left elbow',
     'Elbow_L': 'Left elbow',
+
+    'Right Elbow': 'Right elbow',
+    'RightElbow': 'Right elbow',
     'Elbow_R': 'Right elbow',
+
+    'Left Wrist': 'Left wrist',
+    'LeftWrist': 'Left wrist',
     'Wrist_L': 'Left wrist',
+
+    'Right Wrist': 'Right wrist',
+    'RightWrist': 'Right wrist',
     'Wrist_R': 'Right wrist',
 
     # Typical Mixamo Rig
@@ -539,12 +585,11 @@ class FixArmature(bpy.types.Operator):
     bl_label = 'Fix Model'
     bl_description = 'Automatically:\n' \
                      '- Reparents bones\n' \
-                     '- Removes unnecessary bones, objects & groups\n' \
+                     '- Removes unnecessary bones, objects, groups & constraints\n' \
                      '- Translates and renames bones & objects\n' \
                      '- Mixes weight paints\n' \
                      '- Corrects the hips\n' \
                      '- Joins meshes\n' \
-                     '- Removes bone constraints\n' \
                      '- Corrects shading'
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -903,6 +948,8 @@ def check_hierarchy(correct_hierarchy_array):
                 previous = correct_hierarchy[index - 1]
 
             # NOTE: armature.data.bones is being used instead of armature.data.edit_bones because of a failed test (edit_bones array empty for some reason)
+            for bone2 in armature.data.bones:
+                print(bone2.name)
             if bone not in armature.data.bones:
                 return {'result': False, 'message': bone + ' was not found in the hierarchy, this will cause problems!'}
 

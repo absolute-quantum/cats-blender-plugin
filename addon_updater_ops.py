@@ -216,10 +216,9 @@ class addon_updater_update_now(bpy.types.Operator):
 
 
 class addon_updater_update_target(bpy.types.Operator):
-    bl_label = updater.addon+" version target"
+    bl_label = "Cats version selector"
     bl_idname = updater.addon+".updater_update_target"
-    bl_description = "Install a targeted version of the {x} addon".format(
-                                                        x=updater.addon)
+    bl_description = "Install a targeted version of Cats."
 
     def target_version(self, context):
         # in case of error importing updater
