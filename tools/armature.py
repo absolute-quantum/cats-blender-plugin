@@ -187,7 +187,8 @@ bone_list_weight = {
     'LLegTwist3': 'Left leg',
     'LegW_L': 'Left leg',
     'LegW2_L': 'Left leg',
-    'KneeS_L': 'Left leg',
+    'LowerKnee_L': 'Left leg',
+    'UpperKnee_L': 'Left leg',
 
     'LegD_R': 'Right leg',
     'Right foot D': 'Right leg',
@@ -204,6 +205,8 @@ bone_list_weight = {
     'LegW_R': 'Right leg',
     'LegW2_R': 'Right leg',
     'KneeS_R': 'Right leg',
+    'LowerKnee_R': 'Right leg',
+    'UpperKnee_R': 'Right leg',
 
     'KneeD_L': 'Left knee',
     'Left knee D': 'Left knee',
@@ -217,6 +220,8 @@ bone_list_weight = {
     'LTibiaTwist3': 'Left knee',
     'KneeW1_L': 'Left knee',
     'KneeW2_L': 'Left knee',
+    'Knee+_L': 'Left knee',
+    'KneeArmor2_L': 'Left knee',
 
     'KneeD_R': 'Right knee',
     'Right knee D': 'Right knee',
@@ -230,6 +235,8 @@ bone_list_weight = {
     'RTibiaTwist3': 'Right knee',
     'KneeW1_R': 'Right knee',
     'KneeW2_R': 'Right knee',
+    'Knee+_R': 'Right knee',
+    'KneeArmor2_R': 'Right knee',
 
     'AnkleD_L': 'Left ankle',
     'Left ankle D': 'Left ankle',
@@ -237,6 +244,9 @@ bone_list_weight = {
     'AnkleEven_L': 'Left ankle',
     'AnkleW1_L': 'Left ankle',
     'AnkleW2_L': 'Left ankle',
+    'Ankle+_L': 'Left ankle',
+    'ToeTipMovable_L': 'Left ankle',
+    'AnkleArmor_L': 'Left ankle',
 
     'AnkleD_R': 'Right ankle',
     'Right ankle D': 'Right ankle',
@@ -244,6 +254,9 @@ bone_list_weight = {
     'AnkleEven_R': 'Right ankle',
     'AnkleW1_R': 'Right ankle',
     'AnkleW2_R': 'Right ankle',
+    'Ankle+_R': 'Right ankle',
+    'ToeTipMovable_R': 'Right ankle',
+    'AnkleArmor_R': 'Right ankle',
 
     '爪TipEX_L': 'Left toe',
     '爪TipEX2_L': 'Left toe',
@@ -335,6 +348,9 @@ bone_list_weight = {
     'DEF-upper_arm_twist_50_L': 'Left arm',
     'DEF-upper_arm_twist_75_L': 'Left arm',
 
+    'Elbow1_R': 'Right elbow',
+    'Elbow2_R': 'Right elbow',
+    'Elbow3_R': 'Right elbow',
     'HandTwist_R': 'Right elbow',
     'HandTwist1_R': 'Right elbow',
     'HandTwist2_R': 'Right elbow',
@@ -365,6 +381,9 @@ bone_list_weight = {
     'DEF-forearm_twist_50_R': 'Right elbow',
     'DEF-forearm_twist_25_R': 'Right elbow',
 
+    'Elbow1_L': 'Left elbow',
+    'Elbow2_L': 'Left elbow',
+    'Elbow3_L': 'Left elbow',
     'HandTwist_L': 'Left elbow',
     'HandTwist1_L': 'Left elbow',
     'HandTwist2_L': 'Left elbow',

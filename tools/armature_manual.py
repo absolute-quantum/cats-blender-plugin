@@ -77,7 +77,7 @@ class StartPoseMode(bpy.types.Operator):
 
     def execute(self, context):
         current = ""
-        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(bpy.context.selected_editable_bones) > 0:
             current = bpy.context.selected_editable_bones[0].name
 
         armature = tools.common.set_default_stage()
