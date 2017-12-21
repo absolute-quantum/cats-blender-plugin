@@ -52,6 +52,7 @@ import tools.bonemerge
 import tools.rootbone
 import tools.translate
 import tools.armature
+import tools.armature_bones
 import tools.armature_manual
 import tools.material
 import tools.common
@@ -65,6 +66,7 @@ importlib.reload(tools.bonemerge)
 importlib.reload(tools.rootbone)
 importlib.reload(tools.translate)
 importlib.reload(tools.armature)
+importlib.reload(tools.armature_bones)
 importlib.reload(tools.armature_manual)
 importlib.reload(tools.material)
 importlib.reload(tools.common)

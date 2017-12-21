@@ -29,6 +29,7 @@
 import bpy
 import tools.common
 import tools.translate
+import tools.armature_bones as Bones
 from mmd_tools_local.translations import DictionaryEnum
 
 mmd_tools_installed = False
@@ -37,547 +38,6 @@ try:
     mmd_tools_installed = True
 except:
     pass
-
-bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'Eyes', 'EyesTip',
-             'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
-bone_list_with = ['_shadow_', '_dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK', 'LegIKTip', 'ToeTipIK',
-                  'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
-                  'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'HandTip_', 'ShoulderC_', 'SleeveShoulderIK_']
-bone_list_rename = {
-    'LowerBody': 'Hips',
-    'Lowerbody': 'Hips',
-    'Lower body': 'Hips',
-    'Lower Body': 'Hips',
-
-    'UpperBody': 'Spine',
-    'Upperbody': 'Spine',
-    'Upper body': 'Spine',
-    'Upper Body': 'Spine',
-    'Upper waist': 'Spine',
-    'Upper Waist': 'Spine',
-
-    'UpperBody2': 'Chest',
-    'Upperbody2': 'Chest',
-    'Upper body 2': 'Chest',
-    'Upper Body 2': 'Chest',
-    'Upper waist 2': 'Chest',
-    'Upper Waist 2': 'Chest',
-    'Waist upper 2': 'Chest',
-    'Waist Upper 2': 'Chest',
-
-    'UpperBody3': 'NewChest',
-    'Upperbody3': 'NewChest',
-    'Upper body 3': 'NewChest',
-    'Upper Body 3': 'NewChest',
-    'Upper waist 3': 'NewChest',
-    'Upper Waist 3': 'NewChest',
-    'Waist upper 3': 'NewChest',
-    'Waist Upper 3': 'NewChest',
-
-    'Left Leg': 'Left leg',
-    'LeftLeg': 'Left leg',
-    'Leg_L': 'Left leg',
-    'left foot': 'Left leg',
-    'Left foot': 'Left leg',
-
-    'Right Leg': 'Right leg',
-    'RightLeg': 'Right leg',
-    'Leg_R': 'Right leg',
-    'right foot': 'Right leg',
-    'Right foot': 'Right leg',
-
-    'Left Knee': 'Left knee',
-    'LeftKnee': 'Left knee',
-    'Knee_L': 'Left knee',
-
-    'Right Knee': 'Right knee',
-    'RightKnee': 'Right knee',
-    'Knee_R': 'Right knee',
-
-    'Left Ankle': 'Left ankle',
-    'LeftAnkle': 'Left ankle',
-    'Ankle_L': 'Left ankle',
-
-    'Right Ankle': 'Right ankle',
-    'RightAnkle': 'Right ankle',
-    'Ankle_R': 'Right ankle',
-
-    'Left Toe': 'Left toe',
-    'LeftToe': 'Left toe',
-    'LegTipEX_L': 'Left toe',
-    'ClawTipEX_L': 'Left toe',
-
-    'Right Toe': 'Right toe',
-    'RightToe': 'Right toe',
-    'LegTipEX_R': 'Right toe',
-    'ClawTipEX_R': 'Right toe',
-
-    'Left Shoulder': 'Left shoulder',
-    'LeftShoulder': 'Left shoulder',
-    'Shoulder_L': 'Left shoulder',
-
-    'Right Shoulder': 'Right shoulder',
-    'RightShoulder': 'Right shoulder',
-    'Shoulder_R': 'Right shoulder',
-
-    'Left Arm': 'Left arm',
-    'LeftArm': 'Left arm',
-    'Arm_L': 'Left arm',
-
-    'Right Arm': 'Right arm',
-    'RightArm': 'Right arm',
-    'Arm_R': 'Right arm',
-
-    'Left Elbow': 'Left elbow',
-    'LeftElbow': 'Left elbow',
-    'Elbow_L': 'Left elbow',
-
-    'Right Elbow': 'Right elbow',
-    'RightElbow': 'Right elbow',
-    'Elbow_R': 'Right elbow',
-
-    'Left Wrist': 'Left wrist',
-    'LeftWrist': 'Left wrist',
-    'Wrist_L': 'Left wrist',
-
-    'Right Wrist': 'Right wrist',
-    'RightWrist': 'Right wrist',
-    'Wrist_R': 'Right wrist',
-
-    # Typical Mixamo Rig
-    'Mixamorig:Hips': 'Hips',
-    'Mixamorig:Spine': 'Spine',
-    'Mixamorig:Spine1': 'Chest',
-    'Mixamorig:Spine2': 'NewChest',
-    'Mixamorig:Neck': 'Neck',
-    'Mixamorig:Head': 'Head',
-    'Mixamorig:LeftEye': 'Eye_L',
-    'Mixamorig:RightEye': 'Eye_R',
-
-    'Mixamorig:LeftShoulder': 'Left shoulder',
-    'Mixamorig:LeftArm': 'Left arm',
-    'Mixamorig:LeftForeArm': 'Left elbow',
-    'Mixamorig:LeftHand': 'Left wrist',
-
-    'Mixamorig:RightShoulder': 'Right shoulder',
-    'Mixamorig:RightArm': 'Right arm',
-    'Mixamorig:RightForeArm': 'Right elbow',
-    'Mixamorig:RightHand': 'Right wrist',
-
-    'Mixamorig:LeftUpLeg': 'Left leg',
-    'Mixamorig:LeftLeg': 'Left knee',
-    'Mixamorig:LeftFoot': 'Left ankle',
-    'Mixamorig:LeftToeBase': 'Left toe',
-
-    'Mixamorig:RightUpLeg': 'Right leg',
-    'Mixamorig:RightLeg': 'Right knee',
-    'Mixamorig:RightFoot': 'Right ankle',
-    'Mixamorig:RightToeBase': 'Right toe'
-}
-bone_list_rename_unknown_side = {
-    'Shoulder': 'shoulder',
-    'Shoulder_001': 'shoulder'
-}
-bone_list_parenting = {
-    'Spine': 'Hips',
-    'Chest': 'Spine',
-    'Neck': 'Chest',
-    'Head': 'Neck',
-    'Left shoulder': 'Chest',
-    'Right shoulder': 'Chest',
-    'Left arm': 'Left shoulder',
-    'Right arm': 'Right shoulder',
-    'Left elbow': 'Left arm',
-    'Right elbow': 'Right arm',
-    'Left wrist': 'Left elbow',
-    'Right wrist': 'Right elbow',
-    'Left leg': 'Hips',
-    'Right leg': 'Hips',
-    'Left knee': 'Left leg',
-    'Right knee': 'Right leg',
-    'Left ankle': 'Left knee',
-    'Right ankle': 'Right knee',
-    'Left toe': 'Left ankle',
-    'Right toe': 'Right ankle'
-}
-bone_list_weight = {
-    'LowerBody1': 'Hips',
-    'LowerBody2': 'Hips',
-
-    'UpperBodyx': 'Spine',
-    'UpperBodyx2': 'Chest',
-
-    'Neckx': 'Neck',
-    'NeckW': 'Neck',
-    'NeckW2': 'Neck',
-
-    'Neckx2': 'Head',
-
-    'EyeReturn_L': 'Eye_L',
-    'EyeW_L': 'Eye_L',
-
-    'EyeReturn_R': 'Eye_R',
-    'EyeW_R': 'Eye_R',
-
-    'LegD_L': 'Left leg',
-    'Left foot D': 'Left leg',
-    'Left foot complement': 'Left leg',
-    'Left foot supplement': 'Left leg',
-    'Legcnt連_L': 'Left leg',
-    'L腿Twist1': 'Left leg',
-    'L腿Twist2': 'Left leg',
-    'L腿Twist3': 'Left leg',
-    'LegcntEven_L': 'Left leg',
-    'LLegTwist1': 'Left leg',
-    'LLegTwist2': 'Left leg',
-    'LLegTwist3': 'Left leg',
-    'LegW_L': 'Left leg',
-    'LegW2_L': 'Left leg',
-    'LowerKnee_L': 'Left leg',
-    'UpperKnee_L': 'Left leg',
-
-    'LegD_R': 'Right leg',
-    'Right foot D': 'Right leg',
-    'Right foot complement': 'Right leg',
-    'Right foot supplement': 'Right leg',
-    'Legcnt連_R': 'Right leg',
-    'R腿Twist1': 'Right leg',
-    'R腿Twist2': 'Right leg',
-    'R腿Twist3': 'Right leg',
-    'LegcntEven_R': 'Right leg',
-    'RLegTwist1': 'Right leg',
-    'RLegTwist2': 'Right leg',
-    'RLegTwist3': 'Right leg',
-    'LegW_R': 'Right leg',
-    'LegW2_R': 'Right leg',
-    'KneeS_R': 'Right leg',
-    'LowerKnee_R': 'Right leg',
-    'UpperKnee_R': 'Right leg',
-
-    'KneeD_L': 'Left knee',
-    'Left knee D': 'Left knee',
-    'Kneecnt連_L': 'Left knee',
-    'L脛Twist1': 'Left knee',
-    'L脛Twist2': 'Left knee',
-    'L脛Twist3': 'Left knee',
-    'KneecntEven_L': 'Left knee',
-    'LTibiaTwist1': 'Left knee',
-    'LTibiaTwist2': 'Left knee',
-    'LTibiaTwist3': 'Left knee',
-    'KneeW1_L': 'Left knee',
-    'KneeW2_L': 'Left knee',
-    'Knee+_L': 'Left knee',
-    'KneeArmor2_L': 'Left knee',
-
-    'KneeD_R': 'Right knee',
-    'Right knee D': 'Right knee',
-    'Kneecnt連_R': 'Right knee',
-    'R脛Twist1': 'Right knee',
-    'R脛Twist2': 'Right knee',
-    'R脛Twist3': 'Right knee',
-    'KneecntEven_R': 'Right knee',
-    'RTibiaTwist1': 'Right knee',
-    'RTibiaTwist2': 'Right knee',
-    'RTibiaTwist3': 'Right knee',
-    'KneeW1_R': 'Right knee',
-    'KneeW2_R': 'Right knee',
-    'Knee+_R': 'Right knee',
-    'KneeArmor2_R': 'Right knee',
-
-    'AnkleD_L': 'Left ankle',
-    'Left ankle D': 'Left ankle',
-    'Ankle連_L': 'Left ankle',
-    'AnkleEven_L': 'Left ankle',
-    'AnkleW1_L': 'Left ankle',
-    'AnkleW2_L': 'Left ankle',
-    'Ankle+_L': 'Left ankle',
-    'ToeTipMovable_L': 'Left ankle',
-    'AnkleArmor_L': 'Left ankle',
-
-    'AnkleD_R': 'Right ankle',
-    'Right ankle D': 'Right ankle',
-    'Ankle連_R': 'Right ankle',
-    'AnkleEven_R': 'Right ankle',
-    'AnkleW1_R': 'Right ankle',
-    'AnkleW2_R': 'Right ankle',
-    'Ankle+_R': 'Right ankle',
-    'ToeTipMovable_R': 'Right ankle',
-    'AnkleArmor_R': 'Right ankle',
-
-    '爪TipEX_L': 'Left toe',
-    '爪TipEX2_L': 'Left toe',
-    '爪TipThumbEX_L': 'Left toe',
-    '爪TipThumbEX2_L': 'Left toe',
-    'ClawTipEX_L': 'Left toe',
-    'ClawTipEX2_L': 'Left toe',
-    'ClawTipThumbEX_L': 'Left toe',
-    'ClawTipThumbEX2_L': 'Left toe',
-
-    '爪TipEX_R': 'Right toe',
-    '爪TipEX2_R': 'Right toe',
-    '爪TipThumbEX_R': 'Right toe',
-    '爪TipThumbEX2_R': 'Right toe',
-    'ClawTipEX_R': 'Right toe',
-    'ClawTipEX2_R': 'Right toe',
-    'ClawTipThumbEX_R': 'Right toe',
-    'ClawTipThumbEX2_R': 'Right toe',
-
-    'ShoulderC_R': 'Right shoulder',
-    'Shoulder2_R': 'Right shoulder',
-    'ShoulderSleeve_R': 'Right shoulder',
-    'SleeveShoulderIK_R': 'Right shoulder',
-    'Right shoulder weight': 'Right shoulder',
-    'ShoulderS_R': 'Right shoulder',
-    'ShoulderW_R': 'Right shoulder',
-
-    'ShoulderC_L': 'Left shoulder',
-    'Shoulder2_L': 'Left shoulder',
-    'ShoulderSleeve_L': 'Left shoulder',
-    'SleeveShoulderIK_L': 'Left shoulder',
-    'Left shoulder weight': 'Left shoulder',
-    'ShoulderS_L': 'Left shoulder',
-    'ShoulderW_L': 'Left shoulder',
-
-    'ArmTwist_R': 'Right arm',
-    'ArmTwist1_R': 'Right arm',
-    'ArmTwist2_R': 'Right arm',
-    'ArmTwist3_R': 'Right arm',
-    'ArmTwist4_R': 'Right arm',
-    'Right arm twist': 'Right arm',
-    'Right arm torsion': 'Right arm',
-    'Right arm torsion 1': 'Right arm',
-    'Right arm tight': 'Right arm',
-    'Right arm tight 1': 'Right arm',
-    'Right arm tight 2': 'Right arm',
-    'Right arm tight 3': 'Right arm',
-    'ElbowAux_R': 'Right arm',
-    'ElbowAux+_R': 'Right arm',
-    '+ElbowAux_R': 'Right arm',
-    'ArmSleeve_R': 'Right arm',
-    'ShoulderTwist_R': 'Right arm',
-    'ArmW_R': 'Right arm',
-    'ArmW2_R': 'Right arm',
-    '袖腕.R': 'Right arm',
-    'SleeveArm_R': 'Right arm',
-    '袖ひじ補助.R': 'Right arm',
-    'SleeveElbowAux_R': 'Right arm',
-    'DEF-upper_arm_02_R': 'Right arm',
-    'DEF-upper_arm_twist_25_R': 'Right arm',
-    'DEF-upper_arm_twist_50_R': 'Right arm',
-    'DEF-upper_arm_twist_75_R': 'Right arm',
-
-    'ArmTwist_L': 'Left arm',
-    'ArmTwist1_L': 'Left arm',
-    'ArmTwist2_L': 'Left arm',
-    'ArmTwist3_L': 'Left arm',
-    'ArmTwist4_L': 'Left arm',
-    'Left arm twist': 'Left arm',
-    'Left arm torsion': 'Left arm',
-    'Left arm torsion 1': 'Left arm',
-    'Left arm tight': 'Left arm',
-    'Left arm tight 1': 'Left arm',
-    'Left arm tight 2': 'Left arm',
-    'Left arm tight 3': 'Left arm',
-    'ElbowAux_L': 'Left arm',
-    'ElbowAux+_L': 'Left arm',
-    '+ElbowAux_L': 'Left arm',
-    'ArmSleeve_L': 'Left arm',
-    'ShoulderTwist_L': 'Left arm',
-    'ArmW_L': 'Left arm',
-    'ArmW2_L': 'Left arm',
-    'エプロンArm': 'Left arm',
-    'SleeveArm_L': 'Left arm',
-    '袖ひじ補助.L': 'Left arm',
-    'SleeveElbowAux_L': 'Left arm',
-    'DEF-upper_arm_02_L': 'Left arm',
-    'DEF-upper_arm_twist_25_L': 'Left arm',
-    'DEF-upper_arm_twist_50_L': 'Left arm',
-    'DEF-upper_arm_twist_75_L': 'Left arm',
-
-    'Elbow1_R': 'Right elbow',
-    'Elbow2_R': 'Right elbow',
-    'Elbow3_R': 'Right elbow',
-    'HandTwist_R': 'Right elbow',
-    'HandTwist1_R': 'Right elbow',
-    'HandTwist2_R': 'Right elbow',
-    'HandTwist3_R': 'Right elbow',
-    'HandTwist4_R': 'Right elbow',
-    'Right Hand 1': 'Right elbow',
-    'Right Hand 2': 'Right elbow',
-    'Right Hand 3': 'Right elbow',
-    'Right hand 1': 'Right elbow',
-    'Right hand 2': 'Right elbow',
-    'Right hand 3': 'Right elbow',
-    'Right hand twist': 'Right elbow',
-    'Right hand twist 1': 'Right elbow',
-    'Right hand twist 2': 'Right elbow',
-    'Right Hand Thread 3': 'Right elbow',
-    'ElbowSleeve_R': 'Right elbow',
-    'WristAux_R': 'Right elbow',
-    'ElbowTwist_R': 'Right elbow',
-    'ElbowTwist2_R': 'Right elbow',
-    'ElbowW_R': 'Right elbow',
-    'ElbowW2_R': 'Right elbow',
-    '袖ひじ.R': 'Right elbow',
-    'SleeveElbow_R': 'Right elbow',
-    'Sleeve口_R': 'Right elbow',
-    'SleeveMouth_R': 'Right elbow',
-    'DEF-upper_arm_elbow_R': 'Right elbow',
-    'DEF-forearm_twist_75_R': 'Right elbow',
-    'DEF-forearm_twist_50_R': 'Right elbow',
-    'DEF-forearm_twist_25_R': 'Right elbow',
-
-    'Elbow1_L': 'Left elbow',
-    'Elbow2_L': 'Left elbow',
-    'Elbow3_L': 'Left elbow',
-    'HandTwist_L': 'Left elbow',
-    'HandTwist1_L': 'Left elbow',
-    'HandTwist2_L': 'Left elbow',
-    'HandTwist3_L': 'Left elbow',
-    'HandTwist4_L': 'Left elbow',
-    'Left Hand 1': 'Left elbow',
-    'Left Hand 2': 'Left elbow',
-    'Left Hand 3': 'Left elbow',
-    'Left hand 1': 'Left elbow',
-    'Left hand 2': 'Left elbow',
-    'Left hand 3': 'Left elbow',
-    'Left hand twist': 'Left elbow',
-    'Left hand twist 1': 'Left elbow',
-    'Left hand twist 2': 'Left elbow',
-    'Left Hand Thread 3': 'Left elbow',
-    'ElbowSleeve_L': 'Left elbow',
-    'WristAux_L': 'Left elbow',
-    'ElbowTwist_L': 'Left elbow',
-    'ElbowTwist2_L': 'Left elbow',
-    'ElbowW_L': 'Left elbow',
-    'ElbowW2_L': 'Left elbow',
-    '袖ひじ.L': 'Left elbow',
-    'SleeveElbow_L': 'Left elbow',
-    'Sleeve口_L': 'Left elbow',
-    'SleeveMouth_L': 'Left elbow',
-    'DEF-upper_arm_elbow_L': 'Left elbow',
-    'DEF-forearm_twist_75_L': 'Left elbow',
-    'DEF-forearm_twist_50_L': 'Left elbow',
-    'DEF-forearm_twist_25_L': 'Left elbow',
-
-    'WristSleeve_L': 'Left wrist',
-    'WristW_L': 'Left wrist',
-    'WristS_L': 'Left wrist',
-    'HandTwist5_L': 'Left wrist',
-
-    'WristSleeve_R': 'Right wrist',
-    'WristW_R': 'Right wrist',
-    'WristS_R': 'Right wrist',
-    'HandTwist5_R': 'Right wrist',
-
-    # Some weird model exception here
-    'DEF-palm_01_R': 'IndexFinger0_R',
-    'DEF-palm_02_R': 'MiddleFinger0_R',
-    'DEF-palm_03_R': 'RingFinger0_R',
-    'DEF-palm_04_R': 'LittleFinger0_R',
-
-    'DEF-f_ring_01_R_02': 'RingFinger1_R',
-    'DEF-f_ring_01_R_01': 'RingFinger1_R',
-    'DEF-f_ring_02_R': 'RingFinger2_R',
-    'DEF-f_ring_03_R': 'RingFinger3_R',
-    'DEF-f_middle_01_R_01': 'MiddleFinger1_R',
-    'DEF-f_middle_01_R_02': 'MiddleFinger1_R',
-    'DEF-f_middle_02_R': 'MiddleFinger2_R',
-    'DEF-f_middle_03_R': 'MiddleFinger3_R',
-
-    'DEF-f_index_03_R': 'IndexFinger3_R',
-    'DEF-f_index_02_R': 'IndexFinger2_R',
-    'DEF-f_index_01_R_02': 'IndexFinger1_R',
-    'DEF-f_index_01_R_01': 'IndexFinger1_R',
-
-    'DEF-f_pinky_03_R': 'LittleFinger3_R',
-    'DEF-f_pinky_02_R': 'LittleFinger2_R',
-    'DEF-f_pinky_01_R_02': 'LittleFinger1_R',
-    'DEF-f_pinky_01_R_01': 'LittleFinger1_R',
-
-    'DEF-thumb_01_R_01': 'Thumb0_R',
-    'DEF-thumb_01_R_02': 'Thumb0_R',
-    'DEF-thumb_02_R': 'Thumb1_R',
-    'DEF-thumb_03_R': 'Thumb2_R',
-
-    'Thumb0_R': 'Right wrist',
-    'IndexFinger0_R': 'Right wrist',
-    'MiddleFinger0_R': 'Right wrist',
-    'RingFinger0_R': 'Right wrist',
-    'LittleFinger0_R': 'Right wrist',
-
-    'DEF-thumb_01_R_02': 'Right wrist',
-    'DEF-hand_R': 'Right wrist',
-    'DEF-thumb_01_R_01': 'Right wrist',
-    'DEF-palm_01_R': 'Right wrist',
-    'DEF-palm_02_R': 'Right wrist',
-
-    'DEF-palm_01_L': 'IndexFinger0_L',
-    'DEF-palm_02_L': 'MiddleFinger0_L',
-    'DEF-palm_03_L': 'RingFinger0_L',
-    'DEF-palm_04_L': 'LittleFinger0_L',
-
-    'DEF-f_Ling_01_L_02': 'RingFinger1_L',
-    'DEF-f_Ling_01_L_01': 'RingFinger1_L',
-    'DEF-f_Ling_02_L': 'RingFinger2_L',
-    'DEF-f_Ling_03_L': 'RingFinger3_L',
-    'DEF-f_middle_01_L_01': 'MiddleFinger1_L',
-    'DEF-f_middle_01_L_02': 'MiddleFinger1_L',
-    'DEF-f_middle_02_L': 'MiddleFinger2_L',
-    'DEF-f_middle_03_L': 'MiddleFinger3_L',
-
-    'DEF-f_index_03_L': 'IndexFinger3_L',
-    'DEF-f_index_02_L': 'IndexFinger2_L',
-    'DEF-f_index_01_L_02': 'IndexFinger1_L',
-    'DEF-f_index_01_L_01': 'IndexFinger1_L',
-
-    'DEF-f_pinky_03_L': 'LittleFinger3_L',
-    'DEF-f_pinky_02_L': 'LittleFinger2_L',
-    'DEF-f_pinky_01_L_02': 'LittleFinger1_L',
-    'DEF-f_pinky_01_L_01': 'LittleFinger1_L',
-
-    'DEF-thumb_01_L_01': 'Thumb0_L',
-    'DEF-thumb_01_L_02': 'Thumb0_L',
-    'DEF-thumb_02_L': 'Thumb1_L',
-    'DEF-thumb_03_L': 'Thumb2_L',
-
-    'Thumb0_L': 'Left wrist',
-    'IndexFinger0_L': 'Left wrist',
-    'MiddleFinger0_L': 'Left wrist',
-    'RingFinger0_L': 'Left wrist',
-    'LittleFinger0_L': 'Left wrist',
-
-    'DEF-thumb_01_L_02': 'Left wrist',
-    'DEF-hand_L': 'Left wrist',
-    'DEF-thumb_01_L_01': 'Left wrist',
-    'DEF-palm_01_L': 'Left wrist',
-    'DEF-palm_02_L': 'Left wrist',
-}
-dont_delete_these_bones = {
-    'Hips', 'Spine', 'Chest', 'Neck', 'Head',
-    'Left leg', 'Left knee', 'Left ankle', 'Left toe',
-    'Right leg', 'Right knee', 'Right ankle', 'Right toe',
-    'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
-    'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist',
-    'OldRightEye', 'OldLeftEye', 'LeftEye', 'RightEye', 'Eye_L', 'Eye_R'
-}
-
-
-def delete_hierarchy(obj):
-    names = {obj.name}
-
-    def get_child_names(objz):
-        for child in objz.children:
-            names.add(child.name)
-            if child.children:
-                get_child_names(child)
-
-    get_child_names(obj)
-    objects = bpy.data.objects
-    [setattr(objects[n], 'select', True) for n in names]
-
-    bpy.ops.object.delete()
-    bpy.data.objects.remove(obj)
 
 
 class FixArmature(bpy.types.Operator):
@@ -616,7 +76,7 @@ class FixArmature(bpy.types.Operator):
         wm = bpy.context.window_manager
         armature = tools.common.set_default_stage()
 
-        steps = len(bpy.data.objects) + len(armature.pose.bone_groups) + len(bone_list_rename_unknown_side) + len(bone_list_parenting) + len(bone_list_weight) + 1
+        steps = len(bpy.data.objects) + len(armature.pose.bone_groups) + len(Bones.bone_list_rename_unknown_side) + len(Bones.bone_list_parenting) + len(Bones.bone_list_weight) + 1  # TODO
         current_step = 0
         wm.progress_begin(current_step, steps)
 
@@ -640,7 +100,7 @@ class FixArmature(bpy.types.Operator):
             current_step += 1
             wm.progress_update(current_step)
             if obj.name == 'rigidbodies' or obj.name == 'rigidbodies.001' or obj.name == 'joints' or obj.name == 'joints.001':
-                delete_hierarchy(obj)
+                tools.common.delete_hierarchy(obj)
 
         # Remove Bone Groups
         for group in armature.pose.bone_groups:
@@ -672,11 +132,26 @@ class FixArmature(bpy.types.Operator):
         # Rename bones
         for bone in armature.data.edit_bones:
             bone.name = bone.name[:1].upper() + bone.name[1:]
-        for key, value in bone_list_rename.items():
-            if key in armature.data.edit_bones or key.lower() in armature.data.edit_bones:
-                bone = armature.data.edit_bones.get(key)
-                if bone is not None:
-                    bone.name = value
+
+        for bone_new, bones_old in Bones.bone_rename.items():
+            if '\Left' in bone_new or '\L' in bone_new:
+                bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
+                         [bone_new.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'), '']]
+            else:
+                bones = [[bone_new, '']]
+            for bone_old in bones_old:
+                if '\Left' in bone_new or '\L' in bone_new:
+                    bones[0][1] = bone_old.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l')
+                    bones[1][1] = bone_old.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')
+                else:
+                    bones[0][1] = bone_old
+
+                for bone in bones:  # bone[0] = new name, bone[1] = old name
+                    print(bone[0] + ' == ' + bone[1])
+                    if bone[1] in armature.data.edit_bones or bone[1].lower() in armature.data.edit_bones:
+                        bone2 = armature.data.edit_bones.get(bone[1])
+                        if bone2 is not None:
+                            bone2.name = bone[0]
 
         # Check if it is a mixamo model
         mixamo = False
@@ -686,7 +161,7 @@ class FixArmature(bpy.types.Operator):
                 break
 
         # Rename bones which don't have a side and try to detect it automatically
-        for key, value in bone_list_rename_unknown_side.items():
+        for key, value in Bones.bone_list_rename_unknown_side.items():
             current_step += 1
             wm.progress_update(current_step)
 
@@ -715,9 +190,9 @@ class FixArmature(bpy.types.Operator):
 
         # Remove un-needed bones and disconnect them
         for bone in armature.data.edit_bones:
-            if bone.name in bone_list or bone.name.startswith(tuple(bone_list_with)):
+            if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
                 if bone.parent is not None:
-                    bone_list_weight[bone.name] = bone.parent.name
+                    Bones.bone_list_weight[bone.name] = bone.parent.name
                 else:
                     armature.data.edit_bones.remove(bone)
             else:
@@ -868,7 +343,7 @@ class FixArmature(bpy.types.Operator):
                         hip_bone.roll = 0
 
         # Reparent all bones to be correct for unity mapping and vrc itself
-        for key, value in bone_list_parenting.items():
+        for key, value in Bones.bone_list_parenting.items():
             current_step += 1
             wm.progress_update(current_step)
 
@@ -880,7 +355,7 @@ class FixArmature(bpy.types.Operator):
         tools.common.switch('OBJECT')
         tools.common.select(mesh)
 
-        for key, value in bone_list_weight.items():
+        for key, value in Bones.bone_list_weight.items():
             current_step += 1
             wm.progress_update(current_step)
             vg = mesh.vertex_groups.get(key)
@@ -994,7 +469,7 @@ def delete_zero_weight():
     not_used_bone_names = bone_names_to_work_on - vertex_group_names_used
 
     for bone_name in not_used_bone_names:
-        if bone_name not in dont_delete_these_bones:
+        if bone_name not in Bones.dont_delete_these_bones:
             armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
             if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
                 for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups

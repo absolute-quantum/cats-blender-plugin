@@ -469,6 +469,23 @@ def removeZeroVerts(obj, thres=0):
             obj.vertex_groups[g.group].remove([v.index])
 
 
+def delete_hierarchy(obj):
+    names = {obj.name}
+
+    def get_child_names(objz):
+        for child in objz.children:
+            names.add(child.name)
+            if child.children:
+                get_child_names(child)
+
+    get_child_names(obj)
+    objects = bpy.data.objects
+    [setattr(objects[n], 'select', True) for n in names]
+
+    bpy.ops.object.delete()
+    bpy.data.objects.remove(obj)
+
+
 def LLHtoECEF(lat, lon, alt):
     # see http://www.mathworks.de/help/toolbox/aeroblks/llatoecefposition.html
 
