@@ -214,6 +214,9 @@ bone_list_weight = {
     'LegW2_L': 'Left leg',
     'LowerKnee_L': 'Left leg',
     'UpperKnee_L': 'Left leg',
+    'LegX1_L': 'Left leg',
+    'LegX2_L': 'Left leg',
+    'LegX3_L': 'Left leg',
 
     'LegD_R': 'Right leg',
     'Right foot D': 'Right leg',
@@ -232,6 +235,9 @@ bone_list_weight = {
     'KneeS_R': 'Right leg',
     'LowerKnee_R': 'Right leg',
     'UpperKnee_R': 'Right leg',
+    'LegX1_R': 'Right leg',
+    'LegX2_R': 'Right leg',
+    'LegX3_R': 'Right leg',
 
     'KneeD_L': 'Left knee',
     'Left knee D': 'Left knee',
@@ -247,6 +253,10 @@ bone_list_weight = {
     'KneeW2_L': 'Left knee',
     'Knee+_L': 'Left knee',
     'KneeArmor2_L': 'Left knee',
+    'KneeX1_L': 'Left knee',
+    'KneeX2_L': 'Left knee',
+    'KneeX3_L': 'Left knee',
+    'Leg left acc': 'Left knee',
 
     'KneeD_R': 'Right knee',
     'Right knee D': 'Right knee',
@@ -262,6 +272,10 @@ bone_list_weight = {
     'KneeW2_R': 'Right knee',
     'Knee+_R': 'Right knee',
     'KneeArmor2_R': 'Right knee',
+    'KneeX1_R': 'Right knee',
+    'KneeX2_R': 'Right knee',
+    'KneeX3_R': 'Right knee',
+    'Leg right acc': 'Right knee',
 
     'AnkleD_L': 'Left ankle',
     'Left ankle D': 'Left ankle',

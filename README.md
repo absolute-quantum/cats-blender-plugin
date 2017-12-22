@@ -223,9 +223,12 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Changelog
 
 #### 0.5.0
+- Added: Model: More models are now compatible (if not please report it to us)
 - Added: Translations: Now shows how many objects were translated
+- Fixed: Model: Joining meshes causes models to be decimated weirdly
 - Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"
 - Fixed: UI: Improved some loading bars
+- Fixed: Other bugs
 
 #### 0.4.0
 - Added: Model: A lot more models are now compatible (if not please report it to us)
