@@ -92,15 +92,15 @@ class FixArmature(bpy.types.Operator):
             except:
                 pass
 
-        # Remove empty objects
-        tools.common.remove_empty()
-
         # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
             current_step += 1
             wm.progress_update(current_step)
             if obj.name == 'rigidbodies' or obj.name == 'rigidbodies.001' or obj.name == 'joints' or obj.name == 'joints.001':
                 tools.common.delete_hierarchy(obj)
+
+        # Remove empty objects
+        tools.common.remove_empty()
 
         # Remove Bone Groups
         for group in armature.pose.bone_groups:

@@ -397,36 +397,35 @@ def repair_viseme_order(mesh_name):
     order['vrc.v_th'] = 19
 
     for name in order.keys():
-        if mesh.data.shape_keys is not None:
-            if hasattr(mesh.data.shape_keys, 'key_blocks'):
-                for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                    if shapekey.name == name:
-                        mesh.active_shape_key_index = index
-                        new_index = order.get(shapekey.name)
-                        index_diff = (index - new_index)
+        if mesh.data.shape_keys is not None and hasattr(mesh.data.shape_keys, 'key_blocks'):
+            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                if shapekey.name == name:
+                    mesh.active_shape_key_index = index
+                    new_index = order.get(shapekey.name)
+                    index_diff = (index - new_index)
 
-                        if new_index >= len(mesh.data.shape_keys.key_blocks):
-                            bpy.ops.object.shape_key_move(type='BOTTOM')
-                            break
+                    if new_index >= len(mesh.data.shape_keys.key_blocks):
+                        bpy.ops.object.shape_key_move(type='BOTTOM')
+                        break
+
+                    position_correct = False
+                    if 0 <= index_diff <= (new_index - 1):
+                        while position_correct is False:
+                            if mesh.active_shape_key_index != new_index:
+                                    bpy.ops.object.shape_key_move(type='UP')
+                            else:
+                                position_correct = True
+                    else:
+                        if mesh.active_shape_key_index > new_index:
+                            bpy.ops.object.shape_key_move(type='TOP')
 
                         position_correct = False
-                        if 0 <= index_diff <= (new_index - 1):
-                            while position_correct is False:
-                                if mesh.active_shape_key_index != new_index:
-                                        bpy.ops.object.shape_key_move(type='UP')
-                                else:
-                                    position_correct = True
-                        else:
-                            if mesh.active_shape_key_index > new_index:
-                                bpy.ops.object.shape_key_move(type='TOP')
-
-                            position_correct = False
-                            while position_correct is False:
-                                if mesh.active_shape_key_index != new_index:
-                                    bpy.ops.object.shape_key_move(type='DOWN')
-                                else:
-                                    position_correct = True
-                        break
+                        while position_correct is False:
+                            if mesh.active_shape_key_index != new_index:
+                                bpy.ops.object.shape_key_move(type='DOWN')
+                            else:
+                                position_correct = True
+                    break
 
 
 def isEmptyGroup(group_name):
@@ -469,20 +468,31 @@ def removeZeroVerts(obj, thres=0):
 
 
 def delete_hierarchy(obj):
-    names = {obj.name}
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.animation_data_clear()
+    names = set()
 
-    def get_child_names(objz):
-        for child in objz.children:
+    def get_child_names(obj):
+        for child in obj.children:
             names.add(child.name)
             if child.children:
                 get_child_names(child)
 
     get_child_names(obj)
-    objects = bpy.data.objects
-    [setattr(objects[n], 'select', True) for n in names]
 
-    bpy.ops.object.delete()
+    objects = bpy.data.objects
+    for n in names:
+        obj_temp = objects.get(n)
+        if obj_temp is not None:
+            setattr(obj_temp, 'select', True)
+            obj_temp.animation_data_clear()
+
+    result = bpy.ops.object.delete()
     bpy.data.objects.remove(obj)
+    if result == {'FINISHED'}:
+        print("Successfully deleted object")
+    else:
+        print("Could not delete object")
 
 
 def LLHtoECEF(lat, lon, alt):
