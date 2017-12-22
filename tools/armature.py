@@ -147,7 +147,6 @@ class FixArmature(bpy.types.Operator):
                     bones[0][1] = bone_old
 
                 for bone in bones:  # bone[0] = new name, bone[1] = old name
-                    print(bone[0] + ' == ' + bone[1])
                     if bone[1] in armature.data.edit_bones or bone[1].lower() in armature.data.edit_bones:
                         bone2 = armature.data.edit_bones.get(bone[1])
                         if bone2 is not None:
@@ -423,8 +422,6 @@ def check_hierarchy(correct_hierarchy_array):
                 previous = correct_hierarchy[index - 1]
 
             # NOTE: armature.data.bones is being used instead of armature.data.edit_bones because of a failed test (edit_bones array empty for some reason)
-            for bone2 in armature.data.bones:
-                print(bone2.name)
             if bone not in armature.data.bones:
                 return {'result': False, 'message': bone + ' was not found in the hierarchy, this will cause problems!'}
 

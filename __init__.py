@@ -85,6 +85,7 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
+dev_branch = True
 
 slider_z = 0
 
@@ -765,6 +766,8 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
                 if index == 0:
                     continue
                 version_str += '.' + str(version[index])
+        if dev_branch:
+            version_str += '-dev'
         version_str += ')'
 
         row.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)

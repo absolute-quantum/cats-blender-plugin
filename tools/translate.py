@@ -51,8 +51,13 @@ class TranslateShapekeyButton(bpy.types.Operator):
                     for index, shapekey in enumerate(obj.data.shape_keys.key_blocks):
                         to_translate.append(shapekey.name)
 
-        translator = Translator()
-        translations = translator.translate(to_translate)
+        try:
+            translator = Translator()
+            translations = translator.translate(to_translate)
+        except:
+            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+            return {'FINISHED'}
+
         for translation in translations:
             translated.append(translation.text)
 
@@ -114,7 +119,12 @@ class TranslateMeshesButton(bpy.types.Operator):
         for obj in objects:
             to_translate.append(obj.name)
 
-        translations = translator.translate(to_translate, src='ja')
+        try:
+            translations = translator.translate(to_translate, src='ja')
+        except:
+            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+            return {'FINISHED'}
+
         for translation in translations:
             translated.append(translation.text)
 
@@ -146,16 +156,20 @@ class TranslateMaterialsButton(bpy.types.Operator):
             for matslot in mesh.material_slots:
                 to_translate.append(matslot.name)
 
-            translated = []
+        translated = []
+        try:
             translations = translator.translate(to_translate)
-            for translation in translations:
-                translated.append(translation.text)
+        except:
+            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+            return {'FINISHED'}
+        for translation in translations:
+            translated.append(translation.text)
 
-            i = 0
-            for index, matslot in enumerate(mesh.material_slots):
-                mesh.active_material_index = index
-                bpy.context.object.active_material.name = translated[i]
-                i += 1
+        i = 0
+        for index, matslot in enumerate(mesh.material_slots):
+            mesh.active_material_index = index
+            bpy.context.object.active_material.name = translated[i]
+            i += 1
 
         tools.common.unselect_all()
 
@@ -189,17 +203,22 @@ class TranslateTexturesButton(bpy.types.Operator):
                         print(texslot.name)
                         to_translate.append(texslot.name)
 
-            translated = []
+        translated = []
+        try:
             translations = translator.translate(to_translate)
-            for translation in translations:
-                translated.append(translation.text)
+        except:
+            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+            return {'FINISHED'}
 
-            i = 0
-            for matslot in mesh.material_slots:
-                for texslot in bpy.data.materials[matslot.name].texture_slots:
-                    if texslot is not None:
-                        bpy.data.textures[texslot.name].name = translated[i]
-                        i += 1
+        for translation in translations:
+            translated.append(translation.text)
+
+        i = 0
+        for matslot in mesh.material_slots:
+            for texslot in bpy.data.materials[matslot.name].texture_slots:
+                if texslot is not None:
+                    bpy.data.textures[texslot.name].name = translated[i]
+                    i += 1
 
         tools.common.unselect_all()
 

@@ -332,8 +332,7 @@ def join_meshes(context):
                     continue
 
                 if mesh.data.shape_keys is not None:
-                    for key in mesh.data.shape_keys.key_blocks:
-                        mesh.shape_key_remove(key)
+                    bpy.ops.object.shape_key_remove(all=True)
                 bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
         unselect_all()
 
