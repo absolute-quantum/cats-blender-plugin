@@ -9,8 +9,8 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
 ## Features
- - Optimizing armature with one click!
- - Creating mouth visemes
+ - Optimizing model with one click!
+ - Creating lip syncing
  - Creating eye tracking
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
@@ -22,7 +22,9 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 *More to come!*
 
 ## Installation
- - download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
+ - Install this Blender plugin if you don't have it already: [mmd_tools](https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip)
+
+ - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
 
  - Install the the addon in blender like so:
 
@@ -226,6 +228,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Model: More models are now compatible (if not please report it to us)
 - Added: Translations: Now shows how many objects were translated
 - Fixed: Model: Joining meshes causes models to be decimated weirdly
+- Fixed: Model: Rigidbodies and joints not getting deleted
 - Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"
 - Fixed: UI: Improved some loading bars
 - Fixed: Other bugs
@@ -234,7 +237,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Model: A lot more models are now compatible (if not please report it to us)
 - Added: Bone Merging: A new feature that can reduce huge groups of bones (useful for Dynamic Bones)
 - Added: Model: Mixamo models are now fixable!
-- Added: Progress notification on serveral operations
+- Added: Progress notification on several operations
 - Added: Model: Joining meshes now applies all unapplied decimation modifiers
 - Added: Model: New "Start/Stop Pose Mode" button
 - Added: Updater: Development branch added to version selection

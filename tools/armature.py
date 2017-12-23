@@ -349,11 +349,45 @@ class FixArmature(bpy.types.Operator):
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
 
-        # Weights should be mixed
+        # Mixing the weights
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
         tools.common.select(mesh)
 
+        for bone_new, bones_old in Bones.bone_reweight.items():
+            if '\Left' in bone_new or '\L' in bone_new:
+                bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
+                         [bone_new.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'), '']]
+            else:
+                bones = [[bone_new, '']]
+            for bone_old in bones_old:
+                if '\Left' in bone_new or '\L' in bone_new:
+                    bones[0][1] = bone_old.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l')
+                    bones[1][1] = bone_old.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')
+                else:
+                    bones[0][1] = bone_old
+
+                for bone in bones:  # bone[0] = new name, bone[1] = old name
+                    print(bone[1] + ' to ' + bone[0])
+                    current_step += 1
+                    wm.progress_update(current_step)
+                    vg = mesh.vertex_groups.get(bone[1])
+                    if vg is None:
+                        vg = mesh.vertex_groups.get(bone[1].lower())
+                        if vg is None:
+                            continue
+                    vg2 = mesh.vertex_groups.get(bone[0])
+                    if vg2 is None:
+                        continue
+                    bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
+                    bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = bone[0]
+                    bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = bone[1]
+                    bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
+                    bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
+                    bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+                    mesh.vertex_groups.remove(vg)
+
+        # Old mixing weights. Still important
         for key, value in Bones.bone_list_weight.items():
             current_step += 1
             wm.progress_update(current_step)
