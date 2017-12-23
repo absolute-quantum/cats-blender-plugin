@@ -131,7 +131,12 @@ class FixArmature(bpy.types.Operator):
 
         # Rename bones
         for bone in armature.data.edit_bones:
-            bone.name = bone.name[:1].upper() + bone.name[1:]
+            name = ''
+            for i, s in enumerate(bone.name.split(' ')):
+                if i != 0:
+                    name += ' '
+                name += s[:1].upper() + s[1:]
+            bone.name = name
 
         for bone_new, bones_old in Bones.bone_rename.items():
             if '\Left' in bone_new or '\L' in bone_new:
@@ -368,7 +373,6 @@ class FixArmature(bpy.types.Operator):
                     bones[0][1] = bone_old
 
                 for bone in bones:  # bone[0] = new name, bone[1] = old name
-                    print(bone[1] + ' to ' + bone[0])
                     current_step += 1
                     wm.progress_update(current_step)
                     vg = mesh.vertex_groups.get(bone[1])

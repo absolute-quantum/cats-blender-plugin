@@ -68,52 +68,46 @@ bone_list_rename_unknown_side = {
     'Shoulder_001': 'shoulder'
 }
 
-############################
-# Replace Old Bone Patterns:
+################################
+# Capitalize all bone names!
+# Capitalize after each space!
+#
+# Replace New Bone Patterns:
 #   Left/Right = \Left
 #   L/R = \L
-# Replace New Bone Patterns:
+# Replace Old Bone Patterns:
 #   Left/Right = \Left
 #   left/right = \left
 #   L/R = \L
 #   l/r = \l
-############################
+################################
 bone_rename = OrderedDict()
 bone_rename['Hips'] = [
     'LowerBody',
     'Lowerbody',
-    'Lower body',
     'Lower Body',
     'Mixamorig:Hips',
 ]
 bone_rename['Spine'] = [
     'UpperBody',
     'Upperbody',
-    'Upper body',
     'Upper Body',
-    'Upper waist',
     'Upper Waist',
     'Mixamorig:Spine',
 ]
 bone_rename['Chest'] = [
     'UpperBody2',
     'Upperbody2',
-    'Upper body 2',
     'Upper Body 2',
-    'Upper waist 2',
     'Upper Waist 2',
-    'Waist upper 2',
     'Waist Upper 2',
     'Mixamorig:Spine1',
 ]
 bone_rename['NewChest'] = [  # Will get deleted
     'UpperBody3',
     'Upperbody3',
-    'Upper body 3',
     'Upper Body 3',
-    'Upper waist 3',
     'Upper Waist 3',
-    'Waist upper 3',
     'Waist Upper 3',
     'Mixamorig:Spine2',
 ]
@@ -177,16 +171,19 @@ bone_rename['Eye_\L'] = [
     'Mixamorig:\LeftEye',
 ]
 
-############################
-# Replace Old Bone Patterns:
+################################
+# Capitalize all bone names!
+# Capitalize after each space!
+#
+# Replace New Bone Patterns:
 #   Left/Right = \Left
 #   L/R = \L
-# Replace New Bone Patterns:
+# Replace Old Bone Patterns:
 #   Left/Right = \Left
 #   left/right = \left
 #   L/R = \L
 #   l/r = \l
-############################
+################################
 bone_reweight = OrderedDict()
 bone_reweight['Hips'] = [
     'LowerBody1',
@@ -212,9 +209,9 @@ bone_reweight['Eye_\L'] = [
 ]
 bone_reweight['\Left leg'] = [
     'LegD_\L',
-    '\Left foot D',
-    '\Left foot complement',
-    '\Left foot supplement',
+    '\Left Foot D',
+    '\Left Foot Complement',
+    '\Left Foot Supplement',
     'Legcnt連_\L',
     '\L腿Twist1',
     '\L腿Twist2',
@@ -233,7 +230,7 @@ bone_reweight['\Left leg'] = [
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
-    '\Left knee D',
+    '\Left Knee D',
     'Kneecnt連_\L',
     '\L脛Twist1',
     '\L脛Twist2',
@@ -249,11 +246,11 @@ bone_reweight['\Left knee'] = [
     'KneeX1_\L',
     'KneeX2_\L',
     'KneeX3_\L',
-    'Leg \left acc',
+    'Leg \Left Acc',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',
-    '\Left ankle D',
+    '\Left Ankle D',
     'Ankle連_\L',
     'AnkleEven_\L',
     'AnkleW1_\L',
@@ -277,7 +274,7 @@ bone_reweight['\Left shoulder'] = [
     'Shoulder2_\L',
     'ShoulderSleeve_\L',
     'SleeveShoulderIK_\L',
-    '\Left shoulder weight',
+    '\Left Shoulder Weight',
     'ShoulderS_\L',
     'ShoulderW_\L',
 ]
@@ -288,13 +285,13 @@ bone_reweight['\Left arm'] = [
     'ArmTwist2_\L',
     'ArmTwist3_\L',
     'ArmTwist4_\L',
-    '\Left arm twist',
-    '\Left arm torsion',
-    '\Left arm torsion 1',
-    '\Left arm tight',
-    '\Left arm tight 1',
-    '\Left arm tight 2',
-    '\Left arm tight 3',
+    '\Left Arm Twist',
+    '\Left Arm Torsion',
+    '\Left Arm Torsion 1',
+    '\Left Arm Tight',
+    '\Left Arm Tight 1',
+    '\Left Arm Tight 2',
+    '\Left Arm Tight 3',
     'ElbowAux_\L',
     'ElbowAux+_\L',
     '+ElbowAux_\L',
@@ -323,15 +320,12 @@ bone_reweight['\Left elbow'] = [
     'HandTwist2_\L',
     'HandTwist3_\L',
     'HandTwist4_\L',
-    '\Left hand 1',
-    '\Left hand 2',
-    '\Left hand 3',
     '\Left Hand 1',
     '\Left Hand 2',
     '\Left Hand 3',
-    '\Left hand twist',
-    '\Left hand twist 1',
-    '\Left hand twist 2',
+    '\Left Hand Twist',
+    '\Left Hand Twist 1',
+    '\Left Hand Twist 2',
     '\Left Hand Thread 3',
     'ElbowSleeve_\L',
     'WristAux_\L',
@@ -367,7 +361,7 @@ bone_reweight['\Left wrist'] = [
     'DEF-palm_02_\L',
 ]
 
-
+# Old reweight list. Still important
 bone_list_weight = {
     'DEF-palm_01_L': 'IndexFinger0_L',
     'DEF-palm_02_L': 'MiddleFinger0_L',
