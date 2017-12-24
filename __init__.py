@@ -92,15 +92,20 @@ preview_collections = {}
 # List all the supporters here
 supporters = OrderedDict()
 #       'Display name' = 'Icon name'
-supporters['Xeverian'] = 'xeverian'
-supporters['Tupper'] = 'tupper'
-supporters['Jazneo'] = 'jazneo'
-supporters['Idea'] = 'idea'
-supporters['RadaruS'] = 'radarus'
-supporters['Kry10'] = 'kry10'
-supporters['smead'] = 'smead'
-supporters['kohai.istool'] = 'kohai'
+supporters['Xeverian'] = 'Xeverian'
+supporters['Tupper'] = 'Tupper'
+supporters['Jazneo'] = 'Jazneo'
+supporters['idea'] = 'idea'
+supporters['radaruS'] = 'radaruS'
+supporters['Kry10'] = 'Kry10'
+supporters['Smead'] = 'Smead'
+supporters['kohai.istool'] = 'kohai.istool'
 supporters['Str4fe'] = 'Str4fe'
+supporters['Raikin'] = 'Raikin'
+supporters['Wintermute'] = 'Wintermute'
+supporters['BerserkerBoreas'] = 'BerserkerBoreas'
+supporters['ihatemondays'] = 'ihatemondays'
+supporters['Derpmare'] = 'Derpmare'
 
 
 class ToolPanel:
