@@ -52,6 +52,7 @@ import tools.bonemerge
 import tools.rootbone
 import tools.translate
 import tools.armature
+import tools.armature_bones
 import tools.armature_manual
 import tools.material
 import tools.common
@@ -65,6 +66,7 @@ importlib.reload(tools.bonemerge)
 importlib.reload(tools.rootbone)
 importlib.reload(tools.translate)
 importlib.reload(tools.armature)
+importlib.reload(tools.armature_bones)
 importlib.reload(tools.armature_manual)
 importlib.reload(tools.material)
 importlib.reload(tools.common)
@@ -83,6 +85,7 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
+dev_branch = True
 
 slider_z = 0
 
@@ -768,6 +771,8 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
                 if index == 0:
                     continue
                 version_str += '.' + str(version[index])
+        if dev_branch:
+            version_str += '-dev'
         version_str += ')'
 
         row.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
@@ -868,103 +873,74 @@ def unload_icons():
     preview_collections.clear()
 
 
+classesToRegister = [
+    ArmaturePanel,
+    tools.armature_manual.ImportModel,
+    tools.armature.FixArmature,
+    tools.armature_manual.SeparateByMaterials,
+    tools.armature_manual.JoinMeshes,
+    tools.armature_manual.MixWeights,
+    tools.armature_manual.StartPoseMode,
+    tools.armature_manual.StopPoseMode,
+    # tools.armature_manual.Test,
+    # tools.armature_manual.Import,
+    # tools.armature_manual.SeparateByMaterials,
+    # tools.armature_manual.JoinMeshesTest,
+    # tools.armature_manual.Finalize,
+
+    TranslationPanel,
+    tools.translate.TranslateShapekeyButton,
+    tools.translate.TranslateBonesButton,
+    tools.translate.TranslateMeshesButton,
+    tools.translate.TranslateMaterialsButton,
+    # tools.translate.TranslateTexturesButton,
+
+    EyeTrackingPanel,
+    tools.eyetracking.CreateEyesButton,
+    tools.eyetracking.StartTestingButton,
+    tools.eyetracking.StopTestingButton,
+    tools.eyetracking.SetRotationButton,
+    tools.eyetracking.AdjustEyesButton,
+    tools.eyetracking.TestBlinking,
+    tools.eyetracking.TestLowerlid,
+    tools.eyetracking.ResetBlinkTest,
+
+    VisemePanel,
+    tools.viseme.AutoVisemeButton,
+
+    BoneRootPanel,
+    tools.rootbone.RefreshRootButton,
+    tools.rootbone.RootButton,
+
+    OptimizePanel,
+    tools.atlas.AutoAtlasButton,
+    tools.material.CombineMaterialsButton,
+    tools.material.OneTexPerMatButton,
+    tools.bonemerge.BoneMergeButton,
+
+    UpdaterPanel,
+    UpdaterPreferences,
+
+    SupporterPanel,
+    tools.supporter.PersonButton,
+    tools.supporter.PatreonButton,
+
+    CreditsPanel,
+    tools.credits.DiscordButton,
+    tools.credits.ForumButton,
+]
+
+
 def register():
     load_icons()
-    bpy.utils.register_class(tools.atlas.AutoAtlasButton)
-    bpy.utils.register_class(tools.eyetracking.CreateEyesButton)
-    bpy.utils.register_class(tools.eyetracking.StartTestingButton)
-    bpy.utils.register_class(tools.eyetracking.StopTestingButton)
-    bpy.utils.register_class(tools.eyetracking.SetRotationButton)
-    bpy.utils.register_class(tools.eyetracking.AdjustEyesButton)
-    bpy.utils.register_class(tools.eyetracking.ResetBlinkTest)
-    bpy.utils.register_class(tools.eyetracking.TestBlinking)
-    bpy.utils.register_class(tools.eyetracking.TestLowerlid)
-    bpy.utils.register_class(tools.viseme.AutoVisemeButton)
-    bpy.utils.register_class(tools.translate.TranslateShapekeyButton)
-    bpy.utils.register_class(tools.translate.TranslateBonesButton)
-    bpy.utils.register_class(tools.translate.TranslateMeshesButton)
-    bpy.utils.register_class(tools.translate.TranslateTexturesButton)
-    bpy.utils.register_class(tools.translate.TranslateMaterialsButton)
-    bpy.utils.register_class(tools.rootbone.RootButton)
-    bpy.utils.register_class(tools.rootbone.RefreshRootButton)
-    bpy.utils.register_class(tools.bonemerge.BoneMergeButton)
-    bpy.utils.register_class(tools.armature.FixArmature)
-    bpy.utils.register_class(tools.material.CombineMaterialsButton)
-    bpy.utils.register_class(tools.material.OneTexPerMatButton)
-    # bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
-    # bpy.utils.register_class(tools.armature_manual.JoinMeshesTest)
-    # bpy.utils.register_class(tools.armature_manual.Import)
-    # bpy.utils.register_class(tools.armature_manual.Finalize)
-    # bpy.utils.register_class(tools.armature_manual.Test)
-    bpy.utils.register_class(tools.armature_manual.StopPoseMode)
-    bpy.utils.register_class(tools.armature_manual.StartPoseMode)
-    bpy.utils.register_class(tools.armature_manual.SeparateByMaterials)
-    bpy.utils.register_class(tools.armature_manual.JoinMeshes)
-    bpy.utils.register_class(tools.armature_manual.MixWeights)
-    bpy.utils.register_class(tools.armature_manual.ImportModel)
-    bpy.utils.register_class(tools.supporter.PatreonButton)
-    bpy.utils.register_class(tools.supporter.PersonButton)
-    bpy.utils.register_class(tools.credits.ForumButton)
-    bpy.utils.register_class(tools.credits.DiscordButton)
-    bpy.utils.register_class(ArmaturePanel)
-    bpy.utils.register_class(TranslationPanel)
-    bpy.utils.register_class(EyeTrackingPanel)
-    bpy.utils.register_class(VisemePanel)
-    bpy.utils.register_class(BoneRootPanel)
-    bpy.utils.register_class(OptimizePanel)
-    bpy.utils.register_class(UpdaterPanel)
-    bpy.utils.register_class(SupporterPanel)
-    bpy.utils.register_class(CreditsPanel)
-    bpy.utils.register_class(UpdaterPreferences)
     addon_updater_ops.register(bl_info)
+    for value in classesToRegister:
+        bpy.utils.register_class(value)
 
 
 def unregister():
-    bpy.utils.unregister_class(tools.atlas.AutoAtlasButton)
-    bpy.utils.unregister_class(tools.eyetracking.CreateEyesButton)
-    bpy.utils.unregister_class(tools.eyetracking.StartTestingButton)
-    bpy.utils.unregister_class(tools.eyetracking.StopTestingButton)
-    bpy.utils.unregister_class(tools.eyetracking.SetRotationButton)
-    bpy.utils.unregister_class(tools.eyetracking.AdjustEyesButton)
-    bpy.utils.unregister_class(tools.eyetracking.ResetBlinkTest)
-    bpy.utils.unregister_class(tools.eyetracking.TestBlinking)
-    bpy.utils.unregister_class(tools.eyetracking.TestLowerlid)
-    bpy.utils.unregister_class(tools.viseme.AutoVisemeButton)
-    bpy.utils.unregister_class(tools.translate.TranslateShapekeyButton)
-    bpy.utils.unregister_class(tools.translate.TranslateBonesButton)
-    bpy.utils.unregister_class(tools.translate.TranslateMeshesButton)
-    bpy.utils.unregister_class(tools.translate.TranslateTexturesButton)
-    bpy.utils.unregister_class(tools.translate.TranslateMaterialsButton)
-    bpy.utils.unregister_class(tools.rootbone.RootButton)
-    bpy.utils.unregister_class(tools.rootbone.RefreshRootButton)
-    bpy.utils.unregister_class(tools.armature.FixArmature)
-    bpy.utils.unregister_class(tools.armature_manual.ImportModel)
-    bpy.utils.unregister_class(tools.armature_manual.MixWeights)
-    bpy.utils.unregister_class(tools.armature_manual.JoinMeshes)
-    bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
-    bpy.utils.unregister_class(tools.armature_manual.StartPoseMode)
-    bpy.utils.unregister_class(tools.armature_manual.StopPoseMode)
-    # bpy.utils.unregister_class(tools.armature_manual.Import)
-    # bpy.utils.unregister_class(tools.armature_manual.Finalize)
-    # bpy.utils.unregister_class(tools.armature_manual.Test)
-    bpy.utils.unregister_class(tools.material.CombineMaterialsButton)
-    bpy.utils.unregister_class(tools.material.OneTexPerMatButton)
-    # bpy.utils.unregister_class(tools.armature_manual.JoinMeshesTest)
-    # bpy.utils.unregister_class(tools.armature_manual.SeparateByMaterials)
-    bpy.utils.unregister_class(tools.supporter.PatreonButton)
-    bpy.utils.unregister_class(tools.supporter.PersonButton)
-    bpy.utils.unregister_class(tools.credits.ForumButton)
-    bpy.utils.unregister_class(tools.credits.DiscordButton)
-    bpy.utils.unregister_class(OptimizePanel)
-    bpy.utils.unregister_class(EyeTrackingPanel)
-    bpy.utils.unregister_class(VisemePanel)
-    bpy.utils.unregister_class(BoneRootPanel)
-    bpy.utils.unregister_class(TranslationPanel)
-    bpy.utils.unregister_class(ArmaturePanel)
-    bpy.utils.unregister_class(UpdaterPanel)
-    bpy.utils.unregister_class(SupporterPanel)
-    bpy.utils.unregister_class(CreditsPanel)
-    bpy.utils.unregister_class(UpdaterPreferences)
+    for value in classesToRegister:
+        bpy.utils.unregister_class(value)
     addon_updater_ops.unregister()
     unload_icons()
 

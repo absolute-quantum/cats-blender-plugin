@@ -108,6 +108,7 @@ class AutoVisemeButton(bpy.types.Operator):
         tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
 
         # Rename selected shapes and rename them back at the end
+        shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
         renamed_shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
         mesh = bpy.data.objects[context.scene.mesh_name_viseme]
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
@@ -248,7 +249,6 @@ class AutoVisemeButton(bpy.types.Operator):
             self.mix_shapekey(context, renamed_shapes, obj['mix'], obj['index'], key, context.scene.shape_intensity)
 
         # Rename shapes back
-        shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
         if shapes[0] not in mesh.data.shape_keys.key_blocks:
             shapekey = mesh.data.shape_keys.key_blocks.get(renamed_shapes[0])
             shapekey.name = shapes[0]

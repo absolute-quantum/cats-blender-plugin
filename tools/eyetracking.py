@@ -189,10 +189,11 @@ class CreateEyesButton(bpy.types.Operator):
         is_correct = tools.armature.check_hierarchy([['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
 
         if context.scene.disable_eye_movement:
+            print('Repair with mouth.')
             repair_shapekeys_mouth(mesh_name)
             # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
         else:
-            print('Repair "' + new_right_eye.name + '".')
+            print('Repair normal "' + new_right_eye.name + '".')
             repair_shapekeys(mesh_name, new_right_eye.name)
 
         # deleted = []
@@ -297,6 +298,7 @@ def repair_shapekeys(mesh_name, vertex_group):
         repair_shapekeys_mouth(mesh_name)
         return
     print('DEBUG: Group: ' + vertex_group + ' found!')
+
     gi = group.index
     for v in mesh.data.vertices:
         for g in v.groups:
@@ -326,7 +328,7 @@ def repair_shapekeys(mesh_name, vertex_group):
                 i += 1
                 break
 
-    bm.to_mesh(mesh.data)
+    bm.to_mesh(mesh.data)  # This glitches out sometimes apparently (look at Nikki Weird Eye Glitch, fixable by clicking fix armature again. I have no idea why)
 
     if i == 0:
         print('Error: Shapekey repairing failed for some reason! Using random shapekey method now.')

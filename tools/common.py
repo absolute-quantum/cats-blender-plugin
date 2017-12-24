@@ -184,8 +184,13 @@ def get_bones_eye_r(self, context):
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
 def get_bones(names):
     choices = []
+    armature = get_armature()
 
-    armature = get_armature().data
+    if armature is None:
+        bpy.types.Object.Enum = choices
+        return bpy.types.Object.Enum
+
+    armature = armature.data
     for bone in armature.bones:
         choices.append((bone.name, bone.name, bone.name))
 
@@ -237,21 +242,22 @@ def get_shapekeys_eye_low_r(self, context):
 def get_shapekeys(context, names, no_basis):
     choices = []
 
-    if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
-        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
-            for shapekey in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
-                if no_basis and shapekey.name == 'Basis':
-                    continue
-                choices.append((shapekey.name, shapekey.name, shapekey.name))
+    mesh = bpy.data.objects.get(context.scene.mesh_name_eye)
+    if mesh is None or not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
+        bpy.types.Object.Enum = choices
+        return bpy.types.Object.Enum
+
+    for shapekey in mesh.data.shape_keys.key_blocks:
+        if no_basis and shapekey.name == 'Basis':
+            continue
+        choices.append((shapekey.name, shapekey.name, shapekey.name))
 
     choices.sort(key=lambda x: tuple(x[0].lower()))
 
     choices2 = []
     for name in names:
-        if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data, 'shape_keys'):
-            if hasattr(bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys, 'key_blocks'):
-                if name in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks and choices[0][0] != name:
-                    choices2.append((name, name, name))
+        if name in mesh.data.shape_keys.key_blocks and choices[0][0] != name:
+            choices2.append((name, name, name))
 
     for choice in choices:
         choices2.append(choice)
@@ -326,8 +332,7 @@ def join_meshes(context):
                     continue
 
                 if mesh.data.shape_keys is not None:
-                    for key in mesh.data.shape_keys.key_blocks:
-                        mesh.shape_key_remove(key)
+                    bpy.ops.object.shape_key_remove(all=True)
                 bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
         unselect_all()
 
@@ -392,36 +397,35 @@ def repair_viseme_order(mesh_name):
     order['vrc.v_th'] = 19
 
     for name in order.keys():
-        if mesh.data.shape_keys is not None:
-            if hasattr(mesh.data.shape_keys, 'key_blocks'):
-                for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                    if shapekey.name == name:
-                        mesh.active_shape_key_index = index
-                        new_index = order.get(shapekey.name)
-                        index_diff = (index - new_index)
+        if mesh.data.shape_keys is not None and hasattr(mesh.data.shape_keys, 'key_blocks'):
+            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                if shapekey.name == name:
+                    mesh.active_shape_key_index = index
+                    new_index = order.get(shapekey.name)
+                    index_diff = (index - new_index)
 
-                        if new_index >= len(mesh.data.shape_keys.key_blocks):
-                            bpy.ops.object.shape_key_move(type='BOTTOM')
-                            break
+                    if new_index >= len(mesh.data.shape_keys.key_blocks):
+                        bpy.ops.object.shape_key_move(type='BOTTOM')
+                        break
+
+                    position_correct = False
+                    if 0 <= index_diff <= (new_index - 1):
+                        while position_correct is False:
+                            if mesh.active_shape_key_index != new_index:
+                                    bpy.ops.object.shape_key_move(type='UP')
+                            else:
+                                position_correct = True
+                    else:
+                        if mesh.active_shape_key_index > new_index:
+                            bpy.ops.object.shape_key_move(type='TOP')
 
                         position_correct = False
-                        if 0 <= index_diff <= (new_index - 1):
-                            while position_correct is False:
-                                if mesh.active_shape_key_index != new_index:
-                                        bpy.ops.object.shape_key_move(type='UP')
-                                else:
-                                    position_correct = True
-                        else:
-                            if mesh.active_shape_key_index > new_index:
-                                bpy.ops.object.shape_key_move(type='TOP')
-
-                            position_correct = False
-                            while position_correct is False:
-                                if mesh.active_shape_key_index != new_index:
-                                    bpy.ops.object.shape_key_move(type='DOWN')
-                                else:
-                                    position_correct = True
-                        break
+                        while position_correct is False:
+                            if mesh.active_shape_key_index != new_index:
+                                bpy.ops.object.shape_key_move(type='DOWN')
+                            else:
+                                position_correct = True
+                    break
 
 
 def isEmptyGroup(group_name):
@@ -461,6 +465,34 @@ def removeZeroVerts(obj, thres=0):
                 z.append(g)
         for r in z:
             obj.vertex_groups[g.group].remove([v.index])
+
+
+def delete_hierarchy(obj):
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.animation_data_clear()
+    names = set()
+
+    def get_child_names(obj):
+        for child in obj.children:
+            names.add(child.name)
+            if child.children:
+                get_child_names(child)
+
+    get_child_names(obj)
+
+    objects = bpy.data.objects
+    for n in names:
+        obj_temp = objects.get(n)
+        if obj_temp is not None:
+            setattr(obj_temp, 'select', True)
+            obj_temp.animation_data_clear()
+
+    result = bpy.ops.object.delete()
+    bpy.data.objects.remove(obj)
+    if result == {'FINISHED'}:
+        print("Successfully deleted object")
+    else:
+        print("Could not delete object")
 
 
 def LLHtoECEF(lat, lon, alt):

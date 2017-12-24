@@ -75,10 +75,15 @@ class RootButton(bpy.types.Operator):
 
 
 def get_parent_root_bones(self, context):
-    armature = tools.common.get_armature().data
+    armature = tools.common.get_armature()
     check_these_bones = []
     bone_groups = {}
     choices = []
+
+    if armature is None:
+        bpy.types.Object.Enum = choices
+        return bpy.types.Object.Enum
+    armature = armature.data
 
     # Get cache if exists
     if len(globs.root_bones_choices) >= 1:
