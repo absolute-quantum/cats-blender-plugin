@@ -218,7 +218,7 @@ class SeparateByMaterials(bpy.types.Operator):
     def execute(self, context):
         obj = context.active_object
 
-        if obj and obj.type != 'MESH':
+        if not obj or (obj and obj.type != 'MESH'):
             tools.common.unselect_all()
             meshes = tools.common.get_meshes_objects()
             if len(meshes) == 0:
