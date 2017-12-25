@@ -1,6 +1,6 @@
-# Cats Blender Plugin (0.4.0)
+# Cats Blender Plugin (0.4.1)
 
-A tool designed to shorten steps needed to import and optimize MMD models into VRChat
+A tool designed to shorten steps needed to import and optimize MMD and Mixamo models into VRChat.
 
 Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
 
@@ -9,8 +9,8 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
 ## Features
- - Optimizing armature with one click!
- - Creating mouth visemes
+ - Optimizing model with one click!
+ - Creating lip syncing
  - Creating eye tracking
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
@@ -22,7 +22,9 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 *More to come!*
 
 ## Installation
- - download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
+ - Install this Blender plugin if you don't have it already: [mmd_tools](https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip)
+
+ - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
 
  - Install the the addon in blender like so:
 
@@ -222,11 +224,21 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.4.1
+- Added: Model: More models are now compatible (if not please report it to us)
+- Added: Translations: Now shows how many objects were translated
+- Added: Model: New notification when mmd_tools is not installed/enabled
+- Fixed: Model: Joining meshes causes models to be decimated weirdly
+- Fixed: Model: Rigidbodies and joints not getting deleted
+- Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"
+- Fixed: UI: Improved some loading bars
+- Fixed: Other bugs
+
 #### 0.4.0
 - Added: Model: A lot more models are now compatible (if not please report it to us)
 - Added: Bone Merging: A new feature that can reduce huge groups of bones (useful for Dynamic Bones)
 - Added: Model: Mixamo models are now fixable!
-- Added: Progress notification on serveral operations
+- Added: Progress notification on several operations
 - Added: Model: Joining meshes now applies all unapplied decimation modifiers
 - Added: Model: New "Start/Stop Pose Mode" button
 - Added: Updater: Development branch added to version selection
@@ -249,12 +261,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Optimization: Combine same materials now ignores inactive texture slots in it's unique identification
 - Fixed: Armature: Fixed multiple toes bug
 - Fixed: Even more bugs
-
-#### 0.2.1
-- Added: Supporters (donators) tab
-- Fixed: Atlas: Alpha values are restored after atlassing (thanks Tupper!)
-- Fixed: Combine Meshes: Error 'NoneType attribute has no key_blocks' fixed
-- Fixed: Combine Materials: Now also checks for uniqueness on specular and diffuse color
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

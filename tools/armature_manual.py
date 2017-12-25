@@ -27,6 +27,8 @@
 # Edits by: Hotox, Neitri
 
 import re
+import webbrowser
+
 import bpy
 import tools.common
 from mmd_tools_local import utils
@@ -51,14 +53,52 @@ class ImportModel(bpy.types.Operator):
 
     def execute(self, context):
         if not mmd_tools_installed:
-            self.report({'ERROR'}, 'mmd_tools not installed!')
+            bpy.context.window_manager.popup_menu(popup_install, title='mmd_tools is not installed!', icon='ERROR')
             return {'FINISHED'}
 
         try:
             bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
         except:
-            self.report({'ERROR'}, 'mmd_tools not enabled! Please enable mmd_tools.')
+            bpy.context.window_manager.popup_menu(popup_enable, title='mmd_tools is not enabled!', icon='ERROR')
 
+        return {'FINISHED'}
+
+
+def popup_enable(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'mmd_tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("Please enable it in your User Preferences.")
+
+
+def popup_install(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'mmd_tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("Please click here to go to this link and follow")
+    row = col.row(align=True)
+    row.label("the installation guide there in order to install it:")
+    col.separator()
+    row = col.row(align=True)
+    row.operator('armature_manual.mmd_tools', icon='LOAD_FACTORY')
+
+
+class MmdToolsButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.mmd_tools'
+    bl_label = 'Install mmd_tools'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/powroupi/blender_mmd_tools')
+
+        self.report({'INFO'}, 'mmd_tools link opened')
         return {'FINISHED'}
 
 
@@ -66,7 +106,7 @@ class StartPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.start_pose_mode'
     bl_label = 'Start Pose Mode'
     bl_description = 'Starts the pose mode.\n' \
-                     'This lets you test how bones will move.'
+                     'This lets you test how bones will move.\n'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -77,7 +117,7 @@ class StartPoseMode(bpy.types.Operator):
 
     def execute(self, context):
         current = ""
-        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(bpy.context.selected_editable_bones) > 0:
             current = bpy.context.selected_editable_bones[0].name
 
         armature = tools.common.set_default_stage()
@@ -113,7 +153,7 @@ class StartPoseMode(bpy.types.Operator):
 class StopPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.stop_pose_mode'
     bl_label = 'Stop Pose Mode'
-    bl_description = 'Stops the pose mode and resets the pose to normal.'
+    bl_description = 'Stops the pose mode and resets the pose to normal.\n'
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
@@ -148,7 +188,7 @@ class StopPoseMode(bpy.types.Operator):
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
-    bl_description = 'Join the Model meshes into a single one.\n'
+    bl_description = 'Joins the model meshes into a single one and applies all unapplied decimation modifiers.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -218,7 +258,7 @@ class SeparateByMaterials(bpy.types.Operator):
     def execute(self, context):
         obj = context.active_object
 
-        if obj and obj.type != 'MESH':
+        if not obj or (obj and obj.type != 'MESH'):
             tools.common.unselect_all()
             meshes = tools.common.get_meshes_objects()
             if len(meshes) == 0:
@@ -253,7 +293,8 @@ class MixWeights(bpy.types.Operator):
     bl_idname = 'armature_manual.mix_weights'
     bl_label = 'Mix Weights'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.\n' \
-                     'Only available in Edit or Pose Mode with bones selected!\n'
+                     '\n' \
+                     'Only available in Edit or Pose Mode with bones selected.\n'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     _armature = None

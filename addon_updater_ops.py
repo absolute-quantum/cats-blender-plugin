@@ -216,10 +216,9 @@ class addon_updater_update_now(bpy.types.Operator):
 
 
 class addon_updater_update_target(bpy.types.Operator):
-    bl_label = updater.addon+" version target"
+    bl_label = "Cats version selector"
     bl_idname = updater.addon+".updater_update_target"
-    bl_description = "Install a targeted version of the {x} addon".format(
-                                                        x=updater.addon)
+    bl_description = "Install a targeted version of Cats."
 
     def target_version(self, context):
         # in case of error importing updater
@@ -969,7 +968,7 @@ def register(bl_info):
     # updater.addon = # define at top of module, MUST be done first
 
     # Website for manual addon download, optional but recommended to set
-    updater.website = "https://github.com/michaeldegroot/cats-blender-plugin"
+    updater.website = "https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip"
 
     # used to check/compare versions
     updater.current_version = bl_info["version"]
