@@ -27,6 +27,8 @@
 # Edits by: Hotox, Neitri
 
 import re
+import webbrowser
+
 import bpy
 import tools.common
 from mmd_tools_local import utils
@@ -51,14 +53,52 @@ class ImportModel(bpy.types.Operator):
 
     def execute(self, context):
         if not mmd_tools_installed:
-            self.report({'ERROR'}, 'mmd_tools not installed!')
+            bpy.context.window_manager.popup_menu(popup_install, title='mmd_tools is not installed!', icon='ERROR')
             return {'FINISHED'}
 
         try:
             bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
         except:
-            self.report({'ERROR'}, 'mmd_tools not enabled! Please enable mmd_tools.')
+            bpy.context.window_manager.popup_menu(popup_enable, title='mmd_tools is not enabled!', icon='ERROR')
 
+        return {'FINISHED'}
+
+
+def popup_enable(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'mmd_tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("Please enable it in your User Preferences.")
+
+
+def popup_install(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'mmd_tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("Please click here to go to this link and follow")
+    row = col.row(align=True)
+    row.label("the installation guide there in order to install it:")
+    col.separator()
+    row = col.row(align=True)
+    row.operator('armature_manual.mmd_tools', icon='LOAD_FACTORY')
+
+
+class MmdToolsButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.mmd_tools'
+    bl_label = 'Install mmd_tools'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/powroupi/blender_mmd_tools')
+
+        self.report({'INFO'}, 'mmd_tools link opened')
         return {'FINISHED'}
 
 

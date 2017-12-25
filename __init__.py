@@ -32,16 +32,6 @@ import bpy.utils.previews
 from . import addon_updater_ops
 from collections import OrderedDict
 
-mmd_tools_installed = False
-try:
-    import mmd_tools
-
-    mmd_tools_installed = True
-    print("mmd_tools found!")
-except:
-    print("mmd_tools not found!")
-    pass
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
 
@@ -79,13 +69,13 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 4, 0],
+    'version': [0, 4, 1],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = True
+dev_branch = False
 
 slider_z = 0
 
@@ -95,20 +85,23 @@ preview_collections = {}
 # List all the supporters here
 supporters = OrderedDict()
 #       'Display name' = 'Icon name'
-supporters['Xeverian'] = 'Xeverian'
-supporters['Tupper'] = 'Tupper'
-supporters['Jazneo'] = 'Jazneo'
+supporters['Xeverian'] = 'xeverian'
+supporters['Tupper'] = 'tupper'
+supporters['Jazneo'] = 'jazneo'
 supporters['idea'] = 'idea'
-supporters['radaruS'] = 'radaruS'
-supporters['Kry10'] = 'Kry10'
-supporters['Smead'] = 'Smead'
+supporters['RadaruS'] = 'radaruS'
+supporters['Kry10'] = 'kry10'
+supporters['Smead'] = 'smead'
 supporters['kohai.istool'] = 'kohai.istool'
-supporters['Str4fe'] = 'Str4fe'
-supporters['Raikin'] = 'Raikin'
-supporters['Wintermute'] = 'Wintermute'
-supporters['BerserkerBoreas'] = 'BerserkerBoreas'
+supporters['Str4fe'] = 'str4fe'
+supporters["Ainrehtea Dal'Nalirtu"] = "Ainrehtea Dal'Nalirtu"
+supporters['Wintermute'] = 'wintermute'
+supporters['Raikin'] = 'raikin'
+supporters['BerserkerBoreas'] = 'berserkerboreas'
 supporters['ihatemondays'] = 'ihatemondays'
-supporters['Derpmare'] = 'Derpmare'
+supporters['Derpmare'] = 'derpmare'
+supporters['Bin Chicken'] = 'bin_chicken'
+supporters['Chikan Celeryman'] = 'chikan_celeryman'
 
 
 class ToolPanel:
@@ -406,11 +399,13 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        if mmd_tools_installed:
-            row = col.row(align=True)
-            row.scale_y = 1.4
-            row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
-            col.separator()
+        row = col.row(align=True)
+        row.scale_y = 1.4
+        row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
+        # row = col.row(align=True)
+        # row.scale_y = 0.9
+        # row.label('(PMXEditor is outdated, do not use it!)', icon='ERROR')
+        col.separator()
 
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
@@ -876,6 +871,7 @@ def unload_icons():
 classesToRegister = [
     ArmaturePanel,
     tools.armature_manual.ImportModel,
+    tools.armature_manual.MmdToolsButton,
     tools.armature.FixArmature,
     tools.armature_manual.SeparateByMaterials,
     tools.armature_manual.JoinMeshes,

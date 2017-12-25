@@ -1,6 +1,6 @@
-# Cats Blender Plugin (0.5.0)
+# Cats Blender Plugin (0.4.1)
 
-A tool designed to shorten steps needed to import and optimize MMD models into VRChat
+A tool designed to shorten steps needed to import and optimize MMD and Mixamo models into VRChat.
 
 Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
 
@@ -224,9 +224,10 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
-#### 0.5.0
+#### 0.4.1
 - Added: Model: More models are now compatible (if not please report it to us)
 - Added: Translations: Now shows how many objects were translated
+- Added: Model: Added notification when mmd_tools is not installed/enabled
 - Fixed: Model: Joining meshes causes models to be decimated weirdly
 - Fixed: Model: Rigidbodies and joints not getting deleted
 - Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"

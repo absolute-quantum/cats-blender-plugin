@@ -463,7 +463,8 @@ def check_hierarchy(correct_hierarchy_array):
 
             # NOTE: armature.data.bones is being used instead of armature.data.edit_bones because of a failed test (edit_bones array empty for some reason)
             if bone not in armature.data.bones:
-                return {'result': False, 'message': bone + ' was not found in the hierarchy, this will cause problems!'}
+                return {'result': False, 'message': bone + ' was not found in the hierarchy, this will cause problems! \n '
+                        "Did you use PMXEditor? For best results it's suggested to not use PMXEditor at all and use the original pmx/pmd file instead."}
 
             bone = armature.data.bones[bone]
 
