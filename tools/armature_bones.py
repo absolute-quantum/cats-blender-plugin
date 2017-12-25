@@ -175,8 +175,6 @@ bone_rename['\Left ankle'] = [
 bone_rename['\Left toe'] = [
     '\Left Toe',
     '\LeftToe',
-    '\Left Toe EX',
-    '\Left Foot Tip EX',
     'LegTipEX_\L',
     'ClawTipEX_\L',
     'Mixamorig:\LeftToeBase',
@@ -378,6 +376,8 @@ bone_reweight['\Left toe'] = [
     'ClawTipEX2_\L',
     'ClawTipThumbEX_\L',
     'ClawTipThumbEX2_\L',
+    '\Left Toe EX',
+    '\Left Foot Tip EX',
 ]
 
 # Old reweight list. Still important

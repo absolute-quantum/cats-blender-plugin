@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.4.1)
+# Cats Blender Plugin (0.5.0)
 
 A tool designed to shorten steps needed to import and optimize MMD and Mixamo models into VRChat.
 
@@ -224,6 +224,9 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.5.0
+- Added: Model: More models are now compatible (if not please report it to us)
+
 #### 0.4.1
 - Added: Model: More models are now compatible (if not please report it to us)
 - Added: Translations: Now shows how many objects were translated
@@ -246,21 +249,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Changed: Separate by Materials: Improved search for the mesh
 - Fixed: Undo now works better
 - Fixed: Bugs, bugs and bugs
-
-#### 0.3.0
-- Added: Armature: More models are now compatible (if not please report it to us)
-- Added: Armature: Fix hips now adjusts the upper leg bones to be placed more correctly for full body tracking
-- Added: Eye Tracking: Testing of blink and lowerlid shapes
-- Added: UI: Custom icons!
-- Added: Armature: Added "Import Model" button (shortcut to the mmd_tools button)
-- Added: Armature: Added "Separate by Materials" button (shortcut to the mmd_tools button)
-- Added: Armature: Fixing Armature now correctly sets the shading
-- Added: Updater: New popup when update is available
-- Changed: Eye Tracking: Made "Basis" usable again (useful for models with a single shape containing both blinks)
-- Changed: Armature Panel renamed to Model
-- Fixed: Optimization: Combine same materials now ignores inactive texture slots in it's unique identification
-- Fixed: Armature: Fixed multiple toes bug
-- Fixed: Even more bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

@@ -380,11 +380,17 @@ class FixArmature(bpy.types.Operator):
                         vg = mesh.vertex_groups.get(bone[1].lower())
                         if vg is None:
                             continue
-                    print(bone[1] + " to1 " + bone[0])
-                    vg2 = mesh.vertex_groups.get(bone[0])
-                    if vg2 is None:
-                        continue
-                    print(bone[1] + " to2 " + bone[0])
+                    # print(bone[1] + " to1 " + bone[0])
+                    # If important vertex group is not there create it
+                    if mesh.vertex_groups.get(bone[0]) is None:
+                        if bone[0] in Bones.dont_delete_these_bones and bone[0] in armature.data.bones:
+                            bpy.ops.object.vertex_group_add()
+                            mesh.vertex_groups.active.name = bone[0]
+                            if mesh.vertex_groups.get(bone[0]) is None:
+                                continue
+                        else:
+                            continue
+                    # print(bone[1] + " to2 " + bone[0])
                     bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
                     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = bone[0]
                     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = bone[1]
