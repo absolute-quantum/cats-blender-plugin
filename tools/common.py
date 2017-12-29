@@ -474,9 +474,10 @@ def delete_hierarchy(obj):
 
     def get_child_names(obj):
         for child in obj.children:
-            names.add(child.name)
-            if child.children:
-                get_child_names(child)
+            if child.type != 'ARMATURE':
+                names.add(child.name)
+                if child.children:
+                    get_child_names(child)
 
     get_child_names(obj)
 

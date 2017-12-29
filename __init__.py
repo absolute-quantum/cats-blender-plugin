@@ -102,6 +102,8 @@ supporters['ihatemondays'] = 'ihatemondays'
 supporters['Derpmare'] = 'derpmare'
 supporters['Bin Chicken'] = 'bin_chicken'
 supporters['Chikan Celeryman'] = 'chikan_celeryman'
+supporters['Ashe'] = 'ashe'
+supporters['Quadriple'] = 'quadriple'
 
 
 class ToolPanel:
@@ -126,7 +128,8 @@ class ToolPanel:
         items=[
             ("CREATION", "Creation", "Here you can create eye tracking."),
             ("TESTING", "Testing", "Here you can test how eye tracking will look ingame.")
-        ]
+        ],
+        update=tools.eyetracking.stop_testing
     )
 
     bpy.types.Scene.mesh_name_eye = bpy.props.EnumProperty(
@@ -217,7 +220,8 @@ class ToolPanel:
         min=-19,
         max=25,
         step=1,
-        subtype='FACTOR'
+        subtype='FACTOR',
+        update=tools.eyetracking.set_rotation
     )
 
     bpy.types.Scene.eye_rotation_y = bpy.props.IntProperty(
@@ -227,7 +231,8 @@ class ToolPanel:
         min=-19,
         max=19,
         step=1,
-        subtype='FACTOR'
+        subtype='FACTOR',
+        update=tools.eyetracking.set_rotation
     )
 
     bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
@@ -544,8 +549,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 box.label('No model found!', icon='ERROR')
                 return
 
-            mode = bpy.context.active_object.mode
-            if mode != 'POSE':
+            if bpy.context.active_object is not None and bpy.context.active_object.mode != 'POSE':
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 1.5
@@ -562,7 +566,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_rotation_y', icon='ARROW_LEFTRIGHT')
                 row = col.row(align=True)
-                row.operator('eyes.set_rotation', icon='MAN_ROT')
+                row.operator('eyes.reset_rotation', icon='MAN_ROT')
 
                 # global slider_z
                 # if context.scene.eye_blink_shape != slider_z:
@@ -895,7 +899,7 @@ classesToRegister = [
     tools.eyetracking.CreateEyesButton,
     tools.eyetracking.StartTestingButton,
     tools.eyetracking.StopTestingButton,
-    tools.eyetracking.SetRotationButton,
+    tools.eyetracking.ResetRotationButton,
     tools.eyetracking.AdjustEyesButton,
     tools.eyetracking.TestBlinking,
     tools.eyetracking.TestLowerlid,

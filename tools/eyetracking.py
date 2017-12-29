@@ -46,11 +46,13 @@ class CreateEyesButton(bpy.types.Operator):
         if context.scene.mesh_name_eye == "" \
                 or context.scene.head == "" \
                 or context.scene.eye_left == "" \
-                or context.scene.eye_right == "" \
-                or context.scene.wink_left == "" \
-                or context.scene.wink_right == "" \
-                or context.scene.lowerlid_left == "" \
-                or context.scene.lowerlid_right == "":
+                or context.scene.eye_right == "":
+            return False
+
+        if not context.scene.disable_eye_blinking and (context.scene.wink_left == ""
+                                                       or context.scene.wink_right == ""
+                                                       or context.scene.lowerlid_left == ""
+                                                       or context.scene.lowerlid_right == ""):
             return False
 
         # if not context.scene.disable_eye_blinking:
@@ -113,6 +115,9 @@ class CreateEyesButton(bpy.types.Operator):
             else:
                 armature.data.edit_bones.remove(armature.data.edit_bones.get('RightEye'))
 
+        if not bpy.data.objects[mesh_name].data.shape_keys:
+            bpy.data.objects[mesh_name].shape_key_add(name='Basis', from_mix=False)
+
         # Set head roll to 0 degrees
         bpy.context.object.data.edit_bones[context.scene.head].roll = 0
 
@@ -151,7 +156,7 @@ class CreateEyesButton(bpy.types.Operator):
 
         # Remove existing shapekeys
         for new_shape in new_shapes:
-            for index, shapekey in enumerate(bpy.data.objects[context.scene.mesh_name_viseme].data.shape_keys.key_blocks):
+            for index, shapekey in enumerate(bpy.data.objects[mesh_name].data.shape_keys.key_blocks):
                 if shapekey.name == new_shape and new_shape not in shapes:
                     bpy.context.active_object.active_shape_key_index = index
                     bpy.ops.object.shape_key_remove()
@@ -363,6 +368,7 @@ def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
     if i == 0:
         print('Error: Random shapekey repairing failed for some reason! Canceling!')
 
+
 def fix_eye_position(context, old_eye, new_eye, head, right_side):
     # Verify that the new eye bone is in the correct position
     # by comparing the old eye vertex group average vector location
@@ -412,6 +418,12 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
     new_eye.tail[2] = new_eye.head[2] + 0.2
 
 
+eye_left = None
+eye_right = None
+eye_left_data = None
+eye_right_data = None
+
+
 class StartTestingButton(bpy.types.Operator):
     bl_idname = 'eyes.test'
     bl_label = 'Start Eye Testing'
@@ -434,11 +446,14 @@ class StartTestingButton(bpy.types.Operator):
         tools.common.switch('POSE')
         armature.data.pose_position = 'POSE'
 
-        eye_left = armature.data.bones.get('LeftEye')
-        eye_right = armature.data.bones.get('RightEye')
+        global eye_left, eye_right, eye_left_data, eye_right_data
+        eye_left = armature.pose.bones.get('LeftEye')
+        eye_right = armature.pose.bones.get('RightEye')
+        eye_left_data = armature.data.bones.get('LeftEye')
+        eye_right_data = armature.data.bones.get('RightEye')
 
-        if eye_left is None or eye_right is None:
-            return
+        if eye_left is None or eye_right is None or eye_left_data is None or eye_right_data is None:
+            return {'FINISHED'}
 
         for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
             shape_key.value = 0
@@ -450,9 +465,15 @@ class StartTestingButton(bpy.types.Operator):
         bpy.ops.pose.transforms_clear()
         for pb in tools.common.get_armature().data.bones:
             pb.select = False
+            pb.hide = True
 
-        eye_left.select = True
-        eye_right.select = True
+        # eye_left.select = True
+        # eye_right.select = True
+        eye_left_data.hide = False
+        eye_right_data.hide = False
+
+        context.scene.eye_rotation_x = 0
+        context.scene.eye_rotation_y = 0
 
         return {'FINISHED'}
 
@@ -464,7 +485,13 @@ class StopTestingButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        global eye_left, eye_right, eye_left_data, eye_right_data
+        if eye_left:
+            context.scene.eye_rotation_x = 0
+            context.scene.eye_rotation_y = 0
+
         for pb in tools.common.get_armature().data.bones:
+            pb.hide = False
             pb.select = True
         bpy.ops.pose.rot_clear()
         bpy.ops.pose.scale_clear()
@@ -477,13 +504,82 @@ class StopTestingButton(bpy.types.Operator):
 
         for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
             shape_key.value = 0
+
+        eye_left = None
+        eye_right = None
+        eye_left_data = None
+        eye_right_data = None
+
         return {'FINISHED'}
 
 
-class SetRotationButton(bpy.types.Operator):
-    bl_idname = 'eyes.set_rotation'
-    bl_label = 'Test Rotation'
-    bl_description = "This let's you test how the eye movement will look ingame."
+# This gets called by the eye testing sliders
+def set_rotation(self, context):
+    global eye_left, eye_right, eye_left_data, eye_right_data
+
+    if not eye_left:
+        StopTestingButton.execute(self, context)
+        self.report({'ERROR'}, "Something went wrong. Please try eye testing again.")
+        return None
+
+    eye_left_data.select = True
+    eye_right_data.select = True
+
+    bpy.ops.pose.rot_clear()
+
+    eye_left_data.select = False
+    eye_right_data.select = False
+
+    eye_left.rotation_mode = 'XYZ'
+    eye_left.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
+    eye_left.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+
+    eye_right.rotation_mode = 'XYZ'
+    eye_right.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
+    eye_right.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+    return None
+
+
+def stop_testing(self, context):
+        global eye_left, eye_right, eye_left_data, eye_right_data
+        if not eye_left or not eye_right or not eye_left_data or not eye_right_data:
+            return None
+
+        armature = tools.common.set_default_stage()
+        tools.common.switch('POSE')
+        armature.data.pose_position = 'POSE'
+
+        context.scene.eye_rotation_x = 0
+        context.scene.eye_rotation_y = 0
+
+        for pb in armature.data.bones:
+            pb.hide = False
+            pb.select = True
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+        for pb in armature.data.bones:
+            pb.select = False
+
+        armature = tools.common.set_default_stage()
+        armature.data.pose_position = 'REST'
+
+        for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
+            shape_key.value = 0
+
+        eye_left = None
+        eye_right = None
+        eye_left_data = None
+        eye_right_data = None
+        return None
+
+
+
+
+class ResetRotationButton(bpy.types.Operator):
+    bl_idname = 'eyes.reset_rotation'
+    bl_label = 'Reset Rotation'
+    bl_description = "This resets the eye positions."
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -495,21 +591,8 @@ class SetRotationButton(bpy.types.Operator):
         return False
 
     def execute(self, context):
-        armature = tools.common.get_armature()
-        eye_left = armature.pose.bones.get('LeftEye')
-        eye_right = armature.pose.bones.get('RightEye')
-
-        bpy.ops.pose.rot_clear()
-        bpy.ops.pose.scale_clear()
-        bpy.ops.pose.transforms_clear()
-
-        eye_left.rotation_mode = 'XYZ'
-        eye_left.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
-        eye_left.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
-
-        eye_right.rotation_mode = 'XYZ'
-        eye_right.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
-        eye_right.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+        context.scene.eye_rotation_x = 0
+        context.scene.eye_rotation_y = 0
 
         return {'FINISHED'}
 
@@ -536,15 +619,22 @@ class AdjustEyesButton(bpy.types.Operator):
         armature = tools.common.set_default_stage()
         tools.common.switch('EDIT')
 
-        eye_left = armature.data.edit_bones.get('LeftEye')
-        eye_right = armature.data.edit_bones.get('RightEye')
+        new_eye_left = armature.data.edit_bones.get('LeftEye')
+        new_eye_right = armature.data.edit_bones.get('RightEye')
         old_eye_left = armature.pose.bones.get(context.scene.eye_left)
         old_eye_right = armature.pose.bones.get(context.scene.eye_right)
 
-        fix_eye_position(context, old_eye_left, eye_left, None, False)
-        fix_eye_position(context, old_eye_right, eye_right, None, True)
+        fix_eye_position(context, old_eye_left, new_eye_left, None, False)
+        fix_eye_position(context, old_eye_right, new_eye_right, None, True)
 
         tools.common.switch('POSE')
+
+        global eye_left, eye_right, eye_left_data, eye_right_data
+        eye_left = armature.pose.bones.get('LeftEye')
+        eye_right = armature.pose.bones.get('RightEye')
+        eye_left_data = armature.data.bones.get('LeftEye')
+        eye_right_data = armature.data.bones.get('RightEye')
+
         return {'FINISHED'}
 
 
@@ -621,22 +711,3 @@ class ResetBlinkTest(bpy.types.Operator):
         context.scene.eye_lowerlid_shape = 1
 
         return {'FINISHED'}
-
-
-# Update via slider, doesn't work :(
-def update_bones(context, degrees):
-    print(degrees)
-    context.scene.eye_lowerlid_shape = 0.0
-
-    # armature = tools.common.get_armature()
-    # eye_left = armature.pose.bones.get('LeftEye')
-    # eye_right = armature.pose.bones.get('RightEye')
-    #
-    # eye_left.rotation_mode = 'XYZ'
-    # eye_right.rotation_mode = 'XYZ'
-    #
-    # eye_left.rotation_euler.rotate_axis('Z', math.radians(degrees))
-    # eye_right.rotation_euler.rotate_axis('Z', math.radians(degrees))
-    #
-    # if eye_left is None or eye_right is None:
-    #     return

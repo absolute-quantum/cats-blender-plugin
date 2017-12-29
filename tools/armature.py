@@ -96,7 +96,7 @@ class FixArmature(bpy.types.Operator):
         for obj in bpy.data.objects:
             current_step += 1
             wm.progress_update(current_step)
-            if obj.name == 'rigidbodies' or obj.name == 'rigidbodies.001' or obj.name == 'joints' or obj.name == 'joints.001':
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
 
         # Remove empty objects
@@ -286,6 +286,26 @@ class FixArmature(bpy.types.Operator):
                         old_chest = armature.data.edit_bones.get('ChestOld')
                         armature.data.edit_bones.remove(old_chest)
 
+        # Correct arm bone positions for better looking
+        if 'Left arm' in armature.data.edit_bones:
+            if 'Left elbow' in armature.data.edit_bones:
+                if 'Left wrist' in armature.data.edit_bones:
+                    arm = armature.data.edit_bones.get('Left arm')
+                    elbow = armature.data.edit_bones.get('Left elbow')
+                    wrist = armature.data.edit_bones.get('Left wrist')
+                    arm.tail = elbow.head
+                    elbow.tail = wrist.head
+
+        # Correct arm bone positions for better looking
+        if 'Right arm' in armature.data.edit_bones:
+            if 'Right elbow' in armature.data.edit_bones:
+                if 'Right wrist' in armature.data.edit_bones:
+                    arm = armature.data.edit_bones.get('Right arm')
+                    elbow = armature.data.edit_bones.get('Right elbow')
+                    wrist = armature.data.edit_bones.get('Right wrist')
+                    arm.tail = elbow.head
+                    elbow.tail = wrist.head
+
         # Hips bone should be fixed as per specification from the SDK code
         if not mixamo:
             if 'Hips' in armature.data.edit_bones:
@@ -434,6 +454,12 @@ class FixArmature(bpy.types.Operator):
         if context.scene.remove_zero_weight:
             delete_zero_weight()
 
+        # # This is code for testing
+        # print('18 LOOKING FOR BONES!!!')
+        # if 'Breast_L' in tools.common.get_armature().pose.bones:
+        #     print('THEY ARE THERE!')
+        # return {'FINISHED'}
+
         # At this point, everything should be fixed and now we validate and give errors if needed
 
         # The bone hierarchy needs to be validated
@@ -524,16 +550,9 @@ def delete_zero_weight():
 
 def delete_bone_constraints():
     armature = tools.common.get_armature()
-
-    bones = set([bone.name for bone in armature.pose.bones])
-
     tools.common.switch('POSE')
-    bone_name_to_pose_bone = dict()
-    for bone in armature.pose.bones:
-        bone_name_to_pose_bone[bone.name] = bone
 
-    for bone_name in bones:
-        bone = bone_name_to_pose_bone[bone_name]
+    for bone in armature.pose.bones:
         if len(bone.constraints) > 0:
             for constraint in bone.constraints:
                 bone.constraints.remove(constraint)
