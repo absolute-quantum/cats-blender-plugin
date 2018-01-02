@@ -209,7 +209,11 @@ class CreateEyesButton(bpy.types.Operator):
         #     for key in deleted:
         #         text += key + ', '
         #     self.report({'WARNING'}, text)
+
+        context.scene.eye_mode = 'TESTING'
+
         wm.progress_end()
+
         if not is_correct['result']:
             self.report({'ERROR'}, is_correct['message'])
             self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
@@ -572,8 +576,6 @@ def stop_testing(self, context):
         eye_left_data = None
         eye_right_data = None
         return None
-
-
 
 
 class ResetRotationButton(bpy.types.Operator):

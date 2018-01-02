@@ -188,7 +188,7 @@ class ToolPanel:
                     '\n'
                     'Disables eye movement. Useful if you only want blinking.\n'
                     'This creates eye bones with no movement bound to them.\n'
-                    'You still have to correctly assign the eye bones in Unity.',
+                    'You still have to assign "LeftEye" and "RightEye" to the eyes in Unity.',
         subtype='DISTANCE'
     )
 
@@ -267,19 +267,19 @@ class ToolPanel:
     bpy.types.Scene.mouth_a = bpy.props.EnumProperty(
         name='Viseme AA',
         description='Shape key containing mouth movement that looks like someone is saying "aa".\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_ah
+        items=tools.common.get_shapekeys_mouth_ah,
     )
 
     bpy.types.Scene.mouth_o = bpy.props.EnumProperty(
         name='Viseme OH',
         description='Shape key containing mouth movement that looks like someone is saying "oh".\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_oh
+        items=tools.common.get_shapekeys_mouth_oh,
     )
 
     bpy.types.Scene.mouth_ch = bpy.props.EnumProperty(
         name='Viseme CH',
         description='Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth.\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_ch
+        items=tools.common.get_shapekeys_mouth_ch,
     )
 
     bpy.types.Scene.shape_intensity = bpy.props.FloatProperty(

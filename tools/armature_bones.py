@@ -54,7 +54,44 @@ bone_list_parenting = {
     'Right ankle': 'Right knee',
     'Left toe': 'Left ankle',
     'Right toe': 'Right ankle',
+
     'M-head_copy': 'Head',
+
+    'Thumb0_L': 'Left wrist',
+    'IndexFinger1_L': 'Left wrist',
+    'MiddleFinger1_L': 'Left wrist',
+    'RingFinger1_L': 'Left wrist',
+    'LittleFinger1_L': 'Left wrist',
+
+    'Thumb1_L': 'Thumb0_L',
+    'IndexFinger2_L': 'IndexFinger1_L',
+    'MiddleFinger2_L': 'MiddleFinger1_L',
+    'RingFinger2_L': 'RingFinger1_L',
+    'LittleFinger2_L': 'LittleFinger1_L',
+
+    'Thumb2_L': 'Thumb1_L',
+    'IndexFinger3_L': 'IndexFinger2_L',
+    'MiddleFinger3_L': 'MiddleFinger2_L',
+    'RingFinger3_L': 'RingFinger2_L',
+    'LittleFinger3_L': 'LittleFinger2_L',
+
+    'Thumb0_R': 'Right wrist',
+    'IndexFinger1_R': 'Right wrist',
+    'MiddleFinger1_R': 'Right wrist',
+    'RingFinger1_R': 'Right wrist',
+    'LittleFinger1_R': 'Right wrist',
+
+    'Thumb1_R': 'Thumb0_R',
+    'IndexFinger2_R': 'IndexFinger1_R',
+    'MiddleFinger2_R': 'MiddleFinger1_R',
+    'RingFinger2_R': 'RingFinger1_R',
+    'LittleFinger2_R': 'LittleFinger1_R',
+
+    'Thumb2_R': 'Thumb1_R',
+    'IndexFinger3_R': 'IndexFinger2_R',
+    'MiddleFinger3_R': 'MiddleFinger2_R',
+    'RingFinger3_R': 'RingFinger2_R',
+    'LittleFinger3_R': 'LittleFinger2_R',
 }
 dont_delete_these_bones = {
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
@@ -266,6 +303,7 @@ bone_reweight['\Left arm'] = [
     'SleeveArm_\L',
     '袖ひじ補助_\L',
     'SleeveElbowAux_\L',
+    'ArmxcIa_\L',
     'DEF-upper_arm_02_\L',
     'DEF-upper_arm_twist_25_\L',
     'DEF-upper_arm_twist_50_\L',
@@ -351,6 +389,12 @@ bone_reweight['\Left leg'] = [
     '\Left Foot EX',
     'KneeEX_\L',
     'LegEX_\L',
+    'Thigh_\L',
+    'Leg+_\L',
+    'Leg++_\L',
+    'Leg+++_\L',
+    'Leg++++_\L',
+    'Knee++_\L',
     'Pants_Stuff_000_\L',
     'Pants_Stuff_001_\L',
     'DEF-thigh_sub_\L',
@@ -374,6 +418,9 @@ bone_reweight['\Left knee'] = [
     'KneeW1_\L',
     'KneeW2_\L',
     'Knee+_\L',
+    'Knee+++_\L',
+    'Knee++++_\L',
+    'Ankle++_\L',
     'KneeArmor2_\L',
     'KneeX1_\L',
     'KneeX2_\L',
@@ -397,10 +444,12 @@ bone_reweight['\Left ankle'] = [
     'AnkleEven_\L',
     'AnkleW1_\L',
     'AnkleW2_\L',
-    'Ankle+_\L',
     'ToeTipMovable_\L',
     'AnkleArmor_\L',
     'LowerUseless_\L',
+    'Ankle+_\L',
+    'Ankle+++_\L',
+    'Ankle++++_\L',
     'DEF-foot_\L',
 ]
 bone_reweight['\Left toe'] = [
@@ -433,6 +482,8 @@ bone_reweight['Eye_\L'] = [
     'EyeW_\L',
     'EyeLight_\L',
     'EyeReturn_\L',
+    'Pupil_\L',
+    'Highlight_\L',
     'DEF-eye_\L',
 ]
 bone_reweight['Breast_\L'] = [

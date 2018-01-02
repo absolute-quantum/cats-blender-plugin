@@ -42,6 +42,11 @@ class TranslateShapekeyButton(bpy.types.Operator):
     def execute(self, context):
         tools.common.unhide_all()
 
+        # Remove Rigidbodies and joints
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
+
         to_translate = []
         translated = []
 
@@ -93,6 +98,13 @@ class TranslateBonesButton(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.unhide_all()
+
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
+
         count = translate_bones(self.dictionary)
 
         if count[1] == 0:
@@ -110,6 +122,12 @@ class TranslateMeshesButton(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.unhide_all()
+
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
 
         to_translate = []
         translated = []
@@ -145,6 +163,12 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.unhide_all()
+
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
 
         translator = Translator()
 
@@ -190,6 +214,12 @@ class TranslateTexturesButton(bpy.types.Operator):
         return {'FINISHED'}
 
         tools.common.unhide_all()
+
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
 
         translator = Translator()
 
