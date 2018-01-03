@@ -139,7 +139,7 @@ class ToolPanel:
         name='Half Decimation',
         description="Uncheck this if you want to keep emotion shape keys.\n"
                     "\n"
-                    "This will decimate meshes with less than 4 shape keys as those are often not used.\n"
+                    "This will only decimate meshes with less than 4 shape keys as those are often not used.\n"
                     'This will give better results but you will lose the shape keys in some meshes.\n' 
                     'Eye Tracking and lip syncing should still work.',
         default=True

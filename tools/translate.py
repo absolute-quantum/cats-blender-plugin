@@ -181,11 +181,15 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 to_translate.append(matslot.name)
 
         translated = []
-        try:
-            translations = translator.translate(to_translate)
-        except:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-            return {'FINISHED'}
+        translations = translator.translate(to_translate)
+
+        # translated = []
+        # try:
+        #     translations = translator.translate(to_translate)
+        # except Error:
+        #     self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+        #     return {'FINISHED'}
+
         for translation in translations:
             translated.append(translation.text)
 
@@ -236,7 +240,7 @@ class TranslateTexturesButton(bpy.types.Operator):
         translated = []
         try:
             translations = translator.translate(to_translate)
-        except:
+        except Error:
             self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
             return {'FINISHED'}
 

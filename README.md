@@ -12,6 +12,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Optimizing model with one click!
  - Creating lip syncing
  - Creating eye tracking
+ - Automatic decimation
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
  - Optimizing materials
@@ -84,6 +85,19 @@ Deletes the selected bones and adds their weight to their respective parents.
 ![](https://i.imgur.com/SCyhVn1.png)
 
 **Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
+
+
+## Decimation
+
+![](https://i.imgur.com/MjrHX5W.png)
+
+**Decimate your model automatically**
+
+##### Full Decimation
+This will decimate your whole model deleting all shape keys in the process.
+
+##### Half Decimation
+This will only decimate meshes with less than 4 shape keys as those are often not used.
 
 
 ## Eye tracking
