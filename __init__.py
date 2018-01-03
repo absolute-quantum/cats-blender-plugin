@@ -31,6 +31,7 @@ import importlib
 import bpy.utils.previews
 from . import addon_updater_ops
 from collections import OrderedDict
+from datetime import datetime
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
@@ -84,26 +85,29 @@ preview_collections = {}
 
 # List all the supporters here
 supporters = OrderedDict()
-#       'Display name' = 'Icon name'
-supporters['Xeverian'] = 'xeverian'
-supporters['Tupper'] = 'tupper'
-supporters['Jazneo'] = 'jazneo'
-supporters['idea'] = 'idea'
-supporters['RadaruS'] = 'radaruS'
-supporters['Kry10'] = 'kry10'
-supporters['Smead'] = 'smead'
-supporters['kohai.istool'] = 'kohai.istool'
-supporters['Str4fe'] = 'str4fe'
-supporters["Ainrehtea Dal'Nalirtu"] = "Ainrehtea Dal'Nalirtu"
-supporters['Wintermute'] = 'wintermute'
-supporters['Raikin'] = 'raikin'
-supporters['BerserkerBoreas'] = 'berserkerboreas'
-supporters['ihatemondays'] = 'ihatemondays'
-supporters['Derpmare'] = 'derpmare'
-supporters['Bin Chicken'] = 'bin_chicken'
-supporters['Chikan Celeryman'] = 'chikan_celeryman'
-supporters['Ashe'] = 'ashe'
-supporters['Quadriple'] = 'quadriple'
+#       'Display name' = ['Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
+supporters['Xeverian'] = ['xeverian', '2017-12-19']
+supporters['Tupper'] = ['tupper', '2017-12-19']
+supporters['Jazneo'] = ['jazneo', '2017-12-19']
+supporters['idea'] = ['idea', '2017-12-19']
+supporters['RadaruS'] = ['radaruS', '2017-12-19']
+supporters['Kry10'] = ['kry10', '2017-12-19']
+supporters['Smead'] = ['smead', '2017-12-25']
+supporters['kohai.istool'] = ['kohai.istool', '2017-12-25']
+supporters['Str4fe'] = ['str4fe', '2017-12-25']
+supporters["Ainrehtea Dal'Nalirtu"] = ["Ainrehtea Dal'Nalirtu", '2017-12-25']
+# supporters['Wintermute'] = ['wintermute', '2017-12-19']
+supporters['Raikin'] = ['raikin', '2017-12-25']
+supporters['BerserkerBoreas'] = ['berserkerboreas', '2017-12-25']
+supporters['ihatemondays'] = ['ihatemondays', '2017-12-25']
+supporters['Derpmare'] = ['derpmare', '2017-12-25']
+supporters['Bin Chicken'] = ['bin_chicken', '2017-12-25']
+supporters['Chikan Celeryman'] = ['chikan_celeryman', '2017-12-25']
+supporters['migero'] = ['migero', '2018-01-05']
+supporters['Ashe'] = ['ashe', '2018-01-05']
+supporters['Quadriple'] = ['quadriple', '2018-01-05']
+
+current_supporters = None
 
 
 class ToolPanel:
@@ -725,7 +729,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
 
         i = 0
         cont = True
-        items = list(supporters.items())
+        items = list(current_supporters.items())
         while cont:
             try:
                 item = items[i]
@@ -777,10 +781,14 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
-        row.label('Created by GiveMeAllYourCats for the VRC community <3')
-        row.scale_y = 0.5
+        row.label('Created by GiveMeAllYourCats and Hotox')
         row = col.row(align=True)
-        row.label('Special thanks to: Shotariya, Hotox and Neitri!')
+        row.label('For the awesome VRChat community <3')
+        row.scale_y = 0.5
+        col.separator()
+        row = col.row(align=True)
+        row.label('Special thanks to: Shotariya and Neitri')
+        col.separator()
         row = col.row(align=True)
         row.label('Want to give feedback or found a bug?')
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
@@ -857,7 +865,7 @@ def load_icons():
     pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
 
     # load the supporters icons
-    for key, value in supporters.items():
+    for key, value in current_supporters.items():
         try:
             pcoll.load(value, os.path.join(my_icons_dir, 'supporters/' + value + '.png'), 'IMAGE')
         except KeyError:
@@ -870,6 +878,19 @@ def unload_icons():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
     preview_collections.clear()
+
+
+def set_current_supporters():
+    global current_supporters
+    if current_supporters:
+        return current_supporters
+
+    current_supporters = OrderedDict()
+    now = datetime.now()
+    for key, value in supporters.items():
+        print(key + " " + str(tools.common.days_between(now.strftime("%Y-%m-%d"), value[1])))
+        if tools.common.days_between(now.strftime("%Y-%m-%d"), value[1]) <= 30:
+            current_supporters[key] = value[0]
 
 
 classesToRegister = [
@@ -932,6 +953,7 @@ classesToRegister = [
 
 
 def register():
+    set_current_supporters()
     load_icons()
     addon_updater_ops.register(bl_info)
     for value in classesToRegister:

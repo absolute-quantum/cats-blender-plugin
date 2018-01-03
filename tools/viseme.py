@@ -207,8 +207,8 @@ class AutoVisemeButton(bpy.types.Operator):
         shapekey_data['vrc.v_pp'] = {
             'index': 15,
             'mix': [
-                [(shape_a), (0.0002)],
-                [(shape_o), (0.0002)]
+                [(shape_a), (0.0004)],
+                [(shape_o), (0.0004)]
             ]
         }
         shapekey_data['vrc.v_rr'] = {
@@ -221,8 +221,8 @@ class AutoVisemeButton(bpy.types.Operator):
         shapekey_data['vrc.v_sil'] = {
             'index': 17,
             'mix': [
-                [(shape_a), (0.0001)],
-                [(shape_ch), (0.0001)]
+                [(shape_a), (0.0002)],
+                [(shape_ch), (0.0002)]
             ]
         }
         shapekey_data['vrc.v_ss'] = {

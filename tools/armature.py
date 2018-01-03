@@ -141,13 +141,13 @@ class FixArmature(bpy.types.Operator):
         # Reorders vrc shape keys to the correct order
         tools.common.repair_viseme_order(mesh.name)
 
+        # Translate bones with dictionary
+        tools.translate.translate_bones(self.dictionary)
+
         # Armature should be selected and in edit mode
         tools.common.unselect_all()
         tools.common.select(armature)
         tools.common.switch('EDIT')
-
-        # Translate bones with dictionary
-        tools.translate.translate_bones(self.dictionary)
 
         # Count steps for loading bar again
         steps += len(armature.data.edit_bones)

@@ -288,16 +288,17 @@ def translate_bones(dictionary):
         return count
 
     for translation in translations:
-        count[1] += 1
         google_output.append(translation.text.capitalize())
 
     # Replace all untranslated parts in the bones with translations
     for bone in armature.bones:
         bone_name = bone.name
         match = re.findall(regex, bone_name)
-        if match is not None:
+        if match and len(match) > 0:
             for index, name in enumerate(google_input):
                 if name in match:
-                    bone.name = bone_name.replace(name, google_output[index])
+                    bone_name = bone_name.replace(name, google_output[index])
+            bone.name = bone_name
+            count[1] += 1
 
     return count
