@@ -225,11 +225,14 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Changelog
 
 #### 0.5.0
+- Added: Automatic Decimation! (experimental)
 - Added: Model: A lot more models are now compatible (if not please report it to us)
 - Changed: Eye Tracking: Eye position sliders now update in realtime!
 - Changed: Eye Tracking: Clearer vision of the model by hiding unimportant bones
+- Changed: Model: Clearer error message when bones are missing
 - Fixed: Eye Tracking: When disabling eye blinking, shape keys were still required
-- Fixed: Bugs from everywhere
+- Fixed: Translation: Sometimes bones were not fully translated
+- Fixed: Buggy bugs
 
 #### 0.4.1
 - Added: Model: More models are now compatible (if not please report it to us)

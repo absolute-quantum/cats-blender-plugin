@@ -191,7 +191,7 @@ class CreateEyesButton(bpy.types.Operator):
         tools.common.fix_armature_name()
 
         # Check for correct bone hierarchy
-        is_correct = tools.armature.check_hierarchy([['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
+        is_correct = tools.armature.check_hierarchy(True, [['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
 
         if context.scene.disable_eye_movement:
             print('Repair with mouth.')
@@ -210,7 +210,6 @@ class CreateEyesButton(bpy.types.Operator):
         #         text += key + ', '
         #     self.report({'WARNING'}, text)
 
-        context.scene.eye_mode = 'TESTING'
 
         wm.progress_end()
 
@@ -218,6 +217,7 @@ class CreateEyesButton(bpy.types.Operator):
             self.report({'ERROR'}, is_correct['message'])
             self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
         else:
+            context.scene.eye_mode = 'TESTING'
             self.report({'INFO'}, 'Created eye tracking!')
 
         return {'FINISHED'}

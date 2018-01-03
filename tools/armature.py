@@ -37,6 +37,7 @@ from mmd_tools_local.translations import DictionaryEnum
 mmd_tools_installed = False
 try:
     import mmd_tools
+
     mmd_tools_installed = True
 except:
     pass
@@ -72,7 +73,6 @@ class FixArmature(bpy.types.Operator):
                 if ob.parent is not None and ob.parent.type == 'ARMATURE':
                     i += 1
         return i > 0
-
 
     def execute(self, context):
         wm = bpy.context.window_manager
@@ -110,9 +110,9 @@ class FixArmature(bpy.types.Operator):
                 bpy.ops.mmd_tools.set_shadeless_glsl_shading()
                 for obj in bpy.data.objects:
                     if obj.parent is None and obj.type == 'EMPTY':
-                            obj.mmd_root.use_toon_texture = False
-                            obj.mmd_root.use_sphere_texture = False
-                            break
+                        obj.mmd_root.use_toon_texture = False
+                        obj.mmd_root.use_sphere_texture = False
+                        break
             except:
                 pass
 
@@ -497,7 +497,7 @@ class FixArmature(bpy.types.Operator):
         # At this point, everything should be fixed and now we validate and give errors if needed
 
         # The bone hierarchy needs to be validated
-        hierarchy_check_hips = check_hierarchy([
+        hierarchy_check_hips = check_hierarchy(False, [
             ['Hips', 'Spine', 'Chest', 'Neck', 'Head'],
             ['Hips', 'Left leg', 'Left knee', 'Left ankle'],
             ['Hips', 'Right leg', 'Right knee', 'Right ankle'],
@@ -511,34 +511,45 @@ class FixArmature(bpy.types.Operator):
             self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
-        self.report({'INFO'}, 'Model fixed.')
+        self.report({'INFO'}, 'Model successfully fixed.')
         return {'FINISHED'}
 
 
-def check_hierarchy(correct_hierarchy_array):
+def check_hierarchy(check_parenting, correct_hierarchy_array):
     armature = tools.common.set_default_stage()
+    missing = ''
 
-    for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
-        previous = None
+    for correct_hierarchy in correct_hierarchy_array:  # For each hierarchy array
+        if len(missing) > 0 and missing[-3:] != ' - ':
+            missing += '\n - '
+
         for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
-            if index > 0:
-                previous = correct_hierarchy[index - 1]
+            if bone not in missing and bone not in armature.data.bones:
+                missing += bone + ', '
 
-            # NOTE: armature.data.bones is being used instead of armature.data.edit_bones because of a failed test (edit_bones array empty for some reason)
-            if bone not in armature.data.bones:
-                return {'result': False, 'message': bone + ' was not found in the hierarchy, this will cause problems! \n '
-                        "Did you use PMXEditor? For best results it's suggested to not use PMXEditor at all and use the original pmx/pmd file instead."}
+    if len(missing) > 0:
+        return {'result': False, 'message': 'The following bones were not found: \n - ' +
+                                            missing[:-2] + '\n' +
+                                            "Make sure that this is a MMD or Mixamo model and DO NOT use PMXEditor (use the original .pmx/.pmd instead)!"}
 
-            bone = armature.data.bones[bone]
+    if check_parenting:
+        for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
+            previous = None
+            for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
+                if index > 0:
+                    previous = correct_hierarchy[index - 1]
 
-            # If a previous item was found
-            if previous is not None:
-                # And there is no parent, then we have a problem mkay
-                if bone.parent is None:
-                    return {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
-                # Previous needs to be the parent of the current item
-                if previous != bone.parent.name:
-                    return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
+                if bone in armature.data.bones:
+                    bone = armature.data.bones[bone]
+
+                    # If a previous item was found
+                    if previous is not None:
+                        # And there is no parent, then we have a problem mkay
+                        if bone.parent is None:
+                            return {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
+                        # Previous needs to be the parent of the current item
+                        if previous != bone.parent.name:
+                            return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
 
     return {'result': True}
 

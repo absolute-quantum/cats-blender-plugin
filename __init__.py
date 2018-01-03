@@ -49,6 +49,7 @@ import tools.material
 import tools.common
 import tools.supporter
 import tools.credits
+import tools.decimation
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -63,6 +64,7 @@ importlib.reload(tools.material)
 importlib.reload(tools.common)
 importlib.reload(tools.supporter)
 importlib.reload(tools.credits)
+importlib.reload(tools.decimation)
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -123,6 +125,31 @@ class ToolPanel:
         description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.\n"
                     'Uncheck this if bones you want to keep got deleted.',
         default=True
+    )
+
+    # Decimation
+    bpy.types.Scene.full_decimation = bpy.props.BoolProperty(
+        name='Full Decimation',
+        description="This will decimate your whole model deleting all shape keys in the process.\n"
+                    'This will give better results but you will lose the ability to add blinking and lip syncing.\n' 
+                    'Eye Tracking will still work if you disable Eye Blinking.',
+        default=False
+    )
+    bpy.types.Scene.half_decimation = bpy.props.BoolProperty(
+        name='Half Decimation',
+        description="Uncheck this if you want to keep emotion shape keys.\n"
+                    "\n"
+                    "This will decimate meshes with less than 4 shape keys as those are often not used.\n"
+                    'This will give better results but you will lose the shape keys in some meshes.\n' 
+                    'Eye Tracking and lip syncing should still work.',
+        default=True
+    )
+
+    bpy.types.Scene.max_tris = bpy.props.IntProperty(
+        name='Polycount',
+        default=19999,
+        min=1,
+        max=100000
     )
 
     # Eye Tracking
@@ -472,6 +499,35 @@ class TranslationPanel(ToolPanel, bpy.types.Panel):
         row.operator('translate.materials', icon='MATERIAL')
 
 
+class DecimationPanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_decimation_v1'
+    bl_label = 'Decimation'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.label('Auto Decimation is currently experimental.')
+        row = col.row(align=True)
+        row.scale_y = 0.5
+        row.label('It works but it might not look good. Test for yourself.')
+        col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'full_decimation')
+        row = col.row(align=True)
+        row.prop(context.scene, 'half_decimation')
+        col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'max_tris')
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.operator('auto.decimate', icon='MOD_DECIM')
+
+
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_eye_v1'
     bl_label = 'Eye Tracking'
@@ -719,6 +775,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 class SupporterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_supporter_v2'
     bl_label = 'Supporters'
+
     # bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -915,6 +972,9 @@ classesToRegister = [
     tools.translate.TranslateMeshesButton,
     tools.translate.TranslateMaterialsButton,
     # tools.translate.TranslateTexturesButton,
+
+    DecimationPanel,
+    tools.decimation.AutoDecimateButton,
 
     EyeTrackingPanel,
     tools.eyetracking.CreateEyesButton,
