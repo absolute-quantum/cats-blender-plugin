@@ -210,7 +210,6 @@ class CreateEyesButton(bpy.types.Operator):
         #         text += key + ', '
         #     self.report({'WARNING'}, text)
 
-
         wm.progress_end()
 
         if not is_correct['result']:

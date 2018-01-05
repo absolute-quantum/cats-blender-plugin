@@ -409,6 +409,7 @@ bone_reweight['\Left wrist'] = [
 ]
 bone_reweight['\Left leg'] = [
     'LegD_\L',
+    '+LegD_\L',
     '\Left Foot D',
     '\Left Foot Complement',
     '\Left Foot Supplement',
