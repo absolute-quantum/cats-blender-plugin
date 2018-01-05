@@ -194,11 +194,11 @@ class CreateEyesButton(bpy.types.Operator):
         is_correct = tools.armature.check_hierarchy(True, [['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
 
         if context.scene.disable_eye_movement:
-            print('Repair with mouth.')
+            # print('Repair with mouth.')
             repair_shapekeys_mouth(mesh_name)
             # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
         else:
-            print('Repair normal "' + new_right_eye.name + '".')
+            # print('Repair normal "' + new_right_eye.name + '".')
             repair_shapekeys(mesh_name, new_right_eye.name)
 
         # deleted = []

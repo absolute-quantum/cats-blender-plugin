@@ -273,8 +273,10 @@ class SeparateByMaterials(bpy.types.Operator):
                 mod.show_expanded = False
 
         tools.common.set_default_stage()
+        tools.common.ShapekeyOrder.save(obj.name)
 
         utils.separateByMaterials(obj)
+
         for ob in context.selected_objects:
             if ob.type != 'MESH' or ob.data.shape_keys is None:
                 continue

@@ -116,6 +116,11 @@ class FixArmature(bpy.types.Operator):
             except:
                 pass
 
+        # Set better bone view
+        bpy.context.object.data.draw_type = 'OCTAHEDRAL'
+        armature.draw_type = 'WIRE'
+        armature.show_x_ray = True
+
         # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
             if 'rigidbodies' in obj.name or 'joints' in obj.name:

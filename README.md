@@ -240,10 +240,13 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 #### 0.5.0
 - Added: Automatic Decimation! (experimental)
-- Added: Model: A lot more models are now compatible (if not please report it to us)
+- Added: Model: A lot more models are now compatible (please report non working models to us)
+- Added: Model: Added support for XNALara models! (.xps, .mesh) (experimental) (please report non working models to us)
+- Added: Translation: Error message when Blender version is too old
 - Changed: Eye Tracking: Eye position sliders now update in realtime!
 - Changed: Eye Tracking: Clearer vision of the model by hiding unimportant bones
 - Changed: Model: Clearer error message when bones are missing
+- Changed: Model: Joining meshes now restores the original shape key order
 - Fixed: Eye Tracking: When disabling eye blinking, shape keys were still required
 - Fixed: Translation: Sometimes bones were not fully translated
 - Fixed: Buggy bugs

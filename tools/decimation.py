@@ -121,8 +121,8 @@ class AutoDecimateButton(bpy.types.Operator):
 
     def decimate(self, context):
         print('START DECIMATION')
-        full_decimation = context.scene.full_decimation
-        half_decimation = context.scene.half_decimation
+        full_decimation = context.scene.decimation_mode == 'FULL'
+        half_decimation = context.scene.decimation_mode == 'HALF'
         meshes = []
         current_tris_count = 0
         tris_count = 0
@@ -135,14 +135,17 @@ class AutoDecimateButton(bpy.types.Operator):
 
             if mesh.data.shape_keys is not None:
                 if full_decimation:
+                    print('FULL')
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris
                 elif half_decimation and len(mesh.data.shape_keys.key_blocks) < 4:
+                    print('HALF')
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris
                 elif len(mesh.data.shape_keys.key_blocks) == 1:
+                    print('SAVE')
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris

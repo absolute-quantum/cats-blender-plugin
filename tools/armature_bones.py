@@ -139,6 +139,8 @@ bone_rename['Hips'] = [
     'Lowerbody',
     'Lower Body',
     'Mixamorig:Hips',
+    'Pelvis',
+    'Bip001 Pelvis',
 ]
 bone_rename['Spine'] = [
     'UpperBody',
@@ -146,6 +148,8 @@ bone_rename['Spine'] = [
     'Upper Body',
     'Upper Waist',
     'Mixamorig:Spine',
+    'Spine Lower',
+    'Bip001 Spine',
 ]
 bone_rename['Chest'] = [
     'UpperBody2',
@@ -154,6 +158,8 @@ bone_rename['Chest'] = [
     'Upper Waist 2',
     'Waist Upper 2',
     'Mixamorig:Spine1',
+    'Spine Upper',
+    'Bip001 Spine1',
 ]
 bone_rename['NewChest'] = [  # Will get deleted
     'UpperBody3',
@@ -162,18 +168,25 @@ bone_rename['NewChest'] = [  # Will get deleted
     'Upper Waist 3',
     'Waist Upper 3',
     'Mixamorig:Spine2',
+    'Bip001 Spine2',
 ]
 bone_rename['Neck'] = [
     'Mixamorig:Neck',
+    'Head Neck Lower',
+    'Bip001 Neck',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
+    'Head Neck Upper',
+    'Bip001 Head',
 ]
 bone_rename['\Left shoulder'] = [
     '\Left Shoulder',
     '\LeftShoulder',
     'Shoulder_\L',
     'Mixamorig:\LeftShoulder',
+    'Arm \Left Shoulder 1',
+    'Bip001 \L Clavicle',
 ]
 bone_rename['\Left arm'] = [
     '\Left Arm',
@@ -182,6 +195,8 @@ bone_rename['\Left arm'] = [
     '+ \Left Elbow Support',
     '+ \Left Elbow Support',
     'Mixamorig:\LeftArm',
+    'Arm \Left Shoulder 2',
+    'Bip001 \L UpperArm',
 ]
 bone_rename['Left arm'] = [
     '+ Leisure Elder Supplement',
@@ -191,12 +206,16 @@ bone_rename['\Left elbow'] = [
     '\LeftElbow',
     'Elbow_\L',
     'Mixamorig:\LeftForeArm',
+    'Arm \Left Elbow',
+    'Bip001 \L Forearm',
 ]
 bone_rename['\Left wrist'] = [
     '\Left Wrist',
     '\LeftWrist',
     'Wrist_\L',
     'Mixamorig:\LeftHand',
+    'Arm \Left Wrist',
+    'Bip001 \L Hand',
 ]
 bone_rename['\Left leg'] = [
     '\Left Leg',
@@ -206,18 +225,24 @@ bone_rename['\Left leg'] = [
     'Leg00003333_\L',
     'Leg00004444_\L',
     'Mixamorig:\LeftUpLeg',
+    'Leg \Left Thigh',
+    'Bip001 \L Thigh',
 ]
 bone_rename['\Left knee'] = [
     '\Left Knee',
     '\LeftKnee',
     'Knee_\L',
     'Mixamorig:\LeftLeg',
+    'Leg \Left Knee',
+    'Bip001 \L Calf',
 ]
 bone_rename['\Left ankle'] = [
     '\Left Ankle',
     '\LeftAnkle',
     'Ankle_\L',
     'Mixamorig:\LeftFoot',
+    'Leg \Left Ankle',
+    'Bip001 \L Foot',
 ]
 bone_rename['\Left toe'] = [
     '\Left Toe',
@@ -226,10 +251,14 @@ bone_rename['\Left toe'] = [
     'LegTipEX_\L',
     'ClawTipEX_\L',
     'Mixamorig:\LeftToeBase',
+    'Leg \Left Toes',
+    'Bip001 \L Toe0',
 ]
 bone_rename['Eye_\L'] = [
     '\Left Eye',
     'Mixamorig:\LeftEye',
+    'Head Eyeball \Left',
+    'FEye\L',
 ]
 
 ################################
@@ -249,12 +278,16 @@ bone_reweight = OrderedDict()
 bone_reweight['Hips'] = [
     'LowerBody1',
     'Lowerbody2',
+    'Pelvis Adj',
 ]
 bone_reweight['Spine'] = [
     'UpperBodyx',
+    'Spine Lower Adj',
+    'Spine Middle Adj',
 ]
 bone_reweight['Chest'] = [
     'UpperBodyx2',
+    'Spine Upper Adj',
 ]
 bone_reweight['Neck'] = [
     'Neckx',
@@ -273,6 +306,7 @@ bone_reweight['\Left shoulder'] = [
     '\Left Shoulder Weight',
     'ShoulderS_\L',
     'ShoulderW_\L',
+    'Arm \Left Shoulder Adj 1',
 ]
 bone_reweight['\Left arm'] = [
     'Arm01_\L',
@@ -309,6 +343,9 @@ bone_reweight['\Left arm'] = [
     'DEF-upper_arm_twist_25_\L',
     'DEF-upper_arm_twist_50_\L',
     'DEF-upper_arm_twist_75_\L',
+    'Arm \Left Shoulder Adj 2',
+    'Arm \Left Shoulder Adj 3',
+    'Arm \Left Shoulder Adj 4',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -351,6 +388,9 @@ bone_reweight['\Left elbow'] = [
     'DEF-forearm_twist_75_\L',
     '+Elbow_\L',
     'Elbowa_\L',
+    'Arm \Left Wrist Adj',
+    'Arm \Left Elbow Adj 2',
+    'Arm \Left Elbow Adj 1',
 ]
 bone_reweight['\Left wrist'] = [
     'WristSleeve_\L',
@@ -402,6 +442,9 @@ bone_reweight['\Left leg'] = [
     'DEF-thigh_twist_25_\L',
     'DEF-thigh_twist_50_\L',
     'DEF-thigh_twist_75_\L',
+    'Leg \Left Thigh Adj 1',
+    'Leg \Left Thigh Adj 2',
+    'Leg \Left Thigh Adj 3',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -432,6 +475,9 @@ bone_reweight['\Left knee'] = [
     'DEF-shin_twist_25_\L',
     'DEF-shin_twist_50_\L',
     'DEF-shin_twist_75_\L',
+    'Leg \Left Ankle Adj',
+    'Leg \Left Knee Adj 1',
+    'Leg \Left Knee Adj 2',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',

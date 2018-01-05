@@ -108,6 +108,16 @@ supporters['Chikan Celeryman'] = ['chikan_celeryman', '2017-12-25']
 supporters['migero'] = ['migero', '2018-01-05']
 supporters['Ashe'] = ['ashe', '2018-01-05']
 supporters['Quadriple'] = ['quadriple', '2018-01-05']
+# abrownbag
+supporters['Azuth'] = ['radaruS', '2018-01-05']  # Missing
+supporters['goblox'] = ['goblox', '2018-01-05']
+supporters['Rikku'] = ['Rikku', '2018-01-05']
+supporters['azupwn'] = ['azupwn', '2018-01-05']
+supporters['m o t h'] = ['m o t h', '2018-01-05']
+# buffy
+supporters['Tomnautical'] = ['Tomnautical', '2018-01-05']
+# jelly
+supporters['Atirion'] = ['Atirion', '2018-01-05']
 
 current_supporters = None
 
@@ -128,10 +138,35 @@ class ToolPanel:
     )
 
     # Decimation
+    bpy.types.Scene.decimation_mode = bpy.props.EnumProperty(
+        name="Decimation Mode",
+        description="Decimation Mode",
+        items=[
+            ("MINIMAL", "Save", 'Decent results - no shape key loss\n'
+                                '\n'
+                                "This will only decimate meshes with no shape keys.\n"
+                                "The results are decent and you won't lose any shape keys.\n"
+                                'Eye Tracking and Lip Syncing will be fully preserved.'),
+
+            ("HALF", "Half", 'Better results - minimal shape key loss\n'
+                             "\n"
+                             "This will only decimate meshes with less than 4 shape keys as those are often not used.\n"
+                             'The results are better but you will lose the shape keys in some meshes.\n'
+                             'Eye Tracking and Lip Syncing should still work.'),
+
+            ("FULL", "Full", 'Best results - full shape key loss\n'
+                             '\n'
+                             "This will decimate your whole model deleting all shape keys in the process.\n"
+                             'This will give the best results but you will lose the ability to add blinking and Lip Syncing.\n'
+                             'Eye Tracking will still work if you disable Eye Blinking.')
+        ],
+        default='HALF'
+    )
+
     bpy.types.Scene.full_decimation = bpy.props.BoolProperty(
         name='Full Decimation',
         description="This will decimate your whole model deleting all shape keys in the process.\n"
-                    'This will give better results but you will lose the ability to add blinking and lip syncing.\n' 
+                    'This will give better results but you will lose the ability to add blinking and lip syncing.\n'
                     'Eye Tracking will still work if you disable Eye Blinking.',
         default=False
     )
@@ -140,7 +175,7 @@ class ToolPanel:
         description="Uncheck this if you want to keep emotion shape keys.\n"
                     "\n"
                     "This will only decimate meshes with less than 4 shape keys as those are often not used.\n"
-                    'This will give better results but you will lose the shape keys in some meshes.\n' 
+                    'This will give better results but you will lose the shape keys in some meshes.\n'
                     'Eye Tracking and lip syncing should still work.',
         default=True
     )
@@ -431,6 +466,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
     def draw(self, context):
         addon_updater_ops.check_for_update_background()
+
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
@@ -514,11 +550,11 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 0.5
         row.label('It works but it might not look good. Test for yourself.')
+        row = col.row(align=True)
+        col.separator()
         col.separator()
         row = col.row(align=True)
-        row.prop(context.scene, 'full_decimation')
-        row = col.row(align=True)
-        row.prop(context.scene, 'half_decimation')
+        row.prop(context.scene, 'decimation_mode', expand=True)
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'max_tris')
@@ -1015,9 +1051,16 @@ classesToRegister = [
 def register():
     set_current_supporters()
     load_icons()
-    addon_updater_ops.register(bl_info)
+
+    try:
+        addon_updater_ops.register(bl_info)
+    except ValueError:
+        pass
+
     for value in classesToRegister:
         bpy.utils.register_class(value)
+    bpy.context.user_preferences.system.use_international_fonts = True
+    bpy.context.user_preferences.filepaths.use_file_compression = True
 
 
 def unregister():

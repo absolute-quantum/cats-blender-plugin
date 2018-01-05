@@ -40,6 +40,10 @@ class TranslateShapekeyButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if bpy.app.version < (2, 79, 0):
+            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            return {'FINISHED'}
+
         tools.common.unhide_all()
 
         # Remove Rigidbodies and joints
@@ -121,6 +125,10 @@ class TranslateMeshesButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if bpy.app.version < (2, 79, 0):
+            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            return {'FINISHED'}
+
         tools.common.unhide_all()
 
         # Remove Rigidbodies and joints
@@ -162,6 +170,10 @@ class TranslateMaterialsButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if bpy.app.version < (2, 79, 0):
+            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            return {'FINISHED'}
+
         tools.common.unhide_all()
 
         # Remove Rigidbodies and joints
@@ -181,14 +193,11 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 to_translate.append(matslot.name)
 
         translated = []
-        translations = translator.translate(to_translate)
-
-        # translated = []
-        # try:
-        #     translations = translator.translate(to_translate)
-        # except Error:
-        #     self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-        #     return {'FINISHED'}
+        try:
+            translations = translator.translate(to_translate)
+        except:
+            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+            return {'FINISHED'}
 
         for translation in translations:
             translated.append(translation.text)
@@ -240,7 +249,7 @@ class TranslateTexturesButton(bpy.types.Operator):
         translated = []
         try:
             translations = translator.translate(to_translate)
-        except Error:
+        except SSLError:
             self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
             return {'FINISHED'}
 
