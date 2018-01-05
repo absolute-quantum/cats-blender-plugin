@@ -23,9 +23,11 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
+from datetime import datetime
 
 import bpy
 import bmesh
+import globs
 import numpy as np
 from mathutils import Vector
 from math import degrees
@@ -349,10 +351,11 @@ def join_meshes(context):
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
             if ob.parent is not None and ob.parent.type == 'ARMATURE':
-                ob.name = 'Body'
                 mesh = ob
+                mesh.name = 'Body'
                 for mod in mesh.modifiers:
                     mod.show_expanded = False
+                ShapekeyOrder.repair(mesh.name)
                 break
 
     reset_context_scenes(context)
@@ -373,7 +376,6 @@ def reset_context_scenes(context):
 
 
 def repair_viseme_order(mesh_name):
-    mesh = bpy.data.objects[mesh_name]
     order = OrderedDict()
     order['Basis'] = 0
     order['vrc.blink_left'] = 1
@@ -396,10 +398,23 @@ def repair_viseme_order(mesh_name):
     order['vrc.v_ss'] = 18
     order['vrc.v_th'] = 19
 
+    repair_shape_order(mesh_name, order)
+
+
+def repair_shape_order(mesh_name, order):
+    mesh = bpy.data.objects[mesh_name]
+    if not mesh.data.shape_keys:
+        return
+
+    wm = bpy.context.window_manager
+    current_step = 0
+    wm.progress_begin(current_step, len(order.items()))
+
     for name in order.keys():
-        if mesh.data.shape_keys is not None and hasattr(mesh.data.shape_keys, 'key_blocks'):
+        if hasattr(mesh.data.shape_keys, 'key_blocks'):
             for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
                 if shapekey.name == name:
+
                     mesh.active_shape_key_index = index
                     new_index = order.get(shapekey.name)
                     index_diff = (index - new_index)
@@ -426,6 +441,36 @@ def repair_viseme_order(mesh_name):
                             else:
                                 position_correct = True
                     break
+        current_step += 1
+        wm.progress_update(current_step)
+
+    wm.progress_end()
+
+
+class ShapekeyOrder:
+
+    @staticmethod
+    def save(mesh_name):
+        if globs.shapekey_order:
+            print('SAVE ABORTED!')
+            return
+        print('SAVE ORDER')
+        globs.shapekey_order = OrderedDict()
+        mesh = bpy.data.objects[mesh_name]
+        if mesh.data.shape_keys is not None and hasattr(mesh.data.shape_keys, 'key_blocks'):
+            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                globs.shapekey_order[shapekey.name] = index
+                print('SAVED ' + shapekey.name)
+
+    @staticmethod
+    def repair(mesh_name):
+        print('REPAIR ORDER')
+        if not globs.shapekey_order:
+            print('REPAIR FAILED')
+            return
+
+        repair_shape_order(mesh_name, globs.shapekey_order)
+        globs.shapekey_order = None
 
 
 def isEmptyGroup(group_name):
@@ -468,15 +513,16 @@ def removeZeroVerts(obj, thres=0):
 
 
 def delete_hierarchy(obj):
-    bpy.ops.object.select_all(action='DESELECT')
+    unselect_all()
     obj.animation_data_clear()
     names = set()
 
     def get_child_names(obj):
         for child in obj.children:
-            names.add(child.name)
-            if child.children:
-                get_child_names(child)
+            if child.type != 'ARMATURE':
+                names.add(child.name)
+                if child.children:
+                    get_child_names(child)
 
     get_child_names(obj)
 
@@ -493,6 +539,12 @@ def delete_hierarchy(obj):
         print("Successfully deleted object")
     else:
         print("Could not delete object")
+
+
+def days_between(d1, d2):
+    d1 = datetime.strptime(d1, "%Y-%m-%d")
+    d2 = datetime.strptime(d2, "%Y-%m-%d")
+    return abs((d2 - d1).days)
 
 
 def LLHtoECEF(lat, lon, alt):
