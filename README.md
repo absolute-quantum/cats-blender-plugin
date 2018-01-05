@@ -89,15 +89,18 @@ Deletes the selected bones and adds their weight to their respective parents.
 
 ## Decimation
 
-![](https://i.imgur.com/MjrHX5W.png)
+![](https://i.imgur.com/DOjZR8G.png)
 
 **Decimate your model automatically**
 
-##### Full Decimation
-This will decimate your whole model deleting all shape keys in the process.
+##### Save Decimation
+This will only decimate meshes with no shape keys.
 
 ##### Half Decimation
 This will only decimate meshes with less than 4 shape keys as those are often not used.
+
+##### Full Decimation
+This will decimate your whole model deleting all shape keys in the process.
 
 
 ## Eye tracking
@@ -243,6 +246,9 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Model: A lot more models are now compatible (please report non working models to us)
 - Added: Model: Added support for XNALara models! (.xps, .mesh) (experimental) (please report non working models to us)
 - Added: Translation: Error message when Blender version is too old
+- Added: Model: Changes bone draw type to wire, octahedral and xray (standard mmd_tools draw type)
+- Added: Now enables international fonts and compressed saves on startup
+- Added: Model: Joining meshes now has a loading bar
 - Changed: Eye Tracking: Eye position sliders now update in realtime!
 - Changed: Eye Tracking: Clearer vision of the model by hiding unimportant bones
 - Changed: Model: Clearer error message when bones are missing

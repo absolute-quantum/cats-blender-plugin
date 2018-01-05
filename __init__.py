@@ -72,13 +72,13 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 4, 1],
+    'version': [0, 5, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = True
+dev_branch = False
 
 slider_z = 0
 
@@ -105,20 +105,22 @@ supporters['ihatemondays'] = ['ihatemondays', '2017-12-25']
 supporters['Derpmare'] = ['derpmare', '2017-12-25']
 supporters['Bin Chicken'] = ['bin_chicken', '2017-12-25']
 supporters['Chikan Celeryman'] = ['chikan_celeryman', '2017-12-25']
-supporters['abrownbag'] = ['abrownbag', '2018-12-27']
-supporters['Buffy'] = ['Buffy', '2018-01-02']
 supporters['migero'] = ['migero', '2018-01-05']
 supporters['Ashe'] = ['ashe', '2018-01-05']
 supporters['Quadriple'] = ['quadriple', '2018-01-05']
+supporters['abrownbag'] = ['abrownbag', '2018-01-05']
 supporters['Azuth'] = ['radaruS', '2018-01-05']  # Missing
 supporters['goblox'] = ['goblox', '2018-01-05']
 supporters['Rikku'] = ['Rikku', '2018-01-05']
 supporters['azupwn'] = ['azupwn', '2018-01-05']
 supporters['m o t h'] = ['m o t h', '2018-01-05']
+supporters['Yorx'] = ['Yorx', '2018-01-05']
+supporters['Buffy'] = ['Buffy', '2018-01-05']
 supporters['Tomnautical'] = ['Tomnautical', '2018-01-05']
-supporters['Jelly'] = ['Jelly', '2018-01-03']
+supporters['Jelly'] = ['Jelly', '2018-01-05']
 supporters['Atirion'] = ['Atirion', '2018-01-05']
 supporters['Lydania'] = ['Lydania', '2018-01-05']
+supporters['Shanie-senpai'] = ['Shanie-senpai', '2018-01-05']
 
 
 current_supporters = None
@@ -150,7 +152,7 @@ class ToolPanel:
                                 "The results are decent and you won't lose any shape keys.\n"
                                 'Eye Tracking and Lip Syncing will be fully preserved.'),
 
-            ("HALF", "Half", 'Better results - minimal shape key loss\n'
+            ("HALF", "Half", 'Good results - minimal shape key loss\n'
                              "\n"
                              "This will only decimate meshes with less than 4 shape keys as those are often not used.\n"
                              'The results are better but you will lose the shape keys in some meshes.\n'
@@ -554,9 +556,19 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row.label('It works but it might not look good. Test for yourself.')
         row = col.row(align=True)
         col.separator()
-        col.separator()
+        row = col.row(align=True)
+        row.label('Decimation Mode:')
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_mode', expand=True)
+        row = col.row(align=True)
+        row.scale_y = 0.7
+        if context.scene.decimation_mode == 'MINIMAL':
+            row.label(' Decent results - No shape key loss')
+        elif context.scene.decimation_mode == 'HALF':
+            row.label(' Good results - Minimal shape key loss')
+        elif context.scene.decimation_mode == 'FULL':
+            row.label(' Best results - Full shape key loss')
+        col.separator()
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'max_tris')
@@ -1057,6 +1069,7 @@ def register():
     try:
         addon_updater_ops.register(bl_info)
     except ValueError:
+        print('Error while registering updater.')
         pass
 
     for value in classesToRegister:

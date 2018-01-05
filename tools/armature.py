@@ -117,7 +117,7 @@ class FixArmature(bpy.types.Operator):
                 pass
 
         # Set better bone view
-        bpy.context.object.data.draw_type = 'OCTAHEDRAL'
+        armature.data.draw_type = 'OCTAHEDRAL'
         armature.draw_type = 'WIRE'
         armature.show_x_ray = True
 

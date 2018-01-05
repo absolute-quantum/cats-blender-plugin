@@ -513,7 +513,7 @@ def removeZeroVerts(obj, thres=0):
 
 
 def delete_hierarchy(obj):
-    bpy.ops.object.select_all(action='DESELECT')
+    unselect_all()
     obj.animation_data_clear()
     names = set()
 

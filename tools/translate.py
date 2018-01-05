@@ -47,6 +47,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
         tools.common.unhide_all()
 
         # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
         for obj in bpy.data.objects:
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
