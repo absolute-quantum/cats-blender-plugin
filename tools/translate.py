@@ -40,7 +40,17 @@ class TranslateShapekeyButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if bpy.app.version < (2, 79, 0):
+            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            return {'FINISHED'}
+
         tools.common.unhide_all()
+
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
 
         to_translate = []
         translated = []
@@ -93,6 +103,13 @@ class TranslateBonesButton(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.unhide_all()
+
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
+
         count = translate_bones(self.dictionary)
 
         if count[1] == 0:
@@ -109,7 +126,17 @@ class TranslateMeshesButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if bpy.app.version < (2, 79, 0):
+            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            return {'FINISHED'}
+
         tools.common.unhide_all()
+
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
 
         to_translate = []
         translated = []
@@ -144,7 +171,17 @@ class TranslateMaterialsButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if bpy.app.version < (2, 79, 0):
+            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            return {'FINISHED'}
+
         tools.common.unhide_all()
+
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
 
         translator = Translator()
 
@@ -162,6 +199,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
         except:
             self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
             return {'FINISHED'}
+
         for translation in translations:
             translated.append(translation.text)
 
@@ -191,6 +229,12 @@ class TranslateTexturesButton(bpy.types.Operator):
 
         tools.common.unhide_all()
 
+        # Remove Rigidbodies and joints
+        tools.common.switch('OBJECT')
+        for obj in bpy.data.objects:
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                tools.common.delete_hierarchy(obj)
+
         translator = Translator()
 
         for mesh in tools.common.get_meshes_objects():
@@ -206,7 +250,7 @@ class TranslateTexturesButton(bpy.types.Operator):
         translated = []
         try:
             translations = translator.translate(to_translate)
-        except:
+        except SSLError:
             self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
             return {'FINISHED'}
 
@@ -258,16 +302,17 @@ def translate_bones(dictionary):
         return count
 
     for translation in translations:
-        count[1] += 1
         google_output.append(translation.text.capitalize())
 
     # Replace all untranslated parts in the bones with translations
     for bone in armature.bones:
         bone_name = bone.name
         match = re.findall(regex, bone_name)
-        if match is not None:
+        if match and len(match) > 0:
             for index, name in enumerate(google_input):
                 if name in match:
-                    bone.name = bone_name.replace(name, google_output[index])
+                    bone_name = bone_name.replace(name, google_output[index])
+            bone.name = bone_name
+            count[1] += 1
 
     return count

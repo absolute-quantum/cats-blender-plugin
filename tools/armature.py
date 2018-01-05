@@ -27,6 +27,8 @@
 # Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
+import copy
+
 import tools.common
 import tools.translate
 import tools.armature_bones as Bones
@@ -35,6 +37,7 @@ from mmd_tools_local.translations import DictionaryEnum
 mmd_tools_installed = False
 try:
     import mmd_tools
+
     mmd_tools_installed = True
 except:
     pass
@@ -71,14 +74,35 @@ class FixArmature(bpy.types.Operator):
                     i += 1
         return i > 0
 
-
     def execute(self, context):
         wm = bpy.context.window_manager
         armature = tools.common.set_default_stage()
 
-        steps = len(bpy.data.objects) + len(armature.pose.bone_groups) + len(Bones.bone_list_rename_unknown_side) + len(Bones.bone_list_parenting) + len(Bones.bone_list_weight) + 1  # TODO
-        current_step = 0
-        wm.progress_begin(current_step, steps)
+        # Add rename bones to reweight bones
+        temp_reweight_bones = copy.deepcopy(Bones.bone_reweight)
+        temp_list_reweight_bones = copy.deepcopy(Bones.bone_list_weight)
+        for key, value in Bones.bone_rename.items():
+            list = temp_reweight_bones.get(key)
+            if not list:
+                temp_reweight_bones[key] = value
+            else:
+                for name in value:
+                    if name not in list:
+                        temp_reweight_bones.get(key).append(name)
+
+        # Count objects for loading bar
+        steps = 0
+        for key, value in Bones.bone_rename.items():
+            if '\Left' in key or '\L' in key:
+                steps += 2 * len(value)
+            else:
+                steps += len(value)
+        for key, value in temp_reweight_bones.items():
+            if '\Left' in key or '\L' in key:
+                steps += 2 * len(value)
+            else:
+                steps += len(value)
+        steps += len(temp_list_reweight_bones) + len(Bones.bone_list_parenting)
 
         # Set correct mmd shading
         if mmd_tools_installed:
@@ -86,17 +110,20 @@ class FixArmature(bpy.types.Operator):
                 bpy.ops.mmd_tools.set_shadeless_glsl_shading()
                 for obj in bpy.data.objects:
                     if obj.parent is None and obj.type == 'EMPTY':
-                            obj.mmd_root.use_toon_texture = False
-                            obj.mmd_root.use_sphere_texture = False
-                            break
+                        obj.mmd_root.use_toon_texture = False
+                        obj.mmd_root.use_sphere_texture = False
+                        break
             except:
                 pass
 
+        # Set better bone view
+        armature.data.draw_type = 'OCTAHEDRAL'
+        armature.draw_type = 'WIRE'
+        armature.show_x_ray = True
+
         # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
-            current_step += 1
-            wm.progress_update(current_step)
-            if obj.name == 'rigidbodies' or obj.name == 'rigidbodies.001' or obj.name == 'joints' or obj.name == 'joints.001':
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
 
         # Remove empty objects
@@ -104,8 +131,6 @@ class FixArmature(bpy.types.Operator):
 
         # Remove Bone Groups
         for group in armature.pose.bone_groups:
-            current_step += 1
-            wm.progress_update(current_step)
             armature.pose.bone_groups.remove(group)
 
         # Model should be in rest position
@@ -121,16 +146,31 @@ class FixArmature(bpy.types.Operator):
         # Reorders vrc shape keys to the correct order
         tools.common.repair_viseme_order(mesh.name)
 
+        # Translate bones with dictionary
+        tools.translate.translate_bones(self.dictionary)
+
         # Armature should be selected and in edit mode
         tools.common.unselect_all()
         tools.common.select(armature)
         tools.common.switch('EDIT')
 
-        # Translate bones with dictionary
-        tools.translate.translate_bones(self.dictionary)
+        # Count steps for loading bar again
+        steps += len(armature.data.edit_bones)
+        for bone in armature.data.edit_bones:
+            if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
+                if bone.parent is not None:
+                    steps += 1
+                else:
+                    steps -= 1
+
+        # Start loading bar
+        current_step = 0
+        wm.progress_begin(current_step, steps)
 
         # Rename bones
         for bone in armature.data.edit_bones:
+            current_step += 1
+            wm.progress_update(current_step)
             name = ''
             for i, s in enumerate(bone.name.split(' ')):
                 if i != 0:
@@ -152,10 +192,13 @@ class FixArmature(bpy.types.Operator):
                     bones[0][1] = bone_old
 
                 for bone in bones:  # bone[0] = new name, bone[1] = old name
+                    current_step += 1
+                    wm.progress_update(current_step)
                     if bone[1] in armature.data.edit_bones or bone[1].lower() in armature.data.edit_bones:
-                        bone2 = armature.data.edit_bones.get(bone[1])
-                        if bone2 is not None:
-                            bone2.name = bone[0]
+                        if bone[0] not in armature.data.edit_bones:
+                            bone2 = armature.data.edit_bones.get(bone[1])
+                            if bone2 is not None:
+                                bone2.name = bone[0]
 
         # Check if it is a mixamo model
         mixamo = False
@@ -166,9 +209,6 @@ class FixArmature(bpy.types.Operator):
 
         # Rename bones which don't have a side and try to detect it automatically
         for key, value in Bones.bone_list_rename_unknown_side.items():
-            current_step += 1
-            wm.progress_update(current_step)
-
             for bone in armature.data.edit_bones:
                 parent = bone.parent
                 if parent is None:
@@ -196,7 +236,7 @@ class FixArmature(bpy.types.Operator):
         for bone in armature.data.edit_bones:
             if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
                 if bone.parent is not None:
-                    Bones.bone_list_weight[bone.name] = bone.parent.name
+                    temp_list_reweight_bones[bone.name] = bone.parent.name
                 else:
                     armature.data.edit_bones.remove(bone)
             else:
@@ -286,6 +326,26 @@ class FixArmature(bpy.types.Operator):
                         old_chest = armature.data.edit_bones.get('ChestOld')
                         armature.data.edit_bones.remove(old_chest)
 
+        # Correct arm bone positions for better looking
+        if 'Left arm' in armature.data.edit_bones:
+            if 'Left elbow' in armature.data.edit_bones:
+                if 'Left wrist' in armature.data.edit_bones:
+                    arm = armature.data.edit_bones.get('Left arm')
+                    elbow = armature.data.edit_bones.get('Left elbow')
+                    wrist = armature.data.edit_bones.get('Left wrist')
+                    arm.tail = elbow.head
+                    elbow.tail = wrist.head
+
+        # Correct arm bone positions for better looking
+        if 'Right arm' in armature.data.edit_bones:
+            if 'Right elbow' in armature.data.edit_bones:
+                if 'Right wrist' in armature.data.edit_bones:
+                    arm = armature.data.edit_bones.get('Right arm')
+                    elbow = armature.data.edit_bones.get('Right elbow')
+                    wrist = armature.data.edit_bones.get('Right wrist')
+                    arm.tail = elbow.head
+                    elbow.tail = wrist.head
+
         # Hips bone should be fixed as per specification from the SDK code
         if not mixamo:
             if 'Hips' in armature.data.edit_bones:
@@ -350,7 +410,6 @@ class FixArmature(bpy.types.Operator):
         for key, value in Bones.bone_list_parenting.items():
             current_step += 1
             wm.progress_update(current_step)
-
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
 
@@ -359,7 +418,7 @@ class FixArmature(bpy.types.Operator):
         tools.common.switch('OBJECT')
         tools.common.select(mesh)
 
-        for bone_new, bones_old in Bones.bone_reweight.items():
+        for bone_new, bones_old in temp_reweight_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:
                 bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
                          [bone_new.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'), '']]
@@ -380,11 +439,17 @@ class FixArmature(bpy.types.Operator):
                         vg = mesh.vertex_groups.get(bone[1].lower())
                         if vg is None:
                             continue
-                    print(bone[1] + " to1 " + bone[0])
-                    vg2 = mesh.vertex_groups.get(bone[0])
-                    if vg2 is None:
-                        continue
-                    print(bone[1] + " to2 " + bone[0])
+                    # print(bone[1] + " to1 " + bone[0])
+                    # If important vertex group is not there create it
+                    if mesh.vertex_groups.get(bone[0]) is None:
+                        if bone[0] in Bones.dont_delete_these_bones and bone[0] in armature.data.bones:
+                            bpy.ops.object.vertex_group_add()
+                            mesh.vertex_groups.active.name = bone[0]
+                            if mesh.vertex_groups.get(bone[0]) is None:
+                                continue
+                        else:
+                            continue
+                    # print(bone[1] + " to2 " + bone[0])
                     bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
                     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = bone[0]
                     bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = bone[1]
@@ -394,7 +459,7 @@ class FixArmature(bpy.types.Operator):
                     mesh.vertex_groups.remove(vg)
 
         # Old mixing weights. Still important
-        for key, value in Bones.bone_list_weight.items():
+        for key, value in temp_list_reweight_bones.items():
             current_step += 1
             wm.progress_update(current_step)
             vg = mesh.vertex_groups.get(key)
@@ -428,10 +493,16 @@ class FixArmature(bpy.types.Operator):
         if context.scene.remove_zero_weight:
             delete_zero_weight()
 
+        # # This is code for testing
+        # print('18 LOOKING FOR BONES!!!')
+        # if 'Breast_L' in tools.common.get_armature().pose.bones:
+        #     print('THEY ARE THERE!')
+        # return {'FINISHED'}
+
         # At this point, everything should be fixed and now we validate and give errors if needed
 
         # The bone hierarchy needs to be validated
-        hierarchy_check_hips = check_hierarchy([
+        hierarchy_check_hips = check_hierarchy(False, [
             ['Hips', 'Spine', 'Chest', 'Neck', 'Head'],
             ['Hips', 'Left leg', 'Left knee', 'Left ankle'],
             ['Hips', 'Right leg', 'Right knee', 'Right ankle'],
@@ -439,43 +510,51 @@ class FixArmature(bpy.types.Operator):
             ['Chest', 'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist']
         ])
 
-        current_step += 1
-        wm.progress_update(current_step)
-
         wm.progress_end()
 
         if hierarchy_check_hips['result'] is False:
             self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
-        self.report({'INFO'}, 'Model fixed.')
+        self.report({'INFO'}, 'Model successfully fixed.')
         return {'FINISHED'}
 
 
-def check_hierarchy(correct_hierarchy_array):
+def check_hierarchy(check_parenting, correct_hierarchy_array):
     armature = tools.common.set_default_stage()
+    missing = ''
 
-    for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
-        previous = None
+    for correct_hierarchy in correct_hierarchy_array:  # For each hierarchy array
+        if len(missing) > 0 and missing[-3:] != ' - ':
+            missing += '\n - '
+
         for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
-            if index > 0:
-                previous = correct_hierarchy[index - 1]
+            if bone not in missing and bone not in armature.data.bones:
+                missing += bone + ', '
 
-            # NOTE: armature.data.bones is being used instead of armature.data.edit_bones because of a failed test (edit_bones array empty for some reason)
-            if bone not in armature.data.bones:
-                return {'result': False, 'message': bone + ' was not found in the hierarchy, this will cause problems! \n '
-                        "Did you use PMXEditor? For best results it's suggested to not use PMXEditor at all and use the original pmx/pmd file instead."}
+    if len(missing) > 0:
+        return {'result': False, 'message': 'The following bones were not found: \n - ' +
+                                            missing[:-2] + '\n' +
+                                            "Make sure that this is a MMD or Mixamo model and DO NOT use PMXEditor (use the original .pmx/.pmd instead)!"}
 
-            bone = armature.data.bones[bone]
+    if check_parenting:
+        for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
+            previous = None
+            for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
+                if index > 0:
+                    previous = correct_hierarchy[index - 1]
 
-            # If a previous item was found
-            if previous is not None:
-                # And there is no parent, then we have a problem mkay
-                if bone.parent is None:
-                    return {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
-                # Previous needs to be the parent of the current item
-                if previous != bone.parent.name:
-                    return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
+                if bone in armature.data.bones:
+                    bone = armature.data.bones[bone]
+
+                    # If a previous item was found
+                    if previous is not None:
+                        # And there is no parent, then we have a problem mkay
+                        if bone.parent is None:
+                            return {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
+                        # Previous needs to be the parent of the current item
+                        if previous != bone.parent.name:
+                            return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
 
     return {'result': True}
 
@@ -518,16 +597,9 @@ def delete_zero_weight():
 
 def delete_bone_constraints():
     armature = tools.common.get_armature()
-
-    bones = set([bone.name for bone in armature.pose.bones])
-
     tools.common.switch('POSE')
-    bone_name_to_pose_bone = dict()
-    for bone in armature.pose.bones:
-        bone_name_to_pose_bone[bone.name] = bone
 
-    for bone_name in bones:
-        bone = bone_name_to_pose_bone[bone_name]
+    for bone in armature.pose.bones:
         if len(bone.constraints) > 0:
             for constraint in bone.constraints:
                 bone.constraints.remove(constraint)

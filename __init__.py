@@ -31,6 +31,7 @@ import importlib
 import bpy.utils.previews
 from . import addon_updater_ops
 from collections import OrderedDict
+from datetime import datetime
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
@@ -48,6 +49,7 @@ import tools.material
 import tools.common
 import tools.supporter
 import tools.credits
+import tools.decimation
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -62,6 +64,7 @@ importlib.reload(tools.material)
 importlib.reload(tools.common)
 importlib.reload(tools.supporter)
 importlib.reload(tools.credits)
+importlib.reload(tools.decimation)
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -69,7 +72,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 4, 1],
+    'version': [0, 5, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -84,24 +87,43 @@ preview_collections = {}
 
 # List all the supporters here
 supporters = OrderedDict()
-#       'Display name' = 'Icon name'
-supporters['Xeverian'] = 'xeverian'
-supporters['Tupper'] = 'tupper'
-supporters['Jazneo'] = 'jazneo'
-supporters['idea'] = 'idea'
-supporters['RadaruS'] = 'radaruS'
-supporters['Kry10'] = 'kry10'
-supporters['Smead'] = 'smead'
-supporters['kohai.istool'] = 'kohai.istool'
-supporters['Str4fe'] = 'str4fe'
-supporters["Ainrehtea Dal'Nalirtu"] = "Ainrehtea Dal'Nalirtu"
-supporters['Wintermute'] = 'wintermute'
-supporters['Raikin'] = 'raikin'
-supporters['BerserkerBoreas'] = 'berserkerboreas'
-supporters['ihatemondays'] = 'ihatemondays'
-supporters['Derpmare'] = 'derpmare'
-supporters['Bin Chicken'] = 'bin_chicken'
-supporters['Chikan Celeryman'] = 'chikan_celeryman'
+#       'Display name' = ['Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
+supporters['Xeverian'] = ['xeverian', '2017-12-19']
+supporters['Tupper'] = ['tupper', '2017-12-19']
+supporters['Jazneo'] = ['jazneo', '2017-12-19']
+supporters['idea'] = ['idea', '2017-12-19']
+supporters['RadaruS'] = ['radaruS', '2017-12-19']
+supporters['Kry10'] = ['kry10', '2017-12-19']
+supporters['Smead'] = ['smead', '2017-12-25']
+supporters['kohai.istool'] = ['kohai.istool', '2017-12-25']
+supporters['Str4fe'] = ['str4fe', '2017-12-25']
+supporters["Ainrehtea Dal'Nalirtu"] = ["Ainrehtea Dal'Nalirtu", '2017-12-25']
+# supporters['Wintermute'] = ['wintermute', '2017-12-19']
+supporters['Raikin'] = ['raikin', '2017-12-25']
+supporters['BerserkerBoreas'] = ['berserkerboreas', '2017-12-25']
+supporters['ihatemondays'] = ['ihatemondays', '2017-12-25']
+supporters['Derpmare'] = ['derpmare', '2017-12-25']
+supporters['Bin Chicken'] = ['bin_chicken', '2017-12-25']
+supporters['Chikan Celeryman'] = ['chikan_celeryman', '2017-12-25']
+supporters['migero'] = ['migero', '2018-01-05']
+supporters['Ashe'] = ['ashe', '2018-01-05']
+supporters['Quadriple'] = ['quadriple', '2018-01-05']
+supporters['abrownbag'] = ['abrownbag', '2018-01-05']
+supporters['Azuth'] = ['radaruS', '2018-01-05']  # Missing
+supporters['goblox'] = ['goblox', '2018-01-05']
+supporters['Rikku'] = ['Rikku', '2018-01-05']
+supporters['azupwn'] = ['azupwn', '2018-01-05']
+supporters['m o t h'] = ['m o t h', '2018-01-05']
+supporters['Yorx'] = ['Yorx', '2018-01-05']
+supporters['Buffy'] = ['Buffy', '2018-01-05']
+supporters['Tomnautical'] = ['Tomnautical', '2018-01-05']
+supporters['akarinjelly'] = ['Jelly', '2018-01-05']
+supporters['Atirion'] = ['Atirion', '2018-01-05']
+supporters['Lydania'] = ['Lydania', '2018-01-05']
+supporters['Shanie-senpai'] = ['Shanie-senpai', '2018-01-05']
+
+
+current_supporters = None
 
 
 class ToolPanel:
@@ -119,6 +141,56 @@ class ToolPanel:
         default=True
     )
 
+    # Decimation
+    bpy.types.Scene.decimation_mode = bpy.props.EnumProperty(
+        name="Decimation Mode",
+        description="Decimation Mode",
+        items=[
+            ("MINIMAL", "Save", 'Decent results - no shape key loss\n'
+                                '\n'
+                                "This will only decimate meshes with no shape keys.\n"
+                                "The results are decent and you won't lose any shape keys.\n"
+                                'Eye Tracking and Lip Syncing will be fully preserved.'),
+
+            ("HALF", "Half", 'Good results - minimal shape key loss\n'
+                             "\n"
+                             "This will only decimate meshes with less than 4 shape keys as those are often not used.\n"
+                             'The results are better but you will lose the shape keys in some meshes.\n'
+                             'Eye Tracking and Lip Syncing should still work.'),
+
+            ("FULL", "Full", 'Best results - full shape key loss\n'
+                             '\n'
+                             "This will decimate your whole model deleting all shape keys in the process.\n"
+                             'This will give the best results but you will lose the ability to add blinking and Lip Syncing.\n'
+                             'Eye Tracking will still work if you disable Eye Blinking.')
+        ],
+        default='HALF'
+    )
+
+    bpy.types.Scene.full_decimation = bpy.props.BoolProperty(
+        name='Full Decimation',
+        description="This will decimate your whole model deleting all shape keys in the process.\n"
+                    'This will give better results but you will lose the ability to add blinking and lip syncing.\n'
+                    'Eye Tracking will still work if you disable Eye Blinking.',
+        default=False
+    )
+    bpy.types.Scene.half_decimation = bpy.props.BoolProperty(
+        name='Half Decimation',
+        description="Uncheck this if you want to keep emotion shape keys.\n"
+                    "\n"
+                    "This will only decimate meshes with less than 4 shape keys as those are often not used.\n"
+                    'This will give better results but you will lose the shape keys in some meshes.\n'
+                    'Eye Tracking and lip syncing should still work.',
+        default=True
+    )
+
+    bpy.types.Scene.max_tris = bpy.props.IntProperty(
+        name='Polycount',
+        default=19999,
+        min=1,
+        max=100000
+    )
+
     # Eye Tracking
     bpy.types.Scene.eye_mode = bpy.props.EnumProperty(
         name="Eye Mode",
@@ -126,7 +198,8 @@ class ToolPanel:
         items=[
             ("CREATION", "Creation", "Here you can create eye tracking."),
             ("TESTING", "Testing", "Here you can test how eye tracking will look ingame.")
-        ]
+        ],
+        update=tools.eyetracking.stop_testing
     )
 
     bpy.types.Scene.mesh_name_eye = bpy.props.EnumProperty(
@@ -185,7 +258,7 @@ class ToolPanel:
                     '\n'
                     'Disables eye movement. Useful if you only want blinking.\n'
                     'This creates eye bones with no movement bound to them.\n'
-                    'You still have to correctly assign the eye bones in Unity.',
+                    'You still have to assign "LeftEye" and "RightEye" to the eyes in Unity.',
         subtype='DISTANCE'
     )
 
@@ -217,7 +290,8 @@ class ToolPanel:
         min=-19,
         max=25,
         step=1,
-        subtype='FACTOR'
+        subtype='FACTOR',
+        update=tools.eyetracking.set_rotation
     )
 
     bpy.types.Scene.eye_rotation_y = bpy.props.IntProperty(
@@ -227,7 +301,8 @@ class ToolPanel:
         min=-19,
         max=19,
         step=1,
-        subtype='FACTOR'
+        subtype='FACTOR',
+        update=tools.eyetracking.set_rotation
     )
 
     bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
@@ -262,19 +337,19 @@ class ToolPanel:
     bpy.types.Scene.mouth_a = bpy.props.EnumProperty(
         name='Viseme AA',
         description='Shape key containing mouth movement that looks like someone is saying "aa".\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_ah
+        items=tools.common.get_shapekeys_mouth_ah,
     )
 
     bpy.types.Scene.mouth_o = bpy.props.EnumProperty(
         name='Viseme OH',
         description='Shape key containing mouth movement that looks like someone is saying "oh".\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_oh
+        items=tools.common.get_shapekeys_mouth_oh,
     )
 
     bpy.types.Scene.mouth_ch = bpy.props.EnumProperty(
         name='Viseme CH',
         description='Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth.\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_ch
+        items=tools.common.get_shapekeys_mouth_ch,
     )
 
     bpy.types.Scene.shape_intensity = bpy.props.FloatProperty(
@@ -395,6 +470,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
     def draw(self, context):
         addon_updater_ops.check_for_update_background()
+
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
@@ -461,6 +537,45 @@ class TranslationPanel(ToolPanel, bpy.types.Panel):
         row.operator('translate.meshes', icon='MESH_DATA')
         # row.operator('translate.textures', icon='TEXTURE')
         row.operator('translate.materials', icon='MATERIAL')
+
+
+class DecimationPanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_decimation_v1'
+    bl_label = 'Decimation'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.label('Auto Decimation is currently experimental.')
+        row = col.row(align=True)
+        row.scale_y = 0.5
+        row.label('It works but it might not look good. Test for yourself.')
+        row = col.row(align=True)
+        col.separator()
+        row = col.row(align=True)
+        row.label('Decimation Mode:')
+        row = col.row(align=True)
+        row.prop(context.scene, 'decimation_mode', expand=True)
+        row = col.row(align=True)
+        row.scale_y = 0.7
+        if context.scene.decimation_mode == 'MINIMAL':
+            row.label(' Decent results - No shape key loss')
+        elif context.scene.decimation_mode == 'HALF':
+            row.label(' Good results - Minimal shape key loss')
+        elif context.scene.decimation_mode == 'FULL':
+            row.label(' Best results - Full shape key loss')
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'max_tris')
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.operator('auto.decimate', icon='MOD_DECIM')
 
 
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
@@ -544,8 +659,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 box.label('No model found!', icon='ERROR')
                 return
 
-            mode = bpy.context.active_object.mode
-            if mode != 'POSE':
+            if bpy.context.active_object is not None and bpy.context.active_object.mode != 'POSE':
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 1.5
@@ -562,7 +676,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_rotation_y', icon='ARROW_LEFTRIGHT')
                 row = col.row(align=True)
-                row.operator('eyes.set_rotation', icon='MAN_ROT')
+                row.operator('eyes.reset_rotation', icon='MAN_ROT')
 
                 # global slider_z
                 # if context.scene.eye_blink_shape != slider_z:
@@ -711,6 +825,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 class SupporterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_supporter_v2'
     bl_label = 'Supporters'
+
     # bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -721,7 +836,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
 
         i = 0
         cont = True
-        items = list(supporters.items())
+        items = list(current_supporters.items())
         while cont:
             try:
                 item = items[i]
@@ -773,10 +888,14 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
-        row.label('Created by GiveMeAllYourCats for the VRC community <3')
-        row.scale_y = 0.5
+        row.label('Created by GiveMeAllYourCats and Hotox')
         row = col.row(align=True)
-        row.label('Special thanks to: Shotariya, Hotox and Neitri!')
+        row.label('For the awesome VRChat community <3')
+        row.scale_y = 0.5
+        col.separator()
+        row = col.row(align=True)
+        row.label('Special thanks to: Shotariya and Neitri')
+        col.separator()
         row = col.row(align=True)
         row.label('Want to give feedback or found a bug?')
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
@@ -853,7 +972,7 @@ def load_icons():
     pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
 
     # load the supporters icons
-    for key, value in supporters.items():
+    for key, value in current_supporters.items():
         try:
             pcoll.load(value, os.path.join(my_icons_dir, 'supporters/' + value + '.png'), 'IMAGE')
         except KeyError:
@@ -866,6 +985,19 @@ def unload_icons():
     for pcoll in preview_collections.values():
         bpy.utils.previews.remove(pcoll)
     preview_collections.clear()
+
+
+def set_current_supporters():
+    global current_supporters
+    if current_supporters:
+        return current_supporters
+
+    current_supporters = OrderedDict()
+    now = datetime.now()
+    for key, value in supporters.items():
+        print(key + " " + str(tools.common.days_between(now.strftime("%Y-%m-%d"), value[1])))
+        if tools.common.days_between(now.strftime("%Y-%m-%d"), value[1]) <= 30:
+            current_supporters[key] = value[0]
 
 
 classesToRegister = [
@@ -891,11 +1023,14 @@ classesToRegister = [
     tools.translate.TranslateMaterialsButton,
     # tools.translate.TranslateTexturesButton,
 
+    DecimationPanel,
+    tools.decimation.AutoDecimateButton,
+
     EyeTrackingPanel,
     tools.eyetracking.CreateEyesButton,
     tools.eyetracking.StartTestingButton,
     tools.eyetracking.StopTestingButton,
-    tools.eyetracking.SetRotationButton,
+    tools.eyetracking.ResetRotationButton,
     tools.eyetracking.AdjustEyesButton,
     tools.eyetracking.TestBlinking,
     tools.eyetracking.TestLowerlid,
@@ -928,10 +1063,19 @@ classesToRegister = [
 
 
 def register():
+    set_current_supporters()
     load_icons()
-    addon_updater_ops.register(bl_info)
+
+    try:
+        addon_updater_ops.register(bl_info)
+    except ValueError:
+        print('Error while registering updater.')
+        pass
+
     for value in classesToRegister:
         bpy.utils.register_class(value)
+    bpy.context.user_preferences.system.use_international_fonts = True
+    bpy.context.user_preferences.filepaths.use_file_compression = True
 
 
 def unregister():

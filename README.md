@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.4.1)
+# Cats Blender Plugin (0.5.0)
 
 A tool designed to shorten steps needed to import and optimize MMD and Mixamo models into VRChat.
 
@@ -12,6 +12,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
  - Optimizing model with one click!
  - Creating lip syncing
  - Creating eye tracking
+ - Automatic decimation
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
  - Optimizing materials
@@ -84,6 +85,22 @@ Deletes the selected bones and adds their weight to their respective parents.
 ![](https://i.imgur.com/SCyhVn1.png)
 
 **Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
+
+
+## Decimation
+
+![](https://i.imgur.com/DOjZR8G.png)
+
+**Decimate your model automatically**
+
+##### Save Decimation
+This will only decimate meshes with no shape keys.
+
+##### Half Decimation
+This will only decimate meshes with less than 4 shape keys as those are often not used.
+
+##### Full Decimation
+This will decimate your whole model deleting all shape keys in the process.
 
 
 ## Eye tracking
@@ -224,6 +241,22 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.5.0
+- Added: Automatic Decimation! (experimental)
+- Added: Model: A lot more models are now compatible (please report non working models to us)
+- Added: Model: Added support for XNALara models! (.xps, .mesh) (experimental) (please report non working models to us)
+- Added: Translation: Error message when Blender version is too old
+- Added: Model: Changes bone draw type to wire, octahedral and xray (standard mmd_tools draw type)
+- Added: Now enables international fonts and compressed saves on startup
+- Added: Model: Joining meshes now has a loading bar
+- Changed: Eye Tracking: Eye position sliders now update in realtime!
+- Changed: Eye Tracking: Clearer vision of the model by hiding unimportant bones
+- Changed: Model: Clearer error message when bones are missing
+- Changed: Model: Joining meshes now restores the original shape key order
+- Fixed: Eye Tracking: When disabling eye blinking, shape keys were still required
+- Fixed: Translation: Sometimes bones were not fully translated
+- Fixed: Buggy bugs
+
 #### 0.4.1
 - Added: Model: More models are now compatible (if not please report it to us)
 - Added: Translations: Now shows how many objects were translated
@@ -246,21 +279,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Changed: Separate by Materials: Improved search for the mesh
 - Fixed: Undo now works better
 - Fixed: Bugs, bugs and bugs
-
-#### 0.3.0
-- Added: Armature: More models are now compatible (if not please report it to us)
-- Added: Armature: Fix hips now adjusts the upper leg bones to be placed more correctly for full body tracking
-- Added: Eye Tracking: Testing of blink and lowerlid shapes
-- Added: UI: Custom icons!
-- Added: Armature: Added "Import Model" button (shortcut to the mmd_tools button)
-- Added: Armature: Added "Separate by Materials" button (shortcut to the mmd_tools button)
-- Added: Armature: Fixing Armature now correctly sets the shading
-- Added: Updater: New popup when update is available
-- Changed: Eye Tracking: Made "Basis" usable again (useful for models with a single shape containing both blinks)
-- Changed: Armature Panel renamed to Model
-- Fixed: Optimization: Combine same materials now ignores inactive texture slots in it's unique identification
-- Fixed: Armature: Fixed multiple toes bug
-- Fixed: Even more bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

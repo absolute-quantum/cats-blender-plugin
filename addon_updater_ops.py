@@ -979,7 +979,7 @@ def register(bl_info):
 
     # Optional, consider turning off for production or allow as an option
     # This will print out additional debugging info to the console
-    updater.verbose = True  # make False for production default
+    updater.verbose = False  # make False for production default
 
     # Optional, customize where the addon updater processing subfolder is,
     # essentially a staging folder used by the updater on its own
