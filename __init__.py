@@ -105,19 +105,21 @@ supporters['ihatemondays'] = ['ihatemondays', '2017-12-25']
 supporters['Derpmare'] = ['derpmare', '2017-12-25']
 supporters['Bin Chicken'] = ['bin_chicken', '2017-12-25']
 supporters['Chikan Celeryman'] = ['chikan_celeryman', '2017-12-25']
+supporters['abrownbag'] = ['abrownbag', '2018-12-27']
+supporters['Buffy'] = ['Buffy', '2018-01-02']
 supporters['migero'] = ['migero', '2018-01-05']
 supporters['Ashe'] = ['ashe', '2018-01-05']
 supporters['Quadriple'] = ['quadriple', '2018-01-05']
-# abrownbag
 supporters['Azuth'] = ['radaruS', '2018-01-05']  # Missing
 supporters['goblox'] = ['goblox', '2018-01-05']
 supporters['Rikku'] = ['Rikku', '2018-01-05']
 supporters['azupwn'] = ['azupwn', '2018-01-05']
 supporters['m o t h'] = ['m o t h', '2018-01-05']
-# buffy
 supporters['Tomnautical'] = ['Tomnautical', '2018-01-05']
-# jelly
+supporters['Jelly'] = ['Jelly', '2018-01-03']
 supporters['Atirion'] = ['Atirion', '2018-01-05']
+supporters['Lydania'] = ['Lydania', '2018-01-05']
+
 
 current_supporters = None
 
