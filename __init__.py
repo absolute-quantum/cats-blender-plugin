@@ -475,6 +475,18 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
+        if bpy.app.version < (2, 79, 0):
+            col.separator()
+            col.separator()
+            col.separator()
+            col.label('Old Blender version detected!', icon='ERROR')
+            col.label('Some features might not work!', icon='ERROR')
+            col.label('Please update to Blender 2.79!', icon='ERROR')
+            col.separator()
+            col.separator()
+            col.separator()
+            col.separator()
+
         row = col.row(align=True)
         row.scale_y = 1.4
         row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
