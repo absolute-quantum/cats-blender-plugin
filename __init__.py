@@ -146,7 +146,7 @@ class ToolPanel:
         name="Decimation Mode",
         description="Decimation Mode",
         items=[
-            ("MINIMAL", "Save", 'Decent results - no shape key loss\n'
+            ("MINIMAL", "Safe", 'Decent results - no shape key loss\n'
                                 '\n'
                                 "This will only decimate meshes with no shape keys.\n"
                                 "The results are decent and you won't lose any shape keys.\n"
@@ -996,7 +996,7 @@ def set_current_supporters():
     now = datetime.now()
     for key, value in supporters.items():
         print(key + " " + str(tools.common.days_between(now.strftime("%Y-%m-%d"), value[1])))
-        if tools.common.days_between(now.strftime("%Y-%m-%d"), value[1]) <= 30:
+        if tools.common.days_between(now.strftime("%Y-%m-%d"), value[1]) <= 31:
             current_supporters[key] = value[0]
 
 

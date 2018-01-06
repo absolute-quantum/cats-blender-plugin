@@ -534,6 +534,7 @@ def delete_hierarchy(obj):
             obj_temp.animation_data_clear()
 
     result = bpy.ops.object.delete()
+    bpy.data.scenes['Scene'].objects.unlink(obj)
     bpy.data.objects.remove(obj)
     if result == {'FINISHED'}:
         print("Successfully deleted object")
