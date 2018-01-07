@@ -187,7 +187,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                     # Combining material slots that are similiar with only themselfs are useless
                     if len(combined_textures) <= 1:
                         continue
-                    i += len(combined_textures) - 1
+                    i += len(combined_textures)
 
                     print('NEW', file, combined_textures, len(combined_textures))
                     tools.common.switch('EDIT')
