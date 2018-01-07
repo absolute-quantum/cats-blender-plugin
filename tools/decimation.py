@@ -164,16 +164,17 @@ class AutoDecimateButton(bpy.types.Operator):
             tools.common.select(mesh_obj)
             print(mesh_obj.name)
 
+            # Calculate new decimation ratio
             decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
             print(decimation)
 
-            bpy.ops.object.modifier_add(type='DECIMATE')
+            # Apply decimation mod
+            mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
+            mod.ratio = decimation
+            mod.use_collapse_triangulate = True
+            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
-            bpy.context.object.modifiers["Decimate"].ratio = decimation
-            bpy.context.object.modifiers["Decimate"].use_collapse_triangulate = True
-
-            bpy.ops.object.modifier_apply(apply_as='DATA', modifier="Decimate")
-            tris_after = len(bpy.context.active_object.data.polygons)
+            tris_after = len(mesh_obj.data.polygons)
             print(tris)
             print(tris_after)
 

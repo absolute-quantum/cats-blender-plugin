@@ -241,6 +241,11 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.6.0
+- Added: Model: Added support for DAZ/Poser, Blender Rigify, Sims 2, Motion Builder and 3DS Max models
+- Added: Model: Added support for Models with more than 2 spines
+- Added: Model: Now resets the pivot to the center
+- Fixed: Model: Multiple parenting issues
 #### 0.5.0
 - Added: Automatic Decimation! (experimental)
 - Added: Model: A lot more models are now compatible (please report non working models to us)
@@ -266,19 +271,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"
 - Fixed: UI: Improved some loading bars
 - Fixed: Other bugs
-
-#### 0.4.0
-- Added: Model: A lot more models are now compatible (if not please report it to us)
-- Added: Bone Merging: A new feature that can reduce huge groups of bones (useful for Dynamic Bones)
-- Added: Model: Mixamo models are now fixable!
-- Added: Progress notification on several operations
-- Added: Model: Joining meshes now applies all unapplied decimation modifiers
-- Added: Model: New "Start/Stop Pose Mode" button
-- Added: Updater: Development branch added to version selection
-- Changed: Functions that need UI context are now excluded from the spacebar menu
-- Changed: Separate by Materials: Improved search for the mesh
-- Fixed: Undo now works better
-- Fixed: Bugs, bugs and bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

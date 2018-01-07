@@ -268,7 +268,7 @@ class SeparateByMaterials(bpy.types.Operator):
 
         for mod in obj.modifiers:
             if 'Decimate' in mod.name:
-                bpy.ops.object.modifier_remove(modifier=mod.name)
+                obj.modifiers.remove(mod)
             else:
                 mod.show_expanded = False
 

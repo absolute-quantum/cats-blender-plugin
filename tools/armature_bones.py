@@ -55,8 +55,6 @@ bone_list_parenting = {
     'Left toe': 'Left ankle',
     'Right toe': 'Right ankle',
 
-    'M-head_copy': 'Head',
-
     'Thumb0_L': 'Left wrist',
     'IndexFinger1_L': 'Left wrist',
     'MiddleFinger1_L': 'Left wrist',
@@ -92,6 +90,9 @@ bone_list_parenting = {
     'MiddleFinger3_R': 'MiddleFinger2_R',
     'RingFinger3_R': 'RingFinger2_R',
     'LittleFinger3_R': 'LittleFinger2_R',
+
+    # Special cases
+    'M-head_copy': 'Head',
 }
 dont_delete_these_bones = {
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
@@ -141,44 +142,87 @@ bone_rename['Hips'] = [
     'Mixamorig:Hips',
     'Pelvis',
     'Bip001 Pelvis',
+    'Root',
+    'Root Hips',
+    'Root_rot',
+    'Hip',
 ]
-bone_rename['Spine'] = [
+bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
+    'Spine',  # First entry!
+
+    # MMD
     'UpperBody',
     'Upperbody',
     'Upper Body',
     'Upper Waist',
-    'Mixamorig:Spine',
-    'Spine Lower',
-    'Bip001 Spine',
-]
-bone_rename['Chest'] = [
     'UpperBody2',
     'Upperbody2',
     'Upper Body 2',
     'Upper Waist 2',
     'Waist Upper 2',
-    'Mixamorig:Spine1',
-    'Spine Upper',
-    'Bip001 Spine1',
-]
-bone_rename['NewChest'] = [  # Will get deleted
     'UpperBody3',
     'Upperbody3',
     'Upper Body 3',
     'Upper Waist 3',
     'Waist Upper 3',
+
+    # Mixamo
+    'Mixamorig:Spine',
+    'Mixamorig:Spine0',
+    'Mixamorig:Spine1',
     'Mixamorig:Spine2',
+    'Mixamorig:Spine3',
+    'Mixamorig:Spine4',
+
+    # 3DMax?
+    'Bip001 Spine',
+    'Bip001 Spine0',
+    'Bip001 Spine1',
     'Bip001 Spine2',
+    'Bip001 Spine3',
+    'Bip001 Spine4',
+    'Bip001 Spine5',
+
+    # Something
+    'B C Spine',
+    'B C Spine0',
+    'B C Spine1',
+    'B C Spine2',
+    'B C Spine3',
+    'B C Spine4',
+    'B C Spine5',
+    'B C Chest',
+
+    # .Mesh
+    'Spine Lower',
+    'Spine Upper',
+
+    'abdomen',
+
+    'Spine0',
+    'Spine1',
+    'Spine2',
+    'Spine3',
+    'Spine4',
+    'Spine5',
+
+    'Chest1',
+    'Chest2',
+    'Chest3',
+
+    'Chest'  # Last entry!
 ]
 bone_rename['Neck'] = [
     'Mixamorig:Neck',
     'Head Neck Lower',
     'Bip001 Neck',
+    'B C Neck1',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
     'Head Neck Upper',
     'Bip001 Head',
+    'B C Head',
 ]
 bone_rename['\Left shoulder'] = [
     '\Left Shoulder',
@@ -187,16 +231,30 @@ bone_rename['\Left shoulder'] = [
     'Mixamorig:\LeftShoulder',
     'Arm \Left Shoulder 1',
     'Bip001 \L Clavicle',
+    'B \L Shoulder',
+    'Shoulder \L',
+    '\LCollar',
+    '\L_clavicle',
+    '\LeftCollar',
+    '\Left Collar',
 ]
 bone_rename['\Left arm'] = [
     '\Left Arm',
     '\LeftArm',
     'Arm_\L',
+    'ArmTC_\L',
     '+ \Left Elbow Support',
     '+ \Left Elbow Support',
     'Mixamorig:\LeftArm',
     'Arm \Left Shoulder 2',
     'Bip001 \L UpperArm',
+    'B \L Arm1',
+    'Upper Arm \L',
+    '\LShldr',
+    'Upper_arm_\L',
+    '\L_upperarm',
+    '\LeftUpArm',
+    'Uparm_\L'
 ]
 bone_rename['Left arm'] = [
     '+ Leisure Elder Supplement',
@@ -208,25 +266,52 @@ bone_rename['\Left elbow'] = [
     'Mixamorig:\LeftForeArm',
     'Arm \Left Elbow',
     'Bip001 \L Forearm',
+    'B \L Arm2',
+    'Forearm \L',
+    '\LForeArm',
+    'forearm_\L',
+    '\L_forearm',
+    '\LeftLowArm',
+    '\Left Forearm',
+    'Loarm_\L'
 ]
 bone_rename['\Left wrist'] = [
     '\Left Wrist',
     '\LeftWrist',
     'Wrist_\L',
+    'HandAux2_\L',
     'Mixamorig:\LeftHand',
     'Arm \Left Wrist',
     'Bip001 \L Hand',
+    'B \L Hand',
+    'Hand \L',
+    '\LHand',
+    'Hand_\L',
+    '\L_hand',
+    '\LeftHand',
+    '\Left Hand',
+    'Finger3-1_\L'
 ]
 bone_rename['\Left leg'] = [
     '\Left Leg',
     '\Left foot',
     '\LeftLeg',
     'Leg_\L',
+    'LegWAux_\L',
     'Leg00003333_\L',
     'Leg00004444_\L',
     'Mixamorig:\LeftUpLeg',
     'Leg \Left Thigh',
     'Bip001 \L Thigh',
+    'B \L Leg1',
+    'Upper Leg \L',
+    '\LThigh',
+    'Thigh_\L',
+    '\L_thigh',
+    '\LeftUpLeg',
+    '\LeftHip',
+    '\Left Thigh',
+    'Upleg_\L'
 ]
 bone_rename['\Left knee'] = [
     '\Left Knee',
@@ -235,6 +320,14 @@ bone_rename['\Left knee'] = [
     'Mixamorig:\LeftLeg',
     'Leg \Left Knee',
     'Bip001 \L Calf',
+    'B \L Leg2',
+    'Lower Leg \L',
+    '\LShin',
+    'Shin_\L',
+    '\L_calf',
+    '\LeftLowLeg',
+    '\Left Shin',
+    'Loleg_\L'
 ]
 bone_rename['\Left ankle'] = [
     '\Left Ankle',
@@ -243,6 +336,13 @@ bone_rename['\Left ankle'] = [
     'Mixamorig:\LeftFoot',
     'Leg \Left Ankle',
     'Bip001 \L Foot',
+    'B \L Foot',
+    'Lower',
+    '\LFoot',
+    'Foot_\L',
+    '\L_foot',
+    '\LeftFoot',
+    '\Left Foot'
 ]
 bone_rename['\Left toe'] = [
     '\Left Toe',
@@ -253,12 +353,21 @@ bone_rename['\Left toe'] = [
     'Mixamorig:\LeftToeBase',
     'Leg \Left Toes',
     'Bip001 \L Toe0',
+    'B \L Toe',
+    '\LToe',
+    'Toe_\L',
+    '\L_toe',
+    '\LeftToeBase',
+    'Toe1-1_\L'
 ]
 bone_rename['Eye_\L'] = [
     '\Left Eye',
     'Mixamorig:\LeftEye',
     'Head Eyeball \Left',
     'FEye\L',
+    'Eye\L',
+    'Eye_\L',
+    '\L_eye',
 ]
 
 ################################
@@ -307,6 +416,7 @@ bone_reweight['\Left shoulder'] = [
     'ShoulderS_\L',
     'ShoulderW_\L',
     'Arm \Left Shoulder Adj 1',
+    'B \L ArmorParts',
 ]
 bone_reweight['\Left arm'] = [
     'Arm01_\L',
@@ -501,15 +611,7 @@ bone_reweight['\Left toe'] = [
     'ClawTipThumbEX2_\L',
     '\Left Toe EX',
     '\Left Foot Tip EX',
-    'DEF-toe_\L',
-]
-bone_reweight['\Left toe'] = [
-    'ClawTipEX_\L',
-    'ClawTipEX2_\L',
-    'ClawTipThumbEX_\L',
-    'ClawTipThumbEX2_\L',
-    '\Left Toe EX',
-    '\Left Foot Tip EX',
+    'LegTip2_\L',
     'DEF-toe_\L',
 ]
 bone_reweight['Eye_\L'] = [

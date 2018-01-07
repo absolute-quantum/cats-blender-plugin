@@ -81,7 +81,10 @@ class FixArmature(bpy.types.Operator):
         # Add rename bones to reweight bones
         temp_reweight_bones = copy.deepcopy(Bones.bone_reweight)
         temp_list_reweight_bones = copy.deepcopy(Bones.bone_list_weight)
+        temp_list_reparent_bones = copy.deepcopy(Bones.bone_list_parenting)
         for key, value in Bones.bone_rename.items():
+            if key == 'Spine':
+                continue
             list = temp_reweight_bones.get(key)
             if not list:
                 temp_reweight_bones[key] = value
@@ -102,7 +105,7 @@ class FixArmature(bpy.types.Operator):
                 steps += 2 * len(value)
             else:
                 steps += len(value)
-        steps += len(temp_list_reweight_bones) + len(Bones.bone_list_parenting)
+        steps += len(temp_list_reweight_bones)  # + len(Bones.bone_list_parenting)
 
         # Set correct mmd shading
         if mmd_tools_installed:
@@ -143,6 +146,10 @@ class FixArmature(bpy.types.Operator):
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes(context)
 
+        # Correct pivot position
+        bpy.ops.view3d.snap_cursor_to_center()
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+
         # Reorders vrc shape keys to the correct order
         tools.common.repair_viseme_order(mesh.name)
 
@@ -178,6 +185,7 @@ class FixArmature(bpy.types.Operator):
                 name += s[:1].upper() + s[1:]
             bone.name = name
 
+        spines = []
         for bone_new, bones_old in Bones.bone_rename.items():
             if '\Left' in bone_new or '\L' in bone_new:
                 bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
@@ -194,11 +202,24 @@ class FixArmature(bpy.types.Operator):
                 for bone in bones:  # bone[0] = new name, bone[1] = old name
                     current_step += 1
                     wm.progress_update(current_step)
-                    if bone[1] in armature.data.edit_bones or bone[1].lower() in armature.data.edit_bones:
-                        if bone[0] not in armature.data.edit_bones:
-                            bone2 = armature.data.edit_bones.get(bone[1])
-                            if bone2 is not None:
-                                bone2.name = bone[0]
+
+                    name = ''
+                    if bone[1] in armature.data.edit_bones:
+                        name = bone[1]
+                    elif bone[1].lower() in armature.data.edit_bones:
+                        name = bone[1].lower()
+
+                    if name == '':
+                        continue
+
+                    if bone_new == 'Spine':
+                        spines.append(name)
+                        continue
+
+                    if name != '' and bone[0] not in armature.data.edit_bones:
+                        bone2 = armature.data.edit_bones.get(name)
+                        if bone2 is not None:
+                            bone2.name = bone[0]
 
         # Check if it is a mixamo model
         mixamo = False
@@ -256,75 +277,59 @@ class FixArmature(bpy.types.Operator):
 
         # == FIXING OF SPECIAL BONE CASES ==
 
-        # Create missing Chest # TODO bleeding
-        if 'Chest' not in armature.data.edit_bones:
-            if 'Spine' in armature.data.edit_bones:
-                if 'Neck' in armature.data.edit_bones:
-                    chest = armature.data.edit_bones.new('Chest')
-                    spine = armature.data.edit_bones.get('Spine')
-                    neck = armature.data.edit_bones.get('Neck')
+        # Fix all spines!
+        spine_count = len(spines)
+        if spine_count == 0:
+            pass
 
-                    # Set new Chest bone to new position
-                    chest.tail = neck.head
-                    chest.head = spine.head
-                    chest.head[2] = spine.head[2] + (neck.head[2] - spine.head[2]) / 2
-                    chest.head[1] = spine.head[1] + (neck.head[1] - spine.head[1]) / 2
+        elif spine_count == 1:  # Create missing Chest
+            if 'Neck' in armature.data.edit_bones:
+                print('BONE CREATION')
+                spine = armature.data.edit_bones.get(spines[0])
+                chest = armature.data.edit_bones.new('Chest')
+                neck = armature.data.edit_bones.get('Neck')
 
-                    # Adjust spine bone position
-                    spine.tail = chest.head
+                # Correct the names
+                spine.name = 'Spine'
+                chest.name = 'Chest'
 
-                    # Reparent bones to include new chest
-                    chest.parent = spine
+                # Set new Chest bone to new position
+                chest.tail = neck.head
+                chest.head = spine.head
+                chest.head[2] = spine.head[2] + (neck.head[2] - spine.head[2]) / 2
+                chest.head[1] = spine.head[1] + (neck.head[1] - spine.head[1]) / 2
 
-                    for bone in armature.data.edit_bones:
-                        if bone.parent == spine:
-                            bone.parent = chest
+                # Adjust spine bone position
+                spine.tail = chest.head
 
-        # Remove third chest
-        if 'NewChest' in armature.data.edit_bones:
-            if 'Chest' in armature.data.edit_bones:
-                if 'Spine' in armature.data.edit_bones:
-                    new_chest = armature.data.edit_bones.get('NewChest')
-                    old_chest = armature.data.edit_bones.get('Chest')
-                    spine = armature.data.edit_bones.get('Spine')
+                # Reparent bones to include new chest
+                chest.parent = spine
 
-                    # Check if NewChest is empty
-                    if tools.common.isEmptyGroup(new_chest.name):
-                        armature.data.edit_bones.remove(new_chest)
-                    else:
-                        # Rename chests
-                        old_chest.name = 'ChestOld'
-                        new_chest.name = 'Chest'
+                for bone in armature.data.edit_bones:
+                    if bone.parent == spine:
+                        bone.parent = chest
 
-                        # Adjust spine bone position
-                        spine.tail[0] += old_chest.tail[0] - old_chest.head[0]
-                        spine.tail[1] += old_chest.tail[1] - old_chest.head[1]
-                        spine.tail[2] += old_chest.tail[2] - old_chest.head[2]
+        elif spine_count == 2:  # Everything correct, just rename them
+            print('NORMAL')
+            armature.data.edit_bones.get(spines[0]).name = 'Spine'
+            armature.data.edit_bones.get(spines[1]).name = 'Chest'
 
-                        # Move weight paint to spine
-                        tools.common.unselect_all()
-                        tools.common.switch('OBJECT')
-                        tools.common.select(mesh)
+        elif spine_count > 2:  # Merge spines
+            print('MASS MERGING')
+            spine = armature.data.edit_bones.get(spines[0])
+            chest = armature.data.edit_bones.get(spines[spine_count - 1])
 
-                        vg = mesh.vertex_groups.get(old_chest.name)
-                        if vg is not None:
-                            bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
-                            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = spine.name
-                            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = old_chest.name
-                            bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
-                            bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
-                            bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
-                            mesh.vertex_groups.remove(vg)
+            # Correct names
+            spine.name = 'Spine'
+            chest.name = 'Chest'
 
-                        tools.common.unselect_all()
-                        tools.common.select(armature)
-                        tools.common.switch('EDIT')
+            # Adjust spine bone position
+            spine.tail = chest.head
 
-                        # Delete old chest bone
-                        # New Check is necessary because switch to object mode in between
-
-                        old_chest = armature.data.edit_bones.get('ChestOld')
-                        armature.data.edit_bones.remove(old_chest)
+            # Add all redundant spines to the merge list
+            for spine in spines[1:spine_count-1]:
+                print(spine)
+                temp_list_reweight_bones[spine] = 'Spine'
 
         # Correct arm bone positions for better looking
         if 'Left arm' in armature.data.edit_bones:
@@ -406,13 +411,6 @@ class FixArmature(bpy.types.Operator):
                         right_leg.roll = 0
                         hip_bone.roll = 0
 
-        # Reparent all bones to be correct for unity mapping and vrc itself
-        for key, value in Bones.bone_list_parenting.items():
-            current_step += 1
-            wm.progress_update(current_step)
-            if key in armature.data.edit_bones and value in armature.data.edit_bones:
-                armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
-
         # Mixing the weights
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
@@ -449,13 +447,19 @@ class FixArmature(bpy.types.Operator):
                                 continue
                         else:
                             continue
+
+                    bone_tmp = armature.data.bones.get(bone[1])
+                    if bone_tmp:
+                        for child in bone_tmp.children:
+                            temp_list_reparent_bones[child.name] = bone[0]
+
                     # print(bone[1] + " to2 " + bone[0])
-                    bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
-                    bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = bone[0]
-                    bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = bone[1]
-                    bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
-                    bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
-                    bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+                    mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
+                    mod.vertex_group_a = bone[0]
+                    mod.vertex_group_b = bone[1]
+                    mod.mix_mode = 'ADD'
+                    mod.mix_set = 'B'
+                    bpy.ops.object.modifier_apply(modifier=mod.name)
                     mesh.vertex_groups.remove(vg)
 
         # Old mixing weights. Still important
@@ -470,17 +474,31 @@ class FixArmature(bpy.types.Operator):
             vg2 = mesh.vertex_groups.get(value)
             if vg2 is None:
                 continue
-            bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
-            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = value
-            bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = key
-            bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
-            bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
-            bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+
+            bone_tmp = armature.data.bones.get(bone[1])
+            if bone_tmp:
+                for child in bone_tmp.children:
+                    temp_list_reparent_bones[child.name] = bone[0]
+
+            print(key + ' to ' + value)
+            mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
+            mod.vertex_group_a = bone[0]
+            mod.vertex_group_b = bone[1]
+            mod.mix_mode = 'ADD'
+            mod.mix_set = 'B'
+            bpy.ops.object.modifier_apply(modifier=mod.name)
             mesh.vertex_groups.remove(vg)
 
         tools.common.unselect_all()
         tools.common.select(armature)
         tools.common.switch('EDIT')
+
+        # Reparent all bones to be correct for unity mapping and vrc itself
+        for key, value in temp_list_reparent_bones.items():
+            # current_step += 1
+            # wm.progress_update(current_step)
+            if key in armature.data.edit_bones and value in armature.data.edit_bones:
+                armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
 
         # Bone constraints should be deleted
         # if context.scene.remove_constraints:

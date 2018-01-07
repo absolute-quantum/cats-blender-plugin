@@ -327,10 +327,10 @@ def join_meshes(context):
         for mod in mesh.modifiers:
             if 'Decimate' in mod.name:
                 if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
-                    bpy.ops.object.modifier_remove(modifier=mod.name)
+                    mesh.modifiers.remove(mod)
                     continue
                 if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
-                    bpy.ops.object.modifier_remove(modifier=mod.name)
+                    mesh.modifiers.remove(mod)
                     continue
 
                 if mesh.data.shape_keys is not None:
@@ -361,6 +361,20 @@ def join_meshes(context):
     reset_context_scenes(context)
 
     return mesh
+
+
+def separate_by_verts(context):
+    for obj in bpy.context.selected_objects:
+        if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
+            bpy.context.scene.objects.active = obj
+            bpy.ops.object.mode_set(mode='EDIT')
+            bpy.ops.mesh.select_mode(type='VERT')
+            for vgroup in obj.vertex_groups:
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bpy.ops.object.vertex_group_set_active(group=vgroup.name)
+                bpy.ops.object.vertex_group_select()
+                bpy.ops.mesh.separate(type='SELECTED')
+            bpy.ops.object.mode_set(mode='OBJECT')
 
 
 def reset_context_scenes(context):
