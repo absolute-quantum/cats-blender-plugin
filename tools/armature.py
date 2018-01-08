@@ -453,7 +453,7 @@ class FixArmature(bpy.types.Operator):
                         for child in bone_tmp.children:
                             temp_list_reparent_bones[child.name] = bone[0]
 
-                    # print(bone[1] + " to2 " + bone[0])
+                    print(bone[1] + " to2 " + bone[0])
                     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
                     mod.vertex_group_a = bone[0]
                     mod.vertex_group_b = bone[1]
@@ -480,10 +480,12 @@ class FixArmature(bpy.types.Operator):
                 for child in bone_tmp.children:
                     temp_list_reparent_bones[child.name] = bone[0]
 
-            print(key + ' to ' + value)
+            if key == value:
+                print('BUG: ' + key + ' tried to mix weights with itself!')
+
             mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
-            mod.vertex_group_a = bone[0]
-            mod.vertex_group_b = bone[1]
+            mod.vertex_group_a = value
+            mod.vertex_group_b = key
             mod.mix_mode = 'ADD'
             mod.mix_set = 'B'
             bpy.ops.object.modifier_apply(modifier=mod.name)

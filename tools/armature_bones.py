@@ -366,7 +366,6 @@ bone_rename['Eye_\L'] = [
     'Head Eyeball \Left',
     'FEye\L',
     'Eye\L',
-    'Eye_\L',
     '\L_eye',
 ]
 
@@ -444,6 +443,7 @@ bone_reweight['\Left arm'] = [
     'ShoulderTwist_\L',
     'ArmW_\L',
     'ArmW2_\L',
+    'Sleeve1_\L',
     'SleeveArm_\L',
     'SleeveElbowAux_\L',
     'ArmxcIa_\L',
@@ -487,6 +487,7 @@ bone_reweight['\Left elbow'] = [
     'ElbowTwist2_\L',
     'ElbowW_\L',
     'ElbowW2_\L',
+    'Sleeve2_\L',
     'SleeveElbow_\L',
     'SleeveMouth_\L',
     'ElbowRotation_\L',
@@ -503,6 +504,7 @@ bone_reweight['\Left elbow'] = [
     'Arm \Left Elbow Adj 1',
 ]
 bone_reweight['\Left wrist'] = [
+    'Sleeve3_\L',
     'WristSleeve_\L',
     'WristW_\L',
     'WristS_\L',
