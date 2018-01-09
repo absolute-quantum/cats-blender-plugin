@@ -52,19 +52,29 @@ class ImportModel(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        if not mmd_tools_installed:
-            bpy.context.window_manager.popup_menu(popup_install, title='mmd_tools is not installed!', icon='ERROR')
-            return {'FINISHED'}
+        if context.scene.import_mode == 'MMD':
+            if not mmd_tools_installed:
+                bpy.context.window_manager.popup_menu(popup_install_mmd, title='mmd_tools is not installed!', icon='ERROR')
+                return {'FINISHED'}
 
-        try:
-            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
-        except:
-            bpy.context.window_manager.popup_menu(popup_enable, title='mmd_tools is not enabled!', icon='ERROR')
+            try:
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+            except AttributeError:
+                bpy.context.window_manager.popup_menu(popup_enable_mmd, title='mmd_tools is not enabled!', icon='ERROR')
+
+        elif context.scene.import_mode == 'XPS':
+            try:
+                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
+            except AttributeError:
+                bpy.context.window_manager.popup_menu(popup_install_xps, title='XPS Tools is not installed or enabled!', icon='ERROR')
+
+        elif context.scene.import_mode == 'FBX':
+            bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
 
         return {'FINISHED'}
 
 
-def popup_enable(self, context):
+def popup_enable_mmd(self, context):
     layout = self.layout
     col = layout.column(align=True)
 
@@ -75,7 +85,7 @@ def popup_enable(self, context):
     row.label("Please enable it in your User Preferences.")
 
 
-def popup_install(self, context):
+def popup_install_mmd(self, context):
     layout = self.layout
     col = layout.column(align=True)
 
@@ -91,6 +101,33 @@ def popup_install(self, context):
     row.operator('armature_manual.mmd_tools', icon='LOAD_FACTORY')
 
 
+def popup_enable_xps(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'XPS Tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("Please enable it in your User Preferences.")
+
+
+def popup_install_xps(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'XPS Tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("If it is not enabled please enable it in your User Preferences.")
+    row = col.row(align=True)
+    row.label("If it is not installed please click here to go to this link to download and install it")
+    col.separator()
+    row = col.row(align=True)
+    row.operator('armature_manual.xps_tools', icon='LOAD_FACTORY')
+
+
 class MmdToolsButton(bpy.types.Operator):
     bl_idname = 'armature_manual.mmd_tools'
     bl_label = 'Install mmd_tools'
@@ -99,6 +136,17 @@ class MmdToolsButton(bpy.types.Operator):
         webbrowser.open('https://github.com/powroupi/blender_mmd_tools')
 
         self.report({'INFO'}, 'mmd_tools link opened')
+        return {'FINISHED'}
+
+
+class XpsToolsButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.xps_tools'
+    bl_label = 'Install XPS Tools'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
+
+        self.report({'INFO'}, 'XPS Tools link opened')
         return {'FINISHED'}
 
 

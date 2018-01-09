@@ -145,6 +145,54 @@ class FixArmature(bpy.types.Operator):
             except AttributeError:
                 pass
 
+
+        # mmd_tools specific operations
+        shading_is_set = False
+        if mmd_tools_installed:
+
+            # Set correct mmd shading
+            try:
+                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                for obj in bpy.data.objects:
+                    if obj.parent is None and obj.type == 'EMPTY':
+                        obj.mmd_root.use_toon_texture = False
+                        obj.mmd_root.use_sphere_texture = False
+                        break
+                shading_is_set = True
+            except (AttributeError, RuntimeError):
+                pass
+
+            # Convert mmd bone morph into shape keys
+            try:
+                mmd_root = armature.parent.mmd_root
+                if len(mmd_root.bone_morphs) > 0:
+
+                    current_step = 0
+                    wm.progress_begin(current_step, len(mmd_root.bone_morphs))
+
+
+                    for index, morph in enumerate(mmd_root.bone_morphs):
+                        current_step += 1
+                        wm.progress_update(current_step)
+                        armature.parent.mmd_root.active_morph = index
+                        bpy.ops.mmd_tools.view_bone_morph()
+                        mesh = tools.common.get_meshes_objects()[0]
+                        tools.common.select(mesh)
+
+                        mod = mesh.modifiers.new(morph.name, 'ARMATURE')
+                        mod.object = armature
+                        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+                    wm.progress_end()
+            except AttributeError:
+                pass
+
+        if not shading_is_set:
+            try:
+                bpy.ops.xps_tools.set_shadeless_glsl_shading()
+            except (AttributeError, RuntimeError):
+                pass
+
+
         # Set better bone view
         armature.data.draw_type = 'OCTAHEDRAL'
         armature.draw_type = 'WIRE'
@@ -208,12 +256,17 @@ class FixArmature(bpy.types.Operator):
         for bone in armature.data.edit_bones:
             current_step += 1
             wm.progress_update(current_step)
-            name = ''
-            for i, s in enumerate(bone.name.split(' ')):
+
+            name = bone.name
+            name = name.replace('-', '_')
+            name = name.replace('ValveBiped_', '')
+
+            upper_name = ''
+            for i, s in enumerate(name.split(' ')):
                 if i != 0:
-                    name += ' '
-                name += s[:1].upper() + s[1:]
-            bone.name = name
+                    upper_name += ' '
+                upper_name += s[:1].upper() + s[1:]
+            bone.name = upper_name
 
         spines = []
         for bone_new, bones_old in Bones.bone_rename.items():

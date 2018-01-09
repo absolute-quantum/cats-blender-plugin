@@ -243,9 +243,16 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 #### 0.6.0
 - Added: Model: Added support for DAZ/Poser, Blender Rigify, Sims 2, Motion Builder and 3DS Max models
-- Added: Model: Added support for Models with more than 2 spines
+- Added: Model: Added support for models with more than 2 spines
+- Added: Model: Added conversion of mmd bone morphs into shape keys
+- Added: Model: Added import option for XNALara and FBX
 - Added: Model: Now resets the pivot to the center
+- Added: Decimation: Added custom decimation tab, allows you to whitelist meshes and shape keys
+- Added: Decimation: Added option to exclude fingers from decimation
+- Added: General: Warning when Blender is outdated
+- Fixed: Atlas: Fixed transparency issue after creating auto atlas
 - Fixed: Model: Multiple parenting issues
+
 #### 0.5.0
 - Added: Automatic Decimation! (experimental)
 - Added: Model: A lot more models are now compatible (please report non working models to us)

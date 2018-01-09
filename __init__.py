@@ -133,6 +133,16 @@ class ToolPanel:
     bl_category = 'CATS'
 
     # Armature
+    bpy.types.Scene.import_mode = bpy.props.EnumProperty(
+        name="Import Mode",
+        description="Import Mode",
+        items=[
+            ("MMD", "MMD", 'Import .pmx/.pmd files'),
+            ("XPS", "XNALara", 'Import .xps/.mesh/.ascii files'),
+            ("FBX", "FBX", 'Import .fbx files'),
+        ],
+        default='MMD'
+    )
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove Zero Weight Bones',
         description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.\n"
@@ -526,6 +536,8 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
+        row = col.row(align=True)
+        row.prop(context.scene, 'import_mode', expand=True)
         row = col.row(align=True)
         row.scale_y = 1.4
         row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
@@ -1164,6 +1176,7 @@ classesToRegister = [
     ArmaturePanel,
     tools.armature_manual.ImportModel,
     tools.armature_manual.MmdToolsButton,
+    tools.armature_manual.XpsToolsButton,
     tools.armature.FixArmature,
     tools.armature_manual.SeparateByMaterials,
     tools.armature_manual.JoinMeshes,
