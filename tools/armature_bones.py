@@ -120,6 +120,25 @@ bone_list_rename_unknown_side = {
     'Shoulder': 'shoulder',
     'Shoulder_001': 'shoulder'
 }
+bone_finger_list = [
+    'Thumb0_',
+    'IndexFinger1_',
+    'MiddleFinger1_',
+    'RingFinger1_',
+    'LittleFinger1_',
+
+    'Thumb1_',
+    'IndexFinger2_',
+    'MiddleFinger2_',
+    'RingFinger2_',
+    'LittleFinger2_',
+
+    'Thumb2_',
+    'IndexFinger3_',
+    'MiddleFinger3_',
+    'RingFinger3_',
+    'LittleFinger3_',
+]
 
 ################################
 # Capitalize all bone names!

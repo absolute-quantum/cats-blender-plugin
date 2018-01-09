@@ -26,7 +26,111 @@
 
 import bpy
 import tools.common
-from mmd_tools_local import utils
+import tools.armature_bones as Bones
+
+
+ignore_shapes = []
+ignore_meshes = []
+
+
+class ScanButton(bpy.types.Operator):
+    bl_idname = 'auto.scan'
+    bl_label = 'Scan for decimation models'
+    bl_description = 'Separates the mesh.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.add_shape_key == "":
+            return False
+
+        return True
+
+    def execute(self, context):
+        shape = context.scene.add_shape_key
+        shapes = tools.common.get_shapekeys_decimation_list(self, context)
+        count = len(shapes)
+
+        if count > 1 and shapes.index(shape) == count - 1:
+            context.scene.add_shape_key = shapes[count - 2]
+
+        ignore_shapes.append(shape)
+
+        return {'FINISHED'}
+
+
+class AddShapeButton(bpy.types.Operator):
+    bl_idname = 'add.shape'
+    bl_label = 'Add'
+    bl_description = 'Adds the selected shape key to the whitelist.\n' \
+                     'This means that every mesh containing that shape key will be not decimated.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.add_shape_key == "":
+            return False
+
+        return True
+
+    def execute(self, context):
+        shape = context.scene.add_shape_key
+        shapes = tools.common.get_shapekeys_decimation_list(self, context)
+        count = len(shapes)
+
+        if count > 1 and shapes.index(shape) == count - 1:
+            context.scene.add_shape_key = shapes[count - 2]
+
+        ignore_shapes.append(shape)
+
+        return {'FINISHED'}
+
+
+class AddMeshButton(bpy.types.Operator):
+    bl_idname = 'add.mesh'
+    bl_label = 'Add'
+    bl_description = 'Adds the selected mesh to the whitelist.\n' \
+                     'This means that this mesh will be not decimated.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if context.scene.add_mesh == "":
+            return False
+        return True
+
+    def execute(self, context):
+        ignore_meshes.append(context.scene.add_mesh)
+
+        return {'FINISHED'}
+
+
+class RemoveShapeButton(bpy.types.Operator):
+    bl_idname = 'remove.shape'
+    bl_label = ''
+    bl_description = 'Removes the selected shape key from the whitelist.\n' \
+                     'This means that this shape key is no longer decimation safe!'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    shape_name = bpy.props.StringProperty()
+
+    def execute(self, context):
+        ignore_shapes.remove(self.shape_name)
+
+        return {'FINISHED'}
+
+
+class RemoveMeshButton(bpy.types.Operator):
+    bl_idname = 'remove.mesh'
+    bl_label = ''
+    bl_description = 'Removes the selected mesh from the whitelist.\n' \
+                     'This means that this mesh will be decimated.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    mesh_name = bpy.props.StringProperty()
+
+    def execute(self, context):
+        ignore_meshes.remove(self.mesh_name)
+
+        return {'FINISHED'}
 
 
 class AutoDecimateButton(bpy.types.Operator):
@@ -50,32 +154,6 @@ class AutoDecimateButton(bpy.types.Operator):
                     i += 1
         return i == 1
 
-    @staticmethod
-    def __can_remove(key_block):
-        if 'mmd_' in key_block.name:
-            return True
-        if key_block.relative_key == key_block:
-            return False  # Basis
-        for v0, v1 in zip(key_block.relative_key.data, key_block.data):
-            if v0.co != v1.co:
-                return False
-        return True
-
-    def __shape_key_clean(self, context, obj, key_blocks):
-        for kb in key_blocks:
-            if self.__can_remove(kb):
-                obj.shape_key_remove(kb)
-
-    def __shape_key_clean_old(self, context, obj, key_blocks):
-        context.scene.objects.active = obj
-        for i in reversed(range(len(key_blocks))):
-            kb = key_blocks[i]
-            if self.__can_remove(kb):
-                obj.active_shape_key_index = i
-                bpy.ops.object.shape_key_remove()
-
-    __do_shape_key_clean = __shape_key_clean_old if bpy.app.version < (2, 75, 0) else __shape_key_clean
-
     def execute(self, context):
         # Remove Rigidbodies and joints
         tools.common.unhide_all()
@@ -92,28 +170,9 @@ class AutoDecimateButton(bpy.types.Operator):
             if len(meshes) == 0:
                 return {'FINISHED'}
             obj = meshes[0]
-            tools.common.select(obj)
 
-        for mod in obj.modifiers:
-            if 'Decimate' in mod.name:
-                bpy.ops.object.modifier_remove(modifier=mod.name)
-            else:
-                mod.show_expanded = False
-
-        tools.common.set_default_stage()
-
-        utils.separateByMaterials(obj)
-        for ob in context.selected_objects:
-            if ob.type != 'MESH' or ob.data.shape_keys is None:
-                continue
-            if not ob.data.shape_keys.use_relative:
-                continue  # not be considered yet
-            key_blocks = ob.data.shape_keys.key_blocks
-            counts = len(key_blocks)
-            self.__do_shape_key_clean(context, ob, key_blocks)
-            counts -= len(key_blocks)
-
-        utils.clearUnusedMeshes()
+        if context.scene.decimation_mode != 'CUSTOM':
+            tools.common.separate_by_materials(context, obj)
 
         self.decimate(context)
 
@@ -121,21 +180,70 @@ class AutoDecimateButton(bpy.types.Operator):
 
     def decimate(self, context):
         print('START DECIMATION')
+        tools.common.set_default_stage()
+
+        custom_decimation = context.scene.decimation_mode == 'CUSTOM'
         full_decimation = context.scene.decimation_mode == 'FULL'
         half_decimation = context.scene.decimation_mode == 'HALF'
+        decimate_fingers = context.scene.decimate_fingers
         meshes = []
         current_tris_count = 0
         tris_count = 0
 
-        for mesh in tools.common.get_meshes_objects():
-            tools.common.select(mesh)
+        meshes_obj = tools.common.get_meshes_objects()
 
-            tris = len(bpy.context.active_object.data.polygons)
-            current_tris_count += tris
+        for mesh in meshes_obj:
+            current_tris_count += len(mesh.data.polygons)
+
+        if decimate_fingers:
+            for mesh in meshes_obj:
+                if len(mesh.vertex_groups) > 0:
+                    tools.common.select(mesh)
+                    tools.common.switch('EDIT')
+
+                    bpy.ops.mesh.select_mode(type='VERT')
+
+                    for finger in Bones.bone_finger_list:
+                        print(finger)
+                        vgs = [mesh.vertex_groups.get(finger + 'L'), mesh.vertex_groups.get(finger + 'R')]
+                        for vg in vgs:
+                            if vg:
+                                bpy.ops.object.vertex_group_set_active(group=vg.name)
+                                bpy.ops.object.vertex_group_select()
+                                try:
+                                    bpy.ops.mesh.separate(type='SELECTED')
+                                except RuntimeError:
+                                    pass
+
+                    bpy.ops.object.mode_set(mode='OBJECT')
+
+                    tools.common.unselect_all()
+
+        for mesh in meshes_obj:
+            tools.common.select(mesh)
+            tris = len(mesh.data.polygons)
+
+            if custom_decimation and mesh.name in ignore_meshes:
+                tools.common.unselect_all()
+                continue
 
             if mesh.data.shape_keys is not None:
                 if full_decimation:
                     print('FULL')
+                    bpy.ops.object.shape_key_remove(all=True)
+                    meshes.append((mesh, tris))
+                    tris_count += tris
+                elif custom_decimation:
+                    found = False
+                    for shape in ignore_shapes:
+                        if shape in mesh.data.shape_keys.key_blocks:
+                            found = True
+                            break
+                    if found:
+                        print('IGNORED')
+                        tools.common.unselect_all()
+                        continue
+                    print('CUSTOM')
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris
@@ -154,6 +262,8 @@ class AutoDecimateButton(bpy.types.Operator):
                 tris_count += tris
 
             tools.common.unselect_all()
+
+        # decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
 
         meshes.sort(key=lambda x: x[1])
 
@@ -183,13 +293,41 @@ class AutoDecimateButton(bpy.types.Operator):
 
             tools.common.unselect_all()
 
+        # # Check if decimated correctly
+        # if decimation < 0:
+        #     print('')
+        #     print('RECHECK!')
+        #
+        #     current_tris_count = 0
+        #     tris_count = 0
+        #
+        #     for mesh in tools.common.get_meshes_objects():
+        #         tools.common.select(mesh)
+        #         tris = len(bpy.context.active_object.data.polygons)
+        #         tris_count += tris
+        #         print(tris_count)
+        #
+        #     for mesh in reversed(meshes):
+        #         mesh_obj = mesh[0]
+        #         tools.common.select(mesh_obj)
+        #
+        #         # Calculate new decimation ratio
+        #         decimation = (context.scene.max_tris - tris_count) / tris_count
+        #         print(decimation)
+        #
+        #         # Apply decimation mod
+        #         mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
+        #         mod.ratio = decimation
+        #         mod.use_collapse_triangulate = True
+        #         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+        #
+        #         tools.common.unselect_all()
+        #         break
+
         mesh = tools.common.join_meshes(context)
         if mesh is not None:
             tools.common.repair_viseme_order(mesh.name)
 
-        if decimation < 0:
-            self.report({'ERROR'}, 'Model decimated but desired polycount could not be reached.\n'
-                                   'You can go back and try again with enabled Full/Half Decimation or manually remove the shape keys from unimportant meshes first.')
 
 
 

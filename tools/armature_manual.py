@@ -231,30 +231,6 @@ class SeparateByMaterials(bpy.types.Operator):
                     i += 1
         return i == 1
 
-    @staticmethod
-    def __can_remove(key_block):
-        if key_block.relative_key == key_block:
-            return False  # Basis
-        for v0, v1 in zip(key_block.relative_key.data, key_block.data):
-            if v0.co != v1.co:
-                return False
-        return True
-
-    def __shape_key_clean(self, context, obj, key_blocks):
-        for kb in key_blocks:
-            if self.__can_remove(kb):
-                obj.shape_key_remove(kb)
-
-    def __shape_key_clean_old(self, context, obj, key_blocks):
-        context.scene.objects.active = obj
-        for i in reversed(range(len(key_blocks))):
-            kb = key_blocks[i]
-            if self.__can_remove(kb):
-                obj.active_shape_key_index = i
-                bpy.ops.object.shape_key_remove()
-
-    __do_shape_key_clean = __shape_key_clean_old if bpy.app.version < (2, 75, 0) else __shape_key_clean
-
     def execute(self, context):
         obj = context.active_object
 
@@ -264,30 +240,8 @@ class SeparateByMaterials(bpy.types.Operator):
             if len(meshes) == 0:
                 return {'FINISHED'}
             obj = meshes[0]
-            tools.common.select(obj)
 
-        for mod in obj.modifiers:
-            if 'Decimate' in mod.name:
-                obj.modifiers.remove(mod)
-            else:
-                mod.show_expanded = False
-
-        tools.common.set_default_stage()
-        tools.common.ShapekeyOrder.save(obj.name)
-
-        utils.separateByMaterials(obj)
-
-        for ob in context.selected_objects:
-            if ob.type != 'MESH' or ob.data.shape_keys is None:
-                continue
-            if not ob.data.shape_keys.use_relative:
-                continue  # not be considered yet
-            key_blocks = ob.data.shape_keys.key_blocks
-            counts = len(key_blocks)
-            self.__do_shape_key_clean(context, ob, key_blocks)
-            counts -= len(key_blocks)
-
-        utils.clearUnusedMeshes()
+        tools.common.separate_by_materials(context, obj)
         return {'FINISHED'}
 
 

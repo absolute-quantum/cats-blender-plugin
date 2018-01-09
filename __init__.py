@@ -122,7 +122,6 @@ supporters['Atirion'] = ['Atirion', '2018-01-05']
 supporters['Lydania'] = ['Lydania', '2018-01-05']
 supporters['Shanie-senpai'] = ['Shanie-senpai', '2018-01-05']
 
-
 current_supporters = None
 
 
@@ -146,11 +145,11 @@ class ToolPanel:
         name="Decimation Mode",
         description="Decimation Mode",
         items=[
-            ("MINIMAL", "Safe", 'Decent results - no shape key loss\n'
-                                '\n'
-                                "This will only decimate meshes with no shape keys.\n"
-                                "The results are decent and you won't lose any shape keys.\n"
-                                'Eye Tracking and Lip Syncing will be fully preserved.'),
+            ("SAFE", "Safe", 'Decent results - no shape key loss\n'
+                             '\n'
+                             "This will only decimate meshes with no shape keys.\n"
+                             "The results are decent and you won't lose any shape keys.\n"
+                             'Eye Tracking and Lip Syncing will be fully preserved.'),
 
             ("HALF", "Half", 'Good results - minimal shape key loss\n'
                              "\n"
@@ -162,9 +161,22 @@ class ToolPanel:
                              '\n'
                              "This will decimate your whole model deleting all shape keys in the process.\n"
                              'This will give the best results but you will lose the ability to add blinking and Lip Syncing.\n'
-                             'Eye Tracking will still work if you disable Eye Blinking.')
+                             'Eye Tracking will still work if you disable Eye Blinking.'),
+
+            ("CUSTOM", "Custom", 'Custom results - custom shape key loss\n'
+                               '\n'
+                               "This will let you choose which meshes and shape keys should not be decimated.\n")
         ],
         default='HALF'
+    )
+
+    bpy.types.Scene.selection_mode = bpy.props.EnumProperty(
+        name="Selection Mode",
+        description="Selection Mode",
+        items=[
+            ("SHAPES", "Shape Keys", 'Select all the shape keys you want to keep here.'),
+            ("MESHES", "Meshes", 'Select all the meshes you want to keep here')
+        ]
     )
 
     bpy.types.Scene.full_decimation = bpy.props.BoolProperty(
@@ -184,8 +196,35 @@ class ToolPanel:
         default=True
     )
 
+    bpy.types.Scene.add_shape_key = bpy.props.EnumProperty(
+        name='Shape',
+        description='The shape key you want to keep.',
+        items=tools.common.get_shapekeys_decimation
+    )
+
+    bpy.types.Scene.add_mesh = bpy.props.EnumProperty(
+        name='Mesh',
+        description='The mesh you want to leave untouched by the decimation.',
+        items=tools.common.get_meshes_decimation
+    )
+
+    bpy.types.Scene.decimate_fingers = bpy.props.BoolProperty(
+        name="Don't Decimate Fingers",
+        description="Check this if you don't want to decimate your fingers!\n"
+                    "Results will be worse but there will be no issues with finger movement.\n"
+                    "This is probably only useful if you have a VR headset.\n"
+                    "\n"
+                    "This operation requires the finger bones to be names specifically:\n"
+                    "Thumb(0-2)_(L/R)\n"
+                    "IndexFinger(1-3)_(L/R)\n"
+                    "MiddleFinger(1-3)_(L/R)\n"
+                    "RingFinger(1-3)_(L/R)\n"
+                    "LittleFinger(1-3)_(L/R)"
+    )
+
     bpy.types.Scene.max_tris = bpy.props.IntProperty(
         name='Polycount',
+        description="The target amount of tris after decimation.",
         default=19999,
         min=1,
         max=100000
@@ -566,7 +605,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 0.5
         row.label('It works but it might not look good. Test for yourself.')
-        row = col.row(align=True)
         col.separator()
         row = col.row(align=True)
         row.label('Decimation Mode:')
@@ -574,20 +612,130 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'decimation_mode', expand=True)
         row = col.row(align=True)
         row.scale_y = 0.7
-        if context.scene.decimation_mode == 'MINIMAL':
+        if context.scene.decimation_mode == 'SAFE':
             row.label(' Decent results - No shape key loss')
         elif context.scene.decimation_mode == 'HALF':
             row.label(' Good results - Minimal shape key loss')
         elif context.scene.decimation_mode == 'FULL':
             row.label(' Best results - Full shape key loss')
+
+        elif context.scene.decimation_mode == 'CUSTOM':
+            col.separator()
+
+            if len(tools.common.get_meshes_objects()) == 1:
+                row = col.row(align=True)
+                row.label('Start by Separating by Materials:')
+                row = col.row(align=True)
+                row.scale_y = 1.2
+                row.operator('armature_manual.separate_by_materials', icon='PLAY')
+                return
+            else:
+                row = col.row(align=True)
+                row.label('Stop by Joining Meshes:')
+                row = col.row(align=True)
+                row.scale_y = 1.2
+                row.operator('armature_manual.join_meshes', icon='PAUSE')
+
+            col.separator()
+            col.separator()
+            row = col.row(align=True)
+            row.label('Whitelisted:')
+            row = col.row(align=True)
+            row.prop(context.scene, 'selection_mode', expand=True)
+            col.separator()
+            col.separator()
+
+            if context.scene.selection_mode == 'SHAPES':
+                row = col.split(0.7)
+                row.prop(context.scene, 'add_shape_key', icon='SHAPEKEY_DATA')
+                row.operator('add.shape', icon='ZOOMIN')
+                col.separator()
+                col.separator()
+
+                box2 = col.box()
+                col = box2.column(align=True)
+
+                if len(tools.decimation.ignore_shapes) == 0:
+                    col.label('No shape key selected')
+
+                for shape in tools.decimation.ignore_shapes:
+                    row = col.split(0.8)
+                    row.label(shape, icon='SHAPEKEY_DATA')
+                    op = row.operator('remove.shape', icon='ZOOMOUT')
+                    op.shape_name = shape
+            elif context.scene.selection_mode == 'MESHES':
+                row = col.split(0.7)
+                row.prop(context.scene, 'add_mesh', icon='MESH_DATA')
+                row.operator('add.mesh', icon='ZOOMIN')
+                col.separator()
+                col.separator()
+
+                if context.scene.add_mesh == '':
+                    row = col.row(align=True)
+                    col.label('Every mesh is selected. This equals no Decimation.', icon='ERROR')
+
+                box2 = col.box()
+                col = box2.column(align=True)
+
+                if len(tools.decimation.ignore_meshes) == 0:
+                    col.label('No mesh selected')
+
+                for mesh in tools.decimation.ignore_meshes:
+                    row = col.split(0.8)
+                    row.label(mesh, icon='MESH_DATA')
+                    op = row.operator('remove.mesh', icon='ZOOMOUT')
+                    op.mesh_name = mesh
+
+            col = box.column(align=True)
+
+            col.label('Info: Both whitelists are considered during decimation')
+            row = col.row(align=True)
+
+            # # row = col.row(align=True)
+            # # rows = 2
+            # # row = layout.row()
+            # # row.template_list("auto.decimate_list", "", bpy.context.scene, "auto", bpy.context.scene, "custom_index", rows=rows)
+            #
+            # obj = context.object
+            #
+            # # template_list now takes two new args.
+            # # The first one is the identifier of the registered UIList to use (if you want only the default list,
+            # # with no custom draw code, use "UI_UL_list").
+            # layout.template_list("ShapekeyList", "", ('heyho', 'heyho2'), "material_slots", ('heyho', 'heyho2'), "active_material_index")
+
         col.separator()
         col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'decimate_fingers')
         row = col.row(align=True)
         row.prop(context.scene, 'max_tris')
         col.separator()
-        col.separator()
         row = col.row(align=True)
+        row.scale_y = 1.2
         row.operator('auto.decimate', icon='MOD_DECIM')
+
+
+# class ShapekeyList(bpy.types.UIList):
+#     # The draw_item function is called for each item of the collection that is visible in the list.
+#     #   data is the RNA object containing the collection,
+#     #   item is the current drawn item of the collection,
+#     #   icon is the "computed" icon for the item (as an integer, because some objects like materials or textures
+#     #   have custom icons ID, which are not available as enum items).
+#     #   active_data is the RNA object containing the active property for the collection (i.e. integer pointing to the
+#     #   active item of the collection).
+#     #   active_propname is the name of the active property (use 'getattr(active_data, active_propname)').
+#     #   index is index of the current item in the collection.
+#     #   flt_flag is the result of the filtering process for this item.
+#     #   Note: as index and flt_flag are optional arguments, you do not have to use/declare them here if you don't
+#     #         need them.
+#     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+#         layout.label(text=item.name, translate=False, icon='SHAPEKEY_DATA')
+#         # split.prop(item, "name", text="", emboss=False, translate=False, icon='BORDER_RECT')
+#
+#
+# class Uilist_actions(bpy.types.Operator):
+#     bl_idname = "custom.list_action"
+#     bl_label = "List Action"
 
 
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
@@ -1037,6 +1185,10 @@ classesToRegister = [
 
     DecimationPanel,
     tools.decimation.AutoDecimateButton,
+    tools.decimation.AddShapeButton,
+    tools.decimation.AddMeshButton,
+    tools.decimation.RemoveShapeButton,
+    tools.decimation.RemoveMeshButton,
 
     EyeTrackingPanel,
     tools.eyetracking.CreateEyesButton,

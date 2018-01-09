@@ -29,9 +29,11 @@ import bpy
 import bmesh
 import globs
 import numpy as np
+import tools.decimation
 from mathutils import Vector
 from math import degrees
 from collections import OrderedDict
+from mmd_tools_local import utils
 
 # TODO
 # - Add check if hips bone really needs to be rotated
@@ -171,6 +173,20 @@ def get_meshes(self, context):
     return bpy.types.Object.Enum
 
 
+def get_meshes_decimation(self, context):
+    choices = []
+
+    for object in bpy.context.scene.objects:
+        if object.type == 'MESH':
+            if object.parent is not None and object.parent.type == 'ARMATURE':
+                if object.name in tools.decimation.ignore_meshes:
+                    continue
+                choices.append((object.name, object.name, object.name))
+
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
+    return bpy.types.Object.Enum
+
+
 def get_bones_head(self, context):
     return get_bones(['Head'])
 
@@ -212,59 +228,86 @@ def get_bones(names):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow'], False)
+    return get_shapekeys(context, ['Ah', 'Wow'], False, False, False)
 
 
 def get_shapekeys_mouth_oh(self, context):
-    return get_shapekeys(context, ['Your'], False)
+    return get_shapekeys(context, ['Your'], False, False, False)
 
 
 def get_shapekeys_mouth_ch(self, context):
-    return get_shapekeys(context, ['Glue', 'There'], False)
+    return get_shapekeys(context, ['Glue', 'There'], False, False, False)
 
 
 def get_shapekeys_eye_blink_l(self, context):
-    return get_shapekeys(context, ['Wink 2', 'Wink', 'Basis'], False)
+    return get_shapekeys(context, ['Wink 2', 'Wink', 'Basis'], False, False, False)
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Basis'], False)
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Basis'], False, False, False)
 
 
 def get_shapekeys_eye_low_l(self, context):
-    return get_shapekeys(context, ['Basis'], False)
+    return get_shapekeys(context, ['Basis'], False, False, False)
 
 
 def get_shapekeys_eye_low_r(self, context):
-    return get_shapekeys(context, ['Basis'], False)
+    return get_shapekeys(context, ['Basis'], False, False, False)
+
+
+def get_shapekeys_decimation(self, context):
+    return get_shapekeys(context, ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], True, True, False)
+
+
+def get_shapekeys_decimation_list(self, context):
+    return get_shapekeys(context, ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], True, True, True)
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
 # no_basis - If this is true the Basis will not be available in the list
-def get_shapekeys(context, names, no_basis):
+def get_shapekeys(context, names, no_basis, decimation, return_list):
     choices = []
+    choices_simple = []
+    meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
 
-    mesh = bpy.data.objects.get(context.scene.mesh_name_eye)
-    if mesh is None or not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
-        bpy.types.Object.Enum = choices
-        return bpy.types.Object.Enum
+    if decimation:
+        meshes = get_meshes_objects()
 
-    for shapekey in mesh.data.shape_keys.key_blocks:
-        if no_basis and shapekey.name == 'Basis':
-            continue
-        choices.append((shapekey.name, shapekey.name, shapekey.name))
+    for mesh in meshes:
+        if mesh is None or not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
+            bpy.types.Object.Enum = choices
+            return bpy.types.Object.Enum
+
+        for shapekey in mesh.data.shape_keys.key_blocks:
+            name = shapekey.name
+            if name in choices_simple:
+                continue
+            if no_basis and name == 'Basis':
+                continue
+            if decimation and name in tools.decimation.ignore_shapes:
+                continue
+            choices.append((name, name, name))
+            choices_simple.append(name)
 
     choices.sort(key=lambda x: tuple(x[0].lower()))
 
     choices2 = []
     for name in names:
-        if name in mesh.data.shape_keys.key_blocks and choices[0][0] != name:
+        if name in choices_simple and len(choices) > 1 and choices[0][0] != name:
+            if decimation and name in tools.decimation.ignore_shapes:
+                continue
             choices2.append((name, name, name))
 
     for choice in choices:
         choices2.append(choice)
 
     bpy.types.Object.Enum = choices2
+
+    if return_list:
+        shape_list = []
+        for choice in choices2:
+            shape_list.append(choice[0])
+        return shape_list
 
     return bpy.types.Object.Enum
 
@@ -325,7 +368,7 @@ def join_meshes(context):
     for mesh in get_meshes_objects():
         select(mesh)
         for mod in mesh.modifiers:
-            if 'Decimate' in mod.name:
+            if mod.type == 'DECIMATE':
                 if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
                     mesh.modifiers.remove(mod)
                     continue
@@ -363,10 +406,44 @@ def join_meshes(context):
     return mesh
 
 
+def separate_by_materials(context, mesh):
+    set_default_stage()
+    select(mesh)
+
+    ShapekeyOrder.save(mesh.name)
+
+    for mod in mesh.modifiers:
+        if mod.type == 'DECIMATE':
+            mesh.modifiers.remove(mod)
+        else:
+            mod.show_expanded = False
+
+    utils.separateByMaterials(mesh)
+
+    for ob in context.selected_objects:
+        if ob.type == 'MESH' and ob.data.shape_keys:
+            for kb in ob.data.shape_keys.key_blocks:
+                if can_remove(kb):
+                    ob.shape_key_remove(kb)
+
+    utils.clearUnusedMeshes()
+
+
+def can_remove(key_block):
+    if 'mmd_' in key_block.name:
+        return True
+    if key_block.relative_key == key_block:
+        return False  # Basis
+    for v0, v1 in zip(key_block.relative_key.data, key_block.data):
+        if v0.co != v1.co:
+            return False
+    return True
+
+
 def separate_by_verts(context):
     for obj in bpy.context.selected_objects:
-        if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
-            bpy.context.scene.objects.active = obj
+            if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
+                bpy.context.scene.objects.active = obj
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_mode(type='VERT')
             for vgroup in obj.vertex_groups:
@@ -474,13 +551,12 @@ class ShapekeyOrder:
         if mesh.data.shape_keys is not None and hasattr(mesh.data.shape_keys, 'key_blocks'):
             for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
                 globs.shapekey_order[shapekey.name] = index
-                print('SAVED ' + shapekey.name)
 
     @staticmethod
     def repair(mesh_name):
         print('REPAIR ORDER')
         if not globs.shapekey_order:
-            print('REPAIR FAILED')
+            print('REPAIR EMTPY')
             return
 
         repair_shape_order(mesh_name, globs.shapekey_order)
@@ -560,24 +636,6 @@ def days_between(d1, d2):
     d1 = datetime.strptime(d1, "%Y-%m-%d")
     d2 = datetime.strptime(d2, "%Y-%m-%d")
     return abs((d2 - d1).days)
-
-
-def LLHtoECEF(lat, lon, alt):
-    # see http://www.mathworks.de/help/toolbox/aeroblks/llatoecefposition.html
-
-    rad = np.float64(6378137.0)  # Radius of the Earth (in meters)
-    f = np.float64(1.0 / 298.257223563)  # Flattening factor WGS84 Model
-    cosLat = np.cos(lat)
-    sinLat = np.sin(lat)
-    FF = (1.0 - f) ** 2
-    C = 1 / np.sqrt(cosLat ** 2 + FF * sinLat ** 2)
-    S = C * FF
-
-    x = (rad * C + alt) * cosLat * np.cos(lon)
-    y = (rad * C + alt) * cosLat * np.sin(lon)
-    z = (rad * S + alt) * sinLat
-
-    return [x, y, z]
 
 # === THIS CODE COULD BE USEFUL ===
 
