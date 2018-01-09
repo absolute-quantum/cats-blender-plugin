@@ -118,7 +118,7 @@ class FixArmature(bpy.types.Operator):
                         obj.mmd_root.use_toon_texture = False
                         obj.mmd_root.use_sphere_texture = False
                         break
-            except AttributeError:
+            except (AttributeError, RuntimeError):
                 pass
 
             # Convert mmd bone morph into shape keys
@@ -171,10 +171,14 @@ class FixArmature(bpy.types.Operator):
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes(context)
+        tools.common.select(mesh)
 
         # Correct pivot position
-        bpy.ops.view3d.snap_cursor_to_center()
-        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        try:
+            bpy.ops.view3d.snap_cursor_to_center()
+            bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        except RuntimeError:
+            pass
 
         # Reorders vrc shape keys to the correct order
         tools.common.repair_viseme_order(mesh.name)
