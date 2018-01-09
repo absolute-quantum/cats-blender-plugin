@@ -30,5 +30,3 @@ root_bones_choices = {}
 
 # Keeps track of operations done for unit testing
 testing = []
-
-shapekey_order = None

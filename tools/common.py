@@ -27,7 +27,6 @@ from datetime import datetime
 
 import bpy
 import bmesh
-import globs
 import numpy as np
 import tools.decimation
 from mathutils import Vector
@@ -44,6 +43,9 @@ from mmd_tools_local import utils
 # - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
 # - Eye tracking test add reset blink
 # - Eye tracking test set subcol like in updater
+
+
+shapekey_order = None
 
 
 def get_armature():
@@ -542,25 +544,27 @@ class ShapekeyOrder:
 
     @staticmethod
     def save(mesh_name):
-        if globs.shapekey_order:
+        global shapekey_order
+        if shapekey_order:
             print('SAVE ABORTED!')
             return
         print('SAVE ORDER')
-        globs.shapekey_order = OrderedDict()
+        shapekey_order = OrderedDict()
         mesh = bpy.data.objects[mesh_name]
         if mesh.data.shape_keys is not None and hasattr(mesh.data.shape_keys, 'key_blocks'):
             for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                globs.shapekey_order[shapekey.name] = index
+                shapekey_order[shapekey.name] = index
 
     @staticmethod
     def repair(mesh_name):
+        global shapekey_order
         print('REPAIR ORDER')
-        if not globs.shapekey_order:
+        if not shapekey_order:
             print('REPAIR EMTPY')
             return
 
-        repair_shape_order(mesh_name, globs.shapekey_order)
-        globs.shapekey_order = None
+        repair_shape_order(mesh_name, shapekey_order)
+        shapekey_order = None
 
 
 def isEmptyGroup(group_name):

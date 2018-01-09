@@ -50,7 +50,6 @@ import tools.common
 import tools.supporter
 import tools.credits
 import tools.decimation
-import globs
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -66,7 +65,6 @@ importlib.reload(tools.common)
 importlib.reload(tools.supporter)
 importlib.reload(tools.credits)
 importlib.reload(tools.decimation)
-importlib.reload(globs)
 
 bl_info = {
     'name': 'Cats Blender Plugin',
