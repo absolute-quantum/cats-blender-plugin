@@ -225,6 +225,13 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Spine4',
     'Spine5',
 
+    'Spine 0',
+    'Spine 1',
+    'Spine 2',
+    'Spine 3',
+    'Spine 4',
+    'Spine 5',
+
     'Chest1',
     'Chest2',
     'Chest3',
@@ -273,7 +280,7 @@ bone_rename['\Left arm'] = [
     'Upper_arm_\L',
     '\L_upperarm',
     '\LeftUpArm',
-    'Uparm_\L'
+    'Uparm_\L',
 ]
 bone_rename['Left arm'] = [
     '+ Leisure Elder Supplement',
@@ -292,7 +299,7 @@ bone_rename['\Left elbow'] = [
     '\L_forearm',
     '\LeftLowArm',
     '\Left Forearm',
-    'Loarm_\L'
+    'Loarm_\L',
 ]
 bone_rename['\Left wrist'] = [
     '\Left Wrist',
@@ -361,7 +368,8 @@ bone_rename['\Left ankle'] = [
     'Foot_\L',
     '\L_foot',
     '\LeftFoot',
-    '\Left Foot'
+    '\Left Foot',
+    'Leg \Left Foot',
 ]
 bone_rename['\Left toe'] = [
     '\Left Toe',
@@ -377,7 +385,8 @@ bone_rename['\Left toe'] = [
     'Toe_\L',
     '\L_toe',
     '\LeftToeBase',
-    'Toe1-1_\L'
+    'Toe1-1_\L',
+    'Leg \Left Foot Toes',
 ]
 bone_rename['Eye_\L'] = [
     '\Left Eye',
@@ -475,6 +484,7 @@ bone_reweight['\Left arm'] = [
     'Arm \Left Shoulder Adj 2',
     'Arm \Left Shoulder Adj 3',
     'Arm \Left Shoulder Adj 4',
+    'Arm \Left Bicep',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -521,6 +531,7 @@ bone_reweight['\Left elbow'] = [
     'Arm \Left Wrist Adj',
     'Arm \Left Elbow Adj 2',
     'Arm \Left Elbow Adj 1',
+    'Arm \Left Forearm'
 ]
 bone_reweight['\Left wrist'] = [
     'Sleeve3_\L',
@@ -537,6 +548,7 @@ bone_reweight['\Left wrist'] = [
     'DEF-palm_02_\L',
     'DEF-palm_03_\L',
     'DEF-palm_04_\L',
+    'Arm \Left Hand',
 ]
 bone_reweight['\Left leg'] = [
     'LegD_\L',
@@ -646,6 +658,8 @@ bone_reweight['Eye_\L'] = [
     'F_EyeLight2_\L',
     'F_EyeLight3_\L',
     'DEF-eye_\L',
+    'EyeLight+_\L',
+    'EyeRotationErase_\L',
 ]
 bone_reweight['Breast_\L'] = [
     'DEF-bust_01_\L',

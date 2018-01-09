@@ -107,8 +107,10 @@ class FixArmature(bpy.types.Operator):
                 steps += len(value)
         steps += len(temp_list_reweight_bones)  # + len(Bones.bone_list_parenting)
 
-        # Set correct mmd shading
+        # mmd_tools specific operations
         if mmd_tools_installed:
+
+            # Set correct mmd shading
             try:
                 bpy.ops.mmd_tools.set_shadeless_glsl_shading()
                 for obj in bpy.data.objects:
@@ -116,7 +118,31 @@ class FixArmature(bpy.types.Operator):
                         obj.mmd_root.use_toon_texture = False
                         obj.mmd_root.use_sphere_texture = False
                         break
-            except:
+            except AttributeError:
+                pass
+
+            # Convert mmd bone morph into shape keys
+            try:
+                mmd_root = armature.parent.mmd_root
+                if len(mmd_root.bone_morphs) > 0:
+
+                    current_step = 0
+                    wm.progress_begin(current_step, len(mmd_root.bone_morphs))
+
+
+                    for index, morph in enumerate(mmd_root.bone_morphs):
+                        current_step += 1
+                        wm.progress_update(current_step)
+                        armature.parent.mmd_root.active_morph = index
+                        bpy.ops.mmd_tools.view_bone_morph()
+                        mesh = tools.common.get_meshes_objects()[0]
+                        tools.common.select(mesh)
+
+                        mod = mesh.modifiers.new(morph.name, 'ARMATURE')
+                        mod.object = armature
+                        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+                    wm.progress_end()
+            except AttributeError:
                 pass
 
         # Set better bone view
