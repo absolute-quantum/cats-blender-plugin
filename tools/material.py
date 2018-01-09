@@ -29,7 +29,6 @@
 
 import bpy
 import tools.common
-import hashlib
 
 
 class OneTexPerMatButton(bpy.types.Operator):
@@ -157,20 +156,17 @@ class CombineMaterialsButton(bpy.types.Operator):
                         if mat_slot.material.use_textures[tex_index]:
                             if hasattr(mtex_slot.texture, 'image') and bpy.data.materials[mat_slot.name].use_textures[tex_index]:
                                 hash_this += mtex_slot.texture.image.filepath   # Filepaths makes the hash unique
-                            hash_this += str(mat_slot.material.alpha)           # Alpha setting on material makes the hash unique
-                            hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique
-                            hash_this += str(mat_slot.material.diffuse_color)   # Diffuse color makes the hash unique
-
-                # Hash the unique values of this material slot
-                hash_val = hashlib.md5(hash_this.encode('utf-8')).hexdigest()
+                hash_this += str(mat_slot.material.alpha)           # Alpha setting on material makes the hash unique
+                hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique
+                hash_this += str(mat_slot.material.diffuse_color)   # Diffuse color makes the hash unique
 
                 print('---------------------------------------------------')
-                print(mat_slot.name, hash_val, hash_this)
+                print(mat_slot.name, hash_this)
 
                 # Now create or add to the dict key that has this hash value
-                if hash_val not in self.combined_tex:
-                    self.combined_tex[hash_val] = []
-                self.combined_tex[hash_val].append({'mat': mat_slot.name, 'index': index})
+                if hash_this not in self.combined_tex:
+                    self.combined_tex[hash_this] = []
+                self.combined_tex[hash_this].append({'mat': mat_slot.name, 'index': index})
 
         print('CREATED COMBINED TEX', self.combined_tex)
 
@@ -180,6 +176,7 @@ class CombineMaterialsButton(bpy.types.Operator):
         tools.common.switch('OBJECT')
         wm = bpy.context.window_manager
         wm.progress_begin(0, len(bpy.context.scene.objects))
+        i = 0
         for index, object in enumerate(bpy.context.scene.objects):  # for each scene object
             wm.progress_update(index)
             if object.type == 'MESH':
@@ -190,6 +187,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                     # Combining material slots that are similiar with only themselfs are useless
                     if len(combined_textures) <= 1:
                         continue
+                    i += len(combined_textures)
 
                     print('NEW', file, combined_textures, len(combined_textures))
                     tools.common.switch('EDIT')
@@ -212,6 +210,9 @@ class CombineMaterialsButton(bpy.types.Operator):
                 print('CLEANED MAT SLOTS')
 
         wm.progress_end()
-        self.report({'INFO'}, 'Materials Combined!')
+        if i == 0:
+            self.report({'INFO'}, 'No materials combined.')
+        else:
+            self.report({'INFO'}, 'Combined ' + str(i) + ' materials!')
 
         return{'FINISHED'}
