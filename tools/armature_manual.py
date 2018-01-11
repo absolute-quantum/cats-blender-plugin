@@ -26,11 +26,11 @@
 # Repo: https://github.com/netri/blender_neitri_tools
 # Edits by: Hotox, Neitri
 
+import bpy
 import re
 import webbrowser
-
-import bpy
 import tools.common
+
 from mmd_tools_local import utils
 from mmd_tools_local.core.material import FnMaterial
 from collections import OrderedDict

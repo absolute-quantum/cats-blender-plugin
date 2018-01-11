@@ -30,7 +30,7 @@ from collections import OrderedDict
 
 bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'Eyes', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
-bone_list_with = ['_shadow_', '_dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK', 'LegIKTip', 'ToeTipIK',
+bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK', 'LegIKTip', 'ToeTipIK',
                   'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
                   'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'HandTip_', 'ShoulderC_', 'SleeveShoulderIK_']
 bone_list_parenting = {
@@ -142,7 +142,7 @@ bone_finger_list = [
 
 ################################
 # Capitalize all bone names!
-# Capitalize after each space!
+# Capitalize after each space and underscore!
 # Replace '-' with '_'
 # Replace 'ValveBiped_' with ''
 #
@@ -166,7 +166,7 @@ bone_rename['Hips'] = [
     'Bip01_Pelvis',
     'Root',
     'Root Hips',
-    'Root_rot',
+    'Root_Rot',
     'Hip',
 ]
 bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
@@ -226,7 +226,7 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Spine Lower',
     'Spine Upper',
 
-    'abdomen',
+    'Abdomen',
 
     'Spine0',
     'Spine1',
@@ -241,6 +241,12 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Spine 3',
     'Spine 4',
     'Spine 5',
+
+    'Spine_01',
+    'Spine_02',
+    'Spine_03',
+    'Spine_04',
+    'Spine_05',
 
     'Chest1',
     'Chest2',
@@ -267,6 +273,7 @@ bone_rename['\Left shoulder'] = [
     '\LeftShoulder',
     'Shoulder_\L',
     '\LShoulder',
+    '\L_Shoulder',
     'Mixamorig:\LeftShoulder',
     'Arm \Left Shoulder 1',
     'Bip001 \L Clavicle',
@@ -274,7 +281,7 @@ bone_rename['\Left shoulder'] = [
     'B \L Shoulder',
     'Shoulder \L',
     '\LCollar',
-    '\L_clavicle',
+    '\L_Clavicle',
     '\Left Clavicle',
     '\Left_Clavicle',
     '\LeftCollar',
@@ -297,10 +304,11 @@ bone_rename['\Left arm'] = [
     'Upper Arm \L',
     '\Left Upper Arm',
     '\LShldr',
-    'Upper_arm_\L',
-    '\L_upperarm',
+    'Upper_Arm_\L',
+    '\L_Upperarm',
     '\LeftUpArm',
     'Uparm_\L',
+    '\L_Arm_01',
 ]
 bone_rename['Left arm'] = [
     '+ Leisure Elder Supplement',
@@ -316,11 +324,12 @@ bone_rename['\Left elbow'] = [
     'B \L Arm2',
     'Forearm \L',
     '\LForeArm',
-    'forearm_\L',
-    '\L_forearm',
+    'Forearm_\L',
+    '\L_Forearm',
     '\LeftLowArm',
     '\Left Forearm',
     'Loarm_\L',
+    '\L_Arm_02',
 ]
 bone_rename['\Left wrist'] = [
     '\Left Wrist',
@@ -335,7 +344,7 @@ bone_rename['\Left wrist'] = [
     'Hand \L',
     '\LHand',
     'Hand_\L',
-    '\L_hand',
+    '\L_Hand',
     '\LeftHand',
     '\Left Hand',
     'Finger3_1_\L'
@@ -356,11 +365,12 @@ bone_rename['\Left leg'] = [
     'Upper Leg \L',
     '\LThigh',
     'Thigh_\L',
-    '\L_thigh',
+    '\L_Thigh',
     '\LeftUpLeg',
     '\LeftHip',
     '\Left Thigh',
-    'Upleg_\L'
+    'Upleg_\L',
+    '\L_Leg_01',
 ]
 bone_rename['\Left knee'] = [
     '\Left Knee',
@@ -375,10 +385,11 @@ bone_rename['\Left knee'] = [
     '\LLeg',
     '\LShin',
     'Shin_\L',
-    '\L_calf',
+    '\L_Calf',
     '\LeftLowLeg',
     '\Left Shin',
-    'Loleg_\L'
+    'Loleg_\L',
+    '\L_Leg_02',
 ]
 bone_rename['\Left ankle'] = [
     '\Left Ankle',
@@ -392,10 +403,11 @@ bone_rename['\Left ankle'] = [
     'Lower',
     '\LFoot',
     'Foot_\L',
-    '\L_foot',
+    '\L_Foot',
     '\LeftFoot',
     '\Left Foot',
     'Leg \Left Foot',
+    '\L_Foot_01',
 ]
 bone_rename['\Left toe'] = [
     '\Left Toe',
@@ -410,7 +422,7 @@ bone_rename['\Left toe'] = [
     'B \L Toe',
     '\LToe',
     'Toe_\L',
-    '\L_toe',
+    '\L_Toe',
     '\LeftToeBase',
     'Toe1_1_\L',
     'Leg \Left Foot Toes',
@@ -421,12 +433,12 @@ bone_rename['Eye_\L'] = [
     'Head Eyeball \Left',
     'FEye\L',
     'Eye\L',
-    '\L_eye',
+    '\L_Eye',
 ]
 
 ################################
 # Capitalize all bone names!
-# Capitalize after each space!
+# Capitalize after each space and underscore!
 # Replace '-' with '_'
 # Replace 'ValveBiped_' with ''
 #
@@ -509,15 +521,16 @@ bone_reweight['\Left arm'] = [
     'ArmxcIa_\L',
     'ArmRotation_\L',
     'ArmTwistReturn_\L',
-    'DEF_upper_arm_02_\L',
-    'DEF_upper_arm_twist_25_\L',
-    'DEF_upper_arm_twist_50_\L',
-    'DEF_upper_arm_twist_75_\L',
+    'DEF_Upper_Arm_02_\L',
+    'DEF_Upper_Arm_Twist_25_\L',
+    'DEF_Upper_Arm_Twist_50_\L',
+    'DEF_Upper_Arm_Twist_75_\L',
     'Arm \Left Shoulder Adj 2',
     'Arm \Left Shoulder Adj 3',
     'Arm \Left Shoulder Adj 4',
     'Arm \Left Bicep',
     '\LArmB',
+    '\L_Sub_Shoulder',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -555,10 +568,10 @@ bone_reweight['\Left elbow'] = [
     'ElbowRotation_\L',
     'HandTwistRotation1_\L',
     'HandTwistRotation2_\L',
-    'DEF_upper_arm_elbow_\L',
-    'DEF_forearm_twist_25_\L',
-    'DEF_forearm_twist_50_\L',
-    'DEF_forearm_twist_75_\L',
+    'DEF_Upper_Arm_Elbow_\L',
+    'DEF_Forearm_Twist_25_\L',
+    'DEF_Forearm_Twist_50_\L',
+    'DEF_Forearm_Twist_75_\L',
     '+Elbow_\L',
     'Elbowa_\L',
     'Arm \Left Wrist Adj',
@@ -567,6 +580,7 @@ bone_reweight['\Left elbow'] = [
     'Arm \Left Forearm'
     '\Left Forearm Twist'
     '\LHandEX'
+    '\L_Sub_Elbow'
 ]
 bone_reweight['\Left wrist'] = [
     'Sleeve3_\L',
@@ -578,11 +592,11 @@ bone_reweight['\Left wrist'] = [
     'MiddleFinger0_\L',
     'RingFinger0_\L',
     'LittleFinger0_\L',
-    'DEF_hand_\L',
-    'DEF_palm_01_\L',
-    'DEF_palm_02_\L',
-    'DEF_palm_03_\L',
-    'DEF_palm_04_\L',
+    'DEF_Hand_\L',
+    'DEF_Halm_01_\L',
+    'DEF_Halm_02_\L',
+    'DEF_Halm_03_\L',
+    'DEF_Halm_04_\L',
     'Arm \Left Hand',
 ]
 bone_reweight['\Left leg'] = [
@@ -616,12 +630,12 @@ bone_reweight['\Left leg'] = [
     'Peaches_\L',
     'Pants_Stuff_000_\L',
     'Pants_Stuff_001_\L',
-    'DEF_thigh_sub_\L',
-    'DEF_thigh_01_\L',
-    'DEF_thigh_02_\L',
-    'DEF_thigh_twist_25_\L',
-    'DEF_thigh_twist_50_\L',
-    'DEF_thigh_twist_75_\L',
+    'DEF_Thigh_Sub_\L',
+    'DEF_Thigh_01_\L',
+    'DEF_Thigh_02_\L',
+    'DEF_Thigh_Twist_25_\L',
+    'DEF_Thigh_Twist_50_\L',
+    'DEF_Thigh_Twist_75_\L',
     'Leg \Left Thigh Adj 1',
     'Leg \Left Thigh Adj 2',
     'Leg \Left Thigh Adj 3',
@@ -649,13 +663,13 @@ bone_reweight['\Left knee'] = [
     'AnkleEX_\L',
     'KneeAux_\L',
     'Shin_\L',
-    'DEF_knee_\L',
-    'DEF_knee_02_\L',
-    'DEF_shin_01_\L',
-    'DEF_shin_02_\L',
-    'DEF_shin_twist_25_\L',
-    'DEF_shin_twist_50_\L',
-    'DEF_shin_twist_75_\L',
+    'DEF_Knee_\L',
+    'DEF_Knee_02_\L',
+    'DEF_Shin_01_\L',
+    'DEF_Shin_02_\L',
+    'DEF_Shin_Twist_25_\L',
+    'DEF_Shin_Twist_50_\L',
+    'DEF_Shin_Twist_75_\L',
     'Leg \Left Ankle Adj',
     'Leg \Left Knee Adj 1',
     'Leg \Left Knee Adj 2',
@@ -672,7 +686,7 @@ bone_reweight['\Left ankle'] = [
     'Ankle+_\L',
     'Ankle+++_\L',
     'Ankle++++_\L',
-    'DEF_foot_\L',
+    'DEF_Foot_\L',
 ]
 bone_reweight['\Left toe'] = [
     '\Left Toes',
@@ -683,7 +697,7 @@ bone_reweight['\Left toe'] = [
     '\Left Toe EX',
     '\Left Foot Tip EX',
     'LegTip2_\L',
-    'DEF_toe_\L',
+    'DEF_Toe_\L',
 ]
 bone_reweight['Eye_\L'] = [
     'EyeW_\L',
@@ -697,70 +711,70 @@ bone_reweight['Eye_\L'] = [
     'F_EyeLight1_\L',
     'F_EyeLight2_\L',
     'F_EyeLight3_\L',
-    'DEF_eye_\L',
+    'DEF_Eye_\L',
     'EyeLight+_\L',
     'EyeRotationErase_\L',
 ]
 bone_reweight['Breast_\L'] = [
-    'DEF_bust_01_\L',
-    'DEF_bust_02_\L',
+    'DEF_Bust_01_\L',
+    'DEF_Bust_02_\L',
 ]
 
 # Secondary reweight list.
 bone_list_weight = {
     # Other model fixes
-    'DEF_zipper': 'Zipper',
+    'DEF_Zipper': 'Zipper',
 
     # Finger fixing
     # Left
-    'DEF_thumb_01_L_01': 'Thumb0_L',
-    'DEF_thumb_01_L_02': 'Thumb0_L',
-    'DEF_thumb_02_L': 'Thumb1_L',
-    'DEF_thumb_03_L': 'Thumb2_L',
+    'DEF_Thumb_01_L_01': 'Thumb0_L',
+    'DEF_Thumb_01_L_02': 'Thumb0_L',
+    'DEF_Thumb_02_L': 'Thumb1_L',
+    'DEF_Thumb_03_L': 'Thumb2_L',
 
-    'DEF_f_index_01_L_01': 'IndexFinger1_L',
-    'DEF_f_index_01_L_02': 'IndexFinger1_L',
-    'DEF_f_index_02_L': 'IndexFinger2_L',
-    'DEF_f_index_03_L': 'IndexFinger3_L',
+    'DEF_F_Index_01_L_01': 'IndexFinger1_L',
+    'DEF_F_Index_01_L_02': 'IndexFinger1_L',
+    'DEF_F_Index_02_L': 'IndexFinger2_L',
+    'DEF_F_Index_03_L': 'IndexFinger3_L',
 
-    'DEF_f_middle_01_L_01': 'MiddleFinger1_L',
-    'DEF_f_middle_01_L_02': 'MiddleFinger1_L',
-    'DEF_f_middle_02_L': 'MiddleFinger2_L',
-    'DEF_f_middle_03_L': 'MiddleFinger3_L',
+    'DEF_F_Middle_01_L_01': 'MiddleFinger1_L',
+    'DEF_F_Middle_01_L_02': 'MiddleFinger1_L',
+    'DEF_F_Middle_02_L': 'MiddleFinger2_L',
+    'DEF_F_Middle_03_L': 'MiddleFinger3_L',
 
-    'DEF_f_ring_01_L_01': 'RingFinger1_L',
-    'DEF_f_ring_01_L_02': 'RingFinger1_L',
-    'DEF_f_ring_02_L': 'RingFinger2_L',
-    'DEF_f_ring_03_L': 'RingFinger3_L',
+    'DEF_F_Ring_01_L_01': 'RingFinger1_L',
+    'DEF_F_Ring_01_L_02': 'RingFinger1_L',
+    'DEF_F_Ring_02_L': 'RingFinger2_L',
+    'DEF_F_Ring_03_L': 'RingFinger3_L',
 
-    'DEF_f_pinky_01_L_01': 'LittleFinger1_L',
-    'DEF_f_pinky_01_L_02': 'LittleFinger1_L',
-    'DEF_f_pinky_02_L': 'LittleFinger2_L',
-    'DEF_f_pinky_03_L': 'LittleFinger3_L',
+    'DEF_F_Pinky_01_L_01': 'LittleFinger1_L',
+    'DEF_F_Pinky_01_L_02': 'LittleFinger1_L',
+    'DEF_F_Pinky_02_L': 'LittleFinger2_L',
+    'DEF_F_Pinky_03_L': 'LittleFinger3_L',
 
     # Right
-    'DEF_thumb_01_R_01': 'Thumb0_R',
-    'DEF_thumb_01_R_02': 'Thumb0_R',
-    'DEF_thumb_02_R': 'Thumb1_R',
-    'DEF_thumb_03_R': 'Thumb2_R',
+    'DEF_Thumb_01_R_01': 'Thumb0_R',
+    'DEF_Thumb_01_R_02': 'Thumb0_R',
+    'DEF_Thumb_02_R': 'Thumb1_R',
+    'DEF_Thumb_03_R': 'Thumb2_R',
 
-    'DEF_f_index_01_R_01': 'IndexFinger1_R',
-    'DEF_f_index_01_R_02': 'IndexFinger1_R',
-    'DEF_f_index_02_R': 'IndexFinger2_R',
-    'DEF_f_index_03_R': 'IndexFinger3_R',
+    'DEF_F_Index_01_R_01': 'IndexFinger1_R',
+    'DEF_F_Index_01_R_02': 'IndexFinger1_R',
+    'DEF_F_Index_02_R': 'IndexFinger2_R',
+    'DEF_F_Index_03_R': 'IndexFinger3_R',
 
-    'DEF_f_middle_01_R_01': 'MiddleFinger1_R',
-    'DEF_f_middle_01_R_02': 'MiddleFinger1_R',
-    'DEF_f_middle_02_R': 'MiddleFinger2_R',
-    'DEF_f_middle_03_R': 'MiddleFinger3_R',
+    'DEF_F_Middle_01_R_01': 'MiddleFinger1_R',
+    'DEF_F_Middle_01_R_02': 'MiddleFinger1_R',
+    'DEF_F_Middle_02_R': 'MiddleFinger2_R',
+    'DEF_F_Middle_03_R': 'MiddleFinger3_R',
 
-    'DEF_f_ring_01_R_01': 'RingFinger1_R',
-    'DEF_f_ring_01_R_02': 'RingFinger1_R',
-    'DEF_f_ring_02_R': 'RingFinger2_R',
-    'DEF_f_ring_03_R': 'RingFinger3_R',
+    'DEF_F_Ring_01_R_01': 'RingFinger1_R',
+    'DEF_F_Ring_01_R_02': 'RingFinger1_R',
+    'DEF_F_Ring_02_R': 'RingFinger2_R',
+    'DEF_F_Ring_03_R': 'RingFinger3_R',
 
-    'DEF_f_pinky_01_R_01': 'LittleFinger1_R',
-    'DEF_f_pinky_01_R_02': 'LittleFinger1_R',
-    'DEF_f_pinky_02_R': 'LittleFinger2_R',
-    'DEF_f_pinky_03_R': 'LittleFinger3_R',
+    'DEF_F_Pinky_01_R_01': 'LittleFinger1_R',
+    'DEF_F_Pinky_01_R_02': 'LittleFinger1_R',
+    'DEF_F_Pinky_02_R': 'LittleFinger2_R',
+    'DEF_F_Pinky_03_R': 'LittleFinger3_R',
 }
