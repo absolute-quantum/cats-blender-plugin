@@ -230,23 +230,23 @@ def get_bones(names):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow'], False, False, False)
+    return get_shapekeys(context, ['Ah', 'Wow', 'A'], False, False, False)
 
 
 def get_shapekeys_mouth_oh(self, context):
-    return get_shapekeys(context, ['Your'], False, False, False)
+    return get_shapekeys(context, ['Your', 'O'], False, False, False)
 
 
 def get_shapekeys_mouth_ch(self, context):
-    return get_shapekeys(context, ['Glue', 'There'], False, False, False)
+    return get_shapekeys(context, ['Glue', 'There', 'I'], False, False, False)
 
 
 def get_shapekeys_eye_blink_l(self, context):
-    return get_shapekeys(context, ['Wink 2', 'Wink', 'Blink', 'Basis'], False, False, False)
+    return get_shapekeys(context, ['Wink 2', 'Wink', 'Blink (Left)', 'Blink', 'Basis'], False, False, False)
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Basis'], False, False, False)
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False, False, False)
 
 
 def get_shapekeys_eye_low_l(self, context):

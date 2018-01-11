@@ -122,31 +122,6 @@ class FixArmature(bpy.types.Operator):
             except (AttributeError, RuntimeError):
                 pass
 
-            # Convert mmd bone morph into shape keys
-            try:
-                mmd_root = armature.parent.mmd_root
-                if len(mmd_root.bone_morphs) > 0:
-
-                    current_step = 0
-                    wm.progress_begin(current_step, len(mmd_root.bone_morphs))
-
-
-                    for index, morph in enumerate(mmd_root.bone_morphs):
-                        current_step += 1
-                        wm.progress_update(current_step)
-                        armature.parent.mmd_root.active_morph = index
-                        bpy.ops.mmd_tools.view_bone_morph()
-                        mesh = tools.common.get_meshes_objects()[0]
-                        tools.common.select(mesh)
-
-                        mod = mesh.modifiers.new(morph.name, 'ARMATURE')
-                        mod.object = armature
-                        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
-                    wm.progress_end()
-            except AttributeError:
-                pass
-
-
         # mmd_tools specific operations
         shading_is_set = False
         if mmd_tools_installed:
@@ -170,7 +145,6 @@ class FixArmature(bpy.types.Operator):
 
                     current_step = 0
                     wm.progress_begin(current_step, len(mmd_root.bone_morphs))
-
 
                     for index, morph in enumerate(mmd_root.bone_morphs):
                         current_step += 1
@@ -439,6 +413,26 @@ class FixArmature(bpy.types.Operator):
                         shoulder.tail = arm.head
                         arm.tail = elbow.head
                         elbow.tail = wrist.head
+
+        # Correct arm bone positions for better looking
+        if 'Left leg' in armature.data.edit_bones:
+            if 'Left knee' in armature.data.edit_bones:
+                if 'Left ankle' in armature.data.edit_bones:
+                        leg = armature.data.edit_bones.get('Left leg')
+                        knee = armature.data.edit_bones.get('Left knee')
+                        ankle = armature.data.edit_bones.get('Left ankle')
+                        leg.tail = knee.head
+                        knee.tail = ankle.head
+
+        # Correct arm bone positions for better looking
+        if 'Right leg' in armature.data.edit_bones:
+            if 'Right knee' in armature.data.edit_bones:
+                if 'Right ankle' in armature.data.edit_bones:
+                        leg = armature.data.edit_bones.get('Right leg')
+                        knee = armature.data.edit_bones.get('Right knee')
+                        ankle = armature.data.edit_bones.get('Right ankle')
+                        leg.tail = knee.head
+                        knee.tail = ankle.head
 
         # Hips bone should be fixed as per specification from the SDK code
         if not mixamo:

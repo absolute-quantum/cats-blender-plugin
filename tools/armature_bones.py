@@ -275,6 +275,8 @@ bone_rename['\Left shoulder'] = [
     'Shoulder \L',
     '\LCollar',
     '\L_clavicle',
+    '\Left Clavicle',
+    '\Left_Clavicle',
     '\LeftCollar',
     '\Left Collar',
 ]
@@ -293,6 +295,7 @@ bone_rename['\Left arm'] = [
     'Bip01_\L_UpperArm',
     'B \L Arm1',
     'Upper Arm \L',
+    '\Left Upper Arm',
     '\LShldr',
     'Upper_arm_\L',
     '\L_upperarm',
@@ -491,6 +494,8 @@ bone_reweight['\Left arm'] = [
     '\Left Arm Tight 1',
     '\Left Arm Tight 2',
     '\Left Arm Tight 3',
+    '\Left Upper Arm Twist',
+    '\Left Upper Arm Twist B',
     'ElbowAux_\L',
     'ElbowAux+_\L',
     '+ElbowAux_\L',
@@ -560,6 +565,7 @@ bone_reweight['\Left elbow'] = [
     'Arm \Left Elbow Adj 2',
     'Arm \Left Elbow Adj 1',
     'Arm \Left Forearm'
+    '\Left Forearm Twist'
     '\LHandEX'
 ]
 bone_reweight['\Left wrist'] = [
@@ -589,6 +595,7 @@ bone_reweight['\Left leg'] = [
     '\LLegTwist1',
     '\LLegTwist2',
     '\LLegTwist3',
+    '\Left Leg Twist',
     'LegW_\L',
     'LegW2_\L',
     'LowerKnee_\L',
@@ -637,6 +644,7 @@ bone_reweight['\Left knee'] = [
     'KneeX2_\L',
     'KneeX3_\L',
     'Leg \Left Acc',
+    '\Left Knee Twist',
     '\Left Ankle EX',
     'AnkleEX_\L',
     'KneeAux_\L',
@@ -667,6 +675,7 @@ bone_reweight['\Left ankle'] = [
     'DEF_foot_\L',
 ]
 bone_reweight['\Left toe'] = [
+    '\Left Toes',
     'ClawTipEX_\L',
     'ClawTipEX2_\L',
     'ClawTipThumbEX_\L',
@@ -681,6 +690,8 @@ bone_reweight['Eye_\L'] = [
     'EyeLight_\L',
     'EyeReturn_\L',
     'Pupil_\L',
+    '\Left Pupil',
+    '\Left Eye Glint',
     'Highlight_\L',
     'F_EyeTip_\L',
     'F_EyeLight1_\L',

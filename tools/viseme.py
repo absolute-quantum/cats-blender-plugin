@@ -107,6 +107,9 @@ class AutoVisemeButton(bpy.types.Operator):
         tools.common.set_default_stage()
         tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
 
+        # Fix a small bug
+        bpy.context.object.show_only_shape_key = False
+
         # Rename selected shapes and rename them back at the end
         shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
         renamed_shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]

@@ -140,6 +140,9 @@ class CreateEyesButton(bpy.types.Operator):
         bpy.context.scene.objects.active = bpy.data.objects[mesh_name]
         tools.common.switch('OBJECT')
 
+        # Fix a small bug
+        bpy.context.object.show_only_shape_key = False
+
         # Copy the existing eye vertex group to the new one if eye movement is activated
         if not context.scene.disable_eye_movement:
             self.copy_vertex_group(mesh_name, old_eye_left.name, 'LeftEye')
