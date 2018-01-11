@@ -58,18 +58,25 @@ class ImportModel(bpy.types.Operator):
                 return {'FINISHED'}
 
             try:
-                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'})
             except AttributeError:
                 bpy.context.window_manager.popup_menu(popup_enable_mmd, title='mmd_tools is not enabled!', icon='ERROR')
+            except (TypeError, ValueError):
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
 
         elif context.scene.import_mode == 'XPS':
             try:
                 bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
             except AttributeError:
                 bpy.context.window_manager.popup_menu(popup_install_xps, title='XPS Tools is not installed or enabled!', icon='ERROR')
+            except (TypeError, ValueError):
+                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
 
         elif context.scene.import_mode == 'FBX':
-            bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
+            try:
+                bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=True)
+            except (TypeError, ValueError):
+                bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
 
         return {'FINISHED'}
 
@@ -147,6 +154,23 @@ class XpsToolsButton(bpy.types.Operator):
         webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
 
         self.report({'INFO'}, 'XPS Tools link opened')
+        return {'FINISHED'}
+
+
+class ExportModel(bpy.types.Operator):
+    bl_idname = 'armature_manual.export_model'
+    bl_label = 'Export Model'
+    bl_description = 'Export this model as .fbx for Unity.\n' \
+                     '\n' \
+                     'Automatically sets the optimal export settings.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        try:
+            bpy.ops.export_scene.fbx('INVOKE_DEFAULT', object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'}, use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False)
+        except (TypeError, ValueError):
+            bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
+
         return {'FINISHED'}
 
 

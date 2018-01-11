@@ -53,6 +53,7 @@ class FixArmature(bpy.types.Operator):
                      '- Mixes weight paints\n' \
                      '- Corrects the hips\n' \
                      '- Joins meshes\n' \
+                     '- Coverts morphs into shapes\n' \
                      '- Corrects shading'
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -191,7 +192,6 @@ class FixArmature(bpy.types.Operator):
                 bpy.ops.xps_tools.set_shadeless_glsl_shading()
             except (AttributeError, RuntimeError):
                 pass
-
 
         # Set better bone view
         armature.data.draw_type = 'OCTAHEDRAL'
@@ -415,24 +415,30 @@ class FixArmature(bpy.types.Operator):
                 temp_list_reweight_bones[spine] = 'Spine'
 
         # Correct arm bone positions for better looking
-        if 'Left arm' in armature.data.edit_bones:
-            if 'Left elbow' in armature.data.edit_bones:
-                if 'Left wrist' in armature.data.edit_bones:
-                    arm = armature.data.edit_bones.get('Left arm')
-                    elbow = armature.data.edit_bones.get('Left elbow')
-                    wrist = armature.data.edit_bones.get('Left wrist')
-                    arm.tail = elbow.head
-                    elbow.tail = wrist.head
+        if 'Left shoulder' in armature.data.edit_bones:
+            if 'Left arm' in armature.data.edit_bones:
+                if 'Left elbow' in armature.data.edit_bones:
+                    if 'Left wrist' in armature.data.edit_bones:
+                        shoulder = armature.data.edit_bones.get('Left shoulder')
+                        arm = armature.data.edit_bones.get('Left arm')
+                        elbow = armature.data.edit_bones.get('Left elbow')
+                        wrist = armature.data.edit_bones.get('Left wrist')
+                        shoulder.tail = arm.head
+                        arm.tail = elbow.head
+                        elbow.tail = wrist.head
 
         # Correct arm bone positions for better looking
-        if 'Right arm' in armature.data.edit_bones:
-            if 'Right elbow' in armature.data.edit_bones:
-                if 'Right wrist' in armature.data.edit_bones:
-                    arm = armature.data.edit_bones.get('Right arm')
-                    elbow = armature.data.edit_bones.get('Right elbow')
-                    wrist = armature.data.edit_bones.get('Right wrist')
-                    arm.tail = elbow.head
-                    elbow.tail = wrist.head
+        if 'Right shoulder' in armature.data.edit_bones:
+            if 'Right arm' in armature.data.edit_bones:
+                if 'Right elbow' in armature.data.edit_bones:
+                    if 'Right wrist' in armature.data.edit_bones:
+                        shoulder = armature.data.edit_bones.get('Right shoulder')
+                        arm = armature.data.edit_bones.get('Right arm')
+                        elbow = armature.data.edit_bones.get('Right elbow')
+                        wrist = armature.data.edit_bones.get('Right wrist')
+                        shoulder.tail = arm.head
+                        arm.tail = elbow.head
+                        elbow.tail = wrist.head
 
         # Hips bone should be fixed as per specification from the SDK code
         if not mixamo:
@@ -462,9 +468,15 @@ class FixArmature(bpy.types.Operator):
                             hip_bone.tail[1] = right_leg.head[1]
 
                             # Flip the hips bone and make sure the hips bone is not below the legs bone
-                            hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
+                            # hip_bone_length = abs(hip_bone.tail[2] - hip_bone.head[2])
+                            # hip_bone.head[2] = right_leg.head[2]
+                            # hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
+
                             hip_bone.head[2] = right_leg.head[2]
-                            hip_bone.tail[2] = hip_bone.head[2] + hip_bone_length
+                            hip_bone.tail[2] = spine.head[2]
+
+                            if hip_bone.tail[2] < hip_bone.head[2]:
+                                hip_bone.tail[2] = hip_bone.tail[2] + 0.1
 
                         elif spine is not None and chest is not None and neck is not None and head is not None:
                             bones = [hip_bone, spine, chest, neck, head]
@@ -598,7 +610,7 @@ class FixArmature(bpy.types.Operator):
 
         # # This is code for testing
         # print('18 LOOKING FOR BONES!!!')
-        # if 'Breast_L' in tools.common.get_armature().pose.bones:
+        #  if 'Breast_L' in tools.common.get_armature().pose.bones:
         #     print('THEY ARE THERE!')
         # return {'FINISHED'}
 

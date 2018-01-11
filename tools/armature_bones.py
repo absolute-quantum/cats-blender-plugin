@@ -266,6 +266,7 @@ bone_rename['\Left shoulder'] = [
     '\Left Shoulder',
     '\LeftShoulder',
     'Shoulder_\L',
+    '\LShoulder',
     'Mixamorig:\LeftShoulder',
     'Arm \Left Shoulder 1',
     'Bip001 \L Clavicle',
@@ -281,6 +282,8 @@ bone_rename['\Left arm'] = [
     '\Left Arm',
     '\LeftArm',
     'Arm_\L',
+    '\LArm',
+    '\LArmA',
     'ArmTC_\L',
     '+ \Left Elbow Support',
     '+ \Left Elbow Support',
@@ -366,6 +369,7 @@ bone_rename['\Left knee'] = [
     'Bip01_\L_Calf',
     'B \L Leg2',
     'Lower Leg \L',
+    '\LLeg',
     '\LShin',
     'Shin_\L',
     '\L_calf',
@@ -437,6 +441,7 @@ bone_reweight['Hips'] = [
     'LowerBody1',
     'Lowerbody2',
     'Pelvis Adj',
+    'Waist',
 ]
 bone_reweight['Spine'] = [
     'UpperBodyx',
@@ -507,6 +512,7 @@ bone_reweight['\Left arm'] = [
     'Arm \Left Shoulder Adj 3',
     'Arm \Left Shoulder Adj 4',
     'Arm \Left Bicep',
+    '\LArmB',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -554,6 +560,7 @@ bone_reweight['\Left elbow'] = [
     'Arm \Left Elbow Adj 2',
     'Arm \Left Elbow Adj 1',
     'Arm \Left Forearm'
+    '\LHandEX'
 ]
 bone_reweight['\Left wrist'] = [
     'Sleeve3_\L',

@@ -155,13 +155,6 @@ class AutoDecimateButton(bpy.types.Operator):
         return i == 1
 
     def execute(self, context):
-        # Remove Rigidbodies and joints
-        tools.common.unhide_all()
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
-
         obj = context.active_object
 
         if not obj or (obj and obj.type != 'MESH'):

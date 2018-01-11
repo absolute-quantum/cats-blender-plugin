@@ -121,6 +121,13 @@ supporters['akarinjelly'] = ['Jelly', '2018-01-05']
 supporters['Atirion'] = ['Atirion', '2018-01-05']
 supporters['Lydania'] = ['Lydania', '2018-01-05']
 supporters['Shanie-senpai'] = ['Shanie-senpai', '2018-01-05']
+supporters['Kal [Thramis]'] = ['Kal', '2018-01-11']
+supporters['Sifu'] = ['Sifu', '2018-01-11']
+supporters['Lil Clone'] = ['Lil Clone', '2018-01-11']
+supporters['Naranar'] = ['Naranar', '2018-01-11']
+supporters['gwigz'] = ['gwigz', '2018-01-11']
+supporters['Lux'] = ['Lux', '2018-01-11']
+supporters['liquid (retso)'] = ['liquid', '2018-01-11']
 
 current_supporters = None
 
@@ -354,6 +361,16 @@ class ToolPanel:
         update=tools.eyetracking.set_rotation
     )
 
+    bpy.types.Scene.iris_height = bpy.props.IntProperty(
+        name='Iris Height',
+        description='Moves the iris away from the eye ball.',
+        default=0,
+        min=0,
+        max=100,
+        step=1,
+        subtype='FACTOR'
+    )
+
     bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
         name='Blink Strenght',
         description='Test the blinking of the eye.',
@@ -541,6 +558,11 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 1.4
         row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
+
+        if tools.common.get_armature():
+            row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
+
+
         # row = col.row(align=True)
         # row.scale_y = 0.9
         # row.label('(PMXEditor is outdated, do not use it!)', icon='ERROR')
@@ -1175,6 +1197,7 @@ def set_current_supporters():
 classesToRegister = [
     ArmaturePanel,
     tools.armature_manual.ImportModel,
+    tools.armature_manual.ExportModel,
     tools.armature_manual.MmdToolsButton,
     tools.armature_manual.XpsToolsButton,
     tools.armature.FixArmature,
@@ -1242,6 +1265,10 @@ classesToRegister = [
 def register():
     set_current_supporters()
     load_icons()
+
+    version = bl_info.get('version')
+    if dev_branch and len(version) > 2:
+        version[2] += 1
 
     try:
         addon_updater_ops.register(bl_info)

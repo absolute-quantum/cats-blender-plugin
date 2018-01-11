@@ -242,7 +242,7 @@ def get_shapekeys_mouth_ch(self, context):
 
 
 def get_shapekeys_eye_blink_l(self, context):
-    return get_shapekeys(context, ['Wink 2', 'Wink', 'Basis'], False, False, False)
+    return get_shapekeys(context, ['Wink 2', 'Wink', 'Blink', 'Basis'], False, False, False)
 
 
 def get_shapekeys_eye_blink_r(self, context):
@@ -410,8 +410,13 @@ def join_meshes(context):
 
 def separate_by_materials(context, mesh):
     set_default_stage()
-    select(mesh)
 
+    # Remove Rigidbodies and joints
+    for obj in bpy.data.objects:
+        if 'rigidbodies' in obj.name or 'joints' in obj.name:
+            tools.common.delete_hierarchy(obj)
+
+    select(mesh)
     ShapekeyOrder.save(mesh.name)
 
     for mod in mesh.modifiers:

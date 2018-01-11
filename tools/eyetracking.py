@@ -33,6 +33,9 @@ import tools.common
 import tools.armature
 
 
+iris_heights = None
+
+
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
     bl_label = 'Create Eye Tracking'
@@ -635,6 +638,56 @@ class AdjustEyesButton(bpy.types.Operator):
         eye_right = armature.pose.bones.get('RightEye')
         eye_left_data = armature.data.bones.get('LeftEye')
         eye_right_data = armature.data.bones.get('RightEye')
+
+        return {'FINISHED'}
+
+
+class StartIrisHeightButton(bpy.types.Operator):
+    bl_idname = 'eyes.adjust_iris_height_start'
+    bl_label = 'Start Iris Height Adjustment'
+    bl_description = "Let's you readjust the distance of the iris from the eye ball.\n" \
+                     "Use this to fix clipping of the iris into the eye ball.\n" \
+                     "This get's saved."
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        armature = tools.common.get_armature()
+        if 'LeftEye' in armature.pose.bones:
+            if 'RightEye' in armature.pose.bones:
+                return True
+        return False
+
+    def execute(self, context):
+        if context.scene.disable_eye_movement:
+            return {'FINISHED'}
+
+        armature = tools.common.set_default_stage()
+        armature.hide = True
+
+        mesh = bpy.data.objects[context.scene.mesh_name_eye]
+        tools.common.select(mesh)
+        tools.common.switch('EDIT')
+
+        if len(mesh.vertex_groups) > 0:
+            tools.common.select(mesh)
+            tools.common.switch('EDIT')
+            bpy.ops.mesh.select_mode(type='VERT')
+
+            vgs = [mesh.vertex_groups.get('LeftEye'), mesh.vertex_groups.get('RightEye')]
+            for vg in vgs:
+                if vg:
+                    bpy.ops.object.vertex_group_set_active(group=vg.name)
+                    bpy.ops.object.vertex_group_select()
+
+            import bmesh
+            [i.index for i in bmesh.from_edit_mesh(bpy.context.active_object.data).verts if i.select]
+
+            bm = bmesh.from_edit_mesh(mesh.data)
+            for v in bm.verts:
+                if v.select:
+                    v.co.y += context.scene.iris_height * 0.01
+                    print(v.co)
 
         return {'FINISHED'}
 
