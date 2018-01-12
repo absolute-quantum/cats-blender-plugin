@@ -254,6 +254,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Added: Decimation: Added option to exclude fingers from decimation
 - Added: General: Warning when Blender is outdated
 - Fixed: Atlas: Fixed transparency issue after creating auto atlas
+- Fixed: Material: Fixed an issue where materials were wrongly merged together (Thanks kiraver!)
 - Fixed: Model: Multiple parenting issues
 - Fixed: Bugs from every corner
 

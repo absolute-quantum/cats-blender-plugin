@@ -92,10 +92,15 @@ class FixArmature(bpy.types.Operator):
                     y_cord = 2
 
         # Add rename bones to reweight bones
+        temp_rename_bones = copy.deepcopy(Bones.bone_rename)
         temp_reweight_bones = copy.deepcopy(Bones.bone_reweight)
         temp_list_reweight_bones = copy.deepcopy(Bones.bone_list_weight)
         temp_list_reparent_bones = copy.deepcopy(Bones.bone_list_parenting)
-        for key, value in Bones.bone_rename.items():
+
+        for key, value in Bones.bone_rename_fingers.items():
+            temp_rename_bones[key] = value
+
+        for key, value in temp_rename_bones.items():
             if key == 'Spine':
                 continue
             list = temp_reweight_bones.get(key)
@@ -108,7 +113,7 @@ class FixArmature(bpy.types.Operator):
 
         # Count objects for loading bar
         steps = 0
-        for key, value in Bones.bone_rename.items():
+        for key, value in temp_rename_bones.items():
             if '\Left' in key or '\L' in key:
                 steps += 2 * len(value)
             else:
@@ -263,7 +268,7 @@ class FixArmature(bpy.types.Operator):
             bone.name = upper_name
 
         spines = []
-        for bone_new, bones_old in Bones.bone_rename.items():
+        for bone_new, bones_old in temp_rename_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:
                 bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
                          [bone_new.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'), '']]

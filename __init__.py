@@ -128,6 +128,9 @@ supporters['Naranar'] = ['Naranar', '2018-01-11']
 supporters['gwigz'] = ['gwigz', '2018-01-11']
 supporters['Lux'] = ['Lux', '2018-01-11']
 supporters['liquid (retso)'] = ['liquid', '2018-01-11']
+supporters['GreenTeaGamer'] = ['GreenTeaGamer', '2018-01-12']
+supporters['Desruko'] = ['Desruko', '2018-01-12']
+supporters['Mute_'] = ['Mute_', '2018-01-12']
 
 current_supporters = None
 
@@ -226,12 +229,27 @@ class ToolPanel:
     )
 
     bpy.types.Scene.decimate_fingers = bpy.props.BoolProperty(
-        name="Don't Decimate Fingers",
+        name="Save Fingers",
         description="Check this if you don't want to decimate your fingers!\n"
                     "Results will be worse but there will be no issues with finger movement.\n"
                     "This is probably only useful if you have a VR headset.\n"
                     "\n"
-                    "This operation requires the finger bones to be names specifically:\n"
+                    "This operation requires the finger bones to be named specifically:\n"
+                    "Thumb(0-2)_(L/R)\n"
+                    "IndexFinger(1-3)_(L/R)\n"
+                    "MiddleFinger(1-3)_(L/R)\n"
+                    "RingFinger(1-3)_(L/R)\n"
+                    "LittleFinger(1-3)_(L/R)"
+    )
+
+    bpy.types.Scene.decimate_hands = bpy.props.BoolProperty(
+        name="Save Hands",
+        description="Check this if you don't want to decimate your full hands!\n"
+                    "Results will be worse but there will be no issues with hand movement.\n"
+                    "This is probably only useful if you have a VR headset.\n"
+                    "\n"
+                    "This operation requires the finger and hand bones to be named specifically:\n"
+                    "Left/Right wrist\n"
                     "Thumb(0-2)_(L/R)\n"
                     "IndexFinger(1-3)_(L/R)\n"
                     "MiddleFinger(1-3)_(L/R)\n"
@@ -240,7 +258,7 @@ class ToolPanel:
     )
 
     bpy.types.Scene.max_tris = bpy.props.IntProperty(
-        name='Polycount',
+        name='Tris',
         description="The target amount of tris after decimation.",
         default=19999,
         min=1,
@@ -684,7 +702,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 row.prop(context.scene, 'add_shape_key', icon='SHAPEKEY_DATA')
                 row.operator('add.shape', icon='ZOOMIN')
                 col.separator()
-                col.separator()
 
                 box2 = col.box()
                 col = box2.column(align=True)
@@ -701,7 +718,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 row = col.split(0.7)
                 row.prop(context.scene, 'add_mesh', icon='MESH_DATA')
                 row.operator('add.mesh', icon='ZOOMIN')
-                col.separator()
                 col.separator()
 
                 if context.scene.add_mesh == '':
@@ -722,8 +738,13 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
 
             col = box.column(align=True)
 
-            col.label('Info: Both whitelists are considered during decimation')
-            row = col.row(align=True)
+
+            if len(tools.decimation.ignore_shapes) == 0 and len(tools.decimation.ignore_meshes) == 0:
+                col.label('Both lists are empty, this equals Full Decimation!', icon='ERROR')
+                row = col.row(align=True)
+            else:
+                col.label('Both whitelists are considered during decimation', icon='INFO')
+                row = col.row(align=True)
 
             # # row = col.row(align=True)
             # # rows = 2
@@ -897,6 +918,12 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
                 col.separator()
                 col.separator()
+                col.separator()
+                row = col.row(align=True)
+                row.scale_y = 0.3
+                row.label("Don't forget to assign 'LeftEye' and 'RightEye' ", icon='ERROR')
+                row = col.row(align=True)
+                row.label("      to the eyes in Unity!")
                 row = col.row(align=True)
                 row.scale_y = 1.5
                 row.operator('eyes.test_stop', icon='PAUSE')

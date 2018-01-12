@@ -169,6 +169,10 @@ class AutoDecimateButton(bpy.types.Operator):
 
         self.decimate(context)
 
+        mesh = tools.common.join_meshes(context)
+        if mesh is not None:
+            tools.common.repair_viseme_order(mesh.name)
+
         return {'FINISHED'}
 
     def decimate(self, context):
@@ -256,7 +260,12 @@ class AutoDecimateButton(bpy.types.Operator):
 
             tools.common.unselect_all()
 
-        # decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+        decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+        if decimation >= 1:
+            self.report({'ERROR'}, 'The model already has less tris than given. Nothing had to be decimated.')
+            return
+        elif decimation <= 0:
+            self.report({'ERROR'}, 'The model could not be decimated to the given tris count. It got decimated as much as possible within the limits.')
 
         meshes.sort(key=lambda x: x[1])
 
@@ -268,7 +277,10 @@ class AutoDecimateButton(bpy.types.Operator):
             print(mesh_obj.name)
 
             # Calculate new decimation ratio
-            decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+            try:
+                decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+            except ZeroDivisionError:
+                decimation = 1
             print(decimation)
 
             # Apply decimation mod
@@ -316,10 +328,6 @@ class AutoDecimateButton(bpy.types.Operator):
         #
         #         tools.common.unselect_all()
         #         break
-
-        mesh = tools.common.join_meshes(context)
-        if mesh is not None:
-            tools.common.repair_viseme_order(mesh.name)
 
 
 
