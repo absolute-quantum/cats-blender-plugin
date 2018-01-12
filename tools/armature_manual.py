@@ -26,11 +26,11 @@
 # Repo: https://github.com/netri/blender_neitri_tools
 # Edits by: Hotox, Neitri
 
+import bpy
 import re
 import webbrowser
-
-import bpy
 import tools.common
+
 from mmd_tools_local import utils
 from mmd_tools_local.core.material import FnMaterial
 from collections import OrderedDict
@@ -52,19 +52,36 @@ class ImportModel(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        if not mmd_tools_installed:
-            bpy.context.window_manager.popup_menu(popup_install, title='mmd_tools is not installed!', icon='ERROR')
-            return {'FINISHED'}
+        if context.scene.import_mode == 'MMD':
+            if not mmd_tools_installed:
+                bpy.context.window_manager.popup_menu(popup_install_mmd, title='mmd_tools is not installed!', icon='ERROR')
+                return {'FINISHED'}
 
-        try:
-            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
-        except:
-            bpy.context.window_manager.popup_menu(popup_enable, title='mmd_tools is not enabled!', icon='ERROR')
+            try:
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'})
+            except AttributeError:
+                bpy.context.window_manager.popup_menu(popup_enable_mmd, title='mmd_tools is not enabled!', icon='ERROR')
+            except (TypeError, ValueError):
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+
+        elif context.scene.import_mode == 'XPS':
+            try:
+                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
+            except AttributeError:
+                bpy.context.window_manager.popup_menu(popup_install_xps, title='XPS Tools is not installed or enabled!', icon='ERROR')
+            except (TypeError, ValueError):
+                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
+
+        elif context.scene.import_mode == 'FBX':
+            try:
+                bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=True)
+            except (TypeError, ValueError):
+                bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
 
         return {'FINISHED'}
 
 
-def popup_enable(self, context):
+def popup_enable_mmd(self, context):
     layout = self.layout
     col = layout.column(align=True)
 
@@ -75,7 +92,7 @@ def popup_enable(self, context):
     row.label("Please enable it in your User Preferences.")
 
 
-def popup_install(self, context):
+def popup_install_mmd(self, context):
     layout = self.layout
     col = layout.column(align=True)
 
@@ -91,6 +108,33 @@ def popup_install(self, context):
     row.operator('armature_manual.mmd_tools', icon='LOAD_FACTORY')
 
 
+def popup_enable_xps(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'XPS Tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("Please enable it in your User Preferences.")
+
+
+def popup_install_xps(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'XPS Tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("If it is not enabled please enable it in your User Preferences.")
+    row = col.row(align=True)
+    row.label("If it is not installed please click here to go to this link to download and install it")
+    col.separator()
+    row = col.row(align=True)
+    row.operator('armature_manual.xps_tools', icon='LOAD_FACTORY')
+
+
 class MmdToolsButton(bpy.types.Operator):
     bl_idname = 'armature_manual.mmd_tools'
     bl_label = 'Install mmd_tools'
@@ -99,6 +143,34 @@ class MmdToolsButton(bpy.types.Operator):
         webbrowser.open('https://github.com/powroupi/blender_mmd_tools')
 
         self.report({'INFO'}, 'mmd_tools link opened')
+        return {'FINISHED'}
+
+
+class XpsToolsButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.xps_tools'
+    bl_label = 'Install XPS Tools'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
+
+        self.report({'INFO'}, 'XPS Tools link opened')
+        return {'FINISHED'}
+
+
+class ExportModel(bpy.types.Operator):
+    bl_idname = 'armature_manual.export_model'
+    bl_label = 'Export Model'
+    bl_description = 'Export this model as .fbx for Unity.\n' \
+                     '\n' \
+                     'Automatically sets the optimal export settings.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        try:
+            bpy.ops.export_scene.fbx('INVOKE_DEFAULT', object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'}, use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False)
+        except (TypeError, ValueError):
+            bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
+
         return {'FINISHED'}
 
 
@@ -231,30 +303,6 @@ class SeparateByMaterials(bpy.types.Operator):
                     i += 1
         return i == 1
 
-    @staticmethod
-    def __can_remove(key_block):
-        if key_block.relative_key == key_block:
-            return False  # Basis
-        for v0, v1 in zip(key_block.relative_key.data, key_block.data):
-            if v0.co != v1.co:
-                return False
-        return True
-
-    def __shape_key_clean(self, context, obj, key_blocks):
-        for kb in key_blocks:
-            if self.__can_remove(kb):
-                obj.shape_key_remove(kb)
-
-    def __shape_key_clean_old(self, context, obj, key_blocks):
-        context.scene.objects.active = obj
-        for i in reversed(range(len(key_blocks))):
-            kb = key_blocks[i]
-            if self.__can_remove(kb):
-                obj.active_shape_key_index = i
-                bpy.ops.object.shape_key_remove()
-
-    __do_shape_key_clean = __shape_key_clean_old if bpy.app.version < (2, 75, 0) else __shape_key_clean
-
     def execute(self, context):
         obj = context.active_object
 
@@ -264,30 +312,8 @@ class SeparateByMaterials(bpy.types.Operator):
             if len(meshes) == 0:
                 return {'FINISHED'}
             obj = meshes[0]
-            tools.common.select(obj)
 
-        for mod in obj.modifiers:
-            if 'Decimate' in mod.name:
-                bpy.ops.object.modifier_remove(modifier=mod.name)
-            else:
-                mod.show_expanded = False
-
-        tools.common.set_default_stage()
-        tools.common.ShapekeyOrder.save(obj.name)
-
-        utils.separateByMaterials(obj)
-
-        for ob in context.selected_objects:
-            if ob.type != 'MESH' or ob.data.shape_keys is None:
-                continue
-            if not ob.data.shape_keys.use_relative:
-                continue  # not be considered yet
-            key_blocks = ob.data.shape_keys.key_blocks
-            counts = len(key_blocks)
-            self.__do_shape_key_clean(context, ob, key_blocks)
-            counts -= len(key_blocks)
-
-        utils.clearUnusedMeshes()
+        tools.common.separate_by_materials(context, obj)
         return {'FINISHED'}
 
 

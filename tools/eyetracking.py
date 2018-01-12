@@ -33,6 +33,9 @@ import tools.common
 import tools.armature
 
 
+iris_heights = None
+
+
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
     bl_label = 'Create Eye Tracking'
@@ -137,6 +140,9 @@ class CreateEyesButton(bpy.types.Operator):
         bpy.context.scene.objects.active = bpy.data.objects[mesh_name]
         tools.common.switch('OBJECT')
 
+        # Fix a small bug
+        bpy.context.object.show_only_shape_key = False
+
         # Copy the existing eye vertex group to the new one if eye movement is activated
         if not context.scene.disable_eye_movement:
             self.copy_vertex_group(mesh_name, old_eye_left.name, 'LeftEye')
@@ -214,7 +220,8 @@ class CreateEyesButton(bpy.types.Operator):
 
         if not is_correct['result']:
             self.report({'ERROR'}, is_correct['message'])
-            self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
+            self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head'
+                                   '\nFurthermore the mesh containing the eyes has to be called "Body" and the armature "Armature".')
         else:
             context.scene.eye_mode = 'TESTING'
             self.report({'INFO'}, 'Created eye tracking!')
@@ -394,7 +401,7 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
             length = (p1 - p2).length
             print(length)  # TODO calculate scale if bone is too close to center of the eye
 
-    # dist = math.sqrt((coords_eye[0] - head.head[0]) ** 2 + (coords_eye[1] - head.head[1]) ** 2 + (coords_eye[2] - head.head[2]) ** 2)
+    # dist = math.sqrt((coords_eye[0] - head.head[x_cord]) ** 2 + (coords_eye[1] - head.head[y_cord]) ** 2 + (coords_eye[2] - head.head[z_cord]) ** 2)
     # dist2 = np.linalg.norm(coords_eye - head.head)
     # dist3 = math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 + (p1[2] - p2[2]) ** 2)
     # dist4 = np.linalg.norm(p1 - p2)
@@ -403,22 +410,35 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
     # print(2 ** 2)
     # print(dist4)
 
+    # Check if bone matrix == world matrix
+    armature = tools.common.get_armature()
+    x_cord = 0
+    y_cord = 1
+    z_cord = 2
+    for index, bone in enumerate(armature.pose.bones):
+        if index == 5:
+            bone_pos = bone.matrix
+            world_pos = armature.matrix_world * bone.matrix
+            if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
+                z_cord = 1
+                y_cord = 2
+
     if context.scene.disable_eye_movement:
         if head is not None:
             if right_side:
-                new_eye.head[0] = head.head[0] + 0.05
+                new_eye.head[x_cord] = head.head[x_cord] + 0.05
             else:
-                new_eye.head[0] = head.head[0] - 0.05
-            new_eye.head[1] = head.head[1]
-            new_eye.head[2] = head.head[2]
+                new_eye.head[x_cord] = head.head[x_cord] - 0.05
+            new_eye.head[y_cord] = head.head[y_cord]
+            new_eye.head[z_cord] = head.head[z_cord]
     else:
-        new_eye.head[0] = old_eye.head[0] + scale * (coords_eye[0] - old_eye.head[0])
-        new_eye.head[1] = old_eye.head[1] + scale * (coords_eye[1] - old_eye.head[1])
-        new_eye.head[2] = old_eye.head[2] + scale * (coords_eye[2] - old_eye.head[2])
+        new_eye.head[x_cord] = old_eye.head[x_cord] + scale * (coords_eye[0] - old_eye.head[x_cord])
+        new_eye.head[y_cord] = old_eye.head[y_cord] + scale * (coords_eye[1] - old_eye.head[y_cord])
+        new_eye.head[z_cord] = old_eye.head[z_cord] + scale * (coords_eye[2] - old_eye.head[z_cord])
 
-    new_eye.tail[0] = new_eye.head[0]
-    new_eye.tail[1] = new_eye.head[1]
-    new_eye.tail[2] = new_eye.head[2] + 0.2
+    new_eye.tail[x_cord] = new_eye.head[x_cord]
+    new_eye.tail[y_cord] = new_eye.head[y_cord]
+    new_eye.tail[z_cord] = new_eye.head[z_cord] + 0.2
 
 
 eye_left = None
@@ -635,6 +655,56 @@ class AdjustEyesButton(bpy.types.Operator):
         eye_right = armature.pose.bones.get('RightEye')
         eye_left_data = armature.data.bones.get('LeftEye')
         eye_right_data = armature.data.bones.get('RightEye')
+
+        return {'FINISHED'}
+
+
+class StartIrisHeightButton(bpy.types.Operator):
+    bl_idname = 'eyes.adjust_iris_height_start'
+    bl_label = 'Start Iris Height Adjustment'
+    bl_description = "Let's you readjust the distance of the iris from the eye ball.\n" \
+                     "Use this to fix clipping of the iris into the eye ball.\n" \
+                     "This get's saved."
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        armature = tools.common.get_armature()
+        if 'LeftEye' in armature.pose.bones:
+            if 'RightEye' in armature.pose.bones:
+                return True
+        return False
+
+    def execute(self, context):
+        if context.scene.disable_eye_movement:
+            return {'FINISHED'}
+
+        armature = tools.common.set_default_stage()
+        armature.hide = True
+
+        mesh = bpy.data.objects[context.scene.mesh_name_eye]
+        tools.common.select(mesh)
+        tools.common.switch('EDIT')
+
+        if len(mesh.vertex_groups) > 0:
+            tools.common.select(mesh)
+            tools.common.switch('EDIT')
+            bpy.ops.mesh.select_mode(type='VERT')
+
+            vgs = [mesh.vertex_groups.get('LeftEye'), mesh.vertex_groups.get('RightEye')]
+            for vg in vgs:
+                if vg:
+                    bpy.ops.object.vertex_group_set_active(group=vg.name)
+                    bpy.ops.object.vertex_group_select()
+
+            import bmesh
+            [i.index for i in bmesh.from_edit_mesh(bpy.context.active_object.data).verts if i.select]
+
+            bm = bmesh.from_edit_mesh(mesh.data)
+            for v in bm.verts:
+                if v.select:
+                    v.co.y += context.scene.iris_height * 0.01
+                    print(v.co)
 
         return {'FINISHED'}
 

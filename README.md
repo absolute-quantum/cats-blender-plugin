@@ -1,6 +1,7 @@
 # Cats Blender Plugin (0.5.0)
 
-A tool designed to shorten steps needed to import and optimize MMD and Mixamo models into VRChat.
+A tool designed to shorten steps needed to import and optimize models into VRChat.
+Compatible models are: MMD, XNALara, Mixamo, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
 
 Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
 
@@ -49,7 +50,7 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 ## Model
 ![](https://i.imgur.com/gw66CMj.png)
 
-A vastly improved combination of Neitri and Shotariya's blender plugins, it tries to fix and optimize the armature with one click.
+This tries to completely fix your model with one click.
 
 ##### Fix model
 Fixes your model automatically by:
@@ -68,7 +69,7 @@ Fixes your model automatically by:
 Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.
 
 ##### Import model
-Imports a mmd model (.pmx, .pmd). This requires mmd_tools in order to work.
+Imports a model.
 
 ##### Separate by material
 Separatres a mesh by materials
@@ -241,6 +242,22 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.6.0
+- Added: Model: Added support for DAZ/Poser, Blender Rigify, Sims 2, Motion Builder and 3DS Max models
+- Added: Model: Added support for models with more than 2 spines
+- Added: Model: Added conversion of mmd bone morphs into shape keys
+- Added: Model: Added import option for XNALara and FBX
+- Added: Model: Now resets the pivot to the center
+- Added: Model: Added Export button
+- Added: Model: Importing and Exporting now automatically sets the optimal settings
+- Added: Decimation: Added custom decimation tab, allows you to whitelist meshes and shape keys
+- Added: Decimation: Added option to exclude fingers from decimation
+- Added: General: Warning when Blender is outdated
+- Fixed: Atlas: Fixed transparency issue after creating auto atlas
+- Fixed: Material: Fixed an issue where materials were wrongly merged together (Thanks kiraver!)
+- Fixed: Model: Multiple parenting issues
+- Fixed: Bugs from every corner
+
 #### 0.5.0
 - Added: Automatic Decimation! (experimental)
 - Added: Model: A lot more models are now compatible (please report non working models to us)
@@ -266,19 +283,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"
 - Fixed: UI: Improved some loading bars
 - Fixed: Other bugs
-
-#### 0.4.0
-- Added: Model: A lot more models are now compatible (if not please report it to us)
-- Added: Bone Merging: A new feature that can reduce huge groups of bones (useful for Dynamic Bones)
-- Added: Model: Mixamo models are now fixable!
-- Added: Progress notification on several operations
-- Added: Model: Joining meshes now applies all unapplied decimation modifiers
-- Added: Model: New "Start/Stop Pose Mode" button
-- Added: Updater: Development branch added to version selection
-- Changed: Functions that need UI context are now excluded from the spacebar menu
-- Changed: Separate by Materials: Improved search for the mesh
-- Fixed: Undo now works better
-- Fixed: Bugs, bugs and bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
