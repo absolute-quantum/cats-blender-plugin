@@ -78,7 +78,7 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = False
+dev_branch = True
 
 slider_z = 0
 
@@ -121,13 +121,13 @@ supporters['akarinjelly'] = ['Jelly', '2018-01-05']
 supporters['Atirion'] = ['Atirion', '2018-01-05']
 supporters['Lydania'] = ['Lydania', '2018-01-05']
 supporters['Shanie-senpai'] = ['Shanie-senpai', '2018-01-05']
-supporters['Kal [Thramis]'] = ['Kal', '2018-01-11']
-supporters['Sifu'] = ['Sifu', '2018-01-11']
-supporters['Lil Clone'] = ['Lil Clone', '2018-01-11']
-supporters['Naranar'] = ['Naranar', '2018-01-11']
-supporters['gwigz'] = ['gwigz', '2018-01-11']
-supporters['Lux'] = ['Lux', '2018-01-11']
-supporters['liquid (retso)'] = ['liquid', '2018-01-11']
+supporters['Kal [Thramis]'] = ['Kal', '2018-01-12']
+supporters['Sifu'] = ['Sifu', '2018-01-12']
+supporters['Lil Clone'] = ['Lil Clone', '2018-01-12']
+supporters['Naranar'] = ['Naranar', '2018-01-12']
+supporters['gwigz'] = ['gwigz', '2018-01-12']
+supporters['Lux'] = ['Lux', '2018-01-12']
+supporters['liquid (retso)'] = ['liquid', '2018-01-12']
 supporters['GreenTeaGamer'] = ['GreenTeaGamer', '2018-01-12']
 supporters['Desruko'] = ['Desruko', '2018-01-12']
 supporters['Mute_'] = ['Mute_', '2018-01-12']

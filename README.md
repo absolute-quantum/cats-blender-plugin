@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.5.0)
+# Cats Blender Plugin (0.7.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -242,6 +242,8 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.7.0
+
 #### 0.6.0
 - Added: Model: Added support for DAZ/Poser, Blender Rigify, Sims 2, Motion Builder and 3DS Max models
 - Added: Model: Added support for models with more than 2 spines
@@ -273,16 +275,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Eye Tracking: When disabling eye blinking, shape keys were still required
 - Fixed: Translation: Sometimes bones were not fully translated
 - Fixed: Buggy bugs
-
-#### 0.4.1
-- Added: Model: More models are now compatible (if not please report it to us)
-- Added: Translations: Now shows how many objects were translated
-- Added: Model: New notification when mmd_tools is not installed/enabled
-- Fixed: Model: Joining meshes causes models to be decimated weirdly
-- Fixed: Model: Rigidbodies and joints not getting deleted
-- Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"
-- Fixed: UI: Improved some loading bars
-- Fixed: Other bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
