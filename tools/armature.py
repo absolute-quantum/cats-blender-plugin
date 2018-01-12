@@ -667,9 +667,13 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                 missing += bone + ', '
 
     if len(missing) > 0:
-        return {'result': False, 'message': 'The following bones were not found: \n - ' +
-                                            missing[:-2] + '\n' +
-                                            "Make sure that this is a MMD or Mixamo model and DO NOT use PMXEditor (use the original .pmx/.pmd instead)!"}
+        message = 'The following bones were not found: \n - ' + missing[:-2]
+        if not check_parenting:
+            message += "\nLooks like you found a model which Cats could not fix!" \
+                       "\nIf this is a non modified model we would love to make it compatible." \
+                       "\nReport it to us in the forum or in our discord, links can be found in the Credits panel."
+
+        return {'result': False, 'message': message}
 
     if check_parenting:
         for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array

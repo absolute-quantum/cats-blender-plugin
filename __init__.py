@@ -72,13 +72,13 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 5, 0],
+    'version': [0, 6, 0],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = True
+dev_branch = False
 
 slider_z = 0
 
@@ -674,7 +674,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         elif context.scene.decimation_mode == 'CUSTOM':
             col.separator()
 
-            if len(tools.common.get_meshes_objects()) == 1:
+            if len(tools.common.get_meshes_objects()) <= 1:
                 row = col.row(align=True)
                 row.label('Start by Separating by Materials:')
                 row = col.row(align=True)
@@ -1217,7 +1217,7 @@ def set_current_supporters():
     now = datetime.now()
     for key, value in supporters.items():
         print(key + " " + str(tools.common.days_between(now.strftime("%Y-%m-%d"), value[1])))
-        if tools.common.days_between(now.strftime("%Y-%m-%d"), value[1]) <= 31:
+        if tools.common.days_between(now.strftime("%Y-%m-%d"), value[1]) <= 60:
             current_supporters[key] = value[0]
 
 

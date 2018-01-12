@@ -220,7 +220,8 @@ class CreateEyesButton(bpy.types.Operator):
 
         if not is_correct['result']:
             self.report({'ERROR'}, is_correct['message'])
-            self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head')
+            self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head'
+                                   '\nFurthermore the mesh containing the eyes has to be called "Body" and the armature "Armature".')
         else:
             context.scene.eye_mode = 'TESTING'
             self.report({'INFO'}, 'Created eye tracking!')
