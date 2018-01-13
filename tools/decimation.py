@@ -260,7 +260,10 @@ class AutoDecimateButton(bpy.types.Operator):
 
             tools.common.unselect_all()
 
-        decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+            try:
+                decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+            except ZeroDivisionError:
+                decimation = 1
         if decimation >= 1:
             self.report({'ERROR'}, 'The model already has less tris than given. Nothing had to be decimated.')
             return
