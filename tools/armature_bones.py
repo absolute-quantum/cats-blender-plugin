@@ -751,6 +751,7 @@ bone_reweight['Eye_\L'] = [
     'EyeW_\L',
     'EyeLight_\L',
     'EyeReturn_\L',
+    '\Left Eye Return',
     'Pupil_\L',
     '\Left Pupil',
     '\Left Eye Glint',
