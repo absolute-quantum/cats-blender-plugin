@@ -243,7 +243,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 ## Changelog
 
 #### 0.7.0
-- Added: Model: More models are now compatible (please report non working models to us)
+- Added: Model: A lot more models are now compatible (please report non working models to us)
 - Fixed: Eye Tracking: Fixed a bug where the mouth would stay open after creating eye tracking
 - Fixed: Decimation: Fixed a bug where decimation would failed due to division by zero
 - Fixed: More bugs
