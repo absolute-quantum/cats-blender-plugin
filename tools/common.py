@@ -329,30 +329,6 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-# Repair vrc shape keys
-def repair_shapekeys():
-    for ob in bpy.data.objects:
-        if ob.type == 'MESH':
-            mesh = ob
-            bm = bmesh.new()
-            bm.from_mesh(mesh.data)
-            bm.verts.ensure_lookup_table()
-
-            for key in bm.verts.layers.shape.keys():
-                if not key.startswith('vrc'):
-                    continue
-
-                value = bm.verts.layers.shape.get(key)
-                for vert in bm.verts:
-                    shapekey = vert
-                    shapekey_coords = mesh.matrix_world * shapekey[value]
-                    shapekey_coords[2] -= 0.00001
-                    shapekey[value] = mesh.matrix_world.inverted() * shapekey_coords
-                    break
-
-            bm.to_mesh(mesh.data)
-
-
 def get_meshes_objects():
     meshes = []
     for ob in bpy.data.objects:
@@ -542,6 +518,8 @@ def repair_shape_order(mesh_name, order):
         current_step += 1
         wm.progress_update(current_step)
 
+    mesh.active_shape_key_index = 0
+
     wm.progress_end()
 
 
@@ -694,5 +672,28 @@ def days_between(d1, d2):
 #             deleted_shapes.append(key)
 #
 #     return deleted_shapes
+
+# # Repair vrc shape keys old
+# def repair_shapekeys():
+#     for ob in bpy.data.objects:
+#         if ob.type == 'MESH':
+#             mesh = ob
+#             bm = bmesh.new()
+#             bm.from_mesh(mesh.data)
+#             bm.verts.ensure_lookup_table()
+#
+#             for key in bm.verts.layers.shape.keys():
+#                 if not key.startswith('vrc'):
+#                     continue
+#
+#                 value = bm.verts.layers.shape.get(key)
+#                 for vert in bm.verts:
+#                     shapekey = vert
+#                     shapekey_coords = mesh.matrix_world * shapekey[value]
+#                     shapekey_coords[2] -= 0.00001
+#                     shapekey[value] = mesh.matrix_world.inverted() * shapekey_coords
+#                     break
+#
+#             bm.to_mesh(mesh.data)
 
 # === THIS CODE COULD BE USEFUL ===

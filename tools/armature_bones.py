@@ -270,6 +270,7 @@ bone_rename['Neck'] = [
     'Head Neck Lower',
     'Bip001 Neck',
     'Bip01_Neck',
+    'Bip01_Neck1',
     'B C Neck1',
     'B_C_Neck1',
 ]
@@ -278,6 +279,7 @@ bone_rename['Head'] = [
     'Head Neck Upper',
     'Bip001 Head',
     'Bip01_Head',
+    'Bip01_Head1',
     'B C Head',
     'B_C_Head',
 ]
@@ -456,6 +458,12 @@ bone_rename['Eye_\L'] = [
     'FEye\L',
     'Eye\L',
     '\L_Eye',
+]
+bone_rename['Eye_L'] = [
+    'Eyes',
+]
+bone_rename['Eye_R'] = [
+    'HL',
 ]
 
 ################################

@@ -97,7 +97,9 @@ class CreateEyesButton(bpy.types.Operator):
         if not context.scene.disable_eye_movement:
             # Find the existing vertex group of the left eye bone
             if self.vertex_group_exists(mesh_name, old_eye_left.name) is False:
-                self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
+                self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it.'
+                                       '\nThis might be because you selected the wrong mesh or the wrong eye bone.'
+                                       '\nMake sure to join your meshes before creating eye tracking.')
                 return {'CANCELLED'}
 
             # Find the existing vertex group of the right eye bone
@@ -300,7 +302,14 @@ class CreateEyesButton(bpy.types.Operator):
 
 # Repair vrc shape keys
 def repair_shapekeys(mesh_name, vertex_group):
+    # This is done to fix a very weird bug where the mouth stays open sometimes
+    tools.common.set_default_stage()
     mesh = bpy.data.objects[mesh_name]
+    tools.common.unselect_all()
+    tools.common.select(mesh)
+    tools.common.switch('EDIT')
+    tools.common.switch('OBJECT')
+
     bm = bmesh.new()
     bm.from_mesh(mesh.data)
     bm.verts.ensure_lookup_table()
@@ -352,7 +361,14 @@ def repair_shapekeys(mesh_name, vertex_group):
 
 # Repair vrc shape keys with random vertex
 def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
+    # This is done to fix a very weird bug where the mouth stays open sometimes
+    tools.common.set_default_stage()
     mesh = bpy.data.objects[mesh_name]
+    tools.common.unselect_all()
+    tools.common.select(mesh)
+    tools.common.switch('EDIT')
+    tools.common.switch('OBJECT')
+
     bm = bmesh.new()
     bm.from_mesh(mesh.data)
     bm.verts.ensure_lookup_table()
