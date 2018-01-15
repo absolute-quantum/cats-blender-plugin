@@ -28,9 +28,9 @@
 
 from collections import OrderedDict
 
-bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'Eyes', 'EyesTip',
+bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
-bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIKTip', 'ToeTipIK',
+bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIKTip', 'LegIK', 'ToeTipIK',
                   'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
                   'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'HandTip_', 'ShoulderC_', 'SleeveShoulderIK_']
 bone_list_parenting = {
@@ -120,6 +120,14 @@ bone_list_rename_unknown_side = {
     'Shoulder': 'shoulder',
     'Shoulder_001': 'shoulder'
 }
+bone_list_conflicting_names = [
+    ('L_Clavicle', 'L_Shoulder', 'Arm_L'),
+    ('R_Clavicle', 'R_Shoulder', 'Arm_R'),
+    ('LeftCollar', 'LeftShoulder', 'Arm_L'),
+    ('RightCollar', 'RightShoulder', 'Arm_R'),
+    ('Left_Collar', 'Left Shoulder', 'Arm_L'),
+    ('Right_Collar', 'Right Shoulder', 'Arm_R'),
+]
 bone_finger_list = [
     'Thumb0_',
     'IndexFinger1_',
@@ -146,8 +154,8 @@ bone_finger_list = [
 # Replace '-' with '_'
 # Replace ' ' with '_'
 # Replace 'ValveBiped_' with ''
-# Replace 'Bip01' with 'Bip'
-# Replace 'Bip001' with 'Bip'
+# Replace 'Bip01_' with 'Bip'
+# Replace 'Bip001_' with 'Bip'
 #
 # Replace New Bone Patterns:
 #   Left/Right = \Left
@@ -282,6 +290,7 @@ bone_rename['\Left shoulder'] = [
     '\L_Shoulder',
     'Mixamorig:\LeftShoulder',
     'Arm_\Left_Shoulder_1',
+    'ShoulderArm_\L',
     'Bip_\L_Clavicle',
     'Bip_Collar_\L',
     'B_\L_Shoulder',
@@ -316,6 +325,7 @@ bone_rename['\Left arm'] = [
     '\L_Upperarm',
     '\LeftUpArm',
     'Uparm_\L',
+    '\L_Arm',
     '\L_Arm_01',
 ]
 bone_rename['Left arm'] = [
@@ -325,6 +335,7 @@ bone_rename['\Left elbow'] = [
     '\Left_Elbow',
     '\LeftElbow',
     'Elbow_\L',
+    '\L_Elbow',
     'Mixamorig:\LeftForeArm',
     'Arm_\Left_Elbow',
     'Bip_\L_Forearm',
@@ -381,6 +392,7 @@ bone_rename['\Left leg'] = [
     '\LeftHip',
     '\Left_Thigh',
     'Upleg_\L',
+    '\L_Hip',
     '\L_Leg_01',
 ]
 bone_rename['\Left knee'] = [
@@ -402,6 +414,7 @@ bone_rename['\Left knee'] = [
     '\Left_Shin',
     'Loleg_\L',
     '\L_Leg_02',
+    '\L_KneeLower',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
@@ -463,8 +476,8 @@ bone_rename['Eye_R'] = [
 # Replace '-' with '_'
 # Replace ' ' with '_'
 # Replace 'ValveBiped_' with ''
-# Replace 'Bip01' with 'Bip'
-# Replace 'Bip001' with 'Bip'
+# Replace 'Bip01_' with 'Bip'
+# Replace 'Bip001_' with 'Bip'
 #
 # Replace New Bone Patterns:
 #   Left/Right = \Left
@@ -537,10 +550,12 @@ bone_reweight['\Left arm'] = [
     'ElbowAux+_\L',
     '+ElbowAux_\L',
     'ArmSleeve_\L',
+    'Arm_Sleeve_\L',
+    'ArmTwist_Sleeve_\L',
     'ShoulderTwist_\L',
     'ArmW_\L',
     'ArmW2_\L',
-    'Sleeve1_\L',
+    # 'Sleeve1_\L',
     'SleeveArm_\L',
     'SleeveElbowAux_\L',
     'ArmxcIa_\L',
@@ -601,8 +616,9 @@ bone_reweight['\Left elbow'] = [
     'ElbowTwist2_\L',
     'ElbowW_\L',
     'ElbowW2_\L',
-    'Sleeve2_\L',
+    # 'Sleeve2_\L',
     'SleeveElbow_\L',
+    'Elbow_Sleeve_\L',
     'SleeveMouth_\L',
     'ElbowRotation_\L',
     'HandTwistRotation1_\L',
@@ -634,7 +650,7 @@ bone_reweight['\Left elbow'] = [
     'Arm_\Left_Wrist_Ctr',
 ]
 bone_reweight['\Left wrist'] = [
-    'Sleeve3_\L',
+    # 'Sleeve3_\L',
     'WristSleeve_\L',
     'WristW_\L',
     'WristS_\L',
@@ -698,6 +714,7 @@ bone_reweight['\Left leg'] = [
     'B_\L_Pelvis_Hojo01',
     'Bip_\L_ThighTwist',
     'Bip_\L_ThighTwist1',
+    '\L_KneeUpper',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -761,6 +778,10 @@ bone_reweight['\Left toe'] = [
 bone_reweight['Eye_\L'] = [
     'EyeW_\L',
     'EyeLight_\L',
+    'EyeLight1_\L',
+    'EyeLight2_\L',
+    'EyeLight3_\L',
+    'EyeLight4_\L',
     'EyeReturn_\L',
     '\Left_Eye_Return',
     'Pupil_\L',
@@ -929,6 +950,7 @@ bone_rename_fingers['MiddleFinger1_\L'] = [
     'F_Middle_01_\L',
     '\L_Mid0',
     '\L_Middle_01',
+    '\L_Middle1',
     '\LeftHandMiddle1',
     '\LeftFinger2',
     'Finger3_2_\L',
@@ -943,6 +965,7 @@ bone_rename_fingers['MiddleFinger2_\L'] = [
     'F_Middle_02_\L',
     '\L_Mid1',
     '\L_Middle_02',
+    '\L_Middle2',
     '\LeftHandMiddle2',
     '\LeftFinger21',
     'Finger3_3_\L',

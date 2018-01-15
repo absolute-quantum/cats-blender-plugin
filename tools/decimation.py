@@ -182,6 +182,7 @@ class AutoDecimateButton(bpy.types.Operator):
         custom_decimation = context.scene.decimation_mode == 'CUSTOM'
         full_decimation = context.scene.decimation_mode == 'FULL'
         half_decimation = context.scene.decimation_mode == 'HALF'
+        safe_decimation = context.scene.decimation_mode == 'SAFE'
         decimate_fingers = context.scene.decimate_fingers
         meshes = []
         current_tris_count = 0
@@ -260,10 +261,26 @@ class AutoDecimateButton(bpy.types.Operator):
 
             tools.common.unselect_all()
 
-            try:
-                decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
-            except ZeroDivisionError:
-                decimation = 1
+        print(current_tris_count)
+        print(tris_count)
+
+        if (current_tris_count - tris_count) > context.scene.max_tris:
+            message = 'This model can not be decimated to the given tris count with the specified settings.\n'
+            if safe_decimation:
+                message += 'Try to use Custom, Half or Full decimation.'
+            elif half_decimation:
+                message += 'Try to use Custom or Full decimation.'
+            elif custom_decimation:
+                message += 'Select fewer shape keys and/or meshes or use Full decimation.'
+            if decimate_fingers:
+                message = message[:-1] + " or disable 'Save Fingers'."
+            self.report({'ERROR'}, message)
+            return
+
+        try:
+            decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+        except ZeroDivisionError:
+            decimation = 1
         if decimation >= 1:
             self.report({'ERROR'}, 'The model already has less tris than given. Nothing had to be decimated.')
             return

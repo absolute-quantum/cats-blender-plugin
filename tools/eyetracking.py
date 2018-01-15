@@ -529,6 +529,10 @@ class StopTestingButton(bpy.types.Operator):
             context.scene.eye_rotation_x = 0
             context.scene.eye_rotation_y = 0
 
+        if not context.object or context.object.mode != 'POSE':
+            tools.common.set_default_stage()
+            tools.common.switch('POSE')
+
         for pb in tools.common.get_armature().data.bones:
             pb.hide = False
             pb.select = True

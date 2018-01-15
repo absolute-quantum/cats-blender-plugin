@@ -1053,6 +1053,17 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.label('Do you like this plugin and want to support us?')
+        row = col.row(align=True)
+        row.separator()
+        row = col.row(align=True)
+        row.scale_y = 1.2
+        row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
+        row = col.row(align=True)
+        row.separator()
+        row.separator()
         row = col.row(align=True)
 
         i = 0
@@ -1075,12 +1086,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                 row.label('')
                 i += 1
 
-        row = col.row(align=True)
-        row.separator()
-        row = col.row(align=True)
-        row.label('Do you like this plugin and want to support us?')
-        row = col.row(align=True)
-        row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
 
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):

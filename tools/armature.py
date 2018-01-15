@@ -261,7 +261,7 @@ class FixArmature(bpy.types.Operator):
         current_step = 0
         wm.progress_begin(current_step, steps)
 
-        # Rename bones
+        # Standardize bone names
         for bone in armature.data.edit_bones:
             current_step += 1
             wm.progress_update(current_step)
@@ -288,6 +288,12 @@ class FixArmature(bpy.types.Operator):
 
             bone.name = upper_name
 
+        # Resolve conflicting bone names
+        for names in Bones.bone_list_conflicting_names:
+            if names[0] in armature.data.edit_bones and names[1] in armature.data.edit_bones:
+                armature.data.edit_bones.get(names[1]).name = names[2]
+
+        # Rename all the bones
         spines = []
         for bone_new, bones_old in temp_rename_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:
@@ -359,7 +365,7 @@ class FixArmature(bpy.types.Operator):
         # Remove un-needed bones and disconnect them
         for bone in armature.data.edit_bones:
             if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
-                if bone.parent is not None:
+                if bone.parent and mesh.vertex_groups.get(bone.name) and mesh.vertex_groups.get(bone.parent.name):
                     temp_list_reweight_bones[bone.name] = bone.parent.name
                 else:
                     armature.data.edit_bones.remove(bone)
@@ -593,7 +599,8 @@ class FixArmature(bpy.types.Operator):
                     bone_tmp = armature.data.bones.get(name)
                     if bone_tmp:
                         for child in bone_tmp.children:
-                            temp_list_reparent_bones[child.name] = bone[0]
+                            if not temp_list_reparent_bones.get(child.name):
+                                temp_list_reparent_bones[child.name] = bone[0]
 
                     # print(bone[1] + " to2 " + bone[0])
                     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
@@ -621,7 +628,8 @@ class FixArmature(bpy.types.Operator):
             bone_tmp = armature.data.bones.get(bone[1])
             if bone_tmp:
                 for child in bone_tmp.children:
-                    temp_list_reparent_bones[child.name] = bone[0]
+                    if not temp_list_reparent_bones.get(child.name):
+                        temp_list_reparent_bones[child.name] = bone[0]
 
             if key == value:
                 print('BUG: ' + key + ' tried to mix weights with itself!')
