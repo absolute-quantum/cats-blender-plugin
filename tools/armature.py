@@ -268,6 +268,7 @@ class FixArmature(bpy.types.Operator):
 
             name = bone.name.replace(' ', '_')\
                 .replace('-', '_')\
+                .replace('.', '_')\
                 .replace('ValveBiped_', '')\
                 .replace('Bip1_', 'Bip_')\
                 .replace('Bip01_', 'Bip_')\
