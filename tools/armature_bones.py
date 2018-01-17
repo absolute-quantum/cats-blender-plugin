@@ -127,6 +127,8 @@ bone_list_conflicting_names = [
     ('RightCollar', 'RightShoulder', 'Arm_R'),
     ('Left_Collar', 'Left Shoulder', 'Arm_L'),
     ('Right_Collar', 'Right Shoulder', 'Arm_R'),
+    ('LeftUpLeg', 'LeftLeg', 'Knee_L'),
+    ('RightUpLeg', 'RightLeg', 'Knee_R'),
 ]
 bone_finger_list = [
     'Thumb0_',
@@ -360,6 +362,7 @@ bone_rename['\Left elbow'] = [
     '\L_Foarm',
     'Loarm_\L',
     '\L_Arm_02',
+    '\LeftForeArm',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
