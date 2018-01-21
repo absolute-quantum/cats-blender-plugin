@@ -762,7 +762,7 @@ def delete_zero_weight():
     not_used_bone_names = bone_names_to_work_on - vertex_group_names_used
 
     for bone_name in not_used_bone_names:
-        if bone_name not in Bones.dont_delete_these_bones:
+        if bone_name not in Bones.dont_delete_these_bones and 'Root_' not in bone_name:
             armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
             if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
                 for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups

@@ -484,6 +484,7 @@ bone_rename['Eye_\L'] = [
     'Eye\L',
     '\L_Eye',
     'Bip_Eyeball_\L',
+    '\L_EYE',
 ]
 bone_rename['Eye_L'] = [
     'Eyes',
@@ -521,10 +522,12 @@ bone_reweight['Spine'] = [
     'UpperBodyx',
     'Spine_Lower_Adj',
     'Spine_Middle_Adj',
+    'Bip_Spine0a',
 ]
 bone_reweight['Chest'] = [
     'UpperBodyx2',
     'Spine_Upper_Adj',
+    'Bip_Spine1a',
 ]
 bone_reweight['Neck'] = [
     'Neckx',
@@ -546,6 +549,7 @@ bone_reweight['\Left shoulder'] = [
     'Arm_\Left_Shoulder_Adj_1',
     'B_\L_ArmorParts',
     'Bip_\L_Shoulder',
+    'Kata_\L',
 ]
 bone_reweight['\Left arm'] = [
     'Arm01_\L',
@@ -609,6 +613,7 @@ bone_reweight['\Left arm'] = [
     'Arm_\Left_Shoulder_Ctr_1',
     '\L_Sho_Ast',
     '\L_Arm_Ast',
+    'Uppertwist1_\L',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -674,6 +679,8 @@ bone_reweight['\Left elbow'] = [
     'Arm_\Left_Wrist_Ctr',
     '\L_Elb_Ast',
     '\L_Wrist_Ast',
+    'Foretwist_\L',
+    'Foretwist1_\L',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -742,6 +749,9 @@ bone_reweight['\Left leg'] = [
     'Bip_\L_ThighTwist1',
     '\L_KneeUpper',
     '\L_Tro_Ast',
+    'Momotwist_\L',
+    'Momotwist2_\L',
+    'Momoniku_\L',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -803,6 +813,11 @@ bone_reweight['\Left toe'] = [
     '\Left_Foot_Tip_EX',
     'LegTip2_\L',
     'DEF_Toe_\L',
+    'Bip_\L_Toe01',
+    'Bip_\L_Toe1',
+    'Bip_\L_Toe11',
+    'Bip_\L_Toe2',
+    'Bip_\L_Toe21',
 ]
 bone_reweight['Eye_\L'] = [
     'EyeW_\L',

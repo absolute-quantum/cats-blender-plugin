@@ -244,8 +244,11 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 #### 0.7.0
 - Added: Model: A lot more models are now compatible (please report non working models to us)
+- Added: Model: Added "Pose to Shape Key" button when in pose mode. This converts the current pose into a shape key
+- Changed: Eye Tracking: Improved error messages
 - Fixed: Eye Tracking: Fixed a bug where the mouth would stay open after creating eye tracking
 - Fixed: Decimation: Fixed a bug where decimation would failed due to division by zero
+- Fixed: Model: Fixed a bug where root bones created with cats got deleted
 - Fixed: More bugs
 
 #### 0.6.0

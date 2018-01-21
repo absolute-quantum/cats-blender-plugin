@@ -303,13 +303,13 @@ class ToolPanel:
 
     bpy.types.Scene.eye_left = bpy.props.EnumProperty(
         name='Left Eye',
-        description='The left eye bone',
+        description='The models left eye bone',
         items=tools.common.get_bones_eye_l
     )
 
     bpy.types.Scene.eye_right = bpy.props.EnumProperty(
         name='Right Eye',
-        description='The right eye bone',
+        description='The models right eye bone',
         items=tools.common.get_bones_eye_r
     )
 
@@ -383,7 +383,8 @@ class ToolPanel:
 
     bpy.types.Scene.eye_rotation_y = bpy.props.IntProperty(
         name='Left - Right',
-        description='Rotate the eye bones on the horizontal axis.',
+        description='Rotate the eye bones on the horizontal axis.'
+                    '\nThis is from your own point of view.',
         default=0,
         min=-19,
         max=19,
@@ -626,6 +627,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.05
             row.operator('armature_manual.stop_pose_mode', icon='POSE_DATA')
+            if not tools.eyetracking.eye_left:
+                row = col.row(align=True)
+                row.scale_y = 1.05
+                row.operator('armature_manual.pose_to_shape', icon='SHAPEKEY_DATA')
 
         # row = col.row(align=True)
         # row.scale_y = 1.1
@@ -1325,6 +1330,7 @@ classesToRegister = [
     tools.armature_manual.MixWeights,
     tools.armature_manual.StartPoseMode,
     tools.armature_manual.StopPoseMode,
+    tools.armature_manual.PoseToShape,
     # tools.armature_manual.Test,
     # tools.armature_manual.Import,
     # tools.armature_manual.SeparateByMaterials,

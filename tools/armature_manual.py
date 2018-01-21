@@ -30,6 +30,7 @@ import bpy
 import re
 import webbrowser
 import tools.common
+import tools.eyetracking
 
 from mmd_tools_local import utils
 from mmd_tools_local.core.material import FnMaterial
@@ -237,6 +238,7 @@ class StopPoseMode(bpy.types.Operator):
     def execute(self, context):
         armature = tools.common.get_armature()
         for pb in armature.data.bones:
+            pb.hide = False
             pb.select = True
         bpy.ops.pose.rot_clear()
         bpy.ops.pose.scale_clear()
@@ -253,7 +255,36 @@ class StopPoseMode(bpy.types.Operator):
                     shape_key.value = 0
 
         bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
+        tools.eyetracking.eye_left = None
 
+        return {'FINISHED'}
+
+
+class PoseToShape(bpy.types.Operator):
+    bl_idname = 'armature_manual.pose_to_shape'
+    bl_label = 'Pose to Shape Key'
+    bl_description = 'INFO: Join your meshes first!' \
+                     '\n' \
+                     '\nThis saves your current pose as a new shape key.' \
+                     '\nThe new shape key will be at the bottom of your shape key list of the mesh.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return len(tools.common.get_meshes_objects()) == 1
+
+    def execute(self, context):
+        mesh = tools.common.get_meshes_objects()[0]
+        tools.common.unselect_all()
+        tools.common.select(mesh)
+
+        # Apply armature mod
+        mod = mesh.modifiers.new("Pose", 'ARMATURE')
+        mod.object = tools.common.get_armature()
+        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+
+        tools.common.set_default_stage()
+        tools.common.switch('POSE')
         return {'FINISHED'}
 
 
