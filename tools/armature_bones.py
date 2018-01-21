@@ -410,6 +410,8 @@ bone_rename['\Left leg'] = [
     '\L_Hip',
     '\L_Leg_01',
     '\L_Femur',
+    'Waist_Cancel_\Left',
+    'Waist_Cancellation_\Left',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -752,6 +754,7 @@ bone_reweight['\Left leg'] = [
     'Momotwist_\L',
     'Momotwist2_\L',
     'Momoniku_\L',
+    '+_\Left_Foot_D',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
