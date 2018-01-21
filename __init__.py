@@ -72,13 +72,13 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 6, 0],
+    'version': [0, 6, 1],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = True
+dev_branch = False
 
 slider_z = 0
 
@@ -132,17 +132,20 @@ supporters = [
     ['Desruko', 'Desruko', '2018-01-12'],
     ['Mute_', 'Mute_', '2018-01-12'],
     # icewind (don't add)
-    ['qy_li', 'qy_li', '2018-01-18'],  # emtpy pic
-    ['Sixnalia', 'Sixnalia', '2018-01-18'],
-    # REOL
-    ['\1B', 'BOXMOB', '2018-01-18'],
-    ['\2O', 'BOXMOB', '2018-01-18'],
-    ['\3X', 'BOXMOB', '2018-01-18'],
-    ['\1M', 'BOXMOB', '2018-01-18'],
-    ['\2O', 'BOXMOB', '2018-01-18'],
-    ['\3B', 'BOXMOB', '2018-01-18'],
-    ['Rezinion', 'Rezinion', '2018-01-18'],
-    ['Karma', 'Karma', '2018-01-18'],
+    ['qy_li', 'qy_li', '2018-01-22'],  # emtpy pic
+    ['Sixnalia', 'Sixnalia', '2018-01-22'],
+    ['ReOL', 'ReOL', '2018-01-22'],
+    ['Rezinion', 'Rezinion', '2018-01-22'],
+    ['Karma', 'Karma', '2018-01-22'],
+    ['\1B', 'BOXMOB', '2018-01-22'],
+    ['\2O', 'BOXMOB', '2018-01-22'],
+    ['\3X', 'BOXMOB', '2018-01-22'],
+    ['\1M', 'BOXMOB', '2018-01-22'],
+    ['\2O', 'BOXMOB', '2018-01-22'],
+    ['\3B', 'BOXMOB', '2018-01-22'],
+    ['SolarSnowball', 'SolarSnowball', '2018-01-22'],
+    ['Hordaland', 'Hordaland', '2018-01-22'],
+    ['Bones', 'Bones', '2018-01-22'],
 ]
 
 current_supporters = None

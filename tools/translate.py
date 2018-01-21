@@ -59,7 +59,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
             if hasattr(obj.data, 'shape_keys'):
                 if hasattr(obj.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(obj.data.shape_keys.key_blocks):
-                        to_translate.append(shapekey.name)
+                        if 'vrc.' not in shapekey.name:
+                            to_translate.append(shapekey.name)
 
         translator = Translator()
         try:
@@ -81,8 +82,9 @@ class TranslateShapekeyButton(bpy.types.Operator):
             if hasattr(obj.data, 'shape_keys'):
                 if hasattr(obj.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(obj.data.shape_keys.key_blocks):
-                        shapekey.name = translated[i]
-                        i += 1
+                        if 'vrc.' not in shapekey.name:
+                            shapekey.name = translated[i]
+                            i += 1
 
         self.report({'INFO'}, 'Translated ' + str(i) + ' shape keys.')
         return {'FINISHED'}

@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.7.0)
+# Cats Blender Plugin (0.6.1)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -242,13 +242,15 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
-#### 0.7.0
+#### 0.6.1
 - Added: Model: A lot more models are now compatible (please report non working models to us)
 - Added: Model: Added "Pose to Shape Key" button when in pose mode. This converts the current pose into a shape key
 - Changed: Eye Tracking: Improved error messages
 - Fixed: Eye Tracking: Fixed a bug where the mouth would stay open after creating eye tracking
 - Fixed: Decimation: Fixed a bug where decimation would failed due to division by zero
-- Fixed: Model: Fixed a bug where root bones created with cats got deleted
+- Fixed: Model: Fixed a bug where root bones created by cats got deleted
+- Fixed: Materials: Fixed an error when the texture files don't exist
+- Fixed: Translation: Shape keys created by cats no longer get translated
 - Fixed: More bugs
 
 #### 0.6.0
