@@ -407,7 +407,7 @@ class ToolPanel:
     )
 
     bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
-        name='Blink Strenght',
+        name='Blink Strength',
         description='Test the blinking of the eye.',
         default=1.0,
         min=0.0,
@@ -418,7 +418,7 @@ class ToolPanel:
     )
 
     bpy.types.Scene.eye_lowerlid_shape = bpy.props.FloatProperty(
-        name='Lowerlid Strenght',
+        name='Lowerlid Strength',
         description='Test the lowerlid blinking of the eye.',
         default=1.0,
         min=0.0,

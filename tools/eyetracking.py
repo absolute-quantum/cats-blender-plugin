@@ -446,9 +446,6 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
             if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
                 z_cord = 1
                 y_cord = 2
-                print('OTHER WAY AROUND!', new_eye, coords_eye)
-            else:
-                print('CORRECT!', new_eye, coords_eye)
 
     if context.scene.disable_eye_movement:
         if head is not None:

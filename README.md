@@ -23,11 +23,14 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 *More to come!*
 
+## Requirements
+
+ - Blender 2.79 (run as administrator)
+ - [powroupi/mmd tools](https://github.com/powroupi/blender_mmd_tools) (dev_test branch)
+
 ## Installation
  - Install this Blender plugin if you don't have it already: [mmd_tools](https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip)
-
  - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
-
  - Install the the addon in blender like so:
 
 ![](https://i.imgur.com/eZV1zrs.gif)
@@ -40,11 +43,14 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 [![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
+[![VRChat - Importing an MMD to VRChat Megatutorial!](https://img.youtube.com/vi/7P0ljQ6hU0A/0.jpg)](https://www.youtube.com/watch?v=7P0ljQ6hU0A)
+
 
 ## Code contributors:
  - Hotox
  - Shotariya
  - Neitri
+ - Kiraver
 
 
 ## Model
@@ -251,6 +257,7 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Model: Fixed a bug where root bones created by cats got deleted
 - Fixed: Materials: Fixed an error when the texture files don't exist
 - Fixed: Translation: Shape keys created by cats no longer get translated
+- Fixed: Small spelling mistake
 - Fixed: More bugs
 
 #### 0.6.0
@@ -289,6 +296,7 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
 
 
 ## Roadmap
+ - Full body tracking support
  - MOAR updates on the armature code
  - Texture translation should have an option to rename the filename also
  - Automatic lower lid creation for eye tracking
