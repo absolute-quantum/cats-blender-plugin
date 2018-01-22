@@ -125,6 +125,24 @@ class FixArmature(bpy.types.Operator):
                 steps += len(value)
         steps += len(temp_list_reweight_bones)  # + len(Bones.bone_list_parenting)
 
+        # Get Double Entries
+        list = []
+        print('DOUBLE ENTRIES:')
+        for key, value in temp_reweight_bones.items():
+            for name in value:
+                if name not in list:
+                    list.append(name)
+                else:
+                    print(key + " | " + name)
+        list = []
+        for key, value in temp_rename_bones.items():
+            for name in value:
+                if name not in list:
+                    list.append(name)
+                else:
+                    print(key + " | " + name)
+        print('DOUBLES END')
+
         # mmd_tools specific operations
         if mmd_tools_installed:
 
@@ -243,14 +261,18 @@ class FixArmature(bpy.types.Operator):
         current_step = 0
         wm.progress_begin(current_step, steps)
 
-        # Rename bones
+        # Standardize bone names
         for bone in armature.data.edit_bones:
             current_step += 1
             wm.progress_update(current_step)
 
-            name = bone.name
-            name = name.replace('-', '_')
-            name = name.replace('ValveBiped_', '')
+            name = bone.name.replace(' ', '_')\
+                .replace('-', '_')\
+                .replace('.', '_')\
+                .replace('ValveBiped_', '')\
+                .replace('Bip1_', 'Bip_')\
+                .replace('Bip01_', 'Bip_')\
+                .replace('Bip001_', 'Bip_')
 
             upper_name = ''
             for i, s in enumerate(name.split(' ')):
@@ -267,6 +289,12 @@ class FixArmature(bpy.types.Operator):
 
             bone.name = upper_name
 
+        # Resolve conflicting bone names
+        for names in Bones.bone_list_conflicting_names:
+            if names[0] in armature.data.edit_bones and names[1] in armature.data.edit_bones:
+                armature.data.edit_bones.get(names[1]).name = names[2]
+
+        # Rename all the bones
         spines = []
         for bone_new, bones_old in temp_rename_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:
@@ -298,7 +326,7 @@ class FixArmature(bpy.types.Operator):
                         spines.append(name)
                         continue
 
-                    if name != '' and bone[0] not in armature.data.edit_bones:
+                    if bone[0] not in armature.data.edit_bones:
                         bone2 = armature.data.edit_bones.get(name)
                         if bone2 is not None:
                             bone2.name = bone[0]
@@ -338,7 +366,7 @@ class FixArmature(bpy.types.Operator):
         # Remove un-needed bones and disconnect them
         for bone in armature.data.edit_bones:
             if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
-                if bone.parent is not None:
+                if bone.parent and mesh.vertex_groups.get(bone.name) and mesh.vertex_groups.get(bone.parent.name):
                     temp_list_reweight_bones[bone.name] = bone.parent.name
                 else:
                     armature.data.edit_bones.remove(bone)
@@ -546,12 +574,19 @@ class FixArmature(bpy.types.Operator):
                 for bone in bones:  # bone[0] = new name, bone[1] = old name
                     current_step += 1
                     wm.progress_update(current_step)
-                    vg = mesh.vertex_groups.get(bone[1])
-                    if vg is None:
-                        vg = mesh.vertex_groups.get(bone[1].lower())
-                        if vg is None:
-                            continue
+
+                    name = ''
+                    if bone[1] in mesh.vertex_groups:
+                        name = bone[1]
+                    elif bone[1].lower() in mesh.vertex_groups:
+                        name = bone[1].lower()
+
+                    if name == '':
+                        continue
+
+                    vg = mesh.vertex_groups.get(name)
                     # print(bone[1] + " to1 " + bone[0])
+
                     # If important vertex group is not there create it
                     if mesh.vertex_groups.get(bone[0]) is None:
                         if bone[0] in Bones.dont_delete_these_bones and bone[0] in armature.data.bones:
@@ -562,15 +597,16 @@ class FixArmature(bpy.types.Operator):
                         else:
                             continue
 
-                    bone_tmp = armature.data.bones.get(bone[1])
+                    bone_tmp = armature.data.bones.get(name)
                     if bone_tmp:
                         for child in bone_tmp.children:
-                            temp_list_reparent_bones[child.name] = bone[0]
+                            if not temp_list_reparent_bones.get(child.name):
+                                temp_list_reparent_bones[child.name] = bone[0]
 
-                    print(bone[1] + " to2 " + bone[0])
+                    # print(bone[1] + " to2 " + bone[0])
                     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
                     mod.vertex_group_a = bone[0]
-                    mod.vertex_group_b = bone[1]
+                    mod.vertex_group_b = name
                     mod.mix_mode = 'ADD'
                     mod.mix_set = 'B'
                     bpy.ops.object.modifier_apply(modifier=mod.name)
@@ -580,6 +616,7 @@ class FixArmature(bpy.types.Operator):
         for key, value in temp_list_reweight_bones.items():
             current_step += 1
             wm.progress_update(current_step)
+
             vg = mesh.vertex_groups.get(key)
             if vg is None:
                 vg = mesh.vertex_groups.get(key.lower())
@@ -592,7 +629,8 @@ class FixArmature(bpy.types.Operator):
             bone_tmp = armature.data.bones.get(bone[1])
             if bone_tmp:
                 for child in bone_tmp.children:
-                    temp_list_reparent_bones[child.name] = bone[0]
+                    if not temp_list_reparent_bones.get(child.name):
+                        temp_list_reparent_bones[child.name] = bone[0]
 
             if key == value:
                 print('BUG: ' + key + ' tried to mix weights with itself!')
@@ -724,7 +762,7 @@ def delete_zero_weight():
     not_used_bone_names = bone_names_to_work_on - vertex_group_names_used
 
     for bone_name in not_used_bone_names:
-        if bone_name not in Bones.dont_delete_these_bones:
+        if bone_name not in Bones.dont_delete_these_bones and 'Root_' not in bone_name:
             armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
             if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
                 for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups

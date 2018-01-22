@@ -52,12 +52,6 @@ class CreateEyesButton(bpy.types.Operator):
                 or context.scene.eye_right == "":
             return False
 
-        if not context.scene.disable_eye_blinking and (context.scene.wink_left == ""
-                                                       or context.scene.wink_right == ""
-                                                       or context.scene.lowerlid_left == ""
-                                                       or context.scene.lowerlid_right == ""):
-            return False
-
         # if not context.scene.disable_eye_blinking:
         #     if context.scene.wink_left == 'Basis' or context.scene.wink_right == 'Basis':
         #         return False
@@ -82,6 +76,14 @@ class CreateEyesButton(bpy.types.Operator):
         old_eye_right = armature.data.edit_bones.get(context.scene.eye_right)
 
         # Check for errors
+        if not context.scene.disable_eye_blinking and (context.scene.wink_left == ""
+                                                       or context.scene.wink_right == ""
+                                                       or context.scene.lowerlid_left == ""
+                                                       or context.scene.lowerlid_right == ""):
+            self.report({'ERROR'}, 'You have no shape keys selected.'
+                                   '\nPlease choose a mesh containing shape keys or check "Disable Eye Blinking".')
+            return {'CANCELLED'}
+
         if head is None:
             self.report({'ERROR'}, 'The bone "' + context.scene.head + '" does not exist.')
             return {'CANCELLED'}
@@ -97,24 +99,32 @@ class CreateEyesButton(bpy.types.Operator):
         if not context.scene.disable_eye_movement:
             # Find the existing vertex group of the left eye bone
             if self.vertex_group_exists(mesh_name, old_eye_left.name) is False:
-                self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
+                self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it.'
+                                       '\nThis might be because you selected the wrong mesh or the wrong bone.'
+                                       '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
                 return {'CANCELLED'}
 
             # Find the existing vertex group of the right eye bone
             if self.vertex_group_exists(mesh_name, old_eye_right.name) is False:
-                self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" has no existing vertex group or no vertices assigned to it, this is probably the wrong eye bone')
+                self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" has no existing vertex group or no vertices assigned to it.'
+                                       '\nThis might be because you selected the wrong mesh or the wrong bone.'
+                                       '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
                 return {'CANCELLED'}
 
         # Find existing LeftEye/RightEye and rename or delete
         if 'LeftEye' in armature.data.edit_bones:
             if old_eye_left.name == 'LeftEye':
-                old_eye_left.name = 'OldLeftEye'
+                self.report({'ERROR'}, 'Please do not use "LeftEye" as the input bone.'
+                                       '\nIf you are sure that you want to use that bone please rename it to "Eye_L".')
+                return {'CANCELLED'}
             else:
                 armature.data.edit_bones.remove(armature.data.edit_bones.get('LeftEye'))
 
         if 'RightEye' in armature.data.edit_bones:
             if old_eye_right.name == 'RightEye':
-                old_eye_right.name = 'OldRightEye'
+                self.report({'ERROR'}, 'Please do not use "RightEye" as the input bone.'
+                                       '\nIf you are sure that you want to use that bone please rename it to "Eye_R".')
+                return {'CANCELLED'}
             else:
                 armature.data.edit_bones.remove(armature.data.edit_bones.get('RightEye'))
 
@@ -300,7 +310,14 @@ class CreateEyesButton(bpy.types.Operator):
 
 # Repair vrc shape keys
 def repair_shapekeys(mesh_name, vertex_group):
+    # This is done to fix a very weird bug where the mouth stays open sometimes
+    tools.common.set_default_stage()
     mesh = bpy.data.objects[mesh_name]
+    tools.common.unselect_all()
+    tools.common.select(mesh)
+    tools.common.switch('EDIT')
+    tools.common.switch('OBJECT')
+
     bm = bmesh.new()
     bm.from_mesh(mesh.data)
     bm.verts.ensure_lookup_table()
@@ -352,7 +369,14 @@ def repair_shapekeys(mesh_name, vertex_group):
 
 # Repair vrc shape keys with random vertex
 def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
+    # This is done to fix a very weird bug where the mouth stays open sometimes
+    tools.common.set_default_stage()
     mesh = bpy.data.objects[mesh_name]
+    tools.common.unselect_all()
+    tools.common.select(mesh)
+    tools.common.switch('EDIT')
+    tools.common.switch('OBJECT')
+
     bm = bmesh.new()
     bm.from_mesh(mesh.data)
     bm.verts.ensure_lookup_table()
@@ -512,6 +536,10 @@ class StopTestingButton(bpy.types.Operator):
         if eye_left:
             context.scene.eye_rotation_x = 0
             context.scene.eye_rotation_y = 0
+
+        if not context.object or context.object.mode != 'POSE':
+            tools.common.set_default_stage()
+            tools.common.switch('POSE')
 
         for pb in tools.common.get_armature().data.bones:
             pb.hide = False

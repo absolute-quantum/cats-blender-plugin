@@ -72,7 +72,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 6, 0],
+    'version': [0, 6, 1],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -86,51 +86,67 @@ slider_z = 0
 preview_collections = {}
 
 # List all the supporters here
-supporters = OrderedDict()
+supporters = [
 #       'Display name' = ['Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
-supporters['Xeverian'] = ['xeverian', '2017-12-19']
-supporters['Tupper'] = ['tupper', '2017-12-19']
-supporters['Jazneo'] = ['jazneo', '2017-12-19']
-supporters['idea'] = ['idea', '2017-12-19']
-supporters['RadaruS'] = ['radaruS', '2017-12-19']
-supporters['Kry10'] = ['kry10', '2017-12-19']
-supporters['Smead'] = ['smead', '2017-12-25']
-supporters['kohai.istool'] = ['kohai.istool', '2017-12-25']
-supporters['Str4fe'] = ['str4fe', '2017-12-25']
-supporters["Ainrehtea Dal'Nalirtu"] = ["Ainrehtea Dal'Nalirtu", '2017-12-25']
-# supporters['Wintermute'] = ['wintermute', '2017-12-19']
-supporters['Raikin'] = ['raikin', '2017-12-25']
-supporters['BerserkerBoreas'] = ['berserkerboreas', '2017-12-25']
-supporters['ihatemondays'] = ['ihatemondays', '2017-12-25']
-supporters['Derpmare'] = ['derpmare', '2017-12-25']
-supporters['Bin Chicken'] = ['bin_chicken', '2017-12-25']
-supporters['Chikan Celeryman'] = ['chikan_celeryman', '2017-12-25']
-supporters['migero'] = ['migero', '2018-01-05']
-supporters['Ashe'] = ['ashe', '2018-01-05']
-supporters['Quadriple'] = ['quadriple', '2018-01-05']
-supporters['abrownbag'] = ['abrownbag', '2018-01-05']
-supporters['Azuth'] = ['radaruS', '2018-01-05']  # Missing
-supporters['goblox'] = ['goblox', '2018-01-05']
-supporters['Rikku'] = ['Rikku', '2018-01-05']
-supporters['azupwn'] = ['azupwn', '2018-01-05']
-supporters['m o t h'] = ['m o t h', '2018-01-05']
-supporters['Yorx'] = ['Yorx', '2018-01-05']
-supporters['Buffy'] = ['Buffy', '2018-01-05']
-supporters['Tomnautical'] = ['Tomnautical', '2018-01-05']
-supporters['akarinjelly'] = ['Jelly', '2018-01-05']
-supporters['Atirion'] = ['Atirion', '2018-01-05']
-supporters['Lydania'] = ['Lydania', '2018-01-05']
-supporters['Shanie-senpai'] = ['Shanie-senpai', '2018-01-05']
-supporters['Kal [Thramis]'] = ['Kal', '2018-01-11']
-supporters['Sifu'] = ['Sifu', '2018-01-11']
-supporters['Lil Clone'] = ['Lil Clone', '2018-01-11']
-supporters['Naranar'] = ['Naranar', '2018-01-11']
-supporters['gwigz'] = ['gwigz', '2018-01-11']
-supporters['Lux'] = ['Lux', '2018-01-11']
-supporters['liquid (retso)'] = ['liquid', '2018-01-11']
-supporters['GreenTeaGamer'] = ['GreenTeaGamer', '2018-01-12']
-supporters['Desruko'] = ['Desruko', '2018-01-12']
-supporters['Mute_'] = ['Mute_', '2018-01-12']
+    ['Xeverian', 'xeverian', '2017-12-19'],
+    ['Tupper', 'tupper', '2017-12-19'],
+    ['Jazneo', 'jazneo', '2017-12-19'],
+    ['idea', 'idea', '2017-12-19'],
+    ['RadaruS', 'radaruS', '2017-12-19'],
+    ['Kry10', 'kry10', '2017-12-19'],
+    ['Smead', 'smead', '2017-12-25'],
+    ['kohai.istool', 'kohai.istool', '2017-12-25'],
+    ['Str4fe', 'str4fe', '2017-12-25'],
+    ["Ainrehtea Dal'Nalirtu", "Ainrehtea Dal'Nalirtu", '2017-12-25'],
+    # ['Wintermute', 'wintermute', '2017-12-19'],
+    ['Raikin', 'raikin', '2017-12-25'],
+    ['BerserkerBoreas', 'berserkerboreas', '2017-12-25'],
+    ['ihatemondays', 'ihatemondays', '2017-12-25'],
+    ['Derpmare', 'derpmare', '2017-12-25'],
+    ['Bin Chicken', 'bin_chicken', '2017-12-25'],
+    ['Chikan Celeryman', 'chikan_celeryman', '2017-12-25'],
+    ['migero', 'migero', '2018-01-05'],
+    ['Ashe', 'ashe', '2018-01-05'],
+    ['Quadriple', 'quadriple', '2018-01-05'],
+    ['abrownbag', 'abrownbag', '2018-01-05'],
+    ['Azuth', 'radaruS', '2018-01-05'],  # Missing
+    ['goblox', 'goblox', '2018-01-05'],
+    ['Rikku', 'Rikku', '2018-01-05'],
+    ['azupwn', 'azupwn', '2018-01-05'],
+    ['m o t h', 'm o t h', '2018-01-05'],
+    ['Yorx', 'Yorx', '2018-01-05'],
+    ['Buffy', 'Buffy', '2018-01-05'],
+    ['Tomnautical', 'Tomnautical', '2018-01-05'],
+    ['akarinjelly', 'Jelly', '2018-01-05'],
+    ['Atirion', 'Atirion', '2018-01-05'],
+    ['Lydania', 'Lydania', '2018-01-05'],
+    ['Shanie-senpai', 'Shanie-senpai', '2018-01-05'],
+    ['Kal [Thramis],', 'Kal', '2018-01-12'],
+    ['Sifu', 'Sifu', '2018-01-12'],
+    ['Lil Clone', 'Lil Clone', '2018-01-12'],
+    ['Naranar', 'Naranar', '2018-01-12'],
+    ['gwigz', 'gwigz', '2018-01-12'],
+    ['Lux', 'Lux', '2018-01-12'],
+    ['liquid (retso)', 'liquid', '2018-01-12'],
+    ['GreenTeaGamer', 'GreenTeaGamer', '2018-01-12'],
+    ['Desruko', 'Desruko', '2018-01-12'],
+    ['Mute_', 'Mute_', '2018-01-12'],
+    # icewind (don't add)
+    ['qy_li', 'qy_li', '2018-01-22'],  # emtpy pic
+    ['Sixnalia', 'Sixnalia', '2018-01-22'],
+    ['ReOL', 'ReOL', '2018-01-22'],
+    ['Rezinion', 'Rezinion', '2018-01-22'],
+    ['Karma', 'Karma', '2018-01-22'],
+    ['\1B', 'BOXMOB', '2018-01-22'],
+    ['\2O', 'BOXMOB', '2018-01-22'],
+    ['\3X', 'BOXMOB', '2018-01-22'],
+    ['\1M', 'BOXMOB', '2018-01-22'],
+    ['\2O', 'BOXMOB', '2018-01-22'],
+    ['\3B', 'BOXMOB', '2018-01-22'],
+    ['SolarSnowball', 'SolarSnowball', '2018-01-22'],
+    ['Hordaland', 'Hordaland', '2018-01-22'],
+    ['Bones', 'Bones', '2018-01-22'],
+]
 
 current_supporters = None
 
@@ -290,13 +306,13 @@ class ToolPanel:
 
     bpy.types.Scene.eye_left = bpy.props.EnumProperty(
         name='Left Eye',
-        description='The left eye bone',
+        description='The models left eye bone',
         items=tools.common.get_bones_eye_l
     )
 
     bpy.types.Scene.eye_right = bpy.props.EnumProperty(
         name='Right Eye',
-        description='The right eye bone',
+        description='The models right eye bone',
         items=tools.common.get_bones_eye_r
     )
 
@@ -370,7 +386,8 @@ class ToolPanel:
 
     bpy.types.Scene.eye_rotation_y = bpy.props.IntProperty(
         name='Left - Right',
-        description='Rotate the eye bones on the horizontal axis.',
+        description='Rotate the eye bones on the horizontal axis.'
+                    '\nThis is from your own point of view.',
         default=0,
         min=-19,
         max=19,
@@ -390,7 +407,7 @@ class ToolPanel:
     )
 
     bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
-        name='Blink Strenght',
+        name='Blink Strength',
         description='Test the blinking of the eye.',
         default=1.0,
         min=0.0,
@@ -401,7 +418,7 @@ class ToolPanel:
     )
 
     bpy.types.Scene.eye_lowerlid_shape = bpy.props.FloatProperty(
-        name='Lowerlid Strenght',
+        name='Lowerlid Strength',
         description='Test the lowerlid blinking of the eye.',
         default=1.0,
         min=0.0,
@@ -613,6 +630,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.05
             row.operator('armature_manual.stop_pose_mode', icon='POSE_DATA')
+            if not tools.eyetracking.eye_left:
+                row = col.row(align=True)
+                row.scale_y = 1.05
+                row.operator('armature_manual.pose_to_shape', icon='SHAPEKEY_DATA')
 
         # row = col.row(align=True)
         # row.scale_y = 1.1
@@ -921,7 +942,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 0.3
-                row.label("Don't forget to assign 'LeftEye' and 'RightEye' ", icon='ERROR')
+                row.label("Don't forget to assign 'LeftEye' and 'RightEye' ", icon='INFO')
                 row = col.row(align=True)
                 row.label("      to the eyes in Unity!")
                 row = col.row(align=True)
@@ -1053,20 +1074,33 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.label('Do you like this plugin and want to support us?')
+        row = col.row(align=True)
+        row.separator()
+        row = col.row(align=True)
+        row.scale_y = 1.2
+        row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
+        row = col.row(align=True)
+        row.separator()
+        row.separator()
         row = col.row(align=True)
 
         i = 0
         cont = True
-        items = list(current_supporters.items())
+        items = current_supporters
         while cont:
             try:
                 item = items[i]
+                name = item[0]
+                icon = item[1]
                 if i == 0:
                     row.label('Thanks to our awesome supporters! <3')
                     col.separator()
                 if i % 3 == 0:
                     row = col.row(align=True)
-                row.operator('supporter.person', text=item[0], emboss=False, icon_value=preview_collections["custom_icons"][item[1]].icon_id)
+                row.operator('supporter.person', text=name, emboss=False, icon_value=preview_collections["custom_icons"][icon].icon_id)
                 i += 1
             except IndexError:
                 if i % 3 == 0:
@@ -1075,12 +1109,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                 row.label('')
                 i += 1
 
-        row = col.row(align=True)
-        row.separator()
-        row = col.row(align=True)
-        row.label('Do you like this plugin and want to support us?')
-        row = col.row(align=True)
-        row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
 
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
@@ -1193,9 +1221,9 @@ def load_icons():
     pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
 
     # load the supporters icons
-    for key, value in current_supporters.items():
+    for value in current_supporters:
         try:
-            pcoll.load(value, os.path.join(my_icons_dir, 'supporters/' + value + '.png'), 'IMAGE')
+            pcoll.load(value[1], os.path.join(my_icons_dir, 'supporters/' + value[1] + '.png'), 'IMAGE')
         except KeyError:
             pass
 
@@ -1213,12 +1241,84 @@ def set_current_supporters():
     if current_supporters:
         return current_supporters
 
-    current_supporters = OrderedDict()
+    current_supporters = []
+    temp_current_supporters = []
     now = datetime.now()
-    for key, value in supporters.items():
-        print(key + " " + str(tools.common.days_between(now.strftime("%Y-%m-%d"), value[1])))
-        if tools.common.days_between(now.strftime("%Y-%m-%d"), value[1]) <= 60:
-            current_supporters[key] = value[0]
+    count = 0
+    print('    ')
+    for supporter in supporters:
+        # print(key + " " + str(tools.common.days_between(now.strftime("%Y-%m-%d"), value[1])))
+        if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 60:
+            temp_current_supporters.append([supporter[0], supporter[1], count])
+            print([supporter[0], supporter[1], count])
+            count += 1
+    print('    ')
+
+    # Sort supporters
+    for i in range(0, count):
+        value = temp_current_supporters[i]
+        key = value[0]
+        if key.startswith('\1'):
+            if value[2] % 3 == 1:
+                for value2 in temp_current_supporters:
+                    if value2[2] == value[2] - 1:
+                        value2[2] = value[2]
+                        value[2] = value2[2] - 1
+                        print('DEBUG 1', key)
+                        break
+            if value[2] % 3 == 2:
+                for value2 in temp_current_supporters:
+                    if value2[2] == value[2] - 2:
+                        value2[2] = value[2]
+                        value[2] = value2[2] - 2
+                        print('DEBUG 2', key)
+                        break
+        elif key.startswith('\2'):
+            if value[2] % 3 == 0:
+                for value2 in temp_current_supporters:
+                    if value2[2] == value[2] - 2:
+                        value2[2] = value[2]
+                        value[2] = value2[2] - 2
+                        print('DEBUG 3', key)
+                        break
+            if value[2] % 3 == 2:
+                for value2 in temp_current_supporters:
+                    if value2[2] == value[2] - 1:
+                        value2[2] = value[2]
+                        value[2] = value2[2] - 1
+                        print('DEBUG 4', key)
+                        break
+        elif key.startswith('\3'):
+            if value[2] % 3 == 0:
+                for value2 in temp_current_supporters:
+                    if value2[2] == value[2] - 1:
+                        value2[2] = value[2]
+                        value[2] = value2[2] - 1
+                        print('DEBUG 5', key)
+                        break
+            if value[2] % 3 == 1:
+                for value2 in temp_current_supporters:
+                    if value2[2] == value[2] - 2:
+                        value2[2] = value[2]
+                        value[2] = value2[2] - 2
+                        print('DEBUG 6', key)
+                        break
+
+    # Fill in Supporters
+    for i in range(0, count):
+        for value in temp_current_supporters:
+            if value[2] == i:
+                print(value)
+                if value[0].startswith('\1') or value[0].startswith('\2') or value[0].startswith('\3'):
+                    current_supporters.append([value[0][1:], value[1]])
+                else:
+                    current_supporters.append([value[0], value[1]])
+
+
+
+
+
+
 
 
 classesToRegister = [
@@ -1233,6 +1333,7 @@ classesToRegister = [
     tools.armature_manual.MixWeights,
     tools.armature_manual.StartPoseMode,
     tools.armature_manual.StopPoseMode,
+    tools.armature_manual.PoseToShape,
     # tools.armature_manual.Test,
     # tools.armature_manual.Import,
     # tools.armature_manual.SeparateByMaterials,

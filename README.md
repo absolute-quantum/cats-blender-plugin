@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.6.0)
+# Cats Blender Plugin (0.6.1)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -23,11 +23,14 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 *More to come!*
 
+## Requirements
+
+ - Blender 2.79 (run as administrator)
+ - [powroupi/mmd tools](https://github.com/powroupi/blender_mmd_tools) (dev_test branch)
+
 ## Installation
  - Install this Blender plugin if you don't have it already: [mmd_tools](https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip)
-
  - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
-
  - Install the the addon in blender like so:
 
 ![](https://i.imgur.com/eZV1zrs.gif)
@@ -40,11 +43,14 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 [![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
+[![VRChat - Importing an MMD to VRChat Megatutorial!](https://img.youtube.com/vi/7P0ljQ6hU0A/0.jpg)](https://www.youtube.com/watch?v=7P0ljQ6hU0A)
+
 
 ## Code contributors:
  - Hotox
  - Shotariya
  - Neitri
+ - Kiraver
 
 
 ## Model
@@ -242,6 +248,18 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.6.1
+- Added: Model: A lot more models are now compatible (please report non working models to us)
+- Added: Model: Added "Pose to Shape Key" button when in pose mode. This converts the current pose into a shape key
+- Changed: Eye Tracking: Improved error messages
+- Fixed: Eye Tracking: Fixed a bug where the mouth would stay open after creating eye tracking
+- Fixed: Decimation: Fixed a bug where decimation would failed due to division by zero
+- Fixed: Model: Fixed a bug where root bones created by cats got deleted
+- Fixed: Materials: Fixed an error when the texture files don't exist
+- Fixed: Translation: Shape keys created by cats no longer get translated
+- Fixed: Small spelling mistake
+- Fixed: More bugs
+
 #### 0.6.0
 - Added: Model: Added support for DAZ/Poser, Blender Rigify, Sims 2, Motion Builder and 3DS Max models
 - Added: Model: Added support for models with more than 2 spines
@@ -274,20 +292,11 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Translation: Sometimes bones were not fully translated
 - Fixed: Buggy bugs
 
-#### 0.4.1
-- Added: Model: More models are now compatible (if not please report it to us)
-- Added: Translations: Now shows how many objects were translated
-- Added: Model: New notification when mmd_tools is not installed/enabled
-- Fixed: Model: Joining meshes causes models to be decimated weirdly
-- Fixed: Model: Rigidbodies and joints not getting deleted
-- Fixed: Visemes: Shape keys getting wrongly renamed to name + "_old"
-- Fixed: UI: Improved some loading bars
-- Fixed: Other bugs
-
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
 
 ## Roadmap
+ - Full body tracking support
  - MOAR updates on the armature code
  - Texture translation should have an option to rename the filename also
  - Automatic lower lid creation for eye tracking

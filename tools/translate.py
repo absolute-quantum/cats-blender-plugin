@@ -59,13 +59,19 @@ class TranslateShapekeyButton(bpy.types.Operator):
             if hasattr(obj.data, 'shape_keys'):
                 if hasattr(obj.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(obj.data.shape_keys.key_blocks):
-                        to_translate.append(shapekey.name)
+                        if 'vrc.' not in shapekey.name:
+                            to_translate.append(shapekey.name)
 
+        translator = Translator()
         try:
-            translator = Translator()
             translations = translator.translate(to_translate)
-        except:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+        except Exception as ex:
+            if type(ex).__name__ == 'ConnectionError':
+                self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+                return {'FINISHED'}
+            template = "Exception {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            self.report({'ERROR'}, message)
             return {'FINISHED'}
 
         for translation in translations:
@@ -76,8 +82,9 @@ class TranslateShapekeyButton(bpy.types.Operator):
             if hasattr(obj.data, 'shape_keys'):
                 if hasattr(obj.data.shape_keys, 'key_blocks'):
                     for index, shapekey in enumerate(obj.data.shape_keys.key_blocks):
-                        shapekey.name = translated[i]
-                        i += 1
+                        if 'vrc.' not in shapekey.name:
+                            shapekey.name = translated[i]
+                            i += 1
 
         self.report({'INFO'}, 'Translated ' + str(i) + ' shape keys.')
         return {'FINISHED'}
@@ -147,9 +154,14 @@ class TranslateMeshesButton(bpy.types.Operator):
             to_translate.append(obj.name)
 
         try:
-            translations = translator.translate(to_translate, src='ja')
-        except:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+            translations = translator.translate(to_translate)
+        except Exception as ex:
+            if type(ex).__name__ == 'ConnectionError':
+                self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+                return {'FINISHED'}
+            template = "Exception {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            self.report({'ERROR'}, message)
             return {'FINISHED'}
 
         for translation in translations:
@@ -183,8 +195,6 @@ class TranslateMaterialsButton(bpy.types.Operator):
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
 
-        translator = Translator()
-
         for mesh in tools.common.get_meshes_objects():
             to_translate = []
             tools.common.select(mesh)
@@ -194,10 +204,17 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 to_translate.append(matslot.name)
 
         translated = []
+        translator = Translator()
         try:
             translations = translator.translate(to_translate)
-        except:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+        except Exception as ex:
+            if type(ex).__name__ == 'ConnectionError':
+                self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+                return {'FINISHED'}
+
+            template = "Exception {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            self.report({'ERROR'}, message)
             return {'FINISHED'}
 
         for translation in translations:
