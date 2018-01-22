@@ -487,6 +487,7 @@ bone_rename['Eye_\L'] = [
     '\L_Eye',
     'Bip_Eyeball_\L',
     '\L_EYE',
+    'G_Eye_\L',
 ]
 bone_rename['Eye_L'] = [
     'Eyes',

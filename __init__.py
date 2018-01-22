@@ -942,7 +942,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 0.3
-                row.label("Don't forget to assign 'LeftEye' and 'RightEye' ", icon='ERROR')
+                row.label("Don't forget to assign 'LeftEye' and 'RightEye' ", icon='INFO')
                 row = col.row(align=True)
                 row.label("      to the eyes in Unity!")
                 row = col.row(align=True)
