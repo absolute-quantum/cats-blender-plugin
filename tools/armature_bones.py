@@ -282,6 +282,7 @@ bone_rename['Neck'] = [
     'Bip_Neck1',
     'B_C_Neck1',
     'B_C_Neck1',
+    'Head_Neck',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
@@ -350,6 +351,7 @@ bone_rename['\Left elbow'] = [
     'Mixamorig:\LeftForeArm',
     'Arm_\Left_Elbow',
     'Bip_\L_Forearm',
+    'Bip_\L_ForeArm',
     'Bip_LowerArm_\L',
     'B_\L_Arm2',
     'B_\L_Arm2',
@@ -843,6 +845,7 @@ bone_reweight['Eye_\L'] = [
     'DEF_Eye_\L',
     'EyeLight+_\L',
     'EyeRotationErase_\L',
+    'EyeFlip_\L',
 ]
 bone_reweight['Breast_\L'] = [
     'DEF_Bust_01_\L',
