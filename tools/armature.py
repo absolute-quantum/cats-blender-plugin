@@ -126,16 +126,18 @@ class FixArmature(bpy.types.Operator):
         steps += len(temp_list_reweight_bones)  # + len(Bones.bone_list_parenting)
 
         # Get Double Entries
-        list = []
         print('DOUBLE ENTRIES:')
-        for key, value in temp_reweight_bones.items():
+        print('RENAME:')
+        list = []
+        for key, value in temp_rename_bones.items():
             for name in value:
                 if name not in list:
                     list.append(name)
                 else:
                     print(key + " | " + name)
+        print('REWEIGHT:')
         list = []
-        for key, value in temp_rename_bones.items():
+        for key, value in temp_reweight_bones.items():
             for name in value:
                 if name not in list:
                     list.append(name)
@@ -266,20 +268,22 @@ class FixArmature(bpy.types.Operator):
             current_step += 1
             wm.progress_update(current_step)
 
-            name = bone.name.replace(' ', '_')\
+            name_split = bone.name.split('"')
+            if len(name_split) > 3:
+                name = name_split[1]
+            else:
+                name = bone.name
+
+            name = name.replace(' ', '_')\
                 .replace('-', '_')\
                 .replace('.', '_')\
                 .replace('ValveBiped_', '')\
                 .replace('Bip1_', 'Bip_')\
                 .replace('Bip01_', 'Bip_')\
-                .replace('Bip001_', 'Bip_')
-
-            upper_name = ''
-            for i, s in enumerate(name.split(' ')):
-                if i != 0:
-                    upper_name += ' '
-                upper_name += s[:1].upper() + s[1:]
-            name = upper_name
+                .replace('Bip001_', 'Bip_')\
+                .replace('____', '_')\
+                .replace('___', '_')\
+                .replace('__', '_')\
 
             upper_name = ''
             for i, s in enumerate(name.split('_')):

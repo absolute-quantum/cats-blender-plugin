@@ -144,15 +144,17 @@ def get_parent_root_bones(self, context):
                             bone_groups[rootbone.name] = []
                         bone_groups[rootbone.name].append(bone.name)
 
+    bone_groups_tmp = {}
     for rootbone in bone_groups:
         # NOTE: user probably doesn't want to parent bones together that have less then 2 bones
         if len(bone_groups[rootbone]) >= 2:
             choices.append((rootbone, rootbone.replace('_R', '').replace('_L', '') + ' (' + str(len(bone_groups[rootbone])) + ' bones)', rootbone))
+            bone_groups_tmp[rootbone] = bone_groups[rootbone]
 
     bpy.types.Object.Enum = choices
 
     # set cache
-    globs.root_bones = bone_groups
+    globs.root_bones = bone_groups_tmp
     globs.root_bones_choices = choices
 
     return bpy.types.Object.Enum
@@ -165,6 +167,9 @@ class RefreshRootButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        print(globs.root_bones_choices)
+        print('')
+        print(globs.root_bones)
         globs.root_bones_choices = {}
 
         self.report({'INFO'}, 'Root bones refreshed, check the root bones list again.')
