@@ -9,6 +9,10 @@ Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.
 
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
+## Website
+Check our website to report errors, suggestions or make comments!
+https://catsblenderplugin.com
+
 ## Features
  - Optimizing model with one click!
  - Creating lip syncing
