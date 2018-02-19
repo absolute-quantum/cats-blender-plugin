@@ -252,6 +252,10 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 ## Changelog
 
+#### 0.6.2
+- Added: Model: More models are now compatible (please report non working models to us)
+- Fixed: Bone Merging: No longer deletes random bones sometimes
+
 #### 0.6.1
 - Added: Model: A lot more models are now compatible (please report non working models to us)
 - Added: Model: Added "Pose to Shape Key" button when in pose mode. This converts the current pose into a shape key
@@ -279,22 +283,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Material: Fixed an issue where materials were wrongly merged together (Thanks kiraver!)
 - Fixed: Model: Multiple parenting issues
 - Fixed: Bugs from every corner
-
-#### 0.5.0
-- Added: Automatic Decimation! (experimental)
-- Added: Model: A lot more models are now compatible (please report non working models to us)
-- Added: Model: Added support for XNALara models! (.xps, .mesh) (experimental) (please report non working models to us)
-- Added: Translation: Error message when Blender version is too old
-- Added: Model: Changes bone draw type to wire, octahedral and xray (standard mmd_tools draw type)
-- Added: Now enables international fonts and compressed saves on startup
-- Added: Model: Joining meshes now has a loading bar
-- Changed: Eye Tracking: Eye position sliders now update in realtime!
-- Changed: Eye Tracking: Clearer vision of the model by hiding unimportant bones
-- Changed: Model: Clearer error message when bones are missing
-- Changed: Model: Joining meshes now restores the original shape key order
-- Fixed: Eye Tracking: When disabling eye blinking, shape keys were still required
-- Fixed: Translation: Sometimes bones were not fully translated
-- Fixed: Buggy bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

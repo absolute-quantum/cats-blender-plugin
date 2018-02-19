@@ -1248,7 +1248,7 @@ def set_current_supporters():
     print('    ')
     for supporter in supporters:
         # print(key + " " + str(tools.common.days_between(now.strftime("%Y-%m-%d"), value[1])))
-        if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 60:
+        if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 600:
             temp_current_supporters.append([supporter[0], supporter[1], count])
             print([supporter[0], supporter[1], count])
             count += 1
