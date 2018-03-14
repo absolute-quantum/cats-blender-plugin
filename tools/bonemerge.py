@@ -70,11 +70,19 @@ class BoneMergeButton(bpy.types.Operator):
 
         # Start the bone check for every parent
         for bone_name in parent_bones:
+            print('')
+            print('PARENT: ' + bone_name)
             bone = armature.data.bones.get(bone_name)
             if bone is None:
                 continue
 
+            children = []
             for child in bone.children:
+                children.append(child.name)
+
+            for child_name in children:
+                child = armature.data.bones.get(child_name)
+                print('CHILD: ' + child.name)
                 self.check_bone(mesh, child, ratio, ratio)
                 did += 1
                 wm.progress_update(did)
@@ -123,12 +131,13 @@ class BoneMergeButton(bpy.types.Operator):
                 vg2 = mesh.vertex_groups.get(parent_name)
                 if vg is not None and vg2 is not None:
                     # NOTE: Mixes B into A
-                    bpy.ops.object.modifier_add(type='VERTEX_WEIGHT_MIX')
-                    bpy.context.object.modifiers['VertexWeightMix'].vertex_group_a = parent_name
-                    bpy.context.object.modifiers['VertexWeightMix'].vertex_group_b = bone_name
-                    bpy.context.object.modifiers['VertexWeightMix'].mix_mode = 'ADD'
-                    bpy.context.object.modifiers['VertexWeightMix'].mix_set = 'B'
-                    bpy.ops.object.modifier_apply(modifier='VertexWeightMix')
+                    mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
+                    mod.vertex_group_a = parent_name
+                    mod.vertex_group_b = bone_name
+                    mod.mix_mode = 'ADD'
+                    mod.mix_set = 'B'
+                    bpy.ops.object.modifier_move_up(modifier=mod.name)
+                    bpy.ops.object.modifier_apply(modifier=mod.name)
                     mesh.vertex_groups.remove(vg)
 
                 tools.common.set_default_stage()

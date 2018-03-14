@@ -72,7 +72,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 6, 1],
+    'version': [0, 6, 2],
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -80,14 +80,12 @@ bl_info = {
 }
 dev_branch = False
 
-slider_z = 0
-
 # global variable to store icons in
 preview_collections = {}
 
 # List all the supporters here
 supporters = [
-#       'Display name' = ['Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
+#   ['Display name', 'Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
     ['Xeverian', 'xeverian', '2017-12-19'],
     ['Tupper', 'tupper', '2017-12-19'],
     ['Jazneo', 'jazneo', '2017-12-19'],
@@ -109,7 +107,7 @@ supporters = [
     ['Ashe', 'ashe', '2018-01-05'],
     ['Quadriple', 'quadriple', '2018-01-05'],
     ['abrownbag', 'abrownbag', '2018-01-05'],
-    ['Azuth', 'radaruS', '2018-01-05'],  # Missing
+    ['Azuth', 'Azuth', '2018-01-05'],  # Missing
     ['goblox', 'goblox', '2018-01-05'],
     ['Rikku', 'Rikku', '2018-01-05'],
     ['azupwn', 'azupwn', '2018-01-05'],
@@ -146,6 +144,20 @@ supporters = [
     ['SolarSnowball', 'SolarSnowball', '2018-01-22'],
     ['Hordaland', 'Hordaland', '2018-01-22'],
     ['Bones', 'Bones', '2018-01-22'],
+    # Joshua (onodaTV)
+    # charlie (discord) 24th missing
+    # Axo_ (hawaianfuzz)
+    # Jerry (jt1990)
+    ['Dogniss', 'Dogniss', '2018-03-10'], # to be completed
+    # Fabian (fabien-brenig) (ignore)
+    # Vinny (finalf)
+    # Marcus (m.johannson) (ignore)
+    ['Awrini', 'Awrini', '2018-03-10'],
+    ['Smooth', 'Smooth', '2018-03-10'],
+    # FlammaRilva (fls81245) (ignore)
+    ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
+    ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
+    ['Curio', 'Curio', '2018-03-10'],
 ]
 
 current_supporters = None
@@ -1109,6 +1121,15 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                 row.label('')
                 i += 1
 
+        col.separator()
+        row = col.row(align=True)
+        row.scale_y = 1.2
+        row.label('Is your name missing?', icon="INFO")
+        row = col.row(align=True)
+        row.scale_y = 0.3
+        row.label('     Please contact us in our discord!')
+        col.separator()
+
 
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
@@ -1245,14 +1266,11 @@ def set_current_supporters():
     temp_current_supporters = []
     now = datetime.now()
     count = 0
-    print('    ')
     for supporter in supporters:
-        # print(key + " " + str(tools.common.days_between(now.strftime("%Y-%m-%d"), value[1])))
-        if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 60:
+        # if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 6000:
+        if True:
             temp_current_supporters.append([supporter[0], supporter[1], count])
-            print([supporter[0], supporter[1], count])
             count += 1
-    print('    ')
 
     # Sort supporters
     for i in range(0, count):

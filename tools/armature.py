@@ -126,16 +126,18 @@ class FixArmature(bpy.types.Operator):
         steps += len(temp_list_reweight_bones)  # + len(Bones.bone_list_parenting)
 
         # Get Double Entries
-        list = []
         print('DOUBLE ENTRIES:')
-        for key, value in temp_reweight_bones.items():
+        print('RENAME:')
+        list = []
+        for key, value in temp_rename_bones.items():
             for name in value:
                 if name not in list:
                     list.append(name)
                 else:
                     print(key + " | " + name)
+        print('REWEIGHT:')
         list = []
-        for key, value in temp_rename_bones.items():
+        for key, value in temp_reweight_bones.items():
             for name in value:
                 if name not in list:
                     list.append(name)
@@ -266,20 +268,22 @@ class FixArmature(bpy.types.Operator):
             current_step += 1
             wm.progress_update(current_step)
 
-            name = bone.name.replace(' ', '_')\
+            name_split = bone.name.split('"')
+            if len(name_split) > 3:
+                name = name_split[1]
+            else:
+                name = bone.name
+
+            name = name.replace(' ', '_')\
                 .replace('-', '_')\
                 .replace('.', '_')\
                 .replace('ValveBiped_', '')\
                 .replace('Bip1_', 'Bip_')\
                 .replace('Bip01_', 'Bip_')\
-                .replace('Bip001_', 'Bip_')
-
-            upper_name = ''
-            for i, s in enumerate(name.split(' ')):
-                if i != 0:
-                    upper_name += ' '
-                upper_name += s[:1].upper() + s[1:]
-            name = upper_name
+                .replace('Bip001_', 'Bip_')\
+                .replace('____', '_')\
+                .replace('___', '_')\
+                .replace('__', '_')\
 
             upper_name = ''
             for i, s in enumerate(name.split('_')):
@@ -393,31 +397,36 @@ class FixArmature(bpy.types.Operator):
             pass
 
         elif spine_count == 1:  # Create missing Chest
-            if 'Neck' in armature.data.edit_bones:
-                print('BONE CREATION')
-                spine = armature.data.edit_bones.get(spines[0])
-                chest = armature.data.edit_bones.new('Chest')
-                neck = armature.data.edit_bones.get('Neck')
+            print('BONE CREATION')
+            spine = armature.data.edit_bones.get(spines[0])
+            chest = armature.data.edit_bones.new('Chest')
+            neck = armature.data.edit_bones.get('Neck')
 
-                # Correct the names
-                spine.name = 'Spine'
-                chest.name = 'Chest'
+            # Check for neck
+            if neck:
+                chest_top = neck.head
+            else:
+                chest_top = spine.tail
 
-                # Set new Chest bone to new position
-                chest.tail = neck.head
-                chest.head = spine.head
-                chest.head[z_cord] = spine.head[z_cord] + (neck.head[z_cord] - spine.head[z_cord]) / 2
-                chest.head[y_cord] = spine.head[y_cord] + (neck.head[y_cord] - spine.head[y_cord]) / 2
+            # Correct the names
+            spine.name = 'Spine'
+            chest.name = 'Chest'
 
-                # Adjust spine bone position
-                spine.tail = chest.head
+            # Set new Chest bone to new position
+            chest.tail = chest_top
+            chest.head = spine.head
+            chest.head[z_cord] = spine.head[z_cord] + (chest_top[z_cord] - spine.head[z_cord]) / 2
+            chest.head[y_cord] = spine.head[y_cord] + (chest_top[y_cord] - spine.head[y_cord]) / 2
 
-                # Reparent bones to include new chest
-                chest.parent = spine
+            # Adjust spine bone position
+            spine.tail = chest.head
 
-                for bone in armature.data.edit_bones:
-                    if bone.parent == spine:
-                        bone.parent = chest
+            # Reparent bones to include new chest
+            chest.parent = spine
+
+            for bone in armature.data.edit_bones:
+                if bone.parent == spine:
+                    bone.parent = chest
 
         elif spine_count == 2:  # Everything correct, just rename them
             print('NORMAL')
@@ -440,6 +449,16 @@ class FixArmature(bpy.types.Operator):
             for spine in spines[1:spine_count-1]:
                 print(spine)
                 temp_list_reweight_bones[spine] = 'Spine'
+
+        # Fix missing neck
+        if 'Neck' not in armature.data.edit_bones:
+            if 'Chest' in armature.data.edit_bones:
+                if 'Head' in armature.data.edit_bones:
+                    neck = armature.data.edit_bones.new('Neck')
+                    chest = armature.data.edit_bones.get('Chest')
+                    head = armature.data.edit_bones.get('Head')
+                    neck.head = chest.tail
+                    neck.tail = head.head
 
         # Correct arm bone positions for better looking
         if 'Left shoulder' in armature.data.edit_bones:

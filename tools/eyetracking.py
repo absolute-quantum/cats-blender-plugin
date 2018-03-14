@@ -28,6 +28,7 @@ import bpy
 import bmesh
 import math
 from collections import OrderedDict
+from random import random
 
 import tools.common
 import tools.armature
@@ -342,29 +343,39 @@ def repair_shapekeys(mesh_name, vertex_group):
 
     print('DEBUG: Repairing shapes!')
     # Move that vertex by a tiny amount
+    moved = False
     i = 0
     for key in bm.verts.layers.shape.keys():
-        if not key.startswith('vrc'):
+        if not key.startswith('vrc.'):
             continue
         print('DEBUG: Repairing shape: ' + key)
         value = bm.verts.layers.shape.get(key)
-        for vert in bm.verts:
+        for index, vert in enumerate(bm.verts):
             if vert.co.xyz == vcoords:
+                if index < i:
+                    continue
                 shapekey = vert
                 shapekey_coords = mesh.matrix_world * shapekey[value]
-                shapekey_coords[0] -= 0.00005
-                shapekey_coords[1] -= 0.00005
-                shapekey_coords[2] -= 0.00005
+                shapekey_coords[0] -= 0.00007 * randBoolNumber()
+                shapekey_coords[1] -= 0.00007 * randBoolNumber()
+                shapekey_coords[2] -= 0.00007 * randBoolNumber()
                 shapekey[value] = mesh.matrix_world.inverted() * shapekey_coords
                 print('DEBUG: Repaired shape: ' + key)
                 i += 1
+                moved = True
                 break
 
-    bm.to_mesh(mesh.data)  # This glitches out sometimes apparently (look at Nikki Weird Eye Glitch, fixable by clicking fix armature again. I have no idea why)
+    bm.to_mesh(mesh.data)
 
-    if i == 0:
+    if not moved:
         print('Error: Shapekey repairing failed for some reason! Using random shapekey method now.')
         repair_shapekeys_mouth(mesh_name)
+
+
+def randBoolNumber():
+    if random() < 0.5:
+        return -1
+    return 1
 
 
 # Repair vrc shape keys with random vertex
@@ -382,7 +393,7 @@ def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
     bm.verts.ensure_lookup_table()
 
     # Move that vertex by a tiny amount
-    i = 0
+    moved = False
     for key in bm.verts.layers.shape.keys():
         if not key.startswith('vrc'):
             continue
@@ -390,16 +401,17 @@ def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
         for vert in bm.verts:
             shapekey = vert
             shapekey_coords = mesh.matrix_world * shapekey[value]
-            shapekey_coords[0] -= 0.00005
-            shapekey_coords[1] -= 0.00005
-            shapekey_coords[2] -= 0.00005
+            shapekey_coords[0] -= 0.00007
+            shapekey_coords[1] -= 0.00007
+            shapekey_coords[2] -= 0.00007
             shapekey[value] = mesh.matrix_world.inverted() * shapekey_coords
-            i += 1
+            print('TEST')
+            moved = True
             break
 
     bm.to_mesh(mesh.data)
 
-    if i == 0:
+    if not moved:
         print('Error: Random shapekey repairing failed for some reason! Canceling!')
 
 
