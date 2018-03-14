@@ -157,6 +157,7 @@ supporters = [
     # FlammaRilva (fls81245) (ignore)
     ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
     ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
+    ['Curio', 'Curio', '2018-03-10'],
 ]
 
 current_supporters = None
