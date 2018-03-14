@@ -210,15 +210,21 @@ def get_bones(names):
         bpy.types.Object.Enum = choices
         return bpy.types.Object.Enum
 
-    armature = armature.data
-    for bone in armature.bones:
-        choices.append((bone.name, bone.name, bone.name))
+    print("")
+    print("START DEBUG UNICODE")
+    print("")
+    for bone in armature.data.bones:
+        print(bone.name)
+        try:
+            choices.append((bone.name, bone.name, bone.name))
+        except UnicodeDecodeError:
+            print("ERROR", bone.name)
 
     choices.sort(key=lambda x: tuple(x[0].lower()))
 
     choices2 = []
     for name in names:
-        if name in armature.bones and choices[0][0] != name:
+        if name in armature.data.bones and choices[0][0] != name:
             choices2.append((name, name, name))
 
     for choice in choices:

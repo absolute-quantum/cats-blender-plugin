@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.6.1)
+# Cats Blender Plugin (0.6.2)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -58,9 +58,12 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/gw66CMj.png)
+![](https://i.imgur.com/x6h9B5k.png)
 
 This tries to completely fix your model with one click.
+
+##### Import model
+Imports a model with the selected type.
 
 ##### Fix model
 Fixes your model automatically by:
@@ -75,12 +78,6 @@ Fixes your model automatically by:
  - Deleting unused vertex groups
  - Using the correct shading
 
-##### Delete zero weight bones
-Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.
-
-##### Import model
-Imports a model.
-
 ##### Separate by material
 Separatres a mesh by materials
 
@@ -89,6 +86,12 @@ Joins all meshes into one
 
 ##### Mix weights
 Deletes the selected bones and adds their weight to their respective parents.
+
+##### Start Pose Mode
+Lets you test how bones will move.
+
+##### Pose to Shape Key
+Saves your current pose as a new shape key.
 
 
 ## Translation
@@ -100,7 +103,7 @@ Deletes the selected bones and adds their weight to their respective parents.
 
 ## Decimation
 
-![](https://i.imgur.com/DOjZR8G.png)
+![](https://i.imgur.com/vozxKy9.png)
 
 **Decimate your model automatically**
 
@@ -113,6 +116,9 @@ This will only decimate meshes with less than 4 shape keys as those are often no
 ##### Full Decimation
 This will decimate your whole model deleting all shape keys in the process.
 
+##### Custom Decimation
+This will let you choose which meshes and shape keys should not be decimated.
+
 
 ## Eye tracking
 ![](https://i.imgur.com/yw8INDO.png)
@@ -120,32 +126,6 @@ This will decimate your whole model deleting all shape keys in the process.
 
 **Eye tracking is used to artificially track someone when they come close to you**
 It's a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
-
-### Properties
-
-##### Mesh
-The mesh with the eyes vertex groups
-
-##### Head
-Head bone name
-
-##### Left eye
-Eye bone left name
-
-##### Right eye
-Eye bone right name
-
-##### Blink left
-The name of the shape key that controls wink left
-
-##### Blink right
-The name of the shape key that controls wink right
-
-##### Lowerlid left
-The name of the shape key that controls lowerlid left
-
-##### Lowerlid right
-The name of the shape key that controls lowerlid right
 
 ##### Disable Eye Blinking
 Disables eye blinking. Useful if you only want eye movement.
@@ -163,23 +143,6 @@ Configure eye movement speed
 **Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
 The script generates 15 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
 *This is still an experimental feature and will be fine tuned over the course of time*
-
-### Properties
-
-##### Mesh
-The mesh with the mouth shape keys
-
-##### Viseme AA
-Shape key containing mouth movement that looks like someone is saying "aa"
-
-##### Viseme OH
-Shape key containing mouth movement that looks like someone is saying "oh"
-
-##### Viseme CH
-Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth
-
-##### Shape key mix intensity
-Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.
 
 
 ## Bone parenting
@@ -234,9 +197,6 @@ Texture baking and multiple textures per material can look weird in the end resu
 **Lets you reduce overall bone count in a group set of bones**
 This works by checking all bones and trying to figure out if they can be grouped together, which will appear in a list for you to choose from. After satisfied with the selection of this group you can then set a percentage value how much bones you would like to merge together in itself and press 'Merge bones'
 
-##### To merge
-This is a list of bones that look like they could be merged together. Select a group of bones from the list and press "Merge bones"
-
 ##### Refresh list
 This will clear the group bones list cache and rebuild it, useful if bones have changed or your model
 
@@ -254,7 +214,10 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 
 #### 0.6.2
 - Added: Model: More models are now compatible (please report non working models to us)
+- Added: Model: Missing necks are now created automatically
+- Changed: Eye tracking: Improved randomness of vertex movement (could fix some instances where the mouth stays open)
 - Fixed: Bone Merging: No longer deletes random bones sometimes
+- Fixed: Supporter: Names no longer disappear without a reason
 
 #### 0.6.1
 - Added: Model: A lot more models are now compatible (please report non working models to us)
