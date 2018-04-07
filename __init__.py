@@ -30,11 +30,11 @@ import importlib
 import bpy.utils.previews
 from . import addon_updater_ops
 from datetime import datetime
-import mmd_tools_local
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
 
+import mmd_tools_local
 # print("\n", mmd_tools_local.bl_info["version"])
 # if mmd_tools_local.bl_info["version"] == (0, 5, 0):
 #     print("mmd_tools deleting!")
@@ -58,6 +58,7 @@ import tools.credits
 import tools.decimation
 
 
+importlib.reload(mmd_tools_local)
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
