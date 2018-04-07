@@ -1,19 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import logging
-import bpy
-from bpy.types import AddonPreferences
-from bpy.props import StringProperty
-
-from . import properties
-from . import operators
-from . import panels
-
 bl_info= {
     "name": "mmd_tools",
     "author": "sugiany",
     "version": (0, 6, 0),
-    "blender": (2, 71, 0),
+    "blender": (2, 70, 0),
     "location": "View3D > Tool Shelf > MMD Tools Panel",
     "description": "Utility tools for MMD model editing. (powroupi's forked version)",
     "warning": "",
@@ -21,22 +12,24 @@ bl_info= {
     "tracker_url": "https://github.com/powroupi/blender_mmd_tools/issues",
     "category": "Object"}
 
-# if "bpy" in locals():
-#     import imp
-#     if "import_pmx" in locals():
-#         imp.reload(import_pmx)
-#     if "export_pmx" in locals():
-#         imp.reload(export_pmx)
-#     if "import_vmd" in locals():
-#         imp.reload(import_vmd)
-#     if "mmd_camera" in locals():
-#         imp.reload(mmd_camera)
-#     if "utils" in locals():
-#         imp.reload(utils)
-#     if "cycles_converter" in locals():
-#         imp.reload(cycles_converter)
-#     if "auto_scene_setup" in locals():
-#         imp.reload(auto_scene_setup)
+if "bpy" in locals():
+    if bpy.app.version < (2, 71, 0):
+        import imp as importlib
+    else:
+        import importlib
+    importlib.reload(properties)
+    importlib.reload(operators)
+    importlib.reload(panels)
+else:
+    import bpy
+    import logging
+    from bpy.types import AddonPreferences
+    from bpy.props import StringProperty
+
+    from . import properties
+    from . import operators
+    from . import panels
+
 
 logging.basicConfig(format='%(message)s')
 
@@ -93,10 +86,10 @@ def register():
     properties.register()
 
 def unregister():
+    properties.unregister()
     bpy.types.INFO_MT_file_import.remove(menu_func_import)
     bpy.types.INFO_MT_file_export.remove(menu_func_export)
     bpy.types.INFO_MT_armature_add.remove(menu_func_armature)
-    properties.unregister()
     bpy.utils.unregister_module(__name__)
 
 if __name__ == "__main__":

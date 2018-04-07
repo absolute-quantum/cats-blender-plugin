@@ -129,3 +129,4 @@ class MMDTexturePanel(Panel):
         else:
             r = c.row()
             r.prop(mmd_material, 'toon_texture')
+

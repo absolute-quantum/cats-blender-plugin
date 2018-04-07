@@ -16,6 +16,7 @@ from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.vmd.importer import BoneConverter, BoneConverterPoseMode
 from mmd_tools_local import bpyutils
 from mmd_tools_local.utils import saferelpath
+from mmd_tools_local.operators.misc import MoveObject
 
 
 class _Vertex:
@@ -374,7 +375,7 @@ class __PmxExporter:
 
                 pmx_bone.location = __to_pmx_location(p_bone.head)
                 pmx_bone.parent = bone.parent
-                pmx_bone.visible = mmd_bone.is_visible
+                pmx_bone.visible = not bone.hide and any((all(x) for x in zip(bone.layers, arm.data.layers)))
                 pmx_bone.isControllable = mmd_bone.is_controllable
                 pmx_bone.isMovable = not all(p_bone.lock_location)
                 pmx_bone.isRotatable = not all(p_bone.lock_rotation)
@@ -435,8 +436,8 @@ class __PmxExporter:
             self.__model.bones = pmx_bones
         return r
 
-    def __exportIKLinks(self, pose_bone, pmx_bones, bone_map, ik_links, count):
-        if count <= 0:
+    def __exportIKLinks(self, pose_bone, count, bone_map, ik_links):
+        if count <= 0 or pose_bone is None or pose_bone.name not in bone_map:
             return ik_links
 
         logging.debug('    Create IK Link for %s', pose_bone.name)
@@ -484,10 +485,7 @@ class __PmxExporter:
             ik_link.minimumAngle = list(minimum)
             ik_link.maximumAngle = list(maximum)
 
-        if pose_bone.parent is not None:
-            return self.__exportIKLinks(pose_bone.parent, pmx_bones, bone_map, ik_links + [ik_link], count - 1)
-        else:
-            return ik_links + [ik_link]
+        return self.__exportIKLinks(pose_bone.parent, count - 1, bone_map, ik_links + [ik_link])
 
 
     def __exportIK(self, bone_map):
@@ -504,24 +502,44 @@ class __PmxExporter:
             for c in bone.constraints:
                 if c.type == 'IK' and not c.mute:
                     logging.debug('  Found IK constraint.')
-                    ik_pose_bone = pose_bones[c.subtarget]
-                    if ik_pose_bone.mmd_shadow_bone_type == 'IK_TARGET':
-                        ik_bone_index = bone_map[ik_pose_bone.parent.name]
-                        logging.debug('  Found IK proxy bone: %s -> %s', ik_pose_bone.name, ik_pose_bone.parent.name)
-                    else:
-                        ik_bone_index = bone_map[c.subtarget]
-
-                    ik_target_bone = self.__get_ik_target_bone(bone)
-                    pmx_ik_bone = pmx_bones[ik_bone_index]
-                    if ik_target_bone is None:
-                        logging.warning('  - IK bone: %s, IK Target not found !!!', pmx_ik_bone.name)
+                    ik_pose_bone = self.__get_ik_control_bone(c)
+                    if ik_pose_bone is None:
+                        logging.warning('  * Invalid IK constraint "%s" on bone %s', c.name, bone.name)
                         continue
-                    logging.debug('  - IK bone: %s, IK Target: %s', pmx_ik_bone.name, ik_target_bone.name)
+
+                    ik_bone_index = bone_map.get(ik_pose_bone.name, -1)
+                    if ik_bone_index < 0:
+                        logging.warning('  * IK bone "%s" not found !!!', ik_pose_bone.name)
+                        continue
+
+                    pmx_ik_bone = pmx_bones[ik_bone_index]
+                    if pmx_ik_bone.isIK:
+                        logging.warning('  * IK bone "%s" is used by another IK setting !!!', ik_pose_bone.name)
+                        continue
+
+                    ik_chain0 = bone if c.use_tail else bone.parent
+                    ik_target_bone = self.__get_ik_target_bone(bone) if c.use_tail else bone
+                    if ik_target_bone is None:
+                        logging.warning('  * IK bone: %s, IK Target not found !!!', ik_pose_bone.name)
+                        continue
+                    logging.debug('  - IK bone: %s, IK Target: %s', ik_pose_bone.name, ik_target_bone.name)
                     pmx_ik_bone.isIK = True
                     pmx_ik_bone.loopCount = max(int(c.iterations/ik_loop_factor), 1)
                     pmx_ik_bone.rotationConstraint = bone.mmd_bone.ik_rotation_constraint
                     pmx_ik_bone.target = bone_map[ik_target_bone.name]
-                    pmx_ik_bone.ik_links = self.__exportIKLinks(bone, pmx_bones, bone_map, [], c.chain_count)
+                    pmx_ik_bone.ik_links = self.__exportIKLinks(ik_chain0, c.chain_count, bone_map, [])
+
+    def __get_ik_control_bone(self, ik_constraint):
+        arm = ik_constraint.target
+        if arm != ik_constraint.id_data:
+            return None
+        bone = arm.pose.bones.get(ik_constraint.subtarget, None)
+        if bone is None:
+            return None
+        if bone.mmd_shadow_bone_type == 'IK_TARGET':
+            logging.debug('  Found IK proxy bone: %s -> %s', bone.name, getattr(bone.parent, 'name', None))
+            return bone.parent
+        return bone
 
     def __get_ik_target_bone(self, target_bone):
         """ Get mmd ik target bone.
@@ -667,7 +685,8 @@ class __PmxExporter:
             return
         categories = self.CATEGORIES
         pose_bones = self.__armature.pose.bones
-        bone_util_cls = BoneConverterPoseMode if mmd_root.is_built else BoneConverter
+        use_pose_mode = mmd_root.is_built and self.__armature.data.pose_position != 'REST'
+        bone_util_cls = BoneConverterPoseMode if use_pose_mode else BoneConverter
         for morph in mmd_root.bone_morphs:
             bone_morph = pmx.BoneMorph(
                 name=morph.name,
@@ -787,7 +806,7 @@ class __PmxExporter:
                 continue
             p_rigid = pmx.Rigid()
             mmd_rigid = obj.mmd_rigid
-            p_rigid.name = mmd_rigid.name_j
+            p_rigid.name = mmd_rigid.name_j or MoveObject.get_name(obj)
             p_rigid.name_e = mmd_rigid.name_e
             p_rigid.location = mathutils.Vector(t) * self.TO_PMX_MATRIX * self.__scale
             p_rigid.rotation = mathutils.Vector(r) * self.TO_PMX_MATRIX * -1
@@ -836,7 +855,7 @@ class __PmxExporter:
                 continue
             p_joint = pmx.Joint()
             mmd_joint = joint.mmd_joint
-            p_joint.name = mmd_joint.name_j
+            p_joint.name = mmd_joint.name_j or MoveObject.get_name(joint, 'J.')
             p_joint.name_e = mmd_joint.name_e
             p_joint.location = mathutils.Vector(t) * self.TO_PMX_MATRIX * self.__scale
             p_joint.rotation = mathutils.Vector(r) * self.TO_PMX_MATRIX * -1
@@ -1043,6 +1062,9 @@ class __PmxExporter:
             meshObj.active_shape_key_index = i
             mesh = meshObj.to_mesh(bpy.context.scene, True, 'PREVIEW', False)
             mesh.transform(pmx_matrix)
+            if len(mesh.vertices) != len(base_mesh.vertices):
+                logging.warning('   * Error! vertex count mismatch!')
+                continue
             if shape_key_name in {'mmd_sdef_c', 'mmd_sdef_r0', 'mmd_sdef_r1'}:
                 if shape_key_name == 'mmd_sdef_c':
                     for v in mesh.vertices:
@@ -1084,6 +1106,7 @@ class __PmxExporter:
         else:
             uv_data = iter(lambda: _DummyUV, None)
         face_seq = []
+        reversing = not pmx_matrix.is_negative # pmx.load/pmx.save reverse face vertices by default
         for face, uv in zip(base_mesh.tessfaces, uv_data):
             if len(face.vertices) != 3:
                 raise Exception
@@ -1093,7 +1116,7 @@ class __PmxExporter:
             v2 = self.__convertFaceUVToVertexUV(face.vertices[1], uv.uv2, n2, base_vertices)
             v3 = self.__convertFaceUVToVertexUV(face.vertices[2], uv.uv3, n3, base_vertices)
 
-            t = _Face([v1, v2, v3])
+            t = _Face([v3, v2, v1]) if reversing else _Face([v1, v2, v3])
             face_seq.append(t)
             if face.material_index not in materials:
                 materials[face.material_index] = []
@@ -1172,8 +1195,8 @@ class __PmxExporter:
         self.__model.comment_e = 'exported by mmd_tools'
 
         if root is not None:
-            self.__model.name = root.mmd_root.name
-            self.__model.name_e = root.mmd_root.name_e
+            self.__model.name = root.mmd_root.name or root.name
+            self.__model.name_e = root.mmd_root.name_e or root.name
             txt = bpy.data.texts.get(root.mmd_root.comment_text, None)
             if txt:
                 self.__model.comment = txt.as_string().replace('\n', '\r\n')

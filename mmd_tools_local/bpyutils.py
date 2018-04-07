@@ -284,3 +284,70 @@ def makeCapsule(segment=8, ring_count=2, radius=1.0, height=1.0, target_object=N
     bm.free()
     return target_object
 
+
+class ObjectOp:
+
+    def __init__(self, obj):
+        self.__obj = obj
+
+    if bpy.app.version < (2, 75, 0):
+        def shape_key_remove(self, key):
+            obj = self.__obj
+            bpy.context.scene.objects.active = obj
+            obj.active_shape_key_index = key.id_data.key_blocks.find(key.name)
+            bpy.ops.object.shape_key_remove()
+    else:
+        def shape_key_remove(self, key):
+            self.__obj.shape_key_remove(key)
+
+class TransformConstraintOp:
+
+    __MIN_MAX_MAP = {} if bpy.app.version < (2, 71, 0) else {'ROTATION':'_rot', 'SCALE':'_scale'}
+
+    @staticmethod
+    def create(constraints, name, map_type):
+        c = constraints.get(name, None)
+        if c and c.type != 'TRANSFORM':
+            constraints.remove(c)
+            c = None
+        if c is None:
+            c = constraints.new('TRANSFORM')
+            c.name = name
+        c.use_motion_extrapolate = True
+        c.target_space = c.owner_space = 'LOCAL'
+        c.map_from = c.map_to = map_type
+        c.map_to_x_from = 'X'
+        c.map_to_y_from = 'Y'
+        c.map_to_z_from = 'Z'
+        c.influence = 1
+        return c
+
+    @classmethod
+    def min_max_attributes(cls, map_type, name_id=''):
+        key = (map_type, name_id)
+        ret = cls.__MIN_MAX_MAP.get(key, None)
+        if ret is None:
+            defaults = (i+j+k for i in ('from_', 'to_') for j in ('min_', 'max_') for k in 'xyz')
+            extension = cls.__MIN_MAX_MAP.get(map_type, '')
+            ret = cls.__MIN_MAX_MAP[key] = tuple(n+extension for n in defaults if name_id in n)
+        return ret
+
+    @classmethod
+    def update_min_max(cls, constraint, value, influence=1):
+        c = constraint
+        if not c or c.type != 'TRANSFORM':
+            return
+
+        for attr in cls.min_max_attributes(c.map_from, 'from_min'):
+            setattr(c, attr, -value)
+        for attr in cls.min_max_attributes(c.map_from, 'from_max'):
+            setattr(c, attr, value)
+
+        if influence is None:
+            return
+
+        for attr in cls.min_max_attributes(c.map_to, 'to_min'):
+            setattr(c, attr, -value*influence)
+        for attr in cls.min_max_attributes(c.map_to, 'to_max'):
+            setattr(c, attr, value*influence)
+

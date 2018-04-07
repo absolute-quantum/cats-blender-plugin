@@ -13,8 +13,8 @@ class _PanelBase(object):
 class UL_Materials(UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        if self.layout_type in {'DEFAULT'}:
-            if item:
+        if self.layout_type in {'DEFAULT'}:    
+            if item:        
                 row = layout.row(align=True)
                 item_prop = getattr(item, 'mmd_material')
                 row.prop(item_prop, 'name_j', text='', emboss=False, icon='MATERIAL')
@@ -56,7 +56,7 @@ class MMDMaterialSorter(_PanelBase, Panel):
 class UL_ModelMeshes(UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        if self.layout_type in {'DEFAULT'}:
+        if self.layout_type in {'DEFAULT'}:           
             layout.label(text=item.name, translate=False, icon='OBJECT_DATA')
         elif self.layout_type in {'COMPACT'}:
             pass
@@ -119,3 +119,4 @@ class MMDMeshSorter(_PanelBase, Panel):
         tb1.operator('mmd_tools.object_move', text='', icon='TRIA_UP').type = 'UP'
         tb1.operator('mmd_tools.object_move', text='', icon='TRIA_DOWN').type = 'DOWN'
         tb1.operator('mmd_tools.object_move', text='', icon=TRIA_DOWN_BAR).type = 'BOTTOM'
+

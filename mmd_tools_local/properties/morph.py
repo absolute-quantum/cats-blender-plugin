@@ -28,16 +28,14 @@ def _set_name(prop, value):
     if prop_name == value:
         return
 
-    used_names = set(x.name for x in getattr(mmd_root, morph_type))
+    used_names = {x.name for x in getattr(mmd_root, morph_type) if x != prop}
     value = utils.uniqueName(value, used_names)
     if prop_name is not None:
         if morph_type == 'vertex_morphs':
             kb_list = {}
             for mesh in FnModel(prop.id_data).meshes():
-                shape_keys = mesh.data.shape_keys
-                if shape_keys:
-                    for kb in shape_keys.key_blocks:
-                        kb_list.setdefault(kb.name, []).append(kb)
+                for kb in getattr(mesh.data.shape_keys, 'key_blocks', ()):
+                    kb_list.setdefault(kb.name, []).append(kb)
 
             if prop_name in kb_list:
                 value = utils.uniqueName(value, used_names|kb_list.keys())
@@ -50,10 +48,17 @@ def _set_name(prop, value):
                     if d.name == prop_name and d.morph_type == morph_type:
                         d.name = value
 
-        for item in mmd_root.display_item_frames[u'表情'].items:
+        frame_facial = mmd_root.display_item_frames.get(u'表情')
+        for item in getattr(frame_facial, 'items', []):
             if item.name == prop_name and item.morph_type == morph_type:
                 item.name = value
                 break
+
+        obj = FnModel(prop.id_data).morph_slider.placeholder()
+        if obj and value not in obj.data.shape_keys.key_blocks:
+            kb = obj.data.shape_keys.key_blocks.get(prop_name, None)
+            if kb:
+                kb.name = value
 
     prop['name'] = value
 
@@ -402,3 +407,4 @@ class GroupMorph(_MorphBase, PropertyGroup):
 class VertexMorph(_MorphBase, PropertyGroup):
     """Vertex Morph
     """
+

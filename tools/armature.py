@@ -36,12 +36,10 @@ from mmd_tools_local.translations import DictionaryEnum
 
 mmd_tools_installed = False
 try:
-    import mmd_tools
-
+    import mmd_tools_local
     mmd_tools_installed = True
 except:
     pass
-
 
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
@@ -147,7 +145,6 @@ class FixArmature(bpy.types.Operator):
 
         # mmd_tools specific operations
         if mmd_tools_installed:
-
             # Set correct mmd shading
             try:
                 bpy.ops.mmd_tools.set_shadeless_glsl_shading()

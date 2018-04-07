@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.6.2)
+# Cats Blender Plugin (0.6.3)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -192,7 +192,7 @@ Texture baking and multiple textures per material can look weird in the end resu
 
 ## Bone merging
 
-![](https://i.imgur.com/S88JLJd.png)
+![](https://i.imgur.com/FXwOvho.png)
 
 **Lets you reduce overall bone count in a group set of bones**
 This works by checking all bones and trying to figure out if they can be grouped together, which will appear in a list for you to choose from. After satisfied with the selection of this group you can then set a percentage value how much bones you would like to merge together in itself and press 'Merge bones'
@@ -205,12 +205,21 @@ This will start the merge process
 
 
 ## Update Plugin
-There is an auto updater in the plugin so you don't have to keep checking for new version. This is how to check for updates:
+There is an auto updater in the plugin so you don't have to keep checking for new version.
 
-![](https://i.imgur.com/LbO7Xst.gif)
+![](https://i.imgur.com/ltcTRlR.png)
 
 
 ## Changelog
+
+#### 0.6.3
+- Added: mmd_tools is no longer required! Cats now automatically comes with it!
+-- You should uninstall all previous versions of mmd_tools for the best results!
+-- If you want to use your own mmd_tools load it after Cats!
+
+- Changed: Updater: Now longer requires to hover over the buttons in order to update them
+- Changed: Updater: Better error handling
+
 
 #### 0.6.2
 - Added: Model: More models are now compatible (please report non working models to us)
@@ -230,22 +239,6 @@ There is an auto updater in the plugin so you don't have to keep checking for ne
 - Fixed: Translation: Shape keys created by cats no longer get translated
 - Fixed: Small spelling mistake
 - Fixed: More bugs
-
-#### 0.6.0
-- Added: Model: Added support for DAZ/Poser, Blender Rigify, Sims 2, Motion Builder and 3DS Max models
-- Added: Model: Added support for models with more than 2 spines
-- Added: Model: Added conversion of mmd bone morphs into shape keys
-- Added: Model: Added import option for XNALara and FBX
-- Added: Model: Now resets the pivot to the center
-- Added: Model: Added Export button
-- Added: Model: Importing and Exporting now automatically sets the optimal settings
-- Added: Decimation: Added custom decimation tab, allows you to whitelist meshes and shape keys
-- Added: Decimation: Added option to exclude fingers from decimation
-- Added: General: Warning when Blender is outdated
-- Fixed: Atlas: Fixed transparency issue after creating auto atlas
-- Fixed: Material: Fixed an issue where materials were wrongly merged together (Thanks kiraver!)
-- Fixed: Model: Multiple parenting issues
-- Fixed: Bugs from every corner
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

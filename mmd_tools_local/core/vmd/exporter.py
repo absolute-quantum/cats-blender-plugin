@@ -396,3 +396,4 @@ class VMDExporter:
             vmdFile.cameraAnimation = self.__exportCameraAnimation(camera)
             vmdFile.lampAnimation = self.__exportLampAnimation(lamp)
             vmdFile.save(filepath=filepath)
+

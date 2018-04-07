@@ -235,13 +235,13 @@ class RemoveRigidBody(Operator):
         bpy.ops.object.delete(use_global=True)
         if root:
             utils.selectAObject(root)
-        return { 'FINISHED' }
+        return { 'FINISHED' } 
 
-class AddJoint(Operator):
+class AddJoint(Operator): 
     bl_idname = 'mmd_tools.add_joint'
     bl_label = 'Add Joint'
     bl_description = 'Add Joint(s) to selected rigidbody objects'
-    bl_options = {'PRESET'}
+    bl_options = {'PRESET'} 
 
     use_bone_rotation = bpy.props.BoolProperty(
         name='Use Bone Rotation',
@@ -330,7 +330,7 @@ class RemoveJoint(Operator):
     bl_idname = 'mmd_tools.remove_joint'
     bl_label = 'Remove Joint'
     bl_description = 'Deletes the currently selected Joint'
-    bl_options = {'PRESET'}
+    bl_options = {'PRESET'}  
 
     @classmethod
     def poll(cls, context):

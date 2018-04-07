@@ -74,5 +74,6 @@ class ResetShading(Operator):
 
         bpy.context.scene.display_settings.display_device = 'sRGB'
         context.area.spaces[0].viewport_shade='SOLID'
+        context.area.spaces[0].show_backface_culling = True
         bpy.context.scene.game_settings.material_mode = 'MULTITEXTURE'
         return {'FINISHED'}

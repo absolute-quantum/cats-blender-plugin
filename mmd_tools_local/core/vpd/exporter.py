@@ -132,3 +132,4 @@ class VPDExporter:
             self.__exportPoseLib(armature, pose_type, filepath, use_pose_mode)
         else:
             raise Exception('Unknown pose type "%s"', pose_type)
+

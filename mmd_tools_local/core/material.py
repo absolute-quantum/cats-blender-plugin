@@ -273,12 +273,17 @@ class FnMaterial(object):
         mat = self.__material
         mmd_mat = mat.mmd_material
         mat.alpha = mmd_mat.alpha
-        mat.specular_intensity = 0.8*mmd_mat.alpha
+        mat.specular_alpha = mmd_mat.alpha
+        mat.use_transparency = True
+        mat.transparency_method = 'Z_TRANSPARENCY'
+        self.update_self_shadow_map()
 
     def update_specular_color(self):
         mat = self.__material
         mmd_mat = mat.mmd_material
         mat.specular_color = mmd_mat.specular_color
+        mat.specular_shader = 'PHONG'
+        mat.specular_intensity = 0.8
 
     def update_shininess(self):
         mat = self.__material
@@ -297,11 +302,12 @@ class FnMaterial(object):
     def update_self_shadow_map(self):
         mat = self.__material
         mmd_mat = mat.mmd_material
-        mat.use_cast_buffer_shadows = mmd_mat.enabled_self_shadow_map # only buffer shadows
+        cast_shadows = mmd_mat.enabled_self_shadow_map if mat.alpha > 1e-3 else False
+        mat.use_cast_buffer_shadows = cast_shadows # only buffer shadows
         if hasattr(mat, 'use_cast_shadows'):
             # "use_cast_shadows" is not supported in older Blender (< 2.71),
             # so we still use "use_cast_buffer_shadows".
-            mat.use_cast_shadows = mmd_mat.enabled_self_shadow_map
+            mat.use_cast_shadows = cast_shadows
 
     def update_self_shadow(self):
         mat = self.__material
@@ -326,3 +332,4 @@ class FnMaterial(object):
 
     def update_edge_weight(self):
         pass
+

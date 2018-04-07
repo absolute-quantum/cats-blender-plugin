@@ -34,7 +34,6 @@ def setParentToBone(obj, parent, bone_name):
 
 def selectSingleBone(context, armature, bone_name, reset_pose=False):
     import bpy
-    from mathutils import Vector, Quaternion
     try:
         bpy.ops.object.mode_set(mode='OBJECT')
     except:
@@ -88,6 +87,7 @@ def mergeVertexGroup(meshObj, src_vertex_group_name, dest_vertex_group_name):
 
 def separateByMaterials(meshObj):
     import bpy
+    matrix_parent_inverse = meshObj.matrix_parent_inverse.copy()
     prev_parent = meshObj.parent
     dummy_parent = bpy.data.objects.new(name='tmp', object_data=None)
     meshObj.parent = dummy_parent
@@ -102,16 +102,17 @@ def separateByMaterials(meshObj):
 
     for i in dummy_parent.children:
         mesh = i.data
+        materials = mesh.materials
         if len(mesh.polygons) > 0:
-            mat_index = mesh.polygons[0].material_index
-            mat = mesh.materials[mat_index]
-            for k in mesh.materials:
-                mesh.materials.pop(index=0, update_data=True)
-            mesh.materials.append(mat)
-            for po in mesh.polygons:
-                po.material_index = 0
-            i.name = mat.name
-            i.parent = prev_parent
+            if len(materials) > 1:
+                mat_index = mesh.polygons[0].material_index
+                for x in reversed(range(len(materials))):
+                    if x != mat_index:
+                        materials.pop(index=x, update_data=True)
+        i.name = getattr(materials[0], 'name', 'None') if len(materials) else 'None'
+        i.parent = prev_parent
+        i.matrix_parent_inverse = matrix_parent_inverse
+    bpy.data.objects.remove(dummy_parent)
 
 def clearUnusedMeshes():
     import bpy

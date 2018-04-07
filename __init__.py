@@ -24,17 +24,23 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 
-import bpy
 import sys
 import os
 import importlib
 import bpy.utils.previews
 from . import addon_updater_ops
-from collections import OrderedDict
 from datetime import datetime
+import mmd_tools_local
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
+
+# print("\n", mmd_tools_local.bl_info["version"])
+# if mmd_tools_local.bl_info["version"] == (0, 5, 0):
+#     print("mmd_tools deleting!")
+#     bpy.ops.wm.addon_remove(module="mmd_tools")
+#     print("mmd_tools deleted!")
+#     import mmd_tools_local
 
 import tools.viseme
 import tools.atlas
@@ -50,6 +56,7 @@ import tools.common
 import tools.supporter
 import tools.credits
 import tools.decimation
+
 
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -72,13 +79,13 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 6, 2],
+    'version': [0, 6, 2],  # Only change this version right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = False
+dev_branch = True
 
 # global variable to store icons in
 preview_collections = {}
@@ -119,7 +126,7 @@ supporters = [
     ['Atirion', 'Atirion', '2018-01-05'],
     ['Lydania', 'Lydania', '2018-01-05'],
     ['Shanie-senpai', 'Shanie-senpai', '2018-01-05'],
-    ['Kal [Thramis],', 'Kal', '2018-01-12'],
+    ['Kal [Thramis]', 'Kal', '2018-01-12'],
     ['Sifu', 'Sifu', '2018-01-12'],
     ['Lil Clone', 'Lil Clone', '2018-01-12'],
     ['Naranar', 'Naranar', '2018-01-12'],
@@ -599,6 +606,18 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
             col.separator()
+
+        # elif bpy.app.version == (2, 79, "a"):
+        #     col.separator()
+        #     col.separator()
+        #     col.separator()
+        #     col.label('Not supported Blender version detected!', icon='ERROR')
+        #     col.label('Some features might not work!', icon='ERROR')
+        #     col.label('Please use to Blender 2.79!', icon='ERROR')
+        #     col.separator()
+        #     col.separator()
+        #     col.separator()
+        #     col.separator()
 
         row = col.row(align=True)
         row.prop(context.scene, 'import_mode', expand=True)
@@ -1409,6 +1428,17 @@ classesToRegister = [
 
 
 def register():
+    # bpy.utils.unregister_module("mmd_tools")
+
+    print(mmd_tools_local.bl_info["version"])
+    if mmd_tools_local.bl_info["version"] == "0.5.0":
+        print("ALTE VERSION!!!")
+
+    try:
+        mmd_tools_local.register()
+    except AttributeError:
+        pass
+
     set_current_supporters()
     load_icons()
 
@@ -1429,6 +1459,11 @@ def register():
 
 
 def unregister():
+    try:
+        mmd_tools_local.unregister()
+    except AttributeError:
+        pass
+
     for value in classesToRegister:
         bpy.utils.unregister_class(value)
     addon_updater_ops.unregister()
