@@ -24,10 +24,12 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 
-import sys
 import os
+import sys
+import copy
 import importlib
 import bpy.utils.previews
+
 from . import addon_updater_ops
 from datetime import datetime
 
@@ -86,7 +88,9 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
+
 dev_branch = True
+version = copy.deepcopy(bl_info.get('version'))
 
 # global variable to store icons in
 preview_collections = {}
@@ -620,6 +624,13 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         #     col.separator()
         #     col.separator()
 
+        if addon_updater_ops.updater.update_ready:
+            col.separator()
+            col.label('New Cats version available!', icon='INFO')
+            col.label('Check the Updater panel!', icon='INFO')
+            col.separator()
+            col.separator()
+
         row = col.row(align=True)
         row.prop(context.scene, 'import_mode', expand=True)
         row = col.row(align=True)
@@ -673,6 +684,8 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         # row = col.row(align=True)
         # row.scale_y = 1.1
         # row.operator('armature_manual.join_meshes2', icon='MESH_DATA')
+
+        # addon_updater_ops.update_notice_box_ui(self, context)
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -1163,7 +1176,6 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
         row = col.row(align=True)
 
-        version = bl_info.get('version')
         version_str = 'Cats Blender Plugin ('
         if len(version) > 0:
             version_str += str(version[0])
@@ -1207,7 +1219,7 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
     auto_check_update = bpy.props.BoolProperty(
         name='Auto-check for Update',
         description='If enabled, auto-check for updates using an interval',
-        default=True,
+        default=True
     )
     updater_intrval_months = bpy.props.IntProperty(
         name='Months',
@@ -1219,21 +1231,21 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
         name='Days',
         description='Number of days between checking for updates',
         default=1,
-        min=0,
+        min=1
     )
     updater_intrval_hours = bpy.props.IntProperty(
         name='Hours',
         description='Number of hours between checking for updates',
         default=0,
         min=0,
-        max=23
+        max=0
     )
     updater_intrval_minutes = bpy.props.IntProperty(
         name='Minutes',
         description='Number of minutes between checking for updates',
         default=0,
         min=0,
-        max=59
+        max=0
     )
 
     def draw(self, context):
@@ -1430,22 +1442,16 @@ classesToRegister = [
 
 def register():
     # bpy.utils.unregister_module("mmd_tools")
-
-    print(mmd_tools_local.bl_info["version"])
-    if mmd_tools_local.bl_info["version"] == "0.5.0":
-        print("ALTE VERSION!!!")
-
     try:
         mmd_tools_local.register()
     except AttributeError:
         pass
 
-    set_current_supporters()
-    load_icons()
-
-    version = bl_info.get('version')
     if dev_branch and len(version) > 2:
         version[2] += 1
+
+    set_current_supporters()
+    load_icons()
 
     try:
         addon_updater_ops.register(bl_info)

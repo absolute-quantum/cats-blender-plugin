@@ -69,7 +69,7 @@ updater.addon = "cats_blender_plugin"
 # simple popup for prompting checking for update & allow to install if available
 class addon_updater_install_popup(bpy.types.Operator):
     """Check and install update if available"""
-    bl_label = "Update {x} addon".format(x=updater.addon)
+    bl_label = "Update Cats Blender Plugin".format(x=updater.addon)
     bl_idname = updater.addon + ".updater_install_popup"
     bl_description = "Popup menu to check and display current updates available"
     bl_options = {'REGISTER', 'INTERNAL'}

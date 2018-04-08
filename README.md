@@ -1,17 +1,18 @@
-# Cats Blender Plugin (0.6.3)
+# Cats Blender Plugin (0.7.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
 
-Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
+With Cats it takes only a few minutes to upload your model into VRChat.
+All the hours long processes of fixing your models are compressed into a few functions!
 
-Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=master)
+So if you enjoy how this plugin saves you countless hours of work consider supporting us through Patreon:
 
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
-## Website
-Check our website to report errors, suggestions or make comments!
-https://catsblenderplugin.com
+Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=master)
+
+Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
 
 ## Features
  - Optimizing model with one click!
@@ -27,13 +28,12 @@ https://catsblenderplugin.com
 
 *More to come!*
 
-## Requirements
+## Requirement
 
  - Blender 2.79 (run as administrator)
- - [powroupi/mmd tools](https://github.com/powroupi/blender_mmd_tools) (dev_test branch)
+   - mmd_tools is **no longer required**! Cats comes pre-installed with it!
 
 ## Installation
- - Install this Blender plugin if you don't have it already: [mmd_tools](https://github.com/powroupi/blender_mmd_tools/archive/dev_test.zip)
  - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
  - Install the the addon in blender like so:
 
@@ -49,6 +49,9 @@ https://catsblenderplugin.com
 
 [![VRChat - Importing an MMD to VRChat Megatutorial!](https://img.youtube.com/vi/7P0ljQ6hU0A/0.jpg)](https://www.youtube.com/watch?v=7P0ljQ6hU0A)
 
+## Website
+Check our website to report errors, suggestions or make comments!
+https://catsblenderplugin.com
 
 ## Code contributors:
  - Hotox
@@ -205,21 +208,19 @@ This will start the merge process
 
 
 ## Update Plugin
-There is an auto updater in the plugin so you don't have to keep checking for new version.
+There is an auto updater in the plugin so you don't have to keep checking for a new version.
 
 ![](https://i.imgur.com/ltcTRlR.png)
 
 
 ## Changelog
 
-#### 0.6.3
+#### 0.7.0
 - Added: mmd_tools is no longer required! Cats now automatically comes with it!
--- You should uninstall all previous versions of mmd_tools for the best results!
--- If you want to use your own mmd_tools load it after Cats!
-
+  - You should uninstall all previous versions of mmd_tools for the best result!
+  - If you want to use your own mmd_tools load it after Cats!
 - Changed: Updater: Now longer requires to hover over the buttons in order to update them
 - Changed: Updater: Better error handling
-
 
 #### 0.6.2
 - Added: Model: More models are now compatible (please report non working models to us)
