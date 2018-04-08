@@ -1,7 +1,7 @@
 # Cats Blender Plugin (0.7.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
-Compatible models are: MMD, XNALara, Mixamo, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
+Compatible models are: MMD, XNALara, Mixamo, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
 
 With Cats it takes only a few minutes to upload your model into VRChat.
 All the hours long processes of fixing your models are compressed into a few functions!
@@ -219,8 +219,12 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Added: mmd_tools is no longer required! Cats now automatically comes with it!
   - You should uninstall all previous versions of mmd_tools for the best result!
   - If you want to use your own mmd_tools load it after Cats!
+- Added: Model: Unreal Engine models are now supported!
+- Added: Model: More models are now compatible (please report non working models to us)
+- Added: Model: Mixing Weights is now possible in Pose Mode
 - Changed: Updater: Now longer requires to hover over the buttons in order to update them
-- Changed: Updater: Better error handling
+- Changed: Updater: Various improvements
+- Fixed: A bunch of bugs
 
 #### 0.6.2
 - Added: Model: More models are now compatible (please report non working models to us)

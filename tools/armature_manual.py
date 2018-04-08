@@ -365,8 +365,8 @@ class MixWeights(bpy.types.Operator):
         if bpy.context.active_object is None:
             return False
 
-        if bpy.context.selected_editable_bones is None:
-            return False
+        # if bpy.context.selected_editable_bones is None:
+        #     return False
 
         # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
         #     return True

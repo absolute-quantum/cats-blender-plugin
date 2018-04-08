@@ -288,12 +288,19 @@ class FixArmature(bpy.types.Operator):
                     upper_name += '_'
                 upper_name += s[:1].upper() + s[1:]
 
+            if upper_name[-2:] == 'S0':
+                upper_name = upper_name[:-2]
+
             bone.name = upper_name
 
         # Resolve conflicting bone names
         for names in Bones.bone_list_conflicting_names:
             if names[0] in armature.data.edit_bones and names[1] in armature.data.edit_bones:
                 armature.data.edit_bones.get(names[1]).name = names[2]
+
+        # Standardize bone names again (new duplicate bones have ".001" in it)
+        for bone in armature.data.edit_bones:
+            bone.name = bone.name.replace('.', '_')
 
         # Rename all the bones
         spines = []
@@ -456,6 +463,9 @@ class FixArmature(bpy.types.Operator):
                     head = armature.data.edit_bones.get('Head')
                     neck.head = chest.tail
                     neck.tail = head.head
+
+                    if neck.head[2] == neck.tail[2]:
+                        neck.tail[2] += 0.1
 
         # Correct arm bone positions for better looking
         if 'Left shoulder' in armature.data.edit_bones:
