@@ -55,6 +55,9 @@ bone_list_parenting = {
     'Left toe': 'Left ankle',
     'Right toe': 'Right ankle',
 
+    'Left leg 2': 'Left leg',
+    'Right leg 2': 'Right leg',
+
     'Thumb0_L': 'Left wrist',
     'IndexFinger1_L': 'Left wrist',
     'MiddleFinger1_L': 'Left wrist',
@@ -101,6 +104,7 @@ dont_delete_these_bones = {
     'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
     'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist',
     'OldRightEye', 'OldLeftEye', 'LeftEye', 'RightEye', 'Eye_L', 'Eye_R',
+    'Left leg 2', 'Right leg 2',
 
     'Thumb0_L', 'Thumb1_L', 'Thumb2_L',
     'IndexFinger1_L', 'IndexFinger2_L', 'IndexFinger3_L',

@@ -172,6 +172,8 @@ supporters = [
     ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
     ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
     ['Curio', 'Curio', '2018-03-10'],
+    ['Axo_', 'Axo_', '2018-04-10'],
+    ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10'],
 ]
 
 current_supporters = None
@@ -1382,7 +1384,6 @@ classesToRegister = [
     tools.armature_manual.MmdToolsButton,
     tools.armature_manual.XpsToolsButton,
     tools.armature.FixArmature,
-    tools.armature_manual.Separate,
     tools.armature_manual.SeparateByMaterials,
     tools.armature_manual.SeparateByLooseParts,
     tools.armature_manual.JoinMeshes,

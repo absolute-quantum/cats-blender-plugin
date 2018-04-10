@@ -464,8 +464,8 @@ class FixArmature(bpy.types.Operator):
                     neck.head = chest.tail
                     neck.tail = head.head
 
-                    if neck.head[2] == neck.tail[2]:
-                        neck.tail[2] += 0.1
+                    if neck.head[z_cord] == neck.tail[z_cord]:
+                        neck.tail[z_cord] += 0.1
 
         # Correct arm bone positions for better looking
         if 'Left shoulder' in armature.data.edit_bones:
@@ -514,19 +514,17 @@ class FixArmature(bpy.types.Operator):
                         knee.tail = ankle.head
 
         # Hips bone should be fixed as per specification from the SDK code
+        full_body_tracking = True
         if not mixamo:
             if 'Hips' in armature.data.edit_bones:
                 if 'Left leg' in armature.data.edit_bones:
                     if 'Right leg' in armature.data.edit_bones:
                         hips = armature.data.edit_bones.get('Hips')
+                        spine = armature.data.edit_bones.get('Spine')
                         left_leg = armature.data.edit_bones.get('Left leg')
                         right_leg = armature.data.edit_bones.get('Right leg')
-                        spine = armature.data.edit_bones.get('Spine')
-                        chest = armature.data.edit_bones.get('Chest')
-                        neck = armature.data.edit_bones.get('Neck')
-                        head = armature.data.edit_bones.get('Head')
-
-                        full_body_tracking = False
+                        left_knee = armature.data.edit_bones.get('Left knee')
+                        right_knee = armature.data.edit_bones.get('Right knee')
 
                         # Fixing the hips
                         if not full_body_tracking:
@@ -549,13 +547,57 @@ class FixArmature(bpy.types.Operator):
                             if hips.tail[z_cord] < hips.head[z_cord]:
                                 hips.tail[z_cord] = hips.tail[z_cord] + 0.1
 
-                        elif spine and chest and neck and head:
-                            bones = [hips, spine, chest, neck, head]
-                            for bone in bones:
-                                bone_length = abs(bone.tail[z_cord] - bone.head[z_cord])
-                                bone.tail[x_cord] = bone.head[x_cord]
-                                bone.tail[y_cord] = bone.head[y_cord]
-                                bone.tail[z_cord] = bone.head[z_cord] + bone_length
+                        # elif spine and chest and neck and head:
+                        #     bones = [hips, spine, chest, neck, head]
+                        #     for bone in bones:
+                        #         bone_length = abs(bone.tail[z_cord] - bone.head[z_cord])
+                        #         bone.tail[x_cord] = bone.head[x_cord]
+                        #         bone.tail[y_cord] = bone.head[y_cord]
+                        #         bone.tail[z_cord] = bone.head[z_cord] + bone_length
+
+                        else:
+                            hips.head[x_cord] = 0
+                            hips.tail[x_cord] = 0
+
+                            # hips.head[y_cord] = right_leg.head[y_cord]
+                            # hips.tail[y_cord] = right_leg.head[y_cord]
+                            #
+                            hips.head[z_cord] = spine.head[z_cord]
+                            hips.tail[z_cord] = right_leg.head[z_cord]
+                            
+                            left_leg_top = armature.data.edit_bones.new('Left leg top')
+                            right_leg_top = armature.data.edit_bones.new('Right leg top')
+
+                            left_leg_top.head = left_leg.head
+                            left_leg_top.tail = left_leg.head
+                            left_leg_top.tail[z_cord] = left_leg.head[z_cord] + 0.1
+
+                            right_leg_top.head = right_leg.head
+                            right_leg_top.tail = right_leg.head
+                            right_leg_top.tail[z_cord] = right_leg.head[z_cord] + 0.1
+
+                            spine.head = hips.head
+
+                            left_leg.name = "Left leg 2"
+                            right_leg.name = "Right leg 2"
+
+                            left_leg_top.name = "Left leg"
+                            right_leg_top.name = "Right leg"
+
+                            left_leg_top.parent = hips
+                            right_leg_top.parent = hips
+
+                            left_leg.parent = left_leg_top
+                            right_leg.parent = right_leg_top
+
+                            left_knee.parent = left_leg_top
+                            right_knee.parent = right_leg_top
+
+
+
+
+
+
 
                         # # Fixing legs
                         # right_knee = armature.data.edit_bones.get('Right knee')
@@ -578,6 +620,7 @@ class FixArmature(bpy.types.Operator):
                         left_leg.roll = 0
                         right_leg.roll = 0
                         hips.roll = 0
+
 
         # Mixing the weights
         tools.common.unselect_all()
