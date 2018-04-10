@@ -195,7 +195,12 @@ class TranslateMaterialsButton(bpy.types.Operator):
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
 
-        for mesh in tools.common.get_meshes_objects():
+        meshes = []
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                meshes.append(ob)
+
+        for mesh in meshes:
             to_translate = []
             tools.common.select(mesh)
             mesh.active_material_index = 0
@@ -254,7 +259,12 @@ class TranslateTexturesButton(bpy.types.Operator):
 
         translator = Translator()
 
-        for mesh in tools.common.get_meshes_objects():
+        meshes = []
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                meshes.append(ob)
+
+        for mesh in meshes:
             to_translate = []
             tools.common.select(mesh)
 

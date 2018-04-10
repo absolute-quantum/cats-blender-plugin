@@ -59,6 +59,7 @@ import tools.supporter
 import tools.credits
 import tools.decimation
 import tools.shapekey
+import tools.copy_protection
 
 
 importlib.reload(mmd_tools_local)
@@ -77,6 +78,7 @@ importlib.reload(tools.supporter)
 importlib.reload(tools.credits)
 importlib.reload(tools.decimation)
 importlib.reload(tools.shapekey)
+importlib.reload(tools.copy_protection)
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -99,7 +101,7 @@ preview_collections = {}
 
 # List all the supporters here
 supporters = [
-#   ['Display name', 'Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
+    # ['Display name', 'Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
     ['Xeverian', 'xeverian', '2017-12-19'],
     ['Tupper', 'tupper', '2017-12-19'],
     ['Jazneo', 'jazneo', '2017-12-19'],
@@ -162,7 +164,7 @@ supporters = [
     # charlie (discord) 24th missing
     # Axo_ (hawaianfuzz)
     # Jerry (jt1990)
-    ['Dogniss', 'Dogniss', '2018-03-10'], # to be completed
+    ['Dogniss', 'Dogniss', '2018-03-10'],  # to be completed
     # Fabian (fabien-brenig) (ignore)
     # Vinny (finalf)
     # Marcus (m.johannson) (ignore)
@@ -644,7 +646,6 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         if tools.common.get_armature():
             row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
 
-
         # row = col.row(align=True)
         # row.scale_y = 0.9
         # row.label('(PMXEditor is outdated, do not use it!)', icon='ERROR')
@@ -809,7 +810,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                     op.mesh_name = mesh
 
             col = box.column(align=True)
-
 
             if len(tools.decimation.ignore_shapes) == 0 and len(tools.decimation.ignore_meshes) == 0:
                 col.label('Both lists are empty, this equals Full Decimation!', icon='ERROR')
@@ -1102,7 +1102,27 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row = box.row(align=True)
             col.separator()
             row.operator('refresh.root', icon='FILE_REFRESH')
-            row.operator('bone.merge', icon="AUTOMERGE_ON")
+            row.operator('bone.merge', icon='AUTOMERGE_ON')
+
+
+class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_copyprotection_v1'
+    bl_label = 'Copy Protection'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
+        row = col.row(align=True)
+        try:
+            bpy.data.shape_keys['Key'].key_blocks['BasisObfuscated']
+        except Exception as e:
+            row.operator('copyprotection.enable', icon='KEY_HLT')
+        else:
+            row.operator('copyprotection.disable', icon='KEY_DEHLT')
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
@@ -1168,7 +1188,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 0.3
         row.label('     Please contact us in our discord!')
         col.separator()
-
 
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
@@ -1302,7 +1321,7 @@ def set_current_supporters():
 
     current_supporters = []
     temp_current_supporters = []
-    now = datetime.now()
+    # now = datetime.now()
     count = 0
     for supporter in supporters:
         # if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 6000:
@@ -1371,12 +1390,6 @@ def set_current_supporters():
                     current_supporters.append([value[0], value[1]])
 
 
-
-
-
-
-
-
 classesToRegister = [
     ArmaturePanel,
     tools.armature_manual.ImportModel,
@@ -1433,6 +1446,10 @@ classesToRegister = [
     tools.material.CombineMaterialsButton,
     tools.material.OneTexPerMatButton,
     tools.bonemerge.BoneMergeButton,
+
+    CopyProtectionPanel,
+    tools.copy_protection.CopyProtectionEnable,
+    tools.copy_protection.CopyProtectionDisable,
 
     UpdaterPanel,
     UpdaterPreferences,

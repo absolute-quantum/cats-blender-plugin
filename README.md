@@ -24,6 +24,7 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
  - Merging bone groups to reduce overall bone count
+ - Copy protection to secure you avatars from game cache stealing
  - Auto updater
 
 *More to come!*
@@ -223,6 +224,8 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Added: Model: More models are now compatible (please report non working models to us)
 - Added: Model: New "Separate by Loose Parts" button
 - Added: Model: Mixing Weights is now possible in Pose Mode
+- Added: Model: Full Body Tracking support for fix model
+- Added: Copy Protection: Secures your avatar against game cache ripping
 - Changed: Updater: No longer requires to hover over the buttons in order to update them
 - Changed: Updater: Various improvements
 - Fixed: A bunch of bugs
