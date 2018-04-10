@@ -210,11 +210,11 @@ def get_bones(names):
         bpy.types.Object.Enum = choices
         return bpy.types.Object.Enum
 
-    print("")
-    print("START DEBUG UNICODE")
-    print("")
+    # print("")
+    # print("START DEBUG UNICODE")
+    # print("")
     for bone in armature.data.bones:
-        print(bone.name)
+        # print(bone.name)
         try:
             choices.append((bone.name, bone.name, bone.name))
         except UnicodeDecodeError:
@@ -414,6 +414,50 @@ def separate_by_materials(context, mesh):
             for kb in ob.data.shape_keys.key_blocks:
                 if can_remove(kb):
                     ob.shape_key_remove(kb)
+
+    utils.clearUnusedMeshes()
+
+
+def separate_by_loose_parts(context, mesh):
+    set_default_stage()
+
+    # Remove Rigidbodies and joints
+    for obj in bpy.data.objects:
+        if 'rigidbodies' in obj.name or 'joints' in obj.name:
+            tools.common.delete_hierarchy(obj)
+
+    select(mesh)
+    ShapekeyOrder.save(mesh.name)
+
+    for mod in mesh.modifiers:
+        if mod.type == 'DECIMATE':
+            mesh.modifiers.remove(mod)
+        else:
+            mod.show_expanded = False
+
+    bpy.ops.mesh.separate(type='LOOSE')
+
+    for ob in context.selected_objects:
+        if ob.type == 'MESH':
+            if ob.data.shape_keys:
+                for kb in ob.data.shape_keys.key_blocks:
+                    if can_remove(kb):
+                        ob.shape_key_remove(kb)
+
+            mesh = ob.data
+            materials = mesh.materials
+            if len(mesh.polygons) > 0:
+                if len(materials) > 1:
+                    mat_index = mesh.polygons[0].material_index
+                    for x in reversed(range(len(materials))):
+                        if x != mat_index:
+                            materials.pop(index=x, update_data=True)
+            ob.name = getattr(materials[0], 'name', 'None') if len(materials) else 'None'
+
+            if '. 001' in ob.name:
+                ob.name = ob.name.replace('. 001', '')
+            if '.000' in ob.name:
+                ob.name = ob.name.replace('.000', '')
 
     utils.clearUnusedMeshes()
 

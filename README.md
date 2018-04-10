@@ -28,6 +28,10 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
 
 *More to come!*
 
+## Website
+Check our website to report errors, suggestions or make comments!
+https://catsblenderplugin.com
+
 ## Requirement
 
  - Blender 2.79 (run as administrator)
@@ -49,10 +53,6 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
 
 [![VRChat - Importing an MMD to VRChat Megatutorial!](https://img.youtube.com/vi/7P0ljQ6hU0A/0.jpg)](https://www.youtube.com/watch?v=7P0ljQ6hU0A)
 
-## Website
-Check our website to report errors, suggestions or make comments!
-https://catsblenderplugin.com
-
 ## Code contributors:
  - Hotox
  - Shotariya
@@ -61,7 +61,7 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/x6h9B5k.png)
+![](https://i.imgur.com/d1yhtHp.png)
 
 This tries to completely fix your model with one click.
 
@@ -81,8 +81,8 @@ Fixes your model automatically by:
  - Deleting unused vertex groups
  - Using the correct shading
 
-##### Separate by material
-Separatres a mesh by materials
+##### Separate by material / loose parts
+Separates a mesh by materials or loose parts
 
 ##### Join meshes
 Joins all meshes into one
@@ -221,8 +221,9 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
   - If you want to use your own mmd_tools load it after Cats!
 - Added: Model: Unreal Engine models are now supported!
 - Added: Model: More models are now compatible (please report non working models to us)
+- Added: Model: New "Separate by Loose Parts" button
 - Added: Model: Mixing Weights is now possible in Pose Mode
-- Changed: Updater: Now longer requires to hover over the buttons in order to update them
+- Changed: Updater: No longer requires to hover over the buttons in order to update them
 - Changed: Updater: Various improvements
 - Fixed: A bunch of bugs
 
@@ -259,3 +260,9 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
 ## Feedback
 Do you love this plugin or have you found a bug?
 Post a response in this thread or send your feedback to the official discord server of the plugin for real-time communication: https://discord.gg/f8yZGnv and look for people with the developer role ;)
+
+
+## Support us
+If you enjoy how this plugin saves you countless hours of work consider supporting us through Patreon:
+
+[![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)

@@ -58,6 +58,7 @@ import tools.common
 import tools.supporter
 import tools.credits
 import tools.decimation
+import tools.shapekey
 
 
 importlib.reload(mmd_tools_local)
@@ -75,6 +76,7 @@ importlib.reload(tools.common)
 importlib.reload(tools.supporter)
 importlib.reload(tools.credits)
 importlib.reload(tools.decimation)
+importlib.reload(tools.shapekey)
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -656,7 +658,9 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         col.label('Manual Model Fixing:')
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
+        row.label("Separate by: ", icon='MESH_DATA')
+        row.operator('armature_manual.separate_by_materials')
+        row.operator('armature_manual.separate_by_loose_parts')
         row = col.row(align=True)
         row.scale_y = 1.05
         row.operator('armature_manual.join_meshes', icon='MESH_DATA')
@@ -745,7 +749,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 row.label('Start by Separating by Materials:')
                 row = col.row(align=True)
                 row.scale_y = 1.2
-                row.operator('armature_manual.separate_by_materials', icon='PLAY')
+                row.operator('armature_manual.separate_by_materials', text='Separate by Materials', icon='PLAY')
                 return
             else:
                 row = col.row(align=True)
@@ -1378,7 +1382,9 @@ classesToRegister = [
     tools.armature_manual.MmdToolsButton,
     tools.armature_manual.XpsToolsButton,
     tools.armature.FixArmature,
+    tools.armature_manual.Separate,
     tools.armature_manual.SeparateByMaterials,
+    tools.armature_manual.SeparateByLooseParts,
     tools.armature_manual.JoinMeshes,
     tools.armature_manual.MixWeights,
     tools.armature_manual.StartPoseMode,
@@ -1437,6 +1443,8 @@ classesToRegister = [
     CreditsPanel,
     tools.credits.DiscordButton,
     tools.credits.ForumButton,
+
+    tools.shapekey.ShapeKeyApplier,
 ]
 
 
@@ -1464,6 +1472,8 @@ def register():
     bpy.context.user_preferences.system.use_international_fonts = True
     bpy.context.user_preferences.filepaths.use_file_compression = True
 
+    # bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+
 
 def unregister():
     try:
@@ -1475,6 +1485,8 @@ def unregister():
         bpy.utils.unregister_class(value)
     addon_updater_ops.unregister()
     unload_icons()
+
+    # bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
 
 
 if __name__ == '__main__':
