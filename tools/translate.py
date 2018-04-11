@@ -196,12 +196,13 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 tools.common.delete_hierarchy(obj)
 
         to_translate = []
-        for mesh in tools.common.get_meshes_objects():
-            tools.common.select(mesh)
-            mesh.active_material_index = 0
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                tools.common.select(ob)
+                ob.active_material_index = 0
 
-            for matslot in mesh.material_slots:
-                to_translate.append(matslot.name)
+                for matslot in ob.material_slots:
+                    to_translate.append(matslot.name)
 
         translated = []
         translator = Translator()
@@ -221,11 +222,12 @@ class TranslateMaterialsButton(bpy.types.Operator):
             translated.append(translation.text)
 
         i = 0
-        for mesh in tools.common.get_meshes_objects():
-            for index, matslot in enumerate(mesh.material_slots):
-                mesh.active_material_index = index
-                bpy.context.object.active_material.name = translated[i]
-                i += 1
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                for index, matslot in enumerate(ob.material_slots):
+                    ob.active_material_index = index
+                    bpy.context.object.active_material.name = translated[i]
+                    i += 1
 
         tools.common.unselect_all()
 
@@ -256,14 +258,13 @@ class TranslateTexturesButton(bpy.types.Operator):
         translator = Translator()
 
         to_translate = []
-        for mesh in tools.common.get_meshes_objects():
-            tools.common.select(mesh)
-
-            for matslot in mesh.material_slots:
-                for texslot in bpy.data.materials[matslot.name].texture_slots:
-                    if texslot is not None:
-                        print(texslot.name)
-                        to_translate.append(texslot.name)
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                for matslot in ob.material_slots:
+                    for texslot in bpy.data.materials[matslot.name].texture_slots:
+                        if texslot is not None:
+                            print(texslot.name)
+                            to_translate.append(texslot.name)
 
         translated = []
         try:
@@ -276,12 +277,13 @@ class TranslateTexturesButton(bpy.types.Operator):
             translated.append(translation.text)
 
         i = 0
-        for mesh in tools.common.get_meshes_objects():
-            for matslot in mesh.material_slots:
-                for texslot in bpy.data.materials[matslot.name].texture_slots:
-                    if texslot is not None:
-                        bpy.data.textures[texslot.name].name = translated[i]
-                        i += 1
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                for matslot in ob.material_slots:
+                    for texslot in bpy.data.materials[matslot.name].texture_slots:
+                        if texslot is not None:
+                            bpy.data.textures[texslot.name].name = translated[i]
+                            i += 1
 
         tools.common.unselect_all()
 

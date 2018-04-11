@@ -162,11 +162,11 @@ supporters = [
     ['Bones', 'Bones', '2018-01-22'],
     # Joshua (onodaTV)
     # charlie (discord) 24th missing
-    # Axo_ (hawaianfuzz)
+    ['Axo_', 'Axo_', '2018-04-10'],
     # Jerry (jt1990)
-    ['Dogniss', 'Dogniss', '2018-03-10'],  # to be completed
+    ['Dogniss', 'Dogniss', '2018-03-10'],
     # Fabian (fabien-brenig) (ignore)
-    # Vinny (finalf)
+    ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10'],
     # Marcus (m.johannson) (ignore)
     ['Awrini', 'Awrini', '2018-03-10'],
     ['Smooth', 'Smooth', '2018-03-10'],
@@ -174,8 +174,6 @@ supporters = [
     ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
     ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
     ['Curio', 'Curio', '2018-03-10'],
-    ['Axo_', 'Axo_', '2018-04-10'],
-    ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10'],
 ]
 
 current_supporters = None
@@ -199,6 +197,13 @@ class ToolPanel:
         ],
         default='MMD'
     )
+
+    bpy.types.Scene.armature = bpy.props.EnumProperty(
+        name='Armature',
+        description='Select the armature which will be used by cats.',
+        items=tools.common.get_armature_list
+    )
+
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove Zero Weight Bones',
         description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.\n"
@@ -646,11 +651,15 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         if tools.common.get_armature():
             row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
 
-        # row = col.row(align=True)
-        # row.scale_y = 0.9
-        # row.label('(PMXEditor is outdated, do not use it!)', icon='ERROR')
-        col.separator()
+        if len(tools.common.get_armature_objects()) > 1:
+            col.separator()
+            col.separator()
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'armature', icon='ARMATURE_DATA')
 
+        col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
         row = col.row(align=True)
@@ -1117,12 +1126,22 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
-        try:
-            bpy.data.shape_keys['Key'].key_blocks['BasisObfuscated']
-        except Exception as e:
-            row.operator('copyprotection.enable', icon='KEY_HLT')
-        else:
+        row.scale_y = 0.8
+        row.label('Prevents your avatar from being ripped by others.')
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.label('Only use this if you know what you are doing!')
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.label('This should be the last thing before exporting!')
+        col.separator()
+        row = col.row(align=True)
+
+        meshes = tools.common.get_meshes_objects()
+        if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
+        else:
+            row.operator('copyprotection.enable', icon='KEY_HLT')
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
@@ -1490,7 +1509,7 @@ def register():
     bpy.context.user_preferences.system.use_international_fonts = True
     bpy.context.user_preferences.filepaths.use_file_compression = True
 
-    # bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+    bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
 
 
 def unregister():
@@ -1504,7 +1523,7 @@ def unregister():
     addon_updater_ops.unregister()
     unload_icons()
 
-    # bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
+    bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
 
 
 if __name__ == '__main__':

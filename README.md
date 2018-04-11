@@ -218,14 +218,19 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 
 #### 0.7.0
 - Added: mmd_tools is no longer required! Cats now automatically comes with it!
-  - You should uninstall all previous versions of mmd_tools for the best result!
-  - If you want to use your own mmd_tools load it after Cats!
-- Added: Model: Unreal Engine models are now supported!
-- Added: Model: More models are now compatible (please report non working models to us)
+  - You should uninstall all previous versions of mmd_tools for the best result
+  - If you want to use your own mmd_tools load it after Cats
+- Added: Full Body Tracking support for "Fix Model"!
+  - This also partially fixes leg bending for desktop users
+- Added: Multiple armature support!
+  - Armature selection appears when 2 or more armatures are detected
+- Added: Copy Protection: Secures your avatar against game cache ripping!
 - Added: Model: New "Separate by Loose Parts" button
+- Added: Model: Unreal Engine models are now supported!
 - Added: Model: Mixing Weights is now possible in Pose Mode
-- Added: Model: Full Body Tracking support for fix model
-- Added: Copy Protection: Secures your avatar against game cache ripping
+- Added: Model: More models are now compatible (please report non working models to us)
+- Added: Shapekeys: Added "Shapekey to Basis" button to shapekey menu
+- Changed: Translation: Translating materials now translates all materials (including materials outside of armatures)
 - Changed: Updater: No longer requires to hover over the buttons in order to update them
 - Changed: Updater: Various improvements
 - Fixed: A bunch of bugs

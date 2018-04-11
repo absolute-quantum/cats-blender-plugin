@@ -202,10 +202,11 @@ class CreateEyesButton(bpy.types.Operator):
         context.scene.lowerlid_right = shapes[3]
 
         # Remove empty objects
+        tools.common.set_default_stage()  # Fixes an error apparently
         tools.common.remove_empty()
 
         # Fix armature name
-        tools.common.fix_armature_name()
+        tools.common.fix_armature_names()
 
         # Check for correct bone hierarchy
         is_correct = tools.armature.check_hierarchy(True, [['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
@@ -474,7 +475,7 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
 
     new_eye.tail[x_cord] = new_eye.head[x_cord]
     new_eye.tail[y_cord] = new_eye.head[y_cord]
-    new_eye.tail[z_cord] = new_eye.head[z_cord] + 0.2
+    new_eye.tail[z_cord] = new_eye.head[z_cord] + 0.1
 
 
 eye_left = None

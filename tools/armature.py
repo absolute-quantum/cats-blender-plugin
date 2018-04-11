@@ -32,6 +32,7 @@ import copy
 import tools.common
 import tools.translate
 import tools.armature_bones as Bones
+from googletrans import Translator
 from mmd_tools_local.translations import DictionaryEnum
 
 mmd_tools_installed = False
@@ -66,12 +67,11 @@ class FixArmature(bpy.types.Operator):
     def poll(cls, context):
         if tools.common.get_armature() is None:
             return False
-        i = 0
-        for ob in bpy.data.objects:
-            if ob.type == 'MESH':
-                if ob.parent is not None and ob.parent.type == 'ARMATURE':
-                    i += 1
-        return i > 0
+
+        if len(tools.common.get_armature_objects()) == 0:
+            return False
+
+        return True
 
     def execute(self, context):
         wm = bpy.context.window_manager
@@ -211,19 +211,8 @@ class FixArmature(bpy.types.Operator):
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
 
-        # Remove empty objects
+        # Remove empty mmd object
         tools.common.remove_empty()
-
-        # Remove Bone Groups
-        for group in armature.pose.bone_groups:
-            armature.pose.bone_groups.remove(group)
-
-        # Model should be in rest position
-        armature.data.pose_position = 'REST'
-
-        # Armature should be named correctly
-        armature.name = 'Armature'
-        armature.data.name = 'Armature'
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes(context)
@@ -246,6 +235,13 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.select(armature)
         tools.common.switch('EDIT')
+
+        # Remove Bone Groups
+        for group in armature.pose.bone_groups:
+            armature.pose.bone_groups.remove(group)
+
+        # Model should be in rest position
+        armature.data.pose_position = 'REST'
 
         # Count steps for loading bar again
         steps += len(armature.data.edit_bones)
@@ -559,9 +555,8 @@ class FixArmature(bpy.types.Operator):
                             hips.head[x_cord] = 0
                             hips.tail[x_cord] = 0
 
-                            # hips.head[y_cord] = right_leg.head[y_cord]
-                            # hips.tail[y_cord] = right_leg.head[y_cord]
-                            #
+                            hips.tail[y_cord] = hips.head[y_cord]
+
                             hips.head[z_cord] = spine.head[z_cord]
                             hips.tail[z_cord] = right_leg.head[z_cord]
                             
@@ -800,6 +795,10 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                         # Previous needs to be the parent of the current item
                         if previous != bone.parent.name:
                             return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
+
+    # Armature should be named correctly (has to be at the end because of multiple armatures)
+    tools.common.fix_armature_names()
+
 
     return {'result': True}
 

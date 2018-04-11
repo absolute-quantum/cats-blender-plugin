@@ -40,42 +40,48 @@ class ShapeKeyApplier(bpy.types.Operator):
         return bpy.context.object.active_shape_key_index > 0
 
     def execute(self, context):
-
         mesh = bpy.context.scene.objects.active
-        shapekey_name = bpy.context.object.active_shape_key.name
-
+        mesh.show_only_shape_key = False
         bpy.ops.object.shape_key_clear()
 
-        for shapekey in mesh.data.shape_keys.key_blocks:
-            if shapekey.name != 'Basis':
-                shapekey.name = 'Basis'
-            break
+        new_basis_shapekey = mesh.active_shape_key
+        new_basis_shapekey.value = 1
+        new_basis_shapekey_name = new_basis_shapekey.name
 
-        bpy.data.objects[mesh.name].shape_key_add(name='Basis Old', from_mix=False)
+        old_basis_shapekey = None
 
-        order = OrderedDict()
-        order[shapekey_name] = 0
-        order['Basis'] = 1
-        order['Basis Old'] = 2
-        order['Basis Old.001'] = 3
-        order['Basis Old.002'] = 4
-        order['Basis Old.003'] = 5
-        order['Basis Old.004'] = 6
-        order['Basis Old.005'] = 7
-        tools.common.repair_shape_order(mesh.name, order)
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if index == 0:
+                shapekey.name = 'Basis Old'
+                old_basis_shapekey = shapekey
+                break
 
-        bpy.context.object.active_shape_key_index = 1
-        bpy.ops.object.shape_key_remove()
+        new_basis_shapekey.name = 'Basis'
 
-        mesh.data.shape_keys.key_blocks.get(shapekey_name).name = 'Basis'
+        for index in range(0, len(mesh.data.shape_keys.key_blocks)):
+            mesh.active_shape_key_index = index
+            shapekey = mesh.active_shape_key
+            if shapekey and shapekey.name != 'Basis' and shapekey.name != 'Basis Old':
+                shapekey.value = 1
+                mesh.shape_key_add(name=shapekey.name + '-New', from_mix=True)
+                shapekey.value = 0
+
+        for index in reversed(range(0, len(mesh.data.shape_keys.key_blocks))):
+            mesh.active_shape_key_index = index
+            shapekey = mesh.active_shape_key
+            if shapekey and not shapekey.name.endswith('-New') and shapekey.name != 'Basis' and shapekey.name != 'Basis Old':
+                bpy.ops.object.shape_key_remove(all=False)
+
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if shapekey and shapekey.name.endswith('-New'):
+                shapekey.name = shapekey.name[:-4]
+                shapekey.relative_key = mesh.data.shape_keys.key_blocks['Basis']
 
         tools.common.repair_viseme_order(mesh.name)
 
-        self.report({'INFO'}, 'Successfully set shapekey ' + shapekey_name + ' as the new Basis.')
+        self.report({'INFO'}, 'Successfully set shapekey ' + new_basis_shapekey_name + ' as the new Basis.')
         return {'FINISHED'}
 
-def setActiveShapeKey (name):
-    bpy.context.object.active_shape_key_index = bpy.context.object.data.shape_keys.key_blocks.keys().index(name)
 
 def addToShapekeyMenu(self, context):
     self.layout.separator()

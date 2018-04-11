@@ -32,6 +32,8 @@ import tools.decimation
 from mathutils import Vector
 from math import degrees
 from collections import OrderedDict
+
+from googletrans import Translator
 from mmd_tools_local import utils
 
 # TODO
@@ -49,10 +51,17 @@ shapekey_order = None
 
 
 def get_armature():
-    # NOTE: what if there are two armatures?
+    for obj in bpy.data.objects:
+        if obj.type == 'ARMATURE' and obj.name == bpy.context.scene.armature:
+            return obj
+
+
+def get_armature_objects():
+    armatures = []
     for obj in bpy.data.objects:
         if obj.type == 'ARMATURE':
-            return obj
+            armatures.append(obj)
+    return armatures
 
 
 def unhide_all():
@@ -93,16 +102,12 @@ def remove_bone(find_bone):
 
 
 def remove_empty():
-    switch('EDIT')  # This fixes an error apparently
-    set_default_stage()
-    unselect_all()
-    for obj in bpy.data.objects:
-        if obj.type == 'EMPTY':
-            bpy.context.scene.objects.active = bpy.data.objects[obj.name]
-            obj.select = True
-            bpy.ops.object.delete(use_global=False)
-
-        unselect_all()
+    armature = set_default_stage()
+    if armature.parent and armature.parent.type == 'EMPTY':
+        tools.common.unselect_all()
+        tools.common.select(armature.parent)
+        bpy.ops.object.delete(use_global=False)
+        tools.common.unselect_all()
 
 
 def get_bone_angle(p1, p2):
@@ -168,8 +173,28 @@ def get_meshes(self, context):
 
     for object in bpy.context.scene.objects:
         if object.type == 'MESH':
-            if object.parent is not None and object.parent.type == 'ARMATURE':
+            if object.parent is not None and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
                 choices.append((object.name, object.name, object.name))
+
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
+    return bpy.types.Object.Enum
+
+
+def get_armature_list(self, context):
+    choices = []
+
+    for object in bpy.context.scene.objects:
+        if object.type == 'ARMATURE':
+            # 1. Will be returned by context.scene
+            # 2. Will be shown in lists
+            # 3. will be shown in the hover description (below description)
+
+            # Set name displayed in list
+            name = object.data.name
+            if name.startswith('Armature ('):
+                name = object.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
+
+            choices.append((object.name, name, object.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
@@ -180,9 +205,12 @@ def get_meshes_decimation(self, context):
 
     for object in bpy.context.scene.objects:
         if object.type == 'MESH':
-            if object.parent is not None and object.parent.type == 'ARMATURE':
+            if object.parent is not None and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
                 if object.name in tools.decimation.ignore_meshes:
                     continue
+                # 1. Will be returned by context.scene
+                # 2. Will be shown in lists
+                # 3. will be shown in the hover description (below description)
                 choices.append((object.name, object.name, object.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
@@ -216,6 +244,9 @@ def get_bones(names):
     for bone in armature.data.bones:
         # print(bone.name)
         try:
+            # 1. Will be returned by context.scene
+            # 2. Will be shown in lists
+            # 3. will be shown in the hover description (below description)
             choices.append((bone.name, bone.name, bone.name))
         except UnicodeDecodeError:
             print("ERROR", bone.name)
@@ -294,6 +325,9 @@ def get_shapekeys(context, names, no_basis, decimation, return_list):
                 continue
             if decimation and name in tools.decimation.ignore_shapes:
                 continue
+            # 1. Will be returned by context.scene
+            # 2. Will be shown in lists
+            # 3. will be shown in the hover description (below description)
             choices.append((name, name, name))
             choices_simple.append(name)
 
@@ -320,9 +354,15 @@ def get_shapekeys(context, names, no_basis, decimation, return_list):
     return bpy.types.Object.Enum
 
 
-def fix_armature_name():
-    get_armature().name = 'Armature'
-    get_armature().data.name = 'Armature'
+def fix_armature_names():
+    # Armature should be named correctly (has to be at the end because of multiple armatures)
+    armature = get_armature()
+    armature.name = 'Armature'
+    if not armature.data.name.startswith('Armature'):
+        try:
+            armature.data.name = 'Armature (' + Translator().translate(armature.data.name).text + ')'
+        except:
+            armature.data.name = 'Armature'
 
 
 def get_texture_sizes(self, context):
@@ -339,7 +379,7 @@ def get_meshes_objects():
     meshes = []
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            if ob.parent is not None and ob.parent.type == 'ARMATURE':
+            if ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == bpy.context.scene.armature:
                 meshes.append(ob)
     return meshes
 
@@ -377,7 +417,7 @@ def join_meshes(context):
     mesh = None
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            if ob.parent is not None and ob.parent.type == 'ARMATURE':
+            if ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == bpy.context.scene.armature:
                 mesh = ob
                 mesh.name = 'Body'
                 for mod in mesh.modifiers:
@@ -488,9 +528,11 @@ def separate_by_verts(context):
 
 
 def reset_context_scenes(context):
-    context.scene.head = get_bones_head(None, context)[0][0]
-    context.scene.eye_left = get_bones_eye_l(None, context)[0][0]
-    context.scene.eye_right = get_bones_eye_r(None, context)[0][0]
+    head_bones = get_bones_head(None, context)
+    if len(head_bones) > 0:
+        context.scene.head = head_bones[0][0]
+        context.scene.eye_left = get_bones_eye_l(None, context)[0][0]
+        context.scene.eye_right = get_bones_eye_r(None, context)[0][0]
 
     mesh = get_meshes(None, context)[0][0]
     context.scene.mesh_name_eye = mesh
