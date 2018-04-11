@@ -207,6 +207,20 @@ This will clear the group bones list cache and rebuild it, useful if bones have 
 ##### Merge bones
 This will start the merge process
 
+## Copy Protection
+
+![](https://i.imgur.com/eyfqaqd.png)
+
+**Can protect your avatars from being ripped from the game cache**
+Unity game cache rips do not include blendshapes and this method can protect you against people that try to steal your avatar that way. To setup your avatar for protection follow these steps:
+
+ 1. Make sure your avatar was already exported and loaded in unity and you have configured everything
+ 2. In blender; Click the enable protection button and export your model to unity
+ 3. In unity; enable the 'Basis Orginal' blendshape and set the value to 100
+ 4. Your character should appear normal now
+
+People that try to steal your avatar in the unity cache rip way will only see a box of mangled waifu trash instead of your original character.
+
 
 ## Update Plugin
 There is an auto updater in the plugin so you don't have to keep checking for a new version.
@@ -224,7 +238,7 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
   - This also partially fixes leg bending for desktop users
 - Added: Multiple armature support!
   - Armature selection appears when 2 or more armatures are detected
-- Added: Copy Protection: Secures your avatar against game cache ripping!
+- Added: Copy Protection: Secures your avatar against unity game cache ripping!
 - Added: Model: New "Separate by Loose Parts" button
 - Added: Model: Unreal Engine models are now supported!
 - Added: Model: Mixing Weights is now possible in Pose Mode
@@ -258,11 +272,11 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
 
 
 ## Roadmap
- - Full body tracking support
  - MOAR updates on the armature code
  - Texture translation should have an option to rename the filename also
  - Automatic lower lid creation for eye tracking
  - Manual bone selection button for root bones
+ - Full body tracking proportion adjustments
 
 
 ## Feedback

@@ -1127,13 +1127,19 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label('Prevents your avatar from being ripped by others.')
+        row.label('Prevents your avatar from unity cache ripping.')
         row = col.row(align=True)
         row.scale_y = 0.8
         row.label('Only use this if you know what you are doing!')
         row = col.row(align=True)
         row.scale_y = 0.8
         row.label('This should be the last thing before exporting!')
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.label('Unity bone mapping should be done before doing this.')
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.label('For more information: read the documentation.')
         col.separator()
         row = col.row(align=True)
 
