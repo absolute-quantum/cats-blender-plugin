@@ -218,8 +218,11 @@ Game cache rips in most common cases do not include blendshapes and shaders. Thi
  2. In blender; Click the enable protection button and export your model to unity
  3. In unity; enable the 'Basis Orginal' blendshape and set the value to 100
  4. Your character should appear normal now
+ 5. Make sure to check and adjust your bounding box:
 
-People that try to steal your avatar in the unity cache rip way will only see a box of mangled waifu trash instead of your original character.
+![](https://i.imgur.com/4NrfVOr.png)
+
+People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
 
 
 ## Update Plugin
