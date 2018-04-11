@@ -212,7 +212,7 @@ This will start the merge process
 ![](https://i.imgur.com/eyfqaqd.png)
 
 **Can protect your avatars from being ripped from the game cache**
-Unity game cache rips do not include blendshapes and this method can protect you against people that try to steal your avatar that way. To setup your avatar for protection follow these steps:
+Game cache rips in most common cases do not include blendshapes and shaders. This method will make it much harder for people that try to steal your avatar through ripping from cache. To setup, follow these steps:
 
  1. Make sure your avatar was already exported and loaded in unity and you have configured everything
  2. In blender; Click the enable protection button and export your model to unity
