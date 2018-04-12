@@ -82,6 +82,8 @@ Fixes your model automatically by:
  - Deleting unused vertex groups
  - Using the correct shading
  - Making it compatible with Full Body Tracking
+ 
+ **special thanks to @ProfessorSnep#0001, @persia#0123 and @Gallium#7020 <3 <3**
 
 ##### Separate by material / loose parts
 Separates a mesh by materials or loose parts
