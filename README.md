@@ -212,17 +212,44 @@ This will start the merge process
 ![](https://i.imgur.com/eyfqaqd.png)
 
 **Can protect your avatars from being ripped from the game cache**
-Game cache rips in most common cases do not include blendshapes and shaders. This method will make it much harder for people that try to steal your avatar through ripping from cache. To setup, follow these steps:
+Game cache rips in most common cases do not include blendshapes and shaders. 
+This method will make it much harder for people that try to steal your avatar through ripping from cache.
 
- 1. Make sure your avatar was already exported and loaded in unity and you have configured everything
- 2. In blender; Click the enable protection button and export your model to unity
- 3. In unity; enable the 'Basis Orginal' blendshape and set the value to 100
- 4. Your character should appear normal now
- 5. Make sure to check and adjust your bounding box:
 
-![](https://i.imgur.com/4NrfVOr.png)
+
+To setup, follow these steps:
+
+1. Do all the modifications to your model in Blender before you follow the next steps!
+   This option should be the last one you do in Blender before exporting!
+2. You won't be able to see the mesh of your model inside the Unity bone mapping screen (it will be garbled mess, but only in there).
+   Because of that, if you need to actually see your models mesh (e.g. for straightening the fingers for VR), follow the extra steps below.
+   If you don't need to see the mesh (e.g. for unassigning the jaw bone) skip to step 2.
+     - Export your model from Blender without enabling the protection
+     - Load it up in Unity and configure it in the bone mapping screen and press "Done"
+     - In Blender: Click the "Enable Protection" button and export your model
+     - Then, except for just dragging the fbx into Unity, you need to go into the folder where this Unity project is located
+       and then replace the unprotected fbx with the protected one. 
+       That way your configurations will be kept.
+     - Skip to step 2
+3. In Blender: Click the "Enable Protection" button and export your model and import it into Unity
+4. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
+   https://i.imgur.com/RlrGTvV.gif
+5. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
+   If the VRCSDK complains about your model being too large, edit your bounding box back to normal here:
+   (this option is below the blendshape list from above)
+   ![](https://i.imgur.com/4NrfVOr.png)
+6. Your avatar now behaves just like a normal one.
 
 People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
+
+**Things to note:**
+
+- Unity can show some lighting bugs on the model. This is mostly not a problem as it will look normal inside VRChat.
+- This protection method can have a negative effect on the Outline option from the Cubed shader depending
+  on which randomization option you choose in Cats.
+  Try it for yourself to see if it effects you and disable the option if necessary.
+- The preview avatar within the avatar selection menu can look weird.
+  This does not effect how it actually looks ingame.
 
 
 ## Update Plugin

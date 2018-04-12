@@ -61,7 +61,6 @@ import tools.decimation
 import tools.shapekey
 import tools.copy_protection
 
-
 importlib.reload(mmd_tools_local)
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -86,14 +85,14 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 6, 2],  # Only change this version right before publishing the new update!
+    'version': [0, 7, 0],  # Only change this version right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
 
-dev_branch = True
+dev_branch = False
 version = copy.deepcopy(bl_info.get('version'))
 
 # global variable to store icons in
@@ -200,7 +199,7 @@ class ToolPanel:
 
     bpy.types.Scene.armature = bpy.props.EnumProperty(
         name='Armature',
-        description='Select the armature which will be used by cats.',
+        description='Select the armature which will be used by Cats.',
         items=tools.common.get_armature_list
     )
 
@@ -235,8 +234,8 @@ class ToolPanel:
                              'Eye Tracking will still work if you disable Eye Blinking.'),
 
             ("CUSTOM", "Custom", 'Custom results - custom shape key loss\n'
-                               '\n'
-                               "This will let you choose which meshes and shape keys should not be decimated.\n")
+                                 '\n'
+                                 "This will let you choose which meshes and shape keys should not be decimated.\n")
         ],
         default='HALF'
     )
@@ -597,6 +596,24 @@ class ToolPanel:
         name='To Merge',
         description='List of bones that look like they could be marged together to reduce overall bones.',
         items=tools.rootbone.get_parent_root_bones,
+    )
+
+    # Copy Protection
+    bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
+        name="Randomization Level",
+        description="Randomization Level",
+        items=[
+            ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unsusable for thieves.\n"
+                             'This method might cause problems with the outline from Cubed shader.\n'
+                             'If you have any problem ingame try again with option "Partial".'),
+            ("PARTIAL", "Partial", 'Use this if you experience bugs ingame with the Full option!\n'
+                                   '\n'
+                                   "This will only randomize a number of vertices and therefore will have a few unprotected areas,\n"
+                                   "but it's still unusable to thieves as a whole.\n"
+                                   'This method however reduces the glitches that can occur ingame by a lot.\n'
+                                   'Use this if you experience any bugs ingame with the Full option!')
+        ],
+        default='FULL'
     )
 
 
@@ -1127,26 +1144,25 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label('Prevents your avatar from unity cache ripping.')
+        row.label('Prevents your avatar from Unity cache ripping.')
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label('Only use this if you know what you are doing!')
-        row = col.row(align=True)
-        row.scale_y = 0.8
-        row.label('This should be the last thing before exporting!')
-        row = col.row(align=True)
-        row.scale_y = 0.8
-        row.label('Unity bone mapping should be done before doing this.')
-        row = col.row(align=True)
-        row.scale_y = 0.8
-        row.label('For more information: read the documentation.')
+        row.label('Before use: Read the documentation!')
         col.separator()
         row = col.row(align=True)
+        row.label('Randomization Level:')
+        row = col.row(align=True)
+        row.prop(context.scene, 'protection_mode', expand=True)
 
+        row = col.row(align=True)
         meshes = tools.common.get_meshes_objects()
         if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
+            row = row.split(percentage=0.9, align=False)
+            row.scale_y = 1.2
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
+            row.operator('copyprotection.randomize', text='', icon='FILE_REFRESH')
         else:
+            row.scale_y = 1.2
             row.operator('copyprotection.enable', icon='KEY_HLT')
 
 
@@ -1196,7 +1212,8 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                     col.separator()
                 if i % 3 == 0:
                     row = col.row(align=True)
-                row.operator('supporter.person', text=name, emboss=False, icon_value=preview_collections["custom_icons"][icon].icon_id)
+                row.operator('supporter.person', text=name, emboss=False,
+                             icon_value=preview_collections["custom_icons"][icon].icon_id)
                 i += 1
             except IndexError:
                 if i % 3 == 0:
@@ -1475,6 +1492,7 @@ classesToRegister = [
     CopyProtectionPanel,
     tools.copy_protection.CopyProtectionEnable,
     tools.copy_protection.CopyProtectionDisable,
+    tools.copy_protection.CopyProtectionRandomize,
 
     UpdaterPanel,
     UpdaterPreferences,

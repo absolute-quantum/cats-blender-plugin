@@ -333,14 +333,14 @@ def repair_shapekeys(mesh_name, vertex_group):
         return
     print('DEBUG: Group: ' + vertex_group + ' found!')
 
-    vcoords = False
+    vcoords = None
     gi = group.index
     for v in mesh.data.vertices:
         for g in v.groups:
             if g.group == gi:
                 vcoords = v.co.xyz
 
-    if vcoords is False:
+    if not vcoords:
         return
 
     print('DEBUG: Repairing shapes!')

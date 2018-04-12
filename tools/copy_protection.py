@@ -23,11 +23,11 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
+import copy
 
 import bpy
 import random
 import tools.common
-from mathutils import Vector
 
 
 class CopyProtectionEnable(bpy.types.Operator):
@@ -44,7 +44,7 @@ class CopyProtectionEnable(bpy.types.Operator):
 
     def execute(self, context):
         mesh = tools.common.get_meshes_objects()[0]
-        tools.common.set_default_stage()
+        armature = tools.common.set_default_stage()
         tools.common.unselect_all()
         tools.common.select(mesh)
         tools.common.switch('OBJECT')
@@ -63,8 +63,62 @@ class CopyProtectionEnable(bpy.types.Operator):
         basis_original.name = 'Basis Original'
 
         # 2. Mangle verts into THE SINGULARITY!!!
+
+        # Check if bone matrix == world matrix, important for xps models
+        xps = False
+        for index, bone in enumerate(armature.pose.bones):
+            if index == 5:
+                bone_pos = bone.matrix
+                world_pos = armature.matrix_world * bone.matrix
+                if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
+                    xps = True
+
+        # mangle percentage
+        percent = 1
+        if context.scene.protection_mode == 'PARTIAL':
+            percent = 0.03
+
+        verts = len(mesh.data.vertices)
+        every = int(verts / (verts * percent))
+        i = random.randint(0, every - 1)
+
+        max_height = 0
+        max_lenght = 0
+        max_width = 0
         for index, vert in enumerate(mesh.data.vertices):
-            mesh.data.vertices[index].co = Vector((random.uniform(-.4, .4), random.uniform(-.4, .4), random.uniform(0, .4)))
+            if max_height < mesh.data.vertices[index].co.z:
+                max_height = mesh.data.vertices[index].co.z
+            if max_lenght < mesh.data.vertices[index].co.x:
+                max_lenght = mesh.data.vertices[index].co.x
+            if max_width < mesh.data.vertices[index].co.y:
+                max_width = mesh.data.vertices[index].co.y
+
+        if xps:
+            tmp = copy.deepcopy(max_height)
+            max_height = copy.deepcopy(max_width)
+            max_width = tmp
+
+        if max_width < 0.5:
+            max_width = 0.5
+
+        for index, vert in enumerate(mesh.data.vertices):
+            vector = None
+            if i >= every:
+                vector = (random.uniform(-max_lenght, max_lenght),
+                          random.uniform(-max_width, max_width),
+                          random.uniform(0, max_height))
+
+            if vector:
+                if not xps:
+                    mesh.data.vertices[index].co = (vector[0], vector[1], vector[2])
+                else:
+                    mesh.data.vertices[index].co = (vector[0], vector[2], vector[1])
+
+            if i >= every:
+                i = 0
+                continue
+            i += 1
+
         mesh.data.update()
 
         # 3. Create a new shapekey that distorts all the vertices
@@ -110,9 +164,40 @@ class CopyProtectionDisable(bpy.types.Operator):
 
             if shapekey.name == 'Basis Original':
                 shapekey.name = 'Basis'
+                shapekey.relative_key = shapekey
                 break
 
         tools.common.repair_viseme_order(mesh.name)
 
         self.report({'INFO'}, 'Model un-secured!')
+        return {'FINISHED'}
+
+
+class CopyProtectionRandomize(bpy.types.Operator):
+    bl_idname = 'copyprotection.randomize'
+    bl_label = 'Randomize Protection'
+    bl_description = 'Rerandomizes the vertices'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        mesh = tools.common.get_meshes_objects()[0]
+
+        tools.common.set_default_stage()
+        tools.common.unselect_all()
+        tools.common.select(mesh)
+        tools.common.switch('OBJECT')
+
+        for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if i == 0:
+                mesh.active_shape_key_index = i
+                bpy.ops.object.shape_key_remove(all=False)
+
+            if shapekey.name == 'Basis Original':
+                shapekey.name = 'Basis'
+                shapekey.relative_key = shapekey
+                break
+
+        bpy.ops.copyprotection.enable('INVOKE_DEFAULT')
+
+        self.report({'INFO'}, 'Model protection randomized!')
         return {'FINISHED'}
