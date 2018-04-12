@@ -264,6 +264,8 @@ People that try to steal your avatar will then only see a box of mangled waifu t
   Try it for yourself to see if it effects you and disable the option if necessary.
 - The preview avatar within the avatar selection menu can look weird.
   This does not effect how it actually looks ingame.
+  
+  **special thanks to @zarniwoop#6081**
 
 
 ## Update Plugin
