@@ -330,8 +330,8 @@ class ViewBoneMorph(Operator):
             p_bone = armature.pose.bones.get(morph_data.bone, None)
             if p_bone:
                 p_bone.bone.select = True
-                p_bone.location = morph_data.location
-                p_bone.rotation_quaternion = morph_data.rotation
+                p_bone.location += morph_data.location
+                p_bone.rotation_quaternion *= morph_data.rotation
         return { 'FINISHED' }
 
 class ApplyBoneMorph(Operator):
@@ -348,6 +348,7 @@ class ApplyBoneMorph(Operator):
         mmd_root = root.mmd_root
         morph = mmd_root.bone_morphs[mmd_root.active_morph]
         morph.data.clear()
+        morph.active_data = 0
         def_loc = Vector((0,0,0))
         def_rot = Quaternion((1,0,0,0))
         for p_bone in armature.pose.bones:
@@ -378,44 +379,44 @@ class SelectRelatedBone(Operator):
         utils.selectSingleBone(context, armature, morph_data.bone)
         return { 'FINISHED' }
 
-class EditBoneOffset(Operator):
+class EditBoneOffset(Operator): 
     bl_idname = 'mmd_tools.edit_bone_morph_offset'
     bl_label = 'Edit Related Bone'
     bl_description = 'Applies the location and rotation of this offset to the bone'
-    bl_options = {'PRESET'}
-
+    bl_options = {'PRESET'}    
+    
     def execute(self, context):
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
-        mmd_root=root.mmd_root
+        mmd_root=root.mmd_root  
         rig = mmd_model.Model(root)
-        armature = rig.armature()
+        armature = rig.armature()  
         morph = mmd_root.bone_morphs[mmd_root.active_morph]
         morph_data = morph.data[morph.active_data]
         p_bone = armature.pose.bones[morph_data.bone]
         p_bone.location = morph_data.location
         p_bone.rotation_quaternion = morph_data.rotation
         utils.selectSingleBone(context, armature, p_bone.name)
-        return { 'FINISHED' }
+        return { 'FINISHED' }   
 
 class ApplyBoneOffset(Operator):
     bl_idname = 'mmd_tools.apply_bone_morph_offset'
     bl_label = 'Apply Bone Morph Offset'
     bl_description = 'Stores the current bone location and rotation into this offset'
     bl_options = {'PRESET'}
-
+    
     def execute(self, context):
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
-        mmd_root=root.mmd_root
+        mmd_root=root.mmd_root  
         rig = mmd_model.Model(root)
-        armature = rig.armature()
+        armature = rig.armature()        
         morph = mmd_root.bone_morphs[mmd_root.active_morph]
         morph_data = morph.data[morph.active_data]
         p_bone = armature.pose.bones[morph_data.bone]
         morph_data.location = p_bone.location
         morph_data.rotation = p_bone.rotation_quaternion
-        return { 'FINISHED' }
+        return { 'FINISHED' }  
 
 
 class ViewUVMorph(Operator):
@@ -641,3 +642,4 @@ class ApplyUVMorph(Operator):
 
         meshObj.select = selected
         return { 'FINISHED' }
+

@@ -29,9 +29,10 @@ class MMDLamp:
 
         empty.rotation_mode = 'XYZ'
         empty.lock_rotation = (True, True, True)
-        empty.empty_draw_size = 0.2
-        empty.scale = [20*scale] * 3
+        empty.empty_draw_size = 0.4
+        empty.scale = [10*scale] * 3
         empty.mmd_type = 'LIGHT'
+        empty.location = (0, 0, 11*scale)
 
         lampObj.parent = empty
         lampObj.data.color = (0.602, 0.602, 0.602)

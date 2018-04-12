@@ -103,9 +103,6 @@ class PMXImporter:
         self.__armObj.hide = True
         self.__armObj.select = False
 
-        # Temporarily set the root object as active to let property function hooks access it.
-        self.__targetScene.objects.active = root
-
     def __createMeshObject(self):
         model_name = self.__root.name
         self.__meshObj = bpy.data.objects.new(name=model_name+'_mesh', object_data=bpy.data.meshes.new(name=model_name))
@@ -144,6 +141,7 @@ class PMXImporter:
             pmx_vertices = (pmxModel.vertices[x] for x in indices)
             vertex_count = len(indices)
 
+        vertex_group_table = self.__vertexGroupTable
         mesh.vertices.add(count=vertex_count)
         for i, pv in enumerate(pmx_vertices):
             bv = mesh.vertices[i]
@@ -153,21 +151,22 @@ class PMXImporter:
             vg_edge_scale.add(index=[i], weight=pv.edge_scale, type='REPLACE')
             vg_vertex_order.add(index=[i], weight=i/vertex_count, type='REPLACE')
 
-            if isinstance(pv.weight.weights, pmx.BoneWeightSDEF):
-                self.__vertexGroupTable[pv.weight.bones[0]].add(index=[i], weight=pv.weight.weights.weight, type='REPLACE')
-                self.__vertexGroupTable[pv.weight.bones[1]].add(index=[i], weight=1.0-pv.weight.weights.weight, type='REPLACE')
+            pv_bones = pv.weight.bones
+            pv_weights = pv.weight.weights
+            if isinstance(pv_weights, pmx.BoneWeightSDEF):
+                vertex_group_table[pv_bones[0]].add(index=[i], weight=pv_weights.weight, type='ADD')
+                vertex_group_table[pv_bones[1]].add(index=[i], weight=1.0-pv_weights.weight, type='ADD')
                 self.__sdefVertices[i] = pv
-            elif len(pv.weight.bones) == 1:
-                bone_index = pv.weight.bones[0]
+            elif len(pv_bones) == 1:
+                bone_index = pv_bones[0]
                 if bone_index >= 0:
-                    self.__vertexGroupTable[bone_index].add(index=[i], weight=1.0, type='REPLACE')
-            elif len(pv.weight.bones) == 2:
-                self.__vertexGroupTable[pv.weight.bones[0]].add(index=[i], weight=pv.weight.weights[0], type='REPLACE')
-                self.__vertexGroupTable[pv.weight.bones[1]].add(index=[i], weight=1.0-pv.weight.weights[0], type='REPLACE')
-            elif len(pv.weight.bones) == 4:
-                # If two or more weights for the same bone is present, the second and subsequent will be ignored.
-                for bone, weight in reversed([x for x in zip(pv.weight.bones, pv.weight.weights) if x[0] >= 0]):
-                    self.__vertexGroupTable[bone].add(index=[i], weight=weight, type='REPLACE')
+                    vertex_group_table[bone_index].add(index=[i], weight=1.0, type='ADD')
+            elif len(pv_bones) == 2:
+                vertex_group_table[pv_bones[0]].add(index=[i], weight=pv_weights[0], type='ADD')
+                vertex_group_table[pv_bones[1]].add(index=[i], weight=1.0-pv_weights[0], type='ADD')
+            elif len(pv_bones) == 4:
+                for bone, weight in zip(pv_bones, pv_weights):
+                    vertex_group_table[bone].add(index=[i], weight=weight, type='ADD')
             else:
                 raise Exception('unkown bone weight type.')
 
@@ -400,12 +399,11 @@ class PMXImporter:
             mmd_bone = b_bone.mmd_bone
             mmd_bone.name_j = pmx_bone.name
             mmd_bone.name_e = pmx_bone.name_e
-            mmd_bone.is_visible = pmx_bone.visible
             mmd_bone.is_controllable = pmx_bone.isControllable
             mmd_bone.transform_order = pmx_bone.transform_order
             mmd_bone.transform_after_dynamics = pmx_bone.transAfterPhis
 
-            if pmx_bone.displayConnection == -1 or pmx_bone.displayConnection == [0.0, 0.0, 0.0]:
+            if pmx_bone.displayConnection == -1 or pmx_bone.displayConnection == [0.0, 0.0, 0.0]:                
                 mmd_bone.is_tip = True
                 logging.debug('bone %s is a tip bone', pmx_bone.name)
             elif b_bone.name in specialTipBones:
@@ -414,7 +412,7 @@ class PMXImporter:
             elif not isinstance(pmx_bone.displayConnection, int):
                 logging.debug('bone %s is using a vector tail', pmx_bone.name)
             else:
-                logging.debug('bone %s is not using a vector tail and is not a tip bone. DisplayConnection: %s',
+                logging.debug('bone %s is not using a vector tail and is not a tip bone. DisplayConnection: %s', 
                               pmx_bone.name, str(pmx_bone.displayConnection))
 
             b_bone.bone.hide = not pmx_bone.visible #or mmd_bone.is_tip
@@ -767,16 +765,12 @@ class PMXImporter:
     def __renameLRBones(self, use_underscore):
         pose_bones = self.__armObj.pose.bones
         for i in pose_bones:
-            if i.is_mmd_shadow_bone:
-                continue
             self.__rig.renameBone(i.name, utils.convertNameToLR(i.name, use_underscore))
             # self.__meshObj.vertex_groups[i.mmd_bone.name_j].name = i.name
 
     def __translateBoneNames(self):
         pose_bones = self.__armObj.pose.bones
         for i in pose_bones:
-            if i.is_mmd_shadow_bone:
-                continue
             self.__rig.renameBone(i.name, self.__translator.translate(i.name))
 
     def __fixRepeatedMorphName(self):
@@ -784,7 +778,7 @@ class PMXImporter:
         for m in self.__model.morphs:
             #used_names = used_names_map.setdefault('all', set())
             used_names = used_names_map.setdefault(type(m), set())
-            m.name = utils.uniqueName(m.name, used_names)
+            m.name = utils.uniqueName(m.name or 'Morph', used_names)
             used_names.add(m.name)
 
     def execute(self, **args):
@@ -1000,3 +994,4 @@ class _PMXCleaner:
             counts = old_len - len(m.offsets)
             if counts:
                 logging.warning('   - removed %d (of %d) offsets of "%s"', counts, old_len, m.name)
+

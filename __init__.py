@@ -24,17 +24,25 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 
-import bpy
-import sys
 import os
+import sys
+import copy
 import importlib
 import bpy.utils.previews
+
 from . import addon_updater_ops
-from collections import OrderedDict
 from datetime import datetime
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
+
+import mmd_tools_local
+# print("\n", mmd_tools_local.bl_info["version"])
+# if mmd_tools_local.bl_info["version"] == (0, 5, 0):
+#     print("mmd_tools deleting!")
+#     bpy.ops.wm.addon_remove(module="mmd_tools")
+#     print("mmd_tools deleted!")
+#     import mmd_tools_local
 
 import tools.viseme
 import tools.atlas
@@ -50,7 +58,10 @@ import tools.common
 import tools.supporter
 import tools.credits
 import tools.decimation
+import tools.shapekey
+import tools.copy_protection
 
+importlib.reload(mmd_tools_local)
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
 importlib.reload(tools.eyetracking)
@@ -65,6 +76,8 @@ importlib.reload(tools.common)
 importlib.reload(tools.supporter)
 importlib.reload(tools.credits)
 importlib.reload(tools.decimation)
+importlib.reload(tools.shapekey)
+importlib.reload(tools.copy_protection)
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -72,20 +85,22 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 6, 2],
+    'version': [0, 7, 0],  # Only change this version right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
+
 dev_branch = False
+version = copy.deepcopy(bl_info.get('version'))
 
 # global variable to store icons in
 preview_collections = {}
 
 # List all the supporters here
 supporters = [
-#   ['Display name', 'Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
+    # ['Display name', 'Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
     ['Xeverian', 'xeverian', '2017-12-19'],
     ['Tupper', 'tupper', '2017-12-19'],
     ['Jazneo', 'jazneo', '2017-12-19'],
@@ -119,7 +134,7 @@ supporters = [
     ['Atirion', 'Atirion', '2018-01-05'],
     ['Lydania', 'Lydania', '2018-01-05'],
     ['Shanie-senpai', 'Shanie-senpai', '2018-01-05'],
-    ['Kal [Thramis],', 'Kal', '2018-01-12'],
+    ['Kal [Thramis]', 'Kal', '2018-01-12'],
     ['Sifu', 'Sifu', '2018-01-12'],
     ['Lil Clone', 'Lil Clone', '2018-01-12'],
     ['Naranar', 'Naranar', '2018-01-12'],
@@ -146,11 +161,11 @@ supporters = [
     ['Bones', 'Bones', '2018-01-22'],
     # Joshua (onodaTV)
     # charlie (discord) 24th missing
-    # Axo_ (hawaianfuzz)
+    ['Axo_', 'Axo_', '2018-04-10'],
     # Jerry (jt1990)
-    ['Dogniss', 'Dogniss', '2018-03-10'], # to be completed
+    ['Dogniss', 'Dogniss', '2018-03-10'],
     # Fabian (fabien-brenig) (ignore)
-    # Vinny (finalf)
+    ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10'],
     # Marcus (m.johannson) (ignore)
     ['Awrini', 'Awrini', '2018-03-10'],
     ['Smooth', 'Smooth', '2018-03-10'],
@@ -181,6 +196,13 @@ class ToolPanel:
         ],
         default='MMD'
     )
+
+    bpy.types.Scene.armature = bpy.props.EnumProperty(
+        name='Armature',
+        description='Select the armature which will be used by Cats.',
+        items=tools.common.get_armature_list
+    )
+
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove Zero Weight Bones',
         description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.\n"
@@ -212,8 +234,8 @@ class ToolPanel:
                              'Eye Tracking will still work if you disable Eye Blinking.'),
 
             ("CUSTOM", "Custom", 'Custom results - custom shape key loss\n'
-                               '\n'
-                               "This will let you choose which meshes and shape keys should not be decimated.\n")
+                                 '\n'
+                                 "This will let you choose which meshes and shape keys should not be decimated.\n")
         ],
         default='HALF'
     )
@@ -576,6 +598,24 @@ class ToolPanel:
         items=tools.rootbone.get_parent_root_bones,
     )
 
+    # Copy Protection
+    bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
+        name="Randomization Level",
+        description="Randomization Level",
+        items=[
+            ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
+                             'However this method might cause problems with the Outline option from Cubed shader.\n'
+                             'If you have any issues ingame try again with option "Partial".'),
+            ("PARTIAL", "Partial", 'Use this if you experience issues ingame with the Full option!\n'
+                                   '\n'
+                                   "This will only randomize a number of vertices and therefore will have a few unprotected areas,\n"
+                                   "but it's still unusable to thieves as a whole.\n"
+                                   'This method however reduces the glitches that can occur ingame by a lot.\n'
+                                   'Use this if you experience any issues ingame with the Full option!')
+        ],
+        default='FULL'
+    )
+
 
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature_v1'
@@ -600,6 +640,25 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
+        # elif bpy.app.version == (2, 79, "a"):
+        #     col.separator()
+        #     col.separator()
+        #     col.separator()
+        #     col.label('Not supported Blender version detected!', icon='ERROR')
+        #     col.label('Some features might not work!', icon='ERROR')
+        #     col.label('Please use to Blender 2.79!', icon='ERROR')
+        #     col.separator()
+        #     col.separator()
+        #     col.separator()
+        #     col.separator()
+
+        if addon_updater_ops.updater.update_ready:
+            col.separator()
+            col.label('New Cats version available!', icon='INFO')
+            col.label('Check the Updater panel!', icon='INFO')
+            col.separator()
+            col.separator()
+
         row = col.row(align=True)
         row.prop(context.scene, 'import_mode', expand=True)
         row = col.row(align=True)
@@ -609,12 +668,15 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         if tools.common.get_armature():
             row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
 
+        if len(tools.common.get_armature_objects()) > 1:
+            col.separator()
+            col.separator()
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'armature', icon='ARMATURE_DATA')
 
-        # row = col.row(align=True)
-        # row.scale_y = 0.9
-        # row.label('(PMXEditor is outdated, do not use it!)', icon='ERROR')
         col.separator()
-
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
         row = col.row(align=True)
@@ -625,7 +687,9 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         col.label('Manual Model Fixing:')
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
+        row.label("Separate by: ", icon='MESH_DATA')
+        row.operator('armature_manual.separate_by_materials')
+        row.operator('armature_manual.separate_by_loose_parts')
         row = col.row(align=True)
         row.scale_y = 1.05
         row.operator('armature_manual.join_meshes', icon='MESH_DATA')
@@ -653,6 +717,8 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         # row = col.row(align=True)
         # row.scale_y = 1.1
         # row.operator('armature_manual.join_meshes2', icon='MESH_DATA')
+
+        # addon_updater_ops.update_notice_box_ui(self, context)
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -712,7 +778,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 row.label('Start by Separating by Materials:')
                 row = col.row(align=True)
                 row.scale_y = 1.2
-                row.operator('armature_manual.separate_by_materials', icon='PLAY')
+                row.operator('armature_manual.separate_by_materials', text='Separate by Materials', icon='PLAY')
                 return
             else:
                 row = col.row(align=True)
@@ -770,7 +836,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                     op.mesh_name = mesh
 
             col = box.column(align=True)
-
 
             if len(tools.decimation.ignore_shapes) == 0 and len(tools.decimation.ignore_meshes) == 0:
                 col.label('Both lists are empty, this equals Full Decimation!', icon='ERROR')
@@ -1063,7 +1128,42 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row = box.row(align=True)
             col.separator()
             row.operator('refresh.root', icon='FILE_REFRESH')
-            row.operator('bone.merge', icon="AUTOMERGE_ON")
+            row.operator('bone.merge', icon='AUTOMERGE_ON')
+
+
+class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_copyprotection_v1'
+    bl_label = 'Copy Protection'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.label('Prevents your avatar from Unity cache ripping.')
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.label('Before use: Read the documentation!')
+        col.separator()
+        row = col.row(align=True)
+        row.label('Randomization Level:')
+        row = col.row(align=True)
+        row.prop(context.scene, 'protection_mode', expand=True)
+
+        row = col.row(align=True)
+        meshes = tools.common.get_meshes_objects()
+        if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
+            row = row.split(percentage=0.9, align=False)
+            row.scale_y = 1.2
+            row.operator('copyprotection.disable', icon='KEY_DEHLT')
+            row.operator('copyprotection.randomize', text='', icon='FILE_REFRESH')
+        else:
+            row.scale_y = 1.2
+            row.operator('copyprotection.enable', icon='KEY_HLT')
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
@@ -1112,7 +1212,8 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                     col.separator()
                 if i % 3 == 0:
                     row = col.row(align=True)
-                row.operator('supporter.person', text=name, emboss=False, icon_value=preview_collections["custom_icons"][icon].icon_id)
+                row.operator('supporter.person', text=name, emboss=False,
+                             icon_value=preview_collections["custom_icons"][icon].icon_id)
                 i += 1
             except IndexError:
                 if i % 3 == 0:
@@ -1131,7 +1232,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         col.separator()
 
 
-
 class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_credits_v1'
     bl_label = 'Credits'
@@ -1143,7 +1243,6 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
         row = col.row(align=True)
 
-        version = bl_info.get('version')
         version_str = 'Cats Blender Plugin ('
         if len(version) > 0:
             version_str += str(version[0])
@@ -1187,7 +1286,7 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
     auto_check_update = bpy.props.BoolProperty(
         name='Auto-check for Update',
         description='If enabled, auto-check for updates using an interval',
-        default=True,
+        default=True
     )
     updater_intrval_months = bpy.props.IntProperty(
         name='Months',
@@ -1199,21 +1298,21 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
         name='Days',
         description='Number of days between checking for updates',
         default=1,
-        min=0,
+        min=1
     )
     updater_intrval_hours = bpy.props.IntProperty(
         name='Hours',
         description='Number of hours between checking for updates',
         default=0,
         min=0,
-        max=23
+        max=0
     )
     updater_intrval_minutes = bpy.props.IntProperty(
         name='Minutes',
         description='Number of minutes between checking for updates',
         default=0,
         min=0,
-        max=59
+        max=0
     )
 
     def draw(self, context):
@@ -1264,7 +1363,7 @@ def set_current_supporters():
 
     current_supporters = []
     temp_current_supporters = []
-    now = datetime.now()
+    # now = datetime.now()
     count = 0
     for supporter in supporters:
         # if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 6000:
@@ -1333,12 +1432,6 @@ def set_current_supporters():
                     current_supporters.append([value[0], value[1]])
 
 
-
-
-
-
-
-
 classesToRegister = [
     ArmaturePanel,
     tools.armature_manual.ImportModel,
@@ -1347,6 +1440,7 @@ classesToRegister = [
     tools.armature_manual.XpsToolsButton,
     tools.armature.FixArmature,
     tools.armature_manual.SeparateByMaterials,
+    tools.armature_manual.SeparateByLooseParts,
     tools.armature_manual.JoinMeshes,
     tools.armature_manual.MixWeights,
     tools.armature_manual.StartPoseMode,
@@ -1395,6 +1489,11 @@ classesToRegister = [
     tools.material.OneTexPerMatButton,
     tools.bonemerge.BoneMergeButton,
 
+    CopyProtectionPanel,
+    tools.copy_protection.CopyProtectionEnable,
+    tools.copy_protection.CopyProtectionDisable,
+    tools.copy_protection.CopyProtectionRandomize,
+
     UpdaterPanel,
     UpdaterPreferences,
 
@@ -1405,16 +1504,23 @@ classesToRegister = [
     CreditsPanel,
     tools.credits.DiscordButton,
     tools.credits.ForumButton,
+
+    tools.shapekey.ShapeKeyApplier,
 ]
 
 
 def register():
-    set_current_supporters()
-    load_icons()
+    # bpy.utils.unregister_module("mmd_tools")
+    try:
+        mmd_tools_local.register()
+    except AttributeError:
+        pass
 
-    version = bl_info.get('version')
     if dev_branch and len(version) > 2:
         version[2] += 1
+
+    set_current_supporters()
+    load_icons()
 
     try:
         addon_updater_ops.register(bl_info)
@@ -1427,12 +1533,21 @@ def register():
     bpy.context.user_preferences.system.use_international_fonts = True
     bpy.context.user_preferences.filepaths.use_file_compression = True
 
+    bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+
 
 def unregister():
+    try:
+        mmd_tools_local.unregister()
+    except AttributeError:
+        pass
+
     for value in classesToRegister:
         bpy.utils.unregister_class(value)
     addon_updater_ops.unregister()
     unload_icons()
+
+    bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
 
 
 if __name__ == '__main__':

@@ -233,9 +233,11 @@ class DisplayItemQuickSetup(Operator):
         if self.type == 'RESET':
             rig.initialDisplayFrames()
         elif self.type == 'FACIAL':
+            rig.initialDisplayFrames(reset=False) # ensure default frames
             self.load_facial_items(root.mmd_root)
         elif self.type == 'GROUP_LOAD':
             self.load_bone_groups(root.mmd_root, rig.armature())
+            rig.initialDisplayFrames(reset=False) # ensure default frames
         elif self.type == 'GROUP_APPLY':
             self.apply_bone_groups(root.mmd_root, rig.armature())
         return {'FINISHED'}
@@ -262,7 +264,7 @@ class DisplayItemQuickSetup(Operator):
         for item, data in zip(facial_items, item_list):
             item.type = 'MORPH'
             item.morph_type, item.name = data
-        frame.active_item = min(frame.active_item, len(facial_items)-1)
+        frame.active_item = 0
 
     @staticmethod
     def load_bone_groups(mmd_root, armature):
@@ -289,7 +291,7 @@ class DisplayItemQuickSetup(Operator):
             for item, name in zip(items, bone_names):
                 item.type = 'BONE'
                 item.name = name
-            frame.active_item = min(frame.active_item, len(items)-1)
+            frame.active_item = 0
 
         # remove unused frames
         for i in reversed(range(len(frames))):
@@ -300,7 +302,7 @@ class DisplayItemQuickSetup(Operator):
                         frame.items.clear()
                 else:
                     frames.remove(i)
-        mmd_root.active_display_item_frame = min(mmd_root.active_display_item_frame, len(frames)-1)
+        mmd_root.active_display_item_frame = 0
 
     @staticmethod
     def apply_bone_groups(mmd_root, armature):
@@ -329,3 +331,4 @@ class DisplayItemQuickSetup(Operator):
         for group in arm_bone_groups:
             if group.name not in used_groups:
                 arm_bone_groups.remove(group)
+

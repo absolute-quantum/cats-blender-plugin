@@ -55,8 +55,8 @@ def _updateEdgeWeight(prop, context):
 def _getNameJ(prop):
     return prop.get('name_j', '')
 
-def _setNameJ(prop, value):
-    old_value = prop.get('name_j')
+def _setNameJ(prop, value):  
+    old_value = prop.get('name_j')  
     prop_value = value
     if prop_value and prop_value != old_value:
         root = Model.findRoot(bpy.context.active_object)
@@ -156,7 +156,7 @@ class MMDMaterial(PropertyGroup):
     is_double_sided = BoolProperty(
         name='Double Sided',
         description='Both sides of mesh should be rendered',
-        default=True,
+        default=False,
         update=_updateIsDoubleSided,
         )
 
@@ -252,3 +252,4 @@ class MMDMaterial(PropertyGroup):
         name='Comment',
         description='Comment',
         )
+

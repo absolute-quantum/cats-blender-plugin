@@ -26,7 +26,7 @@ jp_half_to_full_tuples = (
 
 jp_to_en_tuples = [
   ('全ての親', 'ParentNode'),
-  ('操作中心', 'ControlNode'),
+  ('操作中心', 'ControlNode'),               
   ('センター', 'Center'),
   ('ｾﾝﾀｰ', 'Center'),
   ('グループ', 'Group'),
@@ -59,7 +59,7 @@ jp_to_en_tuples = [
   ('符', 'Marks'),
   ('暗い', 'Dark'),
   ('腰', 'Waist'),
-  ('髪', 'Hair'),
+  ('髪', 'Hair'),  
   ('三つ編み', 'Braid'),
   ('胸', 'Breast'),
   ('乳', 'Boob'),
@@ -78,9 +78,9 @@ jp_to_en_tuples = [
   ('人差指', 'IndexFinger'),
   ('中指', 'MiddleFinger'),
   ('薬指', 'RingFinger'),
-  ('小指', 'LittleFinger'),
+  ('小指', 'LittleFinger'),  
   ('足', 'Leg'),
-  ('ひざ', 'Knee'),
+  ('ひざ', 'Knee'),  
   ('つま', 'Toe'),
   ('袖', 'Sleeve'),
   ('新規', 'New'),
@@ -125,7 +125,7 @@ jp_to_en_tuples = [
   ('調整', 'Adjustment'),
   ('補助', 'Aux'),
   ('右', 'Right'),
-  ('左', 'Left'),
+  ('左', 'Left'),  
   ('前', 'Front'),
   ('後ろ', 'Behind'),
   ('後', 'Back'),
@@ -133,7 +133,7 @@ jp_to_en_tuples = [
   ('中', 'Middle'),
   ('上', 'Upper'),
   ('下', 'Lower'),
-  ('親', 'Parent'),
+  ('親', 'Parent'),  
   ('先', 'Tip'),
   ('パーツ', 'Part'),
   ('光', 'Light'),
@@ -146,10 +146,10 @@ jp_to_en_tuples = [
   # full-width unicode forms I think: https://en.wikipedia.org/wiki/Halfwidth_and_fullwidth_forms
   ('０', '0'), ('１', '1'), ('２', '2'), ('３', '3'), ('４', '4'), ('５', '5'), ('６', '6'), ('７', '7'), ('８', '8'), ('９', '9'),
   ('ａ', 'a'), ('ｂ', 'b'), ('ｃ', 'c'), ('ｄ', 'd'), ('ｅ', 'e'), ('ｆ', 'f'), ('ｇ', 'g'), ('ｈ', 'h'), ('ｉ', 'i'), ('ｊ', 'j'),
-  ('ｋ', 'k'), ('ｌ', 'l'), ('ｍ', 'm'), ('ｎ', 'n'), ('ｏ', 'o'), ('ｐ', 'p'), ('ｑ', 'q'), ('ｒ', 'r'), ('ｓ', 's'), ('ｔ', 't'),
+  ('ｋ', 'k'), ('ｌ', 'l'), ('ｍ', 'm'), ('ｎ', 'n'), ('ｏ', 'o'), ('ｐ', 'p'), ('ｑ', 'q'), ('ｒ', 'r'), ('ｓ', 's'), ('ｔ', 't'), 
   ('ｕ', 'u'), ('ｖ', 'v'), ('ｗ', 'w'), ('ｘ', 'x'), ('ｙ', 'y'), ('ｚ', 'z'),
   ('Ａ', 'A'), ('Ｂ', 'B'), ('Ｃ', 'C'), ('Ｄ', 'D'), ('Ｅ', 'E'), ('Ｆ', 'F'), ('Ｇ', 'G'), ('Ｈ', 'H'), ('Ｉ', 'I'), ('Ｊ', 'J'),
-  ('Ｋ', 'K'), ('Ｌ', 'L'), ('Ｍ', 'M'), ('Ｎ', 'N'), ('Ｏ', 'O'), ('Ｐ', 'P'), ('Ｑ', 'Q'), ('Ｒ', 'R'), ('Ｓ', 'S'), ('Ｔ', 'T'),
+  ('Ｋ', 'K'), ('Ｌ', 'L'), ('Ｍ', 'M'), ('Ｎ', 'N'), ('Ｏ', 'O'), ('Ｐ', 'P'), ('Ｑ', 'Q'), ('Ｒ', 'R'), ('Ｓ', 'S'), ('Ｔ', 'T'), 
   ('Ｕ', 'U'), ('Ｖ', 'V'), ('Ｗ', 'W'), ('Ｘ', 'X'), ('Ｙ', 'Y'), ('Ｚ', 'Z'),
   ('＋', '+'), ('－', '-'), ('＿', '_'), ('／', '/'),
   ('.', '_'), # probably should be combined with the global 'use underscore' option
@@ -321,3 +321,4 @@ class DictionaryEnum:
         if dictionary == 'INTERNAL':
             return getTranslator(dict(jp_to_en_tuples))
         return getTranslator(dictionary)
+

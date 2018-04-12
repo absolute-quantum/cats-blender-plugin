@@ -32,16 +32,15 @@ import copy
 import tools.common
 import tools.translate
 import tools.armature_bones as Bones
+from googletrans import Translator
 from mmd_tools_local.translations import DictionaryEnum
 
 mmd_tools_installed = False
 try:
-    import mmd_tools
-
+    import mmd_tools_local
     mmd_tools_installed = True
 except:
     pass
-
 
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
@@ -68,12 +67,11 @@ class FixArmature(bpy.types.Operator):
     def poll(cls, context):
         if tools.common.get_armature() is None:
             return False
-        i = 0
-        for ob in bpy.data.objects:
-            if ob.type == 'MESH':
-                if ob.parent is not None and ob.parent.type == 'ARMATURE':
-                    i += 1
-        return i > 0
+
+        if len(tools.common.get_armature_objects()) == 0:
+            return False
+
+        return True
 
     def execute(self, context):
         wm = bpy.context.window_manager
@@ -147,7 +145,6 @@ class FixArmature(bpy.types.Operator):
 
         # mmd_tools specific operations
         if mmd_tools_installed:
-
             # Set correct mmd shading
             try:
                 bpy.ops.mmd_tools.set_shadeless_glsl_shading()
@@ -214,19 +211,8 @@ class FixArmature(bpy.types.Operator):
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
 
-        # Remove empty objects
+        # Remove empty mmd object
         tools.common.remove_empty()
-
-        # Remove Bone Groups
-        for group in armature.pose.bone_groups:
-            armature.pose.bone_groups.remove(group)
-
-        # Model should be in rest position
-        armature.data.pose_position = 'REST'
-
-        # Armature should be named correctly
-        armature.name = 'Armature'
-        armature.data.name = 'Armature'
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes(context)
@@ -249,6 +235,13 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.select(armature)
         tools.common.switch('EDIT')
+
+        # Remove Bone Groups
+        for group in armature.pose.bone_groups:
+            armature.pose.bone_groups.remove(group)
+
+        # Model should be in rest position
+        armature.data.pose_position = 'REST'
 
         # Count steps for loading bar again
         steps += len(armature.data.edit_bones)
@@ -291,12 +284,19 @@ class FixArmature(bpy.types.Operator):
                     upper_name += '_'
                 upper_name += s[:1].upper() + s[1:]
 
+            if upper_name[-2:] == 'S0':
+                upper_name = upper_name[:-2]
+
             bone.name = upper_name
 
         # Resolve conflicting bone names
         for names in Bones.bone_list_conflicting_names:
             if names[0] in armature.data.edit_bones and names[1] in armature.data.edit_bones:
                 armature.data.edit_bones.get(names[1]).name = names[2]
+
+        # Standardize bone names again (new duplicate bones have ".001" in it)
+        for bone in armature.data.edit_bones:
+            bone.name = bone.name.replace('.', '_')
 
         # Rename all the bones
         spines = []
@@ -460,6 +460,9 @@ class FixArmature(bpy.types.Operator):
                     neck.head = chest.tail
                     neck.tail = head.head
 
+                    if neck.head[z_cord] == neck.tail[z_cord]:
+                        neck.tail[z_cord] += 0.1
+
         # Correct arm bone positions for better looking
         if 'Left shoulder' in armature.data.edit_bones:
             if 'Left arm' in armature.data.edit_bones:
@@ -507,19 +510,17 @@ class FixArmature(bpy.types.Operator):
                         knee.tail = ankle.head
 
         # Hips bone should be fixed as per specification from the SDK code
+        full_body_tracking = True
         if not mixamo:
             if 'Hips' in armature.data.edit_bones:
                 if 'Left leg' in armature.data.edit_bones:
                     if 'Right leg' in armature.data.edit_bones:
                         hips = armature.data.edit_bones.get('Hips')
+                        spine = armature.data.edit_bones.get('Spine')
                         left_leg = armature.data.edit_bones.get('Left leg')
                         right_leg = armature.data.edit_bones.get('Right leg')
-                        spine = armature.data.edit_bones.get('Spine')
-                        chest = armature.data.edit_bones.get('Chest')
-                        neck = armature.data.edit_bones.get('Neck')
-                        head = armature.data.edit_bones.get('Head')
-
-                        full_body_tracking = False
+                        left_knee = armature.data.edit_bones.get('Left knee')
+                        right_knee = armature.data.edit_bones.get('Right knee')
 
                         # Fixing the hips
                         if not full_body_tracking:
@@ -542,13 +543,56 @@ class FixArmature(bpy.types.Operator):
                             if hips.tail[z_cord] < hips.head[z_cord]:
                                 hips.tail[z_cord] = hips.tail[z_cord] + 0.1
 
-                        elif spine and chest and neck and head:
-                            bones = [hips, spine, chest, neck, head]
-                            for bone in bones:
-                                bone_length = abs(bone.tail[z_cord] - bone.head[z_cord])
-                                bone.tail[x_cord] = bone.head[x_cord]
-                                bone.tail[y_cord] = bone.head[y_cord]
-                                bone.tail[z_cord] = bone.head[z_cord] + bone_length
+                        # elif spine and chest and neck and head:
+                        #     bones = [hips, spine, chest, neck, head]
+                        #     for bone in bones:
+                        #         bone_length = abs(bone.tail[z_cord] - bone.head[z_cord])
+                        #         bone.tail[x_cord] = bone.head[x_cord]
+                        #         bone.tail[y_cord] = bone.head[y_cord]
+                        #         bone.tail[z_cord] = bone.head[z_cord] + bone_length
+
+                        else:
+                            hips.head[x_cord] = 0
+                            hips.tail[x_cord] = 0
+
+                            hips.tail[y_cord] = hips.head[y_cord]
+
+                            hips.head[z_cord] = spine.head[z_cord]
+                            hips.tail[z_cord] = right_leg.head[z_cord]
+                            
+                            left_leg_top = armature.data.edit_bones.new('Left leg top')
+                            right_leg_top = armature.data.edit_bones.new('Right leg top')
+
+                            left_leg_top.head = left_leg.head
+                            left_leg_top.tail = left_leg.head
+                            left_leg_top.tail[z_cord] = left_leg.head[z_cord] + 0.1
+
+                            right_leg_top.head = right_leg.head
+                            right_leg_top.tail = right_leg.head
+                            right_leg_top.tail[z_cord] = right_leg.head[z_cord] + 0.1
+
+                            spine.head = hips.head
+
+                            left_leg.name = "Left leg 2"
+                            right_leg.name = "Right leg 2"
+
+                            left_leg_top.name = "Left leg"
+                            right_leg_top.name = "Right leg"
+
+                            left_leg_top.parent = hips
+                            right_leg_top.parent = hips
+
+                            left_leg.parent = left_leg_top
+                            right_leg.parent = right_leg_top
+
+                            left_knee.parent = left_leg_top
+                            right_knee.parent = right_leg_top
+
+
+
+
+
+
 
                         # # Fixing legs
                         # right_knee = armature.data.edit_bones.get('Right knee')
@@ -571,6 +615,7 @@ class FixArmature(bpy.types.Operator):
                         left_leg.roll = 0
                         right_leg.roll = 0
                         hips.roll = 0
+
 
         # Mixing the weights
         tools.common.unselect_all()
@@ -750,6 +795,10 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                         # Previous needs to be the parent of the current item
                         if previous != bone.parent.name:
                             return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
+
+    # Armature should be named correctly (has to be at the end because of multiple armatures)
+    tools.common.fix_armature_names()
+
 
     return {'result': True}
 

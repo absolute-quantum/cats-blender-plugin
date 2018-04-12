@@ -87,6 +87,8 @@ class VPDImporter:
 
 
     def assign(self, obj):
+        if obj is None:
+            return
         if obj.type == 'ARMATURE':
             with bpyutils.select_object(obj):
                 bpy.ops.object.mode_set(mode='POSE')
@@ -95,3 +97,4 @@ class VPDImporter:
             self.__assignToMesh(obj)
         else:
             pass
+

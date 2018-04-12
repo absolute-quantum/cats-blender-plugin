@@ -6,6 +6,7 @@ import bpy
 from bpy.types import Operator
 
 from mmd_tools_local import utils
+from mmd_tools_local.bpyutils import ObjectOp
 from mmd_tools_local.core import model as mmd_model
 from mmd_tools_local.core.morph import FnMorph
 from mmd_tools_local.core.material import FnMaterial
@@ -24,6 +25,12 @@ class MoveObject(Operator, utils.ItemMoveOp):
         m = cls.__PREFIX_REGEXP.match(obj.name)
         name = m.group('name') if m else obj.name
         obj.name = '%s_%s'%(utils.int2base(index, 36, 3), name)
+
+    @classmethod
+    def get_name(cls, obj, prefix=None):
+        m = cls.__PREFIX_REGEXP.match(obj.name)
+        name = m.group('name') if m else obj.name
+        return name[len(prefix):] if prefix and name.startswith(prefix) else name
 
     @classmethod
     def normalize_indices(cls, objects):
@@ -84,20 +91,12 @@ class CleanShapeKeys(Operator):
                 return False
         return True
 
-    def __shape_key_clean(self, context, obj, key_blocks):
+    def __shape_key_clean(self, obj, key_blocks):
         for kb in key_blocks:
             if self.__can_remove(kb):
                 obj.shape_key_remove(kb)
-
-    def __shape_key_clean_old(self, context, obj, key_blocks):
-        context.scene.objects.active = obj
-        for i in reversed(range(len(key_blocks))):
-            kb = key_blocks[i]
-            if self.__can_remove(kb):
-                obj.active_shape_key_index = i
-                bpy.ops.object.shape_key_remove()
-
-    __do_shape_key_clean = __shape_key_clean_old if bpy.app.version < (2, 75, 0) else __shape_key_clean
+        if len(key_blocks) == 1:
+            obj.shape_key_remove(key_blocks[0])
 
     def execute(self, context):
         for ob in context.selected_objects:
@@ -105,11 +104,7 @@ class CleanShapeKeys(Operator):
                 continue
             if not ob.data.shape_keys.use_relative:
                 continue # not be considered yet
-            key_blocks = ob.data.shape_keys.key_blocks
-            counts = len(key_blocks)
-            self.__do_shape_key_clean(context, ob, key_blocks)
-            counts -= len(key_blocks)
-            self.report({ 'INFO' }, 'Removed %d shape keys of object "%s"'%(counts, ob.name))
+            self.__shape_key_clean(ObjectOp(ob), ob.data.shape_keys.key_blocks)
         return {'FINISHED'}
 
 class SeparateByMaterials(Operator):
@@ -139,7 +134,7 @@ class SeparateByMaterials(Operator):
         if root:
             # Store the current material names
             rig = mmd_model.Model(root)
-            mat_names = [mat.name for mat in rig.materials()]
+            mat_names = [getattr(mat, 'name', None) for mat in rig.materials()]
         utils.separateByMaterials(obj)
         if self.clean_shape_keys:
             bpy.ops.mmd_tools.clean_shape_keys()
@@ -148,9 +143,9 @@ class SeparateByMaterials(Operator):
             # The material morphs store the name of the mesh, not of the object.
             # So they will not be out of sync
             for mesh in rig.meshes():
-                if len(mesh.data.materials) == 1:
+                if len(mesh.data.materials) > 0:
                     mat = mesh.data.materials[0]
-                    idx = mat_names.index(mat.name)
+                    idx = mat_names.index(getattr(mat, 'name', None))
                     MoveObject.set_index(mesh, idx)
 
         if root and len(root.mmd_root.material_morphs) > 0:
@@ -170,7 +165,7 @@ class JoinMeshes(Operator):
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
         if root is None:
-            self.report({ 'ERROR' }, 'Select a MMD model')
+            self.report({ 'ERROR' }, 'Select a MMD model') 
             return { 'CANCELLED' }
 
         if root:
@@ -180,21 +175,17 @@ class JoinMeshes(Operator):
         # Find all the meshes in mmd_root
         rig = mmd_model.Model(root)
         meshes_list = sorted(rig.meshes(), key=lambda x: x.name)
+        if not meshes_list:
+            return { 'CANCELLED' }
         active_mesh = meshes_list[0]
 
-        bpy.ops.object.select_all(action='DESELECT')
-        act_layer = context.scene.active_layer
-        for mesh in meshes_list:
-            mesh.layers[act_layer] = True
-            mesh.hide_select = False
-            mesh.hide = False
-            mesh.select = True
-        bpy.context.scene.objects.active = active_mesh
+        from mmd_tools_local import bpyutils
+        bpyutils.select_object(active_mesh, objects=meshes_list)
 
         # Store the current order of the materials
         for m in meshes_list[1:]:
             for mat in m.data.materials:
-                if mat and mat.name not in active_mesh.data.materials:
+                if getattr(mat, 'name', None) not in active_mesh.data.materials[:]:
                     active_mesh.data.materials.append(mat)
 
         # Store the current order of shape keys (vertex morphs)
@@ -233,14 +224,20 @@ class AttachMeshesToMMD(Operator):
         if armObj is None:
             self.report({ 'ERROR' }, 'Model Armature not found')
             return { 'CANCELLED' }
-        act_layer = bpy.context.scene.active_layer
-        meshes_list = (o for o in bpy.context.scene.objects
-                       if o.layers[act_layer] and o.type == 'MESH' and o.mmd_type == 'NONE')
+
+        def __get_root(mesh):
+            if mesh.parent is None:
+                return mesh
+            return __get_root(mesh.parent)
+
+        meshes_list = (o for o in context.visible_objects if o.type == 'MESH' and o.mmd_type == 'NONE')
         for mesh in meshes_list:
             if mmd_model.Model.findRoot(mesh) is not None:
                 # Do not attach meshes from other models
                 continue
+            mesh = __get_root(mesh)
             m = mesh.matrix_world
+            mesh.parent_type = 'OBJECT'
             mesh.parent = armObj
             mesh.matrix_world = m
         return { 'FINISHED' }
@@ -296,3 +293,4 @@ class ChangeMMDIKLoopFactor(Operator):
                 self.report({ 'INFO' }, 'Update %s of %s: %d -> %d'%(c.name, b.name, c.iterations, iterations))
                 c.iterations = iterations
         return { 'FINISHED' }
+

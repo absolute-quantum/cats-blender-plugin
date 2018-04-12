@@ -166,3 +166,4 @@ class MMDJointPanel(_PanelBase, Panel):
         row = col.row()
         row.column(align=True).prop(obj.mmd_joint, 'spring_linear')
         row.column(align=True).prop(obj.mmd_joint, 'spring_angular')
+

@@ -63,12 +63,6 @@ class MMDBone(PropertyGroup):
         max=100,
         )
 
-    is_visible = BoolProperty(
-        name='Visible',
-        description='Is visible',
-        default=True,
-        )
-
     is_controllable = BoolProperty(
         name='Controllable',
         description='Is controllable',

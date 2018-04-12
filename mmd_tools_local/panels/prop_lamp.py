@@ -31,3 +31,4 @@ class MMDLampPanel(Panel):
             c.prop(lamp, 'location', text='Light Source')
         else:
             layout.operator('mmd_tools.convert_to_mmd_lamp', 'Convert')
+

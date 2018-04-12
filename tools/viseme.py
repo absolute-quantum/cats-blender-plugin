@@ -286,7 +286,7 @@ class AutoVisemeButton(bpy.types.Operator):
         tools.common.remove_empty()
 
         # Fix armature name
-        tools.common.fix_armature_name()
+        tools.common.fix_armature_names()
 
         # tools.common.repair_shapekeys()
 

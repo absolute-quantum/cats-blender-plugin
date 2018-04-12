@@ -38,7 +38,7 @@ from collections import OrderedDict
 
 mmd_tools_installed = False
 try:
-    import mmd_tools
+    import mmd_tools_local
     mmd_tools_installed = True
 except:
     pass
@@ -314,7 +314,7 @@ class JoinMeshes(bpy.types.Operator):
 
 class SeparateByMaterials(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_materials'
-    bl_label = 'Separate by Materials'
+    bl_label = 'Materials'
     bl_description = 'Separates selected mesh by materials.\n' \
                      '\n' \
                      'Warning: Never decimate something where you might need the shape keys later (face, mouth, eyes..)'
@@ -348,6 +348,43 @@ class SeparateByMaterials(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class SeparateByLooseParts(bpy.types.Operator):
+    bl_idname = 'armature_manual.separate_by_loose_parts'
+    bl_label = 'Loose Parts'
+    bl_description = 'Separates selected mesh by loose parts sorted by materials.\n' \
+                     'This acts like separating by materials but creates more meshes for more precision.\n' \
+                     '\n' \
+                     'Warning: Never decimate something where you might need the shape keys later (face, mouth, eyes..)'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+
+        if obj and obj.type == 'MESH':
+            return True
+
+        i = 0
+        for ob in bpy.data.objects:
+            if ob.type == 'MESH':
+                if ob.parent is not None and ob.parent.type == 'ARMATURE':
+                    i += 1
+        return i == 1
+
+    def execute(self, context):
+        obj = context.active_object
+
+        if not obj or (obj and obj.type != 'MESH'):
+            tools.common.unselect_all()
+            meshes = tools.common.get_meshes_objects()
+            if len(meshes) == 0:
+                return {'FINISHED'}
+            obj = meshes[0]
+
+        tools.common.separate_by_loose_parts(context, obj)
+        return {'FINISHED'}
+
+
 class MixWeights(bpy.types.Operator):
     bl_idname = 'armature_manual.mix_weights'
     bl_label = 'Mix Weights'
@@ -365,8 +402,8 @@ class MixWeights(bpy.types.Operator):
         if bpy.context.active_object is None:
             return False
 
-        if bpy.context.selected_editable_bones is None:
-            return False
+        # if bpy.context.selected_editable_bones is None:
+        #     return False
 
         # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
         #     return True

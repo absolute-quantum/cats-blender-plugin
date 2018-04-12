@@ -34,6 +34,7 @@ class MMDToolsObjectPanel(_PanelBase, Panel):
         col = layout.column(align=True)
         row = col.row(align=True)
         row.operator('mmd_tools.create_mmd_model_root_object', text='Create Model', icon='OUTLINER_OB_ARMATURE')
+        row.operator('mmd_tools.convert_to_mmd_model', text='Convert Model', icon='OUTLINER_OB_ARMATURE')
 
         col = layout.column(align=True)
         col.operator('mmd_tools.convert_materials_for_cycles', text='Convert Materials For Cycles')
@@ -342,6 +343,8 @@ class MMDMorphMenu(Menu):
 
     def draw(self, context):
         layout = self.layout
+        layout.operator_enum('mmd_tools.morph_slider_setup', 'type')
+        layout.separator()
         layout.operator('mmd_tools.morph_move', icon=TRIA_UP_BAR, text='Move To Top').type = 'TOP'
         layout.operator('mmd_tools.morph_move', icon=TRIA_DOWN_BAR, text='Move To Bottom').type = 'BOTTOM'
 
@@ -384,6 +387,9 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
 
         morph = ItemOp.get_by_index(getattr(mmd_root, morph_type), mmd_root.active_morph)
         if morph:
+            slider = rig.morph_slider.get(morph.name)
+            if slider:
+                col.row().prop(slider, 'value')
             draw_func = getattr(self, '_draw_%s_data'%morph_type[:-7], None)
             if draw_func:
                 draw_func(context, rig, col, morph)
@@ -409,6 +415,7 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
             kb = shape_keys.key_blocks.get(morph.name, None)
             if kb:
                 row = col.row(align=True)
+                row.active = not (i.show_only_shape_key or kb.mute)
                 row.label(i.name, icon='OBJECT_DATA')
                 row.prop(kb, 'value', text=kb.name)
 
@@ -571,7 +578,7 @@ class UL_ObjectsMixIn(object):
         default=False,
         )
 
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index, flt_flag):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             row = layout.split(percentage=0.5, align=True)
             item_prop = getattr(item, self.prop_name)
@@ -740,3 +747,4 @@ class MMDJointSelectorPanel(_PanelBase, Panel):
         tb1.enabled = active_obj.mmd_type == 'JOINT'
         tb1.operator('mmd_tools.object_move', text='', icon='TRIA_UP').type = 'UP'
         tb1.operator('mmd_tools.object_move', text='', icon='TRIA_DOWN').type = 'DOWN'
+
