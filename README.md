@@ -81,6 +81,7 @@ Fixes your model automatically by:
  - Removing bone constraints
  - Deleting unused vertex groups
  - Using the correct shading
+ - Making it compatible with Full Body Tracking
 
 ##### Separate by material / loose parts
 Separates a mesh by materials or loose parts
@@ -209,15 +210,26 @@ This will start the merge process
 
 ## Copy Protection
 
-![](https://i.imgur.com/eyfqaqd.png)
+![](https://i.imgur.com/3yxkxuy.png)
 
 **Can protect your avatars from being ripped from the game cache**
 Game cache rips in most common cases do not include blendshapes and shaders. 
 This method will make it much harder for people that try to steal your avatar through ripping from cache.
 
+#### Options:
+##### Full Randomization
+This will randomize every vertex of your model and it will be completely unusable for thieves.
+However this method might cause problems with the Outline option from Cubed shader.
+If you have any problems ingame with this option try again with option "Partial".
 
+##### Partial Randomization
+Use this if you experience issues ingame with the Full option!
+This will only randomize a number of vertices and therefore will have a few unprotected areas,
+but it's still unusable to thieves as a whole.
+This method however reduces the glitches that can occur ingame by a lot.
+Use this if you experience any issues ingame with the Full option!
 
-To setup, follow these steps:
+#### How to setup:
 
 1. Do all the modifications to your model in Blender before you follow the next steps!
    This option should be the last one you do in Blender before exporting!
@@ -242,7 +254,7 @@ To setup, follow these steps:
 
 People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
 
-**Things to note:**
+##### Things to note:
 
 - Unity can show some lighting bugs on the model. This is mostly not a problem as it will look normal inside VRChat.
 - This protection method can have a negative effect on the Outline option from the Cubed shader depending

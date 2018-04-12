@@ -603,15 +603,15 @@ class ToolPanel:
         name="Randomization Level",
         description="Randomization Level",
         items=[
-            ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unsusable for thieves.\n"
-                             'This method might cause problems with the outline from Cubed shader.\n'
-                             'If you have any problem ingame try again with option "Partial".'),
-            ("PARTIAL", "Partial", 'Use this if you experience bugs ingame with the Full option!\n'
+            ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
+                             'However this method might cause problems with the Outline option from Cubed shader.\n'
+                             'If you have any issues ingame try again with option "Partial".'),
+            ("PARTIAL", "Partial", 'Use this if you experience issues ingame with the Full option!\n'
                                    '\n'
                                    "This will only randomize a number of vertices and therefore will have a few unprotected areas,\n"
                                    "but it's still unusable to thieves as a whole.\n"
                                    'This method however reduces the glitches that can occur ingame by a lot.\n'
-                                   'Use this if you experience any bugs ingame with the Full option!')
+                                   'Use this if you experience any issues ingame with the Full option!')
         ],
         default='FULL'
     )
