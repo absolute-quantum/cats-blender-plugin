@@ -83,7 +83,7 @@ Fixes your model automatically by:
  - Using the correct shading
  - Making it compatible with Full Body Tracking
  
- **special thanks to @ProfessorSnep#0001, @persia#0123 and @Gallium#7020 <3 <3**
+ **special thanks to @Mimi#4114, @ProfessorSnep#0001, @persia#0123 and @Gallium#7020 <3 <3**
 
 ##### Separate by material / loose parts
 Separates a mesh by materials or loose parts
