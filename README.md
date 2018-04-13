@@ -83,7 +83,7 @@ Fixes your model automatically by:
  - Using the correct shading
  - Making it compatible with Full Body Tracking
  
- **special thanks to @Mimi#4114, @ProfessorSnep#0001, @persia#0123 and @Gallium#7020 <3 <3**
+ **special thanks to @ProfessorSnep#0001, @Mimi#4114, @persia#0123 and @Gallium#7020 <3 <3**
 
 ##### Separate by material / loose parts
 Separates a mesh by materials or loose parts
@@ -284,11 +284,11 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Added: mmd_tools is no longer required! Cats now automatically comes with it!
   - You should uninstall all previous versions of mmd_tools for the best result
   - If you want to use your own mmd_tools load it after Cats
-- Added: Full Body Tracking support for "Fix Model"!
+- Added: Full Body Tracking support for "Fix Model"! (thanks @ProfessorSnep#0001!)
   - This also partially fixes leg bending for desktop users
 - Added: Multiple armature support!
   - Armature selection appears when 2 or more armatures are detected
-- Added: Copy Protection: Secures your avatar against unity game cache ripping!
+- Added: Copy Protection: Secures your avatar against unity game cache ripping! (thanks @zarniwoop#6081!)
 - Added: Model: New "Separate by Loose Parts" button
 - Added: Model: Unreal Engine models are now supported!
 - Added: Model: Mixing Weights is now possible in Pose Mode
