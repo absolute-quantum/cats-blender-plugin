@@ -82,6 +82,8 @@ Fixes your model automatically by:
  - Deleting unused vertex groups
  - Using the correct shading
  - Making it compatible with Full Body Tracking
+ 
+ **special thanks to @Mimi#4114, @ProfessorSnep#0001, @persia#0123 and @Gallium#7020 <3 <3**
 
 ##### Separate by material / loose parts
 Separates a mesh by materials or loose parts
@@ -261,6 +263,8 @@ People that try to steal your avatar will then only see a box of mangled waifu t
   Try it for yourself to see if it effects you and disable the option if necessary.
 - The preview avatar within the avatar selection menu can look weird.
   This does not effect how it actually looks ingame.
+  
+  **special thanks to @zarniwoop#6081**
 
 
 ## Update Plugin
