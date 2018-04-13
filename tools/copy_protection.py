@@ -24,6 +24,7 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 import copy
+import webbrowser
 
 import bpy
 import random
@@ -200,4 +201,15 @@ class CopyProtectionRandomize(bpy.types.Operator):
         bpy.ops.copyprotection.enable('INVOKE_DEFAULT')
 
         self.report({'INFO'}, 'Model protection randomized!')
+        return {'FINISHED'}
+
+
+class ProtectionTutorialButton(bpy.types.Operator):
+    bl_idname = 'copyprotection.button'
+    bl_label = 'Go to Documentation'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#copy-protection')
+
+        self.report({'INFO'}, 'Documentation')
         return {'FINISHED'}
