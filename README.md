@@ -276,7 +276,7 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 ## Changelog
 
 #### 0.7.1
-- Added: Model: The Full Body Fix is now an toggleable option
+- Added: Model: The Full Body Fix is now a toggleable option
   - If you get the "spine length zero" warning in Unity you can ignore it as it shouldn't break anything
     But if it really does cause issues uncheck this option
 - Added: Copy protection: Added "Go to Documentation" button
