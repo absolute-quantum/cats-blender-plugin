@@ -242,7 +242,7 @@ Use this if you experience any issues ingame with the Full option!
      - Then, except for just dragging the fbx into Unity, you need to go into the folder where this Unity project is located
        and then replace the unprotected fbx with the protected one. 
        That way your configurations will be kept.
-     - Skip to step 2
+     - Skip to step 4
 3. In Blender: Click the "Enable Protection" button and export your model and import it into Unity
 4. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
    https://i.imgur.com/RlrGTvV.gif
