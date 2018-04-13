@@ -279,6 +279,7 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Added: Model: The Full Body Fix is now an toggleable option
   - If you get the "spine lenght zero" warning in Unity you can ignore it as it shouldn't break anything
     But if it really does cause issues uncheck this option
+- Added: Copy protection: Added "Go to Documentation" button
 
 #### 0.7.0
 - Added: mmd_tools is no longer required! Cats now automatically comes with it!
