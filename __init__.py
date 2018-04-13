@@ -85,7 +85,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 7, 0],  # Only change this version right before publishing the new update!
+    'version': [0, 7, 1],  # Only change this version right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -201,6 +201,15 @@ class ToolPanel:
         name='Armature',
         description='Select the armature which will be used by Cats.',
         items=tools.common.get_armature_list
+    )
+
+    bpy.types.Scene.full_body = bpy.props.BoolProperty(
+        name='Apply Full Body Tracking Fix',
+        description="Applies a general fix for Full Body Tracking and models in general.\n"
+                    'It can reduce the knee bending of your avatar in VRChat.\n'
+                    'If you get the "Spine lenght is zero" warning in Unity you can ignore it.\n'
+                    'If you have problems with the hips ingame, uncheck this option.',
+        default=False
     )
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
@@ -610,8 +619,7 @@ class ToolPanel:
                                    '\n'
                                    "This will only randomize a number of vertices and therefore will have a few unprotected areas,\n"
                                    "but it's still unusable to thieves as a whole.\n"
-                                   'This method however reduces the glitches that can occur ingame by a lot.\n'
-                                   'Use this if you experience any issues ingame with the Full option!')
+                                   'This method however reduces the glitches that can occur ingame by a lot.')
         ],
         default='FULL'
     )
@@ -677,6 +685,9 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'armature', icon='ARMATURE_DATA')
 
         col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'full_body')
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
         row = col.row(align=True)
@@ -1145,9 +1156,11 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 0.8
         row.label('Prevents your avatar from Unity cache ripping.')
+        col.separator()
         row = col.row(align=True)
-        row.scale_y = 0.8
         row.label('Before use: Read the documentation!')
+        row = col.row(align=True)
+        row.operator('copyprotection.button', icon='FORWARD')
         col.separator()
         row = col.row(align=True)
         row.label('Randomization Level:')
@@ -1493,6 +1506,7 @@ classesToRegister = [
     tools.copy_protection.CopyProtectionEnable,
     tools.copy_protection.CopyProtectionDisable,
     tools.copy_protection.CopyProtectionRandomize,
+    tools.copy_protection.ProtectionTutorialButton,
 
     UpdaterPanel,
     UpdaterPreferences,

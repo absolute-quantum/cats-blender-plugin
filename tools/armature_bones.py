@@ -804,6 +804,7 @@ bone_reweight['\Left leg'] = [
     '+_\Left_Foot_D',
     'Leg_\Left_Thigh_Ctr2',
     'LegDS_\L',
+    '\Left_Leg_2',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',

@@ -510,7 +510,7 @@ class FixArmature(bpy.types.Operator):
                         knee.tail = ankle.head
 
         # Hips bone should be fixed as per specification from the SDK code
-        full_body_tracking = True
+        full_body_tracking = context.scene.full_body
         if not mixamo:
             if 'Hips' in armature.data.edit_bones:
                 if 'Left leg' in armature.data.edit_bones:

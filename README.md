@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.7.0)
+# Cats Blender Plugin (0.7.1)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -82,6 +82,8 @@ Fixes your model automatically by:
  - Deleting unused vertex groups
  - Using the correct shading
  - Making it compatible with Full Body Tracking
+ 
+ **special thanks to @ProfessorSnep#0001, @Mimi#4114, @persia#0123 and @Gallium#7020 <3 <3**
 
 ##### Separate by material / loose parts
 Separates a mesh by materials or loose parts
@@ -210,7 +212,7 @@ This will start the merge process
 
 ## Copy Protection
 
-![](https://i.imgur.com/3yxkxuy.png)
+![](https://i.imgur.com/W1OoFs0.png)
 
 **Can protect your avatars from being ripped from the game cache**
 Game cache rips in most common cases do not include blendshapes and shaders. 
@@ -227,7 +229,6 @@ Use this if you experience issues ingame with the Full option!
 This will only randomize a number of vertices and therefore will have a few unprotected areas,
 but it's still unusable to thieves as a whole.
 This method however reduces the glitches that can occur ingame by a lot.
-Use this if you experience any issues ingame with the Full option!
 
 #### How to setup:
 
@@ -242,7 +243,7 @@ Use this if you experience any issues ingame with the Full option!
      - Then, except for just dragging the fbx into Unity, you need to go into the folder where this Unity project is located
        and then replace the unprotected fbx with the protected one. 
        That way your configurations will be kept.
-     - Skip to step 2
+     - Skip to step 4
 3. In Blender: Click the "Enable Protection" button and export your model and import it into Unity
 4. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
    https://i.imgur.com/RlrGTvV.gif
@@ -262,6 +263,8 @@ People that try to steal your avatar will then only see a box of mangled waifu t
   Try it for yourself to see if it effects you and disable the option if necessary.
 - The preview avatar within the avatar selection menu can look weird.
   This does not effect how it actually looks ingame.
+  
+  **special thanks to @zarniwoop#6081**
 
 
 ## Update Plugin
@@ -272,15 +275,21 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 
 ## Changelog
 
+#### 0.7.1
+- Added: Model: The Full Body Fix is now a toggleable option
+  - If you get the "spine length zero" warning in Unity you can ignore it as it shouldn't break anything
+    But if it really does cause issues uncheck this option
+- Added: Copy protection: Added "Go to Documentation" button
+
 #### 0.7.0
 - Added: mmd_tools is no longer required! Cats now automatically comes with it!
   - You should uninstall all previous versions of mmd_tools for the best result
   - If you want to use your own mmd_tools load it after Cats
-- Added: Full Body Tracking support for "Fix Model"!
+- Added: Full Body Tracking support for "Fix Model"! (thanks @ProfessorSnep#0001!)
   - This also partially fixes leg bending for desktop users
 - Added: Multiple armature support!
   - Armature selection appears when 2 or more armatures are detected
-- Added: Copy Protection: Secures your avatar against unity game cache ripping!
+- Added: Copy Protection: Secures your avatar against unity game cache ripping! (thanks @zarniwoop#6081!)
 - Added: Model: New "Separate by Loose Parts" button
 - Added: Model: Unreal Engine models are now supported!
 - Added: Model: Mixing Weights is now possible in Pose Mode
@@ -297,18 +306,6 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Changed: Eye tracking: Improved randomness of vertex movement (could fix some instances where the mouth stays open)
 - Fixed: Bone Merging: No longer deletes random bones sometimes
 - Fixed: Supporter: Names no longer disappear without a reason
-
-#### 0.6.1
-- Added: Model: A lot more models are now compatible (please report non working models to us)
-- Added: Model: Added "Pose to Shape Key" button when in pose mode. This converts the current pose into a shape key
-- Changed: Eye Tracking: Improved error messages
-- Fixed: Eye Tracking: Fixed a bug where the mouth would stay open after creating eye tracking
-- Fixed: Decimation: Fixed a bug where decimation would failed due to division by zero
-- Fixed: Model: Fixed a bug where root bones created by cats got deleted
-- Fixed: Materials: Fixed an error when the texture files don't exist
-- Fixed: Translation: Shape keys created by cats no longer get translated
-- Fixed: Small spelling mistake
-- Fixed: More bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
