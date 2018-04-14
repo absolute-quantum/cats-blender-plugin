@@ -218,17 +218,8 @@ This will start the merge process
 Game cache rips in most common cases do not include blendshapes and shaders. 
 This method will make it much harder for people that try to steal your avatar through ripping from cache.
 
-#### Options:
-##### Full Randomization
-This will randomize every vertex of your model and it will be completely unusable for thieves.
-However this method might cause problems with the Outline option from Cubed shader.
-If you have any problems ingame with this option try again with option "Partial".
+**We managed to fix all the lighting bugs! Therefore the randomization options are not needed anymore.**
 
-##### Partial Randomization
-Use this if you experience issues ingame with the Full option!
-This will only randomize a number of vertices and therefore will have a few unprotected areas,
-but it's still unusable to thieves as a whole.
-This method however reduces the glitches that can occur ingame by a lot.
 
 #### How to setup:
 
@@ -244,7 +235,9 @@ This method however reduces the glitches that can occur ingame by a lot.
        and then replace the unprotected fbx with the protected one. 
        That way your configurations will be kept.
      - Skip to step 4
-3. In Blender: Click the "Enable Protection" button and export your model and import it into Unity
+3. In Blender: Click the "Enable Protection" button
+4. Export it to Unity by either using the "Export" button within Cats or set the fbx export option by yourself: 
+   Geometrie > Smoothing > Set to "Face"
 4. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
    https://i.imgur.com/RlrGTvV.gif
 5. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
@@ -254,15 +247,6 @@ This method however reduces the glitches that can occur ingame by a lot.
 6. Your avatar now behaves just like a normal one.
 
 People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
-
-##### Things to note:
-
-- Unity can show some lighting bugs on the model. This is mostly not a problem as it will look normal inside VRChat.
-- This protection method can have a negative effect on the Outline option from the Cubed shader depending
-  on which randomization option you choose in Cats.
-  Try it for yourself to see if it effects you and disable the option if necessary.
-- The preview avatar within the avatar selection menu can look weird.
-  This does not effect how it actually looks ingame.
   
   **special thanks to @zarniwoop#6081**
 
@@ -274,6 +258,11 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 
 
 ## Changelog
+
+#### 0.7.2
+- Fixed: Copy Protection: The lighting bugs are now gone! Therefore we removed the randomization options.
+  - Either use the Export button within Cats or set the export option by yourself:
+    Geometrie > Smoothing > Set to "Face"
 
 #### 0.7.1
 - Added: Model: The Full Body Fix is now a toggleable option
@@ -300,13 +289,6 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Changed: Updater: Various improvements
 - Fixed: A bunch of bugs
 
-#### 0.6.2
-- Added: Model: More models are now compatible (please report non working models to us)
-- Added: Model: Missing necks are now created automatically
-- Changed: Eye tracking: Improved randomness of vertex movement (could fix some instances where the mouth stays open)
-- Fixed: Bone Merging: No longer deletes random bones sometimes
-- Fixed: Supporter: Names no longer disappear without a reason
-
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
 
@@ -316,6 +298,7 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
  - Automatic lower lid creation for eye tracking
  - Manual bone selection button for root bones
  - Full body tracking proportion adjustments
+ - Making Copy Protection compatible with multiple meshes
 
 
 ## Feedback

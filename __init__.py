@@ -92,7 +92,7 @@ bl_info = {
     'warning': '',
 }
 
-dev_branch = False
+dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
 # global variable to store icons in
@@ -607,22 +607,22 @@ class ToolPanel:
         items=tools.rootbone.get_parent_root_bones,
     )
 
-    # Copy Protection
-    bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
-        name="Randomization Level",
-        description="Randomization Level",
-        items=[
-            ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
-                             'However this method might cause problems with the Outline option from Cubed shader.\n'
-                             'If you have any issues ingame try again with option "Partial".'),
-            ("PARTIAL", "Partial", 'Use this if you experience issues ingame with the Full option!\n'
-                                   '\n'
-                                   "This will only randomize a number of vertices and therefore will have a few unprotected areas,\n"
-                                   "but it's still unusable to thieves as a whole.\n"
-                                   'This method however reduces the glitches that can occur ingame by a lot.')
-        ],
-        default='FULL'
-    )
+    # Copy Protection - obsolete
+    # bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
+    #     name="Randomization Level",
+    #     description="Randomization Level",
+    #     items=[
+    #         ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
+    #                          'However this method might cause problems with the Outline option from Cubed shader.\n'
+    #                          'If you have any issues ingame try again with option "Partial".'),
+    #         ("PARTIAL", "Partial", 'Use this if you experience issues ingame with the Full option!\n'
+    #                                '\n'
+    #                                "This will only randomize a number of vertices and therefore will have a few unprotected areas,\n"
+    #                                "but it's still unusable to thieves as a whole.\n"
+    #                                'This method however reduces the glitches that can occur ingame by a lot.')
+    #     ],
+    #     default='FULL'
+    # )
 
 
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
@@ -1155,17 +1155,18 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label('Prevents your avatar from Unity cache ripping.')
+        row.label('Saves your avatar from Unity cache ripping.')
         col.separator()
         row = col.row(align=True)
         row.label('Before use: Read the documentation!')
         row = col.row(align=True)
         row.operator('copyprotection.button', icon='FORWARD')
         col.separator()
-        row = col.row(align=True)
-        row.label('Randomization Level:')
-        row = col.row(align=True)
-        row.prop(context.scene, 'protection_mode', expand=True)
+        col.separator()
+        # row = col.row(align=True)
+        # row.label('Randomization Level:')
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'protection_mode', expand=True)
 
         row = col.row(align=True)
         meshes = tools.common.get_meshes_objects()

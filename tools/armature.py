@@ -274,6 +274,7 @@ class FixArmature(bpy.types.Operator):
                 .replace('Bip1_', 'Bip_')\
                 .replace('Bip01_', 'Bip_')\
                 .replace('Bip001_', 'Bip_')\
+                .replace('Character1_', '')\
                 .replace('____', '_')\
                 .replace('___', '_')\
                 .replace('__', '_')\

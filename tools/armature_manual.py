@@ -168,7 +168,12 @@ class ExportModel(bpy.types.Operator):
 
     def execute(self, context):
         try:
-            bpy.ops.export_scene.fbx('INVOKE_DEFAULT', object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'}, use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False)
+            bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
+                                     object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
+                                     use_mesh_modifiers=False,
+                                     add_leaf_bones=False,
+                                     bake_anim=False,
+                                     mesh_smooth_type='FACE')
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 

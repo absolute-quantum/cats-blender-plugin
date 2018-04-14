@@ -76,8 +76,8 @@ class CopyProtectionEnable(bpy.types.Operator):
 
         # mangle percentage
         percent = 1
-        if context.scene.protection_mode == 'PARTIAL':
-            percent = 0.03
+        # if context.scene.protection_mode == 'PARTIAL':
+        #     percent = 0.03
 
         verts = len(mesh.data.vertices)
         every = int(verts / (verts * percent))
@@ -120,7 +120,7 @@ class CopyProtectionEnable(bpy.types.Operator):
                 continue
             i += 1
 
-        mesh.data.update()
+        # mesh.data.update()
 
         # 3. Create a new shapekey that distorts all the vertices
         basis_obfuscated = mesh.shape_key_add(name='Basis', from_mix=False)
