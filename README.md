@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.7.1)
+# Cats Blender Plugin (0.7.2)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -212,7 +212,7 @@ This will start the merge process
 
 ## Copy Protection
 
-![](https://i.imgur.com/W1OoFs0.png)
+![](https://i.imgur.com/5qP5bCT.png)
 
 **Can protect your avatars from being ripped from the game cache**
 Game cache rips in most common cases do not include blendshapes and shaders. 
@@ -237,7 +237,7 @@ This method will make it much harder for people that try to steal your avatar th
      - Skip to step 4
 3. In Blender: Click the "Enable Protection" button
 4. Export it to Unity by either using the "Export" button within Cats or set the fbx export option by yourself: 
-   Geometrie > Smoothing > Set to "Face"
+   Geometries > Smoothing > Set to "Face"
 4. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
    https://i.imgur.com/RlrGTvV.gif
 5. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
@@ -260,14 +260,19 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 ## Changelog
 
 #### 0.7.2
+- Changed: Copy Protection: Does now work on multiple meshes.
 - Fixed: Copy Protection: The lighting bugs are now gone! Therefore we removed the randomization options.
   - Either use the Export button within Cats or set the export option by yourself:
-    Geometrie > Smoothing > Set to "Face"
+    Geometries > Smoothing > Set to "Face"
+- Added: Model: "Fix Model" now sets the bone layer to 0.
+  - This means that shadow bones are now editable
+- Fixed: Model: Separating by Loose Parts should no longer crash Blender.
+  - Instead it might lag (but that's better than crashing)
 
 #### 0.7.1
 - Added: Model: The Full Body Fix is now a toggleable option
-  - If you get the "spine length zero" warning in Unity you can ignore it as it shouldn't break anything
-    But if it really does cause issues uncheck this option
+  - If you get the "spine length zero" warning in Unity you can ignore it as it shouldn't break anything.
+    But if it really does cause issues, uncheck this option
 - Added: Copy protection: Added "Go to Documentation" button
 
 #### 0.7.0
@@ -298,7 +303,6 @@ See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plu
  - Automatic lower lid creation for eye tracking
  - Manual bone selection button for root bones
  - Full body tracking proportion adjustments
- - Making Copy Protection compatible with multiple meshes
 
 
 ## Feedback

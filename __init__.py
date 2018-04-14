@@ -1155,7 +1155,7 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label('Saves your avatar from Unity cache ripping.')
+        row.label('Protects your avatar from Unity cache ripping.')
         col.separator()
         row = col.row(align=True)
         row.label('Before use: Read the documentation!')
@@ -1169,14 +1169,11 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         # row.prop(context.scene, 'protection_mode', expand=True)
 
         row = col.row(align=True)
+        row.scale_y = 1.2
         meshes = tools.common.get_meshes_objects()
         if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
-            row = row.split(percentage=0.9, align=False)
-            row.scale_y = 1.2
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
-            row.operator('copyprotection.randomize', text='', icon='FILE_REFRESH')
         else:
-            row.scale_y = 1.2
             row.operator('copyprotection.enable', icon='KEY_HLT')
 
 
@@ -1506,7 +1503,6 @@ classesToRegister = [
     CopyProtectionPanel,
     tools.copy_protection.CopyProtectionEnable,
     tools.copy_protection.CopyProtectionDisable,
-    tools.copy_protection.CopyProtectionRandomize,
     tools.copy_protection.ProtectionTutorialButton,
 
     UpdaterPanel,

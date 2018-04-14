@@ -243,7 +243,7 @@ class FixArmature(bpy.types.Operator):
         # Model should be in rest position
         armature.data.pose_position = 'REST'
 
-        # Count steps for loading bar again
+        # Count steps for loading bar again and reset the layers
         steps += len(armature.data.edit_bones)
         for bone in armature.data.edit_bones:
             if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
@@ -251,6 +251,7 @@ class FixArmature(bpy.types.Operator):
                     steps += 1
                 else:
                     steps -= 1
+            bone.layers[0] = True
 
         # Start loading bar
         current_step = 0

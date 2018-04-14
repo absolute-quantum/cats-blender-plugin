@@ -467,7 +467,9 @@ def separate_by_loose_parts(context, mesh):
             tools.common.delete_hierarchy(obj)
 
     select(mesh)
+    print("DEBUG")
     ShapekeyOrder.save(mesh.name)
+    print("DEBUG2")
 
     for mod in mesh.modifiers:
         if mod.type == 'DECIMATE':
@@ -475,29 +477,74 @@ def separate_by_loose_parts(context, mesh):
         else:
             mod.show_expanded = False
 
-    bpy.ops.mesh.separate(type='LOOSE')
-
+    utils.separateByMaterials(mesh)
+    meshes = []
     for ob in context.selected_objects:
         if ob.type == 'MESH':
-            if ob.data.shape_keys:
-                for kb in ob.data.shape_keys.key_blocks:
+            meshes.append(ob)
+
+    wm = bpy.context.window_manager
+    current_step = 0
+    wm.progress_begin(current_step, len(meshes))
+
+    for mesh in meshes:
+        unselect_all()
+        select(mesh)
+        bpy.ops.mesh.separate(type='LOOSE')
+
+        meshes2 = []
+        for ob in context.selected_objects:
+            if ob.type == 'MESH':
+                meshes2.append(ob)
+
+        ## This crashes blender, but would be better
+        # unselect_all()
+        # for mesh2 in meshes2:
+        #     if len(mesh2.data.vertices) <= 3:
+        #         select(mesh2)
+        #     elif bpy.ops.object.join.poll():
+        #         bpy.ops.object.join()
+        #         unselect_all()
+
+        for mesh2 in meshes2:
+            if mesh2 and mesh2.data.shape_keys:
+                for kb in mesh2.data.shape_keys.key_blocks:
                     if can_remove(kb):
-                        ob.shape_key_remove(kb)
+                        mesh2.shape_key_remove(kb)
 
-            mesh = ob.data
-            materials = mesh.materials
-            if len(mesh.polygons) > 0:
-                if len(materials) > 1:
-                    mat_index = mesh.polygons[0].material_index
-                    for x in reversed(range(len(materials))):
-                        if x != mat_index:
-                            materials.pop(index=x, update_data=True)
-            ob.name = getattr(materials[0], 'name', 'None') if len(materials) else 'None'
+        current_step += 1
+        wm.progress_update(current_step)
 
-            if '. 001' in ob.name:
-                ob.name = ob.name.replace('. 001', '')
-            if '.000' in ob.name:
-                ob.name = ob.name.replace('.000', '')
+    wm.progress_end()
+
+
+    ## Old separate method
+    # print("DEBUG3")
+    # bpy.ops.mesh.separate(type='LOOSE')
+    # print("DEBUG4")
+    #
+    # for ob in context.selected_objects:
+    #     print(ob.name)
+    #     if ob.type == 'MESH':
+    #         if ob.data.shape_keys:
+    #             for kb in ob.data.shape_keys.key_blocks:
+    #                 if can_remove(kb):
+    #                     ob.shape_key_remove(kb)
+    #
+    #         mesh = ob.data
+    #         materials = mesh.materials
+    #         if len(mesh.polygons) > 0:
+    #             if len(materials) > 1:
+    #                 mat_index = mesh.polygons[0].material_index
+    #                 for x in reversed(range(len(materials))):
+    #                     if x != mat_index:
+    #                         materials.pop(index=x, update_data=True)
+    #         ob.name = getattr(materials[0], 'name', 'None') if len(materials) else 'None'
+    #
+    #         if '. 001' in ob.name:
+    #             ob.name = ob.name.replace('. 001', '')
+    #         if '.000' in ob.name:
+    #             ob.name = ob.name.replace('.000', '')
 
     utils.clearUnusedMeshes()
 
@@ -563,6 +610,7 @@ def repair_viseme_order(mesh_name):
     order['vrc.v_sil'] = 17
     order['vrc.v_ss'] = 18
     order['vrc.v_th'] = 19
+    order['Basis Original'] = 20
 
     repair_shape_order(mesh_name, order)
 

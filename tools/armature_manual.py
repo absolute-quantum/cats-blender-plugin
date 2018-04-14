@@ -167,13 +167,30 @@ class ExportModel(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        protected_export = False
+        for mesh in tools.common.get_meshes_objects():
+            if protected_export:
+                break
+            if mesh.data.shape_keys:
+                for shapekey in mesh.data.shape_keys.key_blocks:
+                    if shapekey.name == 'Basis Original':
+                        protected_export = True
+                        break
+
         try:
-            bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
-                                     object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
-                                     use_mesh_modifiers=False,
-                                     add_leaf_bones=False,
-                                     bake_anim=False,
-                                     mesh_smooth_type='FACE')
+            if protected_export:
+                bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
+                                         object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
+                                         use_mesh_modifiers=False,
+                                         add_leaf_bones=False,
+                                         bake_anim=False,
+                                         mesh_smooth_type='FACE')
+            else:
+                bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
+                                         object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
+                                         use_mesh_modifiers=False,
+                                         add_leaf_bones=False,
+                                         bake_anim=False)
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 
@@ -356,10 +373,10 @@ class SeparateByMaterials(bpy.types.Operator):
 class SeparateByLooseParts(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_loose_parts'
     bl_label = 'Loose Parts'
-    bl_description = 'Separates selected mesh by loose parts sorted by materials.\n' \
-                     'This acts like separating by materials but creates more meshes for more precision.\n' \
+    bl_description = 'Can cause a lot of lag depending on the model!\n' \
                      '\n' \
-                     'Warning: Never decimate something where you might need the shape keys later (face, mouth, eyes..)'
+                     'Separates selected mesh by loose parts sorted by materials.\n' \
+                     'This acts like separating by materials but creates more meshes for more precision.\n'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
