@@ -24,7 +24,7 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
  - Merging bone groups to reduce overall bone count
- - Copy protection to secure you avatars from game cache stealing
+ - Copy protection to protect your avatars from game cache ripping
  - Auto updater
 
 *More to come!*
@@ -35,7 +35,7 @@ https://catsblenderplugin.com
 
 ## Requirement
 
- - Blender 2.79 (run as administrator)
+ - Blender 2.79 **(run as administrator)**
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
 
 ## Installation
@@ -266,6 +266,7 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
     Geometries > Smoothing > Set to "Face"
 - Added: Model: "Fix Model" now sets the bone layer to 0.
   - This means that shadow bones are now editable
+- Added: Model: More models are now compatible (please report non working models to us)
 - Fixed: Model: Using the full body fix no longer shows the "spine length zero" error
 - Fixed: Model: Separating by Loose Parts should no longer crash Blender.
   - Instead it might lag (but that's better than crashing)

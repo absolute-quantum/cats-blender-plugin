@@ -173,6 +173,10 @@ supporters = [
     ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
     ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
     ['Curio', 'Curio', '2018-03-10'],
+    # jacob
+    # eduardo
+    ['Runda', 'Runda', '2018-04-20'],
+    # Shirokaze
 ]
 
 current_supporters = None
