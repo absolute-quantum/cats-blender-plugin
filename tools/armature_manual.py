@@ -430,10 +430,10 @@ class MixWeights(bpy.types.Operator):
         # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
         #     return True
 
-        if bpy.context.active_object.mode == 'EDIT' and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.active_object.mode == 'EDIT' and bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
             return True
 
-        if bpy.context.active_object.mode == 'POSE' and len(bpy.context.selected_pose_bones) > 0:
+        if bpy.context.active_object.mode == 'POSE' and bpy.context.selected_pose_bones and len(bpy.context.selected_pose_bones) > 0:
             return True
 
         return False
@@ -508,9 +508,9 @@ class MixWeights(bpy.types.Operator):
             return {'CANCELLED'}
 
         # find which bones to work on
-        if bpy.context.selected_editable_bones is not None and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
             bones_to_work_on = bpy.context.selected_editable_bones
-        elif bpy.context.selected_pose_bones is not None and len(bpy.context.selected_pose_bones) > 0:
+        elif bpy.context.selected_pose_bones and len(bpy.context.selected_pose_bones) > 0:
             bones_to_work_on = bpy.context.selected_pose_bones
         else:
             bones_to_work_on = armature.data.bones
@@ -529,7 +529,7 @@ class MixWeights(bpy.types.Operator):
             return {'CANCELLED'}
 
         # find which bones to work on
-        if bpy.context.selected_editable_bones is not None and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
             bones_to_work_on = bpy.context.selected_editable_bones
         else:
             bones_to_work_on = bpy.context.selected_pose_bones

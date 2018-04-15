@@ -88,6 +88,7 @@ class FixArmature(bpy.types.Operator):
                 if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
                     z_cord = 1
                     y_cord = 2
+                    break
 
         # Add rename bones to reweight bones
         temp_rename_bones = copy.deepcopy(Bones.bone_rename)
@@ -574,6 +575,7 @@ class FixArmature(bpy.types.Operator):
                             right_leg_top.tail[z_cord] = right_leg.head[z_cord] + 0.1
 
                             spine.head = hips.head
+                            hips.head[z_cord] -= 0.0025
 
                             left_leg.name = "Left leg 2"
                             right_leg.name = "Right leg 2"

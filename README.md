@@ -62,7 +62,7 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/d1yhtHp.png)
+![](https://i.imgur.com/hFmVxBw.png)
 
 This tries to completely fix your model with one click.
 
@@ -266,8 +266,10 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
     Geometries > Smoothing > Set to "Face"
 - Added: Model: "Fix Model" now sets the bone layer to 0.
   - This means that shadow bones are now editable
+- Fixed: Model: Using the full body fix no longer shows the "spine length zero" error
 - Fixed: Model: Separating by Loose Parts should no longer crash Blender.
   - Instead it might lag (but that's better than crashing)
+- Fixed: "Remove Doubles" causing an error
 
 #### 0.7.1
 - Added: Model: The Full Body Fix is now a toggleable option

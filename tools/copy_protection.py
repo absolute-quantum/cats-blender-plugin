@@ -73,6 +73,7 @@ class CopyProtectionEnable(bpy.types.Operator):
                     world_pos = armature.matrix_world * bone.matrix
                     if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
                         xps = True
+                        break
 
             max_height = 0
             for index, vert in enumerate(mesh.data.vertices):

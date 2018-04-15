@@ -209,7 +209,7 @@ class ToolPanel:
                     'It can reduce the knee bending of your avatar in VRChat.\n'
                     'If you get the "Spine lenght is zero" warning in Unity you can ignore it.\n'
                     'If you have problems with the hips ingame, uncheck this option.',
-        default=False
+        default=True
     )
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
@@ -1169,7 +1169,7 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         # row.prop(context.scene, 'protection_mode', expand=True)
 
         row = col.row(align=True)
-        row.scale_y = 1.2
+        row.scale_y = 1.3
         meshes = tools.common.get_meshes_objects()
         if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
