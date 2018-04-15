@@ -35,6 +35,9 @@ import tools.armature_bones as Bones
 from googletrans import Translator
 from mmd_tools_local.translations import DictionaryEnum
 
+import math
+from mathutils import Matrix
+
 mmd_tools_installed = False
 try:
     import mmd_tools_local
@@ -81,6 +84,7 @@ class FixArmature(bpy.types.Operator):
         x_cord = 0
         y_cord = 1
         z_cord = 2
+        fbx = False
         for index, bone in enumerate(armature.pose.bones):
             if index == 5:
                 bone_pos = bone.matrix
@@ -88,6 +92,7 @@ class FixArmature(bpy.types.Operator):
                 if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
                     z_cord = 1
                     y_cord = 2
+                    fbx = True
                     break
 
         # Add rename bones to reweight bones
@@ -619,6 +624,25 @@ class FixArmature(bpy.types.Operator):
                         left_leg.roll = 0
                         right_leg.roll = 0
                         hips.roll = 0
+
+        # Rotate if on head and not fbx (Unreal engine model)
+        if 'Hips' in armature.data.edit_bones:
+
+            hips = armature.pose.bones.get('Hips')
+
+            obj = hips.id_data
+            matrix_final = obj.matrix_world * hips.matrix
+            print(matrix_final)
+            print(matrix_final[2][3])
+            print(fbx)
+
+            if not fbx and matrix_final[2][3] < 0:
+                print(hips.head[0], hips.head[1], hips.head[2])
+                # Rotation of -180 around the X-axis
+                rot_x_neg180 = Matrix.Rotation(-math.pi, 4, 'X')
+                armature.matrix_world = rot_x_neg180 * armature.matrix_world
+
+                mesh.rotation_euler = (math.radians(180), 0, 0)
 
 
         # Mixing the weights
