@@ -32,7 +32,6 @@ import copy
 import tools.common
 import tools.translate
 import tools.armature_bones as Bones
-from googletrans import Translator
 from mmd_tools_local.translations import DictionaryEnum
 
 import math
@@ -44,6 +43,7 @@ try:
     mmd_tools_installed = True
 except:
     pass
+
 
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
@@ -212,6 +212,10 @@ class FixArmature(bpy.types.Operator):
         armature.draw_type = 'WIRE'
         armature.show_x_ray = True
 
+        # Disable backface culling
+        if context.area:
+            context.area.spaces[0].show_backface_culling = False
+
         # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
@@ -241,6 +245,10 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.select(armature)
         tools.common.switch('EDIT')
+
+        # Show all hidden verts and faces
+        if bpy.ops.mesh.reveal.poll():
+            bpy.ops.mesh.reveal()
 
         # Remove Bone Groups
         for group in armature.pose.bone_groups:
@@ -334,12 +342,16 @@ class FixArmature(bpy.types.Operator):
                     if name == '':
                         continue
 
+                    # If spine bone, then don't rename for now, and ignore spines with no children
+                    bone2 = armature.data.edit_bones.get(name)
+                    print(name, len(bone2.children))
                     if bone_new == 'Spine':
-                        spines.append(name)
+                        if len(bone2.children) > 0:
+                            spines.append(name)
                         continue
 
+                    # Rename the bone
                     if bone[0] not in armature.data.edit_bones:
-                        bone2 = armature.data.edit_bones.get(name)
                         if bone2 is not None:
                             bone2.name = bone[0]
 

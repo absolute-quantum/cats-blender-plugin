@@ -61,6 +61,7 @@ import tools.decimation
 import tools.shapekey
 import tools.copy_protection
 
+
 importlib.reload(mmd_tools_local)
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -79,20 +80,28 @@ importlib.reload(tools.decimation)
 importlib.reload(tools.shapekey)
 importlib.reload(tools.copy_protection)
 
+# How to update mmd_tools:
+# Paste mmd_tools folder into project
+# Delete mmd_tools_local folder
+# Refactor folder name "mmd_tools" to "mmd_tools_local"
+# Search for "show_backface_culling" and set it to False in view.py
+# Done
+
 bl_info = {
     'name': 'Cats Blender Plugin',
     'category': '3D View',
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 7, 1],  # Only change this version right before publishing the new update!
+    'version': [0, 7, 2],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
 
-dev_branch = True
+dev_branch = False
+# dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
 # global variable to store icons in
@@ -173,9 +182,9 @@ supporters = [
     ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
     ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
     ['Curio', 'Curio', '2018-03-10'],
-    # jacob
+    ['Deathofirish', 'Deathofirish', '2018-04-17'],
     # eduardo
-    ['Runda', 'Runda', '2018-04-20'],
+    ['Runda', 'Runda', '2018-04-17'],
     # Shirokaze
 ]
 
@@ -209,10 +218,10 @@ class ToolPanel:
 
     bpy.types.Scene.full_body = bpy.props.BoolProperty(
         name='Apply Full Body Tracking Fix',
-        description="Applies a general fix for Full Body Tracking and models in general.\n"
-                    'It can reduce the knee bending of your avatar in VRChat.\n'
-                    'If you get the "Spine lenght is zero" warning in Unity you can ignore it.\n'
-                    'If you have problems with the hips ingame, uncheck this option.',
+        description="Applies a general fix for Full Body Tracking.\n"
+                    'Can potentially reduce the knee bending of every avatar in VRChat.\n'
+                    'You can safely ignore the "Spine length zero" warning in Unity.\n'
+                    'If you have problems with the hips ingame, uncheck this option and tell us!\n',
         default=True
     )
 

@@ -218,7 +218,7 @@ This will start the merge process
 Game cache rips in most common cases do not include blendshapes and shaders. 
 This method will make it much harder for people that try to steal your avatar through ripping from cache.
 
-**We managed to fix all the lighting bugs! Therefore the randomization options are not needed anymore.**
+**We managed to fix the lighting bugs! Therefore the randomization options are not needed anymore.**
 
 
 #### How to setup:
@@ -267,10 +267,13 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Added: Model: "Fix Model" now sets the bone layer to 0.
   - This means that shadow bones are now editable
 - Added: Model: More models are now compatible (please report non working models to us)
-- Fixed: Model: Now shows a small info box when full body fix is enabled
+- Added: Model: Now shows a small info box about the bone length warning when full body fix is enabled
 - Fixed: Model: Separating by Loose Parts should no longer crash Blender.
   - Instead it might lag (but that's better than crashing)
+- Fixed: Model: "Fix Model" now disables Backface Culling
+- Fixed: Atlas: Now unhides everything in edit mode
 - Fixed: "Remove Doubles" causing an error
+- Fixed: More bugs
 
 #### 0.7.1
 - Added: Model: The Full Body Fix is now a toggleable option

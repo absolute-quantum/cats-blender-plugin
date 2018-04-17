@@ -23,7 +23,7 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
-import copy
+
 import webbrowser
 
 import bpy
@@ -34,7 +34,7 @@ import tools.common
 class CopyProtectionEnable(bpy.types.Operator):
     bl_idname = 'copyprotection.enable'
     bl_label = 'Enable Protection'
-    bl_description = 'Protects your model from piracy. Only do this if you know what you are doing!'
+    bl_description = 'Protects your model from piracy. Read the documentation before use'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
