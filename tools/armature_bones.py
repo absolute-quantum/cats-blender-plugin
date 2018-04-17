@@ -147,6 +147,9 @@ bone_list_conflicting_names = [
     ('ArmFor_Correction_R', 'Arm_R', 'ArmTwist5_R'),
     ('ElbowFor_Correction_L', 'Elbow_L', 'HandTwist5_L'),
     ('ElbowFor_Correction_R', 'Elbow_R', 'HandTwist5_R'),
+
+    ('Leftcollar', 'Leftshoulder', 'Leftarm'),
+    ('Rightcollar', 'Rightshoulder', 'Rightarm'),
 ]
 bone_finger_list = [
     'Thumb0_',
@@ -340,6 +343,7 @@ bone_rename['\Left shoulder'] = [
     '\L_Clavicle',
     '\Left_Clavicle',
     '\LeftCollar',
+    '\Leftcollar',
     '\Left_Collar',
     '\L_Collar',
     'Arm_\Left_Shoulder',
@@ -349,6 +353,7 @@ bone_rename['\Left shoulder'] = [
 bone_rename['\Left arm'] = [
     '\Left_Arm',
     '\LeftArm',
+    '\Leftarm',
     'Arm_\L',
     '\LArm',
     '\LArmA',
@@ -384,6 +389,7 @@ bone_rename['Left arm'] = [
 bone_rename['\Left elbow'] = [
     '\Left_Elbow',
     '\LeftElbow',
+    '\Leftelbow',
     'Elbow_\L',
     '\L_Elbow',
     'Mixamorig:\LeftForeArm',
@@ -424,6 +430,7 @@ bone_rename['\Left wrist'] = [
     '\LHand',
     '\L_Hand',
     '\LeftHand',
+    '\Lefthand',
     '\Left_Hand',
     'Finger3_1_\L',
     '\L_Hand_1',
@@ -449,6 +456,7 @@ bone_rename['\Left leg'] = [
     '\L_Thigh',
     '\LeftUpLeg',
     '\LeftHip',
+    '\Lefthip',
     '\Left_Thigh',
     'Upleg_\L',
     '\L_Hip',
@@ -462,6 +470,7 @@ bone_rename['\Left leg'] = [
 bone_rename['\Left knee'] = [
     '\Left_Knee',
     '\LeftKnee',
+    '\Leftknee',
     'Knee_\L_001',
     'Knee_\L',
     'Mixamorig:\LeftLeg',
@@ -500,6 +509,7 @@ bone_rename['\Left ankle'] = [
     'Foot_\L',
     '\L_Foot',
     '\LeftFoot',
+    '\Leftfoot',
     '\Left_Foot',
     'Leg_\Left_Foot',
     '\L_Foot_01',
@@ -510,6 +520,8 @@ bone_rename['\Left ankle'] = [
 bone_rename['\Left toe'] = [
     '\Left_Toe',
     '\LeftToe',
+    '\Lefttoe',
+    '\Lefttoe1',
     'LegTip_\L',
     'LegTipEX_\L',
     'ClawTipEX_\L',
@@ -999,6 +1011,7 @@ bone_rename_fingers['Thumb0_\L'] = [
     '\L_Thumb_A_1',
     'T1_\L',
     'L_FINGER11',
+    '\Leftthumb1',
 ]
 bone_rename_fingers['Thumb1_\L'] = [
     'Arm_\Left_Finger_1b',
@@ -1016,6 +1029,7 @@ bone_rename_fingers['Thumb1_\L'] = [
     '\L_Thumb_B_1',
     'T2_\L',
     'L_FINGER12',
+    '\Leftthumb2',
 ]
 bone_rename_fingers['Thumb2_\L'] = [
     'Arm_\Left_Finger_1c',
@@ -1051,6 +1065,7 @@ bone_rename_fingers['IndexFinger1_\L'] = [
     '\L_Index_A_1',
     'If1_\L',
     'L_FINGER21',
+    '\Leftfinger1',
 ]
 bone_rename_fingers['IndexFinger2_\L'] = [
     'Fore2_\L',
@@ -1069,6 +1084,7 @@ bone_rename_fingers['IndexFinger2_\L'] = [
     '\L_Index_B_1',
     'If2_\L',
     'L_FINGER22',
+    '\Leftfinger2',
 ]
 bone_rename_fingers['IndexFinger3_\L'] = [
     'Fore3_\L',

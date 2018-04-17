@@ -698,8 +698,18 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 1.4
         row.operator('armature.fix', icon='BONE_DATA')
 
+        if context.scene.full_body:
+            row = col.row(align=True)
+            row.scale_y = 0.9
+            row.label('You can safely ignore the', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.5
+            row.label('"Spine length zero" warning in Unity.', icon_value=preview_collections["custom_icons"]["empty"].icon_id)
+            col.separator()
+
         col.separator()
-        col.label('Manual Model Fixing:')
+        row = col.row(align=True)
+        row.label('Manual Model Fixing:')
         row = col.row(align=True)
         row.scale_y = 1.05
         row.label("Separate by: ", icon='MESH_DATA')
@@ -1354,6 +1364,7 @@ def load_icons():
     pcoll.load('patreon1', os.path.join(my_icons_dir, 'patreon1.png'), 'IMAGE')
     pcoll.load('patreon2', os.path.join(my_icons_dir, 'patreon2.png'), 'IMAGE')
     pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
+    pcoll.load('empty', os.path.join(my_icons_dir, 'empty.png'), 'IMAGE')
 
     # load the supporters icons
     for value in current_supporters:

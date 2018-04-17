@@ -581,7 +581,7 @@ class FixArmature(bpy.types.Operator):
 
                             spine.head = hips.head
                             # hips.head[z_cord] -= 0.0025
-                            spine.head[z_cord] += 0.0025
+                            # spine.head[z_cord] += 0.0025
 
                             left_leg.name = "Left leg 2"
                             right_leg.name = "Right leg 2"

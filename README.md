@@ -267,7 +267,7 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Added: Model: "Fix Model" now sets the bone layer to 0.
   - This means that shadow bones are now editable
 - Added: Model: More models are now compatible (please report non working models to us)
-- Fixed: Model: Using the full body fix no longer shows the "spine length zero" error
+- Fixed: Model: Now shows a small info box when full body fix is enabled
 - Fixed: Model: Separating by Loose Parts should no longer crash Blender.
   - Instead it might lag (but that's better than crashing)
 - Fixed: "Remove Doubles" causing an error
