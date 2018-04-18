@@ -44,19 +44,15 @@ class AutoAtlasButton(bpy.types.Operator):
         return prefix + str(random.randrange(9999999999)) + suffix
 
     def execute(self, context):
-        tools.common.set_default_stage()
-
         if not bpy.data.is_saved:
             self.report({'ERROR'}, 'You must save your blender file first, please save it to your assets folder so unity can discover the generated atlas file.')
             return {'CANCELLED'}
 
+        tools.common.set_default_stage()
+
         atlas_mesh = bpy.data.objects[context.scene.mesh_name_atlas]
-
-        for obj in bpy.context.selected_objects:
-            obj.select = False
-
-        bpy.context.scene.objects.active = atlas_mesh
-        atlas_mesh.select = True
+        atlas_mesh.hide = False
+        tools.common.select(atlas_mesh)
 
         # Check uv index
         newUVindex = len(atlas_mesh.data.uv_textures) - 1
@@ -83,6 +79,9 @@ class AutoAtlasButton(bpy.types.Operator):
         tools.common.switch('EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.mesh.select_all(action='SELECT')
+
+        if bpy.ops.mesh.reveal.poll():
+            bpy.ops.mesh.reveal()
 
         # Define the image file
         image_name = self.generateRandom('AtlasBake')

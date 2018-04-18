@@ -32,8 +32,10 @@ import copy
 import tools.common
 import tools.translate
 import tools.armature_bones as Bones
-from googletrans import Translator
 from mmd_tools_local.translations import DictionaryEnum
+
+import math
+from mathutils import Matrix
 
 mmd_tools_installed = False
 try:
@@ -41,6 +43,7 @@ try:
     mmd_tools_installed = True
 except:
     pass
+
 
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
@@ -81,6 +84,7 @@ class FixArmature(bpy.types.Operator):
         x_cord = 0
         y_cord = 1
         z_cord = 2
+        fbx = False
         for index, bone in enumerate(armature.pose.bones):
             if index == 5:
                 bone_pos = bone.matrix
@@ -88,6 +92,8 @@ class FixArmature(bpy.types.Operator):
                 if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
                     z_cord = 1
                     y_cord = 2
+                    fbx = True
+                    break
 
         # Add rename bones to reweight bones
         temp_rename_bones = copy.deepcopy(Bones.bone_rename)
@@ -206,6 +212,10 @@ class FixArmature(bpy.types.Operator):
         armature.draw_type = 'WIRE'
         armature.show_x_ray = True
 
+        # Disable backface culling
+        if context.area:
+            context.area.spaces[0].show_backface_culling = False
+
         # Remove Rigidbodies and joints
         for obj in bpy.data.objects:
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
@@ -236,6 +246,10 @@ class FixArmature(bpy.types.Operator):
         tools.common.select(armature)
         tools.common.switch('EDIT')
 
+        # Show all hidden verts and faces
+        if bpy.ops.mesh.reveal.poll():
+            bpy.ops.mesh.reveal()
+
         # Remove Bone Groups
         for group in armature.pose.bone_groups:
             armature.pose.bone_groups.remove(group)
@@ -243,7 +257,7 @@ class FixArmature(bpy.types.Operator):
         # Model should be in rest position
         armature.data.pose_position = 'REST'
 
-        # Count steps for loading bar again
+        # Count steps for loading bar again and reset the layers
         steps += len(armature.data.edit_bones)
         for bone in armature.data.edit_bones:
             if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
@@ -251,6 +265,7 @@ class FixArmature(bpy.types.Operator):
                     steps += 1
                 else:
                     steps -= 1
+            bone.layers[0] = True
 
         # Start loading bar
         current_step = 0
@@ -274,6 +289,7 @@ class FixArmature(bpy.types.Operator):
                 .replace('Bip1_', 'Bip_')\
                 .replace('Bip01_', 'Bip_')\
                 .replace('Bip001_', 'Bip_')\
+                .replace('Character1_', '')\
                 .replace('____', '_')\
                 .replace('___', '_')\
                 .replace('__', '_')\
@@ -326,12 +342,16 @@ class FixArmature(bpy.types.Operator):
                     if name == '':
                         continue
 
+                    # If spine bone, then don't rename for now, and ignore spines with no children
+                    bone2 = armature.data.edit_bones.get(name)
+                    print(name, len(bone2.children))
                     if bone_new == 'Spine':
-                        spines.append(name)
+                        if len(bone2.children) > 0:
+                            spines.append(name)
                         continue
 
+                    # Rename the bone
                     if bone[0] not in armature.data.edit_bones:
-                        bone2 = armature.data.edit_bones.get(name)
                         if bone2 is not None:
                             bone2.name = bone[0]
 
@@ -572,6 +592,8 @@ class FixArmature(bpy.types.Operator):
                             right_leg_top.tail[z_cord] = right_leg.head[z_cord] + 0.1
 
                             spine.head = hips.head
+                            # hips.head[z_cord] -= 0.0025
+                            # spine.head[z_cord] += 0.0025
 
                             left_leg.name = "Left leg 2"
                             right_leg.name = "Right leg 2"
@@ -615,6 +637,25 @@ class FixArmature(bpy.types.Operator):
                         left_leg.roll = 0
                         right_leg.roll = 0
                         hips.roll = 0
+
+        # Rotate if on head and not fbx (Unreal engine model)
+        if 'Hips' in armature.data.edit_bones:
+
+            hips = armature.pose.bones.get('Hips')
+
+            obj = hips.id_data
+            matrix_final = obj.matrix_world * hips.matrix
+            print(matrix_final)
+            print(matrix_final[2][3])
+            print(fbx)
+
+            if not fbx and matrix_final[2][3] < 0:
+                print(hips.head[0], hips.head[1], hips.head[2])
+                # Rotation of -180 around the X-axis
+                rot_x_neg180 = Matrix.Rotation(-math.pi, 4, 'X')
+                armature.matrix_world = rot_x_neg180 * armature.matrix_world
+
+                mesh.rotation_euler = (math.radians(180), 0, 0)
 
 
         # Mixing the weights

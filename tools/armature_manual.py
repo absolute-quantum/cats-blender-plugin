@@ -167,8 +167,30 @@ class ExportModel(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        protected_export = False
+        for mesh in tools.common.get_meshes_objects():
+            if protected_export:
+                break
+            if mesh.data.shape_keys:
+                for shapekey in mesh.data.shape_keys.key_blocks:
+                    if shapekey.name == 'Basis Original':
+                        protected_export = True
+                        break
+
         try:
-            bpy.ops.export_scene.fbx('INVOKE_DEFAULT', object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'}, use_mesh_modifiers=False, add_leaf_bones=False, bake_anim=False)
+            if protected_export:
+                bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
+                                         object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
+                                         use_mesh_modifiers=False,
+                                         add_leaf_bones=False,
+                                         bake_anim=False,
+                                         mesh_smooth_type='FACE')
+            else:
+                bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
+                                         object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
+                                         use_mesh_modifiers=False,
+                                         add_leaf_bones=False,
+                                         bake_anim=False)
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 
@@ -351,10 +373,10 @@ class SeparateByMaterials(bpy.types.Operator):
 class SeparateByLooseParts(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_loose_parts'
     bl_label = 'Loose Parts'
-    bl_description = 'Separates selected mesh by loose parts sorted by materials.\n' \
-                     'This acts like separating by materials but creates more meshes for more precision.\n' \
+    bl_description = 'Can cause a lot of lag depending on the model!\n' \
                      '\n' \
-                     'Warning: Never decimate something where you might need the shape keys later (face, mouth, eyes..)'
+                     'Separates selected mesh by loose parts sorted by materials.\n' \
+                     'This acts like separating by materials but creates more meshes for more precision.\n'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -408,10 +430,10 @@ class MixWeights(bpy.types.Operator):
         # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
         #     return True
 
-        if bpy.context.active_object.mode == 'EDIT' and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.active_object.mode == 'EDIT' and bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
             return True
 
-        if bpy.context.active_object.mode == 'POSE' and len(bpy.context.selected_pose_bones) > 0:
+        if bpy.context.active_object.mode == 'POSE' and bpy.context.selected_pose_bones and len(bpy.context.selected_pose_bones) > 0:
             return True
 
         return False
@@ -486,9 +508,9 @@ class MixWeights(bpy.types.Operator):
             return {'CANCELLED'}
 
         # find which bones to work on
-        if bpy.context.selected_editable_bones is not None and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
             bones_to_work_on = bpy.context.selected_editable_bones
-        elif bpy.context.selected_pose_bones is not None and len(bpy.context.selected_pose_bones) > 0:
+        elif bpy.context.selected_pose_bones and len(bpy.context.selected_pose_bones) > 0:
             bones_to_work_on = bpy.context.selected_pose_bones
         else:
             bones_to_work_on = armature.data.bones
@@ -507,7 +529,7 @@ class MixWeights(bpy.types.Operator):
             return {'CANCELLED'}
 
         # find which bones to work on
-        if bpy.context.selected_editable_bones is not None and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
             bones_to_work_on = bpy.context.selected_editable_bones
         else:
             bones_to_work_on = bpy.context.selected_pose_bones

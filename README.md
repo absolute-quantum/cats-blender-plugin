@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.7.1)
+# Cats Blender Plugin (0.7.2)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -24,7 +24,7 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
  - Merging bone groups to reduce overall bone count
- - Copy protection to secure you avatars from game cache stealing
+ - Copy protection to protect your avatars from game cache ripping
  - Auto updater
 
 *More to come!*
@@ -35,7 +35,7 @@ https://catsblenderplugin.com
 
 ## Requirement
 
- - Blender 2.79 (run as administrator)
+ - Blender 2.79 **(run as administrator)**
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
 
 ## Installation
@@ -62,7 +62,7 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/d1yhtHp.png)
+![](https://i.imgur.com/hFmVxBw.png)
 
 This tries to completely fix your model with one click.
 
@@ -212,23 +212,14 @@ This will start the merge process
 
 ## Copy Protection
 
-![](https://i.imgur.com/W1OoFs0.png)
+![](https://i.imgur.com/5qP5bCT.png)
 
 **Can protect your avatars from being ripped from the game cache**
 Game cache rips in most common cases do not include blendshapes and shaders. 
 This method will make it much harder for people that try to steal your avatar through ripping from cache.
 
-#### Options:
-##### Full Randomization
-This will randomize every vertex of your model and it will be completely unusable for thieves.
-However this method might cause problems with the Outline option from Cubed shader.
-If you have any problems ingame with this option try again with option "Partial".
+**We managed to fix the lighting bugs! Therefore the randomization options are not needed anymore.**
 
-##### Partial Randomization
-Use this if you experience issues ingame with the Full option!
-This will only randomize a number of vertices and therefore will have a few unprotected areas,
-but it's still unusable to thieves as a whole.
-This method however reduces the glitches that can occur ingame by a lot.
 
 #### How to setup:
 
@@ -244,7 +235,9 @@ This method however reduces the glitches that can occur ingame by a lot.
        and then replace the unprotected fbx with the protected one. 
        That way your configurations will be kept.
      - Skip to step 4
-3. In Blender: Click the "Enable Protection" button and export your model and import it into Unity
+3. In Blender: Click the "Enable Protection" button
+4. Export it to Unity by either using the "Export" button within Cats or set the fbx export option by yourself: 
+   Geometries > Smoothing > Set to "Face"
 4. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
    https://i.imgur.com/RlrGTvV.gif
 5. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
@@ -254,15 +247,6 @@ This method however reduces the glitches that can occur ingame by a lot.
 6. Your avatar now behaves just like a normal one.
 
 People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
-
-##### Things to note:
-
-- Unity can show some lighting bugs on the model. This is mostly not a problem as it will look normal inside VRChat.
-- This protection method can have a negative effect on the Outline option from the Cubed shader depending
-  on which randomization option you choose in Cats.
-  Try it for yourself to see if it effects you and disable the option if necessary.
-- The preview avatar within the avatar selection menu can look weird.
-  This does not effect how it actually looks ingame.
   
   **special thanks to @zarniwoop#6081**
 
@@ -275,10 +259,26 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 
 ## Changelog
 
+#### 0.7.2
+- Changed: Copy Protection: Does now work on multiple meshes.
+- Fixed: Copy Protection: The lighting bugs are now gone! Therefore we removed the randomization options.
+  - Either use the Export button within Cats or set the export option by yourself:
+    Geometries > Smoothing > Set to "Face"
+- Added: Model: "Fix Model" now sets the bone layer to 0.
+  - This means that shadow bones are now editable
+- Added: Model: More models are now compatible (please report non working models to us)
+- Added: Model: Now shows a small info box about the bone length warning when full body fix is enabled
+- Fixed: Model: Separating by Loose Parts should no longer crash Blender.
+  - Instead it might lag (but that's better than crashing)
+- Fixed: Model: "Fix Model" now disables Backface Culling
+- Fixed: Atlas: Now unhides everything in edit mode
+- Fixed: "Remove Doubles" causing an error
+- Fixed: More bugs
+
 #### 0.7.1
 - Added: Model: The Full Body Fix is now a toggleable option
-  - If you get the "spine length zero" warning in Unity you can ignore it as it shouldn't break anything
-    But if it really does cause issues uncheck this option
+  - If you get the "spine length zero" warning in Unity you can ignore it as it shouldn't break anything.
+    But if it really does cause issues, uncheck this option
 - Added: Copy protection: Added "Go to Documentation" button
 
 #### 0.7.0
@@ -299,13 +299,6 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Changed: Updater: No longer requires to hover over the buttons in order to update them
 - Changed: Updater: Various improvements
 - Fixed: A bunch of bugs
-
-#### 0.6.2
-- Added: Model: More models are now compatible (please report non working models to us)
-- Added: Model: Missing necks are now created automatically
-- Changed: Eye tracking: Improved randomness of vertex movement (could fix some instances where the mouth stays open)
-- Fixed: Bone Merging: No longer deletes random bones sometimes
-- Fixed: Supporter: Names no longer disappear without a reason
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

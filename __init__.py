@@ -61,6 +61,7 @@ import tools.decimation
 import tools.shapekey
 import tools.copy_protection
 
+
 importlib.reload(mmd_tools_local)
 importlib.reload(tools.viseme)
 importlib.reload(tools.atlas)
@@ -79,13 +80,20 @@ importlib.reload(tools.decimation)
 importlib.reload(tools.shapekey)
 importlib.reload(tools.copy_protection)
 
+# How to update mmd_tools:
+# Paste mmd_tools folder into project
+# Delete mmd_tools_local folder
+# Refactor folder name "mmd_tools" to "mmd_tools_local"
+# Search for "show_backface_culling" and set it to False in view.py
+# Done
+
 bl_info = {
     'name': 'Cats Blender Plugin',
     'category': '3D View',
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 7, 1],  # Only change this version right before publishing the new update!
+    'version': [0, 7, 2],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -93,6 +101,7 @@ bl_info = {
 }
 
 dev_branch = False
+# dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
 # global variable to store icons in
@@ -122,7 +131,7 @@ supporters = [
     ['Ashe', 'ashe', '2018-01-05'],
     ['Quadriple', 'quadriple', '2018-01-05'],
     ['abrownbag', 'abrownbag', '2018-01-05'],
-    ['Azuth', 'Azuth', '2018-01-05'],  # Missing
+    ['Azuth', 'Azuth', '2018-01-05'],
     ['goblox', 'goblox', '2018-01-05'],
     ['Rikku', 'Rikku', '2018-01-05'],
     ['azupwn', 'azupwn', '2018-01-05'],
@@ -147,7 +156,7 @@ supporters = [
     # icewind (don't add)
     ['qy_li', 'qy_li', '2018-01-22'],  # emtpy pic
     ['Sixnalia', 'Sixnalia', '2018-01-22'],
-    ['ReOL', 'ReOL', '2018-01-22'],
+    ['ReOL', 'ReOL', '2018-01-22'],  # emtpy pic
     ['Rezinion', 'Rezinion', '2018-01-22'],
     ['Karma', 'Karma', '2018-01-22'],
     ['\1B', 'BOXMOB', '2018-01-22'],
@@ -173,6 +182,12 @@ supporters = [
     ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
     ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
     ['Curio', 'Curio', '2018-03-10'],
+    ['Deathofirish', 'Deathofirish', '2018-04-17'],  # emtpy pic
+    # eduardo
+    ['Runda', 'Runda', '2018-04-17'],
+    # Shirokaze
+    ['Brindin_wF', 'Brindin_wF', '2018-04-17'],
+    ['Serry Jane', 'Serry_Jane', '2018-04-17'],  # emtpy pic
 ]
 
 current_supporters = None
@@ -205,11 +220,11 @@ class ToolPanel:
 
     bpy.types.Scene.full_body = bpy.props.BoolProperty(
         name='Apply Full Body Tracking Fix',
-        description="Applies a general fix for Full Body Tracking and models in general.\n"
-                    'It can reduce the knee bending of your avatar in VRChat.\n'
-                    'If you get the "Spine lenght is zero" warning in Unity you can ignore it.\n'
-                    'If you have problems with the hips ingame, uncheck this option.',
-        default=False
+        description="Applies a general fix for Full Body Tracking.\n"
+                    'Can potentially reduce the knee bending of every avatar in VRChat.\n'
+                    'You can safely ignore the "Spine length zero" warning in Unity.\n'
+                    'If you have problems with the hips ingame, uncheck this option and tell us!\n',
+        default=True
     )
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
@@ -253,8 +268,8 @@ class ToolPanel:
         name="Selection Mode",
         description="Selection Mode",
         items=[
-            ("SHAPES", "Shape Keys", 'Select all the shape keys you want to keep here.'),
-            ("MESHES", "Meshes", 'Select all the meshes you want to keep here')
+            ("SHAPES", "Shape Keys", 'Select all the shape keys you want to preserve here.'),
+            ("MESHES", "Meshes", "Select all the meshes you don't want to decimate here.")
         ]
     )
 
@@ -607,22 +622,22 @@ class ToolPanel:
         items=tools.rootbone.get_parent_root_bones,
     )
 
-    # Copy Protection
-    bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
-        name="Randomization Level",
-        description="Randomization Level",
-        items=[
-            ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
-                             'However this method might cause problems with the Outline option from Cubed shader.\n'
-                             'If you have any issues ingame try again with option "Partial".'),
-            ("PARTIAL", "Partial", 'Use this if you experience issues ingame with the Full option!\n'
-                                   '\n'
-                                   "This will only randomize a number of vertices and therefore will have a few unprotected areas,\n"
-                                   "but it's still unusable to thieves as a whole.\n"
-                                   'This method however reduces the glitches that can occur ingame by a lot.')
-        ],
-        default='FULL'
-    )
+    # Copy Protection - obsolete
+    # bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
+    #     name="Randomization Level",
+    #     description="Randomization Level",
+    #     items=[
+    #         ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
+    #                          'However this method might cause problems with the Outline option from Cubed shader.\n'
+    #                          'If you have any issues ingame try again with option "Partial".'),
+    #         ("PARTIAL", "Partial", 'Use this if you experience issues ingame with the Full option!\n'
+    #                                '\n'
+    #                                "This will only randomize a number of vertices and therefore will have a few unprotected areas,\n"
+    #                                "but it's still unusable to thieves as a whole.\n"
+    #                                'This method however reduces the glitches that can occur ingame by a lot.')
+    #     ],
+    #     default='FULL'
+    # )
 
 
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
@@ -694,8 +709,18 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 1.4
         row.operator('armature.fix', icon='BONE_DATA')
 
+        if context.scene.full_body:
+            row = col.row(align=True)
+            row.scale_y = 0.9
+            row.label('You can safely ignore the', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.5
+            row.label('"Spine length zero" warning in Unity.', icon_value=preview_collections["custom_icons"]["empty"].icon_id)
+            col.separator()
+
         col.separator()
-        col.label('Manual Model Fixing:')
+        row = col.row(align=True)
+        row.label('Manual Model Fixing:')
         row = col.row(align=True)
         row.scale_y = 1.05
         row.label("Separate by: ", icon='MESH_DATA')
@@ -1155,27 +1180,25 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label('Prevents your avatar from Unity cache ripping.')
+        row.label('Protects your avatar from Unity cache ripping.')
         col.separator()
         row = col.row(align=True)
         row.label('Before use: Read the documentation!')
         row = col.row(align=True)
         row.operator('copyprotection.button', icon='FORWARD')
         col.separator()
-        row = col.row(align=True)
-        row.label('Randomization Level:')
-        row = col.row(align=True)
-        row.prop(context.scene, 'protection_mode', expand=True)
+        col.separator()
+        # row = col.row(align=True)
+        # row.label('Randomization Level:')
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'protection_mode', expand=True)
 
         row = col.row(align=True)
+        row.scale_y = 1.3
         meshes = tools.common.get_meshes_objects()
         if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
-            row = row.split(percentage=0.9, align=False)
-            row.scale_y = 1.2
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
-            row.operator('copyprotection.randomize', text='', icon='FILE_REFRESH')
         else:
-            row.scale_y = 1.2
             row.operator('copyprotection.enable', icon='KEY_HLT')
 
 
@@ -1352,6 +1375,7 @@ def load_icons():
     pcoll.load('patreon1', os.path.join(my_icons_dir, 'patreon1.png'), 'IMAGE')
     pcoll.load('patreon2', os.path.join(my_icons_dir, 'patreon2.png'), 'IMAGE')
     pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
+    pcoll.load('empty', os.path.join(my_icons_dir, 'empty.png'), 'IMAGE')
 
     # load the supporters icons
     for value in current_supporters:
@@ -1505,7 +1529,6 @@ classesToRegister = [
     CopyProtectionPanel,
     tools.copy_protection.CopyProtectionEnable,
     tools.copy_protection.CopyProtectionDisable,
-    tools.copy_protection.CopyProtectionRandomize,
     tools.copy_protection.ProtectionTutorialButton,
 
     UpdaterPanel,

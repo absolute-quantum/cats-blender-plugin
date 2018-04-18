@@ -32,14 +32,7 @@ import bpy
 class TestAddon(unittest.TestCase):
     def test_copy_protection(self):
         bpy.ops.armature.fix()
-        bpy.context.scene.protection_mode = 'FULL'
         bpy.ops.copyprotection.enable()
-        bpy.ops.copyprotection.randomize()
-        bpy.ops.copyprotection.disable()
-
-        bpy.context.scene.protection_mode = 'PARTIAL'
-        bpy.ops.copyprotection.enable()
-        bpy.ops.copyprotection.randomize()
         bpy.ops.copyprotection.disable()
 
 
