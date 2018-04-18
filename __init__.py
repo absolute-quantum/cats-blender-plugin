@@ -186,6 +186,7 @@ supporters = [
     # eduardo
     ['Runda', 'Runda', '2018-04-17'],
     # Shirokaze
+    ['Brindin_wF', 'Brindin_wF', '2018-04-17'],
 ]
 
 current_supporters = None
