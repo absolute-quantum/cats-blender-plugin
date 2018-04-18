@@ -131,7 +131,7 @@ supporters = [
     ['Ashe', 'ashe', '2018-01-05'],
     ['Quadriple', 'quadriple', '2018-01-05'],
     ['abrownbag', 'abrownbag', '2018-01-05'],
-    ['Azuth', 'Azuth', '2018-01-05'],  # Missing
+    ['Azuth', 'Azuth', '2018-01-05'],
     ['goblox', 'goblox', '2018-01-05'],
     ['Rikku', 'Rikku', '2018-01-05'],
     ['azupwn', 'azupwn', '2018-01-05'],
@@ -156,7 +156,7 @@ supporters = [
     # icewind (don't add)
     ['qy_li', 'qy_li', '2018-01-22'],  # emtpy pic
     ['Sixnalia', 'Sixnalia', '2018-01-22'],
-    ['ReOL', 'ReOL', '2018-01-22'],
+    ['ReOL', 'ReOL', '2018-01-22'],  # emtpy pic
     ['Rezinion', 'Rezinion', '2018-01-22'],
     ['Karma', 'Karma', '2018-01-22'],
     ['\1B', 'BOXMOB', '2018-01-22'],
@@ -182,11 +182,12 @@ supporters = [
     ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
     ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
     ['Curio', 'Curio', '2018-03-10'],
-    ['Deathofirish', 'Deathofirish', '2018-04-17'],
+    ['Deathofirish', 'Deathofirish', '2018-04-17'],  # emtpy pic
     # eduardo
     ['Runda', 'Runda', '2018-04-17'],
     # Shirokaze
     ['Brindin_wF', 'Brindin_wF', '2018-04-17'],
+    ['Serry Jane', 'Serry_Jane', '2018-04-17'],  # emtpy pic
 ]
 
 current_supporters = None
@@ -267,8 +268,8 @@ class ToolPanel:
         name="Selection Mode",
         description="Selection Mode",
         items=[
-            ("SHAPES", "Shape Keys", 'Select all the shape keys you want to keep here.'),
-            ("MESHES", "Meshes", 'Select all the meshes you want to keep here')
+            ("SHAPES", "Shape Keys", 'Select all the shape keys you want to preserve here.'),
+            ("MESHES", "Meshes", "Select all the meshes you don't want to decimate here.")
         ]
     )
 
