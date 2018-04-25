@@ -29,6 +29,7 @@ import bpy
 import bmesh
 import numpy as np
 import tools.decimation
+import tools.armature_bones as Bones
 from mathutils import Vector
 from math import degrees
 from collections import OrderedDict
@@ -54,6 +55,7 @@ def get_armature():
     for obj in bpy.data.objects:
         if obj.type == 'ARMATURE' and obj.name == bpy.context.scene.armature:
             return obj
+    return None
 
 
 def get_armature_objects():
@@ -183,7 +185,7 @@ def get_meshes(self, context):
 def get_armature_list(self, context):
     choices = []
 
-    for object in bpy.context.scene.objects:
+    for object in context.scene.objects:
         if object.type == 'ARMATURE':
             # 1. Will be returned by context.scene
             # 2. Will be shown in lists
@@ -195,6 +197,27 @@ def get_armature_list(self, context):
                 name = object.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
 
             choices.append((object.name, name, object.name))
+
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
+    return bpy.types.Object.Enum
+
+
+def get_armature_merge_list(self, context):
+    choices = []
+    current_armature = context.scene.armature
+
+    for obj in context.scene.objects:
+        if obj.type == 'ARMATURE' and obj.name != current_armature:
+            # 1. Will be returned by context.scene
+            # 2. Will be shown in lists
+            # 3. will be shown in the hover description (below description)
+
+            # Set name displayed in list
+            name = obj.data.name
+            if name.startswith('Armature ('):
+                name = obj.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
+
+            choices.append((obj.name, name, obj.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
@@ -375,21 +398,26 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-def get_meshes_objects():
+def get_meshes_objects(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
     meshes = []
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            if ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == bpy.context.scene.armature:
+            if ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
                 meshes.append(ob)
     return meshes
 
 
-def join_meshes(context):
+def join_meshes(armature_name=None):
     set_default_stage()
     unselect_all()
 
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
+
     # Apply existing decimation modifiers
-    for mesh in get_meshes_objects():
+    for mesh in get_meshes_objects(armature_name):
         select(mesh)
         for mod in mesh.modifiers:
             if mod.type == 'DECIMATE':
@@ -406,7 +434,7 @@ def join_meshes(context):
         unselect_all()
 
     # Select all meshes
-    for mesh in get_meshes_objects():
+    for mesh in get_meshes_objects(armature_name):
         select(mesh)
 
     # Join the meshes
@@ -415,9 +443,10 @@ def join_meshes(context):
 
     # Rename result to Body
     mesh = None
+    print("DEBUG!!!", armature_name)
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            if ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == bpy.context.scene.armature:
+            if ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
                 mesh = ob
                 mesh.name = 'Body'
                 for mod in mesh.modifiers:
@@ -425,7 +454,7 @@ def join_meshes(context):
                 ShapekeyOrder.repair(mesh.name)
                 break
 
-    reset_context_scenes(context)
+    reset_context_scenes()
 
     return mesh
 
@@ -574,18 +603,18 @@ def separate_by_verts(context):
             bpy.ops.object.mode_set(mode='OBJECT')
 
 
-def reset_context_scenes(context):
-    head_bones = get_bones_head(None, context)
+def reset_context_scenes():
+    head_bones = get_bones_head(None, bpy.context)
     if len(head_bones) > 0:
-        context.scene.head = head_bones[0][0]
-        context.scene.eye_left = get_bones_eye_l(None, context)[0][0]
-        context.scene.eye_right = get_bones_eye_r(None, context)[0][0]
+        bpy.context.scene.head = head_bones[0][0]
+        bpy.context.scene.eye_left = get_bones_eye_l(None, bpy.context)[0][0]
+        bpy.context.scene.eye_right = get_bones_eye_r(None, bpy.context)[0][0]
 
-    mesh = get_meshes(None, context)[0][0]
-    context.scene.mesh_name_eye = mesh
-    context.scene.mesh_name_viseme = mesh
-    context.scene.mesh_name_atlas = mesh
-    context.scene.merge_mesh = mesh
+    mesh = get_meshes(None, bpy.context)[0][0]
+    bpy.context.scene.mesh_name_eye = mesh
+    bpy.context.scene.mesh_name_viseme = mesh
+    bpy.context.scene.mesh_name_atlas = mesh
+    bpy.context.scene.merge_mesh = mesh
 
 
 def repair_viseme_order(mesh_name):
@@ -763,6 +792,66 @@ def days_between(d1, d2):
     d1 = datetime.strptime(d1, "%Y-%m-%d")
     d2 = datetime.strptime(d2, "%Y-%m-%d")
     return abs((d2 - d1).days)
+
+
+def delete_bone_constraints():
+    armature = tools.common.get_armature()
+    tools.common.switch('POSE')
+
+    for bone in armature.pose.bones:
+        if len(bone.constraints) > 0:
+            for constraint in bone.constraints:
+                bone.constraints.remove(constraint)
+
+    tools.common.switch('EDIT')
+
+
+def delete_zero_weight():
+    armature = tools.common.get_armature()
+    tools.common.switch('EDIT')
+
+    bone_names_to_work_on = set([bone.name for bone in armature.data.edit_bones])
+
+    bone_name_to_edit_bone = dict()
+    for edit_bone in armature.data.edit_bones:
+        bone_name_to_edit_bone[edit_bone.name] = edit_bone
+
+    vertex_group_names_used = set()
+    vertex_group_name_to_objects_having_same_named_vertex_group = dict()
+    for objects in armature.children:
+        vertex_group_id_to_vertex_group_name = dict()
+        for vertex_group in objects.vertex_groups:
+            vertex_group_id_to_vertex_group_name[vertex_group.index] = vertex_group.name
+            if vertex_group.name not in vertex_group_name_to_objects_having_same_named_vertex_group:
+                vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name] = set()
+            vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name].add(objects)
+        for vertex in objects.data.vertices:
+            for group in vertex.groups:
+                if group.weight > 0:
+                    vertex_group_names_used.add(vertex_group_id_to_vertex_group_name.get(group.group))
+
+    not_used_bone_names = bone_names_to_work_on - vertex_group_names_used
+
+    count = 0
+    for bone_name in not_used_bone_names:
+        if bone_name not in Bones.dont_delete_these_bones and 'Root_' not in bone_name:
+            armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
+            count += 1
+            if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
+                for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups
+                    vertex_group = objects.vertex_groups.get(bone_name)
+                    if vertex_group is not None:
+                        objects.vertex_groups.remove(vertex_group)
+
+    return count
+
+
+def remove_unused_objects():
+    for obj in bpy.data.objects:
+        if (obj.type == 'CAMERA' and obj.name == 'Camera') \
+                or (obj.type == 'LAMP' and obj.name == 'Lamp') \
+                or (obj.type == 'MESH' and obj.name == 'Cube'):
+            delete_hierarchy(obj)
 
 # === THIS CODE COULD BE USEFUL ===
 

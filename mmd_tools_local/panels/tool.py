@@ -18,7 +18,7 @@ if bpy.app.version < (2, 73, 0):
 class _PanelBase(object):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
-    bl_category = 'mmd_tools'
+    bl_category = 'MMD'
 
 
 class MMDToolsObjectPanel(_PanelBase, Panel):

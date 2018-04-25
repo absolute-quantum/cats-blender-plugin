@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.7.2)
+# Cats Blender Plugin (0.8.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -234,17 +234,18 @@ This method will make it much harder for people that try to steal your avatar th
      - Then, except for just dragging the fbx into Unity, you need to go into the folder where this Unity project is located
        and then replace the unprotected fbx with the protected one. 
        That way your configurations will be kept.
-     - Skip to step 4
+     - Skip to step 5
 3. In Blender: Click the "Enable Protection" button
 4. Export it to Unity by either using the "Export" button within Cats or set the fbx export option by yourself: 
    Geometries > Smoothing > Set to "Face"
-4. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
+5. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
    https://i.imgur.com/RlrGTvV.gif
-5. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
+6. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
    If the VRCSDK complains about your model being too large, edit your bounding box back to normal here:
    (this option is below the blendshape list from above)
+   
    ![](https://i.imgur.com/4NrfVOr.png)
-6. Your avatar now behaves just like a normal one.
+7. Your avatar now behaves just like a normal one.
 
 People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
   
@@ -258,6 +259,20 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 
 
 ## Changelog
+
+#### 0.8.0
+- Added: Model: Added "Merge Armatures" button!
+  - This merges two selected armatures together.
+  - This makes creating custom models a lot easier if you want parts from one model on another one
+- Added: Model: Source Engine Models are now compatible!
+- Added: Model: Fix Model now sets the roll of all bones to 0
+  - This should fix a lot of finger issues in Unity!
+- Added: Model: Fix Model now removes the standard lamp, camera and cube
+- Added: Model: Splitting Manual Model Fixing into its own panel
+- Added: Eye Tracking: Now shows a warning when important objects aren't named correctly
+- Changed: Mesh selections is no longer shown if there is only one mesh
+- Updated mmd_tools
+- Fixed lots of bugs
 
 #### 0.7.2
 - Changed: Copy Protection: Does now work on multiple meshes.
@@ -280,25 +295,6 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
   - If you get the "spine length zero" warning in Unity you can ignore it as it shouldn't break anything.
     But if it really does cause issues, uncheck this option
 - Added: Copy protection: Added "Go to Documentation" button
-
-#### 0.7.0
-- Added: mmd_tools is no longer required! Cats now automatically comes with it!
-  - You should uninstall all previous versions of mmd_tools for the best result
-  - If you want to use your own mmd_tools load it after Cats
-- Added: Full Body Tracking support for "Fix Model"! (thanks @ProfessorSnep#0001!)
-  - This also partially fixes leg bending for desktop users
-- Added: Multiple armature support!
-  - Armature selection appears when 2 or more armatures are detected
-- Added: Copy Protection: Secures your avatar against unity game cache ripping! (thanks @zarniwoop#6081!)
-- Added: Model: New "Separate by Loose Parts" button
-- Added: Model: Unreal Engine models are now supported!
-- Added: Model: Mixing Weights is now possible in Pose Mode
-- Added: Model: More models are now compatible (please report non working models to us)
-- Added: Shapekeys: Added "Shapekey to Basis" button to shapekey menu
-- Changed: Translation: Translating materials now translates all materials (including materials outside of armatures)
-- Changed: Updater: No longer requires to hover over the buttons in order to update them
-- Changed: Updater: Various improvements
-- Fixed: A bunch of bugs
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

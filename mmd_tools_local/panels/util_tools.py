@@ -5,10 +5,7 @@ from bpy.types import Panel, UIList
 from mmd_tools_local.core.model import Model
 from mmd_tools_local.panels.tool import TRIA_UP_BAR, TRIA_DOWN_BAR
 
-class _PanelBase(object):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-    bl_category = 'mmd_utils'
+from mmd_tools_local.panels.tool import _PanelBase
 
 class UL_Materials(UIList):
 
@@ -34,6 +31,7 @@ class MMDMaterialSorter(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_material_sorter'
     bl_label = 'Material Sorter'
     bl_context = ''
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout
@@ -98,6 +96,7 @@ class MMDMeshSorter(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_meshes_sorter'
     bl_label = 'Meshes Sorter'
     bl_context = ''
+    bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
         layout = self.layout

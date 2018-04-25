@@ -7,12 +7,10 @@ class InvalidFileError(Exception):
 
 ## vmd仕様の文字列をstringに変換
 def _toShiftJisString(byteString):
-    byteString = byteString.split(b"\x00")[0]
-    try:
-        return byteString.decode("shift_jis")
-    except UnicodeDecodeError:
-        # discard truncated sjis char
-        return byteString[:-1].decode("shift_jis")
+    return byteString.split(b'\x00')[0].decode('shift_jis', errors='replace')
+
+def _toShiftJisBytes(string):
+    return string.encode('shift_jis', errors='replace')
 
 
 class Header:
@@ -29,7 +27,7 @@ class Header:
 
     def save(self, fin):
         fin.write(struct.pack('<30s', self.VMD_SIGN))
-        fin.write(struct.pack('<20s', self.model_name.encode('shift_jis')))
+        fin.write(struct.pack('<20s', _toShiftJisBytes(self.model_name)))
 
     def __repr__(self):
         return '<Header model_name %s>'%(self.model_name)
@@ -167,7 +165,7 @@ class _AnimationBase(collections.defaultdict):
         count = sum([len(i) for i in self.values()])
         fin.write(struct.pack('<L', count))
         for name, frameKeys in self.items():
-            name_data = struct.pack('<15s', name.encode('shift_jis'))
+            name_data = struct.pack('<15s', _toShiftJisBytes(name))
             for frameKey in frameKeys:
                 fin.write(name_data)
                 frameKey.save(fin)

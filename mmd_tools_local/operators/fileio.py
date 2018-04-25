@@ -64,7 +64,7 @@ class ImportPmx(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_model'
     bl_label = 'Import Model file (.pmd, .pmx)'
     bl_description = 'Import Model file(s) (.pmd, .pmx)'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
     files = bpy.props.CollectionProperty(type=OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
     directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})

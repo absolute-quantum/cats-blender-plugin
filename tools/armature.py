@@ -55,7 +55,7 @@ class FixArmature(bpy.types.Operator):
                      '- Mixes weight paints\n' \
                      '- Corrects the hips\n' \
                      '- Joins meshes\n' \
-                     '- Coverts morphs into shapes\n' \
+                     '- Converts morphs into shapes\n' \
                      '- Corrects shading'
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -211,6 +211,7 @@ class FixArmature(bpy.types.Operator):
         armature.data.draw_type = 'OCTAHEDRAL'
         armature.draw_type = 'WIRE'
         armature.show_x_ray = True
+        armature.data.show_bone_custom_shapes = False
 
         # Disable backface culling
         if context.area:
@@ -221,16 +222,29 @@ class FixArmature(bpy.types.Operator):
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
 
-        # Remove empty mmd object
+        # Remove empty mmd object and unused objects
         tools.common.remove_empty()
+        tools.common.remove_unused_objects()
 
         # Joins meshes into one and calls it 'Body'
-        mesh = tools.common.join_meshes(context)
+        mesh = tools.common.join_meshes()
+        tools.common.select(armature)
+
+        # Correct pivot position
+        try:
+            # bpy.ops.view3d.snap_cursor_to_center()
+            bpy.context.scene.cursor_location = (0.0, 0.0, 0.0)
+            bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        except RuntimeError:
+            pass
+
+        tools.common.unselect_all()
         tools.common.select(mesh)
 
         # Correct pivot position
         try:
-            bpy.ops.view3d.snap_cursor_to_center()
+            # bpy.ops.view3d.snap_cursor_to_center()
+            bpy.context.scene.cursor_location = (0.0, 0.0, 0.0)
             bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
         except RuntimeError:
             pass
@@ -387,7 +401,7 @@ class FixArmature(bpy.types.Operator):
                         parent.name = 'Left ' + value
                         break
 
-        # Remove un-needed bones and disconnect them
+        # Remove un-needed bones, disconnect them and set roll to 0
         for bone in armature.data.edit_bones:
             if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
                 if bone.parent and mesh.vertex_groups.get(bone.name) and mesh.vertex_groups.get(bone.parent.name):
@@ -396,6 +410,7 @@ class FixArmature(bpy.types.Operator):
                     armature.data.edit_bones.remove(bone)
             else:
                 bone.use_connect = False
+                bone.roll = 0
 
         # Make Hips top parent and reparent other top bones to hips
         if 'Hips' in armature.data.edit_bones:
@@ -404,10 +419,6 @@ class FixArmature(bpy.types.Operator):
             for bone in armature.data.edit_bones:
                 if bone.parent is None:
                     bone.parent = hips
-
-        # Set head roll to 0 degrees for eye tracking
-        if 'Head' in armature.data.edit_bones:
-            armature.data.edit_bones.get('Head').roll = 0
 
         # == FIXING OF SPECIAL BONE CASES ==
 
@@ -657,7 +668,6 @@ class FixArmature(bpy.types.Operator):
 
                 mesh.rotation_euler = (math.radians(180), 0, 0)
 
-
         # Mixing the weights
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
@@ -761,18 +771,18 @@ class FixArmature(bpy.types.Operator):
 
         # Bone constraints should be deleted
         # if context.scene.remove_constraints:
-        delete_bone_constraints()
+        tools.common.delete_bone_constraints()
 
         # Removes unused vertex groups
         tools.common.remove_unused_vertex_groups()
 
         # Zero weight bones should be deleted
         if context.scene.remove_zero_weight:
-            delete_zero_weight()
+            tools.common.delete_zero_weight()
 
         # # This is code for testing
-        # print('18 LOOKING FOR BONES!!!')
-        #  if 'Breast_L' in tools.common.get_armature().pose.bones:
+        # print('LOOKING FOR BONES!')
+        #  if 'Eye_L' in tools.common.get_armature().pose.bones:
         #     print('THEY ARE THERE!')
         # return {'FINISHED'}
 
@@ -786,6 +796,9 @@ class FixArmature(bpy.types.Operator):
             ['Chest', 'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist'],
             ['Chest', 'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist']
         ])
+
+        # Armature should be named correctly (has to be at the end because of multiple armatures)
+        tools.common.fix_armature_names()
 
         wm.progress_end()
 
@@ -837,56 +850,4 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                         if previous != bone.parent.name:
                             return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
 
-    # Armature should be named correctly (has to be at the end because of multiple armatures)
-    tools.common.fix_armature_names()
-
-
     return {'result': True}
-
-
-def delete_zero_weight():
-    armature = tools.common.get_armature()
-    tools.common.switch('EDIT')
-
-    bone_names_to_work_on = set([bone.name for bone in armature.data.edit_bones])
-
-    bone_name_to_edit_bone = dict()
-    for edit_bone in armature.data.edit_bones:
-        bone_name_to_edit_bone[edit_bone.name] = edit_bone
-
-    vertex_group_names_used = set()
-    vertex_group_name_to_objects_having_same_named_vertex_group = dict()
-    for objects in armature.children:
-        vertex_group_id_to_vertex_group_name = dict()
-        for vertex_group in objects.vertex_groups:
-            vertex_group_id_to_vertex_group_name[vertex_group.index] = vertex_group.name
-            if vertex_group.name not in vertex_group_name_to_objects_having_same_named_vertex_group:
-                vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name] = set()
-            vertex_group_name_to_objects_having_same_named_vertex_group[vertex_group.name].add(objects)
-        for vertex in objects.data.vertices:
-            for group in vertex.groups:
-                if group.weight > 0:
-                    vertex_group_names_used.add(vertex_group_id_to_vertex_group_name.get(group.group))
-
-    not_used_bone_names = bone_names_to_work_on - vertex_group_names_used
-
-    for bone_name in not_used_bone_names:
-        if bone_name not in Bones.dont_delete_these_bones and 'Root_' not in bone_name:
-            armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
-            if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
-                for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups
-                    vertex_group = objects.vertex_groups.get(bone_name)
-                    if vertex_group is not None:
-                        objects.vertex_groups.remove(vertex_group)
-
-
-def delete_bone_constraints():
-    armature = tools.common.get_armature()
-    tools.common.switch('POSE')
-
-    for bone in armature.pose.bones:
-        if len(bone.constraints) > 0:
-            for constraint in bone.constraints:
-                bone.constraints.remove(constraint)
-
-    tools.common.switch('EDIT')

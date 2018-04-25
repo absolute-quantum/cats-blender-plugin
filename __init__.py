@@ -100,7 +100,7 @@ bl_info = {
     'warning': '',
 }
 
-dev_branch = False
+dev_branch = True
 # dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
@@ -214,7 +214,7 @@ class ToolPanel:
 
     bpy.types.Scene.armature = bpy.props.EnumProperty(
         name='Armature',
-        description='Select the armature which will be used by Cats.',
+        description='Select the armature which will be used by Cats',
         items=tools.common.get_armature_list
     )
 
@@ -224,14 +224,20 @@ class ToolPanel:
                     'Can potentially reduce the knee bending of every avatar in VRChat.\n'
                     'You can safely ignore the "Spine length zero" warning in Unity.\n'
                     'If you have problems with the hips ingame, uncheck this option and tell us!\n',
-        default=True
+        default=False
     )
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove Zero Weight Bones',
         description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.\n"
-                    'Uncheck this if bones you want to keep got deleted.',
+                    'Uncheck this if bones you want to keep got deleted',
         default=True
+    )
+
+    bpy.types.Scene.merge_armature = bpy.props.EnumProperty(
+        name='Merge Armature',
+        description='Select the armature which will be merged into the one selected in the Model panel\n',
+        items=tools.common.get_armature_merge_list
     )
 
     # Decimation
@@ -273,32 +279,15 @@ class ToolPanel:
         ]
     )
 
-    bpy.types.Scene.full_decimation = bpy.props.BoolProperty(
-        name='Full Decimation',
-        description="This will decimate your whole model deleting all shape keys in the process.\n"
-                    'This will give better results but you will lose the ability to add blinking and lip syncing.\n'
-                    'Eye Tracking will still work if you disable Eye Blinking.',
-        default=False
-    )
-    bpy.types.Scene.half_decimation = bpy.props.BoolProperty(
-        name='Half Decimation',
-        description="Uncheck this if you want to keep emotion shape keys.\n"
-                    "\n"
-                    "This will only decimate meshes with less than 4 shape keys as those are often not used.\n"
-                    'This will give better results but you will lose the shape keys in some meshes.\n'
-                    'Eye Tracking and lip syncing should still work.',
-        default=True
-    )
-
     bpy.types.Scene.add_shape_key = bpy.props.EnumProperty(
         name='Shape',
-        description='The shape key you want to keep.',
+        description='The shape key you want to keep',
         items=tools.common.get_shapekeys_decimation
     )
 
     bpy.types.Scene.add_mesh = bpy.props.EnumProperty(
         name='Mesh',
-        description='The mesh you want to leave untouched by the decimation.',
+        description='The mesh you want to leave untouched by the decimation',
         items=tools.common.get_meshes_decimation
     )
 
@@ -333,7 +322,7 @@ class ToolPanel:
 
     bpy.types.Scene.max_tris = bpy.props.IntProperty(
         name='Tris',
-        description="The target amount of tris after decimation.",
+        description="The target amount of tris after decimation",
         default=19999,
         min=1,
         max=100000
@@ -376,13 +365,13 @@ class ToolPanel:
 
     bpy.types.Scene.wink_left = bpy.props.EnumProperty(
         name='Blink Left',
-        description='The shape key containing a blink with the left eye.',
+        description='The shape key containing a blink with the left eye',
         items=tools.common.get_shapekeys_eye_blink_l
     )
 
     bpy.types.Scene.wink_right = bpy.props.EnumProperty(
         name='Blink Right',
-        description='The shape key containing a blink with the right eye.',
+        description='The shape key containing a blink with the right eye',
         items=tools.common.get_shapekeys_eye_blink_r
     )
 
@@ -406,14 +395,14 @@ class ToolPanel:
                     '\n'
                     'Disables eye movement. Useful if you only want blinking.\n'
                     'This creates eye bones with no movement bound to them.\n'
-                    'You still have to assign "LeftEye" and "RightEye" to the eyes in Unity.',
+                    'You still have to assign "LeftEye" and "RightEye" to the eyes in Unity',
         subtype='DISTANCE'
     )
 
     bpy.types.Scene.disable_eye_blinking = bpy.props.BoolProperty(
         name='Disable Eye Blinking',
         description='Disables eye blinking. Useful if you only want eye movement.\n'
-                    'This will create the necessary shape keys but leaves them empty.',
+                    'This will create the necessary shape keys but leaves them empty',
         subtype='NONE'
     )
 
@@ -422,7 +411,7 @@ class ToolPanel:
         description='Higher = more eye movement\n'
                     'Lower = less eye movement\n'
                     'Warning: Too little or too much range can glitch the eyes.\n'
-                    'Test your results in the "Eye Testing"-Tab!',
+                    'Test your results in the "Eye Testing"-Tab!\n',
         default=0.8,
         min=0.0,
         max=2.0,
@@ -433,7 +422,7 @@ class ToolPanel:
 
     bpy.types.Scene.eye_rotation_x = bpy.props.IntProperty(
         name='Up - Down',
-        description='Rotate the eye bones on the vertical axis.',
+        description='Rotate the eye bones on the vertical axis',
         default=0,
         min=-19,
         max=25,
@@ -445,7 +434,7 @@ class ToolPanel:
     bpy.types.Scene.eye_rotation_y = bpy.props.IntProperty(
         name='Left - Right',
         description='Rotate the eye bones on the horizontal axis.'
-                    '\nThis is from your own point of view.',
+                    '\nThis is from your own point of view',
         default=0,
         min=-19,
         max=19,
@@ -456,7 +445,7 @@ class ToolPanel:
 
     bpy.types.Scene.iris_height = bpy.props.IntProperty(
         name='Iris Height',
-        description='Moves the iris away from the eye ball.',
+        description='Moves the iris away from the eye ball',
         default=0,
         min=0,
         max=100,
@@ -466,7 +455,7 @@ class ToolPanel:
 
     bpy.types.Scene.eye_blink_shape = bpy.props.FloatProperty(
         name='Blink Strength',
-        description='Test the blinking of the eye.',
+        description='Test the blinking of the eye',
         default=1.0,
         min=0.0,
         max=1.0,
@@ -477,7 +466,7 @@ class ToolPanel:
 
     bpy.types.Scene.eye_lowerlid_shape = bpy.props.FloatProperty(
         name='Lowerlid Strength',
-        description='Test the lowerlid blinking of the eye.',
+        description='Test the lowerlid blinking of the eye',
         default=1.0,
         min=0.0,
         max=1.0,
@@ -513,7 +502,7 @@ class ToolPanel:
 
     bpy.types.Scene.shape_intensity = bpy.props.FloatProperty(
         name='Shape Key Mix Intensity',
-        description='Controls the strength in the creation of the shape keys. Lower for less mouth movement strength.',
+        description='Controls the strength in the creation of the shape keys. Lower for less mouth movement strength',
         default=1.0,
         min=0.0,
         max=1.0,
@@ -525,7 +514,7 @@ class ToolPanel:
     # Bone Parenting
     bpy.types.Scene.root_bone = bpy.props.EnumProperty(
         name='To Parent',
-        description='List of bones that look like they could be parented together to a root bone.',
+        description='List of bones that look like they could be parented together to a root bone',
         items=tools.rootbone.get_parent_root_bones,
     )
 
@@ -575,19 +564,19 @@ class ToolPanel:
 
     bpy.types.Scene.texture_size = bpy.props.EnumProperty(
         name='Texture Size',
-        description='Lower for faster bake time, higher for more detail.',
+        description='Lower for faster bake time, higher for more detail',
         items=tools.common.get_texture_sizes
     )
 
     bpy.types.Scene.one_texture = bpy.props.BoolProperty(
         name='One Texture Material',
-        description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.',
+        description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this',
         default=True
     )
 
     bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
         name='Pack Islands',
-        description='Transform all islands so that they will fill up the UV space as much as possible.',
+        description='Transform all islands so that they will fill up the UV space as much as possible',
         default=False
     )
 
@@ -618,7 +607,7 @@ class ToolPanel:
 
     bpy.types.Scene.merge_bone = bpy.props.EnumProperty(
         name='To Merge',
-        description='List of bones that look like they could be marged together to reduce overall bones.',
+        description='List of bones that look like they could be merged together to reduce overall bones',
         items=tools.rootbone.get_parent_root_bones,
     )
 
@@ -653,13 +642,9 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         if bpy.app.version < (2, 79, 0):
             col.separator()
-            col.separator()
-            col.separator()
             col.label('Old Blender version detected!', icon='ERROR')
             col.label('Some features might not work!', icon='ERROR')
             col.label('Please update to Blender 2.79!', icon='ERROR')
-            col.separator()
-            col.separator()
             col.separator()
             col.separator()
 
@@ -691,7 +676,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         if tools.common.get_armature():
             row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
 
-        if len(tools.common.get_armature_objects()) > 1:
+        arm_count = len(tools.common.get_armature_objects())
+        if arm_count == 0:
+            return
+        elif arm_count > 1:
             col.separator()
             col.separator()
             col.separator()
@@ -719,20 +707,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
 
         col.separator()
-        row = col.row(align=True)
-        row.label('Manual Model Fixing:')
-        row = col.row(align=True)
-        row.scale_y = 1.05
-        row.label("Separate by: ", icon='MESH_DATA')
-        row.operator('armature_manual.separate_by_materials')
-        row.operator('armature_manual.separate_by_loose_parts')
-        row = col.row(align=True)
-        row.scale_y = 1.05
-        row.operator('armature_manual.join_meshes', icon='MESH_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.05
-        row.operator('armature_manual.mix_weights', icon='BONE_DATA')
-
+        col.separator()
         ob = bpy.context.active_object
         if bpy.context.active_object is None or ob.mode != 'POSE':
             row = col.row(align=True)
@@ -747,14 +722,62 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                 row.scale_y = 1.05
                 row.operator('armature_manual.pose_to_shape', icon='SHAPEKEY_DATA')
 
-        # row = col.row(align=True)
-        # row.scale_y = 1.1
-        # row.operator('armature_manual.separate_by_materials', icon='MESH_DATA')
-        # row = col.row(align=True)
-        # row.scale_y = 1.1
-        # row.operator('armature_manual.join_meshes2', icon='MESH_DATA')
-
         # addon_updater_ops.update_notice_box_ui(self, context)
+
+
+class ManualPanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_manual_v1'
+    bl_label = 'Model Options'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+        # if not context.scene.show_manual_options:
+        #     row = col.row(align=False)
+        #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_RIGHT')
+        # else:
+        #     row = col.row(align=True)
+        #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_DOWN')
+
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.label("Separate by:", icon='MESH_DATA')
+        row.operator('armature_manual.separate_by_materials', text='Materials')
+        row.operator('armature_manual.separate_by_loose_parts', text='Loose Parts')
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.operator('armature_manual.join_meshes', icon='MESH_DATA')
+
+        col.separator()
+        col.separator()
+        row = col.split(percentage=0.23, align=True)
+        row.scale_y = 1.05
+        row.label("Delete:", icon='X')
+        row.operator('armature_manual.remove_zero_weight', text='Zero Weight Bones')
+        row.operator('armature_manual.remove_constraints', text='Constraints')
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.operator('armature_manual.mix_weights', icon='BONE_DATA')
+
+        col.separator()
+        col.separator()
+        row = col.split(percentage=0.27, align=True)
+        row.scale_y = 1.05
+        row.label("Normals:", icon='SNAP_NORMAL')
+        row.operator('armature_manual.recalculate_normals', text='Recalculate')
+        row.operator('armature_manual.flip_normals', text='Flip')
+
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.prop(context.scene, 'merge_armature')
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.operator('armature_manual.merge_armature', icon='ARMATURE_DATA')
+
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -941,10 +964,18 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'eye_mode', expand=True)
 
         if context.scene.eye_mode == 'CREATION':
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 1.1
-            row.prop(context.scene, 'mesh_name_eye', icon='MESH_DATA')
+
+            mesh_count = len(tools.common.get_meshes_objects())
+            if mesh_count == 0:
+                col.separator()
+                row = col.row(align=True)
+                row.scale_y = 1.1
+                row.label('No meshes found!', icon='ERROR')
+            elif mesh_count > 1:
+                col.separator()
+                row = col.row(align=True)
+                row.scale_y = 1.1
+                row.prop(context.scene, 'mesh_name_eye', icon='MESH_DATA')
 
             col.separator()
             row = col.row(align=True)
@@ -1004,7 +1035,8 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
             #     row = col.row(align=True)
             #     row.label('Eye Bone Tweaking:')
         else:
-            if tools.common.get_armature() is None:
+            armature = tools.common.get_armature()
+            if not armature:
                 box.label('No model found!', icon='ERROR')
                 return
 
@@ -1050,14 +1082,41 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.operator('eyes.reset_blink_test', icon='FILE_REFRESH')
 
+                if armature.name != 'Armature':
+                    col.separator()
+                    col.separator()
+                    col.separator()
+                    row = col.row(align=True)
+                    row.scale_y = 0.3
+                    row.label("Your armature has to be named 'Armature'", icon='ERROR')
+                    row = col.row(align=True)
+                    row.label("      for Eye Tracking to work!")
+                    row = col.row(align=True)
+                    row.scale_y = 0.3
+                    row.label("      (currently '" + armature.name + "')")
+
+                if context.scene.mesh_name_eye != 'Body':
+                    col.separator()
+                    col.separator()
+                    col.separator()
+                    row = col.row(align=True)
+                    row.scale_y = 0.3
+                    row.label("The mesh containing the eyes has to be", icon='ERROR')
+                    row = col.row(align=True)
+                    row.label("      named 'Body' for Eye Tracking to work!")
+                    row = col.row(align=True)
+                    row.scale_y = 0.3
+                    row.label("      (currently '" + context.scene.mesh_name_eye + "')")
+
                 col.separator()
                 col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 0.3
-                row.label("Don't forget to assign 'LeftEye' and 'RightEye' ", icon='INFO')
+                row.label("Don't forget to assign 'LeftEye' and 'RightEye'", icon='INFO')
                 row = col.row(align=True)
                 row.label("      to the eyes in Unity!")
+
                 row = col.row(align=True)
                 row.scale_y = 1.5
                 row.operator('eyes.test_stop', icon='PAUSE')
@@ -1072,10 +1131,19 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
-        row = col.row(align=True)
-        row.scale_y = 1.1
-        row.prop(context.scene, 'mesh_name_viseme', icon='MESH_DATA')
-        col.separator()
+
+        mesh_count = len(tools.common.get_meshes_objects())
+        if mesh_count == 0:
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.label('No meshes found!', icon='ERROR')
+            col.separator()
+        elif mesh_count > 1:
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.prop(context.scene, 'mesh_name_viseme', icon='MESH_DATA')
+            col.separator()
+
         row = col.row(align=True)
         row.scale_y = 1.1
         row.prop(context.scene, 'mouth_a', icon='SHAPEKEY_DATA')
@@ -1124,20 +1192,22 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
         if context.scene.optimize_mode == 'ATLAS':
             col.separator()
-            row = box.row(align=True)
-            row.prop(context.scene, 'island_margin')
-            row.scale_y = 0.9
-            row = box.row(align=True)
-            row.prop(context.scene, 'angle_limit')
-            row.scale_y = 0.9
-            row = box.row(align=True)
-            row.prop(context.scene, 'area_weight')
-            row.scale_y = 0.9
-            row = box.row(align=True)
+            col.separator()
+
+            if len(tools.common.get_meshes_objects()) > 1:
+                row = col.row(align=True)
+                row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
+            row = col.row(align=True)
             row.prop(context.scene, 'texture_size', icon='TEXTURE')
-            row = box.row(align=True)
-            row.scale_y = 1.1
-            row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
+
+            col.separator()
+            row = col.row(align=True)
+            row.prop(context.scene, 'island_margin')
+            row = col.row(align=True)
+            row.prop(context.scene, 'angle_limit')
+            row = col.row(align=True)
+            row.prop(context.scene, 'area_weight')
+
             row = box.row(align=True)
             row.scale_y = 1.1
             row.prop(context.scene, 'one_texture')
@@ -1155,8 +1225,9 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.operator('one.tex', icon='TEXTURE')
 
         if context.scene.optimize_mode == 'BONEMERGING':
-            row = box.row(align=True)
-            row.prop(context.scene, 'merge_mesh')
+            if len(tools.common.get_meshes_objects()) > 1:
+                row = box.row(align=True)
+                row.prop(context.scene, 'merge_mesh')
             row = box.row(align=True)
             row.prop(context.scene, 'merge_bone')
             row = box.row(align=True)
@@ -1198,6 +1269,9 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         meshes = tools.common.get_meshes_objects()
         if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
+            row = col.row(align=True)
+            col.separator()
+            row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
         else:
             row.operator('copyprotection.enable', icon='KEY_HLT')
 
@@ -1473,21 +1547,22 @@ classesToRegister = [
     ArmaturePanel,
     tools.armature_manual.ImportModel,
     tools.armature_manual.ExportModel,
-    tools.armature_manual.MmdToolsButton,
     tools.armature_manual.XpsToolsButton,
     tools.armature.FixArmature,
+    tools.armature_manual.StartPoseMode,
+    tools.armature_manual.StopPoseMode,
+    tools.armature_manual.PoseToShape,
+
+    ManualPanel,
     tools.armature_manual.SeparateByMaterials,
     tools.armature_manual.SeparateByLooseParts,
     tools.armature_manual.JoinMeshes,
     tools.armature_manual.MixWeights,
-    tools.armature_manual.StartPoseMode,
-    tools.armature_manual.StopPoseMode,
-    tools.armature_manual.PoseToShape,
-    # tools.armature_manual.Test,
-    # tools.armature_manual.Import,
-    # tools.armature_manual.SeparateByMaterials,
-    # tools.armature_manual.JoinMeshesTest,
-    # tools.armature_manual.Finalize,
+    tools.armature_manual.RemoveZeroWeight,
+    tools.armature_manual.RemoveConstraints,
+    tools.armature_manual.RecalculateNormals,
+    tools.armature_manual.FlipNormals,
+    tools.armature_manual.MergeArmature,
 
     TranslationPanel,
     tools.translate.TranslateShapekeyButton,

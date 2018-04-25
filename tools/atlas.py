@@ -96,7 +96,8 @@ class AutoAtlasButton(bpy.types.Operator):
         img.file_format = 'PNG'
 
         # Switch to new image for the uv edit
-        bpy.data.screens['UV Editing'].areas[1].spaces[0].image = img
+        if bpy.data.screens['UV Editing'].areas[1].spaces[0]:
+            bpy.data.screens['UV Editing'].areas[1].spaces[0].image = img
 
         # Set uv mapping to active image
         for uvface in atlas_mesh.data.uv_textures.active.data:

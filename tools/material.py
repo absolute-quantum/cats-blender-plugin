@@ -34,7 +34,7 @@ import tools.common
 class OneTexPerMatButton(bpy.types.Operator):
     bl_idname = 'one.tex'
     bl_label = 'One Material Texture'
-    bl_description = 'Have all material slots ignore extra texture slots. These are not used in VRChat.'
+    bl_description = 'Have all material slots ignore extra texture slots as these are not used by VRChat'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -65,7 +65,7 @@ class OneTexPerMatButton(bpy.types.Operator):
 class CombineMaterialsButton(bpy.types.Operator):
     bl_idname = 'combine.mats'
     bl_label = 'Combine Same Materials'
-    bl_description = 'Combines similair materials into one, saving draw calls'
+    bl_description = 'Combines similar materials into one, reducing draw calls.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     combined_tex = {}

@@ -120,6 +120,14 @@ dont_delete_these_bones = {
 
     'Breast_L', 'Breast_R',
 }
+dont_delete_these_main_bones = {
+    'Hips', 'Spine', 'Chest', 'Neck', 'Head',
+    'Left leg', 'Left knee', 'Left ankle', 'Left toe',
+    'Right leg', 'Right knee', 'Right ankle', 'Right toe',
+    'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
+    'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist',
+    'Left leg 2', 'Right leg 2',
+}
 bone_list_rename_unknown_side = {
     'Shoulder': 'shoulder',
     'Shoulder_001': 'shoulder'
