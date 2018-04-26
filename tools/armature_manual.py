@@ -32,10 +32,6 @@ import tools.common
 import tools.eyetracking
 import tools.armature_bones as Bones
 
-from mmd_tools_local import utils
-from mmd_tools_local.core.material import FnMaterial
-from collections import OrderedDict
-
 mmd_tools_installed = False
 try:
     import mmd_tools_local
@@ -709,6 +705,7 @@ class MergeArmature(bpy.types.Operator):
             merge_armature.rotation_euler[i] = mesh.rotation_euler[i]
             merge_armature.scale[i] = mesh.scale[i]
 
+        tools.common.set_default_stage()
         # Apply all transformations on mesh
         tools.common.unselect_all()
         tools.common.select(mesh)

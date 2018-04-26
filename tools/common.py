@@ -610,11 +610,13 @@ def reset_context_scenes():
         bpy.context.scene.eye_left = get_bones_eye_l(None, bpy.context)[0][0]
         bpy.context.scene.eye_right = get_bones_eye_r(None, bpy.context)[0][0]
 
-    mesh = get_meshes(None, bpy.context)[0][0]
-    bpy.context.scene.mesh_name_eye = mesh
-    bpy.context.scene.mesh_name_viseme = mesh
-    bpy.context.scene.mesh_name_atlas = mesh
-    bpy.context.scene.merge_mesh = mesh
+    meshes = get_meshes(None, bpy.context)
+    if len(meshes) > 0:
+        mesh = meshes[0][0]
+        bpy.context.scene.mesh_name_eye = mesh
+        bpy.context.scene.mesh_name_viseme = mesh
+        bpy.context.scene.mesh_name_atlas = mesh
+        bpy.context.scene.merge_mesh = mesh
 
 
 def repair_viseme_order(mesh_name):
