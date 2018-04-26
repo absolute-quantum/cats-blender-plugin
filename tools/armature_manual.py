@@ -324,7 +324,7 @@ class SeparateByMaterials(bpy.types.Operator):
             return True
 
         meshes = tools.common.get_meshes_objects()
-        return meshes and len(meshes) == 1
+        return meshes and len(meshes) >= 1
 
     def execute(self, context):
         obj = context.active_object
@@ -333,6 +333,11 @@ class SeparateByMaterials(bpy.types.Operator):
             tools.common.unselect_all()
             meshes = tools.common.get_meshes_objects()
             if len(meshes) == 0:
+                self.report({'ERROR'}, 'No meshes found!')
+                return {'FINISHED'}
+            if len(meshes) > 1:
+                self.report({'ERROR'}, 'Multiple meshes found!'
+                                       '\nPlease select the mesh you want to separate!')
                 return {'FINISHED'}
             obj = meshes[0]
 
@@ -359,7 +364,7 @@ class SeparateByLooseParts(bpy.types.Operator):
             return True
 
         meshes = tools.common.get_meshes_objects()
-        return meshes and len(meshes) == 1
+        return meshes and len(meshes) >= 1
 
     def execute(self, context):
         obj = context.active_object
@@ -368,6 +373,11 @@ class SeparateByLooseParts(bpy.types.Operator):
             tools.common.unselect_all()
             meshes = tools.common.get_meshes_objects()
             if len(meshes) == 0:
+                self.report({'ERROR'}, 'No meshes found!')
+                return {'FINISHED'}
+            if len(meshes) > 1:
+                self.report({'ERROR'}, 'Multiple meshes found!'
+                                       '\nPlease select the mesh you want to separate!')
                 return {'FINISHED'}
             obj = meshes[0]
 
