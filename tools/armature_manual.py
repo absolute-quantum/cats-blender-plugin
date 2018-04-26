@@ -656,7 +656,10 @@ class FlipNormals(bpy.types.Operator):
 class MergeArmature(bpy.types.Operator):
     bl_idname = 'armature_manual.merge_armature'
     bl_label = 'Merge Armatures'
-    bl_description = "Merges the selected armature into the current armature. This merges all bones and meshes"
+    bl_description = "Merges the selected armature into the current armature. This merges all bones and meshes" \
+                     "\nResults are best when both armatures are fixed by Cats." \
+                     "\nOtherwise make sure that the naming scheme is similar." \
+                     "\nDo not delete bones as they are needed"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -669,12 +672,48 @@ class MergeArmature(bpy.types.Operator):
         tools.common.unselect_all()
 
         # Get both armatures
-        current_armature = bpy.data.objects[context.scene.armature]
-        merge_armature = bpy.data.objects[context.scene.merge_armature]
+        current_armature_name = context.scene.merge_armature_into
+        merge_armature_name = context.scene.merge_armature
+        current_armature = bpy.data.objects[current_armature_name]
+        merge_armature = bpy.data.objects[merge_armature_name]
+
+        # Check for transform on armature, reset it not default
+        for i in [0, 1, 2]:
+            if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
+                for i in [0, 1, 2]:
+                    merge_armature.location[i] = 0
+                    merge_armature.rotation_euler[i] = 0
+                    merge_armature.scale[i] = 1
+                self.report({'ERROR'}, 'The transformation of your merge armature was not at default!'
+                                       '\nPlease only move the mesh to the desired position, not the armature.'
+                                       "\nIt got reset for you. If you don't like it, undo this operation.")
+                return {'FINISHED'}
 
         # Join meshes in both armatures
-        tools.common.join_meshes(armature_name=current_armature.name)
-        tools.common.join_meshes(armature_name=merge_armature.name)
+        tools.common.join_meshes(armature_name=current_armature_name)
+        mesh = tools.common.join_meshes(armature_name=merge_armature_name)
+
+        # Apply transformation from mesh to armature
+        for i in [0, 1, 2]:
+            merge_armature.location[i] = mesh.location[i]
+            merge_armature.rotation_euler[i] = mesh.rotation_euler[i]
+            merge_armature.scale[i] = mesh.scale[i]
+
+        # Apply all transformations on mesh
+        tools.common.unselect_all()
+        tools.common.select(mesh)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+        # Apply all transformations on armature
+        tools.common.unselect_all()
+        tools.common.select(merge_armature)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+        # Reset all transformations on mesh
+        for i in [0, 1, 2]:
+            mesh.location[i] = 0
+            mesh.rotation_euler[i] = 0
+            mesh.scale[i] = 1
 
         # Go into edit mode
         tools.common.unselect_all()
@@ -696,10 +735,13 @@ class MergeArmature(bpy.types.Operator):
         # Join the armatures
         if bpy.ops.object.join.poll():
             bpy.ops.object.join()
-        armature = tools.common.get_armature()
+
+        # Set new armature
+        context.scene.armature = current_armature_name
+        armature = bpy.data.objects[current_armature_name]
 
         # Join the meshes
-        mesh = tools.common.join_meshes()
+        mesh = tools.common.join_meshes(armature_name=current_armature_name)
         if mesh:
             tools.common.repair_viseme_order(mesh.name)
 
@@ -715,12 +757,23 @@ class MergeArmature(bpy.types.Operator):
             if old in armature.data.edit_bones and new in armature.data.edit_bones:
                 armature.data.edit_bones.get(old).parent = armature.data.edit_bones.get(new)
 
-        # Merge bones into existing bones
+        # Remove all unused bones, constraints and vertex groups
         tools.common.set_default_stage()
+        tools.common.delete_bone_constraints()
+        tools.common.remove_unused_vertex_groups()
+        tools.common.delete_zero_weight()
+        tools.common.set_default_stage()
+
+        # Merge bones into existing bones
         tools.common.select(mesh)
         for bone_name in Bones.dont_delete_these_main_bones:
             key = bone_name + '.merge'
             value = bone_name
+
+            # Eye pos is important, therefore they should override the old ones
+            if 'Eye' in bone_name:
+                key = bone_name
+                value = bone_name + '.merge'
 
             vg = mesh.vertex_groups.get(key)
             vg2 = mesh.vertex_groups.get(value)
@@ -735,15 +788,22 @@ class MergeArmature(bpy.types.Operator):
             bpy.ops.object.modifier_apply(modifier=mod.name)
             mesh.vertex_groups.remove(vg)
 
-        # Remove ".merge" from all bones
+        # Remove ".merge" from all non duplicate bones
         for bone in armature.pose.bones:
             new_name = bone.name.replace('.merge', '')
             if new_name not in armature.pose.bones:
                 bone.name = new_name
 
+        # Set new eye bone as default
+        for eye_name in ['Eye_L', 'Eye_R']:
+            if eye_name in armature.pose.bones and eye_name + '.merge' in armature.pose.bones:
+                eye = armature.pose.bones.get(eye_name)
+                eye_merged = armature.pose.bones.get(eye_name + '.merge')
+                eye.name = eye.name + '_Old'
+                eye_merged.name = eye_merged.name.replace('.merge', '')
+
         # Remove all unused bones, constraints and vertex groups
         tools.common.set_default_stage()
-        tools.common.delete_bone_constraints()
         tools.common.remove_unused_vertex_groups()
         tools.common.delete_zero_weight()
         tools.common.set_default_stage()

@@ -234,9 +234,15 @@ class ToolPanel:
         default=True
     )
 
+    bpy.types.Scene.merge_armature_into = bpy.props.EnumProperty(
+        name='Merge Armature',
+        description='Select the armature into which the other armature will be merged\n',
+        items=tools.common.get_armature_list
+    )
+
     bpy.types.Scene.merge_armature = bpy.props.EnumProperty(
         name='Merge Armature',
-        description='Select the armature which will be merged into the one selected in the Model panel\n',
+        description='Select the armature which will be merged into the selected armature above\n',
         items=tools.common.get_armature_merge_list
     )
 
@@ -773,7 +779,13 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.prop(context.scene, 'merge_armature')
+        row.label('Merge Armatures:')
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.prop(context.scene, 'merge_armature_into', text='Merge into')
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.prop(context.scene, 'merge_armature', text='Merge this')
         row = col.row(align=True)
         row.scale_y = 1.05
         row.operator('armature_manual.merge_armature', icon='ARMATURE_DATA')

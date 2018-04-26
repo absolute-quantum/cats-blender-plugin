@@ -270,9 +270,11 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Added: Model: Fix Model now removes the standard lamp, camera and cube
 - Added: Model: Splitting Manual Model Fixing into its own panel
 - Added: Eye Tracking: Now shows a warning when important objects aren't named correctly
+- Added: Copy Protection: Added Export button into the panel after enabling the protection
 - Changed: Mesh selections is no longer shown if there is only one mesh
 - Updated mmd_tools
-- Fixed lots of bugs
+- Fixed: Undoing the operation after a model import no longer undoes the import as well
+- Fixed lots of bugs and typos
 
 #### 0.7.2
 - Changed: Copy Protection: Does now work on multiple meshes.

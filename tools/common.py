@@ -204,7 +204,7 @@ def get_armature_list(self, context):
 
 def get_armature_merge_list(self, context):
     choices = []
-    current_armature = context.scene.armature
+    current_armature = context.scene.merge_armature_into
 
     for obj in context.scene.objects:
         if obj.type == 'ARMATURE' and obj.name != current_armature:

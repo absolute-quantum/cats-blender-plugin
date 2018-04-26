@@ -126,6 +126,7 @@ dont_delete_these_main_bones = {
     'Right leg', 'Right knee', 'Right ankle', 'Right toe',
     'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
     'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist',
+    'LeftEye', 'RightEye', 'Eye_L', 'Eye_R',
     'Left leg 2', 'Right leg 2',
 }
 bone_list_rename_unknown_side = {

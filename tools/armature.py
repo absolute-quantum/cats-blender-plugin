@@ -494,7 +494,7 @@ class FixArmature(bpy.types.Operator):
                     if neck.head[z_cord] == neck.tail[z_cord]:
                         neck.tail[z_cord] += 0.1
 
-        # Correct arm bone positions for better looking
+        # Correct arm bone positions for better looks
         if 'Left shoulder' in armature.data.edit_bones:
             if 'Left arm' in armature.data.edit_bones:
                 if 'Left elbow' in armature.data.edit_bones:
@@ -507,7 +507,7 @@ class FixArmature(bpy.types.Operator):
                         arm.tail = elbow.head
                         elbow.tail = wrist.head
 
-        # Correct arm bone positions for better looking
+        # Correct arm bone positions for better looks
         if 'Right shoulder' in armature.data.edit_bones:
             if 'Right arm' in armature.data.edit_bones:
                 if 'Right elbow' in armature.data.edit_bones:
@@ -520,7 +520,7 @@ class FixArmature(bpy.types.Operator):
                         arm.tail = elbow.head
                         elbow.tail = wrist.head
 
-        # Correct arm bone positions for better looking
+        # Correct leg bone positions for better looks
         if 'Left leg' in armature.data.edit_bones:
             if 'Left knee' in armature.data.edit_bones:
                 if 'Left ankle' in armature.data.edit_bones:
@@ -530,7 +530,7 @@ class FixArmature(bpy.types.Operator):
                         leg.tail = knee.head
                         knee.tail = ankle.head
 
-        # Correct arm bone positions for better looking
+        # Correct leg bone positions for better looks
         if 'Right leg' in armature.data.edit_bones:
             if 'Right knee' in armature.data.edit_bones:
                 if 'Right ankle' in armature.data.edit_bones:
@@ -621,12 +621,6 @@ class FixArmature(bpy.types.Operator):
                             left_knee.parent = left_leg_top
                             right_knee.parent = right_leg_top
 
-
-
-
-
-
-
                         # # Fixing legs
                         # right_knee = armature.data.edit_bones.get('Right knee')
                         # left_knee = armature.data.edit_bones.get('Left knee')
@@ -648,6 +642,21 @@ class FixArmature(bpy.types.Operator):
                         left_leg.roll = 0
                         right_leg.roll = 0
                         hips.roll = 0
+
+        # Reweight all eye children into the eyes TODO make recursive
+        for eye_name in ['Eye_L', 'Eye_R']:
+            if eye_name in armature.data.edit_bones:
+                eye = armature.data.edit_bones.get(eye_name)
+                for eye1 in eye.children:
+                    temp_list_reweight_bones[eye1.name] = eye_name
+                    for eye2 in eye1.children:
+                        temp_list_reweight_bones[eye2.name] = eye_name
+                        for eye3 in eye2.children:
+                            temp_list_reweight_bones[eye3.name] = eye_name
+                            for eye4 in eye3.children:
+                                temp_list_reweight_bones[eye4.name] = eye_name
+                                for eye5 in eye4.children:
+                                    temp_list_reweight_bones[eye5.name] = eye_name
 
         # Rotate if on head and not fbx (Unreal engine model)
         if 'Hips' in armature.data.edit_bones:
