@@ -86,10 +86,27 @@ def switch(new_mode):
         bpy.ops.object.mode_set(mode=new_mode, toggle=False)
 
 
-def set_default_stage():
+def set_default_stage_old():
     switch('OBJECT')
     unhide_all()
     unselect_all()
+    armature = get_armature()
+    select(armature)
+    return armature
+
+
+def set_default_stage():
+    unhide_all()
+    unselect_all()
+
+    for obj in bpy.data.objects:
+        select(obj)
+        switch('OBJECT')
+        if obj.type == 'ARMATURE':
+            obj.data.pose_position = 'REST'
+
+        obj.select = False
+
     armature = get_armature()
     select(armature)
     return armature
@@ -386,6 +403,7 @@ def fix_armature_names():
             armature.data.name = 'Armature (' + Translator().translate(armature.data.name).text + ')'
         except:
             armature.data.name = 'Armature'
+    bpy.context.scene.armature = armature.name
 
 
 def get_texture_sizes(self, context):
@@ -446,11 +464,14 @@ def join_meshes(armature_name=None):
     print("DEBUG!!!", armature_name)
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            if ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
+            if ob.parent and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
                 mesh = ob
                 mesh.name = 'Body'
                 for mod in mesh.modifiers:
                     mod.show_expanded = False
+                    if mod.type == 'ARMATURE':
+                        mod.object = get_armature()
+
                 ShapekeyOrder.repair(mesh.name)
                 break
 

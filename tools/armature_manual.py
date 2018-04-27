@@ -683,6 +683,20 @@ class MergeArmature(bpy.types.Operator):
         current_armature = bpy.data.objects[current_armature_name]
         merge_armature = bpy.data.objects[merge_armature_name]
 
+        if not merge_armature:
+            self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" could not be found.')
+            return {'FINISHED'}
+        if not current_armature:
+            self.report({'ERROR'}, 'The armature "' + current_armature_name + '" could not be found.')
+            return {'FINISHED'}
+
+        if len(tools.common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
+            self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
+            return {'FINISHED'}
+        if len(tools.common.get_meshes_objects(armature_name=current_armature_name)) == 0:
+            self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
+            return {'FINISHED'}
+
         # Check for transform on armature, reset it not default
         for i in [0, 1, 2]:
             if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:

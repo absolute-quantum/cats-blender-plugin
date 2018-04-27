@@ -715,7 +715,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         col.separator()
         ob = bpy.context.active_object
-        if bpy.context.active_object is None or ob.mode != 'POSE':
+        if not ob or ob.mode != 'POSE':
             row = col.row(align=True)
             row.scale_y = 1.05
             row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')
@@ -1451,17 +1451,17 @@ def load_icons():
     my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
 
     # load a preview thumbnail of a file and store in the previews collection
-    pcoll.load('heart1', os.path.join(my_icons_dir, 'heart1.png'), 'IMAGE')
-    pcoll.load('heart2', os.path.join(my_icons_dir, 'heart2.png'), 'IMAGE')
-    pcoll.load('heart3', os.path.join(my_icons_dir, 'heart3.png'), 'IMAGE')
-    pcoll.load('heart4', os.path.join(my_icons_dir, 'heart4.png'), 'IMAGE')
-    pcoll.load('discord1', os.path.join(my_icons_dir, 'discord1.png'), 'IMAGE')
-    pcoll.load('discord2', os.path.join(my_icons_dir, 'discord2.png'), 'IMAGE')
-    pcoll.load('cats1', os.path.join(my_icons_dir, 'cats1.png'), 'IMAGE')
-    pcoll.load('patreon1', os.path.join(my_icons_dir, 'patreon1.png'), 'IMAGE')
-    pcoll.load('patreon2', os.path.join(my_icons_dir, 'patreon2.png'), 'IMAGE')
-    pcoll.load('merge', os.path.join(my_icons_dir, 'merge.png'), 'IMAGE')
-    pcoll.load('empty', os.path.join(my_icons_dir, 'empty.png'), 'IMAGE')
+    pcoll.load('heart1', os.path.join(my_icons_dir, 'other/' + 'heart1.png'), 'IMAGE')
+    pcoll.load('discord1', os.path.join(my_icons_dir, 'other/' + 'discord1.png'), 'IMAGE')
+    pcoll.load('cats1', os.path.join(my_icons_dir, 'other/' + 'cats1.png'), 'IMAGE')
+    pcoll.load('empty', os.path.join(my_icons_dir, 'other/' + 'empty.png'), 'IMAGE')
+    # pcoll.load('heart2', os.path.join(my_icons_dir, 'other/' + 'heart2.png'), 'IMAGE')
+    # pcoll.load('heart3', os.path.join(my_icons_dir, 'other/' + 'heart3.png'), 'IMAGE')
+    # pcoll.load('heart4', os.path.join(my_icons_dir, 'other/' + 'heart4.png'), 'IMAGE')
+    # pcoll.load('discord2', os.path.join(my_icons_dir, 'other/' + 'discord2.png'), 'IMAGE')
+    # pcoll.load('patreon1', os.path.join(my_icons_dir, 'other/' + 'patreon1.png'), 'IMAGE')
+    # pcoll.load('patreon2', os.path.join(my_icons_dir, 'other/' + 'patreon2.png'), 'IMAGE')
+    # pcoll.load('merge', os.path.join(my_icons_dir, 'other/' + 'merge.png'), 'IMAGE')
 
     # load the supporters icons
     for value in current_supporters:
