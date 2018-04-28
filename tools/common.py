@@ -51,9 +51,11 @@ from mmd_tools_local import utils
 shapekey_order = None
 
 
-def get_armature():
+def get_armature(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
     for obj in bpy.data.objects:
-        if obj.type == 'ARMATURE' and obj.name == bpy.context.scene.armature:
+        if obj.type == 'ARMATURE' and obj.name == armature_name:
             return obj
     return None
 
@@ -435,7 +437,7 @@ def join_meshes(armature_name=None):
         armature_name = bpy.context.scene.armature
 
     # Apply existing decimation modifiers
-    for mesh in get_meshes_objects(armature_name):
+    for mesh in get_meshes_objects(armature_name=armature_name):
         select(mesh)
         for mod in mesh.modifiers:
             if mod.type == 'DECIMATE':
@@ -452,7 +454,7 @@ def join_meshes(armature_name=None):
         unselect_all()
 
     # Select all meshes
-    for mesh in get_meshes_objects(armature_name):
+    for mesh in get_meshes_objects(armature_name=armature_name):
         select(mesh)
 
     # Join the meshes
@@ -461,19 +463,15 @@ def join_meshes(armature_name=None):
 
     # Rename result to Body
     mesh = None
-    print("DEBUG!!!", armature_name)
-    for ob in bpy.data.objects:
-        if ob.type == 'MESH':
-            if ob.parent and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
-                mesh = ob
-                mesh.name = 'Body'
-                for mod in mesh.modifiers:
-                    mod.show_expanded = False
-                    if mod.type == 'ARMATURE':
-                        mod.object = get_armature()
+    for mesh in get_meshes_objects(armature_name=armature_name):
+        mesh.name = 'Body'
+        for mod in mesh.modifiers:
+            mod.show_expanded = False
+            if mod.type == 'ARMATURE':
+                mod.object = get_armature(armature_name=armature_name)
 
-                ShapekeyOrder.repair(mesh.name)
-                break
+        ShapekeyOrder.repair(mesh.name)
+        break
 
     reset_context_scenes()
 
@@ -610,7 +608,7 @@ def can_remove(key_block):
     return True
 
 
-def separate_by_verts(context):
+def separate_by_verts():
     for obj in bpy.context.selected_objects:
             if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
                 bpy.context.scene.objects.active = obj
@@ -817,8 +815,11 @@ def days_between(d1, d2):
     return abs((d2 - d1).days)
 
 
-def delete_bone_constraints():
-    armature = tools.common.get_armature()
+def delete_bone_constraints(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
+
+    armature = tools.common.get_armature(armature_name=armature_name)
     tools.common.switch('POSE')
 
     for bone in armature.pose.bones:
@@ -829,8 +830,11 @@ def delete_bone_constraints():
     tools.common.switch('EDIT')
 
 
-def delete_zero_weight():
-    armature = tools.common.get_armature()
+def delete_zero_weight(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
+
+    armature = tools.common.get_armature(armature_name=armature_name)
     tools.common.switch('EDIT')
 
     bone_names_to_work_on = set([bone.name for bone in armature.data.edit_bones])

@@ -168,8 +168,8 @@ class TranslateMeshesButton(bpy.types.Operator):
             translated.append(translation.text)
 
         i = 0
-        for obj in objects:
-            obj.name = translated[i]
+        for obj_name in to_translate:
+            bpy.data.objects[obj_name].name = translated[i]
             i += 1
 
         self.report({'INFO'}, 'Translated ' + str(i) + ' meshes and objects.')

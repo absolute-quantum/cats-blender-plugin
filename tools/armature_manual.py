@@ -277,8 +277,9 @@ class PoseToShape(bpy.types.Operator):
         mod.object = tools.common.get_armature()
         bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
 
-        tools.common.set_default_stage()
+        armature = tools.common.set_default_stage()
         tools.common.switch('POSE')
+        armature.data.pose_position = 'POSE'
 
         self.report({'INFO'}, 'Pose successfully saved as shape key.')
         return {'FINISHED'}
@@ -697,7 +698,7 @@ class MergeArmature(bpy.types.Operator):
             self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
             return {'FINISHED'}
 
-        # Check for transform on armature, reset it not default
+        # Check for transform on armature, reset if not default
         for i in [0, 1, 2]:
             if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
                 for i in [0, 1, 2]:
@@ -780,9 +781,9 @@ class MergeArmature(bpy.types.Operator):
 
         # Remove all unused bones, constraints and vertex groups
         tools.common.set_default_stage()
-        tools.common.delete_bone_constraints()
+        tools.common.delete_bone_constraints(armature_name=current_armature_name)
         tools.common.remove_unused_vertex_groups()
-        tools.common.delete_zero_weight()
+        tools.common.delete_zero_weight(armature_name=current_armature_name)
         tools.common.set_default_stage()
 
         # Merge bones into existing bones
@@ -826,7 +827,7 @@ class MergeArmature(bpy.types.Operator):
         # Remove all unused bones, constraints and vertex groups
         tools.common.set_default_stage()
         tools.common.remove_unused_vertex_groups()
-        tools.common.delete_zero_weight()
+        tools.common.delete_zero_weight(armature_name=current_armature_name)
         tools.common.set_default_stage()
 
         self.report({'INFO'}, 'Armatures successfully joined.')
