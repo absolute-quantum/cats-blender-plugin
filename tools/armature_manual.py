@@ -691,6 +691,15 @@ class MergeArmature(bpy.types.Operator):
             self.report({'ERROR'}, 'The armature "' + current_armature_name + '" could not be found.')
             return {'FINISHED'}
 
+        if merge_armature.parent:
+            self.report({'ERROR'}, 'Please use the "Fix Model" feature on the selected armatures first!'
+                                   '\nAfter that please only move the mesh (not the armature!) to the desired position.')
+            return {'FINISHED'}
+        if current_armature.parent:
+            self.report({'ERROR'}, 'Please use the "Fix Model" feature on the selected armatures first!'
+                                   '\nAfter that please only move the mesh (not the armature!) to the desired position.')
+            return {'FINISHED'}
+
         if len(tools.common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
             self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
             return {'FINISHED'}
@@ -698,27 +707,39 @@ class MergeArmature(bpy.types.Operator):
             self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
             return {'FINISHED'}
 
-        # Check for transform on armature, reset if not default
-        for i in [0, 1, 2]:
-            if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
-                for i in [0, 1, 2]:
-                    merge_armature.location[i] = 0
-                    merge_armature.rotation_euler[i] = 0
-                    merge_armature.scale[i] = 1
-                self.report({'ERROR'}, 'The transformation of your merge armature was not at default!'
-                                       '\nPlease only move the mesh to the desired position, not the armature.'
-                                       "\nIt got reset for you. If you don't like it, undo this operation.")
-                return {'FINISHED'}
-
         # Join meshes in both armatures
         tools.common.join_meshes(armature_name=current_armature_name)
         mesh = tools.common.join_meshes(armature_name=merge_armature_name)
 
+        # Check for transform on armature, reset if not default
+        old_loc = [0, 0, 0]
+        old_scale = [1, 1, 1]
+        for i in [0, 1, 2]:
+            if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
+
+                old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
+                old_rot = [merge_armature.rotation_euler[0], merge_armature.rotation_euler[1], merge_armature.rotation_euler[2]]
+                old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
+
+                for i2 in [0, 1, 2]:
+                    merge_armature.location[i2] = 0
+                    merge_armature.rotation_euler[i2] = 0
+                    merge_armature.scale[i2] = 1
+
+                for i in [0, 1, 2]:
+                    if old_rot[i] != 0 or mesh.rotation_euler[i] != 0:
+                        # Todo Maybe hide both armatures?
+                        self.report({'ERROR'}, 'If you want to rotate the new part, only modify the mesh instead of the armature!'
+                                               "\nThe armature got reset for you. If you don't want that, undo this operation.")
+                        return {'FINISHED'}
+
+                break
+
         # Apply transformation from mesh to armature
         for i in [0, 1, 2]:
-            merge_armature.location[i] = mesh.location[i]
+            merge_armature.location[i] = (mesh.location[i] * old_scale[i]) + old_loc[i]
             merge_armature.rotation_euler[i] = mesh.rotation_euler[i]
-            merge_armature.scale[i] = mesh.scale[i]
+            merge_armature.scale[i] = mesh.scale[i] * old_scale[i]
 
         tools.common.set_default_stage()
         # Apply all transformations on mesh
@@ -733,9 +754,14 @@ class MergeArmature(bpy.types.Operator):
 
         # Reset all transformations on mesh
         for i in [0, 1, 2]:
-            mesh.location[i] = 0
+            mesh.location[i] = old_loc[i]
             mesh.rotation_euler[i] = 0
-            mesh.scale[i] = 1
+            mesh.scale[i] = old_scale[i]
+
+        # Apply all transformations on mesh again
+        tools.common.unselect_all()
+        tools.common.select(mesh)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
         # Go into edit mode
         tools.common.unselect_all()
