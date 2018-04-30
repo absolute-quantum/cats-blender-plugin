@@ -240,6 +240,12 @@ class ToolPanel:
         items=tools.common.get_armature_list
     )
 
+    bpy.types.Scene.attach_to_bone = bpy.props.EnumProperty(
+        name='Attach to Bone',
+        description='Select the bone to which the armature will be attached to\n',
+        items=tools.common.get_bones_merge
+    )
+
     bpy.types.Scene.merge_armature = bpy.props.EnumProperty(
         name='Merge Armature',
         description='Select the armature which will be merged into the selected armature above\n',
@@ -531,7 +537,7 @@ class ToolPanel:
         items=[
             ("ATLAS", "Atlas", "Allows you to make a texture atlas."),
             ("MATERIAL", "Material", "Some various options on material manipulation."),
-            ("BONEMERGING", "Bone Merging", "Allows child bones to be merged and mixed in their above parents."),
+            ("BONEMERGING", "Bone Merging", "Allows child bones to be merged into their parents."),
         ]
     )
 
@@ -765,7 +771,7 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.operator('armature_manual.remove_constraints', text='Constraints')
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.operator('armature_manual.mix_weights', icon='BONE_DATA')
+        row.operator('armature_manual.merge_weights', icon='BONE_DATA')
 
         col.separator()
         col.separator()
@@ -780,15 +786,41 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 1.05
         row.label('Merge Armatures:')
+
+        if len(tools.common.get_armature_objects()) <= 1:
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            col.label('Two or more armatures required.', icon='INFO')
+            return
+
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.prop(context.scene, 'merge_armature_into', text='Merge into')
+        row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.prop(context.scene, 'merge_armature', text='Merge this')
+        row.prop(context.scene, 'merge_armature', text='To Merge', icon_value=preview_collections["custom_icons"]["UP_ARROW"].icon_id)
+
+        found = False
+        base_armature = tools.common.get_armature(armature_name=context.scene.merge_armature_into)
+        merge_armature = tools.common.get_armature(armature_name=context.scene.merge_armature)
+        if merge_armature:
+            for bone in tools.armature_bones.dont_delete_these_main_bones:
+                if 'Eye' not in bone and bone in merge_armature.pose.bones and bone in base_armature.pose.bones:
+                    found = True
+                    break
+
+        if not found:
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
+        else:
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.label('Armatures can be automatically merged!')
+
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.operator('armature_manual.merge_armature', icon='ARMATURE_DATA')
+        row.operator('armature_manual.merge_armatures', icon='ARMATURE_DATA')
 
 
 
@@ -1455,6 +1487,7 @@ def load_icons():
     pcoll.load('discord1', os.path.join(my_icons_dir, 'other/' + 'discord1.png'), 'IMAGE')
     pcoll.load('cats1', os.path.join(my_icons_dir, 'other/' + 'cats1.png'), 'IMAGE')
     pcoll.load('empty', os.path.join(my_icons_dir, 'other/' + 'empty.png'), 'IMAGE')
+    pcoll.load('UP_ARROW', os.path.join(my_icons_dir, 'other/' + 'blender_up_arrow.png'), 'IMAGE')
     # pcoll.load('heart2', os.path.join(my_icons_dir, 'other/' + 'heart2.png'), 'IMAGE')
     # pcoll.load('heart3', os.path.join(my_icons_dir, 'other/' + 'heart3.png'), 'IMAGE')
     # pcoll.load('heart4', os.path.join(my_icons_dir, 'other/' + 'heart4.png'), 'IMAGE')
@@ -1569,7 +1602,7 @@ classesToRegister = [
     tools.armature_manual.SeparateByMaterials,
     tools.armature_manual.SeparateByLooseParts,
     tools.armature_manual.JoinMeshes,
-    tools.armature_manual.MixWeights,
+    tools.armature_manual.MergeWeights,
     tools.armature_manual.RemoveZeroWeight,
     tools.armature_manual.RemoveConstraints,
     tools.armature_manual.RecalculateNormals,

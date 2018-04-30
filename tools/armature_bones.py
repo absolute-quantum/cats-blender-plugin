@@ -97,7 +97,7 @@ bone_list_parenting = {
     # Special cases
     'M_Head_Copy': 'Head',
 }
-dont_delete_these_bones = {
+dont_delete_these_bones = [
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
     'Left leg', 'Left knee', 'Left ankle', 'Left toe',
     'Right leg', 'Right knee', 'Right ankle', 'Right toe',
@@ -119,8 +119,8 @@ dont_delete_these_bones = {
     'LittleFinger1_R', 'LittleFinger2_R', 'LittleFinger3_R',
 
     'Breast_L', 'Breast_R',
-}
-dont_delete_these_main_bones = {
+]
+dont_delete_these_main_bones = [
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
     'Left leg', 'Left knee', 'Left ankle', 'Left toe',
     'Right leg', 'Right knee', 'Right ankle', 'Right toe',
@@ -128,7 +128,19 @@ dont_delete_these_main_bones = {
     'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist',
     'LeftEye', 'RightEye', 'Eye_L', 'Eye_R',
     'Left leg 2', 'Right leg 2',
-}
+
+    'Thumb0_L', 'Thumb1_L', 'Thumb2_L',
+    'IndexFinger1_L', 'IndexFinger2_L', 'IndexFinger3_L',
+    'MiddleFinger1_L', 'MiddleFinger2_L', 'MiddleFinger3_L',
+    'RingFinger1_L', 'RingFinger2_L', 'RingFinger3_L',
+    'LittleFinger1_L', 'LittleFinger2_L', 'LittleFinger3_L',
+
+    'Thumb0_R', 'Thumb1_R', 'Thumb2_R',
+    'IndexFinger1_R', 'IndexFinger2_R', 'IndexFinger3_R',
+    'MiddleFinger1_R', 'MiddleFinger2_R', 'MiddleFinger3_R',
+    'RingFinger1_R', 'RingFinger2_R', 'RingFinger3_R',
+    'LittleFinger1_R', 'LittleFinger2_R', 'LittleFinger3_R',
+]
 bone_list_rename_unknown_side = {
     'Shoulder': 'shoulder',
     'Shoulder_001': 'shoulder'

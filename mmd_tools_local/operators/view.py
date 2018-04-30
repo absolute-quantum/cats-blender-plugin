@@ -8,10 +8,10 @@ class SetGLSLShading(Operator):
     bl_idname = 'mmd_tools.set_glsl_shading'
     bl_label = 'GLSL View'
     bl_description = 'Use GLSL shading with additional lighting'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        bpy.ops.mmd_tools.reset_shading()
+        ResetShading.execute(self, context)
         bpy.context.scene.render.engine = 'BLENDER_RENDER'
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
@@ -32,10 +32,10 @@ class SetShadelessGLSLShading(Operator):
     bl_idname = 'mmd_tools.set_shadeless_glsl_shading'
     bl_label = 'Shadeless GLSL View'
     bl_description = 'Use only toon shading'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        bpy.ops.mmd_tools.reset_shading()
+        ResetShading.execute(self, context)
         bpy.context.scene.render.engine = 'BLENDER_RENDER'
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
@@ -58,7 +58,7 @@ class ResetShading(Operator):
     bl_idname = 'mmd_tools.reset_shading'
     bl_label = 'Reset View'
     bl_description = 'Reset to default Blender shading'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.context.scene.render.engine = 'BLENDER_RENDER'

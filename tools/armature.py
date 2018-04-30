@@ -52,7 +52,7 @@ class FixArmature(bpy.types.Operator):
                      '- Reparents bones\n' \
                      '- Removes unnecessary bones, objects, groups & constraints\n' \
                      '- Translates and renames bones & objects\n' \
-                     '- Mixes weight paints\n' \
+                     '- Merges weight paints\n' \
                      '- Corrects the hips\n' \
                      '- Joins meshes\n' \
                      '- Converts morphs into shapes\n' \
@@ -232,26 +232,26 @@ class FixArmature(bpy.types.Operator):
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
-        tools.common.select(armature)
-
-        # Correct pivot position
-        try:
-            # bpy.ops.view3d.snap_cursor_to_center()
-            bpy.context.scene.cursor_location = (0.0, 0.0, 0.0)
-            bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        except RuntimeError:
-            pass
+        # tools.common.select(armature)
+        #
+        # # Correct pivot position
+        # try:
+        #     # bpy.ops.view3d.snap_cursor_to_center()
+        #     bpy.context.scene.cursor_location = (0.0, 0.0, 0.0)
+        #     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        # except RuntimeError:
+        #     pass
 
         tools.common.unselect_all()
         tools.common.select(mesh)
 
-        # Correct pivot position
-        try:
-            # bpy.ops.view3d.snap_cursor_to_center()
-            bpy.context.scene.cursor_location = (0.0, 0.0, 0.0)
-            bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-        except RuntimeError:
-            pass
+        # # Correct pivot position
+        # try:
+        #     # bpy.ops.view3d.snap_cursor_to_center()
+        #     bpy.context.scene.cursor_location = (0.0, 0.0, 0.0)
+        #     bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+        # except RuntimeError:
+        #     pass
 
         # Reorders vrc shape keys to the correct order
         tools.common.repair_viseme_order(mesh.name)

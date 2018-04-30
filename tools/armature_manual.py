@@ -25,6 +25,7 @@
 # Code author: Neitri
 # Repo: https://github.com/netri/blender_neitri_tools
 # Edits by: Hotox, Neitri
+import copy
 
 import bpy
 import webbrowser
@@ -384,9 +385,9 @@ class SeparateByLooseParts(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MixWeights(bpy.types.Operator):
-    bl_idname = 'armature_manual.mix_weights'
-    bl_label = 'Mix Weights'
+class MergeWeights(bpy.types.Operator):
+    bl_idname = 'armature_manual.merge_weights'
+    bl_label = 'Merge Weights'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.\n' \
                      '\n' \
                      'Only available in Edit or Pose Mode with bones selected'
@@ -661,7 +662,7 @@ class FlipNormals(bpy.types.Operator):
 
 
 class MergeArmature(bpy.types.Operator):
-    bl_idname = 'armature_manual.merge_armature'
+    bl_idname = 'armature_manual.merge_armatures'
     bl_label = 'Merge Armatures'
     bl_description = "Merges the selected armature into the current armature. This merges all bones and meshes" \
                      "\nResults are best when both armatures are fixed by Cats." \
@@ -679,8 +680,8 @@ class MergeArmature(bpy.types.Operator):
         tools.common.unselect_all()
 
         # Get both armatures
-        current_armature_name = context.scene.merge_armature_into
-        merge_armature_name = context.scene.merge_armature
+        current_armature_name = bpy.context.scene.merge_armature_into
+        merge_armature_name = bpy.context.scene.merge_armature
         current_armature = bpy.data.objects[current_armature_name]
         merge_armature = bpy.data.objects[merge_armature_name]
 
@@ -708,17 +709,42 @@ class MergeArmature(bpy.types.Operator):
             return {'FINISHED'}
 
         # Join meshes in both armatures
-        tools.common.join_meshes(armature_name=current_armature_name)
+        mesh_base = tools.common.join_meshes(armature_name=current_armature_name)
         mesh = tools.common.join_meshes(armature_name=merge_armature_name)
 
-        # Check for transform on armature, reset if not default
+        # Check for transform on base armature, reset if not default
+        for i in [0, 1, 2]:
+            if current_armature.location[i] != 0 \
+                    or current_armature.rotation_euler[i] != 0 \
+                    or current_armature.scale[i] != 1 \
+                    or mesh_base.location[i] != 0 \
+                    or mesh_base.rotation_euler[i] != 0 \
+                    or mesh_base.scale[i] != 1:
+
+                for i2 in [0, 1, 2]:
+                    current_armature.location[i2] = 0
+                    current_armature.rotation_euler[i2] = 0
+                    current_armature.scale[i2] = 1
+                    mesh_base.location[i2] = 0
+                    mesh_base.rotation_euler[i2] = 0
+                    mesh_base.scale[i2] = 1
+
+                # Todo Maybe hide both armatures?
+                self.report({'ERROR'},
+                            'The position of your base armature and mesh has to be at 0! Only move the merge armature!'
+                            "\nMaybe you switched the base and merge armatures?"
+                            "\nThe base armatures position got reset for you. If you don't want that, undo this operation.")
+                return {'FINISHED'}
+
+        # Check for transform on merge armature, reset if not default
         old_loc = [0, 0, 0]
         old_scale = [1, 1, 1]
         for i in [0, 1, 2]:
             if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
 
                 old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
-                old_rot = [merge_armature.rotation_euler[0], merge_armature.rotation_euler[1], merge_armature.rotation_euler[2]]
+                old_rot = [merge_armature.rotation_euler[0], merge_armature.rotation_euler[1],
+                           merge_armature.rotation_euler[2]]
                 old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
 
                 for i2 in [0, 1, 2]:
@@ -726,11 +752,12 @@ class MergeArmature(bpy.types.Operator):
                     merge_armature.rotation_euler[i2] = 0
                     merge_armature.scale[i2] = 1
 
-                for i in [0, 1, 2]:
-                    if old_rot[i] != 0 or mesh.rotation_euler[i] != 0:
+                for i2 in [0, 1, 2]:
+                    if old_rot[i2] != 0 or mesh.rotation_euler[i2] != 0:
                         # Todo Maybe hide both armatures?
-                        self.report({'ERROR'}, 'If you want to rotate the new part, only modify the mesh instead of the armature!'
-                                               "\nThe armature got reset for you. If you don't want that, undo this operation.")
+                        self.report({'ERROR'},
+                                    'If you want to rotate the new part, only modify the mesh instead of the armature!'
+                                    "\nThe merge armatures position got reset for you. If you don't want that, undo this operation.")
                         return {'FINISHED'}
 
                 break
@@ -768,7 +795,33 @@ class MergeArmature(bpy.types.Operator):
         tools.common.select(merge_armature)
         tools.common.switch('EDIT')
 
-        # Rename all the bones of the to merge armature
+        # Create new bone
+        bones_to_merge = copy.deepcopy(Bones.dont_delete_these_main_bones)
+        found = False
+        root_name = ''
+        for bone in bones_to_merge:
+            if bone in merge_armature.data.edit_bones and 'Eye' not in bone:
+                found = True
+                print('AUTO MERGE!')
+                break
+
+        if not found:
+            print('CUSTOM MERGE!')
+            root_name = bpy.context.scene.attach_to_bone
+            root = merge_armature.data.edit_bones.get(root_name)
+            if root:
+                root.name += '_Old'
+            root = merge_armature.data.edit_bones.new(root_name)
+            root.tail[2] += 0.1
+
+            # Make new root top parent and reparent other top bones to root
+            root.parent = None
+            for bone2 in merge_armature.data.edit_bones:
+                if not bone2.parent:
+                    bone2.parent = root
+            bones_to_merge.append(root.name)
+
+        # Rename all the bones of the merge armature
         for bone in merge_armature.data.edit_bones:
             bone.name = bone.name + '.merge'
 
@@ -785,8 +838,8 @@ class MergeArmature(bpy.types.Operator):
             bpy.ops.object.join()
 
         # Set new armature
-        context.scene.armature = current_armature_name
-        armature = bpy.data.objects[current_armature_name]
+        bpy.context.scene.armature = current_armature_name
+        armature = tools.common.get_armature(armature_name=current_armature_name)
 
         # Join the meshes
         mesh = tools.common.join_meshes(armature_name=current_armature_name)
@@ -799,7 +852,7 @@ class MergeArmature(bpy.types.Operator):
         tools.common.switch('EDIT')
 
         # Reparent all bones
-        for bone_name in Bones.dont_delete_these_main_bones:
+        for bone_name in bones_to_merge:
             old = bone_name + '.merge'
             new = bone_name
             if old in armature.data.edit_bones and new in armature.data.edit_bones:
@@ -814,7 +867,7 @@ class MergeArmature(bpy.types.Operator):
 
         # Merge bones into existing bones
         tools.common.select(mesh)
-        for bone_name in Bones.dont_delete_these_main_bones:
+        for bone_name in bones_to_merge:
             key = bone_name + '.merge'
             value = bone_name
 
@@ -830,7 +883,7 @@ class MergeArmature(bpy.types.Operator):
 
             mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
             mod.vertex_group_a = value  # to
-            mod.vertex_group_b = key    # from
+            mod.vertex_group_b = key  # from
             mod.mix_mode = 'ADD'
             mod.mix_set = 'B'
             bpy.ops.object.modifier_apply(modifier=mod.name)
@@ -855,6 +908,9 @@ class MergeArmature(bpy.types.Operator):
         tools.common.remove_unused_vertex_groups()
         tools.common.delete_zero_weight(armature_name=current_armature_name)
         tools.common.set_default_stage()
+
+        # Fix armature name
+        tools.common.fix_armature_names(armature_name=current_armature_name)
 
         self.report({'INFO'}, 'Armatures successfully joined.')
         return {'FINISHED'}

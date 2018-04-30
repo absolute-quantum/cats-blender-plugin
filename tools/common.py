@@ -192,10 +192,8 @@ def find_center_vector_of_vertex_group(mesh_name, vertex_group):
 def get_meshes(self, context):
     choices = []
 
-    for object in bpy.context.scene.objects:
-        if object.type == 'MESH':
-            if object.parent is not None and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
-                choices.append((object.name, object.name, object.name))
+    for mesh in get_meshes_objects():
+        choices.append((mesh.name, mesh.name, mesh.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
@@ -260,23 +258,32 @@ def get_meshes_decimation(self, context):
 
 
 def get_bones_head(self, context):
-    return get_bones(['Head'])
+    return get_bones(names=['Head'])
 
 
 def get_bones_eye_l(self, context):
-    return get_bones(['Eye_L', 'EyeReturn_L'])
+    return get_bones(names=['Eye_L', 'EyeReturn_L'])
 
 
 def get_bones_eye_r(self, context):
-    return get_bones(['Eye_R', 'EyeReturn_R'])
+    return get_bones(names=['Eye_R', 'EyeReturn_R'])
+
+
+def get_bones_merge(self, context):
+    return get_bones(armature_name=bpy.context.scene.merge_armature_into)
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
-def get_bones(names):
-    choices = []
-    armature = get_armature()
+def get_bones(names=None, armature_name=None):
+    if not names:
+        names = []
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
 
-    if armature is None:
+    choices = []
+    armature = get_armature(armature_name=armature_name)
+
+    if not armature:
         bpy.types.Object.Enum = choices
         return bpy.types.Object.Enum
 
@@ -396,9 +403,11 @@ def get_shapekeys(context, names, no_basis, decimation, return_list):
     return bpy.types.Object.Enum
 
 
-def fix_armature_names():
+def fix_armature_names(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
     # Armature should be named correctly (has to be at the end because of multiple armatures)
-    armature = get_armature()
+    armature = get_armature(armature_name=armature_name)
     armature.name = 'Armature'
     if not armature.data.name.startswith('Armature'):
         try:
@@ -830,7 +839,7 @@ def delete_bone_constraints(armature_name=None):
     tools.common.switch('EDIT')
 
 
-def delete_zero_weight(armature_name=None):
+def delete_zero_weight(armature_name=None, ignore=''):
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
@@ -861,7 +870,7 @@ def delete_zero_weight(armature_name=None):
 
     count = 0
     for bone_name in not_used_bone_names:
-        if bone_name not in Bones.dont_delete_these_bones and 'Root_' not in bone_name:
+        if bone_name not in Bones.dont_delete_these_bones and 'Root_' not in bone_name and bone_name != ignore:
             armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
             count += 1
             if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
