@@ -110,7 +110,8 @@ def set_default_stage():
         obj.select = False
 
     armature = get_armature()
-    select(armature)
+    if armature:
+        select(armature)
     return armature
 
 
@@ -193,6 +194,16 @@ def get_meshes(self, context):
     choices = []
 
     for mesh in get_meshes_objects():
+        choices.append((mesh.name, mesh.name, mesh.name))
+
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
+    return bpy.types.Object.Enum
+
+
+def get_top_meshes(self, context):
+    choices = []
+
+    for mesh in get_meshes_objects(top_level=True):
         choices.append((mesh.name, mesh.name, mesh.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
@@ -427,13 +438,15 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-def get_meshes_objects(armature_name=None):
-    if not armature_name:
+def get_meshes_objects(armature_name=None, top_level=False):
+    if not armature_name and not top_level:
         armature_name = bpy.context.scene.armature
     meshes = []
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            if ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
+            if top_level and not ob.parent:
+                meshes.append(ob)
+            elif ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
                 meshes.append(ob)
     return meshes
 
@@ -474,6 +487,8 @@ def join_meshes(armature_name=None):
     mesh = None
     for mesh in get_meshes_objects(armature_name=armature_name):
         mesh.name = 'Body'
+        mesh.parent_type = 'OBJECT'
+
         for mod in mesh.modifiers:
             mod.show_expanded = False
             if mod.type == 'ARMATURE':

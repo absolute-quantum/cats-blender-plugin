@@ -300,9 +300,14 @@ class FixArmature(bpy.types.Operator):
             else:
                 name = bone.name
 
+            name = name[:1].upper() + name[1:]
+
             name = name.replace(' ', '_')\
                 .replace('-', '_')\
                 .replace('.', '_')\
+                .replace('____', '_')\
+                .replace('___', '_')\
+                .replace('__', '_')\
                 .replace('ValveBiped_', '')\
                 .replace('Bip1_', 'Bip_')\
                 .replace('Bip01_', 'Bip_')\
@@ -311,9 +316,6 @@ class FixArmature(bpy.types.Operator):
                 .replace('HLP_', '')\
                 .replace('JD_', '')\
                 .replace('JU_', '')\
-                .replace('____', '_')\
-                .replace('___', '_')\
-                .replace('__', '_')\
 
             upper_name = ''
             for i, s in enumerate(name.split('_')):
@@ -331,10 +333,42 @@ class FixArmature(bpy.types.Operator):
 
             bone.name = name
 
-        # Resolve conflicting bone names
+        # Add conflicting bone names to new list
+        conflicting_bones = []
         for names in Bones.bone_list_conflicting_names:
-            if names[0] in armature.data.edit_bones and names[1] in armature.data.edit_bones:
-                armature.data.edit_bones.get(names[1]).name = names[2]
+            if '\Left' not in names[1] and '\L' not in names[1]:
+                conflicting_bones.append(names)
+                continue
+
+            names0 = []
+            name1 = ''
+            name2 = ''
+            for name0 in names[0]:
+                names0.append(name0.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'))
+            if '\Left' in names[1] or '\L' in names[1]:
+                name1 = names[1].replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l')
+            if '\Left' in names[2] or '\L' in names[2]:
+                name2 = names[2].replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l')
+            conflicting_bones.append((names0, name1, name2))
+
+            for name0 in names[0]:
+                names0.append(name0.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'))
+            if '\Left' in names[1] or '\L' in names[1]:
+                name1 = names[1].replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')
+            if '\Left' in names[2] or '\L' in names[2]:
+                name2 = names[2].replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')
+            conflicting_bones.append((names0, name1, name2))
+
+        # Resolve conflicting bone names
+        for names in conflicting_bones:
+            if names[1] in armature.data.edit_bones:
+                found_all = True
+                for name in names[0]:
+                    if name not in armature.data.edit_bones:
+                        found_all = False
+                        break
+                if found_all:
+                    armature.data.edit_bones.get(names[1]).name = names[2]
 
         # Standardize bone names again (new duplicate bones have ".001" in it)
         for bone in armature.data.edit_bones:
@@ -342,6 +376,7 @@ class FixArmature(bpy.types.Operator):
 
         # Rename all the bones
         spines = []
+        spine_parts = []
         for bone_new, bones_old in temp_rename_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:
                 bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
@@ -370,16 +405,30 @@ class FixArmature(bpy.types.Operator):
 
                     # If spine bone, then don't rename for now, and ignore spines with no children
                     bone2 = armature.data.edit_bones.get(name)
-                    print(name, len(bone2.children))
                     if bone_new == 'Spine':
                         if len(bone2.children) > 0:
                             spines.append(name)
+                        else:
+                            spine_parts.append(name)
                         continue
 
                     # Rename the bone
                     if bone[0] not in armature.data.edit_bones:
                         if bone2 is not None:
                             bone2.name = bone[0]
+
+        # Add bones to parent reweigth list
+        for name in Bones.bone_reweigth_to_parent:
+            if '\Left' in name or '\L' in name:
+                bones = [name.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'),
+                         name.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')]
+            else:
+                bones = [name]
+
+            for bone_name in bones:
+                bone = armature.data.edit_bones.get(bone_name)
+                if bone and bone.parent:
+                    temp_list_reweight_bones[bone_name] = bone.parent.name
 
         # Check if it is a mixamo model
         mixamo = False
@@ -436,6 +485,14 @@ class FixArmature(bpy.types.Operator):
 
         # Fix all spines!
         spine_count = len(spines)
+
+        # Fix spines from armatures with no upper body (like skirts)
+        if len(spine_parts) == 1 and not armature.data.edit_bones.get('Neck'):
+            if spine_count == 0:
+                armature.data.edit_bones.get(spine_parts[0]).name = 'Spine'
+            else:
+                spines.append(spine_parts[0])
+
         if spine_count == 0:
             pass
 

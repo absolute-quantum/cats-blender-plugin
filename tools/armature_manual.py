@@ -286,6 +286,40 @@ class PoseToShape(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class PoseToRest(bpy.types.Operator):
+    bl_idname = 'armature_manual.pose_to_rest'
+    bl_label = 'Apply as Rest Pose'
+    bl_description = 'INFO: Join your meshes first!' \
+                     '\n' \
+                     '\nThis sets your current pose as the default pose.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not bpy.context.active_object or bpy.context.active_object.mode != 'POSE':
+            return False
+
+        meshes = tools.common.get_meshes_objects()
+        return meshes and len(meshes) == 1
+
+    def execute(self, context):
+        mesh = tools.common.get_meshes_objects()[0]
+        tools.common.unselect_all()
+        tools.common.select(mesh)
+
+        # Apply armature mod
+        mod = mesh.modifiers.new("Pose", 'ARMATURE')
+        mod.object = tools.common.get_armature()
+        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+
+        armature = tools.common.set_default_stage()
+        tools.common.switch('POSE')
+        armature.data.pose_position = 'POSE'
+
+        self.report({'INFO'}, 'Pose successfully saved as shape key.')
+        return {'FINISHED'}
+
+
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
@@ -680,23 +714,23 @@ class MergeArmature(bpy.types.Operator):
         tools.common.unselect_all()
 
         # Get both armatures
-        current_armature_name = bpy.context.scene.merge_armature_into
+        base_armature_name = bpy.context.scene.merge_armature_into
         merge_armature_name = bpy.context.scene.merge_armature
-        current_armature = bpy.data.objects[current_armature_name]
+        base_armature = bpy.data.objects[base_armature_name]
         merge_armature = bpy.data.objects[merge_armature_name]
 
         if not merge_armature:
             self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" could not be found.')
             return {'FINISHED'}
-        if not current_armature:
-            self.report({'ERROR'}, 'The armature "' + current_armature_name + '" could not be found.')
+        if not base_armature:
+            self.report({'ERROR'}, 'The armature "' + base_armature_name + '" could not be found.')
             return {'FINISHED'}
 
         if merge_armature.parent:
             self.report({'ERROR'}, 'Please use the "Fix Model" feature on the selected armatures first!'
                                    '\nAfter that please only move the mesh (not the armature!) to the desired position.')
             return {'FINISHED'}
-        if current_armature.parent:
+        if base_armature.parent:
             self.report({'ERROR'}, 'Please use the "Fix Model" feature on the selected armatures first!'
                                    '\nAfter that please only move the mesh (not the armature!) to the desired position.')
             return {'FINISHED'}
@@ -704,175 +738,247 @@ class MergeArmature(bpy.types.Operator):
         if len(tools.common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
             self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
             return {'FINISHED'}
-        if len(tools.common.get_meshes_objects(armature_name=current_armature_name)) == 0:
+        if len(tools.common.get_meshes_objects(armature_name=base_armature_name)) == 0:
             self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
             return {'FINISHED'}
 
-        # Join meshes in both armatures
-        mesh_base = tools.common.join_meshes(armature_name=current_armature_name)
-        mesh = tools.common.join_meshes(armature_name=merge_armature_name)
+        # Merge armatures
+        merge_armatures(self, base_armature_name, merge_armature_name, False)
 
-        # Check for transform on base armature, reset if not default
-        for i in [0, 1, 2]:
-            if current_armature.location[i] != 0 \
-                    or current_armature.rotation_euler[i] != 0 \
-                    or current_armature.scale[i] != 1 \
-                    or mesh_base.location[i] != 0 \
-                    or mesh_base.rotation_euler[i] != 0 \
-                    or mesh_base.scale[i] != 1:
+        self.report({'INFO'}, 'Armatures successfully joined.')
+        return {'FINISHED'}
 
-                for i2 in [0, 1, 2]:
-                    current_armature.location[i2] = 0
-                    current_armature.rotation_euler[i2] = 0
-                    current_armature.scale[i2] = 1
-                    mesh_base.location[i2] = 0
-                    mesh_base.rotation_euler[i2] = 0
-                    mesh_base.scale[i2] = 1
 
-                # Todo Maybe hide both armatures?
-                self.report({'ERROR'},
-                            'The position of your base armature and mesh has to be at 0! Only move the merge armature!'
-                            "\nMaybe you switched the base and merge armatures?"
-                            "\nThe base armatures position got reset for you. If you don't want that, undo this operation.")
-                return {'FINISHED'}
+class AttachMesh(bpy.types.Operator):
+    bl_idname = 'armature_manual.attach_mesh'
+    bl_label = 'Attach Mesh'
+    bl_description = "Attaches the selected mesh to the bone of the selected armature"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-        # Check for transform on merge armature, reset if not default
-        old_loc = [0, 0, 0]
-        old_scale = [1, 1, 1]
-        for i in [0, 1, 2]:
-            if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
+    @classmethod
+    def poll(cls, context):
+        return len(tools.common.get_armature_objects()) > 0 and len(tools.common.get_meshes_objects(top_level=True)) > 0
 
-                old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
-                old_rot = [merge_armature.rotation_euler[0], merge_armature.rotation_euler[1],
-                           merge_armature.rotation_euler[2]]
-                old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
-
-                for i2 in [0, 1, 2]:
-                    merge_armature.location[i2] = 0
-                    merge_armature.rotation_euler[i2] = 0
-                    merge_armature.scale[i2] = 1
-
-                for i2 in [0, 1, 2]:
-                    if old_rot[i2] != 0 or mesh.rotation_euler[i2] != 0:
-                        # Todo Maybe hide both armatures?
-                        self.report({'ERROR'},
-                                    'If you want to rotate the new part, only modify the mesh instead of the armature!'
-                                    "\nThe merge armatures position got reset for you. If you don't want that, undo this operation.")
-                        return {'FINISHED'}
-
-                break
-
-        # Apply transformation from mesh to armature
-        for i in [0, 1, 2]:
-            merge_armature.location[i] = (mesh.location[i] * old_scale[i]) + old_loc[i]
-            merge_armature.rotation_euler[i] = mesh.rotation_euler[i]
-            merge_armature.scale[i] = mesh.scale[i] * old_scale[i]
-
+    def execute(self, context):
+        # Set default stage
         tools.common.set_default_stage()
-        # Apply all transformations on mesh
+        tools.common.unselect_all()
+
+        # Get armature and mesh
+        mesh_name = bpy.context.scene.attach_mesh
+        base_armature_name = bpy.context.scene.merge_armature_into
+        attach_bone_name = bpy.context.scene.attach_to_bone
+        mesh = bpy.data.objects[mesh_name]
+        base_armature = bpy.data.objects[base_armature_name]
+
+        # Create new armature
+        bpy.ops.object.armature_add(location=(0, 0, 0))
+        new_armature = bpy.context.active_object
+
+        # Reparent mesh to new armature
+        mesh.parent = new_armature
+        mesh.parent_type = 'OBJECT'
+
+        # Rename bone in new armature
+        new_armature.data.bones.get('Bone').name = attach_bone_name
+
+        # Switch mesh to edit mode
         tools.common.unselect_all()
         tools.common.select(mesh)
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
-        # Apply all transformations on armature
-        tools.common.unselect_all()
-        tools.common.select(merge_armature)
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
-        # Reset all transformations on mesh
-        for i in [0, 1, 2]:
-            mesh.location[i] = old_loc[i]
-            mesh.rotation_euler[i] = 0
-            mesh.scale[i] = old_scale[i]
-
-        # Apply all transformations on mesh again
-        tools.common.unselect_all()
-        tools.common.select(mesh)
-        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
-        # Go into edit mode
-        tools.common.unselect_all()
-        tools.common.select(merge_armature)
         tools.common.switch('EDIT')
 
-        # Create new bone
-        bones_to_merge = copy.deepcopy(Bones.dont_delete_these_main_bones)
-        found = False
-        root_name = ''
-        for bone in bones_to_merge:
-            if bone in merge_armature.data.edit_bones and 'Eye' not in bone:
-                found = True
-                print('AUTO MERGE!')
-                break
+        # Select and assign all vertices to new vertex group
+        bpy.ops.mesh.select_all(action='SELECT')
+        mesh.vertex_groups.new(attach_bone_name)
+        bpy.ops.object.vertex_group_assign()
 
-        if not found:
-            print('CUSTOM MERGE!')
-            root_name = bpy.context.scene.attach_to_bone
-            root = merge_armature.data.edit_bones.get(root_name)
-            if root:
-                root.name += '_Old'
-            root = merge_armature.data.edit_bones.new(root_name)
-            root.tail[2] += 0.1
+        tools.common.switch('OBJECT')
 
-            # Make new root top parent and reparent other top bones to root
-            root.parent = None
-            for bone2 in merge_armature.data.edit_bones:
-                if not bone2.parent:
-                    bone2.parent = root
-            bones_to_merge.append(root.name)
+        # Create new armature modifier
+        mod = mesh.modifiers.new('Armature', 'ARMATURE')
+        mod.object = new_armature
 
-        # Rename all the bones of the merge armature
-        for bone in merge_armature.data.edit_bones:
-            bone.name = bone.name + '.merge'
+        # Merge armatures
+        merge_armatures(self, base_armature_name, new_armature.name, True, mesh_name=mesh_name)
 
-        # Go back into object mode
-        tools.common.set_default_stage()
-        tools.common.unselect_all()
+        self.report({'INFO'}, 'Mesh successfully attached to armature.')
+        return {'FINISHED'}
 
-        # Select armature in correct way
-        tools.common.select(current_armature)
-        merge_armature.select = True
 
-        # Join the armatures
-        if bpy.ops.object.join.poll():
-            bpy.ops.object.join()
+def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, mesh_name=None):
+    base_armature = bpy.data.objects[base_armature_name]
+    merge_armature = bpy.data.objects[merge_armature_name]
 
-        # Set new armature
-        bpy.context.scene.armature = current_armature_name
-        armature = tools.common.get_armature(armature_name=current_armature_name)
+    # Join meshes in both armatures
+    mesh_base = tools.common.join_meshes(armature_name=base_armature_name)
+    mesh = tools.common.join_meshes(armature_name=merge_armature_name)
 
-        # Join the meshes
-        mesh = tools.common.join_meshes(armature_name=current_armature_name)
-        if mesh:
-            tools.common.repair_viseme_order(mesh.name)
+    # Check for transform on base armature, reset if not default
+    for i in [0, 1, 2]:
+        if base_armature.location[i] != 0 \
+                or base_armature.rotation_euler[i] != 0 \
+                or base_armature.scale[i] != 1 \
+                or mesh_base.location[i] != 0 \
+                or mesh_base.rotation_euler[i] != 0 \
+                or mesh_base.scale[i] != 1:
 
-        # Go into edit mode
-        tools.common.unselect_all()
-        tools.common.select(armature)
-        tools.common.switch('EDIT')
+            for i2 in [0, 1, 2]:
+                base_armature.location[i2] = 0
+                base_armature.rotation_euler[i2] = 0
+                base_armature.scale[i2] = 1
+                mesh_base.location[i2] = 0
+                mesh_base.rotation_euler[i2] = 0
+                mesh_base.scale[i2] = 1
 
-        # Reparent all bones
-        for bone_name in bones_to_merge:
-            old = bone_name + '.merge'
-            new = bone_name
-            if old in armature.data.edit_bones and new in armature.data.edit_bones:
-                armature.data.edit_bones.get(old).parent = armature.data.edit_bones.get(new)
+            # Todo Maybe hide both armatures?
+            self.report({'ERROR'},
+                        'The position of your base armature and mesh has to be at 0! Only move the merge armature!'
+                        "\nMaybe you switched the base and merge armatures?"
+                        "\nThe base armatures position got reset for you. If you don't want that, undo this operation.")
+            return {'FINISHED'}
 
-        # Remove all unused bones, constraints and vertex groups
-        tools.common.set_default_stage()
-        tools.common.delete_bone_constraints(armature_name=current_armature_name)
-        tools.common.remove_unused_vertex_groups()
-        tools.common.delete_zero_weight(armature_name=current_armature_name)
-        tools.common.set_default_stage()
+    # Check for transform on merge armature, reset if not default
+    old_loc = [0, 0, 0]
+    old_scale = [1, 1, 1]
+    for i in [0, 1, 2]:
+        if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
 
-        # Merge bones into existing bones
-        tools.common.select(mesh)
+            old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
+            old_rot = [merge_armature.rotation_euler[0], merge_armature.rotation_euler[1],
+                       merge_armature.rotation_euler[2]]
+            old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
+
+            for i2 in [0, 1, 2]:
+                merge_armature.location[i2] = 0
+                merge_armature.rotation_euler[i2] = 0
+                merge_armature.scale[i2] = 1
+
+            for i2 in [0, 1, 2]:
+                if old_rot[i2] != 0 or mesh.rotation_euler[i2] != 0:
+                    # Todo Maybe hide both armatures?
+                    self.report({'ERROR'},
+                                'If you want to rotate the new part, only modify the mesh instead of the armature!'
+                                "\nThe merge armatures position got reset for you. If you don't want that, undo this operation.")
+                    return {'FINISHED'}
+
+            break
+
+    # Apply transformation from mesh to armature
+    for i in [0, 1, 2]:
+        merge_armature.location[i] = (mesh.location[i] * old_scale[i]) + old_loc[i]
+        merge_armature.rotation_euler[i] = mesh.rotation_euler[i]
+        merge_armature.scale[i] = mesh.scale[i] * old_scale[i]
+
+    tools.common.set_default_stage()
+    # Apply all transformations on mesh
+    tools.common.unselect_all()
+    tools.common.select(mesh)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # Apply all transformations on armature
+    tools.common.unselect_all()
+    tools.common.select(merge_armature)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # Reset all transformations on mesh
+    for i in [0, 1, 2]:
+        mesh.location[i] = old_loc[i]
+        mesh.rotation_euler[i] = 0
+        mesh.scale[i] = old_scale[i]
+
+    # Apply all transformations on mesh again
+    tools.common.unselect_all()
+    tools.common.select(mesh)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # Go into edit mode
+    tools.common.unselect_all()
+    tools.common.select(merge_armature)
+    tools.common.switch('EDIT')
+
+    # Create new bone
+    bones_to_merge = copy.deepcopy(Bones.dont_delete_these_main_bones)
+    found = False
+    root_name = ''
+    for bone in bones_to_merge:
+        if bone in merge_armature.data.edit_bones and 'Eye' not in bone:
+            found = True
+            print('AUTO MERGE!')
+            break
+
+    if not found:
+        print('CUSTOM MERGE!')
+        root_name = bpy.context.scene.attach_to_bone
+        root = merge_armature.data.edit_bones.get(root_name)
+        if root:
+            root.name += '_Old'
+        root = merge_armature.data.edit_bones.new(root_name)
+        root.tail[2] += 0.1
+
+        # Make new root top parent and reparent other top bones to root
+        root.parent = None
+        for bone2 in merge_armature.data.edit_bones:
+            if not bone2.parent:
+                bone2.parent = root
+        bones_to_merge.append(root.name)
+
+    # Rename all the bones of the merge armature
+    mesh_only_bone_name = ''
+    for bone in merge_armature.data.edit_bones:
+        bone.name = bone.name + '.merge'
+        if mesh_only:
+            mesh_only_bone_name = bone.name
+
+
+    # Go back into object mode
+    tools.common.set_default_stage()
+    tools.common.unselect_all()
+
+    # Select armature in correct way
+    tools.common.select(base_armature)
+    merge_armature.select = True
+
+    # Join the armatures
+    if bpy.ops.object.join.poll():
+        bpy.ops.object.join()
+
+    # Set new armature
+    bpy.context.scene.armature = base_armature_name
+    armature = tools.common.get_armature(armature_name=base_armature_name)
+
+    # Join the meshes
+    mesh = tools.common.join_meshes(armature_name=base_armature_name)
+    if mesh:
+        tools.common.repair_viseme_order(mesh.name)
+
+    # Go into edit mode
+    tools.common.unselect_all()
+    tools.common.select(armature)
+    tools.common.switch('EDIT')
+
+    # Reparent all bones
+    for bone_name in bones_to_merge:
+        old = bone_name + '.merge'
+        new = bone_name
+        if old in armature.data.edit_bones and new in armature.data.edit_bones:
+            armature.data.edit_bones.get(old).parent = armature.data.edit_bones.get(new)
+
+    # Remove all unused bones, constraints and vertex groups
+    tools.common.set_default_stage()
+    tools.common.delete_bone_constraints(armature_name=base_armature_name)
+    tools.common.remove_unused_vertex_groups()
+    tools.common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
+    tools.common.set_default_stage()
+
+    # Merge bones into existing bones
+    tools.common.select(mesh)
+    if not mesh_only:
         for bone_name in bones_to_merge:
             key = bone_name + '.merge'
             value = bone_name
 
-            # Eye pos is important, therefore they should override the old ones
-            if 'Eye' in bone_name:
+            # Eye pos is important, therefore they should override the old ones, except when that bone is chosen
+            if 'Eye' in bone_name and 'Eye' not in root_name:
                 key = bone_name
                 value = bone_name + '.merge'
 
@@ -895,22 +1001,23 @@ class MergeArmature(bpy.types.Operator):
             if new_name not in armature.pose.bones:
                 bone.name = new_name
 
-        # Set new eye bone as default
-        for eye_name in ['Eye_L', 'Eye_R']:
-            if eye_name in armature.pose.bones and eye_name + '.merge' in armature.pose.bones:
-                eye = armature.pose.bones.get(eye_name)
-                eye_merged = armature.pose.bones.get(eye_name + '.merge')
-                eye.name = eye.name + '_Old'
-                eye_merged.name = eye_merged.name.replace('.merge', '')
+    # If mesh_only then rename the only bone to mesh name
+    elif mesh_name:
+        armature.pose.bones.get(mesh_only_bone_name).name = mesh_name
 
-        # Remove all unused bones, constraints and vertex groups
-        tools.common.set_default_stage()
-        tools.common.remove_unused_vertex_groups()
-        tools.common.delete_zero_weight(armature_name=current_armature_name)
-        tools.common.set_default_stage()
+    # Set new eye bone as default
+    for eye_name in ['Eye_L', 'Eye_R']:
+        if eye_name in armature.pose.bones and eye_name + '.merge' in armature.pose.bones:
+            eye = armature.pose.bones.get(eye_name)
+            eye_merged = armature.pose.bones.get(eye_name + '.merge')
+            eye.name = eye.name + '_Old'
+            eye_merged.name = eye_merged.name.replace('.merge', '')
 
-        # Fix armature name
-        tools.common.fix_armature_names(armature_name=current_armature_name)
+    # Remove all unused bones, constraints and vertex groups
+    tools.common.set_default_stage()
+    tools.common.remove_unused_vertex_groups()
+    tools.common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
+    tools.common.set_default_stage()
 
-        self.report({'INFO'}, 'Armatures successfully joined.')
-        return {'FINISHED'}
+    # Fix armature name
+    tools.common.fix_armature_names(armature_name=base_armature_name)

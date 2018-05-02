@@ -264,6 +264,9 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 - Added: Model: Added "Merge Armatures" button!
   - This merges two selected armatures together.
   - This makes creating custom models a lot easier if you want parts from one model on another one
+- Added: Model: Added "Attach mesh" button!
+  - This attaches a mesh to a selected bone in an armature.
+  - Custom avatars are a breeze now!
 - Added: Model: Source Engine Models are now compatible!
 - Added: Model: Fix Model now sets the roll of all bones to 0
   - This should fix a lot of finger issues in Unity!

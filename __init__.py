@@ -234,8 +234,17 @@ class ToolPanel:
         default=True
     )
 
+    bpy.types.Scene.merge_mode = bpy.props.EnumProperty(
+        name="Merge Mode",
+        description="Mode",
+        items=[
+            ("ARMATURE", "Merge Armatures", "Here you can merge two armatures together."),
+            ("MESH", "Attach Mesh", "Here you can attach a mesh to an armature.")
+        ]
+    )
+
     bpy.types.Scene.merge_armature_into = bpy.props.EnumProperty(
-        name='Merge Armature',
+        name='Base Armature',
         description='Select the armature into which the other armature will be merged\n',
         items=tools.common.get_armature_list
     )
@@ -250,6 +259,12 @@ class ToolPanel:
         name='Merge Armature',
         description='Select the armature which will be merged into the selected armature above\n',
         items=tools.common.get_armature_merge_list
+    )
+
+    bpy.types.Scene.attach_mesh = bpy.props.EnumProperty(
+        name='Attach Mesh',
+        description='Select the mesh which will be attached to the selected bone in the selected armature\n',
+        items=tools.common.get_top_meshes
     )
 
     # Decimation
@@ -783,44 +798,78 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         col.separator()
+        col.separator()
         row = col.row(align=True)
-        row.scale_y = 1.05
-        row.label('Merge Armatures:')
+        row.prop(context.scene, 'merge_mode', expand=True)
+        col.separator()
 
-        if len(tools.common.get_armature_objects()) <= 1:
+        # Merge Armatures
+        if context.scene.merge_mode == 'ARMATURE':
             row = col.row(align=True)
             row.scale_y = 1.05
-            col.label('Two or more armatures required.', icon='INFO')
-            return
+            row.label('Merge Armatures:')
 
-        row = col.row(align=True)
-        row.scale_y = 1.05
-        row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
-        row = col.row(align=True)
-        row.scale_y = 1.05
-        row.prop(context.scene, 'merge_armature', text='To Merge', icon_value=preview_collections["custom_icons"]["UP_ARROW"].icon_id)
+            if len(tools.common.get_armature_objects()) <= 1:
+                row = col.row(align=True)
+                row.scale_y = 1.05
+                col.label('Two armatures are required!', icon='INFO')
+                return
 
-        found = False
-        base_armature = tools.common.get_armature(armature_name=context.scene.merge_armature_into)
-        merge_armature = tools.common.get_armature(armature_name=context.scene.merge_armature)
-        if merge_armature:
-            for bone in tools.armature_bones.dont_delete_these_main_bones:
-                if 'Eye' not in bone and bone in merge_armature.pose.bones and bone in base_armature.pose.bones:
-                    found = True
-                    break
-
-        if not found:
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
+            row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.prop(context.scene, 'merge_armature', text='To Merge', icon_value=preview_collections["custom_icons"]["UP_ARROW"].icon_id)
+
+            found = False
+            base_armature = tools.common.get_armature(armature_name=context.scene.merge_armature_into)
+            merge_armature = tools.common.get_armature(armature_name=context.scene.merge_armature)
+            if merge_armature:
+                for bone in tools.armature_bones.dont_delete_these_main_bones:
+                    if 'Eye' not in bone and bone in merge_armature.pose.bones and bone in base_armature.pose.bones:
+                        found = True
+                        break
+
+            if not found:
+                row = col.row(align=True)
+                row.scale_y = 1.05
+                row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
+            else:
+                row = col.row(align=True)
+                row.scale_y = 1.05
+                row.label('Armatures can be automatically merged!')
+
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.operator('armature_manual.merge_armatures', icon='ARMATURE_DATA')
+
+        # Attach Mesh
         else:
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.label('Armatures can be automatically merged!')
+            row.label('Attach Mesh to Armature:')
 
-        row = col.row(align=True)
-        row.scale_y = 1.05
-        row.operator('armature_manual.merge_armatures', icon='ARMATURE_DATA')
+            if len(tools.common.get_armature_objects()) == 0 or len(tools.common.get_meshes_objects(top_level=True)) == 0:
+                row = col.row(align=True)
+                row.scale_y = 1.05
+                col.label('An armature and a mesh are required!', icon='INFO')
+                return
+
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.prop(context.scene, 'attach_mesh', text='Mesh', icon_value=preview_collections["custom_icons"]["UP_ARROW"].icon_id)
+
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
+
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.operator('armature_manual.attach_mesh', icon='ARMATURE_DATA')
 
 
 
@@ -1608,6 +1657,7 @@ classesToRegister = [
     tools.armature_manual.RecalculateNormals,
     tools.armature_manual.FlipNormals,
     tools.armature_manual.MergeArmature,
+    tools.armature_manual.AttachMesh,
 
     TranslationPanel,
     tools.translate.TranslateShapekeyButton,
