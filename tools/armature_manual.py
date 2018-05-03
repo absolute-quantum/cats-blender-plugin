@@ -751,7 +751,10 @@ class MergeArmature(bpy.types.Operator):
 class AttachMesh(bpy.types.Operator):
     bl_idname = 'armature_manual.attach_mesh'
     bl_label = 'Attach Mesh'
-    bl_description = "Attaches the selected mesh to the bone of the selected armature"
+    bl_description = "Attaches the selected mesh to the selected bone of the selected armature." \
+                     "\n" \
+                     "\nINFO: The mesh will only be assigned to the selected bone." \
+                     "\nE.g.: A jacket won't work, because it requires multiple bones"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -829,9 +832,13 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
                 mesh_base.location[i2] = 0
                 mesh_base.rotation_euler[i2] = 0
                 mesh_base.scale[i2] = 1
-                merge_armature.location[i2] = 0
-                merge_armature.rotation_euler[i2] = 0
-                merge_armature.scale[i2] = 1
+
+            if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
+                if merge_armature.rotation_euler[i] != 0 or mesh.rotation_euler[i] != 0:
+                    for i2 in [0, 1, 2]:
+                        merge_armature.location[i2] = 0
+                        merge_armature.rotation_euler[i2] = 0
+                        merge_armature.scale[i2] = 1
 
             merge_armature.hide = True
             base_armature.hide = True
