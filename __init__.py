@@ -110,84 +110,89 @@ preview_collections = {}
 # List all the supporters here
 supporters = [
     # ['Display name', 'Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
-    ['Xeverian', 'xeverian', '2017-12-19'],
-    ['Tupper', 'tupper', '2017-12-19'],
-    ['Jazneo', 'jazneo', '2017-12-19'],
-    ['idea', 'idea', '2017-12-19'],
+    ['Xeverian', 'xeverian', '2017-12-19'],  # 45
+    ['Tupper', 'tupper', '2017-12-19'],  # 50
+    # ['Jazneo', 'jazneo', '2017-12-19'],
+    ['idea', 'idea', '2017-12-19'],  # -patr
     ['RadaruS', 'radaruS', '2017-12-19'],
-    ['Kry10', 'kry10', '2017-12-19'],
-    ['Smead', 'smead', '2017-12-25'],
-    ['kohai.istool', 'kohai.istool', '2017-12-25'],
-    ['Str4fe', 'str4fe', '2017-12-25'],
+    # ['Kry10', 'kry10', '2017-12-19'],
+    # ['Smead', 'smead', '2017-12-25'],
+    # ['kohai.istool', 'kohai.istool', '2017-12-25'],
+    ['Str4fe', 'str4fe', '2017-12-25'],  # -niem
     ["Ainrehtea Dal'Nalirtu", "Ainrehtea Dal'Nalirtu", '2017-12-25'],
     # ['Wintermute', 'wintermute', '2017-12-19'],
-    ['Raikin', 'raikin', '2017-12-25'],
+    ['Raikin', 'raikin', '2017-12-25'],  # -soni
     ['BerserkerBoreas', 'berserkerboreas', '2017-12-25'],
     ['ihatemondays', 'ihatemondays', '2017-12-25'],
     ['Derpmare', 'derpmare', '2017-12-25'],
-    ['Bin Chicken', 'bin_chicken', '2017-12-25'],
+    # ['Bin Chicken', 'bin_chicken', '2017-12-25'],
     ['Chikan Celeryman', 'chikan_celeryman', '2017-12-25'],
-    ['migero', 'migero', '2018-01-05'],
-    ['Ashe', 'ashe', '2018-01-05'],
-    ['Quadriple', 'quadriple', '2018-01-05'],
-    ['abrownbag', 'abrownbag', '2018-01-05'],
+    # ['migero', 'migero', '2018-01-05'],
+    ['Ashe', 'ashe', '2018-01-05'],  # 50
+    ['Quadriple', 'quadriple', '2018-01-05'],  # 30
+    ['abrownbag', 'abrownbag', '2018-01-05'],  # cancelled april, remove soon
     ['Azuth', 'Azuth', '2018-01-05'],
     ['goblox', 'goblox', '2018-01-05'],
-    ['Rikku', 'Rikku', '2018-01-05'],
+    # ['Rikku', 'Rikku', '2018-01-05'],
     ['azupwn', 'azupwn', '2018-01-05'],
     ['m o t h', 'm o t h', '2018-01-05'],
-    ['Yorx', 'Yorx', '2018-01-05'],
-    ['Buffy', 'Buffy', '2018-01-05'],
-    ['Tomnautical', 'Tomnautical', '2018-01-05'],
-    ['akarinjelly', 'Jelly', '2018-01-05'],
+    # ['Yorx', 'Yorx', '2018-01-05'],
+    # ['Buffy', 'Buffy', '2018-01-05'],
+    ['Tomnautical', 'Tomnautical', '2018-01-05'],  # -psyo
+    # ['akarinjelly', 'Jelly', '2018-01-05'],
     ['Atirion', 'Atirion', '2018-01-05'],
-    ['Lydania', 'Lydania', '2018-01-05'],
-    ['Shanie-senpai', 'Shanie-senpai', '2018-01-05'],
-    ['Kal [Thramis]', 'Kal', '2018-01-12'],
-    ['Sifu', 'Sifu', '2018-01-12'],
-    ['Lil Clone', 'Lil Clone', '2018-01-12'],
+    ['Lydania', 'Lydania', '2018-01-05'],  # -tobi
+    ['Shanie', 'Shanie-senpai', '2018-01-05'],  # -shan
+    # ['Kal [Thramis]', 'Kal', '2018-01-12'],
+    ['Sifu', 'Sifu', '2018-01-12'],  # -ylon
+    ['Lil Clone', 'Lil Clone', '2018-01-12'],  # cancelled april, remove soon
     ['Naranar', 'Naranar', '2018-01-12'],
-    ['gwigz', 'gwigz', '2018-01-12'],
-    ['Lux', 'Lux', '2018-01-12'],
-    ['liquid (retso)', 'liquid', '2018-01-12'],
-    ['GreenTeaGamer', 'GreenTeaGamer', '2018-01-12'],
-    ['Desruko', 'Desruko', '2018-01-12'],
+    # ['gwigz', 'gwigz', '2018-01-12'],
+    # ['Lux', 'Lux', '2018-01-12'],
+    ['liquid (retso)', 'liquid', '2018-01-12'],  # -oste
+    # ['GreenTeaGamer', 'GreenTeaGamer', '2018-01-12'],
+    # ['Desruko', 'Desruko', '2018-01-12'],
     ['Mute_', 'Mute_', '2018-01-12'],
     # icewind (don't add)
-    ['qy_li', 'qy_li', '2018-01-22'],  # emtpy pic
-    ['Sixnalia', 'Sixnalia', '2018-01-22'],
+    ['qy_li', 'qy_li', '2018-01-22'],  # emtpy pic  - lqy
+    # ['Sixnalia', 'Sixnalia', '2018-01-22'],
     ['ReOL', 'ReOL', '2018-01-22'],  # emtpy pic
     ['Rezinion', 'Rezinion', '2018-01-22'],
     ['Karma', 'Karma', '2018-01-22'],
-    ['\1B', 'BOXMOB', '2018-01-22'],
-    ['\2O', 'BOXMOB', '2018-01-22'],
-    ['\3X', 'BOXMOB', '2018-01-22'],
-    ['\1M', 'BOXMOB', '2018-01-22'],
-    ['\2O', 'BOXMOB', '2018-01-22'],
-    ['\3B', 'BOXMOB', '2018-01-22'],
-    ['SolarSnowball', 'SolarSnowball', '2018-01-22'],
-    ['Hordaland', 'Hordaland', '2018-01-22'],
-    ['Bones', 'Bones', '2018-01-22'],
-    # Joshua (onodaTV)
+    # ['\1B', 'BOXMOB', '2018-01-22'],
+    # ['\2O', 'BOXMOB', '2018-01-22'],
+    # ['\3X', 'BOXMOB', '2018-01-22'],
+    # ['\1M', 'BOXMOB', '2018-01-22'],
+    # ['\2O', 'BOXMOB', '2018-01-22'],
+    # ['\3B', 'BOXMOB', '2018-01-22'],
+    ['SolarSnowball', 'SolarSnowball', '2018-01-22'],  # is later in form list
+    # ['Hordaland', 'Hordaland', '2018-01-22'],
+    ['Bones', 'Bones', '2018-01-22'],  # PP 50
+    # Joshua (onodaTV)    # cancelled april, don't add
     # charlie (discord) 24th missing
     ['Axo_', 'Axo_', '2018-04-10'],
     # Jerry (jt1990)
-    ['Dogniss', 'Dogniss', '2018-03-10'],
+    ['Dogniss', 'Dogniss', '2018-03-10'],  # -Forc
     # Fabian (fabien-brenig) (ignore)
-    ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10'],
+    ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10'], # -fina
     # Marcus (m.johannson) (ignore)
     ['Awrini', 'Awrini', '2018-03-10'],
-    ['Smooth', 'Smooth', '2018-03-10'],
+    # ['Smooth', 'Smooth', '2018-03-10'],
     # FlammaRilva (fls81245) (ignore)
-    ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],
+    ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],  # 42
+    # Checked until here
+
     ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
+    # Murakuumoo (murakuumoo)
     ['Curio', 'Curio', '2018-03-10'],
-    ['Deathofirish', 'Deathofirish', '2018-04-17'],  # emtpy pic
-    # eduardo
+    ['Deathofirish', 'Deathofirish', '2018-04-17'],  # emtpy pic  - jaco
+    # eduardo (botello.eduardo19)
     ['Runda', 'Runda', '2018-04-17'],
-    # Shirokaze
-    ['Brindin_wF', 'Brindin_wF', '2018-04-17'],
-    ['Serry Jane', 'Serry_Jane', '2018-04-17'],  # emtpy pic
+    # Shirokaze (mistareal58)
+    ['Brindin_wF', 'Brindin_wF', '2018-04-17'],  # -Bran
+    ['Serry Jane', 'Serry_Jane', '2018-04-17'],  # emtpy pic  -ianc
+    ['GV-97', 'GV-97', '2018-05-04'],
+    # Kang (do2039)
 ]
 
 current_supporters = None
@@ -808,6 +813,10 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
+        row.operator('custom_model.button', text='How to Use', icon='FORWARD')
+        col.separator()
+
+        row = col.row(align=True)
         row.prop(context.scene, 'merge_mode', expand=True)
         col.separator()
 
@@ -849,7 +858,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                 row.label('Armatures can be automatically merged!')
 
             row = col.row(align=True)
-            row.scale_y = 1.05
+            row.scale_y = 1.2
             row.operator('armature_manual.merge_armatures', icon='ARMATURE_DATA')
 
         # Attach Mesh
@@ -876,7 +885,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
 
             row = col.row(align=True)
-            row.scale_y = 1.05
+            row.scale_y = 1.2
             row.operator('armature_manual.attach_mesh', icon='ARMATURE_DATA')
 
 
@@ -1667,6 +1676,7 @@ classesToRegister = [
     CustomPanel,
     tools.armature_manual.MergeArmature,
     tools.armature_manual.AttachMesh,
+    tools.armature_manual.CustomModelTutorialButton,
 
     TranslationPanel,
     tools.translate.TranslateShapekeyButton,

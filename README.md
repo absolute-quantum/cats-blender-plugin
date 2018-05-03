@@ -128,7 +128,7 @@ This tries to completely fix your model with one click.
 **This makes creating custom avatars a breeze!**
 
 ##### Merge Armatures
-- Merges the selected merge armature into the base armature.
+- Merges the selected armature into the selected base armature.
 - **How to use:**
     - Use "Fix Model" on both armatures
         - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
@@ -333,11 +333,14 @@ It checks for a new version automatically once every day.
         - This should fix a lot of finger issues in Unity!
     - "Fix Model" now removes the standard lamp, camera and cube
     - Full Body Tracking Fix is not longer enabled by default
+    - More models are now compatible (please report non working models to us)
     - Fixed: Undoing the operation after a model import no longer undoes the import as well
 - Eye Tracking:
     - Now shows a warning when important objects aren't named correctly
 - Copy Protection:
     - Added Export button into the panel after enabling the protection
+    - Updated documentation
+        - Step 6 now shows how to fix all remaining lighting issues
 - General:
     - Mesh selections are no longer shown if there is only one mesh
     - Updated mmd_tools

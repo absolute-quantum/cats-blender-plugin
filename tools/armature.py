@@ -782,6 +782,10 @@ class FixArmature(bpy.types.Operator):
                     if name == '':
                         continue
 
+                    if bone[0] == bone[1]:
+                        print('BUG: ' + bone[0] + ' tried to mix weights with itself!')
+                        continue
+
                     vg = mesh.vertex_groups.get(name)
                     # print(bone[1] + " to1 " + bone[0])
 
@@ -832,6 +836,7 @@ class FixArmature(bpy.types.Operator):
 
             if key == value:
                 print('BUG: ' + key + ' tried to mix weights with itself!')
+                continue
 
             mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
             mod.vertex_group_a = value

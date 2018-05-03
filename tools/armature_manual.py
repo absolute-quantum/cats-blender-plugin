@@ -807,6 +807,17 @@ class AttachMesh(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class CustomModelTutorialButton(bpy.types.Operator):
+    bl_idname = 'custom_model.button'
+    bl_label = 'Go to Documentation'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation')
+
+        self.report({'INFO'}, 'Documentation')
+        return {'FINISHED'}
+
+
 def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, mesh_name=None):
     base_armature = bpy.data.objects[base_armature_name]
     merge_armature = bpy.data.objects[merge_armature_name]
