@@ -83,6 +83,7 @@ class __PmxExporter:
         self.__model = None
         self.__bone_name_table = []
         self.__material_name_table = []
+        self.__exported_vertices = []
         self.__vertex_index_map = {} # used for exporting uv morphs
         self.__default_material = None
         self.__vertex_order_map = None # used for controlling vertex order
@@ -201,6 +202,7 @@ class __PmxExporter:
                             weight.weights[i] /= w_all
                         pv.weight = weight
                     self.__model.vertices.append(pv)
+                    self.__exported_vertices.append(v)
 
                 for face in mat_faces:
                     self.__model.faces.append([x.index for x in face.vertices])
@@ -594,20 +596,12 @@ class __PmxExporter:
             self.__model.morphs.append(morph)
 
         append_table = dict(zip(shape_key_names, [m.offsets.append for m in self.__model.morphs]))
-        exported_vert = set()
-        for mesh in meshes:
-            for mf in mesh.material_faces.values():
-                for f in mf:
-                    for v in f.vertices:
-                        if v.index in exported_vert:
-                            continue
-                        exported_vert.add(v.index)
-
-                        for i, offset in v.offsets.items():
-                            mo = pmx.VertexMorphOffset()
-                            mo.index = v.index
-                            mo.offset = offset
-                            append_table[i](mo)
+        for v in self.__exported_vertices:
+            for i, offset in v.offsets.items():
+                mo = pmx.VertexMorphOffset()
+                mo.index = v.index
+                mo.offset = offset
+                append_table[i](mo)
 
     def __export_material_morphs(self, root):
         mmd_root = root.mmd_root
@@ -1048,6 +1042,8 @@ class __PmxExporter:
         if meshObj.data.shape_keys:
             for i, kb in enumerate(meshObj.data.shape_keys.key_blocks):
                 if i == 0: # Basis
+                    continue
+                if kb.name.startswith('mmd_bind'):
                     continue
                 if kb.name == 'mmd_sdef_c': # make sure 'mmd_sdef_c' is at first
                     shape_key_list = [(i, kb)] + shape_key_list

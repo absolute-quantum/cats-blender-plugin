@@ -327,47 +327,51 @@ def get_bones(names=None, armature_name=None):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow', 'A'], False, False, False)
+    return get_shapekeys(context, ['Ah', 'Wow', 'A'], True, False, False, False)
 
 
 def get_shapekeys_mouth_oh(self, context):
-    return get_shapekeys(context, ['Your', 'O'], False, False, False)
+    return get_shapekeys(context, ['Your', 'O'], True, False, False, False)
 
 
 def get_shapekeys_mouth_ch(self, context):
-    return get_shapekeys(context, ['Glue', 'There', 'I'], False, False, False)
+    return get_shapekeys(context, ['Glue', 'There', 'I'], True, False, False, False)
 
 
 def get_shapekeys_eye_blink_l(self, context):
-    return get_shapekeys(context, ['Wink 2', 'Wink', 'Blink (Left)', 'Blink', 'Basis'], False, False, False)
+    return get_shapekeys(context, ['Wink 2', 'Wink', 'Blink (Left)', 'Blink', 'Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False, False, False)
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_low_l(self, context):
-    return get_shapekeys(context, ['Basis'], False, False, False)
+    return get_shapekeys(context, ['Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_low_r(self, context):
-    return get_shapekeys(context, ['Basis'], False, False, False)
+    return get_shapekeys(context, ['Basis'], False, False, False, False)
 
 
 def get_shapekeys_decimation(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], True, True, False)
+    return get_shapekeys(context, ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, False)
 
 
 def get_shapekeys_decimation_list(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], True, True, True)
+    return get_shapekeys(context, ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, True)
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
 # no_basis - If this is true the Basis will not be available in the list
-def get_shapekeys(context, names, no_basis, decimation, return_list):
+def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
     choices = []
     choices_simple = []
-    meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
+
+    if is_mouth:
+        meshes = [bpy.data.objects.get(context.scene.mesh_name_viseme)]
+    else:
+        meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
 
     if decimation:
         meshes = get_meshes_objects()

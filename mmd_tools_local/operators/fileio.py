@@ -62,8 +62,8 @@ def _update_types(cls, prop):
 
 class ImportPmx(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_model'
-    bl_label = 'Import Model file (.pmd, .pmx)'
-    bl_description = 'Import Model file(s) (.pmd, .pmx)'
+    bl_label = 'Import Model File (.pmd, .pmx)'
+    bl_description = 'Import model file(s) (.pmd, .pmx)'
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
     files = bpy.props.CollectionProperty(type=OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
@@ -201,9 +201,9 @@ class ImportPmx(Operator, ImportHelper):
 
 class ImportVmd(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_vmd'
-    bl_label = 'Import VMD file (.vmd)'
+    bl_label = 'Import VMD File (.vmd)'
     bl_description = 'Import a VMD file (.vmd)'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
     filename_ext = '.vmd'
     filter_glob = bpy.props.StringProperty(default='*.vmd', options={'HIDDEN'})
@@ -316,9 +316,9 @@ class ImportVmd(Operator, ImportHelper):
 
 class ImportVpd(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_vpd'
-    bl_label = 'Import VPD file (.vpd)'
+    bl_label = 'Import VPD File (.vpd)'
     bl_description = "Import VPD file(s) to selected rig's pose library (.vpd)"
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
     files = bpy.props.CollectionProperty(type=OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
     directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
@@ -412,7 +412,7 @@ class ImportVpd(Operator, ImportHelper):
 
 class ExportPmx(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_pmx'
-    bl_label = 'Export PMX file (.pmx)'
+    bl_label = 'Export PMX File (.pmx)'
     bl_description = 'Export selected MMD model(s) to PMX file(s) (.pmx)'
     bl_options = {'PRESET'}
 
@@ -546,7 +546,7 @@ class ExportPmx(Operator, ExportHelper):
 
 class ExportVmd(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_vmd'
-    bl_label = 'Export VMD file (.vmd)'
+    bl_label = 'Export VMD File (.vmd)'
     bl_description = 'Export motion data of active object to a VMD file (.vmd)'
     bl_options = {'PRESET'}
 
@@ -626,7 +626,7 @@ class ExportVmd(Operator, ExportHelper):
 
 class ExportVpd(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_vpd'
-    bl_label = 'Export VPD file (.vpd)'
+    bl_label = 'Export VPD File (.vpd)'
     bl_description = 'Export to VPD file(s) (.vpd)'
     bl_description = "Export active rig's pose library to VPD file(s) (.vpd)"
     bl_options = {'PRESET'}

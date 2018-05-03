@@ -11,7 +11,7 @@ class SetGLSLShading(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        ResetShading.execute(self, context)
+        bpy.ops.mmd_tools.reset_shading()
         bpy.context.scene.render.engine = 'BLENDER_RENDER'
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
@@ -35,7 +35,7 @@ class SetShadelessGLSLShading(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        ResetShading.execute(self, context)
+        bpy.ops.mmd_tools.reset_shading()
         bpy.context.scene.render.engine = 'BLENDER_RENDER'
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:

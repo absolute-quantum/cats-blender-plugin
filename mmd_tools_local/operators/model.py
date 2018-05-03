@@ -13,7 +13,7 @@ class MorphSliderSetup(Operator):
     bl_idname = 'mmd_tools.morph_slider_setup'
     bl_label = 'Morph Slider Setup'
     bl_description = 'Translate MMD morphs of selected object into format usable by Blender'
-    bl_options = {'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     type = bpy.props.EnumProperty(
         name='Type',
@@ -43,7 +43,7 @@ class CleanRiggingObjects(Operator):
     bl_idname = 'mmd_tools.clean_rig'
     bl_label = 'Clean Rig'
     bl_description = 'Delete temporary physics objects of selected object and revert physics to default MMD state'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         root = mmd_model.Model.findRoot(context.active_object)
@@ -56,7 +56,7 @@ class BuildRig(Operator):
     bl_idname = 'mmd_tools.build_rig'
     bl_label = 'Build Rig'
     bl_description = 'Translate physics of selected object into format usable by Blender'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         root = mmd_model.Model.findRoot(context.active_object)
@@ -69,7 +69,7 @@ class CleanAdditionalTransformConstraints(Operator):
     bl_idname = 'mmd_tools.clean_additional_transform'
     bl_label = 'Clean Additional Transform'
     bl_description = 'Delete shadow bones of selected object and revert bones to default MMD state'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         obj = context.active_object
@@ -83,7 +83,7 @@ class ApplyAdditionalTransformConstraints(Operator):
     bl_idname = 'mmd_tools.apply_additional_transform'
     bl_label = 'Apply Additional Transform'
     bl_description = 'Translate appended bones of selected object for Blender'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         obj = context.active_object
@@ -97,7 +97,7 @@ class SetupBoneLocalAxes(Operator):
     bl_idname = 'mmd_tools.bone_local_axes_setup'
     bl_label = 'Setup Bone Local Axes'
     bl_description = 'Setup local axes of each bone'
-    bl_options = {'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     type = bpy.props.EnumProperty(
         name='Type',
@@ -127,7 +127,7 @@ class CreateMMDModelRoot(Operator):
     bl_idname = 'mmd_tools.create_mmd_model_root_object'
     bl_label = 'Create a MMD Model Root Object'
     bl_description = 'Create a MMD model root object with a basic armature'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     name_j = bpy.props.StringProperty(
         name='Name',
@@ -277,6 +277,7 @@ class TranslateMMDModel(Operator):
     bl_idname = 'mmd_tools.translate_mmd_model'
     bl_label = 'Translate a MMD Model'
     bl_description = 'Translate Japanese names of a MMD model'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     dictionary = bpy.props.EnumProperty(
         name='Dictionary',

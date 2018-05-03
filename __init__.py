@@ -229,7 +229,7 @@ class ToolPanel:
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove Zero Weight Bones',
-        description="Cleans up the bones hierarchy, because MMD models usually come with a lot of extra bones that don't directly affect any vertices.\n"
+        description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.\n"
                     'Uncheck this if bones you want to keep got deleted',
         default=True
     )

@@ -62,120 +62,178 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/hFmVxBw.png)
+![](https://i.imgur.com/a7S8KnT.png)
 
 This tries to completely fix your model with one click.
 
-##### Import model
-Imports a model with the selected type.
+##### Import/Export Model
+- Imports a model of the selected type with the optimal settings
+- Exports a model as an .fbx with the optimal settings
 
-##### Fix model
-Fixes your model automatically by:
- - Reparenting bones
- - Removing unnecessary bones
- - Renaming and translating objects and bones
- - Mixing weight paints
- - Rotating the hips
- - Joining meshes
- - Removing rigidbodies, joints and bone groups
- - Removing bone constraints
- - Deleting unused vertex groups
- - Using the correct shading
- - Making it compatible with Full Body Tracking
+##### Fix Model
+- Fixes your model automatically by:
+     - Reparenting bones
+     - Removing unnecessary bones
+     - Renaming and translating objects and bones
+     - Mixing weight paints
+     - Rotating the hips
+     - Joining meshes
+     - Removing rigidbodies, joints and bone groups
+     - Removing bone constraints
+     - Deleting unused vertex groups
+     - Using the correct shading
+     - Making it compatible with Full Body Tracking
  
  **special thanks to @ProfessorSnep#0001, @Mimi#4114, @persia#0123 and @Gallium#7020 <3 <3**
 
-##### Separate by material / loose parts
-Separates a mesh by materials or loose parts
-
-##### Join meshes
-Joins all meshes into one
-
-##### Mix weights
-Deletes the selected bones and adds their weight to their respective parents.
-
 ##### Start Pose Mode
-Lets you test how bones will move.
+- Lets you test how bones will move.
 
 ##### Pose to Shape Key
-Saves your current pose as a new shape key.
+- Saves your current pose as a new shape key.
+
+
+## Model Options
+
+![](https://i.imgur.com/crtPqK7.png)
+
+##### Separate by material / loose parts
+- Separates a mesh by materials or loose parts
+
+##### Join meshes
+- Joins all meshes into one
+
+##### Delete Zero Weight Bones
+- Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices
+
+##### Delete Constraints
+- Removes constrains between bones causing specific bone movement as these are not used by VRChat
+
+##### Merge Weights
+- Deletes the selected bones and adds their weight to their respective parents
+
+##### Recalculate Normals
+- Makes normals point inside of the selected mesh
+- Don't use this on good looking meshes as this can screw them up
+
+##### Flip Normals
+- Flips the direction of the faces' normals of the selected mesh.
+
+
+## Custom Model Creation
+
+![](https://i.imgur.com/epkhkmy.png)
+![](https://i.imgur.com/04O63q1.png)
+
+**This makes creating custom avatars a breeze!**
+
+##### Merge Armatures
+- Merges the selected merge armature into the base armature.
+- **How to use:**
+    - Use "Fix Model" on both armatures
+        - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
+        - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure
+        - DO NOT delete any main bones by yourself! CATS will merge them and deletes all unused bones afterwards
+    - Move the mesh (and only the mesh!) of the merge armature to the desired position
+        - You can use Move, Scale and Rotate
+        - CATS will position the bones according to the mesh automatically
+        - If you want multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
+    - Select the base armature and the armature you want to merge into the base armature
+    - If CATS can't detect the bone structure automatically: select a bone you want to attach the new armature to
+        - E.g.: For a hair armature select "Head" as the bone
+    - Press the "Merge Armatures" button -> Done!
+
+##### Attach Mesh to Armature
+- Attaches the selected mesh into the selected armature.
+- **How to use:**
+    - Move the mesh to the desired position
+        - You can use Move, Scale and Rotate
+        - INFO: The mesh will only be assigned to the selected bone
+        - E.g.: A jacket won't work, because it requires multiple bones.
+        - E.g.: A ring on a finger works perfectly, because the ring only needs to move with the finger bone
+    - Select the base armature and the mesh you want to attach to the base armature
+    - Select the bone you want to attach the mesh to
+    - Press the "Attach Mesh" button -> Done!
 
 
 ## Translation
 
 ![](https://i.imgur.com/SCyhVn1.png)
 
-**Can translate certain entities from any language to english** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
+**Can translate certain entities from any language to english.** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
 
 
 ## Decimation
 
 ![](https://i.imgur.com/vozxKy9.png)
 
-**Decimate your model automatically**
+**Decimate your model automatically.**
 
 ##### Save Decimation
-This will only decimate meshes with no shape keys.
+- This will only decimate meshes with no shape keys.
 
 ##### Half Decimation
-This will only decimate meshes with less than 4 shape keys as those are often not used.
+- This will only decimate meshes with less than 4 shape keys as those are often not used.
 
 ##### Full Decimation
-This will decimate your whole model deleting all shape keys in the process.
+- This will decimate your whole model deleting all shape keys in the process.
 
 ##### Custom Decimation
-This will let you choose which meshes and shape keys should not be decimated.
+- This will let you choose which meshes and shape keys should not be decimated.
 
 
-## Eye tracking
+## Eye Tracking
 ![](https://i.imgur.com/yw8INDO.png)
 ![](https://i.imgur.com/VHw73zM.png)
 
-**Eye tracking is used to artificially track someone when they come close to you**
-It's a good idea to check the eye movement in pose mode after this operation to check the validity of the automatic eye tracking creation.
+**Eye tracking is used to artificially track someone when they come close to you.**
+It's a good idea to check the eye movement in the testing tab after this operation to check the validity of the automatic eye tracking creation.
 
 ##### Disable Eye Blinking
-Disables eye blinking. Useful if you only want eye movement.
+- Disables eye blinking. Useful if you only want eye movement.
 
 ##### Disable Eye Movement
-Disables eye movement. Useful if you only want blinking. **IMPORTANT:** Do your decimation first if you check this!
+- Disables eye movement. Useful if you only want blinking. **IMPORTANT:** Do your decimation first if you check this!
 
 ##### Eye Movement Speed
-Configure eye movement speed
+- Configure eye movement speed
 
 
-## Mouth visemes
-![](https://i.imgur.com/z6imAYn.png)
+## Visemes (Lip Sync)
+![](https://i.imgur.com/zReTmcv.png)
 
-**Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone**
+**Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone.**
 The script generates 15 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
-*This is still an experimental feature and will be fine tuned over the course of time*
 
 
 ## Bone parenting
 
 ![](https://i.imgur.com/mgadT4R.png)
 
-**Useful for Dynamic Bones where it is ideal to have one root bone full of child bones**
+**Useful for Dynamic Bones where it is ideal to have one root bone full of child bones.**
 This works by checking all bones and trying to figure out if they can be grouped together, which will appear in a list for you to choose from. After satisfied with the selection of this group you can then press 'Parent bones' and the child bones will be parented to a new bone named RootBone_xyz
 
 ##### To parent
-This is a list of bones that look like they could be parented together to a root bone. Select a group of bones from the list and press "Parent bones"
+- List of bones that look like they could be parented together to a root bone. Select a group of bones from the list and press "Parent bones"
 
 ##### Refresh list
-This will clear the group bones list cache and rebuild it, useful if bones have changed or your model
+- Clears the group bones list cache and rebuild it, useful if bones have changed or your model
 
 ##### Parent bones
-This will start the parent process
+- Starts the parent process
 
 
 ## Texture atlas
-![](https://i.imgur.com/qiD9jAA.png)
+![](https://i.imgur.com/F8nlBlI.png)
 
 **Texture atlas is the process of combining multiple textures into one to save processing power to render one's model**
 If you are unsure about what to do with the margin and angle setting, then leave it default. The most important setting here is texture size and target mesh.
 
-### Properties
+##### Target mesh
+The mesh that you want to create an atlas from
+
+##### Texture size
+Lower for faster bake time, higher for more detail.
 
 ##### Margin
 Margin to reduce bleed of adjacent islands
@@ -183,38 +241,33 @@ Margin to reduce bleed of adjacent islands
 ##### Angle
 Lower for more projection groups, higher for less distortion
 
-##### Texture size
-Lower for faster bake time, higher for more detail.
-
 ##### Area Weight
 Weight projections vector by faces with larger areas
 
-##### Target mesh
-The mesh that you want to create an atlas from
-
 ##### One Texture Material
 Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
-**If any experienced blender user can tell me how to fix this more elegantly please do let me know!**
+**If any experienced Blender user can tell me how to fix this more elegantly please do let us know!**
 
 
 ## Bone merging
 
 ![](https://i.imgur.com/FXwOvho.png)
 
-**Lets you reduce overall bone count in a group set of bones**
+**Lets you reduce overall bone count in a group set of bones.**
 This works by checking all bones and trying to figure out if they can be grouped together, which will appear in a list for you to choose from. After satisfied with the selection of this group you can then set a percentage value how much bones you would like to merge together in itself and press 'Merge bones'
 
 ##### Refresh list
-This will clear the group bones list cache and rebuild it, useful if bones have changed or your model
+- Clears the group bones list cache and rebuild it, useful if bones have changed or your model
 
 ##### Merge bones
-This will start the merge process
+- Starts the merge process
+
 
 ## Copy Protection
 
 ![](https://i.imgur.com/5qP5bCT.png)
 
-**Can protect your avatars from being ripped from the game cache**
+**Can protect your avatars from being ripped from the game cache.**
 Game cache rips in most common cases do not include blendshapes and shaders. 
 This method will make it much harder for people that try to steal your avatar through ripping from cache.
 
@@ -251,14 +304,16 @@ This method will make it much harder for people that try to steal your avatar th
 8. Your avatar now behaves just like a normal one.
 
 People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
-  
+
   **special thanks to @zarniwoop#6081**
 
 
 ## Update Plugin
-There is an auto updater in the plugin so you don't have to keep checking for a new version.
 
 ![](https://i.imgur.com/ltcTRlR.png)
+
+**This plugin has an auto updater.**
+It checks for a new version automatically once every day.
 
 
 ## Changelog

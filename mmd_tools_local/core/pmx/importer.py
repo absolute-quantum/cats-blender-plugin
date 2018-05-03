@@ -397,7 +397,7 @@ class PMXImporter:
         for i, pmx_bone in sorted(enumerate(pmxModel.bones), key=lambda x: x[1].transform_order):
             b_bone = pose_bones[i]
             mmd_bone = b_bone.mmd_bone
-            mmd_bone.name_j = pmx_bone.name
+            mmd_bone.name_j = b_bone.name #pmx_bone.name
             mmd_bone.name_e = pmx_bone.name_e
             mmd_bone.is_controllable = pmx_bone.isControllable
             mmd_bone.transform_order = pmx_bone.transform_order

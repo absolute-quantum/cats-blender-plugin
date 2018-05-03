@@ -84,8 +84,6 @@ class FnBone(object):
             if b.is_mmd_shadow_bone or not b.mmd_bone.enabled_local_axes:
                 continue
             mmd_bone = b.mmd_bone
-            if mmd_bone.has_additional_rotation or mmd_bone.has_additional_location:
-                mmd_bone.is_additional_transform_dirty = True
             bone_map[b.name] = (mmd_bone.local_axis_x, mmd_bone.local_axis_z)
 
         with bpyutils.edit_object(armature) as data:
@@ -142,7 +140,12 @@ class FnBone(object):
     def apply_additional_transformation(cls, armature):
 
         def __is_dirty_bone(b):
-            return not b.is_mmd_shadow_bone and b.mmd_bone.is_additional_transform_dirty
+            if b.is_mmd_shadow_bone:
+                return False
+            mmd_bone = b.mmd_bone
+            if mmd_bone.has_additional_rotation or mmd_bone.has_additional_location:
+                return True
+            return mmd_bone.is_additional_transform_dirty
         dirty_bones = [b for b in armature.pose.bones if __is_dirty_bone(b)]
 
         # setup constraints

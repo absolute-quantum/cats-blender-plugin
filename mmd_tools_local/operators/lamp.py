@@ -9,6 +9,7 @@ class ConvertToMMDLamp(Operator):
     bl_idname = 'mmd_tools.convert_to_mmd_lamp'
     bl_label = 'Convert to MMD Lamp'
     bl_description = 'Create a lamp rig for MMD'
+    bl_options = {'REGISTER', 'UNDO'}
 
     scale = FloatProperty(
         name='Scale',

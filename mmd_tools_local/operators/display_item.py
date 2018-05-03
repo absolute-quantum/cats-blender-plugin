@@ -13,7 +13,7 @@ class AddDisplayItemFrame(Operator):
     bl_idname = 'mmd_tools.display_item_frame_add'
     bl_label = 'Add Display Item Frame'
     bl_description = 'Add a display item frame to the list'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         obj = context.active_object
@@ -30,7 +30,7 @@ class RemoveDisplayItemFrame(Operator):
     bl_idname = 'mmd_tools.display_item_frame_remove'
     bl_label = 'Remove Display Item Frame'
     bl_description = 'Remove active display item frame from the list'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         obj = context.active_object
@@ -52,7 +52,7 @@ class MoveDisplayItemFrame(Operator, ItemMoveOp):
     bl_idname = 'mmd_tools.display_item_frame_move'
     bl_label = 'Move Display Item Frame'
     bl_description = 'Move active display item frame up/down in the list'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         obj = context.active_object
@@ -72,7 +72,7 @@ class AddDisplayItem(Operator):
     bl_idname = 'mmd_tools.display_item_add'
     bl_label = 'Add Display Item'
     bl_description = 'Add a display item to the list'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         obj = context.active_object
@@ -103,8 +103,15 @@ class AddDisplayItem(Operator):
 class RemoveDisplayItem(Operator):
     bl_idname = 'mmd_tools.display_item_remove'
     bl_label = 'Remove Display Item'
-    bl_description = 'Remove active display item from the list'
-    bl_options = {'PRESET'}
+    bl_description = 'Remove display item(s) from the list'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    all = bpy.props.BoolProperty(
+        name='All',
+        description='Delete all display items',
+        default=False,
+        options={'SKIP_SAVE'},
+        )
 
     def execute(self, context):
         obj = context.active_object
@@ -113,15 +120,19 @@ class RemoveDisplayItem(Operator):
         frame = ItemOp.get_by_index(mmd_root.display_item_frames, mmd_root.active_display_item_frame)
         if frame is None:
             return {'CANCELLED'}
-        frame.items.remove(frame.active_item)
-        frame.active_item = max(0, frame.active_item-1)
+        if self.all:
+            frame.items.clear()
+            frame.active_item = 0
+        else:
+            frame.items.remove(frame.active_item)
+            frame.active_item = max(0, frame.active_item-1)
         return {'FINISHED'}
 
 class MoveDisplayItem(Operator, ItemMoveOp):
     bl_idname = 'mmd_tools.display_item_move'
     bl_label = 'Move Display Item'
     bl_description = 'Move active display item up/dowm in the list'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         obj = context.active_object
@@ -137,7 +148,7 @@ class FindDisplayItem(Operator):
     bl_idname = 'mmd_tools.display_item_find'
     bl_label = 'Find Display Item'
     bl_description = 'Find the display item of active bone or morph'
-    bl_options = {'PRESET'}
+    bl_options = {'INTERNAL'}
 
     type = bpy.props.EnumProperty(
         name='Type',
@@ -185,7 +196,7 @@ class SelectCurrentDisplayItem(Operator):
     bl_idname = 'mmd_tools.display_item_select_current'
     bl_label = 'Select Current Display Item'
     bl_description = 'Select the bone or morph assigned to the display item'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         obj = context.active_object
@@ -212,7 +223,7 @@ class DisplayItemQuickSetup(Operator):
     bl_idname = 'mmd_tools.display_item_quick_setup'
     bl_label = 'Display Item Quick Setup'
     bl_description = 'Quick setup display items'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     type = bpy.props.EnumProperty(
         name='Type',
