@@ -796,9 +796,17 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.operator('armature_manual.recalculate_normals', text='Recalculate')
         row.operator('armature_manual.flip_normals', text='Flip')
 
-        col.separator()
-        col.separator()
-        col.separator()
+
+class CustomPanel(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_custom_v1'
+    bl_label = 'Custom Model Creation'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
         row = col.row(align=True)
         row.prop(context.scene, 'merge_mode', expand=True)
         col.separator()
@@ -870,7 +878,6 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.05
             row.operator('armature_manual.attach_mesh', icon='ARMATURE_DATA')
-
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -1656,6 +1663,8 @@ classesToRegister = [
     tools.armature_manual.RemoveConstraints,
     tools.armature_manual.RecalculateNormals,
     tools.armature_manual.FlipNormals,
+
+    CustomPanel,
     tools.armature_manual.MergeArmature,
     tools.armature_manual.AttachMesh,
 

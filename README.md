@@ -240,12 +240,15 @@ This method will make it much harder for people that try to steal your avatar th
    Geometries > Smoothing > Set to "Face"
 5. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
    https://i.imgur.com/RlrGTvV.gif
-6. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
+6. To fix any lighting issues select your .fbx and then select "Import" as the Tangents option here: 
+
+   ![](https://i.imgur.com/SqynQzw.png)
+7. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
    If the VRCSDK complains about your model being too large, edit your bounding box back to normal here:
    (this option is below the blendshape list from above)
    
    ![](https://i.imgur.com/4NrfVOr.png)
-7. Your avatar now behaves just like a normal one.
+8. Your avatar now behaves just like a normal one.
 
 People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
   
@@ -261,23 +264,29 @@ There is an auto updater in the plugin so you don't have to keep checking for a 
 ## Changelog
 
 #### 0.8.0
-- Added: Model: Added "Merge Armatures" button!
-  - This merges two selected armatures together.
-  - This makes creating custom models a lot easier if you want parts from one model on another one
-- Added: Model: Added "Attach mesh" button!
-  - This attaches a mesh to a selected bone in an armature.
-  - Custom avatars are a breeze now!
-- Added: Model: Source Engine Models are now compatible!
-- Added: Model: Fix Model now sets the roll of all bones to 0
-  - This should fix a lot of finger issues in Unity!
-- Added: Model: Fix Model now removes the standard lamp, camera and cube
-- Added: Model: Splitting Manual Model Fixing into its own panel
-- Added: Eye Tracking: Now shows a warning when important objects aren't named correctly
-- Added: Copy Protection: Added Export button into the panel after enabling the protection
-- Changed: Mesh selections is no longer shown if there is only one mesh
-- Updated mmd_tools
-- Fixed: Undoing the operation after a model import no longer undoes the import as well
-- Fixed lots of bugs and typos
+- Model:
+    - Added "Merge Armatures" button!
+        - This merges two selected armatures together.
+    - Added "Attach mesh" button!
+        - This attaches a mesh to a selected bone in an armature.
+        - Custom avatars are a breeze now!
+    - Added support for Source Engine Models!
+    - Added new "Custom Model Creation" panel
+    - Moved some model options into a new "Model Options" panel
+    - Added a lot of new model options to the "Model Options" panel
+    - "Fix Model" now sets the roll of all bones to 0
+        - This should fix a lot of finger issues in Unity!
+    - "Fix Model" now removes the standard lamp, camera and cube
+    - Full Body Tracking Fix is not longer enabled by default
+    - Fixed: Undoing the operation after a model import no longer undoes the import as well
+- Eye Tracking:
+    - Now shows a warning when important objects aren't named correctly
+- Copy Protection:
+    - Added Export button into the panel after enabling the protection
+- General:
+    - Mesh selections are no longer shown if there is only one mesh
+    - Updated mmd_tools
+    - Fixed lots of bugs and typos
 
 #### 0.7.2
 - Changed: Copy Protection: Does now work on multiple meshes.

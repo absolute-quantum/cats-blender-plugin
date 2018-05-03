@@ -698,10 +698,9 @@ class FlipNormals(bpy.types.Operator):
 class MergeArmature(bpy.types.Operator):
     bl_idname = 'armature_manual.merge_armatures'
     bl_label = 'Merge Armatures'
-    bl_description = "Merges the selected armature into the current armature. This merges all bones and meshes" \
-                     "\nResults are best when both armatures are fixed by Cats." \
-                     "\nOtherwise make sure that the naming scheme is similar." \
-                     "\nDo not delete bones as they are needed"
+    bl_description = "Merges the selected merge armature into the base armature." \
+                     "\nYou should fix both armatures with Cats first." \
+                     "\nOnly move the mesh of the merge armature to the desired position, the bones will be moved automatically"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -822,6 +821,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
                 or mesh_base.rotation_euler[i] != 0 \
                 or mesh_base.scale[i] != 1:
 
+            # Reset all wrong transforms
             for i2 in [0, 1, 2]:
                 base_armature.location[i2] = 0
                 base_armature.rotation_euler[i2] = 0
@@ -829,12 +829,20 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
                 mesh_base.location[i2] = 0
                 mesh_base.rotation_euler[i2] = 0
                 mesh_base.scale[i2] = 1
+                merge_armature.location[i2] = 0
+                merge_armature.rotation_euler[i2] = 0
+                merge_armature.scale[i2] = 1
 
-            # Todo Maybe hide both armatures?
+            merge_armature.hide = True
+            base_armature.hide = True
+            tools.common.unselect_all()
+            tools.common.select(mesh)
+            bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
             self.report({'ERROR'},
-                        'The position of your base armature and mesh has to be at 0! Only move the merge armature!'
-                        "\nMaybe you switched the base and merge armatures?"
-                        "\nThe base armatures position got reset for you. If you don't want that, undo this operation.")
+                        'The position of your base armature and mesh has to be at 0! Only move the mesh of the merge armature!'
+                        "\nMaybe you mixed up the base and merge armatures?"
+                        "\nThe positions of the armatures got reset for you and the mesh you have to modify got selected."
+                        "\nPlease start from here or undo this operation.")
             return {'FINISHED'}
 
     # Check for transform on merge armature, reset if not default
@@ -848,6 +856,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
                        merge_armature.rotation_euler[2]]
             old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
 
+            # Reset wrong merge armature transforms
             for i2 in [0, 1, 2]:
                 merge_armature.location[i2] = 0
                 merge_armature.rotation_euler[i2] = 0
@@ -855,10 +864,15 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
 
             for i2 in [0, 1, 2]:
                 if old_rot[i2] != 0 or mesh.rotation_euler[i2] != 0:
-                    # Todo Maybe hide both armatures?
+                    merge_armature.hide = True
+                    base_armature.hide = True
+                    tools.common.unselect_all()
+                    tools.common.select(mesh)
+                    bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
                     self.report({'ERROR'},
-                                'If you want to rotate the new part, only modify the mesh instead of the armature!'
-                                "\nThe merge armatures position got reset for you. If you don't want that, undo this operation.")
+                                'If you want to rotate the new part, only move the mesh instead of the armature!'
+                                "\nThe position of the merge armature got reset and the mesh you have to modify got selected."
+                                "\nPlease start from here or undo this operation.")
                     return {'FINISHED'}
 
             break

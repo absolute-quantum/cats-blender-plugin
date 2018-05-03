@@ -19,6 +19,7 @@ class __EditMode:
     def __exit__(self, type, value, traceback):
         if self.__prevMode == 'EDIT':
             bpy.ops.object.mode_set(mode='OBJECT') # update edited data
+
         bpy.ops.object.mode_set(mode=self.__prevMode)
         self.__obj.select = self.__obj_select
 
