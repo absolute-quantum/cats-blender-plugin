@@ -226,6 +226,9 @@ def get_armature_list(self, context):
 
             choices.append((object.name, name, object.name))
 
+    if len(choices) == 0:
+        choices.append(('None', 'None', 'None'))
+
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
 

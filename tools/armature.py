@@ -625,13 +625,38 @@ class FixArmature(bpy.types.Operator):
 
                             # Fixing the hips
                             if not full_body_tracking:
-                                hips_height = hips.head[z_cord]
-                                hips.head = hips.tail
-                                hips.tail[z_cord] = hips_height
 
                                 # Hips should have x value of 0 in both head and tail
-                                hips.head[x_cord] = 0
-                                hips.tail[x_cord] = 0
+                                middle_x = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
+                                hips.head[x_cord] = middle_x
+                                hips.tail[x_cord] = middle_x
+
+                                # Make sure the hips bone (tail and head tip) is aligned with the legs Y
+                                hips.head[y_cord] = right_leg.head[y_cord]
+                                hips.tail[y_cord] = right_leg.head[y_cord]
+
+                                hips.head[z_cord] = right_leg.head[z_cord]
+                                hips.tail[z_cord] = spine.head[z_cord]
+
+                                if hips.tail[z_cord] < hips.head[z_cord]:
+                                    hips.tail[z_cord] = hips.tail[z_cord] + 0.1
+
+
+
+                                # if hips.tail[z_cord] < hips.head[z_cord]:
+                                #     hips_height = hips.head[z_cord]
+                                #     hips.head = hips.tail
+                                #     hips.tail[z_cord] = hips_height
+                                #
+                                #
+                                #
+                                # hips_height = hips.head[z_cord]
+                                # hips.head = hips.tail
+                                # hips.tail[z_cord] = hips_height
+
+                                # # Hips should have x value of 0 in both head and tail
+                                # hips.head[x_cord] = 0
+                                # hips.tail[x_cord] = 0
 
                                 # # Make sure the hips bone (tail and head tip) is aligned with the legs Y
                                 # hips.head[y_cord] = right_leg.head[y_cord]
@@ -645,8 +670,8 @@ class FixArmature(bpy.types.Operator):
                                 # hips.head[z_cord] = right_leg.head[z_cord]
                                 # hips.tail[z_cord] = spine.head[z_cord]
 
-                                if hips.tail[z_cord] < hips.head[z_cord]:
-                                    hips.tail[z_cord] = hips.tail[z_cord] + 0.1
+                                # if hips.tail[z_cord] < hips.head[z_cord]:
+                                #     hips.tail[z_cord] = hips.tail[z_cord] + 0.1
 
                             # elif spine and chest and neck and head:
                             #     bones = [hips, spine, chest, neck, head]
@@ -711,11 +736,6 @@ class FixArmature(bpy.types.Operator):
                             #
                             #     # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
                             #     left_leg.head[y_cord] = right_leg.head[y_cord]
-
-                            # Roll should be disabled on legs and hips
-                            left_leg.roll = 0
-                            right_leg.roll = 0
-                            hips.roll = 0
 
         # Reweight all eye children into the eyes TODO make recursive
         for eye_name in ['Eye_L', 'Eye_R']:
