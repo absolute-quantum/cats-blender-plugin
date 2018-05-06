@@ -455,8 +455,8 @@ class addon_updater_updated_successful(bpy.types.Operator):
             else:
                 col = layout.column()
                 col.scale_y = 0.7
-                col.label("Addon successfully installed", icon="FILE_TICK")
-                col.label("Restart blender to reload.", icon="BLANK1")
+                col.label("Addon successfully installed.", icon="FILE_TICK")
+                col.label("Restart Blender to reload.", icon="BLANK1")
 
         else:
             # reload addon, but still recommend they restart blender
@@ -838,7 +838,7 @@ def update_settings_ui(self, context, element=None):
 
     # auto-update settings
     # box.label("Cats Updater")
-    # row = box.row()
+    row = box.row()
 
     # special case to tell user to restart blender, if set that way
     if updater.auto_reload_post_update == False:
