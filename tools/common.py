@@ -424,6 +424,9 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
 def fix_armature_names(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
+    base_armature = get_armature(armature_name=bpy.context.scene.merge_armature_into)
+    merge_armature = get_armature(armature_name=bpy.context.scene.merge_armature)
+
     # Armature should be named correctly (has to be at the end because of multiple armatures)
     armature = get_armature(armature_name=armature_name)
     armature.name = 'Armature'
@@ -432,7 +435,24 @@ def fix_armature_names(armature_name=None):
             armature.data.name = 'Armature (' + Translator().translate(armature.data.name).text + ')'
         except:
             armature.data.name = 'Armature'
-    bpy.context.scene.armature = armature.name
+
+    # Reset the armature lists
+    try:
+        bpy.context.scene.armature = armature.name
+    except TypeError:
+        pass
+
+    try:
+        if base_armature:
+            bpy.context.scene.merge_armature_into = base_armature.name
+    except TypeError:
+        pass
+
+    try:
+        if merge_armature:
+            bpy.context.scene.merge_armature = merge_armature.name
+    except TypeError:
+        pass
 
 
 def get_texture_sizes(self, context):

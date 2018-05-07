@@ -100,8 +100,8 @@ bl_info = {
     'warning': '',
 }
 
+# TODO !!!!! CHANGE "HOT TO USE" LINK!
 dev_branch = True
-# dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
 # global variable to store icons in
@@ -134,7 +134,7 @@ supporters = [
     ['Azuth', 'Azuth', '2018-01-05'],
     ['goblox', 'goblox', '2018-01-05'],
     # ['Rikku', 'Rikku', '2018-01-05'],
-    ['azupwn', 'azupwn', '2018-01-05'],
+    ['azupwn', 'azupwn', '2018-01-05'],  # cancelled may, remove soon
     ['m o t h', 'm o t h', '2018-01-05'],
     # ['Yorx', 'Yorx', '2018-01-05'],
     # ['Buffy', 'Buffy', '2018-01-05'],
@@ -188,11 +188,12 @@ supporters = [
     ['Deathofirish', 'Deathofirish', '2018-04-17'],  # emtpy pic  - jaco
     # eduardo (botello.eduardo19)
     ['Runda', 'Runda', '2018-04-17'],
-    # Shirokaze (mistareal58)
+    ['Rurikaze', 'Rurikaze', '2018-05-09'],  # -mist
     ['Brindin_wF', 'Brindin_wF', '2018-04-17'],  # -Bran
     ['Serry Jane', 'Serry_Jane', '2018-04-17'],  # emtpy pic  -ianc
-    ['GV-97', 'GV-97', '2018-05-04'],
-    # Kang (do2039)
+    ['GV-97', 'GV-97', '2018-05-09'],  # -niels
+    ['COMMEN', 'COMMEN', '2018-05-09'],  # emtpy pic  -do20
+    ['Antivirus-Chan', 'Antivirus-Chan', '2018-05-09'],  # emtpy pic  -do20
 ]
 
 current_supporters = None

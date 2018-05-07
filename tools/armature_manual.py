@@ -812,7 +812,8 @@ class CustomModelTutorialButton(bpy.types.Operator):
     bl_label = 'Go to Documentation'
 
     def execute(self, context):
-        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation')
+        # webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation')
+        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/tree/development#custom-model-creation')
 
         self.report({'INFO'}, 'Documentation')
         return {'FINISHED'}

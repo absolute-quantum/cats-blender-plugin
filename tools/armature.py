@@ -331,6 +331,10 @@ class FixArmature(bpy.types.Operator):
             if name[0] == '_' and name[3] == '_' and name[1].isdigit() and name[2].isdigit():
                 name = name[4:]
 
+            # Remove '_01_' from beginning
+            if name.startswith('C_'):
+                name = name[2:]
+
             bone.name = name
 
         # Add conflicting bone names to new list
