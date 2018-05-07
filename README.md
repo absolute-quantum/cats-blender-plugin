@@ -154,6 +154,10 @@ This tries to completely fix your model with one click.
     - Select the base armature and the mesh you want to attach to the base armature
     - Select the bone you want to attach the mesh to
     - Press the "Attach Mesh" button -> Done!
+    
+##### Useful tip:
+- You can change the rest position of your model by using this method:
+https://nixart.wordpress.com/2013/03/28/modifying-the-rest-pose-in-blender/
 
 
 ## Translation

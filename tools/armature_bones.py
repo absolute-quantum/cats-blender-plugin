@@ -22,9 +22,8 @@
 
 # Code author: Shotariya
 # Repo: https://github.com/Grim-es/shotariya
-# Code author: Neitri
-# Repo: https://github.com/netri/blender_neitri_tools
 # Edits by: GiveMeAllYourCats, Hotox
+# Repo: https://github.com/michaeldegroot/cats-blender-plugin
 
 from collections import OrderedDict
 

@@ -141,7 +141,7 @@ def get_bone_angle(p1, p2):
     return ret
 
 
-def remove_unused_vertex_groups():
+def remove_unused_vertex_groups(ignore_main_bones=False):
     unselect_all()
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
@@ -156,6 +156,8 @@ def remove_unused_vertex_groups():
 
             for i, used in sorted(vgroup_used.items(), reverse=True):
                 if not used:
+                    if ignore_main_bones and ob.vertex_groups[i].name in Bones.dont_delete_these_main_bones:
+                        continue
                     ob.vertex_groups.remove(ob.vertex_groups[i])
 
 
@@ -870,23 +872,23 @@ def delete_bone_constraints(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
-    armature = tools.common.get_armature(armature_name=armature_name)
-    tools.common.switch('POSE')
+    armature = get_armature(armature_name=armature_name)
+    switch('POSE')
 
     for bone in armature.pose.bones:
         if len(bone.constraints) > 0:
             for constraint in bone.constraints:
                 bone.constraints.remove(constraint)
 
-    tools.common.switch('EDIT')
+    switch('EDIT')
 
 
 def delete_zero_weight(armature_name=None, ignore=''):
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
-    armature = tools.common.get_armature(armature_name=armature_name)
-    tools.common.switch('EDIT')
+    armature = get_armature(armature_name=armature_name)
+    switch('EDIT')
 
     bone_names_to_work_on = set([bone.name for bone in armature.data.edit_bones])
 
@@ -930,6 +932,64 @@ def remove_unused_objects():
                 or (obj.type == 'LAMP' and obj.name == 'Lamp') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
             delete_hierarchy(obj)
+
+
+def correct_bone_positions(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
+    armature = tools.common.get_armature(armature_name=armature_name)
+
+    chest = armature.data.edit_bones.get('Chest')
+    neck = armature.data.edit_bones.get('Neck')
+    head = armature.data.edit_bones.get('Head')
+    if chest and neck:
+        chest.tail = neck.head
+    if neck and head:
+        neck.tail = head.head
+
+    if 'Left shoulder' in armature.data.edit_bones:
+        if 'Left arm' in armature.data.edit_bones:
+            if 'Left elbow' in armature.data.edit_bones:
+                if 'Left wrist' in armature.data.edit_bones:
+                    shoulder = armature.data.edit_bones.get('Left shoulder')
+                    arm = armature.data.edit_bones.get('Left arm')
+                    elbow = armature.data.edit_bones.get('Left elbow')
+                    wrist = armature.data.edit_bones.get('Left wrist')
+                    shoulder.tail = arm.head
+                    arm.tail = elbow.head
+                    elbow.tail = wrist.head
+
+    if 'Right shoulder' in armature.data.edit_bones:
+        if 'Right arm' in armature.data.edit_bones:
+            if 'Right elbow' in armature.data.edit_bones:
+                if 'Right wrist' in armature.data.edit_bones:
+                    shoulder = armature.data.edit_bones.get('Right shoulder')
+                    arm = armature.data.edit_bones.get('Right arm')
+                    elbow = armature.data.edit_bones.get('Right elbow')
+                    wrist = armature.data.edit_bones.get('Right wrist')
+                    shoulder.tail = arm.head
+                    arm.tail = elbow.head
+                    elbow.tail = wrist.head
+
+    if 'Left leg' in armature.data.edit_bones:
+        if 'Left knee' in armature.data.edit_bones:
+            if 'Left ankle' in armature.data.edit_bones:
+                leg = armature.data.edit_bones.get('Left leg')
+                knee = armature.data.edit_bones.get('Left knee')
+                ankle = armature.data.edit_bones.get('Left ankle')
+                leg.tail = knee.head
+                knee.tail = ankle.head
+
+    if 'Right leg' in armature.data.edit_bones:
+        if 'Right knee' in armature.data.edit_bones:
+            if 'Right ankle' in armature.data.edit_bones:
+                leg = armature.data.edit_bones.get('Right leg')
+                knee = armature.data.edit_bones.get('Right knee')
+                ankle = armature.data.edit_bones.get('Right ankle')
+                leg.tail = knee.head
+                knee.tail = ankle.head
+
+
 
 # === THIS CODE COULD BE USEFUL ===
 

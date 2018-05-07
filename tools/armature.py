@@ -568,50 +568,7 @@ class FixArmature(bpy.types.Operator):
                         neck.tail[z_cord] += 0.1
 
         # Correct arm bone positions for better looks
-        if 'Left shoulder' in armature.data.edit_bones:
-            if 'Left arm' in armature.data.edit_bones:
-                if 'Left elbow' in armature.data.edit_bones:
-                    if 'Left wrist' in armature.data.edit_bones:
-                        shoulder = armature.data.edit_bones.get('Left shoulder')
-                        arm = armature.data.edit_bones.get('Left arm')
-                        elbow = armature.data.edit_bones.get('Left elbow')
-                        wrist = armature.data.edit_bones.get('Left wrist')
-                        shoulder.tail = arm.head
-                        arm.tail = elbow.head
-                        elbow.tail = wrist.head
-
-        # Correct arm bone positions for better looks
-        if 'Right shoulder' in armature.data.edit_bones:
-            if 'Right arm' in armature.data.edit_bones:
-                if 'Right elbow' in armature.data.edit_bones:
-                    if 'Right wrist' in armature.data.edit_bones:
-                        shoulder = armature.data.edit_bones.get('Right shoulder')
-                        arm = armature.data.edit_bones.get('Right arm')
-                        elbow = armature.data.edit_bones.get('Right elbow')
-                        wrist = armature.data.edit_bones.get('Right wrist')
-                        shoulder.tail = arm.head
-                        arm.tail = elbow.head
-                        elbow.tail = wrist.head
-
-        # Correct leg bone positions for better looks
-        if 'Left leg' in armature.data.edit_bones:
-            if 'Left knee' in armature.data.edit_bones:
-                if 'Left ankle' in armature.data.edit_bones:
-                        leg = armature.data.edit_bones.get('Left leg')
-                        knee = armature.data.edit_bones.get('Left knee')
-                        ankle = armature.data.edit_bones.get('Left ankle')
-                        leg.tail = knee.head
-                        knee.tail = ankle.head
-
-        # Correct leg bone positions for better looks
-        if 'Right leg' in armature.data.edit_bones:
-            if 'Right knee' in armature.data.edit_bones:
-                if 'Right ankle' in armature.data.edit_bones:
-                        leg = armature.data.edit_bones.get('Right leg')
-                        knee = armature.data.edit_bones.get('Right knee')
-                        ankle = armature.data.edit_bones.get('Right ankle')
-                        leg.tail = knee.head
-                        knee.tail = ankle.head
+        tools.common.correct_bone_positions()
 
         # Hips bone should be fixed as per specification from the SDK code
         full_body_tracking = context.scene.full_body

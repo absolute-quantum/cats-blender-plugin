@@ -53,6 +53,7 @@ import tools.translate
 import tools.armature
 import tools.armature_bones
 import tools.armature_manual
+import tools.armature_custom
 import tools.material
 import tools.common
 import tools.supporter
@@ -72,6 +73,7 @@ importlib.reload(tools.translate)
 importlib.reload(tools.armature)
 importlib.reload(tools.armature_bones)
 importlib.reload(tools.armature_manual)
+importlib.reload(tools.armature_custom)
 importlib.reload(tools.material)
 importlib.reload(tools.common)
 importlib.reload(tools.supporter)
@@ -814,7 +816,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
-        row.operator('custom_model.button', text='How to Use', icon='FORWARD')
+        row.operator('armature_custom.button', text='How to Use', icon='FORWARD')
         col.separator()
 
         row = col.row(align=True)
@@ -860,7 +862,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.2
-            row.operator('armature_manual.merge_armatures', icon='ARMATURE_DATA')
+            row.operator('armature_custom.merge_armatures', icon='ARMATURE_DATA')
 
         # Attach Mesh
         else:
@@ -887,7 +889,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.2
-            row.operator('armature_manual.attach_mesh', icon='ARMATURE_DATA')
+            row.operator('armature_custom.attach_mesh', icon='ARMATURE_DATA')
 
 
 class TranslationPanel(ToolPanel, bpy.types.Panel):
@@ -1675,9 +1677,9 @@ classesToRegister = [
     tools.armature_manual.FlipNormals,
 
     CustomPanel,
-    tools.armature_manual.MergeArmature,
-    tools.armature_manual.AttachMesh,
-    tools.armature_manual.CustomModelTutorialButton,
+    tools.armature_custom.MergeArmature,
+    tools.armature_custom.AttachMesh,
+    tools.armature_custom.CustomModelTutorialButton,
 
     TranslationPanel,
     tools.translate.TranslateShapekeyButton,
