@@ -316,6 +316,7 @@ class FixArmature(bpy.types.Operator):
                 .replace('HLP_', '')\
                 .replace('JD_', '')\
                 .replace('JU_', '')\
+                .replace('Armature|', '')\
 
             upper_name = ''
             for i, s in enumerate(name.split('_')):
@@ -698,20 +699,17 @@ class FixArmature(bpy.types.Operator):
                             #     # Make sure the left legs (head tip) have the same Y values as right leg (head tip)
                             #     left_leg.head[y_cord] = right_leg.head[y_cord]
 
-        # Reweight all eye children into the eyes TODO make recursive
+        # Function: Reweight all eye children into the eyes
+        def add_eye_children(eye_bone, parent_name):
+            for eye in eye_bone.children:
+                temp_list_reweight_bones[eye.name] = parent_name
+                add_eye_children(eye, parent_name)
+
+        # Reweight all eye children into the eyes
         for eye_name in ['Eye_L', 'Eye_R']:
             if eye_name in armature.data.edit_bones:
                 eye = armature.data.edit_bones.get(eye_name)
-                for eye1 in eye.children:
-                    temp_list_reweight_bones[eye1.name] = eye_name
-                    for eye2 in eye1.children:
-                        temp_list_reweight_bones[eye2.name] = eye_name
-                        for eye3 in eye2.children:
-                            temp_list_reweight_bones[eye3.name] = eye_name
-                            for eye4 in eye3.children:
-                                temp_list_reweight_bones[eye4.name] = eye_name
-                                for eye5 in eye4.children:
-                                    temp_list_reweight_bones[eye5.name] = eye_name
+                add_eye_children(eye, eye.name)
 
         # Rotate if on head and not fbx (Unreal engine model)
         if 'Hips' in armature.data.edit_bones:

@@ -26,14 +26,14 @@
 
 import bpy
 import tools.common
-from collections import OrderedDict
-
 
 
 class ShapeKeyApplier(bpy.types.Operator):
-    """Replace the 'Basis' shape key with the currently selected shape key"""
+    # Replace the 'Basis' shape key with the currently selected shape key
     bl_idname = "object.shape_key_applier"
     bl_label = "Apply Selected Shapekey as Basis"
+    bl_description = 'Applies the selected shape key as the new Basis'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):

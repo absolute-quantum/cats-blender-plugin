@@ -143,6 +143,7 @@ class SeparateByMaterials(Operator):
             # The material morphs store the name of the mesh, not of the object.
             # So they will not be out of sync
             for mesh in rig.meshes():
+                FnMorph.clean_uv_morph_vertex_groups(mesh)
                 if len(mesh.data.materials) > 0:
                     mat = mesh.data.materials[0]
                     idx = mat_names.index(getattr(mat, 'name', None))

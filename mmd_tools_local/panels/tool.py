@@ -547,12 +547,17 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
         row.operator(operators.morph.ApplyUVMorph.bl_idname, text='Apply')
 
         c = col.column()
+        if len(morph.data):
+            row = c.row()
+            row.prop(morph, 'data_type', expand=True)
         row = c.row()
-        row.label('UV Offsets (%d)'%len(morph.data))
+        if morph.data_type == 'VERTEX_GROUP':
+            row.prop(morph, 'vertex_group_scale', text='Scale')
+        else:
+            row.label('UV Offsets (%d)'%len(morph.data))
+            #self._template_morph_offset_list(c, morph, 'UL_UVMorphOffsets')
         row.prop(morph, 'uv_index')
         row.operator('mmd_tools.morph_offset_remove', text='', icon='X').all = True
-        if 0:
-            self._template_morph_offset_list(c, morph, 'UL_UVMorphOffsets')
 
     def _draw_group_data(self, context, rig, col, morph):
         c = col.column(align=True)

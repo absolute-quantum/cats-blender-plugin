@@ -72,7 +72,10 @@ class ResetShading(Operator):
         for i in filter(lambda x: x.is_mmd_glsl_light, context.scene.objects):
             context.scene.objects.unlink(i)
 
-        bpy.context.scene.display_settings.display_device = 'sRGB'
+        try:
+            bpy.context.scene.display_settings.display_device = 'sRGB'
+        except TypeError:
+            pass
         context.area.spaces[0].viewport_shade='SOLID'
         context.area.spaces[0].show_backface_culling = False
         bpy.context.scene.game_settings.material_mode = 'MULTITEXTURE'

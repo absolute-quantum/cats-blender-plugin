@@ -13,6 +13,7 @@ from mmd_tools_local import bpyutils
 from mmd_tools_local.core import pmx
 from mmd_tools_local.core.bone import FnBone
 from mmd_tools_local.core.material import FnMaterial
+from mmd_tools_local.core.morph import FnMorph
 from mmd_tools_local.core.vmd.importer import BoneConverter
 from mmd_tools_local.operators.display_item import DisplayItemQuickSetup
 from mmd_tools_local.operators.misc import MoveObject
@@ -90,13 +91,11 @@ class PMXImporter:
 
         root['import_folder'] = os.path.dirname(pmxModel.filepath)
 
-        txt = bpy.data.texts.new(obj_name+'_comment')
+        txt = bpy.data.texts.new(obj_name)
         txt.from_string(pmxModel.comment.replace('\r', ''))
-        txt.current_line_index = 0
         mmd_root.comment_text = txt.name
-        txt = bpy.data.texts.new(obj_name+'_comment_e')
+        txt = bpy.data.texts.new(obj_name+'_e')
         txt.from_string(pmxModel.comment_e.replace('\r', ''))
-        txt.current_line_index = 0
         mmd_root.comment_e_text = txt.name
 
         self.__armObj = self.__rig.armature()
@@ -683,18 +682,18 @@ class PMXImporter:
     def __importUVMorphs(self):
         mmd_root = self.__root.mmd_root
         categories = self.CATEGORIES
+        __OffsetData = collections.namedtuple('OffsetData', 'index, offset')
+        __convert_offset = lambda x: (x[0], -x[1], x[2], -x[3])
         for morph in [x for x in self.__model.morphs if isinstance(x, pmx.UVMorph)]:
             uv_morph = mmd_root.uv_morphs.add()
             uv_morph.name = morph.name
             uv_morph.name_e = morph.name_e
             uv_morph.category = categories.get(morph.category, 'OTHER')
             uv_morph.uv_index = morph.uv_index
-            for morph_data in morph.offsets:
-                idx = morph_data.index
-                dx, dy, dz, dw = morph_data.offset
-                data = uv_morph.data.add()
-                data.index = idx
-                data.offset = (dx, -dy, dz, -dw)
+
+            offsets = (__OffsetData(d.index, __convert_offset(d.offset)) for d in morph.offsets)
+            FnMorph.store_uv_morph_data(self.__meshObj, uv_morph, offsets, '')
+            uv_morph.data_type = 'VERTEX_GROUP'
 
     def __importGroupMorphs(self):
         mmd_root = self.__root.mmd_root

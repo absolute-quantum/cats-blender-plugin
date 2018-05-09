@@ -195,7 +195,8 @@ supporters = [
     ['Serry Jane', 'Serry_Jane', '2018-04-17'],  # emtpy pic  -ianc
     ['GV-97', 'GV-97', '2018-05-09'],  # -niels
     ['COMMEN', 'COMMEN', '2018-05-09'],  # emtpy pic  -do20
-    ['Antivirus-Chan', 'Antivirus-Chan', '2018-05-09'],  # emtpy pic  -do20
+    ['Antivirus-Chan', 'Antivirus-Chan', '2018-05-09'],  #  -frost
+    ['Rayduxz', 'Rayduxz', '2018-05-09'],  #  -hats
 ]
 
 current_supporters = None

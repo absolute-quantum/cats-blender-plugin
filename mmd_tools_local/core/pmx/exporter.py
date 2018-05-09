@@ -13,6 +13,7 @@ from collections import OrderedDict
 from mmd_tools_local.core import pmx
 from mmd_tools_local.core.bone import FnBone
 from mmd_tools_local.core.material import FnMaterial
+from mmd_tools_local.core.morph import FnMorph
 from mmd_tools_local.core.vmd.importer import BoneConverter, BoneConverterPoseMode
 from mmd_tools_local import bpyutils
 from mmd_tools_local.utils import saferelpath
@@ -20,13 +21,14 @@ from mmd_tools_local.operators.misc import MoveObject
 
 
 class _Vertex:
-    def __init__(self, co, groups, offsets, old_index, edge_scale, vertex_order):
+    def __init__(self, co, groups, offsets, old_index, edge_scale, vertex_order, uv_offsets):
         self.co = co
         self.groups = groups # [(group_number, weight), ...]
         self.offsets = offsets
         self.old_index = old_index # used for exporting uv morphs
         self.edge_scale = edge_scale
         self.vertex_order = vertex_order # used for controlling vertex order
+        self.uv_offsets = uv_offsets
         self.index = None
         self.uv = None
         self.normal = None
@@ -692,7 +694,7 @@ class __PmxExporter:
                 try:
                     morph_data.index = self.__bone_name_table.index(data.bone)
                 except ValueError:
-                    morph_data.index = -1
+                    continue
                 blender_bone = pose_bones.get(data.bone, None)
                 if blender_bone is None:
                     logging.warning('Bone Morph (%s): Bone %s was not found.', morph.name, data.bone)
@@ -710,12 +712,18 @@ class __PmxExporter:
         if len(mmd_root.uv_morphs) == 0:
             return
         categories = self.CATEGORIES
+        append_table_vg = {}
         for morph in mmd_root.uv_morphs:
             uv_morph = pmx.UVMorph(
                 name=morph.name,
                 name_e=morph.name_e,
                 category=categories.get(morph.category, pmx.Morph.CATEGORY_OHTER)
             )
+            uv_morph.uv_index = morph.uv_index
+            self.__model.morphs.append(uv_morph)
+            if morph.data_type == 'VERTEX_GROUP':
+                append_table_vg[morph.name] = uv_morph.offsets.append
+                continue
             offsets = []
             for data in morph.data:
                 dx, dy, dz, dw = data.offset
@@ -726,7 +734,23 @@ class __PmxExporter:
                     morph_data.offset = offset
                     offsets.append(morph_data)
             uv_morph.offsets = sorted(offsets, key=lambda x: x.index)
-            self.__model.morphs.append(uv_morph)
+
+        if append_table_vg:
+            incompleted = set()
+            uv_morphs = mmd_root.uv_morphs
+            for v in self.__exported_vertices:
+                for name, offset in v.uv_offsets.items():
+                    if name not in append_table_vg:
+                        incompleted.add(name)
+                        continue
+                    scale = uv_morphs[name].vertex_group_scale
+                    morph_data = pmx.UVMorphOffset()
+                    morph_data.index = v.index
+                    morph_data.offset = (offset[0]*scale, -offset[1]*scale, offset[2]*scale, -offset[3]*scale)
+                    append_table_vg[name](morph_data)
+
+            if incompleted:
+                logging.warning(' * Incompleted UV morphs %s with vertex groups', incompleted)
 
     def __export_group_morphs(self, root):
         mmd_root = root.mmd_root
@@ -1026,6 +1050,16 @@ class __PmxExporter:
         else:
             get_vertex_order = lambda x: None
 
+        uv_morph_names = {g.index:(n, x) for g, n, x in FnMorph.get_uv_morph_vertex_groups(meshObj)}
+        def get_uv_offsets(v):
+            uv_offsets = {}
+            for x in v.groups:
+                if x.group in uv_morph_names and x.weight > 0:
+                    name, axis = uv_morph_names[x.group]
+                    d = uv_offsets.setdefault(name, [0, 0, 0, 0])
+                    d['XYZW'.index(axis[1])] += -x.weight if axis[0] == '-' else x.weight
+            return uv_offsets
+
         base_vertices = {}
         for v in base_mesh.vertices:
             base_vertices[v.index] = [_Vertex(
@@ -1035,6 +1069,7 @@ class __PmxExporter:
                 v.index if has_uv_morphs else None,
                 get_edge_scale(v),
                 get_vertex_order(v),
+                get_uv_offsets(v),
                 )]
 
         # calculate offsets

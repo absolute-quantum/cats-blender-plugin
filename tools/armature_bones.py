@@ -182,6 +182,14 @@ bone_list_conflicting_names = [
     (['Arm_\L'], 'Arm+_\L', '\Left arm'),
     (['Elbow_\L'], 'Elbow+_\L', '\Left elbow'),
     (['Wrist_\L'], 'Wrist+F_\L', '\Left wrist'),
+
+    (['Strengthen_The_Spine'], 'Spine1', 'Backbone1'),
+    (['Strengthen_The_Spine'], 'Spine2', 'Backbone2'),
+    (['Strengthen_The_Spine'], 'Spine3', 'Backbone3'),
+    (['Strengthen_The_Spine'], 'Spine4', 'Backbone4'),
+    (['Strengthen_The_Spine'], 'Spine5', 'Backbone5'),
+    (['Strengthen_The_Spine'], 'Spine6', 'Backbone6'),
+    (['Strengthen_The_Spine'], 'Spine7', 'Backbone7'),
 ]
 bone_finger_list = [
     'Thumb0_',
@@ -250,6 +258,7 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Upper_Body',
     'Upper_Waist',
     'UpperBody2',
+    'UpperBody2_001',
     'Upperbody2',
     'Upper_Body_2',
     'Upper_Waist_2',
@@ -447,6 +456,7 @@ bone_rename['\Left arm'] = [
     'Arm\L1',
     '\LShoulderJ',
     '\Lf_Shoulder',
+    'Arm_Upper_\L',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -485,6 +495,7 @@ bone_rename['\Left elbow'] = [
     'Arm_\Left_Elbow_1',
     'LowerArm_\L',
     '\Lf_Elbow',
+    'Arm_Lower_\L',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -510,6 +521,7 @@ bone_rename['\Left wrist'] = [
     '\LHandN',
     '\LFingerBaseN',
     '\Lf_Wrist',
+    'Palm_\L',
 ]
 bone_rename['\Left leg'] = [
     '\Left_Leg',
@@ -641,6 +653,7 @@ bone_rename['Eye_\L'] = [
     '\Left_Eye',
     'Mixamorig:\LeftEye',
     'Head_Eyeball_\Left',
+    'Head_Eyeball_\Left_1',
     'FEye\L',
     'Eye\L',
     '\L_Eye',
@@ -1238,6 +1251,7 @@ bone_rename_fingers['IndexFinger1_\L'] = [
     'IndeA_\L',
     'Index1_\L',
     '\Lf_Index1',
+    'Index_01_\L',
 ]
 bone_rename_fingers['IndexFinger2_\L'] = [
     'Fore2_\L',
@@ -1264,6 +1278,7 @@ bone_rename_fingers['IndexFinger2_\L'] = [
     'IndeB_\L',
     'Index2_\L',
     '\Lf_Index2',
+    'Index_02_\L',
 ]
 bone_rename_fingers['IndexFinger3_\L'] = [
     'Fore3_\L',
@@ -1289,6 +1304,7 @@ bone_rename_fingers['IndexFinger3_\L'] = [
     'IndeC_\L',
     'Index3_\L',
     '\Lf_Index3',
+    'Index_03_\L',
 ]
 bone_rename_fingers['MiddleFinger1_\L'] = [
     'Middle1_\L',
@@ -1314,6 +1330,7 @@ bone_rename_fingers['MiddleFinger1_\L'] = [
     '\LFingerC1',
     'MiddA_\L',
     '\Lf_Middle1',
+    'Middle_01_\L',
 ]
 bone_rename_fingers['MiddleFinger2_\L'] = [
     'Middle2_\L',
@@ -1339,6 +1356,7 @@ bone_rename_fingers['MiddleFinger2_\L'] = [
     '\LFingerC2',
     'MiddB_\L',
     '\Lf_Middle2',
+    'Middle_02_\L',
 ]
 bone_rename_fingers['MiddleFinger3_\L'] = [
     'Middle3_\L',
@@ -1363,6 +1381,7 @@ bone_rename_fingers['MiddleFinger3_\L'] = [
     '\LFingerC3',
     'MiddC_\L',
     '\Lf_Middle3',
+    'Middle_03_\L',
 ]
 bone_rename_fingers['RingFinger1_\L'] = [
     'Third1_\L',
@@ -1388,6 +1407,7 @@ bone_rename_fingers['RingFinger1_\L'] = [
     'RingA_\L',
     'Ring1_\L',
     '\Lf_Ring1',
+    'Ring_01_\L',
 ]
 bone_rename_fingers['RingFinger2_\L'] = [
     'Third2_\L',
@@ -1413,6 +1433,7 @@ bone_rename_fingers['RingFinger2_\L'] = [
     'RingB_\L',
     'Ring2_\L',
     '\Lf_Ring2',
+    'Ring_02_\L',
 ]
 bone_rename_fingers['RingFinger3_\L'] = [
     'Third3_\L',
@@ -1438,6 +1459,7 @@ bone_rename_fingers['RingFinger3_\L'] = [
     'RingC_\L',
     'Ring3_\L',
     '\Lf_Ring3',
+    'Ring_03_\L',
 ]
 bone_rename_fingers['LittleFinger1_\L'] = [
     'Little1_\L',
@@ -1464,6 +1486,7 @@ bone_rename_fingers['LittleFinger1_\L'] = [
     'LittA_\L',
     'Pinky1_\L',
     '\Lf_Pinky1',
+    'Pinky_01_\L',
 ]
 bone_rename_fingers['LittleFinger2_\L'] = [
     'Little2_\L',
@@ -1490,6 +1513,7 @@ bone_rename_fingers['LittleFinger2_\L'] = [
     'LittB_\L',
     'Pinky2_\L',
     '\Lf_Pinky2',
+    'Pinky_02_\L',
 ]
 bone_rename_fingers['LittleFinger3_\L'] = [
     'Little3_\L',
@@ -1516,4 +1540,5 @@ bone_rename_fingers['LittleFinger3_\L'] = [
     'LittC_\L',
     'Pinky3_\L',
     '\Lf_Pinky3',
+    'Pinky_03_\L',
 ]
