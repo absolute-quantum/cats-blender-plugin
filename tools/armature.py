@@ -325,6 +325,12 @@ class FixArmature(bpy.types.Operator):
                 upper_name += s[:1].upper() + s[1:]
             name = upper_name
 
+            for i, split in enumerate(name.split(':')):
+                if i == 0:
+                    name = ''
+                else:
+                    name += split
+
             if name[-2:] == 'S0':
                 name = name[:-2]
 

@@ -106,97 +106,94 @@ bl_info = {
 dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
-# global variable to store icons in
-preview_collections = {}
-
 # List all the supporters here
 supporters = [
-    # ['Display name', 'Icon name', 'Start Date']  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
-    ['Xeverian', 'xeverian', '2017-12-19'],  # 45
-    ['Tupper', 'tupper', '2017-12-19'],  # 50
-    # ['Jazneo', 'jazneo', '2017-12-19'],
-    ['idea', 'idea', '2017-12-19'],  # -patr
-    ['RadaruS', 'radaruS', '2017-12-19'],
-    # ['Kry10', 'kry10', '2017-12-19'],
-    # ['Smead', 'smead', '2017-12-25'],
-    # ['kohai.istool', 'kohai.istool', '2017-12-25'],
-    ['Str4fe', 'str4fe', '2017-12-25'],  # -niem
-    ["Ainrehtea Dal'Nalirtu", "Ainrehtea Dal'Nalirtu", '2017-12-25'],
-    # ['Wintermute', 'wintermute', '2017-12-19'],
-    ['Raikin', 'raikin', '2017-12-25'],  # -soni
-    ['BerserkerBoreas', 'berserkerboreas', '2017-12-25'],
-    ['ihatemondays', 'ihatemondays', '2017-12-25'],
-    ['Derpmare', 'derpmare', '2017-12-25'],
-    # ['Bin Chicken', 'bin_chicken', '2017-12-25'],
-    ['Chikan Celeryman', 'chikan_celeryman', '2017-12-25'],
-    # ['migero', 'migero', '2018-01-05'],
-    ['Ashe', 'ashe', '2018-01-05'],  # 50
-    ['Quadriple', 'quadriple', '2018-01-05'],  # 30
-    ['abrownbag', 'abrownbag', '2018-01-05'],  # cancelled april, remove soon
-    ['Azuth', 'Azuth', '2018-01-05'],
-    ['goblox', 'goblox', '2018-01-05'],
-    # ['Rikku', 'Rikku', '2018-01-05'],
-    ['azupwn', 'azupwn', '2018-01-05'],  # cancelled may, remove soon
-    ['m o t h', 'm o t h', '2018-01-05'],
-    # ['Yorx', 'Yorx', '2018-01-05'],
-    # ['Buffy', 'Buffy', '2018-01-05'],
-    ['Tomnautical', 'Tomnautical', '2018-01-05'],  # -psyo
-    # ['akarinjelly', 'Jelly', '2018-01-05'],
-    ['Atirion', 'Atirion', '2018-01-05'],
-    ['Lydania', 'Lydania', '2018-01-05'],  # -tobi
-    ['Shanie', 'Shanie-senpai', '2018-01-05'],  # -shan
-    # ['Kal [Thramis]', 'Kal', '2018-01-12'],
-    ['Sifu', 'Sifu', '2018-01-12'],  # -ylon
-    ['Lil Clone', 'Lil Clone', '2018-01-12'],  # cancelled april, remove soon
-    ['Naranar', 'Naranar', '2018-01-12'],
-    # ['gwigz', 'gwigz', '2018-01-12'],
-    # ['Lux', 'Lux', '2018-01-12'],
-    ['liquid (retso)', 'liquid', '2018-01-12'],  # -oste
-    # ['GreenTeaGamer', 'GreenTeaGamer', '2018-01-12'],
-    # ['Desruko', 'Desruko', '2018-01-12'],
-    ['Mute_', 'Mute_', '2018-01-12'],
+    # ['Display name', 'Icon name', 'Start Date', Support Tier]  yyyy-mm-dd  The start date should be the date when the update goes live to ensure 30 days
+    ['Xeverian', 'xeverian', '2017-12-19', 0],  # 45
+    ['Tupper', 'tupper', '2017-12-19', 1],  # 50
+    # ['Jazneo', 'jazneo', '2017-12-19', 0],
+    ['idea', 'idea', '2017-12-19', 0],  # -patr
+    ['RadaruS', 'radaruS', '2017-12-19', 0],  # emtpy pic
+    # ['Kry10', 'kry10', '2017-12-19', 0],
+    # ['Smead', 'smead', '2017-12-25', 0],
+    # ['kohai.istool', 'kohai.istool', '2017-12-25', 0],
+    ['Str4fe', 'str4fe', '2017-12-25', 0],  # -niem
+    ["Ainrehtea Dal'Nalirtu", "Ainrehtea Dal'Nalirtu", '2017-12-25', 0],
+    # ['Wintermute', 'wintermute', '2017-12-19', 0],
+    ['Raikin', 'raikin', '2017-12-25', 0],  # -soni
+    ['BerserkerBoreas', 'berserkerboreas', '2017-12-25', 0],
+    ['ihatemondays', 'ihatemondays', '2017-12-25', 0],
+    ['Derpmare', 'derpmare', '2017-12-25', 0],
+    # ['Bin Chicken', 'bin_chicken', '2017-12-25', 0],
+    ['Chikan Celeryman', 'chikan_celeryman', '2017-12-25', 0],
+    # ['migero', 'migero', '2018-01-05', 0],
+    ['Ashe', 'ashe', '2018-01-05', 0],  # 50
+    ['Quadriple', 'quadriple', '2018-01-05', 0],  # 30
+    ['abrownbag', 'abrownbag', '2018-01-05', 1],  # cancelled april, remove soon
+    ['Azuth', 'Azuth', '2018-01-05', 0],
+    ['goblox', 'goblox', '2018-01-05', 1],
+    # ['Rikku', 'Rikku', '2018-01-05', 0],
+    ['azupwn', 'azupwn', '2018-01-05', 0],  # cancelled may, remove soon
+    ['m o t h', 'm o t h', '2018-01-05', 0],
+    # ['Yorx', 'Yorx', '2018-01-05', 0],
+    # ['Buffy', 'Buffy', '2018-01-05', 0],
+    ['Tomnautical', 'Tomnautical', '2018-01-05', 0],  # -psyo
+    # ['akarinjelly', 'Jelly', '2018-01-05', 0],
+    ['Atirion', 'Atirion', '2018-01-05', 0],
+    ['Lydania', 'Lydania', '2018-01-05', 0],  # -tobi
+    ['Shanie', 'Shanie-senpai', '2018-01-05', 0],  # -shan
+    # ['Kal [Thramis]', 'Kal', '2018-01-12', 0],
+    ['Sifu', 'Sifu', '2018-01-12', 0],  # -ylon
+    ['Lil Clone', 'Lil Clone', '2018-01-12', 0],  # cancelled april, remove soon
+    ['Naranar', 'Naranar', '2018-01-12', 1],
+    # ['gwigz', 'gwigz', '2018-01-12', 0],
+    # ['Lux', 'Lux', '2018-01-12', 0],
+    ['liquid (retso)', 'liquid', '2018-01-12', 0],  # -oste
+    # ['GreenTeaGamer', 'GreenTeaGamer', '2018-01-12', 0],
+    # ['Desruko', 'Desruko', '2018-01-12', 0],
+    ['Mute_', 'Mute_', '2018-01-12', 0],
     # icewind (don't add)
-    ['qy_li', 'qy_li', '2018-01-22'],  # emtpy pic  - lqy
-    # ['Sixnalia', 'Sixnalia', '2018-01-22'],
-    ['ReOL', 'ReOL', '2018-01-22'],  # emtpy pic
-    ['Rezinion', 'Rezinion', '2018-01-22'],
-    ['Karma', 'Karma', '2018-01-22'],
-    # ['\1B', 'BOXMOB', '2018-01-22'],
-    # ['\2O', 'BOXMOB', '2018-01-22'],
-    # ['\3X', 'BOXMOB', '2018-01-22'],
-    # ['\1M', 'BOXMOB', '2018-01-22'],
-    # ['\2O', 'BOXMOB', '2018-01-22'],
-    # ['\3B', 'BOXMOB', '2018-01-22'],
-    ['SolarSnowball', 'SolarSnowball', '2018-01-22'],  # is later in form list
-    # ['Hordaland', 'Hordaland', '2018-01-22'],
-    ['Bones', 'Bones', '2018-01-22'],  # PP 50
+    ['qy_li', 'qy_li', '2018-01-22', 1],  # emtpy pic  - lqy
+    # ['Sixnalia', 'Sixnalia', '2018-01-22', 0],
+    ['ReOL', 'ReOL', '2018-01-22', 0],  # emtpy pic
+    ['Rezinion', 'Rezinion', '2018-01-22', 0],
+    ['Karma', 'Karma', '2018-01-22', 0],
+    # ['\1B', 'BOXMOB', '2018-01-22', 0],
+    # ['\2O', 'BOXMOB', '2018-01-22', 0],
+    # ['\3X', 'BOXMOB', '2018-01-22', 0],
+    # ['\1M', 'BOXMOB', '2018-01-22', 0],
+    # ['\2O', 'BOXMOB', '2018-01-22', 0],
+    # ['\3B', 'BOXMOB', '2018-01-22', 0],
+    ['SolarSnowball', 'SolarSnowball', '2018-01-22', 0],  # is later in form list
+    # ['Hordaland', 'Hordaland', '2018-01-22', 0],
+    ['Bones', 'Bones', '2018-01-22', 0],  # PP 50
     # Joshua (onodaTV)    # cancelled april, don't add
     # charlie (discord) 24th missing
-    ['Axo_', 'Axo_', '2018-04-10'],
+    ['Axo_', 'Axo_', '2018-04-10', 0],
     # Jerry (jt1990)
-    ['Dogniss', 'Dogniss', '2018-03-10'],  # -Forc
+    ['Dogniss', 'Dogniss', '2018-03-10', 0],  # -Forc
     # Fabian (fabien-brenig) (ignore)
-    ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10'], # -fina
+    ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10', 0],  # emtpy pic  -fina
     # Marcus (m.johannson) (ignore)
-    ['Awrini', 'Awrini', '2018-03-10'],
-    # ['Smooth', 'Smooth', '2018-03-10'],
+    ['Awrini', 'Awrini', '2018-03-10', 0],
+    # ['Smooth', 'Smooth', '2018-03-10', 0],
     # FlammaRilva (fls81245) (ignore)
-    ['NekoNatsuki', 'NekoNatsuki', '2018-03-10'],  # 42
+    ['NekoNatsuki', 'NekoNatsuki', '2018-03-10', 0],  # 42
     # Checked until here
 
-    ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10'],
+    ['AlphaSatanOmega', 'AlphaSatanOmega', '2018-03-10', 0],
     # Murakuumoo (murakuumoo)
-    ['Curio', 'Curio', '2018-03-10'],
-    ['Deathofirish', 'Deathofirish', '2018-04-17'],  # emtpy pic  - jaco
+    ['Curio', 'Curio', '2018-03-10', 1],
+    ['Deathofirish', 'Deathofirish', '2018-04-17', 0],  # emtpy pic  -jaco
     # eduardo (botello.eduardo19)
-    ['Runda', 'Runda', '2018-04-17'],
-    ['Rurikaze', 'Rurikaze', '2018-05-09'],  # -mist
-    ['Brindin_wF', 'Brindin_wF', '2018-04-17'],  # -Bran
-    ['Serry Jane', 'Serry_Jane', '2018-04-17'],  # emtpy pic  -ianc
-    ['GV-97', 'GV-97', '2018-05-09'],  # -niels
-    ['COMMEN', 'COMMEN', '2018-05-09'],  # emtpy pic  -do20
-    ['Antivirus-Chan', 'Antivirus-Chan', '2018-05-09'],  #  -frost
-    ['Rayduxz', 'Rayduxz', '2018-05-09'],  #  -hats
+    ['Runda', 'Runda', '2018-04-17', 0],
+    ['Rurikaze', 'Rurikaze', '2018-05-09', 0],  # -mist
+    ['Brindin_wF', 'Brindin_wF', '2018-04-17', 0],  # -Bran
+    ['Serry Jane', 'Serry_Jane', '2018-04-17', 1],  # emtpy pic  -ianc
+    ['GV-97', 'GV-97', '2018-05-09', 0],  # -niels
+    ['COMMEN', 'COMMEN', '2018-05-09', 0],  # emtpy pic  -do20
+    ['Antivirus-Chan', 'Antivirus-Chan', '2018-05-09', 0],  #  -frost
+    ['Rayduxz', 'Rayduxz', '2018-05-09', 0],  #  -hats
 ]
 
 current_supporters = None
@@ -739,7 +736,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('You can safely ignore the', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.5
-            row.label('"Spine length zero" warning in Unity.', icon_value=preview_collections["custom_icons"]["empty"].icon_id)
+            row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()
 
         col.separator()
@@ -841,7 +838,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.prop(context.scene, 'merge_armature', text='To Merge', icon_value=preview_collections["custom_icons"]["UP_ARROW"].icon_id)
+            row.prop(context.scene, 'merge_armature', text='To Merge', icon_value=tools.supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id)
 
             found = False
             base_armature = tools.common.get_armature(armature_name=context.scene.merge_armature_into)
@@ -882,7 +879,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.prop(context.scene, 'attach_mesh', text='Mesh', icon_value=preview_collections["custom_icons"]["UP_ARROW"].icon_id)
+            row.prop(context.scene, 'attach_mesh', text='Mesh', icon_value=tools.supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id)
 
             row = col.row(align=True)
             row.scale_y = 1.05
@@ -1410,40 +1407,29 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
+        # supporter_data = tools.supporter.supporter_data
+
         row = col.row(align=True)
         row.label('Do you like this plugin and want to support us?')
         row = col.row(align=True)
-        row.separator()
-        row = col.row(align=True)
         row.scale_y = 1.2
-        row.operator('supporter.patreon', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
-        row = col.row(align=True)
-        row.separator()
-        row.separator()
-        row = col.row(align=True)
+        row.operator('supporter.patreon', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
 
-        i = 0
-        cont = True
-        items = current_supporters
-        while cont:
-            try:
-                item = items[i]
-                name = item[0]
-                icon = item[1]
-                if i == 0:
-                    row.label('Thanks to our awesome supporters! <3')
-                    col.separator()
-                if i % 3 == 0:
-                    row = col.row(align=True)
-                row.operator('supporter.person', text=name, emboss=False,
-                             icon_value=preview_collections["custom_icons"][icon].icon_id)
-                i += 1
-            except IndexError:
-                if i % 3 == 0:
-                    cont = False
-                    continue
-                row.label('')
-                i += 1
+        if not tools.supporter.supporter_data or not tools.supporter.supporter_data.get('supporters') or len(tools.supporter.supporter_data.get('supporters')) == 0:
+            return
+
+        col.separator()
+        row = col.row(align=True)
+        row.label('Thanks to our awesome supporters! <3')
+        col.separator()
+
+        supporter_count = self.draw_supporter_list(col, show_tier=1)
+
+        if supporter_count > 0:
+            row = col.row(align=True)
+            col.separator()
+
+        self.draw_supporter_list(col, show_tier=0)
 
         col.separator()
         row = col.row(align=True)
@@ -1453,6 +1439,49 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 0.3
         row.label('     Please contact us in our discord!')
         col.separator()
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.operator('supporter.reload', icon='FILE_REFRESH')
+
+    def draw_supporter_list(self, col, show_tier=0):
+        supporter_data = tools.supporter.supporter_data.get('supporters')
+        preview_collections = tools.supporter.preview_collections.get("supporter_icons")
+
+        i = 0
+        j = 0
+        cont = True
+
+        while cont:
+            try:
+                supporter = supporter_data[j]
+                name = supporter.get('displayname')
+                tier = supporter.get('tier')
+
+                if not name:
+                    j += 1
+                    continue
+                if not tier:
+                    tier = 0
+
+                if i % 3 == 0:
+                    row = col.row(align=True)
+                    if show_tier == 1:
+                        row.scale_y = 1.1
+
+                if tier == show_tier:
+                    row.operator('supporter.person',
+                                 text=name,
+                                 emboss=tier == 1,
+                                 icon_value=preview_collections[name].icon_id)
+                    i += 1
+                j += 1
+            except IndexError:
+                if i % 3 == 0:
+                    cont = False
+                    continue
+                row.label('')
+                i += 1
+        return i
 
 
 class CreditsPanel(ToolPanel, bpy.types.Panel):
@@ -1460,7 +1489,6 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_label = 'Credits'
 
     def draw(self, context):
-        global custom_icons
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
@@ -1477,7 +1505,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
             version_str += '-dev'
         version_str += ')'
 
-        row.label(version_str, icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
+        row.label(version_str, icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
         row.label('Created by GiveMeAllYourCats and Hotox')
@@ -1498,9 +1526,9 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord2"].icon_id)
 
         row = col.row(align=True)
-        row.operator('credits.discord', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
+        row.operator('credits.discord', icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
         row = col.row(align=True)
-        row.operator('credits.forum', icon_value=preview_collections["custom_icons"]["cats1"].icon_id)
+        row.operator('credits.forum', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -1542,45 +1570,6 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
         addon_updater_ops.update_settings_ui(self, context)
 
 
-def load_icons():
-    # Note that preview collections returned by bpy.utils.previews
-    # are regular py objects - you can use them to store custom data.
-    pcoll = bpy.utils.previews.new()
-
-    # path to the folder where the icon is
-    # the path is calculated relative to this py file inside the addon folder
-    my_icons_dir = os.path.join(os.path.dirname(__file__), "icons")
-
-    # load a preview thumbnail of a file and store in the previews collection
-    pcoll.load('heart1', os.path.join(my_icons_dir, 'other/' + 'heart1.png'), 'IMAGE')
-    pcoll.load('discord1', os.path.join(my_icons_dir, 'other/' + 'discord1.png'), 'IMAGE')
-    pcoll.load('cats1', os.path.join(my_icons_dir, 'other/' + 'cats1.png'), 'IMAGE')
-    pcoll.load('empty', os.path.join(my_icons_dir, 'other/' + 'empty.png'), 'IMAGE')
-    pcoll.load('UP_ARROW', os.path.join(my_icons_dir, 'other/' + 'blender_up_arrow.png'), 'IMAGE')
-    # pcoll.load('heart2', os.path.join(my_icons_dir, 'other/' + 'heart2.png'), 'IMAGE')
-    # pcoll.load('heart3', os.path.join(my_icons_dir, 'other/' + 'heart3.png'), 'IMAGE')
-    # pcoll.load('heart4', os.path.join(my_icons_dir, 'other/' + 'heart4.png'), 'IMAGE')
-    # pcoll.load('discord2', os.path.join(my_icons_dir, 'other/' + 'discord2.png'), 'IMAGE')
-    # pcoll.load('patreon1', os.path.join(my_icons_dir, 'other/' + 'patreon1.png'), 'IMAGE')
-    # pcoll.load('patreon2', os.path.join(my_icons_dir, 'other/' + 'patreon2.png'), 'IMAGE')
-    # pcoll.load('merge', os.path.join(my_icons_dir, 'other/' + 'merge.png'), 'IMAGE')
-
-    # load the supporters icons
-    for value in current_supporters:
-        try:
-            pcoll.load(value[1], os.path.join(my_icons_dir, 'supporters/' + value[1] + '.png'), 'IMAGE')
-        except KeyError:
-            pass
-
-    preview_collections['custom_icons'] = pcoll
-
-
-def unload_icons():
-    for pcoll in preview_collections.values():
-        bpy.utils.previews.remove(pcoll)
-    preview_collections.clear()
-
-
 def set_current_supporters():
     global current_supporters
     if current_supporters:
@@ -1593,7 +1582,7 @@ def set_current_supporters():
     for supporter in supporters:
         # if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 6000:
         if True:
-            temp_current_supporters.append([supporter[0], supporter[1], count])
+            temp_current_supporters.append([supporter[0], supporter[1], count, supporter[3]])
             count += 1
 
     # Sort supporters
@@ -1606,14 +1595,12 @@ def set_current_supporters():
                     if value2[2] == value[2] - 1:
                         value2[2] = value[2]
                         value[2] = value2[2] - 1
-                        print('DEBUG 1', key)
                         break
             if value[2] % 3 == 2:
                 for value2 in temp_current_supporters:
                     if value2[2] == value[2] - 2:
                         value2[2] = value[2]
                         value[2] = value2[2] - 2
-                        print('DEBUG 2', key)
                         break
         elif key.startswith('\2'):
             if value[2] % 3 == 0:
@@ -1621,14 +1608,12 @@ def set_current_supporters():
                     if value2[2] == value[2] - 2:
                         value2[2] = value[2]
                         value[2] = value2[2] - 2
-                        print('DEBUG 3', key)
                         break
             if value[2] % 3 == 2:
                 for value2 in temp_current_supporters:
                     if value2[2] == value[2] - 1:
                         value2[2] = value[2]
                         value[2] = value2[2] - 1
-                        print('DEBUG 4', key)
                         break
         elif key.startswith('\3'):
             if value[2] % 3 == 0:
@@ -1636,25 +1621,22 @@ def set_current_supporters():
                     if value2[2] == value[2] - 1:
                         value2[2] = value[2]
                         value[2] = value2[2] - 1
-                        print('DEBUG 5', key)
                         break
             if value[2] % 3 == 1:
                 for value2 in temp_current_supporters:
                     if value2[2] == value[2] - 2:
                         value2[2] = value[2]
                         value[2] = value2[2] - 2
-                        print('DEBUG 6', key)
                         break
 
     # Fill in Supporters
     for i in range(0, count):
         for value in temp_current_supporters:
             if value[2] == i:
-                print(value)
                 if value[0].startswith('\1') or value[0].startswith('\2') or value[0].startswith('\3'):
-                    current_supporters.append([value[0][1:], value[1]])
+                    current_supporters.append([value[0][1:], value[1], value[3]])
                 else:
-                    current_supporters.append([value[0], value[1]])
+                    current_supporters.append([value[0], value[1], value[3]])
 
 
 classesToRegister = [
@@ -1730,6 +1712,7 @@ classesToRegister = [
     SupporterPanel,
     tools.supporter.PersonButton,
     tools.supporter.PatreonButton,
+    tools.supporter.ReloadButton,
 
     CreditsPanel,
     tools.credits.DiscordButton,
@@ -1740,6 +1723,7 @@ classesToRegister = [
 
 
 def register():
+    print("\n### Loading CATS...")
     # bpy.utils.unregister_module("mmd_tools")
     try:
         mmd_tools_local.register()
@@ -1749,8 +1733,11 @@ def register():
     if dev_branch and len(version) > 2:
         version[2] += 1
 
-    set_current_supporters()
-    load_icons()
+    # thread = Thread(target=tools.supporter.load_supporters, args=[])
+    # thread.start()
+    tools.supporter.load_settings()
+    tools.supporter.load_other_icons()
+    tools.supporter.load_supporters()
 
     try:
         addon_updater_ops.register(bl_info)
@@ -1764,9 +1751,11 @@ def register():
     bpy.context.user_preferences.filepaths.use_file_compression = True
 
     bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+    print("### Loaded CATS successfully!")
 
 
 def unregister():
+    print("### Unloading CATS...")
     try:
         mmd_tools_local.unregister()
     except AttributeError:
@@ -1775,9 +1764,11 @@ def unregister():
     for value in classesToRegister:
         bpy.utils.unregister_class(value)
     addon_updater_ops.unregister()
-    unload_icons()
+
+    tools.supporter.unload_icons()
 
     bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
+    print("### Unloaded CATS successfully!")
 
 
 if __name__ == '__main__':

@@ -144,7 +144,7 @@ This tries to completely fix your model with one click.
     - Press the "Merge Armatures" button -> Done!
 
 ##### Attach Mesh to Armature
-- Attaches the selected mesh into the selected armature.
+- Attaches the selected mesh to the selected armature.
 - **How to use:**
     - Move the mesh to the desired position
         - You can use Move, Scale and Rotate
@@ -158,6 +158,11 @@ This tries to completely fix your model with one click.
 ##### Useful tip:
 - You can change the rest position of your model by using this method:
 https://nixart.wordpress.com/2013/03/28/modifying-the-rest-pose-in-blender/
+
+##### Support us:
+- We worked hard on this feature. If you like it consider supporting us, it helps a lot!
+
+[![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
 
 ## Translation
@@ -345,6 +350,9 @@ It checks for a new version automatically once every day.
     - Added Export button into the panel after enabling the protection
     - Updated documentation
         - Step 6 now shows how to fix all remaining lighting issues
+- Supporters:
+    - The supporter list is now synced with an online repository
+        - It can now be updated on the fly without having to update the whole plugin
 - General:
     - Mesh selections are no longer shown if there is only one mesh
     - Updated mmd_tools

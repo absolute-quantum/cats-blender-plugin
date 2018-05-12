@@ -23,6 +23,7 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
+
 from datetime import datetime
 
 import bpy
@@ -862,9 +863,9 @@ def delete_hierarchy(obj):
         print("Could not delete object")
 
 
-def days_between(d1, d2):
-    d1 = datetime.strptime(d1, "%Y-%m-%d")
-    d2 = datetime.strptime(d2, "%Y-%m-%d")
+def days_between(d1, d2, time_format):
+    d1 = datetime.strptime(d1, time_format)
+    d2 = datetime.strptime(d2, time_format)
     return abs((d2 - d1).days)
 
 
@@ -988,6 +989,8 @@ def correct_bone_positions(armature_name=None):
                 ankle = armature.data.edit_bones.get('Right ankle')
                 leg.tail = knee.head
                 knee.tail = ankle.head
+
+
 
 
 
