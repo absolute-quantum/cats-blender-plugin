@@ -1742,7 +1742,6 @@ classesToRegister = [
     UpdaterPreferences,
 
     SupporterPanel,
-    tools.supporter.PersonButton,
     tools.supporter.PatreonButton,
     tools.supporter.ReloadButton,
 
