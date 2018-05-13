@@ -348,6 +348,8 @@ It checks for a new version automatically once every day.
     - Now shows a warning when important objects aren't named correctly
 - Copy Protection:
     - Added Export button into the panel after enabling the protection
+    - Now automatically triangulates the model
+        - Fixes holes appearing after export to Unity
     - Updated documentation
         - Step 6 now shows how to fix all remaining lighting issues
 - Supporters:

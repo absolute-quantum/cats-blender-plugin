@@ -274,9 +274,20 @@ class AutoVisemeButton(bpy.types.Operator):
             renamed_shapes[2] = shapes[2]
 
         # Reset context scenes
-        context.scene.mouth_a = renamed_shapes[0]
-        context.scene.mouth_o = renamed_shapes[1]
-        context.scene.mouth_ch = renamed_shapes[2]
+        try:
+            context.scene.mouth_a = renamed_shapes[0]
+        except TypeError:
+            pass
+
+        try:
+            context.scene.mouth_o = renamed_shapes[1]
+        except TypeError:
+            pass
+
+        try:
+            context.scene.mouth_ch = renamed_shapes[2]
+        except TypeError:
+            pass
 
         # Set shapekey index back to 0
         bpy.context.object.active_shape_key_index = 0

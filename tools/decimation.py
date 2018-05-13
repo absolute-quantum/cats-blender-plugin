@@ -191,6 +191,10 @@ class AutoDecimateButton(bpy.types.Operator):
         meshes_obj = tools.common.get_meshes_objects()
 
         for mesh in meshes_obj:
+            tools.common.select(mesh)
+            tools.common.switch('EDIT')
+            bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
+            tools.common.switch('OBJECT')
             current_tris_count += len(mesh.data.polygons)
 
         if decimate_fingers:

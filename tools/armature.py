@@ -325,17 +325,18 @@ class FixArmature(bpy.types.Operator):
                 upper_name += s[:1].upper() + s[1:]
             name = upper_name
 
-            for i, split in enumerate(name.split(':')):
-                if i == 0:
-                    name = ''
-                else:
-                    name += split
+            if ':' in name:
+                for i, split in enumerate(name.split(':')):
+                    if i == 0:
+                        name = ''
+                    else:
+                        name += split
 
             if name[-2:] == 'S0':
                 name = name[:-2]
 
             # Remove '_01_' from beginning
-            if name[0] == '_' and name[3] == '_' and name[1].isdigit() and name[2].isdigit():
+            if len(name) > 4 and name[0] == '_' and name[3] == '_' and name[1].isdigit() and name[2].isdigit():
                 name = name[4:]
 
             # Remove '_01_' from beginning
