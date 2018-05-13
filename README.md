@@ -95,7 +95,7 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/crtPqK7.png)
+![](https://i.imgur.com/Y7rYJYQ.png)
 
 ##### Separate by material / loose parts
 - Separates a mesh by materials or loose parts
@@ -119,6 +119,10 @@ This tries to completely fix your model with one click.
 ##### Flip Normals
 - Flips the direction of the faces' normals of the selected mesh.
 
+##### Translation
+- Translate certain entities from any language to english.
+Works by sending a request to the Google Translate service. This feature can be slow for entities with a large amount of items.
+
 
 ## Custom Model Creation
 
@@ -132,7 +136,7 @@ This tries to completely fix your model with one click.
 - **How to use:**
     - Use "Fix Model" on both armatures
         - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
-        - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure
+        - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure (https://i.imgur.com/F5KEt0M.png)
         - DO NOT delete any main bones by yourself! CATS will merge them and deletes all unused bones afterwards
     - Move the mesh (and only the mesh!) of the merge armature to the desired position
         - You can use Move, Scale and Rotate
@@ -337,9 +341,10 @@ It checks for a new version automatically once every day.
     - Added support for Source Engine Models!
     - Added new "Custom Model Creation" panel
     - Moved some model options into a new "Model Options" panel
+    - Moved Translations into the new "Model Options" panel
     - Added a lot of new model options to the "Model Options" panel
     - "Fix Model" now sets the roll of all bones to 0
-        - This should fix a lot of finger issues in Unity!
+        - This fixes a lot of finger issues in Unity!
     - "Fix Model" now removes the standard lamp, camera and cube
     - Full Body Tracking Fix is not longer enabled by default
     - More models are now compatible (please report non working models to us)
@@ -355,6 +360,7 @@ It checks for a new version automatically once every day.
 - Supporters:
     - The supporter list is now synced with an online repository
         - It can now be updated on the fly without having to update the whole plugin
+        - New supporter list features will be available soon
 - General:
     - Mesh selections are no longer shown if there is only one mesh
     - Updated mmd_tools

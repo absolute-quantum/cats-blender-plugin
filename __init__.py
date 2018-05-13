@@ -102,7 +102,6 @@ bl_info = {
     'warning': '',
 }
 
-# TODO !!!!! CHANGE "HOT TO USE" LINK!
 dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
@@ -172,7 +171,7 @@ supporters = [
     ['Axo_', 'Axo_', '2018-04-10', 0],
     # Jerry (jt1990)
     ['Dogniss', 'Dogniss', '2018-03-10', 0],  # -Forc
-    # Fabian (fabien-brenig) (ignore)
+    ['Syntion', 'Syntion', '2018-05-13', 0],  # -fabi
     ['Sheet_no_mana', 'Sheet_no_mana', '2018-04-10', 0],  # emtpy pic  -fina
     # Marcus (m.johannson) (ignore)
     ['Awrini', 'Awrini', '2018-03-10', 0],
@@ -194,6 +193,8 @@ supporters = [
     ['COMMEN', 'COMMEN', '2018-05-09', 0],  # emtpy pic  -do20
     ['Antivirus-Chan', 'Antivirus-Chan', '2018-05-09', 0],  #  -frost
     ['Rayduxz', 'Rayduxz', '2018-05-09', 0],  #  -hats
+    # Bem (BemVR1)
+    # PorcelainShrine (questzero)
 ]
 
 current_supporters = None
@@ -708,8 +709,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                 icon = news.get('icon')
                 custom_icon = news.get('custom_icon')
                 if info:
-                    if i == 0:
-                        showed_info = True
+                    showed_info = True
 
                     row = col.row(align=True)
                     row.scale_y = 0.75
@@ -831,6 +831,19 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.operator('armature_manual.recalculate_normals', text='Recalculate')
         row.operator('armature_manual.flip_normals', text='Flip')
 
+        col.separator()
+        row = col.row(align=True)
+        # row.label("Translation:", icon_value=tools.supporter.preview_collections["custom_icons"]["TRANSLATE"].icon_id)
+        row.label("Translation:", icon='FILE_REFRESH')
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.operator('translate.shapekeys', icon='SHAPEKEY_DATA')
+        row.operator('translate.bones', icon='BONE_DATA')
+        row = col.row(align=True)
+        row.scale_y = 1.05
+        row.operator('translate.meshes', icon='MESH_DATA')
+        row.operator('translate.materials', icon='MATERIAL')
+
 
 class CustomPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_custom_v1'
@@ -917,26 +930,6 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.2
             row.operator('armature_custom.attach_mesh', icon='ARMATURE_DATA')
-
-
-class TranslationPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_translation_v1'
-    bl_label = 'Translation'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
-        layout = self.layout
-        box = layout.box()
-        col = box.column(align=True)
-        row = col.row(align=True)
-        row.scale_y = 1
-        row.operator('translate.shapekeys', icon='SHAPEKEY_DATA')
-        row.operator('translate.bones', icon='BONE_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1
-        row.operator('translate.meshes', icon='MESH_DATA')
-        # row.operator('translate.textures', icon='TEXTURE')
-        row.operator('translate.materials', icon='MATERIAL')
 
 
 class DecimationPanel(ToolPanel, bpy.types.Panel):
@@ -1690,18 +1683,15 @@ classesToRegister = [
     tools.armature_manual.RemoveConstraints,
     tools.armature_manual.RecalculateNormals,
     tools.armature_manual.FlipNormals,
+    tools.translate.TranslateShapekeyButton,
+    tools.translate.TranslateBonesButton,
+    tools.translate.TranslateMeshesButton,
+    tools.translate.TranslateMaterialsButton,
 
     CustomPanel,
     tools.armature_custom.MergeArmature,
     tools.armature_custom.AttachMesh,
     tools.armature_custom.CustomModelTutorialButton,
-
-    TranslationPanel,
-    tools.translate.TranslateShapekeyButton,
-    tools.translate.TranslateBonesButton,
-    tools.translate.TranslateMeshesButton,
-    tools.translate.TranslateMaterialsButton,
-    # tools.translate.TranslateTexturesButton,
 
     DecimationPanel,
     tools.decimation.AutoDecimateButton,

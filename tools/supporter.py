@@ -339,6 +339,7 @@ def load_other_icons():
     pcoll.load('cats1', os.path.join(icons_other_dir, 'cats1.png'), 'IMAGE')
     pcoll.load('empty', os.path.join(icons_other_dir, 'empty.png'), 'IMAGE')
     pcoll.load('UP_ARROW', os.path.join(icons_other_dir, 'blender_up_arrow.png'), 'IMAGE')
+    pcoll.load('TRANSLATE', os.path.join(icons_other_dir, 'translate.png'), 'IMAGE')
 
     preview_collections['custom_icons'] = pcoll
 

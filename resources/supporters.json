@@ -1,7 +1,7 @@
 {
   "news": [
     {
-      "info": "Welcome to the cats dev build!",
+      "info2": "Welcome to the cats dev build!",
       "icon": "INFO"
     },
     {
@@ -115,6 +115,9 @@
     },{
       "displayname": "Dogniss",
       "startdate": "2018-04-05"
+    },{
+      "displayname": "Syntion",
+      "startdate": "2018-05-013"
     },{
       "displayname": "Sheet_no_mana",
       "startdate": "2018-04-05"
