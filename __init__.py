@@ -700,6 +700,35 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
+        # Show news from the plugin
+        if tools.supporter.supporter_data and tools.supporter.supporter_data.get('news') and tools.supporter.supporter_data.get('news'):
+            showed_info = False
+            for i, news in enumerate(tools.supporter.supporter_data.get('news')):
+                info = news.get('info')
+                icon = news.get('icon')
+                custom_icon = news.get('custom_icon')
+                if info:
+                    if i == 0:
+                        showed_info = True
+
+                    row = col.row(align=True)
+                    row.scale_y = 0.75
+                    if custom_icon:
+                        try:
+                            row.label(info, icon_value=tools.supporter.preview_collections["supporter_icons"][custom_icon].icon_id)
+                        except KeyError:
+                            row.label(info)
+                    elif icon:
+                        try:
+                            row.label(info, icon=icon)
+                        except TypeError:
+                            row.label(info)
+                    else:
+                        row.label(info)
+            if showed_info:
+                col.separator()
+                col.separator()
+
         row = col.row(align=True)
         row.prop(context.scene, 'import_mode', expand=True)
         row = col.row(align=True)
@@ -1426,7 +1455,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         supporter_count = self.draw_supporter_list(col, show_tier=1)
 
         if supporter_count > 0:
-            row = col.row(align=True)
             col.separator()
 
         self.draw_supporter_list(col, show_tier=0)
@@ -1456,8 +1484,13 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                 supporter = supporter_data[j]
                 name = supporter.get('displayname')
                 tier = supporter.get('tier')
+                idname = supporter.get('idname')
 
-                if not name:
+                website = False
+                if 'website' in supporter.keys():
+                    website = True
+
+                if not name or not idname:
                     j += 1
                     continue
                 if not tier:
@@ -1469,9 +1502,8 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                         row.scale_y = 1.1
 
                 if tier == show_tier:
-                    row.operator('supporter.person',
-                                 text=name,
-                                 emboss=tier == 1,
+                    row.operator(idname,
+                                 emboss=website,
                                  icon_value=preview_collections[name].icon_id)
                     i += 1
                 j += 1
@@ -1738,6 +1770,7 @@ def register():
     tools.supporter.load_settings()
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
+    tools.supporter.register_dynamic_buttons()
 
     try:
         addon_updater_ops.register(bl_info)
@@ -1747,6 +1780,7 @@ def register():
 
     for value in classesToRegister:
         bpy.utils.register_class(value)
+
     bpy.context.user_preferences.system.use_international_fonts = True
     bpy.context.user_preferences.filepaths.use_file_compression = True
 
@@ -1763,6 +1797,7 @@ def unregister():
 
     for value in classesToRegister:
         bpy.utils.unregister_class(value)
+    tools.supporter.unregister_dynamic_buttons()
     addon_updater_ops.unregister()
 
     tools.supporter.unload_icons()

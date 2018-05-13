@@ -44,6 +44,7 @@ preview_collections = {}
 supporter_data = None
 settings_data = None
 reloading = False
+button_list = []
 
 time_format = "%Y-%m-%d %H:%M:%S"
 
@@ -59,15 +60,6 @@ class PatreonButton(bpy.types.Operator):
         webbrowser.open('https://www.patreon.com/catsblenderplugin')
 
         self.report({'INFO'}, 'Patreon page opened')
-        return {'FINISHED'}
-
-
-class PersonButton(bpy.types.Operator):
-    bl_idname = 'supporter.person'
-    bl_label = 'Supporter'
-    bl_description = 'This is an awesome supporter!'
-
-    def execute(self, context):
         return {'FINISHED'}
 
 
@@ -88,6 +80,63 @@ class ReloadButton(bpy.types.Operator):
         thread.start()
 
         return {'FINISHED'}
+
+
+class DynamicPatronButton(bpy.types.Operator):
+    bl_idname = 'support.dynamic_patron_button'
+    bl_label = 'Supporter Name'
+    bl_description = 'This is an awesome supporter'
+
+    website = None
+
+    def execute(self, context):
+        if self.website:
+            webbrowser.open(self.website)
+        return {'FINISHED'}
+
+
+def register_dynamic_buttons():
+    if not supporter_data:
+        return
+
+    temp_idnames = []
+    for supporter in supporter_data.get('supporters'):
+        name = supporter.get('displayname')
+        idname = 'support.' + ''.join(filter(str.isalpha, name.lower()))
+
+        description = name + ' is an awesome supporter'
+        if supporter.get('description'):
+            # description = name + ' says:\n\n' + supporter.get('description') + '\n'
+            description = supporter.get('description') + '\n'
+
+        website = None
+        if supporter.get('website'):
+            website = supporter.get('website')
+
+        while idname in temp_idnames:
+            idname += '2'
+
+        button = type('DynOp_' + name, (DynamicPatronButton, ),
+                  {'bl_idname': idname,
+                   'bl_label': name,
+                   'bl_description': description,
+                   'website': website
+                   })
+
+        button_list.append(button)
+        supporter['idname'] = idname
+        temp_idnames.append(idname)
+        bpy.utils.register_class(button)
+
+
+def unregister_dynamic_buttons():
+    for button in button_list:
+        try:
+            bpy.utils.unregister_class(button)
+        except RuntimeError:
+            pass
+
+    button_list.clear()
 
 
 def download_file():
@@ -183,7 +232,7 @@ def load_supporters():
     now = datetime.now()
     if not settings_data \
             or not settings_data.get('last_supporter_update') \
-            or tools.common.days_between(now.strftime(time_format), settings_data.get('last_supporter_update'), time_format) > 2:
+            or tools.common.days_between(now.strftime(time_format), settings_data.get('last_supporter_update'), time_format) > 1:
         # Start asynchronous download of supporter list zip                                # These are the started days.
         reloading = True                                                                   # So >2 equals 2 full days
         thread = Thread(target=download_file, args=[])
@@ -207,6 +256,14 @@ def load_supporters():
             name = supporter['displayname']
             try:
                 pcoll.load(name, os.path.join(icons_supporter_dir, name + '.png'), 'IMAGE')
+            except KeyError:
+                pass
+        for news in supporter_data['news']:
+            custom_icon = news.get('custom_icon')
+            if not custom_icon or custom_icon in pcoll:
+                continue
+            try:
+                pcoll.load(custom_icon, os.path.join(icons_supporter_dir, custom_icon + '.png'), 'IMAGE')
             except KeyError:
                 pass
 
@@ -242,9 +299,21 @@ def reload_supporters():
                 pcoll.load(name, os.path.join(icons_supporter_dir, name + '.png'), 'IMAGE')
             except KeyError:
                 pass
+        for news in supporter_data['news']:
+            custom_icon = news.get('custom_icon')
+            if not custom_icon or custom_icon in pcoll:
+                continue
+
+            try:
+                pcoll.load(custom_icon, os.path.join(icons_supporter_dir, custom_icon + '.png'), 'IMAGE')
+            except KeyError:
+                pass
 
     if not preview_collections.get('supporter_icons'):
         preview_collections['supporter_icons'] = pcoll
+
+    unregister_dynamic_buttons()
+    register_dynamic_buttons()
 
     # Set running false
     global reloading
@@ -365,4 +434,3 @@ def read_settings_file():
         print('UPDATED MISSING SETTINGS')
 
     return data
-
