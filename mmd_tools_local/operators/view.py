@@ -8,7 +8,7 @@ class SetGLSLShading(Operator):
     bl_idname = 'mmd_tools.set_glsl_shading'
     bl_label = 'GLSL View'
     bl_description = 'Use GLSL shading with additional lighting'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.ops.mmd_tools.reset_shading()
@@ -32,7 +32,7 @@ class SetShadelessGLSLShading(Operator):
     bl_idname = 'mmd_tools.set_shadeless_glsl_shading'
     bl_label = 'Shadeless GLSL View'
     bl_description = 'Use only toon shading'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.ops.mmd_tools.reset_shading()
@@ -58,7 +58,7 @@ class ResetShading(Operator):
     bl_idname = 'mmd_tools.reset_shading'
     bl_label = 'Reset View'
     bl_description = 'Reset to default Blender shading'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         bpy.context.scene.render.engine = 'BLENDER_RENDER'
@@ -72,8 +72,11 @@ class ResetShading(Operator):
         for i in filter(lambda x: x.is_mmd_glsl_light, context.scene.objects):
             context.scene.objects.unlink(i)
 
-        bpy.context.scene.display_settings.display_device = 'sRGB'
+        try:
+            bpy.context.scene.display_settings.display_device = 'sRGB'
+        except TypeError:
+            pass
         context.area.spaces[0].viewport_shade='SOLID'
-        context.area.spaces[0].show_backface_culling = False
+        context.area.spaces[0].show_backface_culling = True
         bpy.context.scene.game_settings.material_mode = 'MULTITEXTURE'
         return {'FINISHED'}

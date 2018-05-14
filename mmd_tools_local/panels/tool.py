@@ -18,7 +18,7 @@ if bpy.app.version < (2, 73, 0):
 class _PanelBase(object):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
-    bl_category = 'mmd_tools'
+    bl_category = 'MMD'
 
 
 class MMDToolsObjectPanel(_PanelBase, Panel):
@@ -199,6 +199,8 @@ class MMDDisplayItemMenu(Menu):
 
     def draw(self, context):
         layout = self.layout
+        layout.operator('mmd_tools.display_item_remove', text='Delete All', icon='X').all = True
+        layout.separator()
         layout.operator('mmd_tools.display_item_move', icon=TRIA_UP_BAR, text='Move To Top').type = 'TOP'
         layout.operator('mmd_tools.display_item_move', icon=TRIA_DOWN_BAR, text='Move To Bottom').type = 'BOTTOM'
 
@@ -343,6 +345,8 @@ class MMDMorphMenu(Menu):
 
     def draw(self, context):
         layout = self.layout
+        layout.operator('mmd_tools.morph_remove', text='Delete All', icon='X').all = True
+        layout.separator()
         layout.operator_enum('mmd_tools.morph_slider_setup', 'type')
         layout.separator()
         layout.operator('mmd_tools.morph_move', icon=TRIA_UP_BAR, text='Move To Top').type = 'TOP'
@@ -405,6 +409,7 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
         tb1 = tb.column(align=True)
         tb1.operator('mmd_tools.morph_offset_add', text='', icon='ZOOMIN')
         tb1.operator('mmd_tools.morph_offset_remove', text='', icon='ZOOMOUT')
+        tb.operator('mmd_tools.morph_offset_remove', text='', icon='X').all = True
         return ItemOp.get_by_index(morph.data, morph.active_data)
 
     def _draw_vertex_data(self, context, rig, col, morph):
@@ -542,11 +547,17 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
         row.operator(operators.morph.ApplyUVMorph.bl_idname, text='Apply')
 
         c = col.column()
+        if len(morph.data):
+            row = c.row()
+            row.prop(morph, 'data_type', expand=True)
         row = c.row()
-        row.label('UV Offsets (%d)'%len(morph.data))
+        if morph.data_type == 'VERTEX_GROUP':
+            row.prop(morph, 'vertex_group_scale', text='Scale')
+        else:
+            row.label('UV Offsets (%d)'%len(morph.data))
+            #self._template_morph_offset_list(c, morph, 'UL_UVMorphOffsets')
         row.prop(morph, 'uv_index')
-        if 0:
-            self._template_morph_offset_list(c, morph, 'UL_UVMorphOffsets')
+        row.operator('mmd_tools.morph_offset_remove', text='', icon='X').all = True
 
     def _draw_group_data(self, context, rig, col, morph):
         c = col.column(align=True)

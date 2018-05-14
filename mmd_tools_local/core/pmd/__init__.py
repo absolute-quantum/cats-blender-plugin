@@ -65,18 +65,9 @@ class  FileReadStream(FileStream):
 
     def readStr(self, size):
         buf = self.__fin.read(size)
-        try:
-            index = buf.index(b'\x00')
-            t = buf[:index]
-            return t.decode('shift-jis')
-        except ValueError:
-            if buf[0] == b'\xfd':
-                return ''
-            try:
-                return buf.decode('shift-jis')
-            except UnicodeDecodeError:
-                logging.warning('found a invalid shift-jis string.')
-                return ''
+        if buf[0] == b'\xfd':
+            return ''
+        return buf.split(b'\x00')[0].decode('shift_jis', errors='replace')
 
     def readFloat(self):
         v, = struct.unpack('<f', self.__fin.read(4))

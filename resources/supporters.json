@@ -1,0 +1,169 @@
+{
+  "news": [
+    {
+      "info2": "Welcome to the cats dev build!",
+      "icon": "INFO"
+    },
+    {
+      "info2": "Happy Halloween!",
+      "custom_icon": "halloween"
+    }
+  ],
+  "supporters": [
+    {
+      "displayname": "Xeverian",
+      "startdate": "2018-01-05",
+      "description": "yare yare daze"
+    },{
+      "displayname": "Tupper",
+      "startdate": "2018-02-05"
+    },{
+      "displayname": "idea",
+      "startdate": "2018-03-05"
+    },{
+      "displayname": "RadaruS",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Str4fe",
+      "startdate": "2018-01-05"
+    },{
+      "displayname": "Ainrehtea Dal'Nalirtu",
+      "startdate": "2018-02-05"
+    },{
+      "displayname": "Raikin",
+      "startdate": "2018-03-05"
+    },{
+      "displayname": "BerserkerBoreas",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "ihatemondays",
+      "startdate": "2018-01-05"
+    },{
+      "displayname": "Derpmare",
+      "startdate": "2018-02-05"
+    },{
+      "displayname": "Chikan Celeryman",
+      "startdate": "2018-03-05"
+    },{
+      "displayname": "Ashe",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Quadriple",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "abrownbag",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Azuth",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "goblox",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "azupwn",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "m o t h",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Tomnautical",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Atirion",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Lydania",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Shanie",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Sifu",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Lil Clone",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Naranar",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "liquid (retso)",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Mute_",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "qy_li",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "ReOL",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Rezinion",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Karma",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "SolarSnowball",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Bones",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Axo_",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Dogniss",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Syntion",
+      "startdate": "2018-05-013"
+    },{
+      "displayname": "Sheet_no_mana",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Awrini",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "NekoNatsuki",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "AlphaSatanOmega",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Curio",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Deathofirish",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Runda",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Rurikaze",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Brindin_wF",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Serry Jane",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "GV-97",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "COMMEN",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Antivirus-Chan",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "Rayduxz",
+      "startdate": "2018-04-05"
+    },{
+      "displayname": "BemVR",
+      "startdate": "2018-05-14"
+    }
+  ]
+}

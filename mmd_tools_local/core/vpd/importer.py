@@ -3,6 +3,7 @@
 import logging
 
 import bpy
+from mathutils import Matrix
 
 from mmd_tools_local import bpyutils
 from mmd_tools_local.core import vmd
@@ -51,14 +52,14 @@ class VPDImporter:
             loc = converter.convert_location(b.location)
             rot = converter.convert_rotation(b.rotation)
             assert(bone not in pose_data)
-            pose_data[bone] = (loc, rot, (1,1,1))
+            pose_data[bone] = Matrix.Translation(loc) * rot.to_matrix().to_4x4()
 
         for bone in armObj.pose.bones:
-            if reset_transform:
-                bone.matrix_basis.identity()
             vpd_pose = pose_data.get(bone, None)
             if vpd_pose:
-                bone.location, bone.rotation_quaternion, bone.scale = vpd_pose
+                bone.matrix_basis = vpd_pose
+            elif reset_transform:
+                bone.matrix_basis.identity()
 
         if armObj.pose_library is None:
             armObj.pose_library = bpy.data.actions.new(name='PoseLib')

@@ -12,6 +12,7 @@ from bpy.props import EnumProperty
 from mmd_tools_local.core.model import Model as FnModel
 from mmd_tools_local.core.bone import FnBone
 from mmd_tools_local.core.material import FnMaterial
+from mmd_tools_local.core.morph import FnMorph
 from mmd_tools_local import utils
 
 
@@ -41,6 +42,11 @@ def _set_name(prop, value):
                 value = utils.uniqueName(value, used_names|kb_list.keys())
                 for kb in kb_list[prop_name]:
                     kb.name = value
+
+        elif morph_type == 'uv_morphs':
+            for mesh in FnModel(prop.id_data).meshes():
+                for vg, n, x in FnMorph.get_uv_morph_vertex_groups(mesh, prop_name):
+                    vg.name = vg.name.replace(prop_name, value)
 
         if 1:#morph_type != 'group_morphs':
             for m in mmd_root.group_morphs:
@@ -356,6 +362,15 @@ class UVMorph(_MorphBase, PropertyGroup):
         max=4,
         default=0,
         )
+    data_type = EnumProperty(
+        name='Data Type',
+        description='Select data type',
+        items = [
+            ('DATA', 'Data', 'Store offset data in root object (deprecated)', 0),
+            ('VERTEX_GROUP', 'Vertex Group', 'Store offset data in vertex groups', 1),
+            ],
+        default='DATA',
+        )
     data = CollectionProperty(
         name='Morph Data',
         type=UVMorphOffset,
@@ -364,6 +379,13 @@ class UVMorph(_MorphBase, PropertyGroup):
         name='Active UV Data',
         min=0,
         default=0,
+        )
+    vertex_group_scale = FloatProperty(
+        name='Vertex Group Scale',
+        description='The value scale of "Vertex Group" data type',
+        precision=3,
+        step=0.1,
+        default=1,
         )
 
 class GroupMorphOffset(PropertyGroup):

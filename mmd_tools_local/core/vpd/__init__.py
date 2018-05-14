@@ -7,7 +7,7 @@ class VpdBone:
     def __init__(self, bone_name, location, rotation):
         self.bone_name = bone_name
         self.location = location
-        self.rotation = rotation
+        self.rotation = rotation if any(rotation) else [0, 0, 0, 1]
 
     def __repr__(self):
         return '<VpdBone %s, loc %s, rot %s>'%(
@@ -46,7 +46,7 @@ class File:
         path = args['filepath']
 
         encoding = 'shift_jis'
-        with open(path, 'rt', encoding=encoding) as fin:
+        with open(path, 'rt', encoding=encoding, errors='replace') as fin:
             self.filepath = path
             if not fin.readline().startswith('Vocaloid Pose Data file'):
                 raise InvalidFileError
@@ -89,7 +89,7 @@ class File:
         path = args.get('filepath', self.filepath)
 
         encoding = 'shift_jis'
-        with open(path, 'wt', encoding=encoding, newline='') as fout:
+        with open(path, 'wt', encoding=encoding, errors='replace', newline='') as fout:
             self.filepath = path
             fout.write('Vocaloid Pose Data file\r\n')
 

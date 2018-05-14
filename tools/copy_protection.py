@@ -48,6 +48,11 @@ class CopyProtectionEnable(bpy.types.Operator):
             armature = tools.common.set_default_stage()
             tools.common.unselect_all()
             tools.common.select(mesh)
+            tools.common.switch('EDIT')
+
+            # Convert quad faces to tris first
+            bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
+
             tools.common.switch('OBJECT')
 
             mesh.show_only_shape_key = False

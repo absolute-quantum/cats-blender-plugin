@@ -13,13 +13,13 @@ import time
 
 
 def isRigidBodyObject(obj):
-    return obj.mmd_type == 'RIGID_BODY'
+    return obj and obj.mmd_type == 'RIGID_BODY'
 
 def isJointObject(obj):
-    return obj.mmd_type == 'JOINT'
+    return obj and obj.mmd_type == 'JOINT'
 
 def isTemporaryObject(obj):
-    return obj.mmd_type in ['TRACK_TARGET', 'NON_COLLISION_CONSTRAINT', 'SPRING_CONSTRAINT', 'SPRING_GOAL']
+    return obj and obj.mmd_type in {'TRACK_TARGET', 'NON_COLLISION_CONSTRAINT', 'SPRING_CONSTRAINT', 'SPRING_GOAL'}
 
 
 def getRigidBodySize(obj):
@@ -97,8 +97,7 @@ class Model:
             armObj.pose.bones[bone_name].mmd_bone.name_j = bone_name
             armObj.pose.bones[bone_name].mmd_bone.name_e = 'Root'
 
-        scene.objects.active = root
-        root.select = True
+        bpyutils.select_object(root)
         return Model(root)
 
     @classmethod

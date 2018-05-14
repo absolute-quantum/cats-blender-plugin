@@ -9,9 +9,9 @@ from mmd_tools_local import cycles_converter
 
 class ConvertMaterialsForCycles(Operator):
     bl_idname = 'mmd_tools.convert_materials_for_cycles'
-    bl_options = {'PRESET'}
     bl_label = 'Convert Shaders For Cycles'
     bl_description = 'Convert materials of selected objects for Cycles.'
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         try:
@@ -26,7 +26,7 @@ class ConvertMaterialsForCycles(Operator):
 class _OpenTextureBase(object):
     """ Create a texture for mmd model material.
     """
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     filepath = StringProperty(
         name="File Path",
@@ -49,7 +49,7 @@ class OpenTexture(Operator, _OpenTextureBase):
     bl_idname = 'mmd_tools.material_open_texture'
     bl_label = 'Open Texture'
     bl_description = 'Create main texture of active material'
-    
+
     def execute(self, context):
         mat = context.active_object.active_material
         fnMat = FnMaterial(mat)
@@ -63,7 +63,7 @@ class RemoveTexture(Operator):
     bl_idname = 'mmd_tools.material_remove_texture'
     bl_label = 'Remove Texture'
     bl_description = 'Remove main texture of active material'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         mat = context.active_object.active_material
@@ -91,7 +91,7 @@ class RemoveSphereTexture(Operator):
     bl_idname = 'mmd_tools.material_remove_sphere_texture'
     bl_label = 'Remove Sphere Texture'
     bl_description = 'Remove sphere texture of active material'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         mat = context.active_object.active_material
@@ -103,7 +103,7 @@ class MoveMaterialUp(Operator):
     bl_idname = 'mmd_tools.move_material_up'
     bl_label = 'Move Material Up'
     bl_description = 'Moves selected material one slot up'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
@@ -129,7 +129,7 @@ class MoveMaterialDown(Operator):
     bl_idname = 'mmd_tools.move_material_down'
     bl_label = 'Move Material Down'
     bl_description = 'Moves the selected material one slot down'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):

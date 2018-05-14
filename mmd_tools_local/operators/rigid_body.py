@@ -15,7 +15,7 @@ class SelectRigidBody(Operator):
     bl_idname = 'mmd_tools.select_rigid_body'
     bl_label = 'Select Rigid Body'
     bl_description = 'Select similar rigidbody objects which have the same property values with active rigidbody object'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     properties = bpy.props.EnumProperty(
         name='Properties',
@@ -40,15 +40,15 @@ class SelectRigidBody(Operator):
         vm = context.window_manager
         return vm.invoke_props_dialog(self)
 
+    @classmethod
+    def poll(cls, context):
+        return mmd_model.isRigidBodyObject(context.active_object)
+
     def execute(self, context):
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
         if root is None:
             self.report({ 'ERROR' }, "The model root can't be found")
-            return { 'CANCELLED' }
-
-        if not mmd_model.isRigidBodyObject(obj):
-            self.report({ 'ERROR' }, 'Active object is not a MMD rigidbody')
             return { 'CANCELLED' }
 
         rig = mmd_model.Model(root)
@@ -82,7 +82,7 @@ class AddRigidBody(Operator):
     bl_idname = 'mmd_tools.add_rigid_body'
     bl_label = 'Add Rigid Body'
     bl_description = 'Adds a Rigid Body'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO', 'PRESET', 'INTERNAL'}
 
     name_j = bpy.props.StringProperty(
         name='Name',
@@ -222,7 +222,7 @@ class RemoveRigidBody(Operator):
     bl_idname = 'mmd_tools.remove_rigid_body'
     bl_label = 'Remove Rigid Body'
     bl_description = 'Deletes the currently selected Rigid Body'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
@@ -241,7 +241,7 @@ class AddJoint(Operator):
     bl_idname = 'mmd_tools.add_joint'
     bl_label = 'Add Joint'
     bl_description = 'Add Joint(s) to selected rigidbody objects'
-    bl_options = {'PRESET'} 
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     use_bone_rotation = bpy.props.BoolProperty(
         name='Use Bone Rotation',
@@ -330,7 +330,7 @@ class RemoveJoint(Operator):
     bl_idname = 'mmd_tools.remove_joint'
     bl_label = 'Remove Joint'
     bl_description = 'Deletes the currently selected Joint'
-    bl_options = {'PRESET'}  
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):

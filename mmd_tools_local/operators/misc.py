@@ -16,7 +16,7 @@ class MoveObject(Operator, utils.ItemMoveOp):
     bl_idname = 'mmd_tools.object_move'
     bl_label = 'Move Object'
     bl_description = 'Move active object up/down in the list'
-    bl_options = {'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     __PREFIX_REGEXP = re.compile(r'(?P<prefix>[0-9A-Z]{3}_)(?P<name>.*)')
 
@@ -76,7 +76,7 @@ class CleanShapeKeys(Operator):
     bl_idname = 'mmd_tools.clean_shape_keys'
     bl_label = 'Clean Shape Keys'
     bl_description = 'Remove unused shape keys of selected mesh objects'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
@@ -109,9 +109,9 @@ class CleanShapeKeys(Operator):
 
 class SeparateByMaterials(Operator):
     bl_idname = 'mmd_tools.separate_by_materials'
-    bl_label = 'Separate by materials'
+    bl_label = 'Separate by Materials'
     bl_description = 'Separate by materials'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     clean_shape_keys = bpy.props.BoolProperty(
         name='Clean Shape Keys',
@@ -143,6 +143,7 @@ class SeparateByMaterials(Operator):
             # The material morphs store the name of the mesh, not of the object.
             # So they will not be out of sync
             for mesh in rig.meshes():
+                FnMorph.clean_uv_morph_vertex_groups(mesh)
                 if len(mesh.data.materials) > 0:
                     mat = mesh.data.materials[0]
                     idx = mat_names.index(getattr(mat, 'name', None))
@@ -159,7 +160,7 @@ class JoinMeshes(Operator):
     bl_idname = 'mmd_tools.join_meshes'
     bl_label = 'Join Meshes'
     bl_description = 'Join the Model meshes into a single one'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         obj = context.active_object
@@ -211,7 +212,7 @@ class AttachMeshesToMMD(Operator):
     bl_idname = 'mmd_tools.attach_meshes'
     bl_label = 'Attach Meshes to Model'
     bl_description = 'Finds existing meshes and attaches them to the selected MMD model'
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
         root = mmd_model.Model.findRoot(context.active_object)
@@ -246,7 +247,7 @@ class ChangeMMDIKLoopFactor(Operator):
     bl_idname = 'mmd_tools.change_mmd_ik_loop_factor'
     bl_label = 'Change MMD IK Loop Factor'
     bl_description = "Multiplier for all bones' IK iterations in Blender"
-    bl_options = {'PRESET'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     mmd_ik_loop_factor = bpy.props.IntProperty(
         name='MMD IK Loop Factor',
