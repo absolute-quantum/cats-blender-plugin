@@ -19,6 +19,7 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
  - Creating lip syncing
  - Creating eye tracking
  - Automatic decimation
+ - Creating custom models easily
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
  - Optimizing materials
@@ -154,7 +155,7 @@ Works by sending a request to the Google Translate service. This feature can be 
         - You can use Move, Scale and Rotate
         - INFO: The mesh will only be assigned to the selected bone
         - E.g.: A jacket won't work, because it requires multiple bones.
-        - E.g.: A ring on a finger works perfectly, because the ring only needs to move with the finger bone
+        - E.g.: A ring on a finger works perfectly, because the ring only needs one bone to move with (the finger bone)
     - Select the base armature and the mesh you want to attach to the base armature
     - Select the bone you want to attach the mesh to
     - Press the "Attach Mesh" button -> Done!
@@ -167,13 +168,6 @@ https://nixart.wordpress.com/2013/03/28/modifying-the-rest-pose-in-blender/
 - We worked hard on this feature. If you like it consider supporting us, it helps a lot!
 
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
-
-
-## Translation
-
-![](https://i.imgur.com/SCyhVn1.png)
-
-**Can translate certain entities from any language to english.** Works by sending a request to the Google translate service. This feature can be slow for entities with a large amount of items.
 
 
 ## Decimation
@@ -357,10 +351,12 @@ It checks for a new version automatically once every day.
         - Fixes holes appearing after export to Unity
     - Updated documentation
         - Step 6 now shows how to fix all remaining lighting issues
+- Atlas:
+    - Changed: Meshes no longer need an armature to be selectable
 - Supporters:
     - The supporter list is now synced with an online repository
         - It can now be updated on the fly without having to update the whole plugin
-        - New supporter list features will be available soon
+    - New supporter list features are available now, check them out!
 - General:
     - Mesh selections are no longer shown if there is only one mesh
     - Updated mmd_tools

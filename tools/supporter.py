@@ -107,7 +107,7 @@ def register_dynamic_buttons():
         description = name + ' is an awesome supporter'
         if supporter.get('description'):
             # description = name + ' says:\n\n' + supporter.get('description') + '\n'
-            description = supporter.get('description') + '\n'
+            description = supporter.get('description')
 
         website = None
         if supporter.get('website'):

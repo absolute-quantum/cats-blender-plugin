@@ -12,7 +12,8 @@
   "supporters": [
     {
       "displayname": "Xeverian",
-      "startdate": "2018-01-05"
+      "startdate": "2018-01-05",
+      "description": "yare yare daze"
     },{
       "displayname": "Tupper",
       "startdate": "2018-02-05"
@@ -160,6 +161,9 @@
     },{
       "displayname": "Rayduxz",
       "startdate": "2018-04-05"
+    },{
+      "displayname": "BemVR",
+      "startdate": "2018-05-14"
     }
   ]
 }

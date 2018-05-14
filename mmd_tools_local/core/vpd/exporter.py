@@ -54,7 +54,7 @@ class VPDExporter:
             bone_name = b.mmd_bone.name_j or b.name
             converter = converters[b]
             location = converter.convert_location(b.location)
-            w, x, y, z = b.rotation_quaternion
+            w, x, y, z = b.matrix_basis.to_quaternion()
             w, x, y, z = converter.convert_rotation([x, y, z, w])
             vpd_bones.append(vpd.VpdBone(bone_name, location, [x, y, z, w]))
         return vpd_bones

@@ -194,9 +194,14 @@ def find_center_vector_of_vertex_group(mesh_name, vertex_group):
 
 
 def get_meshes(self, context):
+    # Modes:
+    # 0 = With Armature only
+    # 1 = Without armature only
+    # 2 = All meshes
+
     choices = []
 
-    for mesh in get_meshes_objects():
+    for mesh in get_meshes_objects(mode=0):
         choices.append((mesh.name, mesh.name, mesh.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
@@ -206,7 +211,17 @@ def get_meshes(self, context):
 def get_top_meshes(self, context):
     choices = []
 
-    for mesh in get_meshes_objects(top_level=True):
+    for mesh in get_meshes_objects(mode=1):
+        choices.append((mesh.name, mesh.name, mesh.name))
+
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
+    return bpy.types.Object.Enum
+
+
+def get_all_meshes(self, context):
+    choices = []
+
+    for mesh in get_meshes_objects(mode=2):
         choices.append((mesh.name, mesh.name, mesh.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
@@ -468,15 +483,26 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-def get_meshes_objects(armature_name=None, top_level=False):
-    if not armature_name and not top_level:
-        armature_name = bpy.context.scene.armature
+def get_meshes_objects(armature_name=None, mode=0):
+    # Modes:
+    # 0 = With armatures only
+    # 1 = Top level only
+    # 2 = All meshes
+
     meshes = []
     for ob in bpy.data.objects:
         if ob.type == 'MESH':
-            if top_level and not ob.parent:
-                meshes.append(ob)
-            elif ob.parent is not None and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
+            if mode == 0:
+                if not armature_name:
+                    armature_name = bpy.context.scene.armature
+                if ob.parent and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
+                    meshes.append(ob)
+
+            elif mode == 1:
+                if not ob.parent:
+                    meshes.append(ob)
+
+            elif mode == 2:
                 meshes.append(ob)
     return meshes
 

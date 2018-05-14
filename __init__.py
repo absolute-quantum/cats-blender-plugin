@@ -95,14 +95,14 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 7, 2],  # Only change this version and the dev branch var right before publishing the new update!
+    'version': [0, 8, 0],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
 
-dev_branch = True
+dev_branch = False
 version = copy.deepcopy(bl_info.get('version'))
 
 # List all the supporters here
@@ -193,7 +193,7 @@ supporters = [
     ['COMMEN', 'COMMEN', '2018-05-09', 0],  # emtpy pic  -do20
     ['Antivirus-Chan', 'Antivirus-Chan', '2018-05-09', 0],  #  -frost
     ['Rayduxz', 'Rayduxz', '2018-05-09', 0],  #  -hats
-    # Bem (BemVR1)
+    ['BemVR', 'BemVR', '2018-05-14', 0],  #  -bemv
     # PorcelainShrine (questzero)
 ]
 
@@ -617,7 +617,7 @@ class ToolPanel:
     bpy.types.Scene.mesh_name_atlas = bpy.props.EnumProperty(
         name='Target Mesh',
         description='The mesh that you want to create a atlas from',
-        items=tools.common.get_meshes
+        items=tools.common.get_all_meshes
     )
 
     # Bone Merging
@@ -910,7 +910,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.05
             row.label('Attach Mesh to Armature:')
 
-            if len(tools.common.get_armature_objects()) == 0 or len(tools.common.get_meshes_objects(top_level=True)) == 0:
+            if len(tools.common.get_armature_objects()) == 0 or len(tools.common.get_meshes_objects(mode=1)) == 0:
                 row = col.row(align=True)
                 row.scale_y = 1.05
                 col.label('An armature and a mesh are required!', icon='INFO')
@@ -1324,11 +1324,18 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
         if context.scene.optimize_mode == 'ATLAS':
             col.separator()
-            col.separator()
 
-            if len(tools.common.get_meshes_objects()) > 1:
+            mesh_count = len(tools.common.get_meshes_objects(mode=2))
+            if mesh_count == 0:
+                row = col.row(align=True)
+                row.label('No meshes found!', icon='ERROR')
+            elif mesh_count > 1:
+                col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
+            else:
+                col.separator()
+
             row = col.row(align=True)
             row.prop(context.scene, 'texture_size', icon='TEXTURE')
 
@@ -1479,13 +1486,13 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                 tier = supporter.get('tier')
                 idname = supporter.get('idname')
 
+                if not name or not idname or supporter.get('disabled'):
+                    j += 1
+                    continue
+
                 website = False
                 if 'website' in supporter.keys():
                     website = True
-
-                if not name or not idname:
-                    j += 1
-                    continue
                 if not tier:
                     tier = 0
 
@@ -1543,12 +1550,6 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.label('Want to give feedback or found a bug?')
-        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart1"].icon_id)
-        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart2"].icon_id)
-        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart3"].icon_id)
-        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["heart4"].icon_id)
-        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord1"].icon_id)
-        # box.label('Want to give feedback or found a bug?', icon_value=preview_collections["custom_icons"]["discord2"].icon_id)
 
         row = col.row(align=True)
         row.operator('credits.discord', icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
@@ -1593,75 +1594,6 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
 
     def draw(self, context):
         addon_updater_ops.update_settings_ui(self, context)
-
-
-def set_current_supporters():
-    global current_supporters
-    if current_supporters:
-        return current_supporters
-
-    current_supporters = []
-    temp_current_supporters = []
-    # now = datetime.now()
-    count = 0
-    for supporter in supporters:
-        # if tools.common.days_between(now.strftime("%Y-%m-%d"), supporter[2]) <= 6000:
-        if True:
-            temp_current_supporters.append([supporter[0], supporter[1], count, supporter[3]])
-            count += 1
-
-    # Sort supporters
-    for i in range(0, count):
-        value = temp_current_supporters[i]
-        key = value[0]
-        if key.startswith('\1'):
-            if value[2] % 3 == 1:
-                for value2 in temp_current_supporters:
-                    if value2[2] == value[2] - 1:
-                        value2[2] = value[2]
-                        value[2] = value2[2] - 1
-                        break
-            if value[2] % 3 == 2:
-                for value2 in temp_current_supporters:
-                    if value2[2] == value[2] - 2:
-                        value2[2] = value[2]
-                        value[2] = value2[2] - 2
-                        break
-        elif key.startswith('\2'):
-            if value[2] % 3 == 0:
-                for value2 in temp_current_supporters:
-                    if value2[2] == value[2] - 2:
-                        value2[2] = value[2]
-                        value[2] = value2[2] - 2
-                        break
-            if value[2] % 3 == 2:
-                for value2 in temp_current_supporters:
-                    if value2[2] == value[2] - 1:
-                        value2[2] = value[2]
-                        value[2] = value2[2] - 1
-                        break
-        elif key.startswith('\3'):
-            if value[2] % 3 == 0:
-                for value2 in temp_current_supporters:
-                    if value2[2] == value[2] - 1:
-                        value2[2] = value[2]
-                        value[2] = value2[2] - 1
-                        break
-            if value[2] % 3 == 1:
-                for value2 in temp_current_supporters:
-                    if value2[2] == value[2] - 2:
-                        value2[2] = value[2]
-                        value[2] = value2[2] - 2
-                        break
-
-    # Fill in Supporters
-    for i in range(0, count):
-        for value in temp_current_supporters:
-            if value[2] == i:
-                if value[0].startswith('\1') or value[0].startswith('\2') or value[0].startswith('\3'):
-                    current_supporters.append([value[0][1:], value[1], value[3]])
-                else:
-                    current_supporters.append([value[0], value[1], value[3]])
 
 
 classesToRegister = [

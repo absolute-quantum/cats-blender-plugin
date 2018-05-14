@@ -94,7 +94,7 @@ class AttachMesh(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(tools.common.get_armature_objects()) > 0 and len(tools.common.get_meshes_objects(top_level=True)) > 0
+        return len(tools.common.get_armature_objects()) > 0 and len(tools.common.get_meshes_objects(mode=1)) > 0
 
     def execute(self, context):
         # Set default stage
