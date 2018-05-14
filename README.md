@@ -73,17 +73,17 @@ This tries to completely fix your model with one click.
 
 ##### Fix Model
 - Fixes your model automatically by:
-     - Reparenting bones
-     - Removing unnecessary bones
-     - Renaming and translating objects and bones
-     - Mixing weight paints
-     - Rotating the hips
-     - Joining meshes
-     - Removing rigidbodies, joints and bone groups
-     - Removing bone constraints
-     - Deleting unused vertex groups
-     - Using the correct shading
-     - Making it compatible with Full Body Tracking
+  - Reparenting bones
+  - Removing unnecessary bones
+  - Renaming and translating objects and bones
+  - Mixing weight paints
+  - Rotating the hips
+  - Joining meshes
+  - Removing rigidbodies, joints and bone groups
+  - Removing bone constraints
+  - Deleting unused vertex groups
+  - Using the correct shading
+  - Making it compatible with Full Body Tracking
  
  **special thanks to @ProfessorSnep#0001, @Mimi#4114, @persia#0123 and @Gallium#7020 <3 <3**
 
@@ -135,31 +135,31 @@ Works by sending a request to the Google Translate service. This feature can be 
 ##### Merge Armatures
 - Merges the selected armature into the selected base armature.
 - **How to use:**
-    - Use "Fix Model" on both armatures
-        - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
-        - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure (https://i.imgur.com/F5KEt0M.png)
-        - DO NOT delete any main bones by yourself! CATS will merge them and deletes all unused bones afterwards
-    - Move the mesh (and only the mesh!) of the merge armature to the desired position
-        - You can use Move, Scale and Rotate
-        - CATS will position the bones according to the mesh automatically
-        - If you want multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
-    - Select the base armature and the armature you want to merge into the base armature
-    - If CATS can't detect the bone structure automatically: select a bone you want to attach the new armature to
-        - E.g.: For a hair armature select "Head" as the bone
-    - Press the "Merge Armatures" button -> Done!
+  - Use "Fix Model" on both armatures
+    - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
+    - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure (https://i.imgur.com/F5KEt0M.png)
+    - DO NOT delete any main bones by yourself! CATS will merge them and deletes all unused bones afterwards
+  - Move the mesh (and only the mesh!) of the merge armature to the desired position
+    - You can use Move, Scale and Rotate
+    - CATS will position the bones according to the mesh automatically
+    - If you want multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
+  - Select the base armature and the armature you want to merge into the base armature
+  - If CATS can't detect the bone structure automatically: select a bone you want to attach the new armature to
+    - E.g.: For a hair armature select "Head" as the bone
+  - Press the "Merge Armatures" button -> Done!
 
 ##### Attach Mesh to Armature
 - Attaches the selected mesh to the selected armature.
 - **How to use:**
-    - Move the mesh to the desired position
-        - You can use Move, Scale and Rotate
-        - INFO: The mesh will only be assigned to the selected bone
-        - E.g.: A jacket won't work, because it requires multiple bones.
-        - E.g.: A ring on a finger works perfectly, because the ring only needs one bone to move with (the finger bone)
-    - Select the base armature and the mesh you want to attach to the base armature
-    - Select the bone you want to attach the mesh to
-    - Press the "Attach Mesh" button -> Done!
-    
+  - Move the mesh to the desired position
+    - You can use Move, Scale and Rotate
+    - INFO: The mesh will only be assigned to the selected bone
+    - E.g.: A jacket won't work, because it requires multiple bones.
+    - E.g.: A ring on a finger works perfectly, because the ring only needs one bone to move with (the finger bone)
+  - Select the base armature and the mesh you want to attach to the base armature
+  - Select the bone you want to attach the mesh to
+  - Press the "Attach Mesh" button -> Done!
+
 ##### Useful tip:
 - You can change the rest position of your model by using this method:
 https://nixart.wordpress.com/2013/03/28/modifying-the-rest-pose-in-blender/
@@ -327,62 +327,39 @@ It checks for a new version automatically once every day.
 
 #### 0.8.0
 - Model:
-    - Added "Merge Armatures" button!
-        - This merges two selected armatures together.
-    - Added "Attach mesh" button!
-        - This attaches a mesh to a selected bone in an armature.
-        - Custom avatars are a breeze now!
-    - Added support for Source Engine Models!
-    - Added new "Custom Model Creation" panel
-    - Moved some model options into a new "Model Options" panel
-    - Moved Translations into the new "Model Options" panel
-    - Added a lot of new model options to the "Model Options" panel
-    - "Fix Model" now sets the roll of all bones to 0
-        - This fixes a lot of finger issues in Unity!
-    - "Fix Model" now removes the standard lamp, camera and cube
-    - Full Body Tracking Fix is not longer enabled by default
-    - More models are now compatible (please report non working models to us)
-    - Fixed: Undoing the operation after a model import no longer undoes the import as well
+  - Added "Merge Armatures" button!
+    - This merges two selected armatures together.
+  - Added "Attach mesh" button!
+    - This attaches a mesh to a selected bone in an armature.
+    - Custom avatars are a breeze now!
+  - Added support for Source Engine Models!
+  - Added new "Custom Model Creation" panel
+  - Moved some model options into a new "Model Options" panel
+  - Added a lot of new model options to that panel
+  - "Fix Model" now sets the roll of all bones to 0
+    - This fixes a lot of finger issues in Unity!
+  - "Fix Model" now removes the standard lamp, camera and cube
+  - Full Body Tracking Fix is not longer enabled by default
+  - More models are now compatible (please report non working models to us)
+  - Fixed: Undoing the operation after a model import no longer undoes the import as well
 - Eye Tracking:
-    - Now shows a warning when important objects aren't named correctly
+  - Now shows a warning when important objects aren't named correctly
 - Copy Protection:
-    - Added Export button into the panel after enabling the protection
-    - Now automatically triangulates the model
-        - Fixes holes appearing after export to Unity
-    - Updated documentation
-        - Step 6 now shows how to fix all remaining lighting issues
+  - Added Export button into the panel after enabling the protection
+  - Now automatically triangulates the model
+    - Fixes holes appearing after export to Unity
+  - Updated documentation
+    - Step 6 now shows how to fix all remaining lighting issues
 - Atlas:
-    - Changed: Meshes no longer need an armature to be selectable
+  - Changed: Meshes no longer need an armature to be selectable
 - Supporters:
-    - The supporter list is now synced with an online repository
-        - It can now be updated on the fly without having to update the whole plugin
-    - New supporter list features are available now, check them out!
+  - The supporter list is now synced with an online repository
+    - It can now be updated on the fly without having to update the whole plugin
+  - New supporter list features are available now, check them out!
 - General:
-    - Mesh selections are no longer shown if there is only one mesh
-    - Updated mmd_tools
-    - Fixed lots of bugs and typos
-
-#### 0.7.2
-- Changed: Copy Protection: Does now work on multiple meshes.
-- Fixed: Copy Protection: The lighting bugs are now gone! Therefore we removed the randomization options.
-  - Either use the Export button within Cats or set the export option by yourself:
-    Geometries > Smoothing > Set to "Face"
-- Added: Model: "Fix Model" now sets the bone layer to 0.
-  - This means that shadow bones are now editable
-- Added: Model: More models are now compatible (please report non working models to us)
-- Added: Model: Now shows a small info box about the bone length warning when full body fix is enabled
-- Fixed: Model: Separating by Loose Parts should no longer crash Blender.
-  - Instead it might lag (but that's better than crashing)
-- Fixed: Model: "Fix Model" now disables Backface Culling
-- Fixed: Atlas: Now unhides everything in edit mode
-- Fixed: "Remove Doubles" causing an error
-- Fixed: More bugs
-
-#### 0.7.1
-- Added: Model: The Full Body Fix is now a toggleable option
-  - If you get the "spine length zero" warning in Unity you can ignore it as it shouldn't break anything.
-    But if it really does cause issues, uncheck this option
-- Added: Copy protection: Added "Go to Documentation" button
+  - Mesh selections are no longer shown if there is only one mesh
+  - Updated mmd_tools
+  - Fixed lots of bugs and typos
 
 See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
