@@ -552,6 +552,12 @@ class FixArmature(bpy.types.Operator):
                     if neck.head[z_cord] == neck.tail[z_cord]:
                         neck.tail[z_cord] += 0.1
 
+        # Straighten up the head bone
+        if 'Head' in armature.data.edit_bones:
+            head = armature.data.edit_bones.get('Head')
+            head.tail[x_cord] = head.head[x_cord]
+            head.tail[y_cord] = head.head[y_cord]
+
         # Correct arm bone positions for better looks
         tools.common.correct_bone_positions()
 
@@ -851,8 +857,11 @@ class FixArmature(bpy.types.Operator):
         # Armature should be named correctly (has to be at the end because of multiple armatures)
         tools.common.fix_armature_names()
 
-        # Fix shading
-        bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+        # Fix shading (check for runtime error because of ci tests)
+        try:
+            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+        except RuntimeError:
+            pass
 
         wm.progress_end()
 

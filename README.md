@@ -325,6 +325,13 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.8.1
+- **Model:**
+  - Now straightens up the head bone
+  - Fixed bone morphs not converting correctly
+  - Fixed bones rotating the mesh twice as far
+  - Fixed eye rotation testing no longer working after changing the eye movement scale
+
 #### 0.8.0
 - Model:
   - Added "Merge Armatures" button!
@@ -361,7 +368,7 @@ It checks for a new version automatically once every day.
   - Updated mmd_tools
   - Fixed lots of bugs and typos
 
-See the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
+Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
 
 ## Roadmap

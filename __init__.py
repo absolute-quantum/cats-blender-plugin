@@ -102,6 +102,7 @@ bl_info = {
     'warning': '',
 }
 
+# TODO Change Highoms name back to Highom<3!
 dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 

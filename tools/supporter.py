@@ -248,27 +248,8 @@ def load_supporters():
     # are regular py objects - you can use them to store custom data.
     pcoll = bpy.utils.previews.new()
 
-    # path to the folder where the icon is
-    # the path is calculated relative to this py file inside the addon folder
-    icons_dir = os.path.join(resources_dir, "icons")
-    icons_supporter_dir = os.path.join(icons_dir, "supporters")
-
-    # load the supporters icons
-    if supporter_data:
-        for supporter in supporter_data['supporters']:
-            name = supporter['displayname']
-            try:
-                pcoll.load(name, os.path.join(icons_supporter_dir, name + '.png'), 'IMAGE')
-            except KeyError:
-                pass
-        for news in supporter_data['news']:
-            custom_icon = news.get('custom_icon')
-            if not custom_icon or custom_icon in pcoll:
-                continue
-            try:
-                pcoll.load(custom_icon, os.path.join(icons_supporter_dir, custom_icon + '.png'), 'IMAGE')
-            except KeyError:
-                pass
+    # load the supporters and news icons
+    load_icons(pcoll)
 
     if preview_collections.get('supporter_icons'):
         bpy.utils.previews.remove(preview_collections['supporter_icons'])
@@ -285,32 +266,8 @@ def reload_supporters():
     else:
         pcoll = bpy.utils.previews.new()
 
-    # path to the folder where the icon is
-    # the path is calculated relative to this py file inside the addon folder
-    icons_dir = os.path.join(resources_dir, "icons")
-    icons_supporter_dir = os.path.join(icons_dir, "supporters")
-
-    # load the supporters icons
-    if supporter_data:
-        for supporter in supporter_data['supporters']:
-            name = supporter['displayname']
-
-            if name in pcoll:
-                continue
-
-            try:
-                pcoll.load(name, os.path.join(icons_supporter_dir, name + '.png'), 'IMAGE')
-            except KeyError:
-                pass
-        for news in supporter_data['news']:
-            custom_icon = news.get('custom_icon')
-            if not custom_icon or custom_icon in pcoll:
-                continue
-
-            try:
-                pcoll.load(custom_icon, os.path.join(icons_supporter_dir, custom_icon + '.png'), 'IMAGE')
-            except KeyError:
-                pass
+    # load the supporters and news icons
+    load_icons(pcoll)
 
     if not preview_collections.get('supporter_icons'):
         preview_collections['supporter_icons'] = pcoll
@@ -320,6 +277,41 @@ def reload_supporters():
 
     # Finish reloading
     finish_reloading()
+
+
+def load_icons(pcoll):
+    # path to the folder where the icon is
+    # the path is calculated relative to this py file inside the addon folder
+    icons_dir = os.path.join(resources_dir, "icons")
+    icons_supporter_dir = os.path.join(icons_dir, "supporters")
+
+    if supporter_data:
+        for supporter in supporter_data['supporters']:
+            name = supporter['displayname']
+            iconname = supporter.get('iconname')
+
+            if not iconname:
+                iconname = name
+
+            if name in pcoll:
+                continue
+
+            try:
+                pcoll.load(name, os.path.join(icons_supporter_dir, iconname + '.png'), 'IMAGE')
+            except KeyError:
+                pass
+
+        for news in supporter_data['news']:
+            custom_icon = news.get('custom_icon')
+
+            if not custom_icon or custom_icon in pcoll:
+                continue
+
+            try:
+                pcoll.load(custom_icon, os.path.join(icons_supporter_dir, custom_icon + '.png'), 'IMAGE')
+            except KeyError:
+                pass
+
 
 
 def finish_reloading():

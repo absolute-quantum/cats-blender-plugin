@@ -681,6 +681,8 @@ class AdjustEyesButton(bpy.types.Operator):
             return {'FINISHED'}
 
         armature = tools.common.set_default_stage()
+        armature.data.pose_position = 'POSE'
+
         tools.common.switch('EDIT')
 
         new_eye_left = armature.data.edit_bones.get('LeftEye')
