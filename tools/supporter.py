@@ -162,6 +162,7 @@ def download_file():
     except urllib.error.URLError:
         print("FILE COULD NOT BE DOWNLOADED")
         shutil.rmtree(downloads_dir)
+        finish_reloading()
         return
     print('DOWNLOAD FINISHED')
 
@@ -169,6 +170,7 @@ def download_file():
     if not os.path.isfile(supporter_zip_file):
         print("ZIP NOT FOUND!")
         shutil.rmtree(downloads_dir)
+        finish_reloading()
         return
 
     # Extract the downloaded zip
@@ -181,6 +183,7 @@ def download_file():
     if not os.path.isdir(extracted_zip_dir):
         print("EXTRACTED ZIP FOLDER NOT FOUND!")
         shutil.rmtree(downloads_dir)
+        finish_reloading()
         return
 
     # delete existing supporter list and icon folder
@@ -315,6 +318,11 @@ def reload_supporters():
     unregister_dynamic_buttons()
     register_dynamic_buttons()
 
+    # Finish reloading
+    finish_reloading()
+
+
+def finish_reloading():
     # Set running false
     global reloading
     reloading = False

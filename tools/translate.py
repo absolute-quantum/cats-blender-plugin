@@ -27,6 +27,7 @@
 import re
 import bpy
 import tools.common
+import requests.exceptions
 
 from googletrans import Translator
 from mmd_tools_local import utils
@@ -65,13 +66,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
         translator = Translator()
         try:
             translations = translator.translate(to_translate)
-        except Exception as ex:
-            if type(ex).__name__ == 'ConnectionError':
-                self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-                return {'FINISHED'}
-            template = "Exception {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            self.report({'ERROR'}, message)
+        except requests.exceptions.ConnectionError:
+            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
             return {'FINISHED'}
 
         for translation in translations:
@@ -155,13 +151,8 @@ class TranslateMeshesButton(bpy.types.Operator):
 
         try:
             translations = translator.translate(to_translate)
-        except Exception as ex:
-            if type(ex).__name__ == 'ConnectionError':
-                self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-                return {'FINISHED'}
-            template = "Exception {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            self.report({'ERROR'}, message)
+        except requests.exceptions.ConnectionError:
+            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
             return {'FINISHED'}
 
         for translation in translations:
@@ -208,14 +199,8 @@ class TranslateMaterialsButton(bpy.types.Operator):
         translator = Translator()
         try:
             translations = translator.translate(to_translate)
-        except Exception as ex:
-            if type(ex).__name__ == 'ConnectionError':
-                self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-                return {'FINISHED'}
-
-            template = "Exception {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(ex).__name__, ex.args)
-            self.report({'ERROR'}, message)
+        except requests.exceptions.ConnectionError:
+            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
             return {'FINISHED'}
 
         for translation in translations:

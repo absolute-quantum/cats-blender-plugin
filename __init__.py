@@ -102,7 +102,7 @@ bl_info = {
     'warning': '',
 }
 
-dev_branch = False
+dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
 # List all the supporters here
@@ -708,7 +708,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                 info = news.get('info')
                 icon = news.get('icon')
                 custom_icon = news.get('custom_icon')
-                if info:
+                if info and not news.get('disabled'):
                     showed_info = True
 
                     row = col.row(align=True)

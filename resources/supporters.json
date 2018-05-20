@@ -1,12 +1,17 @@
 {
   "news": [
     {
-      "info2": "Welcome to the cats dev build!",
+      "info": "Have a nice weekend!",
+      "custom_icon": "fire"
+    },
+    {
+      "info2": "Happy",
       "icon": "INFO"
     },
     {
       "info2": "Happy Halloween!",
-      "custom_icon": "halloween"
+      "custom_icon": "halloween",
+      "disabled": false
     }
   ],
   "supporters": [
@@ -127,7 +132,8 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "NekoNatsuki",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "description": "I do what I do, and make what I make. For the people I love and care so much about"
     },{
       "displayname": "AlphaSatanOmega",
       "startdate": "2018-04-05"
@@ -164,6 +170,12 @@
     },{
       "displayname": "BemVR",
       "startdate": "2018-05-14"
+    },{
+      "displayname": "Hizling",
+      "startdate": "2018-05-14"
+    },{
+      "displayname": "Naatiivee1337",
+      "startdate": "2018-05-20"
     }
   ]
 }

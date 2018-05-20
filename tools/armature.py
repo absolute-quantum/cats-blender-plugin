@@ -32,17 +32,13 @@ import copy
 import tools.common
 import tools.translate
 import tools.armature_bones as Bones
+import mmd_tools_local.operators.morph
 from mmd_tools_local.translations import DictionaryEnum
 
 import math
 from mathutils import Matrix
 
-mmd_tools_installed = False
-try:
-    import mmd_tools_local
-    mmd_tools_installed = True
-except:
-    pass
+mmd_tools_installed = True
 
 
 class FixArmature(bpy.types.Operator):
@@ -190,11 +186,14 @@ class FixArmature(bpy.types.Operator):
                     current_step = 0
                     wm.progress_begin(current_step, len(mmd_root.bone_morphs))
 
+                    armature.data.pose_position = 'POSE'
                     for index, morph in enumerate(mmd_root.bone_morphs):
                         current_step += 1
                         wm.progress_update(current_step)
+
                         armature.parent.mmd_root.active_morph = index
-                        bpy.ops.mmd_tools.view_bone_morph()
+                        mmd_tools_local.operators.morph.ViewBoneMorph.execute(None, context)
+
                         mesh = tools.common.get_meshes_objects()[0]
                         tools.common.select(mesh)
 
@@ -210,6 +209,9 @@ class FixArmature(bpy.types.Operator):
                 bpy.ops.xps_tools.set_shadeless_glsl_shading()
             except (AttributeError, RuntimeError):
                 pass
+
+        # Reset to default
+        tools.common.set_default_stage()
 
         # Set better bone view
         armature.data.draw_type = 'OCTAHEDRAL'
