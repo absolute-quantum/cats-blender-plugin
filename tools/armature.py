@@ -32,17 +32,13 @@ import copy
 import tools.common
 import tools.translate
 import tools.armature_bones as Bones
+import mmd_tools_local.operators.morph
 from mmd_tools_local.translations import DictionaryEnum
 
 import math
 from mathutils import Matrix
 
-mmd_tools_installed = False
-try:
-    import mmd_tools_local
-    mmd_tools_installed = True
-except:
-    pass
+mmd_tools_installed = True
 
 
 class FixArmature(bpy.types.Operator):
@@ -153,63 +149,44 @@ class FixArmature(bpy.types.Operator):
                     print(key + " | " + name)
         print('DOUBLES END')
 
-        # mmd_tools specific operations
-        if mmd_tools_installed:
-            # Set correct mmd shading
-            try:
-                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-                for obj in bpy.data.objects:
-                    if obj.parent is None and obj.type == 'EMPTY':
-                        obj.mmd_root.use_toon_texture = False
-                        obj.mmd_root.use_sphere_texture = False
-                        break
-            except (AttributeError, RuntimeError):
-                pass
+        # Check if model is mmd model
+        mmd_root = None
+        try:
+            mmd_root = armature.parent.mmd_root
+        except AttributeError:
+            pass
 
-        # mmd_tools specific operations
-        shading_is_set = False
-        if mmd_tools_installed:
+        # Perform mmd specific operations
+        if mmd_root:
 
             # Set correct mmd shading
-            try:
-                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-                for obj in bpy.data.objects:
-                    if obj.parent is None and obj.type == 'EMPTY':
-                        obj.mmd_root.use_toon_texture = False
-                        obj.mmd_root.use_sphere_texture = False
-                        break
-                shading_is_set = True
-            except (AttributeError, RuntimeError):
-                pass
+            mmd_root.use_toon_texture = False
+            mmd_root.use_sphere_texture = False
 
-            # Convert mmd bone morph into shape keys
-            try:
-                mmd_root = armature.parent.mmd_root
-                if len(mmd_root.bone_morphs) > 0:
+            # Convert mmd bone morphs into shape keys
+            if len(mmd_root.bone_morphs) > 0:
 
-                    current_step = 0
-                    wm.progress_begin(current_step, len(mmd_root.bone_morphs))
+                current_step = 0
+                wm.progress_begin(current_step, len(mmd_root.bone_morphs))
 
-                    for index, morph in enumerate(mmd_root.bone_morphs):
-                        current_step += 1
-                        wm.progress_update(current_step)
-                        armature.parent.mmd_root.active_morph = index
-                        bpy.ops.mmd_tools.view_bone_morph()
-                        mesh = tools.common.get_meshes_objects()[0]
-                        tools.common.select(mesh)
+                armature.data.pose_position = 'POSE'
+                for index, morph in enumerate(mmd_root.bone_morphs):
+                    current_step += 1
+                    wm.progress_update(current_step)
 
-                        mod = mesh.modifiers.new(morph.name, 'ARMATURE')
-                        mod.object = armature
-                        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
-                    wm.progress_end()
-            except AttributeError:
-                pass
+                    armature.parent.mmd_root.active_morph = index
+                    mmd_tools_local.operators.morph.ViewBoneMorph.execute(None, context)
 
-        if not shading_is_set:
-            try:
-                bpy.ops.xps_tools.set_shadeless_glsl_shading()
-            except (AttributeError, RuntimeError):
-                pass
+                    mesh = tools.common.get_meshes_objects()[0]
+                    tools.common.select(mesh)
+
+                    mod = mesh.modifiers.new(morph.name, 'ARMATURE')
+                    mod.object = armature
+                    bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+                wm.progress_end()
+
+        # Reset to default
+        tools.common.set_default_stage()
 
         # Set better bone view
         armature.data.draw_type = 'OCTAHEDRAL'
@@ -575,6 +552,12 @@ class FixArmature(bpy.types.Operator):
                     if neck.head[z_cord] == neck.tail[z_cord]:
                         neck.tail[z_cord] += 0.1
 
+        # Straighten up the head bone
+        if 'Head' in armature.data.edit_bones:
+            head = armature.data.edit_bones.get('Head')
+            head.tail[x_cord] = head.head[x_cord]
+            head.tail[y_cord] = head.head[y_cord]
+
         # Correct arm bone positions for better looks
         tools.common.correct_bone_positions()
 
@@ -873,6 +856,12 @@ class FixArmature(bpy.types.Operator):
 
         # Armature should be named correctly (has to be at the end because of multiple armatures)
         tools.common.fix_armature_names()
+
+        # Fix shading (check for runtime error because of ci tests)
+        try:
+            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+        except RuntimeError:
+            pass
 
         wm.progress_end()
 

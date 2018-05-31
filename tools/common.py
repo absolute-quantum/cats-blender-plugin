@@ -545,10 +545,15 @@ def join_meshes(armature_name=None):
         mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
 
+        mod_count = 0
         for mod in mesh.modifiers:
             mod.show_expanded = False
             if mod.type == 'ARMATURE':
+                if mod_count > 0:
+                    bpy.ops.object.modifier_remove(modifier=mod.name)
+                    continue
                 mod.object = get_armature(armature_name=armature_name)
+                mod_count += 1
 
         ShapekeyOrder.repair(mesh.name)
         break

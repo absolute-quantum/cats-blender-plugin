@@ -169,15 +169,23 @@ class ConvertToMMDModel(Operator):
             ],
         default='DIFFUSE',
         )
-
     edge_threshold = bpy.props.FloatProperty(
         name='Edge Threshold',
         description='MMD toon edge will not be enabled if freestyle line color alpha less than this value',
         min=0,
-        max=1,
+        max=1.001,
         precision=3,
         step=0.1,
         default=0.1,
+        )
+    edge_alpha_min = bpy.props.FloatProperty(
+        name='Minimum Edge Alpha',
+        description='Minimum alpha of MMD toon edge color',
+        min=0,
+        max=1,
+        precision=3,
+        step=0.1,
+        default=0.5,
         )
 
     @classmethod
@@ -247,26 +255,28 @@ class ConvertToMMDModel(Operator):
         for m in {x for mesh in meshes for x in mesh.data.materials if x}:
             mmd_material = m.mmd_material
 
-            diffuse = m.diffuse_color[:]
+            map_diffuse = next((s.blend_type for s in m.texture_slots if s and s.use_map_color_diffuse), None)
+            use_diffuse = map_diffuse in {None, 'MULTIPLY'}
+            diffuse = m.diffuse_color*min(1.0, m.diffuse_intensity/0.8) if use_diffuse else (1.0, 1.0, 1.0)
             mmd_material.diffuse_color = diffuse
             if self.ambient_color_source == 'MIRROR':
                 mmd_material.ambient_color = m.mirror_color
             else:
                 mmd_material.ambient_color = [0.5*c for c in diffuse]
-            mmd_material.alpha = m.alpha
-            mmd_material.specular_color = m.specular_color
+
+            map_alpha = next((s.blend_type for s in m.texture_slots if s and s.use_map_alpha), None)
+            if m.use_transparency and map_alpha in {None, 'MULTIPLY'}:
+                mmd_material.alpha = m.alpha
+
+            mmd_material.specular_color = m.specular_color*min(1.0, m.specular_intensity/0.8)
             mmd_material.shininess = m.specular_hardness
             mmd_material.is_double_sided = m.game_settings.use_backface_culling
             mmd_material.enabled_self_shadow_map = m.use_cast_buffer_shadows and m.alpha > 1e-3
             mmd_material.enabled_self_shadow = m.use_shadows
             if hasattr(m, 'line_color'): # freestyle line color
                 line_color = list(m.line_color)
-                if line_color[3] < self.edge_threshold:
-                    mmd_material.enabled_toon_edge = False
-                    mmd_material.edge_color[:3] = line_color[:3] # skip alpha
-                else:
-                    mmd_material.enabled_toon_edge = True
-                    mmd_material.edge_color = line_color
+                mmd_material.enabled_toon_edge = line_color[3] >= self.edge_threshold
+                mmd_material.edge_color = line_color[:3] + [max(line_color[3], self.edge_alpha_min)]
 
         from mmd_tools_local.operators.display_item import DisplayItemQuickSetup
         DisplayItemQuickSetup.load_bone_groups(root.mmd_root, armature)

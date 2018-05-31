@@ -117,7 +117,6 @@ class SeparateByMaterials(Operator):
         name='Clean Shape Keys',
         description='Remove unused shape keys of separated objects',
         default=True,
-        options={'SKIP_SAVE'},
         )
 
     @classmethod
@@ -162,11 +161,17 @@ class JoinMeshes(Operator):
     bl_description = 'Join the Model meshes into a single one'
     bl_options = {'REGISTER', 'UNDO'}
 
+    sort_shape_keys = bpy.props.BoolProperty(
+        name='Sort Shape Keys',
+        description='Sort shape keys in the order of vertex morph',
+        default=True,
+        )
+
     def execute(self, context):
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
         if root is None:
-            self.report({ 'ERROR' }, 'Select a MMD model') 
+            self.report({ 'ERROR' }, 'Select a MMD model')
             return { 'CANCELLED' }
 
         if root:
@@ -177,6 +182,7 @@ class JoinMeshes(Operator):
         rig = mmd_model.Model(root)
         meshes_list = sorted(rig.meshes(), key=lambda x: x.name)
         if not meshes_list:
+            self.report({ 'ERROR' }, 'The model does not have any meshes')
             return { 'CANCELLED' }
         active_mesh = meshes_list[0]
 
@@ -189,16 +195,12 @@ class JoinMeshes(Operator):
                 if getattr(mat, 'name', None) not in active_mesh.data.materials[:]:
                     active_mesh.data.materials.append(mat)
 
-        # Store the current order of shape keys (vertex morphs)
-        from collections import OrderedDict
-        __get_key_blocks = lambda x: x.data.shape_keys.key_blocks if x.data.shape_keys else []
-        shape_key_names = OrderedDict((kb.name, None) for m in meshes_list for kb in __get_key_blocks(m))
-        shape_key_names = sorted(shape_key_names.keys(), key=lambda x: root.mmd_root.vertex_morphs.find(x))
-        FnMorph.storeShapeKeyOrder(active_mesh, shape_key_names)
-        active_mesh.active_shape_key_index = 0
-
         # Join selected meshes
         bpy.ops.object.join()
+
+        if self.sort_shape_keys:
+            FnMorph.fixShapeKeyOrder(active_mesh, root.mmd_root.vertex_morphs.keys())
+            active_mesh.active_shape_key_index = 0
 
         if len(root.mmd_root.material_morphs) > 0:
             for morph in root.mmd_root.material_morphs:

@@ -62,6 +62,7 @@ class MergeArmature(bpy.types.Operator):
 
         if merge_armature.parent:
             self.report({'ERROR'}, 'Please use the "Fix Model" feature on the selected armatures first!'
+                                   '\nMake sure to select the armature you want to fix above the "Fix Model" button!'
                                    '\nAfter that please only move the mesh (not the armature!) to the desired position.')
             return {'FINISHED'}
         if base_armature.parent:

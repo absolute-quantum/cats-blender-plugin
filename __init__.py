@@ -95,7 +95,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 8, 0],  # Only change this version and the dev branch var right before publishing the new update!
+    'version': [0, 8, 1],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -708,7 +708,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                 info = news.get('info')
                 icon = news.get('icon')
                 custom_icon = news.get('custom_icon')
-                if info:
+                if info and not news.get('disabled'):
                     showed_info = True
 
                     row = col.row(align=True)

@@ -139,7 +139,7 @@ class MMDMaterial(PropertyGroup):
         max=1,
         precision=3,
         step=0.1,
-        default=[1.0, 1.0, 1.0],
+        default=[0.625, 0.625, 0.625],
         update=_updateSpecularColor,
         )
 
@@ -208,7 +208,7 @@ class MMDMaterial(PropertyGroup):
         max=100,
         soft_max=2,
         step=1.0,
-        default=0.5,
+        default=1.0,
         update=_updateEdgeWeight,
         )
 
