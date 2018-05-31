@@ -24,6 +24,7 @@ class Header:
         if self.signature[:len(self.VMD_SIGN)] != self.VMD_SIGN:
             raise InvalidFileError('File signature "%s" is invalid.'%self.signature)
         self.model_name = _toShiftJisString(struct.unpack('<20s', fin.read(20))[0])
+        print(self)
 
     def save(self, fin):
         fin.write(struct.pack('<30s', self.VMD_SIGN))
@@ -144,6 +145,65 @@ class LampKeyFrameKey:
             )
 
 
+class SelfShadowFrameKey:
+    def __init__(self):
+        self.frame_number = 0
+        self.mode = 0 # 0: none, 1: mode1, 2: mode2
+        self.distance = 0.0
+
+    def load(self, fin):
+        self.frame_number, = struct.unpack('<L', fin.read(4))
+        self.mode, = struct.unpack('<b', fin.read(1))
+        distance, = struct.unpack('<f', fin.read(4))
+        self.distance = int(10000 - distance*100000)
+        print('    ', self)
+
+    def save(self, fin):
+        fin.write(struct.pack('<L', self.frame_number))
+        fin.write(struct.pack('<b', self.mode))
+        distance = (10000 - self.distance)/100000
+        fin.write(struct.pack('<f', distance))
+
+    def __repr__(self):
+        return '<SelfShadowFrameKey frame %s, mode %s, distance %s>'%(
+            str(self.frame_number),
+            str(self.mode),
+            str(self.distance),
+            )
+
+
+class PropertyFrameKey:
+    def __init__(self):
+        self.frame_number = 0
+        self.visible = True
+        self.ik_states = [] # list of (ik_name, enable/disable)
+
+    def load(self, fin):
+        self.frame_number, = struct.unpack('<L', fin.read(4))
+        self.visible, = struct.unpack('<b', fin.read(1))
+        count, = struct.unpack('<L', fin.read(4))
+        for i in range(count):
+            ik_name = _toShiftJisString(struct.unpack('<20s', fin.read(20))[0])
+            state, = struct.unpack('<b', fin.read(1))
+            self.ik_states.append((ik_name, state))
+        print('    ', self)
+
+    def save(self, fin):
+        fin.write(struct.pack('<L', self.frame_number))
+        fin.write(struct.pack('<b', 1 if self.visible else 0))
+        fin.write(struct.pack('<L', len(self.ik_states)))
+        for ik_name, state in self.ik_states:
+            fin.write(struct.pack('<20s', _toShiftJisBytes(ik_name)))
+            fin.write(struct.pack('<b', 1 if state else 0))
+
+    def __repr__(self):
+        return '<PropertyFrameKey frame %s, visible %s, ik_states %s>'%(
+            str(self.frame_number),
+            str(self.visible),
+            str(self.ik_states),
+            )
+
+
 class _AnimationBase(collections.defaultdict):
     def __init__(self):
         collections.defaultdict.__init__(self, list)
@@ -154,6 +214,7 @@ class _AnimationBase(collections.defaultdict):
 
     def load(self, fin):
         count, = struct.unpack('<L', fin.read(4))
+        print('loading %s... %d'%(self.__class__.__name__, count))
         for i in range(count):
             name = _toShiftJisString(struct.unpack('<15s', fin.read(15))[0])
             cls = self.frameClass()
@@ -181,6 +242,7 @@ class _AnimationListBase(list):
 
     def load(self, fin):
         count, = struct.unpack('<L', fin.read(4))
+        print('loading %s... %d'%(self.__class__.__name__, count))
         for i in range(count):
             cls = self.frameClass()
             frameKey = cls()
@@ -229,6 +291,24 @@ class LampAnimation(_AnimationListBase):
         return LampKeyFrameKey
 
 
+class SelfShadowAnimation(_AnimationListBase):
+    def __init__(self):
+        _AnimationListBase.__init__(self)
+
+    @staticmethod
+    def frameClass():
+        return SelfShadowFrameKey
+
+
+class PropertyAnimation(_AnimationListBase):
+    def __init__(self):
+        _AnimationListBase.__init__(self)
+
+    @staticmethod
+    def frameClass():
+        return PropertyFrameKey
+
+
 class File:
     def __init__(self):
         self.filepath = None
@@ -237,6 +317,8 @@ class File:
         self.shapeKeyAnimation = None
         self.cameraAnimation = None
         self.lampAnimation = None
+        self.selfShadowAnimation = None
+        self.propertyAnimation = None
 
     def load(self, **args):
         path = args['filepath']
@@ -248,13 +330,17 @@ class File:
             self.shapeKeyAnimation = ShapeKeyAnimation()
             self.cameraAnimation = CameraAnimation()
             self.lampAnimation = LampAnimation()
+            self.selfShadowAnimation = SelfShadowAnimation()
+            self.propertyAnimation = PropertyAnimation()
 
             self.header.load(fin)
-            self.boneAnimation.load(fin)
             try:
+                self.boneAnimation.load(fin)
                 self.shapeKeyAnimation.load(fin)
                 self.cameraAnimation.load(fin)
                 self.lampAnimation.load(fin)
+                self.selfShadowAnimation.load(fin)
+                self.propertyAnimation.load(fin)
             except struct.error:
                 pass # no valid camera/lamp data
 
@@ -266,6 +352,8 @@ class File:
         shapeKeyAnimation = self.shapeKeyAnimation or ShapeKeyAnimation()
         cameraAnimation = self.cameraAnimation or CameraAnimation()
         lampAnimation = self.lampAnimation or LampAnimation()
+        selfShadowAnimation = self.selfShadowAnimation or SelfShadowAnimation()
+        propertyAnimation = self.propertyAnimation or PropertyAnimation()
 
         with open(path, 'wb') as fin:
             header.save(fin)
@@ -273,4 +361,6 @@ class File:
             shapeKeyAnimation.save(fin)
             cameraAnimation.save(fin)
             lampAnimation.save(fin)
+            selfShadowAnimation.save(fin)
+            propertyAnimation.save(fin)
 

@@ -165,7 +165,7 @@ bone_list_conflicting_names = [
 
     (['Shoulder+_\L'], 'Shoulder_\L', 'Shoulder2_\L'),
 
-    (['Tg_\L'], '\Leg_\L', 'Knee_\L'),
+    (['Tg_\L'], 'Leg_\L', 'Knee_\L'),
 
     (['ShoulderParent1_\L', 'ShoulderParent2_\L'], 'Shoulder2_\L', '\Left shoulder'),
     (['ArmParent1_\L', 'ArmParent2_\L'], 'Arm2_\L', '\Left arm'),
@@ -190,6 +190,8 @@ bone_list_conflicting_names = [
     (['Strengthen_The_Spine'], 'Spine5', 'Backbone5'),
     (['Strengthen_The_Spine'], 'Spine6', 'Backbone6'),
     (['Strengthen_The_Spine'], 'Spine7', 'Backbone7'),
+
+    # (['Elbowb_\L', 'Elbowc_\L'], 'Elbowa_\L', 'Arm05_\L'),
 ]
 bone_finger_list = [
     'Thumb0_',
@@ -715,6 +717,7 @@ bone_reweight['Neck'] = [
 ]
 bone_reweight['Head'] = [
     'Neckx2',
+    'Head_001',
 ]
 bone_reweight['\Left shoulder'] = [
     'ShoulderP_\L',
@@ -811,6 +814,9 @@ bone_reweight['\Left arm'] = [
     '\LeftArmBend',
     '\L_Uptwist_A',
     '\L_Uptwist_B',
+    # 'Elbowb_\L',
+    # 'Elbowc_\L',
+    # 'Elbowd_\L',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',

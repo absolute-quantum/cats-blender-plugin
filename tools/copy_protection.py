@@ -159,5 +159,13 @@ class ProtectionTutorialButton(bpy.types.Operator):
     def execute(self, context):
         webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#copy-protection')
 
+        # mesh = tools.common.get_meshes_objects()[0]
+        # tools.common.select(mesh)
+        # tools.common.switch('OBJECT')
+        #
+        # for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+        #     if i == 1:
+        #         shapekey.value = 1.5
+
         self.report({'INFO'}, 'Documentation')
         return {'FINISHED'}

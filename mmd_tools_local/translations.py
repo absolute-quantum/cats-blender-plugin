@@ -217,7 +217,7 @@ class MMDTranslator:
     def update(self):
         from collections import OrderedDict
         count_old = len(self.__csv_tuples)
-        tuples_dict = OrderedDict((row[0], row) for row in self.__csv_tuples if len(row) >= 2)
+        tuples_dict = OrderedDict((row[0], row) for row in self.__csv_tuples if len(row) >= 2 and row[0])
         self.__csv_tuples.clear()
         self.__csv_tuples.extend(tuples_dict.values())
         print(' - removed items:', count_old-len(self.__csv_tuples), '(of %d)'%count_old)

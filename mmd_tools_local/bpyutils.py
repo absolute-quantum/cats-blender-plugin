@@ -293,9 +293,13 @@ class ObjectOp:
     if bpy.app.version < (2, 75, 0):
         def shape_key_remove(self, key):
             obj = self.__obj
+            key_blocks = obj.data.shape_keys.key_blocks # key.id_data.key_blocks
+            relative_key_map = {k.name:getattr(k.relative_key, 'name', '') for k in key_blocks}
+            obj.active_shape_key_index = key_blocks.find(key.name)
             bpy.context.scene.objects.active = obj
-            obj.active_shape_key_index = key.id_data.key_blocks.find(key.name)
             bpy.ops.object.shape_key_remove()
+            for k in key_blocks:
+                k.relative_key = key_blocks.get(relative_key_map[k.name], key_blocks[0])
     else:
         def shape_key_remove(self, key):
             self.__obj.shape_key_remove(key)

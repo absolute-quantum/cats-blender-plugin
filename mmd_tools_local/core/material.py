@@ -89,7 +89,7 @@ class FnMaterial(object):
 
     def __same_image_file(self, image, filepath):
         if image and image.source == 'FILE':
-            img_filepath = image.filepath_from_user()
+            img_filepath = bpy.path.abspath(image.filepath) # image.filepath_from_user()
             if img_filepath == filepath:
                 return True
             try:
@@ -268,6 +268,7 @@ class FnMaterial(object):
         mat = self.__material
         mmd_mat = mat.mmd_material
         mat.diffuse_color = self._mixDiffuseAndAmbient(mmd_mat)
+        mat.diffuse_intensity = 0.8
 
     def update_alpha(self):
         mat = self.__material

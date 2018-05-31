@@ -1,7 +1,7 @@
 {
   "news": [
     {
-      "info": "Have a nice weekend!",
+      "info2": "Have a nice weekend!",
       "custom_icon": "fire"
     },
     {
@@ -70,6 +70,9 @@
     },{
       "displayname": "m o t h",
       "startdate": "2018-04-05"
+    },{
+      "displayname": "Yorx",
+      "startdate": "2018-05-21"
     },{
       "displayname": "Tomnautical",
       "startdate": "2018-04-05"
@@ -180,6 +183,12 @@
       "displayname": "Highom",
       "iconname": "Highom3 (Highom<3)",
       "startdate": "2018-05-20"
+    },{
+      "displayname": "Skashe",
+      "startdate": "2018-05-24"
+    },{
+      "displayname": "Steinshy",
+      "startdate": "2018-05-31"
     }
   ]
 }

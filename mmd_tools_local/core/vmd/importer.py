@@ -134,11 +134,15 @@ class VMDImporter:
 
 
     def __assignToArmature(self, armObj, action_name=None):
+        boneAnim = self.__vmdFile.boneAnimation
+        logging.info('---- bone animations:%5d  target: %s', len(boneAnim), armObj.name)
+        if len(boneAnim) < 1:
+            return
+
         action_name = action_name or armObj.name
         action = bpy.data.actions.new(name=action_name)
         armObj.animation_data_create().action = action
 
-        boneAnim = self.__vmdFile.boneAnimation
         extra_frame = 1 if self.__frame_margin > 1 else 0
 
         pose_bones = armObj.pose.bones
@@ -207,6 +211,11 @@ class VMDImporter:
 
 
     def __assignToMesh(self, meshObj, action_name=None):
+        shapeKeyAnim = self.__vmdFile.shapeKeyAnimation
+        logging.info('---- morph animations:%5d  target: %s', len(shapeKeyAnim), meshObj.name)
+        if len(shapeKeyAnim) < 1:
+            return
+
         if meshObj.data.shape_keys is None:
             logging.warning('WARNING: mesh object %s does not have any shape key', meshObj.name)
             return
@@ -214,8 +223,6 @@ class VMDImporter:
         action_name = action_name or meshObj.name
         action = bpy.data.actions.new(name=action_name)
         meshObj.data.shape_keys.animation_data_create().action = action
-
-        shapeKeyAnim = self.__vmdFile.shapeKeyAnimation
 
         shapeKeyDict = {}
         for i in meshObj.data.shape_keys.key_blocks:

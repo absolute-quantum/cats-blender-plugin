@@ -1090,9 +1090,11 @@ class __PmxExporter:
         for i, kb in shape_key_list:
             shape_key_name = kb.name
             logging.info(' - processing shape key: %s', shape_key_name)
+            kb_mute, kb.mute = kb.mute, False
             meshObj.active_shape_key_index = i
             mesh = meshObj.to_mesh(bpy.context.scene, True, 'PREVIEW', False)
             mesh.transform(pmx_matrix)
+            kb.mute = kb_mute
             if len(mesh.vertices) != len(base_mesh.vertices):
                 logging.warning('   * Error! vertex count mismatch!')
                 continue

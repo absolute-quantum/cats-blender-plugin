@@ -164,6 +164,22 @@ class VMDExporter:
                 return ir
         return ((20, 20), (107, 107))
 
+    @staticmethod
+    def __xyzw_from_rotation_mode(mode):
+        if mode == 'QUATERNION':
+            return lambda xyzw: xyzw
+
+        if mode == 'AXIS_ANGLE':
+            def __xyzw_from_axis_angle(xyzw):
+                q = mathutils.Quaternion(xyzw[:3], xyzw[3])
+                return [q.x, q.y, q.z, q.w]
+            return __xyzw_from_axis_angle
+
+        def __xyzw_from_euler(xyzw):
+            q = mathutils.Euler(xyzw[:3], xyzw[3]).to_quaternion()
+            return [q.x, q.y, q.z, q.w]
+        return __xyzw_from_euler
+
 
     def __exportBoneAnimation(self, armObj):
         if armObj is None:
@@ -177,6 +193,7 @@ class VMDExporter:
 
         anim_bones = {}
         rePath = re.compile(r'^pose\.bones\["(.+)"\]\.([a-z_]+)$')
+        prop_rotation_map = {'QUATERNION':'rotation_quaternion', 'AXIS_ANGLE':'rotation_axis_angle'}
         for fcurve in animation_data.action.fcurves:
             m = rePath.match(fcurve.data_path)
             if m is None:
@@ -188,30 +205,41 @@ class VMDExporter:
             if bone.is_mmd_shadow_bone:
                 continue
             prop_name = m.group(2)
-            if prop_name not in {'location', 'rotation_quaternion'}:
+            if prop_name not in {'location', prop_rotation_map.get(bone.rotation_mode, 'rotation_euler')}:
                 continue
 
             if bone not in anim_bones:
-                data = list(bone.location) + list(bone.rotation_quaternion)
+                data = list(bone.location)
+                if bone.rotation_mode == 'QUATERNION':
+                    data += list(bone.rotation_quaternion)
+                elif bone.rotation_mode == 'AXIS_ANGLE':
+                    data += list(bone.rotation_axis_angle)
+                else:
+                    data += ([bone.rotation_mode] + list(bone.rotation_euler))
                 anim_bones[bone] = [_FCurve(i) for i in data] # x, y, z, rw, rx, ry, rz
             bone_curves = anim_bones[bone]
             if prop_name == 'location': # x, y, z
                 bone_curves[fcurve.array_index].setFCurve(fcurve)
             elif prop_name == 'rotation_quaternion': # rw, rx, ry, rz
                 bone_curves[3+fcurve.array_index].setFCurve(fcurve)
+            elif prop_name == 'rotation_axis_angle': # rw, rx, ry, rz
+                bone_curves[3+fcurve.array_index].setFCurve(fcurve)
+            elif prop_name == 'rotation_euler': # mode, rx, ry, rz
+                bone_curves[3+fcurve.array_index+1].setFCurve(fcurve)
 
         for bone, bone_curves in anim_bones.items():
             key_name = bone.mmd_bone.name_j or bone.name
             assert(key_name not in vmd_bone_anim) # VMD bone name collision
             frame_keys = vmd_bone_anim[key_name]
 
+            get_xyzw = self.__xyzw_from_rotation_mode(bone.rotation_mode)
             converter = self.__bone_converter_cls(bone, self.__scale, invert=True)
             prev_rot = None
             for frame_number, x, y, z, rw, rx, ry, rz in self.__allFrameKeys(bone_curves):
                 key = vmd.BoneFrameKey()
                 key.frame_number = frame_number - self.__frame_start
                 key.location = converter.convert_location([x[0], y[0], z[0]])
-                curr_rot = converter.convert_rotation([rx[0], ry[0], rz[0], rw[0]])
+                curr_rot = converter.convert_rotation(get_xyzw([rx[0], ry[0], rz[0], rw[0]]))
                 if prev_rot is not None:
                     curr_rot = self.__minRotationDiff(prev_rot, curr_rot)
                 prev_rot = curr_rot
