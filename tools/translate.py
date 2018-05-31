@@ -64,11 +64,13 @@ class TranslateShapekeyButton(bpy.types.Operator):
                             to_translate.append(shapekey.name)
 
         translator = Translator()
-        try:
-            translations = translator.translate(to_translate)
-        except requests.exceptions.ConnectionError:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-            return {'FINISHED'}
+        # try:
+        #     translations = translator.translate(to_translate)
+        # except requests.exceptions.ConnectionError:
+        #     self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+        #     return {'FINISHED'}
+
+        translations = translator.translate(to_translate)
 
         for translation in translations:
             translated.append(translation.text)

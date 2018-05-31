@@ -102,7 +102,7 @@ bl_info = {
     'warning': '',
 }
 
-dev_branch = False
+dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
 # List all the supporters here
