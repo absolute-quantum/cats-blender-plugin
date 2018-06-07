@@ -70,8 +70,12 @@ def get_armature_objects():
 
 
 def unhide_all():
-    for obj in bpy.data.objects:
-        obj.hide = False
+    if bpy.app.version < (2, 79, 9):
+        for obj in bpy.data.objects:
+            obj.hide = False
+    else:
+        for obj in bpy.data.collections:
+            obj.hide_viewport = False
 
 
 def unselect_all():
@@ -881,13 +885,15 @@ def delete_hierarchy(obj):
     objects = bpy.data.objects
     for n in names:
         obj_temp = objects.get(n)
-        if obj_temp is not None:
-            setattr(obj_temp, 'select', True)
+        if obj_temp:
+            obj_temp.select = True
             obj_temp.animation_data_clear()
 
     result = bpy.ops.object.delete()
-    bpy.data.scenes['Scene'].objects.unlink(obj)
+
+    bpy.context.scene.objects.unlink(obj)
     bpy.data.objects.remove(obj)
+
     if result == {'FINISHED'}:
         print("Successfully deleted object")
     else:

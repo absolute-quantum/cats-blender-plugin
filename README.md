@@ -325,6 +325,15 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.8.2
+- **Model:**
+  - Backface culling will now deactivate again
+- **Translation:**
+  - Fixed the SSL error
+    - This fixes a lot of instances where translations would not work
+- **General**
+  - Fixed bugs all over the place
+
 #### 0.8.1
 - **Model:**
   - Now straightens up the head bone

@@ -89,6 +89,10 @@ importlib.reload(tools.copy_protection)
 # Search for "show_backface_culling" and set it to False in view.py
 # Done
 
+# How to update googletrans:
+# in the gtoken.py on line 57 update this line to include "verify=False":
+# r = self.session.get(self.host, verify=False)
+
 bl_info = {
     'name': 'Cats Blender Plugin',
     'category': '3D View',

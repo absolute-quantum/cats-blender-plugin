@@ -136,7 +136,9 @@
     },{
       "displayname": "NekoNatsuki",
       "startdate": "2018-04-05",
-      "description": "I do what I do, and make what I make. For the people I love and care so much about"
+      "description": "I do what I do, and make what I make. For the people I love and care so much about",
+      "website": "https://www.twitch.tv/nekonatsukivr",
+      "tier": 1
     },{
       "displayname": "AlphaSatanOmega",
       "startdate": "2018-04-05"
@@ -180,14 +182,17 @@
       "displayname": "Naatiivee1337",
       "startdate": "2018-05-20"
     },{
-      "displayname": "Highom",
-      "iconname": "Highom3 (Highom<3)",
+      "displayname": "Highom<3",
+      "iconname": "Highom3",
       "startdate": "2018-05-20"
     },{
       "displayname": "Skashe",
       "startdate": "2018-05-24"
     },{
       "displayname": "Steinshy",
+      "startdate": "2018-05-31"
+    },{
+      "displayname": "Nubbins",
       "startdate": "2018-05-31"
     }
   ]
