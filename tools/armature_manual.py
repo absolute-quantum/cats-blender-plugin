@@ -224,6 +224,8 @@ class StopPoseMode(bpy.types.Operator):
 
     def execute(self, context):
         armature = tools.common.get_armature()
+        tools.common.select(armature)
+
         for pb in armature.data.bones:
             pb.hide = False
             pb.select = True
@@ -265,21 +267,27 @@ class PoseToShape(bpy.types.Operator):
         return meshes and len(meshes) == 1
 
     def execute(self, context):
-        mesh = tools.common.get_meshes_objects()[0]
-        tools.common.unselect_all()
-        tools.common.select(mesh)
-
-        # Apply armature mod
-        mod = mesh.modifiers.new("Pose", 'ARMATURE')
-        mod.object = tools.common.get_armature()
-        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
-
-        armature = tools.common.set_default_stage()
-        tools.common.switch('POSE')
-        armature.data.pose_position = 'POSE'
+        pose_to_shapekey('Pose')
 
         self.report({'INFO'}, 'Pose successfully saved as shape key.')
         return {'FINISHED'}
+
+
+def pose_to_shapekey(name):
+    mesh = tools.common.get_meshes_objects()[0]
+    tools.common.unselect_all()
+    tools.common.select(mesh)
+
+    # Apply armature mod
+    mod = mesh.modifiers.new(name, 'ARMATURE')
+    mod.object = tools.common.get_armature()
+    bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+
+    armature = tools.common.set_default_stage()
+    tools.common.switch('POSE')
+    armature.data.pose_position = 'POSE'
+
+    return armature
 
 
 class PoseToRest(bpy.types.Operator):
@@ -287,7 +295,9 @@ class PoseToRest(bpy.types.Operator):
     bl_label = 'Apply as Rest Pose'
     bl_description = 'INFO: Join your meshes first!' \
                      '\n' \
-                     '\nThis sets your current pose as the default pose.'
+                     '\nThis applies the current pose position as the new rest position.' \
+                     '\n' \
+                     '\nWARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -299,20 +309,28 @@ class PoseToRest(bpy.types.Operator):
         return meshes and len(meshes) == 1
 
     def execute(self, context):
+        pose_to_shapekey('PoseToRest')
+
+        bpy.ops.pose.armature_apply()
+
         mesh = tools.common.get_meshes_objects()[0]
         tools.common.unselect_all()
         tools.common.select(mesh)
 
-        # Apply armature mod
-        mod = mesh.modifiers.new("Pose", 'ARMATURE')
-        mod.object = tools.common.get_armature()
-        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+        mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
+        bpy.ops.object.shape_key_to_basis()
 
-        armature = tools.common.set_default_stage()
-        tools.common.switch('POSE')
-        armature.data.pose_position = 'POSE'
+        # Remove old basis shape key from shape_key_to_basis operation
+        if 'Basis Old.001' not in mesh.data.shape_keys.key_blocks:
+            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                if shapekey.name == 'Basis Old':
+                    mesh.active_shape_key_index = index
+                    bpy.ops.object.shape_key_remove(all=False)
+                    break
 
-        self.report({'INFO'}, 'Pose successfully saved as shape key.')
+        bpy.ops.armature_manual.stop_pose_mode()
+
+        self.report({'INFO'}, 'Pose successfully applied as rest pose.')
         return {'FINISHED'}
 
 

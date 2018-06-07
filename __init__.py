@@ -777,16 +777,19 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         ob = bpy.context.active_object
         if not ob or ob.mode != 'POSE':
             row = col.row(align=True)
-            row.scale_y = 1.05
+            row.scale_y = 1.1
             row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')
         else:
             row = col.row(align=True)
-            row.scale_y = 1.05
+            row.scale_y = 1.1
             row.operator('armature_manual.stop_pose_mode', icon='POSE_DATA')
             if not tools.eyetracking.eye_left:
                 row = col.row(align=True)
-                row.scale_y = 1.05
+                row.scale_y = 0.9
                 row.operator('armature_manual.pose_to_shape', icon='SHAPEKEY_DATA')
+                row = col.row(align=True)
+                row.scale_y = 0.9
+                row.operator('armature_manual.pose_to_rest', icon='POSE_HLT')
 
         # addon_updater_ops.update_notice_box_ui(self, context)
 
@@ -1609,6 +1612,7 @@ classesToRegister = [
     tools.armature_manual.StartPoseMode,
     tools.armature_manual.StopPoseMode,
     tools.armature_manual.PoseToShape,
+    tools.armature_manual.PoseToRest,
 
     ManualPanel,
     tools.armature_manual.SeparateByMaterials,

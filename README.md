@@ -63,7 +63,7 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/a7S8KnT.png)
+![](https://i.imgur.com/Soz7v0U.png)
 
 This tries to completely fix your model with one click.
 
@@ -92,6 +92,9 @@ This tries to completely fix your model with one click.
 
 ##### Pose to Shape Key
 - Saves your current pose as a new shape key.
+
+##### Apply as Rest Pose
+- Applies the current pose position as the new rest position
 
 
 ## Model Options
@@ -327,10 +330,14 @@ It checks for a new version automatically once every day.
 
 #### 0.8.2
 - **Model:**
+  - Added new "Apply as Rest Pose" button
+    - This will apply the current pose position as the new rest position
   - Backface culling will now deactivate again
 - **Translation:**
   - Fixed the SSL error
     - This fixes a lot of instances where translations would not work
+- **Shapekeys:**
+  - Fixed "Apply Shapekey as Basis" not being the basis for newly created shape keys
 - **General**
   - Fixed bugs all over the place
 
