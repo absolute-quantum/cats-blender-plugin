@@ -163,10 +163,6 @@ Works by sending a request to the Google Translate service. This feature can be 
   - Select the bone you want to attach the mesh to
   - Press the "Attach Mesh" button -> Done!
 
-##### Useful tip:
-- You can change the rest position of your model by using this method:
-https://nixart.wordpress.com/2013/03/28/modifying-the-rest-pose-in-blender/
-
 ##### Support us:
 - We worked hard on this feature. If you like it consider supporting us, it helps a lot!
 
@@ -333,6 +329,7 @@ It checks for a new version automatically once every day.
   - Added new "Apply as Rest Pose" button
     - This will apply the current pose position as the new rest position
   - Backface culling will now deactivate again
+  - Fixed random important bones disappearing for no reason
 - **Translation:**
   - Fixed the SSL error
     - This fixes a lot of instances where translations would not work

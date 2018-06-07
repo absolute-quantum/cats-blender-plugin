@@ -720,6 +720,11 @@ class FixArmature(bpy.types.Operator):
 
                 mesh.rotation_euler = (math.radians(180), 0, 0)
 
+        # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
+        for bone in armature.data.edit_bones:
+            if bone.head[z_cord] == bone.tail[z_cord]:
+                bone.tail[z_cord] += 0.1
+
         # Mixing the weights
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
@@ -754,6 +759,8 @@ class FixArmature(bpy.types.Operator):
                     if bone[0] == bone[1]:
                         print('BUG: ' + bone[0] + ' tried to mix weights with itself!')
                         continue
+
+                    print(bone[0], bone[1])
 
                     vg = mesh.vertex_groups.get(name)
                     # print(bone[1] + " to1 " + bone[0])
@@ -839,8 +846,10 @@ class FixArmature(bpy.types.Operator):
 
         # # This is code for testing
         # print('LOOKING FOR BONES!')
-        #  if 'Eye_L' in tools.common.get_armature().pose.bones:
+        # if 'Head' in tools.common.get_armature().pose.bones:
         #     print('THEY ARE THERE!')
+        # else:
+        #     print('NOT FOUND!!!!!!')
         # return {'FINISHED'}
 
         # At this point, everything should be fixed and now we validate and give errors if needed
