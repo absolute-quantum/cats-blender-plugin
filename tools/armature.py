@@ -185,6 +185,39 @@ class FixArmature(bpy.types.Operator):
                     bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
                 wm.progress_end()
 
+
+        # Perform source engine specific operations
+        # Check if model is source engine model
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+
+        # Remove unused animation data
+        if bpy.context.active_object.animation_data and bpy.context.active_object.animation_data.action.name == 'ragdoll':
+            bpy.context.active_object.animation_data_clear()
+            source_engine = True
+
+        # Delete unused VTA mesh
+        for mesh in tools.common.get_meshes_objects(mode=1):
+            if mesh.name == 'VTA vertices':
+                tools.common.delete_hierarchy(mesh)
+                source_engine = True
+                break
+
+        if source_engine:
+            # Delete unused physics meshes (like rigidbodies)
+            for mesh in tools.common.get_meshes_objects():
+                if mesh.name.endswith('_physics')\
+                        or mesh.name.endswith('_lod1')\
+                        or mesh.name.endswith('_lod2')\
+                        or mesh.name.endswith('_lod3')\
+                        or mesh.name.endswith('_lod4')\
+                        or mesh.name.endswith('_lod5')\
+                        or mesh.name.endswith('_lod6'):
+                    tools.common.delete_hierarchy(mesh)
+
         # Reset to default
         tools.common.set_default_stage()
 
@@ -525,6 +558,19 @@ class FixArmature(bpy.types.Operator):
             print('NORMAL')
             armature.data.edit_bones.get(spines[0]).name = 'Spine'
             armature.data.edit_bones.get(spines[1]).name = 'Chest'
+
+        elif spine_count == 4 and source_engine:  # SOURCE ENGINE SPECIFIC
+            print('SOURCE ENGINE')
+            spine = armature.data.edit_bones.get(spines[0])
+            chest = armature.data.edit_bones.get(spines[2])
+
+            chest.name = 'Chest'
+            spine.name = 'Spine'
+
+            spine.tail = chest.head
+
+            temp_list_reweight_bones[spines[1]] = 'Spine'
+            temp_list_reweight_bones[spines[3]] = 'Chest'
 
         elif spine_count > 2:  # Merge spines
             print('MASS MERGING')
@@ -871,10 +917,11 @@ class FixArmature(bpy.types.Operator):
         tools.common.fix_armature_names()
 
         # Fix shading (check for runtime error because of ci tests)
-        try:
-            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-        except RuntimeError:
-            pass
+        if not source_engine:
+            try:
+                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+            except RuntimeError:
+                pass
 
         wm.progress_end()
 
@@ -938,7 +985,7 @@ class ModelSettings(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = bpy.context.user_preferences.system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3.25, height=-550)
 
     def check(self, context):
         # Important for changing options

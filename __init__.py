@@ -218,6 +218,7 @@ class ToolPanel:
         items=[
             ("MMD", "MMD", 'Import .pmx/.pmd files'),
             ("XPS", "XNALara", 'Import .xps/.mesh/.ascii files'),
+            ("SOURCE", "Source", 'Import .smd/.qc/.vta/.dmx files'),
             ("FBX", "FBX", 'Import .fbx files'),
         ],
         default='MMD'
@@ -1617,6 +1618,7 @@ classesToRegister = [
     tools.armature_manual.ImportModel,
     tools.armature_manual.ExportModel,
     tools.armature_manual.XpsToolsButton,
+    tools.armature_manual.SourceToolsButton,
     tools.armature.FixArmature,
     tools.armature.ModelSettings,
     tools.armature_manual.StartPoseMode,

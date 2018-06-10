@@ -62,8 +62,12 @@ class ImportModel(bpy.types.Operator):
                 bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
             except AttributeError:
                 bpy.context.window_manager.popup_menu(popup_install_xps, title='XPS Tools is not installed or enabled!', icon='ERROR')
-            except (TypeError, ValueError):
-                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
+
+        elif context.scene.import_mode == 'SOURCE':
+            try:
+                bpy.ops.import_scene.smd('INVOKE_DEFAULT')
+            except AttributeError:
+                bpy.context.window_manager.popup_menu(popup_install_source, title='Blender Source Tools is not installed or enabled!', icon='ERROR')
 
         elif context.scene.import_mode == 'FBX':
             try:
@@ -85,17 +89,6 @@ def popup_enable_mmd(self, context):
     row.label("Please restart Blender.")
 
 
-def popup_enable_xps(self, context):
-    layout = self.layout
-    col = layout.column(align=True)
-
-    row = col.row(align=True)
-    row.label("The plugin 'XPS Tools' is required for this function.")
-    col.separator()
-    row = col.row(align=True)
-    row.label("Please enable it in your User Preferences.")
-
-
 def popup_install_xps(self, context):
     layout = self.layout
     col = layout.column(align=True)
@@ -106,20 +99,47 @@ def popup_install_xps(self, context):
     row = col.row(align=True)
     row.label("If it is not enabled please enable it in your User Preferences.")
     row = col.row(align=True)
-    row.label("If it is not installed please click here to go to this link to download and install it")
+    row.label("If it is not installed please click here to download it and then install it manually.")
     col.separator()
     row = col.row(align=True)
     row.operator('armature_manual.xps_tools', icon='LOAD_FACTORY')
 
 
+def popup_install_source(self, context):
+    layout = self.layout
+    col = layout.column(align=True)
+
+    row = col.row(align=True)
+    row.label("The plugin 'Blender Source Tools' is required for this function.")
+    col.separator()
+    row = col.row(align=True)
+    row.label("If it is not enabled please enable it in your User Preferences.")
+    row = col.row(align=True)
+    row.label("If it is not installed please click here to download it and then install it manually.")
+    col.separator()
+    row = col.row(align=True)
+    row.operator('armature_manual.source_tools', icon='LOAD_FACTORY')
+
+
 class XpsToolsButton(bpy.types.Operator):
     bl_idname = 'armature_manual.xps_tools'
-    bl_label = 'Install XPS Tools'
+    bl_label = 'Open XPS Tools'
 
     def execute(self, context):
         webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
 
         self.report({'INFO'}, 'XPS Tools link opened')
+        return {'FINISHED'}
+
+
+class SourceToolsButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.source_tools'
+    bl_label = 'Open Blender Source Tools'
+
+    def execute(self, context):
+        webbrowser.open('http://steamreview.org/BlenderSourceTools/')
+
+        self.report({'INFO'}, 'Source Tools link opened')
         return {'FINISHED'}
 
 

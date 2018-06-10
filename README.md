@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.8.2)
+# Cats Blender Plugin (0.9.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -324,7 +324,7 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
-#### 0.8.2
+#### 0.9.0
 - **Model:**
   - Added new "Apply as Rest Pose" button
     - This will apply the current pose position as the new rest position
@@ -332,6 +332,7 @@ It checks for a new version automatically once every day.
     - This automatically increases the performance for most models
   - Moved the Fix Model options into a new settings dialog
     - Open this by clicking the wrench icon next to the Fix Model button
+  - Improved support for Source Engine models
   - Backface culling is now deactivated again
   - Fixed random important bones disappearing for no reason
 - **Translation:**
