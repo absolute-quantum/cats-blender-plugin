@@ -65,7 +65,10 @@ class OneTexPerMatButton(bpy.types.Operator):
 class CombineMaterialsButton(bpy.types.Operator):
     bl_idname = 'combine.mats'
     bl_label = 'Combine Same Materials'
-    bl_description = 'Combines similar materials into one, reducing draw calls.'
+    description="Combines similar materials into one, reducing draw calls.\n" \
+                'Your avatar should visibly look the same after this operation.\n' \
+                'This is a very important step for optimizing your avatar.\n' \
+                'If you have problems with this, please tell us!\n',
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     combined_tex = {}
@@ -177,14 +180,14 @@ class CombineMaterialsButton(bpy.types.Operator):
         wm = bpy.context.window_manager
         wm.progress_begin(0, len(bpy.context.scene.objects))
         i = 0
-        for index, object in enumerate(bpy.context.scene.objects):  # for each scene object
+        for index, obj in enumerate(bpy.context.scene.objects):  # for each scene object
             wm.progress_update(index)
-            if object.type == 'MESH':
-                tools.common.select(object)
+            if obj.type == 'MESH':
+                tools.common.select(obj)
                 for file in self.combined_tex:  # for each combined mat slot of scene object
                     combined_textures = self.combined_tex[file]
 
-                    # Combining material slots that are similiar with only themselfs are useless
+                    # Combining material slots that are similar with only themselves are useless
                     if len(combined_textures) <= 1:
                         continue
                     i += len(combined_textures)
@@ -193,7 +196,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                     tools.common.switch('EDIT')
                     bpy.ops.mesh.select_all(action='DESELECT')
                     print('UNSELECT ALL')
-                    for index, mat in enumerate(bpy.context.object.material_slots):  # for each scene object material slot
+                    for mat in bpy.context.object.material_slots:  # for each scene object material slot
                         for tex in combined_textures:
                             if mat.name == tex['mat']:
                                 bpy.context.object.active_material_index = tex['index']
@@ -204,9 +207,16 @@ class CombineMaterialsButton(bpy.types.Operator):
                     print('ASSIGNED TO SLOT INDEX', bpy.context.object.active_material_index)
                     bpy.ops.mesh.select_all(action='DESELECT')
 
-                tools.common.select(object)
+                tools.common.select(obj)
                 tools.common.switch('OBJECT')
                 self.cleanmatslots()
+
+                # Clean material names
+                for i, mat in enumerate(bpy.context.object.material_slots):
+                    if mat.name.endswith('.001'):
+                        bpy.context.object.active_material_index = i
+                        bpy.context.object.active_material.name = mat.name[:-4]
+
                 print('CLEANED MAT SLOTS')
 
         wm.progress_end()

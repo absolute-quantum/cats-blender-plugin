@@ -238,6 +238,15 @@ class ToolPanel:
         default=False
     )
 
+    bpy.types.Scene.combine_mats = bpy.props.BoolProperty(
+        name='Combine Same Materials',
+        description="Combines similar materials into one, reducing draw calls.\n"
+                    'Your avatar should visibly look the same after this operation.\n'
+                    'This is a very important step for optimizing your avatar.\n'
+                    'If you have problems with this, uncheck this option and tell us!\n',
+        default=True
+    )
+
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
         name='Remove Zero Weight Bones',
         description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.\n"
@@ -755,13 +764,14 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         col.separator()
-        row = col.row(align=True)
-        row.prop(context.scene, 'full_body')
-        row = col.row(align=True)
-        row.prop(context.scene, 'remove_zero_weight')
+        col.separator()
         row = col.row(align=True)
         row.scale_y = 1.4
         row.operator('armature.fix', icon='BONE_DATA')
+        subcol = row.row(align=True)
+        subcol.alignment = 'RIGHT'
+        subcol.scale_y = 1.4
+        subcol.operator("armature.settings", text="", icon='MODIFIER')
 
         if context.scene.full_body:
             row = col.row(align=True)
@@ -772,7 +782,6 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()
 
-        col.separator()
         col.separator()
         ob = bpy.context.active_object
         if not ob or ob.mode != 'POSE':
@@ -1609,6 +1618,7 @@ classesToRegister = [
     tools.armature_manual.ExportModel,
     tools.armature_manual.XpsToolsButton,
     tools.armature.FixArmature,
+    tools.armature.ModelSettings,
     tools.armature_manual.StartPoseMode,
     tools.armature_manual.StopPoseMode,
     tools.armature_manual.PoseToShape,
@@ -1694,8 +1704,6 @@ def register():
     if dev_branch and len(version) > 2:
         version[2] += 1
 
-    # thread = Thread(target=tools.supporter.load_supporters, args=[])
-    # thread.start()
     tools.supporter.load_settings()
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
@@ -1732,6 +1740,7 @@ def unregister():
     tools.supporter.unload_icons()
 
     bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
+
     print("### Unloaded CATS successfully!")
 
 

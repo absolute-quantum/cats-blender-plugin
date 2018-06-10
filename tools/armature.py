@@ -230,6 +230,10 @@ class FixArmature(bpy.types.Operator):
         # except RuntimeError:
         #     pass
 
+        # Combines same materials
+        if context.scene.combine_mats:
+            bpy.ops.combine.mats()
+
         # Reorders vrc shape keys to the correct order
         tools.common.repair_viseme_order(mesh.name)
 
@@ -923,3 +927,43 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                             return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
 
     return {'result': True}
+
+
+class ModelSettings(bpy.types.Operator):
+    bl_idname = "armature.settings"
+    bl_label = "Fix Model Settings"
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.prop(context.scene, 'full_body')
+        row = col.row(align=True)
+        row.prop(context.scene, 'combine_mats')
+        row = col.row(align=True)
+        row.prop(context.scene, 'remove_zero_weight')
+
+        if context.scene.full_body:
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label('INFO:', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label('You can safely ignore the', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            col.separator()

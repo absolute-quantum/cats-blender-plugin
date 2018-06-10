@@ -328,7 +328,11 @@ It checks for a new version automatically once every day.
 - **Model:**
   - Added new "Apply as Rest Pose" button
     - This will apply the current pose position as the new rest position
-  - Backface culling will now deactivate again
+  - Fix Model now combines similar materials (toggleable)
+    - This automatically increases the performance for most models
+  - Moved the Fix Model options into a new settings dialog
+    - Open this by clicking the wrench icon next to the Fix Model button
+  - Backface culling is now deactivated again
   - Fixed random important bones disappearing for no reason
 - **Translation:**
   - Fixed the SSL error
