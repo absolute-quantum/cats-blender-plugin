@@ -328,6 +328,7 @@ It checks for a new version automatically once every day.
 - **Model:**
   - Added new "Apply as Rest Pose" button
     - This will apply the current pose position as the new rest position
+  - Added new "Join Selected Meshes" button
   - Fix Model now combines similar materials (toggleable)
     - This automatically increases the performance for most models
   - Moved the Fix Model options into a new settings dialog
@@ -341,6 +342,7 @@ It checks for a new version automatically once every day.
 - **Shapekeys:**
   - Fixed "Apply Shapekey as Basis" not being the basis for newly created shape keys
 - **General**
+  - Various optimizations
   - Fixed bugs all over the place
 
 #### 0.8.1

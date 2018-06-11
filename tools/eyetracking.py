@@ -190,7 +190,7 @@ class CreateEyesButton(bpy.types.Operator):
         shapes[3] = self.copy_shape_key(context, shapes[3], new_shapes, 4)
         wm.progress_update(4)
 
-        tools.common.repair_viseme_order(mesh_name)
+        tools.common.sort_shape_keys(mesh_name)
 
         # Reset the scenes in case they were changed
         context.scene.head = head.name

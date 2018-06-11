@@ -54,13 +54,13 @@ class TranslateShapekeyButton(bpy.types.Operator):
                 tools.common.delete_hierarchy(obj)
 
         to_translate = []
-        translated = []
+        translated = {}
 
         for obj in bpy.data.objects:
             if hasattr(obj.data, 'shape_keys'):
                 if hasattr(obj.data.shape_keys, 'key_blocks'):
-                    for index, shapekey in enumerate(obj.data.shape_keys.key_blocks):
-                        if 'vrc.' not in shapekey.name:
+                    for shapekey in obj.data.shape_keys.key_blocks:
+                        if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
                             to_translate.append(shapekey.name)
 
         translator = Translator()
@@ -70,16 +70,18 @@ class TranslateShapekeyButton(bpy.types.Operator):
             self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
             return {'FINISHED'}
 
-        for translation in translations:
-            translated.append(translation.text)
+        for i, translation in enumerate(translations):
+            translated[to_translate[i]] = translation.text
+
+        tools.common.update_shapekey_orders(translated)
 
         i = 0
         for obj in bpy.data.objects:
             if hasattr(obj.data, 'shape_keys'):
                 if hasattr(obj.data.shape_keys, 'key_blocks'):
-                    for index, shapekey in enumerate(obj.data.shape_keys.key_blocks):
+                    for shapekey in obj.data.shape_keys.key_blocks:
                         if 'vrc.' not in shapekey.name:
-                            shapekey.name = translated[i]
+                            shapekey.name = translated[shapekey.name]
                             i += 1
 
         self.report({'INFO'}, 'Translated ' + str(i) + ' shape keys.')

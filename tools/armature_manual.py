@@ -368,9 +368,39 @@ class JoinMeshes(bpy.types.Operator):
     def execute(self, context):
         mesh = tools.common.join_meshes()
         if mesh:
-            tools.common.repair_viseme_order(mesh.name)
+            tools.common.sort_shape_keys(mesh.name)
 
         self.report({'INFO'}, 'Meshes joined.')
+        return {'FINISHED'}
+
+
+class JoinMeshesSelected(bpy.types.Operator):
+    bl_idname = 'armature_manual.join_meshes_selected'
+    bl_label = 'Join Selected Meshes'
+    bl_description = 'Joins the selected model meshes into a single one and applies all unapplied decimation modifiers'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        meshes = tools.common.get_meshes_objects()
+        return meshes and len(meshes) > 0
+
+    def execute(self, context):
+
+        selected_meshes = 0
+        for mesh in tools.common.get_meshes_objects():
+            if mesh.select:
+                selected_meshes += 1
+
+        if selected_meshes == 0:
+            self.report({'ERROR'}, 'No meshes selected! Please select the meshes you want to join in the hierarchy!')
+            return {'FINISHED'}
+
+        mesh = tools.common.join_meshes(mode=1)
+        if mesh:
+            tools.common.sort_shape_keys(mesh.name)
+
+        self.report({'INFO'}, 'Selected meshes joined.')
         return {'FINISHED'}
 
 

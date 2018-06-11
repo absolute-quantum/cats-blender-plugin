@@ -86,7 +86,7 @@ class ShapeKeyApplier(bpy.types.Operator):
         # bpy.ops.object.shape_key_move(type='TOP')
 
         # Repair important shape key order
-        tools.common.repair_viseme_order(mesh.name)
+        tools.common.sort_shape_keys(mesh.name)
 
         # Do this to correctly apply the new basis as basis
         tools.common.switch('EDIT')

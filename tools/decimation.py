@@ -171,7 +171,7 @@ class AutoDecimateButton(bpy.types.Operator):
 
         mesh = tools.common.join_meshes()
         if mesh is not None:
-            tools.common.repair_viseme_order(mesh.name)
+            tools.common.sort_shape_keys(mesh.name)
 
         return {'FINISHED'}
 

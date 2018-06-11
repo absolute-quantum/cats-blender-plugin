@@ -263,12 +263,15 @@ class FixArmature(bpy.types.Operator):
         # except RuntimeError:
         #     pass
 
+        # Save shape key order
+        tools.common.save_shapekey_order(mesh.name)
+
         # Combines same materials
         if context.scene.combine_mats:
             bpy.ops.combine.mats()
 
         # Reorders vrc shape keys to the correct order
-        tools.common.repair_viseme_order(mesh.name)
+        tools.common.sort_shape_keys(mesh.name)
 
         # Translate bones with dictionary
         tools.translate.translate_bones(self.dictionary)

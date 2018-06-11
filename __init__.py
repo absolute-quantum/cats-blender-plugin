@@ -825,9 +825,12 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.label("Separate by:", icon='MESH_DATA')
         row.operator('armature_manual.separate_by_materials', text='Materials')
         row.operator('armature_manual.separate_by_loose_parts', text='Loose Parts')
+
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.operator('armature_manual.join_meshes', icon='MESH_DATA')
+        row.label("Join Meshes:", icon='MESH_DATA')
+        row.operator('armature_manual.join_meshes', text='All')
+        row.operator('armature_manual.join_meshes_selected', text='Selected')
 
         col.separator()
         col.separator()
@@ -1630,6 +1633,7 @@ classesToRegister = [
     tools.armature_manual.SeparateByMaterials,
     tools.armature_manual.SeparateByLooseParts,
     tools.armature_manual.JoinMeshes,
+    tools.armature_manual.JoinMeshesSelected,
     tools.armature_manual.MergeWeights,
     tools.armature_manual.RemoveZeroWeight,
     tools.armature_manual.RemoveConstraints,

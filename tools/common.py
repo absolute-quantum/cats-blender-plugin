@@ -368,7 +368,8 @@ def get_shapekeys_eye_blink_l(self, context):
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False, False, False, False)
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False,
+                         False, False, False)
 
 
 def get_shapekeys_eye_low_l(self, context):
@@ -380,11 +381,15 @@ def get_shapekeys_eye_low_r(self, context):
 
 
 def get_shapekeys_decimation(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, False)
+    return get_shapekeys(context,
+                         ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2',
+                          'Wink right'], False, True, True, False)
 
 
 def get_shapekeys_decimation_list(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, True)
+    return get_shapekeys(context,
+                         ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2',
+                          'Wink right'], False, True, True, True)
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
@@ -511,41 +516,55 @@ def get_meshes_objects(armature_name=None, mode=0):
     return meshes
 
 
-def join_meshes(armature_name=None):
-    set_default_stage()
-    unselect_all()
+def join_meshes(armature_name=None, mode=0):
+    # Modes:
+    # 0 - Join all meshes
+    # 1 - Join selected only
 
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
-    # Apply existing decimation modifiers
-    for mesh in get_meshes_objects(armature_name=armature_name):
-        select(mesh)
-        for mod in mesh.modifiers:
-            if mod.type == 'DECIMATE':
-                if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
-                    mesh.modifiers.remove(mod)
-                    continue
-                if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
-                    mesh.modifiers.remove(mod)
-                    continue
+    meshes = get_meshes_objects(armature_name=armature_name)
 
-                if mesh.data.shape_keys is not None:
-                    bpy.ops.object.shape_key_remove(all=True)
-                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
-        unselect_all()
+    # Find out which meshes to join
+    meshes_to_join = []
+    for mesh in meshes:
+        if mode == 0:
+            meshes_to_join.append(mesh.name)
+        elif mode == 1 and mesh.select:
+            meshes_to_join.append(mesh.name)
 
-    # Select all meshes
-    for mesh in get_meshes_objects(armature_name=armature_name):
-        select(mesh)
+    set_default_stage()
+    unselect_all()
+
+    # Apply existing decimation modifiers and select the meshes for joining
+    for mesh in meshes:
+        if mesh.name in meshes_to_join:
+            mesh.select = True
+            bpy.context.scene.objects.active = mesh
+
+            for mod in mesh.modifiers:
+                if mod.type == 'DECIMATE':
+                    if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
+                        mesh.modifiers.remove(mod)
+                        continue
+                    if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
+                        mesh.modifiers.remove(mod)
+                        continue
+
+                    if mesh.data.shape_keys is not None:
+                        bpy.ops.object.shape_key_remove(all=True)
+                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
     # Join the meshes
     if bpy.ops.object.join.poll():
         bpy.ops.object.join()
+    else:
+        return None
 
-    # Rename result to Body
-    mesh = None
-    for mesh in get_meshes_objects(armature_name=armature_name):
+    # Rename result to Body and correct modifiers
+    mesh = bpy.context.scene.objects.active
+    if mesh:
         mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
 
@@ -559,8 +578,7 @@ def join_meshes(armature_name=None):
                 mod.object = get_armature(armature_name=armature_name)
                 mod_count += 1
 
-        ShapekeyOrder.repair(mesh.name)
-        break
+        repair_shapekey_order(mesh.name)
 
     reset_context_scenes()
 
@@ -575,8 +593,8 @@ def separate_by_materials(context, mesh):
         if 'rigidbodies' in obj.name or 'joints' in obj.name:
             tools.common.delete_hierarchy(obj)
 
+    save_shapekey_order(mesh.name)
     select(mesh)
-    ShapekeyOrder.save(mesh.name)
 
     for mod in mesh.modifiers:
         if mod.type == 'DECIMATE':
@@ -603,10 +621,8 @@ def separate_by_loose_parts(context, mesh):
         if 'rigidbodies' in obj.name or 'joints' in obj.name:
             tools.common.delete_hierarchy(obj)
 
+    save_shapekey_order(mesh.name)
     select(mesh)
-    print("DEBUG")
-    ShapekeyOrder.save(mesh.name)
-    print("DEBUG2")
 
     for mod in mesh.modifiers:
         if mod.type == 'DECIMATE':
@@ -654,7 +670,6 @@ def separate_by_loose_parts(context, mesh):
 
     wm.progress_end()
 
-
     ## Old separate method
     # print("DEBUG3")
     # bpy.ops.mesh.separate(type='LOOSE')
@@ -699,16 +714,16 @@ def can_remove(key_block):
 
 def separate_by_verts():
     for obj in bpy.context.selected_objects:
-            if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
-                bpy.context.scene.objects.active = obj
-            bpy.ops.object.mode_set(mode='EDIT')
-            bpy.ops.mesh.select_mode(type='VERT')
-            for vgroup in obj.vertex_groups:
-                bpy.ops.mesh.select_all(action='DESELECT')
-                bpy.ops.object.vertex_group_set_active(group=vgroup.name)
-                bpy.ops.object.vertex_group_select()
-                bpy.ops.mesh.separate(type='SELECTED')
-            bpy.ops.object.mode_set(mode='OBJECT')
+        if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
+            bpy.context.scene.objects.active = obj
+        bpy.ops.object.mode_set(mode='EDIT')
+        bpy.ops.mesh.select_mode(type='VERT')
+        for vgroup in obj.vertex_groups:
+            bpy.ops.mesh.select_all(action='DESELECT')
+            bpy.ops.object.vertex_group_set_active(group=vgroup.name)
+            bpy.ops.object.vertex_group_select()
+            bpy.ops.mesh.separate(type='SELECTED')
+        bpy.ops.object.mode_set(mode='OBJECT')
 
 
 def reset_context_scenes():
@@ -727,106 +742,177 @@ def reset_context_scenes():
         bpy.context.scene.merge_mesh = mesh
 
 
-def repair_viseme_order(mesh_name):
-    order = OrderedDict()
-    order['Basis'] = 0
-    order['vrc.blink_left'] = 1
-    order['vrc.blink_right'] = 2
-    order['vrc.lowerlid_left'] = 3
-    order['vrc.lowerlid_right'] = 4
-    order['vrc.v_aa'] = 5
-    order['vrc.v_ch'] = 6
-    order['vrc.v_dd'] = 7
-    order['vrc.v_e'] = 8
-    order['vrc.v_ff'] = 9
-    order['vrc.v_ih'] = 10
-    order['vrc.v_kk'] = 11
-    order['vrc.v_nn'] = 12
-    order['vrc.v_oh'] = 13
-    order['vrc.v_ou'] = 14
-    order['vrc.v_pp'] = 15
-    order['vrc.v_rr'] = 16
-    order['vrc.v_sil'] = 17
-    order['vrc.v_ss'] = 18
-    order['vrc.v_th'] = 19
-    order['Basis Original'] = 20
-
-    repair_shape_order(mesh_name, order)
-
-
-def repair_shape_order(mesh_name, order):
+def save_shapekey_order(mesh_name):
     mesh = bpy.data.objects[mesh_name]
-    if not mesh.data.shape_keys:
+    armature = get_armature()
+
+    # Get current custom data
+    custom_data = armature.get('CUSTOM')
+    if not custom_data:
+        print('NEW DATA!')
+        custom_data = {}
+
+    # Create shape key list for description
+    shape_key_order = ''
+    if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if index > 0:
+                shape_key_order += ',,,'
+            shape_key_order += shapekey.name
+
+    # Check if there is already a shapekey order
+    if custom_data.get('shape_key_order'):
+        print('CUSTOM PROP ALREADY EXISTS!')
+        print(custom_data['shape_key_order'])
+
+        if len(custom_data.get('shape_key_order')) > len(shape_key_order):
+            print('ABORT')
+            return
+
+    # Save order to custom data
+    print('CREATE NEW CUSTOM PROP!')
+    custom_data['shape_key_order'] = shape_key_order
+
+    # Save custom data in armature
+    armature['CUSTOM'] = custom_data
+
+    print(armature.get('CUSTOM')['shape_key_order'])
+
+
+def repair_shapekey_order(mesh_name):
+    armature = get_armature()
+    shape_key_order = []
+
+    # Get current custom data
+    custom_data = armature.get('CUSTOM')
+    if not custom_data:
+        custom_data = {}
+
+    # Extract shape keys from string
+    order_string = custom_data.get('shape_key_order')
+    if order_string:
+        for shape_name in order_string.split(',,,'):
+            shape_key_order.append(shape_name)
+
+    sort_shape_keys(mesh_name, shape_key_order)
+
+
+def update_shapekey_orders(translations):
+    for armature in get_armature_objects():
+        shape_key_order = []
+
+        # Get current custom data
+        custom_data = armature.get('CUSTOM')
+        if not custom_data or not custom_data.get('shape_key_order'):
+            continue
+
+        # Create shape key list for description
+        order_string = custom_data.get('shape_key_order')
+        for shape_name in order_string.split(',,,'):
+            if translations.get(shape_name):
+                shape_key_order.append(translations.get(shape_name))
+            else:
+                shape_key_order.append(shape_name)
+        print(order_string)
+
+        # Create shape key list for properties
+        order_string = ''
+        for i, shapekey in enumerate(shape_key_order):
+            if i > 0:
+                order_string += ',,,'
+            order_string += shapekey
+
+        print(order_string)
+
+        custom_data['shape_key_order'] = order_string
+
+
+def sort_shape_keys(mesh_name, shape_key_order=None):
+    mesh = bpy.data.objects[mesh_name]
+    if not mesh.data.shape_keys or not mesh.data.shape_keys.key_blocks:
         return
+
+    if not shape_key_order:
+        shape_key_order = []
+
+    order = [
+        'Basis',
+        'vrc.blink_left',
+        'vrc.blink_right',
+        'vrc.lowerlid_left',
+        'vrc.lowerlid_right',
+        'vrc.v_aa',
+        'vrc.v_ch',
+        'vrc.v_dd',
+        'vrc.v_e',
+        'vrc.v_ff',
+        'vrc.v_ih',
+        'vrc.v_kk',
+        'vrc.v_nn',
+        'vrc.v_oh',
+        'vrc.v_ou',
+        'vrc.v_pp',
+        'vrc.v_rr',
+        'vrc.v_sil',
+        'vrc.v_ss',
+        'vrc.v_th',
+        'Basis Original'
+    ]
+
+    for shape in shape_key_order:
+        if shape not in order:
+            order.append(shape)
 
     wm = bpy.context.window_manager
     current_step = 0
-    wm.progress_begin(current_step, len(order.items()))
+    wm.progress_begin(current_step, len(order))
 
-    for name in order.keys():
-        if hasattr(mesh.data.shape_keys, 'key_blocks'):
-            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                if shapekey.name == name:
+    i = 0
+    for name in order:
+        if name == 'Basis' and 'Basis' not in mesh.data.shape_keys.key_blocks:
+            i += 1
+            current_step += 1
+            wm.progress_update(current_step)
+            continue
 
-                    mesh.active_shape_key_index = index
-                    new_index = order.get(shapekey.name)
-                    index_diff = (index - new_index)
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if shapekey.name == name:
 
-                    if new_index >= len(mesh.data.shape_keys.key_blocks):
-                        bpy.ops.object.shape_key_move(type='BOTTOM')
-                        break
+                mesh.active_shape_key_index = index
+                new_index = i
+                index_diff = (index - new_index)
+
+                if new_index >= len(mesh.data.shape_keys.key_blocks):
+                    bpy.ops.object.shape_key_move(type='BOTTOM')
+                    break
+
+                position_correct = False
+                if 0 <= index_diff <= (new_index - 1):
+                    while position_correct is False:
+                        if mesh.active_shape_key_index != new_index:
+                            bpy.ops.object.shape_key_move(type='UP')
+                        else:
+                            position_correct = True
+                else:
+                    if mesh.active_shape_key_index > new_index:
+                        bpy.ops.object.shape_key_move(type='TOP')
 
                     position_correct = False
-                    if 0 <= index_diff <= (new_index - 1):
-                        while position_correct is False:
-                            if mesh.active_shape_key_index != new_index:
-                                    bpy.ops.object.shape_key_move(type='UP')
-                            else:
-                                position_correct = True
-                    else:
-                        if mesh.active_shape_key_index > new_index:
-                            bpy.ops.object.shape_key_move(type='TOP')
+                    while position_correct is False:
+                        if mesh.active_shape_key_index != new_index:
+                            bpy.ops.object.shape_key_move(type='DOWN')
+                        else:
+                            position_correct = True
 
-                        position_correct = False
-                        while position_correct is False:
-                            if mesh.active_shape_key_index != new_index:
-                                bpy.ops.object.shape_key_move(type='DOWN')
-                            else:
-                                position_correct = True
-                    break
+                i += 1
+                break
+
         current_step += 1
         wm.progress_update(current_step)
 
     mesh.active_shape_key_index = 0
 
     wm.progress_end()
-
-
-class ShapekeyOrder:
-
-    @staticmethod
-    def save(mesh_name):
-        global shapekey_order
-        if shapekey_order:
-            print('SAVE ABORTED!')
-            return
-        print('SAVE ORDER')
-        shapekey_order = OrderedDict()
-        mesh = bpy.data.objects[mesh_name]
-        if mesh.data.shape_keys is not None and hasattr(mesh.data.shape_keys, 'key_blocks'):
-            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                shapekey_order[shapekey.name] = index
-
-    @staticmethod
-    def repair(mesh_name):
-        global shapekey_order
-        print('REPAIR ORDER')
-        if not shapekey_order:
-            print('REPAIR EMTPY')
-            return
-
-        repair_shape_order(mesh_name, shapekey_order)
-        shapekey_order = None
 
 
 def isEmptyGroup(group_name):
@@ -1026,10 +1112,6 @@ def correct_bone_positions(armature_name=None):
                 ankle = armature.data.edit_bones.get('Right ankle')
                 leg.tail = knee.head
                 knee.tail = ankle.head
-
-
-
-
 
 # === THIS CODE COULD BE USEFUL ===
 

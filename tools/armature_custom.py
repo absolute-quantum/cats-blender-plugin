@@ -318,7 +318,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
     # Join the meshes
     mesh = tools.common.join_meshes(armature_name=base_armature_name)
     if mesh:
-        tools.common.repair_viseme_order(mesh.name)
+        tools.common.sort_shape_keys(mesh.name)
 
     # Go into edit mode
     tools.common.unselect_all()
