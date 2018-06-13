@@ -56,6 +56,33 @@ class OneTexPerMatButton(bpy.types.Operator):
         return{'FINISHED'}
 
 
+class OneTexPerMatOnlyButton(bpy.types.Operator):
+    bl_idname = 'one.tex_only'
+    bl_label = 'One Material Texture'
+    bl_description = 'Have all material slots ignore extra texture slots as these are not used by VRChat.' \
+                     '\nAlso removes the textures from the material instead of disabling it.' \
+                     '\nThis makes no difference, but cleans the list for the perfectionists'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature() is None:
+            return False
+        return len(tools.common.get_meshes_objects()) > 0
+
+    def execute(self, context):
+        tools.common.set_default_stage()
+
+        for mesh in tools.common.get_meshes_objects():
+            for mat_slot in mesh.material_slots:
+                for i, tex_slot in enumerate(mat_slot.material.texture_slots):
+                    if i > 0 and tex_slot:
+                        tex_slot.texture = None
+
+        self.report({'INFO'}, 'All materials have one texture now.')
+        return{'FINISHED'}
+
+
 class StandardizeTextures(bpy.types.Operator):
     bl_idname = 'textures.standardize'
     bl_label = 'Standardize Textures'
@@ -78,6 +105,7 @@ class StandardizeTextures(bpy.types.Operator):
             for i, mat_slot in enumerate(mesh.material_slots):
 
                 mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
+                mat_slot.material.alpha = 1
 
                 for tex_slot in mat_slot.material.texture_slots:
                     if tex_slot:

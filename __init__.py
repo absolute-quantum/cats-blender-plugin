@@ -1381,9 +1381,15 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.1
             row.operator('combine.mats', icon='MATERIAL')
+
             row = col.row(align=True)
             row.scale_y = 1.1
             row.operator('one.tex', icon='TEXTURE')
+            subcol = row.row(align=True)
+            subcol.alignment = 'RIGHT'
+            subcol.scale_y = 1.1
+            subcol.operator("one.tex_only", text="", icon='X')
+
             row = col.row(align=True)
             row.scale_y = 1.1
             row.operator('textures.standardize', icon='TEXTURE_SHADED')
@@ -1682,6 +1688,7 @@ classesToRegister = [
     tools.atlas.AutoAtlasButton,
     tools.material.CombineMaterialsButton,
     tools.material.OneTexPerMatButton,
+    tools.material.OneTexPerMatOnlyButton,
     tools.material.StandardizeTextures,
     tools.bonemerge.BoneMergeButton,
 
