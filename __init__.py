@@ -1305,9 +1305,11 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 1.1
         row.prop(context.scene, 'mouth_ch', icon='SHAPEKEY_DATA')
-        col.separator()
-        row = col.row(align=True)
-        row.prop(context.scene, 'shape_intensity')
+
+        # col.separator()
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'shape_intensity')
+
         col.separator()
         row = col.row(align=True)
         row.operator('auto.viseme', icon='TRIA_RIGHT')

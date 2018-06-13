@@ -263,6 +263,9 @@ class FixArmature(bpy.types.Operator):
         # except RuntimeError:
         #     pass
 
+        if source_engine and mesh.data.shape_keys.key_blocks:
+            mesh.data.shape_keys.key_blocks[0].name = "Basis"
+
         # Save shape key order
         tools.common.save_shapekey_order(mesh.name)
 

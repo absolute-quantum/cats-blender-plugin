@@ -166,10 +166,10 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
     # Check for transform on base armature, reset if not default
     for i in [0, 1, 2]:
         if base_armature.location[i] != 0 \
-                or base_armature.rotation_euler[i] != 0 \
+                or base_armature.rotation_euler[i] > 0.005 \
                 or base_armature.scale[i] != 1 \
                 or mesh_base.location[i] != 0 \
-                or mesh_base.rotation_euler[i] != 0 \
+                or mesh_base.rotation_euler[i] > 0.005 \
                 or mesh_base.scale[i] != 1:
 
             # Reset all wrong transforms
@@ -204,7 +204,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
     old_loc = [0, 0, 0]
     old_scale = [1, 1, 1]
     for i in [0, 1, 2]:
-        if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
+        if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] > 0.005 or merge_armature.scale[i] != 1:
 
             old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
             old_rot = [merge_armature.rotation_euler[0], merge_armature.rotation_euler[1],
@@ -218,7 +218,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
                 merge_armature.scale[i2] = 1
 
             for i2 in [0, 1, 2]:
-                if old_rot[i2] != 0 or mesh.rotation_euler[i2] != 0:
+                if old_rot[i2] > 0.005 or mesh.rotation_euler[i2] > 0.005:
                     merge_armature.hide = True
                     base_armature.hide = True
                     tools.common.unselect_all()
