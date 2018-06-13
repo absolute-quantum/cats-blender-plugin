@@ -1384,6 +1384,9 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.1
             row.operator('one.tex', icon='TEXTURE')
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.operator('textures.standardize', icon='TEXTURE_SHADED')
 
         if context.scene.optimize_mode == 'BONEMERGING':
             if len(tools.common.get_meshes_objects()) > 1:
@@ -1679,6 +1682,7 @@ classesToRegister = [
     tools.atlas.AutoAtlasButton,
     tools.material.CombineMaterialsButton,
     tools.material.OneTexPerMatButton,
+    tools.material.StandardizeTextures,
     tools.bonemerge.BoneMergeButton,
 
     CopyProtectionPanel,
