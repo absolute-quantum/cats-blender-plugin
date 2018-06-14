@@ -74,7 +74,7 @@ class MergeArmature(bpy.types.Operator):
             self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
             return {'FINISHED'}
         if len(tools.common.get_meshes_objects(armature_name=base_armature_name)) == 0:
-            self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
+            self.report({'ERROR'}, 'The armature "' + base_armature_name + '" does not have any meshes.')
             return {'FINISHED'}
 
         # Merge armatures

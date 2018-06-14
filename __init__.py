@@ -752,13 +752,21 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 col.separator()
 
-        row = col.row(align=True)
-        row.prop(context.scene, 'import_mode', expand=True)
-        row = col.row(align=True)
-        row.scale_y = 1.4
-        row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'import_mode', expand=True)
+        # row = col.row(align=True)
+        # row.scale_y = 1.4
+        # row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
+
+        if not tools.common.get_armature():
+            row = col.row(align=True)
+            row.scale_y = 1.7
+            row.operator('armature_manual.import_any_model', text='Import Model', icon='ARMATURE_DATA')
 
         if tools.common.get_armature():
+            row = col.row(align=True)
+            row.scale_y = 1.4
+            row.operator('armature_manual.import_any_model', text='Import Model', icon='ARMATURE_DATA')
             row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
 
         arm_count = len(tools.common.get_armature_objects())
@@ -1639,7 +1647,10 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
 classesToRegister = [
     ArmaturePanel,
     tools.armature_manual.ImportModel,
+    tools.armature_manual.ImportAnyModel,
     tools.armature_manual.ExportModel,
+    tools.armature_manual.InstallXPS,
+    tools.armature_manual.InstallSource,
     tools.armature_manual.XpsToolsButton,
     tools.armature_manual.SourceToolsButton,
     tools.armature.FixArmature,

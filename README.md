@@ -333,6 +333,8 @@ It checks for a new version automatically once every day.
     - This automatically increases the performance for most models
   - Moved the Fix Model options into a new settings dialog
     - Open this by clicking the wrench icon next to the Fix Model button
+  - Import Model now can import all the models with one button
+  - Added option to Keep End Bones
   - Improved support for Source Engine models
   - Backface culling is now deactivated again
   - Fixed random important bones disappearing for no reason

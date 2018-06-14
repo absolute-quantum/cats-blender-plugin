@@ -24,14 +24,17 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats
 
+import os
 import bpy
 import webbrowser
 import tools.common
 import tools.eyetracking
+import bpy_extras.io_utils
 
 mmd_tools_installed = False
 try:
     import mmd_tools_local
+
     mmd_tools_installed = True
 except:
     pass
@@ -47,7 +50,8 @@ class ImportModel(bpy.types.Operator):
         tools.common.remove_unused_objects()
         if context.scene.import_mode == 'MMD':
             if not mmd_tools_installed:
-                bpy.context.window_manager.popup_menu(popup_enable_mmd, title='mmd_tools is not installed!', icon='ERROR')
+                bpy.context.window_manager.popup_menu(popup_enable_mmd, title='mmd_tools is not installed!',
+                                                      icon='ERROR')
                 return {'FINISHED'}
 
             try:
@@ -61,13 +65,16 @@ class ImportModel(bpy.types.Operator):
             try:
                 bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
             except AttributeError:
-                bpy.context.window_manager.popup_menu(popup_install_xps, title='XPS Tools is not installed or enabled!', icon='ERROR')
+                bpy.context.window_manager.popup_menu(popup_install_xps, title='XPS Tools is not installed or enabled!',
+                                                      icon='ERROR')
 
         elif context.scene.import_mode == 'SOURCE':
             try:
                 bpy.ops.import_scene.smd('INVOKE_DEFAULT')
             except AttributeError:
-                bpy.context.window_manager.popup_menu(popup_install_source, title='Blender Source Tools is not installed or enabled!', icon='ERROR')
+                bpy.context.window_manager.popup_menu(popup_install_source,
+                                                      title='Blender Source Tools is not installed or enabled!',
+                                                      icon='ERROR')
 
         elif context.scene.import_mode == 'FBX':
             try:
@@ -76,6 +83,157 @@ class ImportModel(bpy.types.Operator):
                 bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
 
         return {'FINISHED'}
+
+
+class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
+    bl_idname = 'armature_manual.import_any_model'
+    bl_label = 'Import Any Model'
+    bl_description = 'Import a model of any supported type.' \
+                     '\n' \
+                     '\nSupported types:' \
+                     '\n- MMD: .pmx/.pmd' \
+                     '\n- XNALara: .xps/.mesh/.ascii' \
+                     '\n- Source: .smd/.qc/.vta/.dmx' \
+                     '\n- FBX .fbx'
+    # '\n- DAE .dae'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
+    directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
+
+    filter_glob = bpy.props.StringProperty(
+        default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx",
+        options={'HIDDEN'}
+    )
+
+    text1 = bpy.props.BoolProperty(
+        name='IMPORTANT INFO (hover here)',
+        description='If you want to modify the import settings, use File > Import.\n\n',
+        default=False
+    )
+
+    def execute(self, context):
+
+        print(self.directory)
+        for f in self.files:
+            file_name = f['name']
+            filepath = os.path.join(self.directory, file_name)
+
+            # MMD
+            if file_name.endswith('.pmx') or file_name.endswith('.pmd'):
+                try:
+                    bpy.ops.mmd_tools.import_model('EXEC_DEFAULT',
+                                                   files=[{'name': file_name}],
+                                                   directory=self.directory,
+                                                   scale=0.08,
+                                                   types={'MESH', 'ARMATURE', 'MORPHS'})
+                except AttributeError:
+                    bpy.context.window_manager.popup_menu(popup_enable_mmd, title='mmd_tools is not enabled!',
+                                                          icon='ERROR')
+                except (TypeError, ValueError):
+                    bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+
+            # XNALara
+            elif file_name.endswith('.xps') or file_name.endswith('.mesh') or file_name.endswith('.ascii'):
+                try:
+                    bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
+                                                   filepath=filepath)
+                except AttributeError:
+                    bpy.ops.install.xps('INVOKE_DEFAULT')
+
+            # Source Engine
+            elif file_name.endswith('.smd') or file_name.endswith('.qc') or file_name.endswith(
+                    '.vta') or file_name.endswith('.dmx'):
+                try:
+                    bpy.ops.import_scene.smd('EXEC_DEFAULT',
+                                             files=[{'name': file_name}],
+                                             directory=self.directory)
+                except AttributeError:
+                    bpy.ops.install.source('INVOKE_DEFAULT')
+
+            # FBX
+            elif file_name.endswith('.fbx'):
+                try:
+                    bpy.ops.import_scene.fbx('EXEC_DEFAULT',
+                                             filepath=filepath,
+                                             automatic_bone_orientation=True)
+                except (TypeError, ValueError):
+                    bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
+
+            # DAE - not working currently because of bug:
+            # https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
+            elif file_name.endswith('.dae'):
+                try:
+                    bpy.ops.wm.collada_import('EXEC_DEFAULT',
+                                              filepath=filepath,
+                                              fix_orientation=True,
+                                              auto_connect=True)
+                except (TypeError, ValueError):
+                    bpy.ops.wm.collada_import('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
+
+
+class InstallXPS(bpy.types.Operator):
+    bl_idname = "install.xps"
+    bl_label = "XPS Tools is not installed or enabled!"
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.label("The plugin 'XPS Tools' is required for this function.")
+        col.separator()
+        row = col.row(align=True)
+        row.label("If it is not enabled please enable it in your User Preferences.")
+        row = col.row(align=True)
+        row.label("If it is not installed please download and install it manually.")
+        col.separator()
+        row = col.row(align=True)
+        row.operator('armature_manual.xps_tools', icon='LOAD_FACTORY')
+
+
+class InstallSource(bpy.types.Operator):
+    bl_idname = "install.source"
+    bl_label = "Source Tools is not installed or enabled!"
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.label("The plugin 'Source Tools' is required for this function.")
+        col.separator()
+        row = col.row(align=True)
+        row.label("If it is not enabled please enable it in your User Preferences.")
+        row = col.row(align=True)
+        row.label("If it is not installed please download and install it manually.")
+        col.separator()
+        row = col.row(align=True)
+        row.operator('armature_manual.source_tools', icon='LOAD_FACTORY')
 
 
 def popup_enable_mmd(self, context):
@@ -123,7 +281,7 @@ def popup_install_source(self, context):
 
 class XpsToolsButton(bpy.types.Operator):
     bl_idname = 'armature_manual.xps_tools'
-    bl_label = 'Open XPS Tools'
+    bl_label = 'Download XPS Tools'
 
     def execute(self, context):
         webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
@@ -134,7 +292,7 @@ class XpsToolsButton(bpy.types.Operator):
 
 class SourceToolsButton(bpy.types.Operator):
     bl_idname = 'armature_manual.source_tools'
-    bl_label = 'Open Blender Source Tools'
+    bl_label = 'Download Source Tools'
 
     def execute(self, context):
         webbrowser.open('http://steamreview.org/BlenderSourceTools/')
@@ -187,7 +345,7 @@ class StartPoseMode(bpy.types.Operator):
     bl_label = 'Start Pose Mode'
     bl_description = 'Starts the pose mode.\n' \
                      'This lets you test how your model will move'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -197,7 +355,8 @@ class StartPoseMode(bpy.types.Operator):
 
     def execute(self, context):
         current = ""
-        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
+                bpy.context.selected_editable_bones) > 0:
             current = bpy.context.selected_editable_bones[0].name
 
         armature = tools.common.set_default_stage()
@@ -234,7 +393,7 @@ class StopPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.stop_pose_mode'
     bl_label = 'Stop Pose Mode'
     bl_description = 'Stops the pose mode and resets the pose to normal'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -506,10 +665,12 @@ class MergeWeights(bpy.types.Operator):
         # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
         #     return True
 
-        if bpy.context.active_object.mode == 'EDIT' and bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.active_object.mode == 'EDIT' and bpy.context.selected_editable_bones and len(
+                bpy.context.selected_editable_bones) > 0:
             return True
 
-        if bpy.context.active_object.mode == 'POSE' and bpy.context.selected_pose_bones and len(bpy.context.selected_pose_bones) > 0:
+        if bpy.context.active_object.mode == 'POSE' and bpy.context.selected_pose_bones and len(
+                bpy.context.selected_pose_bones) > 0:
             return True
 
         return False
@@ -556,7 +717,8 @@ class MergeWeights(bpy.types.Operator):
 
         armature_edit_mode.restore()
 
-        self.report({'INFO'}, 'Deleted ' + str(len(self._bone_names_to_work_on)) + ' bones and added their weights to their parents')
+        self.report({'INFO'}, 'Deleted ' + str(
+            len(self._bone_names_to_work_on)) + ' bones and added their weights to their parents')
 
         return {'FINISHED'}
 
