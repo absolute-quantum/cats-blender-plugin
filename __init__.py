@@ -232,7 +232,7 @@ class ToolPanel:
 
     bpy.types.Scene.full_body = bpy.props.BoolProperty(
         name='Apply Full Body Tracking Fix',
-        description="Applies a general fix for Full Body Tracking.\n"
+        description="Applies a general fix for Full Body Tracking.\n\n"
                     'Can potentially reduce the knee bending of every avatar in VRChat.\n'
                     'You can safely ignore the "Spine length zero" warning in Unity.\n'
                     'If you have problems with the hips ingame, uncheck this option and tell us!\n',
@@ -241,7 +241,7 @@ class ToolPanel:
 
     bpy.types.Scene.combine_mats = bpy.props.BoolProperty(
         name='Combine Same Materials',
-        description="Combines similar materials into one, reducing draw calls.\n"
+        description="Combines similar materials into one, reducing draw calls.\n\n"
                     'Your avatar should visibly look the same after this operation.\n'
                     'This is a very important step for optimizing your avatar.\n'
                     'If you have problems with this, uncheck this option and tell us!\n',
@@ -253,6 +253,15 @@ class ToolPanel:
         description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.\n"
                     'Uncheck this if bones you want to keep got deleted',
         default=True
+    )
+
+    bpy.types.Scene.keep_end_bones = bpy.props.BoolProperty(
+        name='Keep End Bones',
+        description="Saves end bones from deletion."
+                    '\n\nThis can improve skirt movement for dynamic bones, but increases the bone count.'
+                    '\nThis can also fix issues with crumbled finger bones in Unity.'
+                    '\nMake sure to always uncheck "Add Leaf Bones" when exporting or use the CATS export button',
+        default=False
     )
 
     bpy.types.Scene.merge_mode = bpy.props.EnumProperty(

@@ -1038,14 +1038,15 @@ def delete_zero_weight(armature_name=None, ignore=''):
 
     count = 0
     for bone_name in not_used_bone_names:
-        if bone_name not in Bones.dont_delete_these_bones and 'Root_' not in bone_name and bone_name != ignore:
-            armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
-            count += 1
-            if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
-                for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups
-                    vertex_group = objects.vertex_groups.get(bone_name)
-                    if vertex_group is not None:
-                        objects.vertex_groups.remove(vertex_group)
+        if not bpy.context.scene.keep_end_bones or not is_end_bone(bone_name, armature_name):
+            if bone_name not in Bones.dont_delete_these_bones and 'Root_' not in bone_name and bone_name != ignore:
+                armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name])  # delete bone
+                count += 1
+                if bone_name in vertex_group_name_to_objects_having_same_named_vertex_group:
+                    for objects in vertex_group_name_to_objects_having_same_named_vertex_group[bone_name]:  # delete vertex groups
+                        vertex_group = objects.vertex_groups.get(bone_name)
+                        if vertex_group is not None:
+                            objects.vertex_groups.remove(vertex_group)
 
     return count
 
@@ -1056,6 +1057,14 @@ def remove_unused_objects():
                 or (obj.type == 'LAMP' and obj.name == 'Lamp') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
             delete_hierarchy(obj)
+
+
+def is_end_bone(name, armature_name):
+    armature = get_armature(armature_name=armature_name)
+    end_bone = armature.data.edit_bones.get(name)
+    if end_bone and end_bone.parent and len(end_bone.parent.children) == 1:
+        return True
+    return False
 
 
 def correct_bone_positions(armature_name=None):

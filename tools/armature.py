@@ -273,6 +273,16 @@ class FixArmature(bpy.types.Operator):
         if context.scene.combine_mats:
             bpy.ops.combine.mats()
 
+        # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
+        all_transparent = True
+        for mat_slot in mesh.material_slots:
+            mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
+            if mat_slot.material.alpha > 0:
+                all_transparent = False
+        if all_transparent:
+            for mat_slot in mesh.material_slots:
+                mat_slot.material.alpha = 1
+
         # Reorders vrc shape keys to the correct order
         tools.common.sort_shape_keys(mesh.name)
 
@@ -337,6 +347,7 @@ class FixArmature(bpy.types.Operator):
                 .replace('JD_', '')\
                 .replace('JU_', '')\
                 .replace('Armature|', '')\
+                .replace('Bone_', '')\
 
             upper_name = ''
             for i, s in enumerate(name.split('_')):
@@ -1003,6 +1014,9 @@ class ModelSettings(bpy.types.Operator):
 
         row = col.row(align=True)
         row.prop(context.scene, 'full_body')
+        row = col.row(align=True)
+        row.active = context.scene.remove_zero_weight
+        row.prop(context.scene, 'keep_end_bones')
         row = col.row(align=True)
         row.prop(context.scene, 'combine_mats')
         row = col.row(align=True)

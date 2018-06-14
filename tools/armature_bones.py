@@ -29,9 +29,8 @@ from collections import OrderedDict
 
 bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
-bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIKTip', 'LegIK', 'ToeTipIK',
-                  'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
-                  'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'HandTip_', 'SleeveShoulderIK_']
+bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK',
+                  'ShoulderP_', 'EyeTip_', 'HandDummy_', 'SleeveShoulderIK_']
 bone_list_parenting = {
     'Spine': 'Hips',
     'Chest': 'Spine',
@@ -411,6 +410,7 @@ bone_rename['\Left shoulder'] = [
     'B_\L_Shoulder',
     '\LCollar',
     '\L_Clavicle',
+    '\L_Clavicle1',
     '\Left_Clavicle',
     '\LeftCollar',
     '\Leftcollar',

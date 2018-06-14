@@ -100,9 +100,7 @@ class StandardizeTextures(bpy.types.Operator):
         tools.common.set_default_stage()
 
         for mesh in tools.common.get_meshes_objects():
-            tools.common.unselect_all()
-            tools.common.select(mesh)
-            for i, mat_slot in enumerate(mesh.material_slots):
+            for mat_slot in mesh.material_slots:
 
                 mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
                 mat_slot.material.alpha = 1
