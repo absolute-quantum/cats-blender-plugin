@@ -61,6 +61,7 @@ import tools.credits
 import tools.decimation
 import tools.shapekey
 import tools.copy_protection
+import tools.importer
 
 
 importlib.reload(mmd_tools_local)
@@ -81,6 +82,7 @@ importlib.reload(tools.credits)
 importlib.reload(tools.decimation)
 importlib.reload(tools.shapekey)
 importlib.reload(tools.copy_protection)
+importlib.reload(tools.importer)
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
@@ -758,21 +760,29 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         # row.scale_y = 1.4
         # row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
 
-        if not tools.common.get_armature():
-            row = col.row(align=True)
-            row.scale_y = 1.7
-            row.operator('armature_manual.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-
-        if tools.common.get_armature():
-            row = col.row(align=True)
-            row.scale_y = 1.4
-            row.operator('armature_manual.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
-
         arm_count = len(tools.common.get_armature_objects())
         if arm_count == 0:
+            row = col.row(align=True)
+            row.scale_y = 1
+            subcol = row.split(align=True)
+            subcol.scale_y = 1.7
+            subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            subcol = row.split(align=True)
+            subcol.scale_y = 1.7
+            subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
             return
-        elif arm_count > 1:
+        else:
+            row = col.row(align=True)
+            row.scale_y = 1
+            subcol = row.split(align=True)
+            subcol.scale_y = 1.4
+            subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            subcol.operator('importer.export_model', icon='ARMATURE_DATA')
+            subcol = row.split(align=True)
+            subcol.scale_y = 1.4
+            subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+
+        if arm_count > 1:
             col.separator()
             col.separator()
             col.separator()
@@ -782,13 +792,12 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         col.separator()
-        col.separator()
         row = col.row(align=True)
-        row.scale_y = 1.4
+        row.scale_y = 1.5
         row.operator('armature.fix', icon='BONE_DATA')
         subcol = row.row(align=True)
         subcol.alignment = 'RIGHT'
-        subcol.scale_y = 1.4
+        subcol.scale_y = 1.5
         subcol.operator("armature.settings", text="", icon='MODIFIER')
 
         if context.scene.full_body:
@@ -800,7 +809,6 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()
 
-        col.separator()
         ob = bpy.context.active_object
         if not ob or ob.mode != 'POSE':
             row = col.row(align=True)
@@ -1646,13 +1654,20 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
 
 classesToRegister = [
     ArmaturePanel,
-    tools.armature_manual.ImportModel,
-    tools.armature_manual.ImportAnyModel,
-    tools.armature_manual.ExportModel,
-    tools.armature_manual.InstallXPS,
-    tools.armature_manual.InstallSource,
-    tools.armature_manual.XpsToolsButton,
-    tools.armature_manual.SourceToolsButton,
+    tools.importer.ImportAnyModel,
+    tools.importer.ExportModel,
+    tools.importer.ModelsPopup,
+    tools.importer.ImportMMD,
+    tools.importer.ImportXPS,
+    tools.importer.ImportSource,
+    tools.importer.ImportFBX,
+
+    tools.importer.EnableMMD,
+    tools.importer.InstallXPS,
+    tools.importer.InstallSource,
+    tools.importer.XpsToolsButton,
+    tools.importer.SourceToolsButton,
+
     tools.armature.FixArmature,
     tools.armature.ModelSettings,
     tools.armature_manual.StartPoseMode,

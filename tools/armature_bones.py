@@ -383,6 +383,7 @@ bone_rename['Neck'] = [
     'C_Neck_1',
     'NECK',
     'NeckN',
+    'Helmet_Lower',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
@@ -393,6 +394,7 @@ bone_rename['Head'] = [
     'C_Head_1',
     'HEAD',
     'HeadN',
+    'Helmet_Upper',
 ]
 bone_rename['\Left shoulder'] = [
     '\Left_Shoulder',
@@ -423,6 +425,7 @@ bone_rename['\Left shoulder'] = [
     'Shol_\L',
     '\Lf_Clavicle',
     'Clavicle_\L',
+    'Arm_\Left_Sh_1',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',
@@ -460,6 +463,7 @@ bone_rename['\Left arm'] = [
     '\LShoulderJ',
     '\Lf_Shoulder',
     'Arm_Upper_\L',
+    'Arm_\Left_Sh_2',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -821,6 +825,7 @@ bone_reweight['\Left arm'] = [
     'Shoulder6_\L',
     'Shoulder7_\L',
     'ElbowUpper_\L',
+    'Arm_\Left_Sh_Tw',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
