@@ -604,6 +604,7 @@ bone_rename['\Left ankle'] = [
     '\Left_Ankle_001',
     '\LeftAnkle',
     'Ankle_\L',
+    '\L_Ankle',
     'Mixamorig:\LeftFoot',
     'Leg_\Left_Ankle',
     'Bip_\L_Foot',

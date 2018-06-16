@@ -178,7 +178,7 @@ class ModelsPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = bpy.context.user_preferences.system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3, height=-550)
 
     def check(self, context):
         # Important for changing options
@@ -189,11 +189,11 @@ class ModelsPopup(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = 1.3
         row.operator('importer.import_mmd')
         row.operator('importer.import_xps')
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = 1.3
         row.operator('importer.import_source')
         row.operator('importer.import_fbx')
 
