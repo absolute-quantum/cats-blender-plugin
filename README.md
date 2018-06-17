@@ -139,6 +139,7 @@ Works by sending a request to the Google Translate service. This feature can be 
 - Merges the selected armature into the selected base armature.
 - **How to use:**
   - Use "Fix Model" on both armatures
+    - Select the armature you want to fix in the list above the Fix Model button
     - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
     - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure (https://i.imgur.com/F5KEt0M.png)
     - DO NOT delete any main bones by yourself! CATS will merge them and deletes all unused bones afterwards
@@ -341,8 +342,11 @@ It checks for a new version automatically once every day.
 - **Translation:**
   - Fixed the SSL error
     - This fixes a lot of instances where translations would not work
+- **Custom Model:**
+  - Improved tolerances to allow minimal armature rotations
+  - Error messages are now much more persistent
 - **Shapekeys:**
-  - Fixed "Apply Shapekey as Basis" not being the basis for newly created shape keys
+  - Fixed "Apply Shapekey as Basis" not setting the basis for newly created shape keys
 - **General**
   - Various optimizations
   - Fixed bugs all over the place

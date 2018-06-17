@@ -1122,6 +1122,57 @@ def correct_bone_positions(armature_name=None):
                 leg.tail = knee.head
                 knee.tail = ankle.head
 
+
+dpi_scale = 3
+error = None
+
+
+def show_error(scale, error_list):
+    global error, dpi_scale
+    error = error_list
+    dpi_scale = scale
+
+    # if len(error_list) == 1:
+    #     ShowError.bl_label = error_list[0]
+    #     try:
+    #         bpy.utils.register_class(ShowError)
+    #     except ValueError:
+    #         bpy.utils.unregister_class(ShowError)
+    #         bpy.utils.register_class(ShowError)
+
+    bpy.ops.error.show('INVOKE_DEFAULT')
+
+
+class ShowError(bpy.types.Operator):
+    bl_idname = 'error.show'
+    bl_label = 'Error'
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
+
+    def draw(self, context):
+        if not error:
+            return
+
+        # if not error or len(error) == 1:
+        #     return
+
+        layout = self.layout
+        col = layout.column(align=True)
+
+        for line in error:
+            if line == '':
+                col.separator()
+            else:
+                row = col.row(align=True)
+                row.scale_y = 0.85
+                row.label(line)
+
+
 # === THIS CODE COULD BE USEFUL ===
 
 # def addvertex(meshname, shapekey_name):

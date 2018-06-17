@@ -1744,6 +1744,7 @@ classesToRegister = [
     tools.credits.ForumButton,
 
     tools.shapekey.ShapeKeyApplier,
+    tools.common.ShowError,
 ]
 
 
