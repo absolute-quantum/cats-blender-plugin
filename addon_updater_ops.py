@@ -472,7 +472,7 @@ class addon_updater_updated_successful(bpy.types.Operator):
                 col.label("Addon successfully installed", icon="FILE_TICK")
                 col.label("Consider restarting blender to fully reload.", icon="BLANK1")
 
-    def execut(self, context):
+    def execute(self, context):
         return {'FINISHED'}
 
 

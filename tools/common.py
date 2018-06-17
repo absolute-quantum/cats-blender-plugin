@@ -746,6 +746,9 @@ def save_shapekey_order(mesh_name):
     mesh = bpy.data.objects[mesh_name]
     armature = get_armature()
 
+    if not armature:
+        return
+
     # Get current custom data
     custom_data = armature.get('CUSTOM')
     if not custom_data:
