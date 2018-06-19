@@ -45,7 +45,8 @@ class AutoAtlasButton(bpy.types.Operator):
 
     def execute(self, context):
         if not bpy.data.is_saved:
-            self.report({'ERROR'}, 'You must save your blender file first, please save it to your assets folder so unity can discover the generated atlas file.')
+            tools.common.show_error(6.5, ['You have to save your Blender file first!',
+                                          'Please save it to your assets folder so unity can discover the generated atlas file.'])
             return {'CANCELLED'}
 
         tools.common.set_default_stage()
@@ -56,8 +57,8 @@ class AutoAtlasButton(bpy.types.Operator):
 
         # Check uv index
         newUVindex = len(atlas_mesh.data.uv_textures) - 1
-        if (newUVindex >= 1):
-            self.report({'ERROR'}, 'You have more then one UVMap, please combine them.')
+        if newUVindex >= 1:
+            tools.common.show_error(4.5, ['You have more then one UVMap, please combine them.'])
             return {'CANCELLED'}
 
         # Disable all texture slots for all materials except the first texture slot
@@ -161,4 +162,4 @@ class AutoAtlasButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Auto Atlas finished!')
 
-        return{'FINISHED'}
+        return {'FINISHED'}

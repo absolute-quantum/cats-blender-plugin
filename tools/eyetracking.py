@@ -89,11 +89,11 @@ class CreateEyesButton(bpy.types.Operator):
             self.report({'ERROR'}, 'The bone "' + context.scene.head + '" does not exist.')
             return {'CANCELLED'}
 
-        if old_eye_left is None:
+        if not old_eye_left:
             self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" does not exist.')
             return {'CANCELLED'}
 
-        if old_eye_right is None:
+        if not old_eye_right:
             self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" does not exist.')
             return {'CANCELLED'}
 

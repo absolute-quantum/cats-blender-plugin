@@ -1188,6 +1188,11 @@ class ShowError(bpy.types.Operator):
                 else:
                     row.label(line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
 
+        print('')
+        print('Report: Error')
+        for line in error:
+            print('    ' + line)
+
 
 # === THIS CODE COULD BE USEFUL ===
 

@@ -372,7 +372,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
     elif mesh_name:
         bone = armature.pose.bones.get(mesh_only_bone_name)
         if not bone:
-            self.report({'ERROR'}, 'Something went wrong! Please undo, check your selections and try again.')
+            tools.common.show_error(5.8, ['Something went wrong! Please undo, check your selections and try again.'])
             return
         armature.pose.bones.get(mesh_only_bone_name).name = mesh_name
 
