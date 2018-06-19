@@ -96,11 +96,16 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
     directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
 
-    filter_glob = bpy.props.StringProperty(
-        default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx",
-        options={'HIDDEN'}
-    )
-
+    if bpy.app.version < (2, 79, 9):
+        filter_glob = bpy.props.StringProperty(
+            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx",
+            options={'HIDDEN'}
+        )
+    else:
+        filter_glob = bpy.props.StringProperty(
+            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx;*.dae",
+            options={'HIDDEN'}
+        )
     text1 = bpy.props.BoolProperty(
         name='IMPORTANT INFO (hover here)',
         description='If you want to modify the import settings, use the button next to the Import button.\n\n',

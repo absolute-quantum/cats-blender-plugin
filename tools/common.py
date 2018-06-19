@@ -29,6 +29,7 @@ from datetime import datetime
 import bpy
 import bmesh
 import numpy as np
+import tools.supporter
 import tools.decimation
 import tools.armature_bones as Bones
 from mathutils import Vector
@@ -1127,28 +1128,33 @@ def correct_bone_positions(armature_name=None):
 
 
 dpi_scale = 3
-error = None
+error = []
+override = False
 
 
-def show_error(scale, error_list):
-    global error, dpi_scale
-    error = error_list
+def show_error(scale, error_list, override_header=False):
+    global override, dpi_scale, error
+    override = override_header
     dpi_scale = scale
+    error = error_list
 
-    # if len(error_list) == 1:
-    #     ShowError.bl_label = error_list[0]
-    #     try:
-    #         bpy.utils.register_class(ShowError)
-    #     except ValueError:
-    #         bpy.utils.unregister_class(ShowError)
-    #         bpy.utils.register_class(ShowError)
+    header = 'Report: Error'
+    if override:
+        header = error_list[0]
+
+    ShowError.bl_label = header
+    try:
+        bpy.utils.register_class(ShowError)
+    except ValueError:
+        bpy.utils.unregister_class(ShowError)
+        bpy.utils.register_class(ShowError)
 
     bpy.ops.error.show('INVOKE_DEFAULT')
 
 
 class ShowError(bpy.types.Operator):
     bl_idname = 'error.show'
-    bl_label = 'Error'
+    bl_label = 'Report: Error'
 
     def execute(self, context):
         return {'FINISHED'}
@@ -1158,22 +1164,29 @@ class ShowError(bpy.types.Operator):
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
 
     def draw(self, context):
-        if not error:
+        if not error or len(error) == 0:
             return
 
-        # if not error or len(error) == 1:
-        #     return
+        if override and len(error) == 1:
+            return
 
         layout = self.layout
         col = layout.column(align=True)
 
-        for line in error:
+        first_line = False
+        for i, line in enumerate(error):
+            if i == 0 and override:
+                continue
             if line == '':
                 col.separator()
             else:
                 row = col.row(align=True)
                 row.scale_y = 0.85
-                row.label(line)
+                if not first_line:
+                    row.label(line, icon='ERROR')
+                    first_line = True
+                else:
+                    row.label(line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
 
 
 # === THIS CODE COULD BE USEFUL ===

@@ -349,6 +349,7 @@ It checks for a new version automatically once every day.
   - Fixed "Apply Shapekey as Basis" not setting the basis for newly created shape keys
 - **General**
   - Various optimizations
+  - Improved error messages
   - Fixed bugs all over the place
 
 #### 0.8.1

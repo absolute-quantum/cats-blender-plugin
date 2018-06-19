@@ -942,7 +942,7 @@ class FixArmature(bpy.types.Operator):
 
         wm.progress_end()
 
-        if hierarchy_check_hips['result'] is False:
+        if not hierarchy_check_hips['result']:
             self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
@@ -952,24 +952,31 @@ class FixArmature(bpy.types.Operator):
 
 def check_hierarchy(check_parenting, correct_hierarchy_array):
     armature = tools.common.set_default_stage()
-    missing = ''
+
+    missing_bones = []
+    missing2 = ['The following bones were not found:', '']
 
     for correct_hierarchy in correct_hierarchy_array:  # For each hierarchy array
-        if len(missing) > 0 and missing[-3:] != ' - ':
-            missing += '\n - '
+        line = ' - '
 
         for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
-            if bone not in missing and bone not in armature.data.bones:
-                missing += bone + ', '
+            if bone not in missing_bones and bone not in armature.data.bones:
+                missing_bones.append(bone)
+                if len(line) > 3:
+                    line += ', '
+                line += bone
 
-    if len(missing) > 0:
-        message = 'The following bones were not found: \n - ' + missing[:-2]
-        if not check_parenting:
-            message += "\nLooks like you found a model which Cats could not fix!" \
-                       "\nIf this is a non modified model we would love to make it compatible." \
-                       "\nReport it to us in the forum or in our discord, links can be found in the Credits panel."
+        if len(line) > 3:
+            missing2.append(line)
 
-        return {'result': False, 'message': message}
+    if len(missing2) > 2 and not check_parenting:
+        missing2.append('')
+        missing2.append('Looks like you found a model which Cats could not fix!')
+        missing2.append('If this is a non modified model we would love to make it compatible.')
+        missing2.append('Report it to us in the forum or in our discord, links can be found in the Credits panel.')
+
+        tools.common.show_error(6.4, missing2)
+        return {'result': True, 'message': ''}
 
     if check_parenting:
         for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array

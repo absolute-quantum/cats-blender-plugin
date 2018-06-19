@@ -99,14 +99,14 @@ class CreateEyesButton(bpy.types.Operator):
 
         if not context.scene.disable_eye_movement:
             # Find the existing vertex group of the left eye bone
-            if self.vertex_group_exists(mesh_name, old_eye_left.name) is False:
+            if not vertex_group_exists(mesh_name, old_eye_left.name):
                 self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it.'
                                        '\nThis might be because you selected the wrong mesh or the wrong bone.'
                                        '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
                 return {'CANCELLED'}
 
             # Find the existing vertex group of the right eye bone
-            if self.vertex_group_exists(mesh_name, old_eye_right.name) is False:
+            if not vertex_group_exists(mesh_name, old_eye_right.name):
                 self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" has no existing vertex group or no vertices assigned to it.'
                                        '\nThis might be because you selected the wrong mesh or the wrong bone.'
                                        '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
@@ -240,21 +240,6 @@ class CreateEyesButton(bpy.types.Operator):
 
         return {'FINISHED'}
 
-    def vertex_group_exists(self, mesh_name, bone_name):
-        mesh = bpy.data.objects[mesh_name]
-        data = mesh.data
-        verts = data.vertices
-
-        for vert in verts:
-            i = vert.index
-            try:
-                mesh.vertex_groups[bone_name].weight(i)
-                return True
-            except:
-                pass
-
-        return False
-
     def copy_vertex_group(self, mesh, vertex_group, rename_to):
         # iterate through the vertex group
         vertex_group_index = 0
@@ -308,6 +293,22 @@ class CreateEyesButton(bpy.types.Operator):
 
         mesh.active_shape_key_index = 0
         return from_shape
+
+
+def vertex_group_exists(mesh_name, bone_name):
+    mesh = bpy.data.objects[mesh_name]
+    data = mesh.data
+    verts = data.vertices
+
+    for vert in verts:
+        i = vert.index
+        try:
+            mesh.vertex_groups[bone_name].weight(i)
+            return True
+        except:
+            pass
+
+    return False
 
 
 # Repair vrc shape keys
@@ -679,6 +680,21 @@ class AdjustEyesButton(bpy.types.Operator):
     def execute(self, context):
         if context.scene.disable_eye_movement:
             return {'FINISHED'}
+
+        mesh_name = context.scene.mesh_name_eye
+
+        if not vertex_group_exists(mesh_name, 'LeftEye'):
+            self.report({'ERROR'}, 'The bone "' + 'LeftEye' + '" has no existing vertex group or no vertices assigned to it.'
+                                                                           '\nThis might be because you selected the wrong mesh or the wrong bone.'
+                                                                           '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
+            return {'CANCELLED'}
+
+        # Find the existing vertex group of the right eye bone
+        if not vertex_group_exists(mesh_name, 'RightEye'):
+            self.report({'ERROR'}, 'The bone "' + 'RightEye' + '" has no existing vertex group or no vertices assigned to it.'
+                                                                            '\nThis might be because you selected the wrong mesh or the wrong bone.'
+                                                                            '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
+            return {'CANCELLED'}
 
         armature = tools.common.set_default_stage()
         armature.data.pose_position = 'POSE'

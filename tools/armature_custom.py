@@ -54,24 +54,24 @@ class MergeArmature(bpy.types.Operator):
         merge_armature = bpy.data.objects[merge_armature_name]
 
         if not merge_armature:
-            tools.common.show_error(5, ['The armature "' + merge_armature_name + '" could not be found.'])
+            tools.common.show_error(5.2, ['The armature "' + merge_armature_name + '" could not be found.'])
             return {'FINISHED'}
         if not base_armature:
-            tools.common.show_error(5, ['The armature "' + base_armature_name + '" could not be found.'])
+            tools.common.show_error(5.2, ['The armature "' + base_armature_name + '" could not be found.'])
             return {'FINISHED'}
 
         if merge_armature.parent or base_armature.parent:
-            tools.common.show_error(6,
+            tools.common.show_error(6.2,
                                     ['Please use the "Fix Model" feature on the selected armatures first!',
                                      'Make sure to select the armature you want to fix above the "Fix Model" button!',
                                      'After that please only move the mesh (not the armature!) to the desired position.'])
             return {'FINISHED'}
 
         if len(tools.common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
-            tools.common.show_error(5, ['The armature "' + merge_armature_name + '" does not have any meshes.'])
+            tools.common.show_error(5.2, ['The armature "' + merge_armature_name + '" does not have any meshes.'])
             return {'FINISHED'}
         if len(tools.common.get_meshes_objects(armature_name=base_armature_name)) == 0:
-            tools.common.show_error(5, ['The armature "' + base_armature_name + '" does not have any meshes.'])
+            tools.common.show_error(5.2, ['The armature "' + base_armature_name + '" does not have any meshes.'])
             return {'FINISHED'}
 
         # Merge armatures
@@ -190,7 +190,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
             tools.common.unselect_all()
             tools.common.select(mesh)
             bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
-            tools.common.show_error(8,
+            tools.common.show_error(8.2,
                                     ['The position of your base armature and mesh has to be at 0! Only move the mesh of the merge armature!',
                                      'Maybe you mixed up the base and merge armatures?',
                                      '',
@@ -222,7 +222,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
                     tools.common.unselect_all()
                     tools.common.select(mesh)
                     bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
-                    tools.common.show_error(7,
+                    tools.common.show_error(7.2,
                                             ['If you want to rotate the new part, only move the mesh instead of the armature!',
                                              '',
                                              'The position of the merge armature got reset and the mesh you have to modify got selected.',
@@ -315,8 +315,6 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
 
     # Join the meshes
     mesh = tools.common.join_meshes(armature_name=base_armature_name)
-    if mesh:
-        tools.common.sort_shape_keys(mesh.name)
 
     # Go into edit mode
     tools.common.unselect_all()
