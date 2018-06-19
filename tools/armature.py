@@ -790,7 +790,10 @@ class FixArmature(bpy.types.Operator):
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
         for bone in armature.data.edit_bones:
             if bone.head[z_cord] == bone.tail[z_cord]:
-                bone.tail[z_cord] += 0.1
+                if bone.name == 'Hips' and full_body_tracking:
+                    bone.tail[z_cord] -= 0.1
+                else:
+                    bone.tail[z_cord] += 0.1
 
         # Mixing the weights
         tools.common.unselect_all()
