@@ -225,38 +225,32 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     #                                      'Please start from here or undo this operation.'])
     #         return
 
-    # Check for transforms on merge armature, reset if not default. when attaching a mesh the merge armature is always default
-    old_loc = [0, 0, 0]
-    old_scale = [1, 1, 1]
+    # Check if merge armature is rotated. Because the code can handle everything except rotations
     for i in [0, 1, 2]:
-        if merge_armature.location[i] != 0 or abs(merge_armature.rotation_euler[i]) > tolerance or merge_armature.scale[i] != 1:
+        if abs(merge_armature.rotation_euler[i]) > tolerance or abs(mesh_merge.rotation_euler[i]) > tolerance:
 
-            old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
-            old_rot = [merge_armature.rotation_euler[0], merge_armature.rotation_euler[1],
-                       merge_armature.rotation_euler[2]]
-            old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
+            if merge_armature.location[i] != 0 or abs(merge_armature.rotation_euler[i]) > tolerance or merge_armature.scale[i] != 1:
 
-            # Reset wrong merge armature transforms
-            for i2 in [0, 1, 2]:
-                merge_armature.location[i2] = 0
-                merge_armature.rotation_euler[i2] = 0
-                merge_armature.scale[i2] = 1
+                # Reset wrong merge armature rotations
+                for i2 in [0, 1, 2]:
+                    merge_armature.location[i2] = 0
+                    merge_armature.rotation_euler[i2] = 0
+                    merge_armature.scale[i2] = 1
 
-            # Show error only if a rotation is applied. Because the code can handle everything except rotations
-            for i2 in [0, 1, 2]:
-                if abs(old_rot[i2]) > tolerance or abs(mesh_merge.rotation_euler[i2]) > tolerance:
-                    merge_armature.hide = True
-                    base_armature.hide = True
-                    tools.common.unselect_all()
-                    tools.common.select(mesh_merge)
-                    bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
-                    tools.common.show_error(7.2,
-                                            ['If you want to rotate the new part, only move the mesh instead of the armature!',
-                                             '',
-                                             'The transforms of the merge armature got reset and the mesh you have to modify got selected.',
-                                             'Please start from here or undo this operation.'])
-                    return
-            break
+                tools.common.unselect_all()
+                tools.common.select(mesh_merge)
+
+                tools.common.show_error(7.5,
+                                        ['If you want to rotate the new part, only modify the mesh instead of the armature!',
+                                         '',
+                                         'The transforms of the merge armature got reset and the mesh you have to modify got selected.',
+                                         'Now place this selected mesh where and how you want it to be and then merge the armatures again.',
+                                         "If you don't want that, undo this operation."])
+                return
+
+    # Save the transforms of the merge armature
+    old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
+    old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
 
     # Apply transformation from mesh to armature
     for i in [0, 1, 2]:

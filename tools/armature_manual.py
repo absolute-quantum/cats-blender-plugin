@@ -173,7 +173,7 @@ class PoseToRest(bpy.types.Operator):
                      '\n' \
                      '\nThis applies the current pose position as the new rest position.' \
                      '\n' \
-                     '\nWARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this.'
+                     '\nWARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -491,6 +491,24 @@ class ArmatureEditMode:
         tools.common.switch(self._armature_mode)
         self._armature.hide = self._armature_hide
         bpy.context.scene.objects.active = self._active_object
+
+
+class ApplyTransformations(bpy.types.Operator):
+    bl_idname = 'armature_manual.apply_transformations'
+    bl_label = 'Apply Transformations'
+    bl_description = "Applies the position, rotation and scale to the armature and it's meshes."
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature():
+            return True
+        return False
+
+    def execute(self, context):
+        # Is this needed?
+        self.report({'INFO'}, 'Transformations applied.')
+        return {'FINISHED'}
 
 
 class RemoveZeroWeight(bpy.types.Operator):

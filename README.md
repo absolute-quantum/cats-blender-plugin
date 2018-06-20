@@ -327,9 +327,9 @@ It checks for a new version automatically once every day.
 
 #### 0.9.0
 - **Model:**
-  - Added new "Apply as Rest Pose" button
+  - Added a new "Apply as Rest Pose" button
     - This will apply the current pose position as the new rest position
-  - Added new "Join Selected Meshes" button
+  - Added a new "Join Selected Meshes" button
   - Fix Model now combines similar materials (toggleable)
     - This automatically increases the performance for most models
   - Moved the Fix Model options into a new settings dialog
