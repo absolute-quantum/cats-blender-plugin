@@ -29,9 +29,8 @@ from collections import OrderedDict
 
 bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
-bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIKTip', 'LegIK', 'ToeTipIK',
-                  'ToeTipIKTip', 'ShoulderP_', 'EyeTip_', 'ThumbTip_', 'IndexFingerTip_', 'MiddleFingerTip_',
-                  'RingFingerTip_', 'LittleFingerTip_', 'HandDummy_', 'HandTip_', 'SleeveShoulderIK_']
+bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK',
+                  'ShoulderP_', 'EyeTip_', 'HandDummy_', 'SleeveShoulderIK_']
 bone_list_parenting = {
     'Spine': 'Hips',
     'Chest': 'Spine',
@@ -384,6 +383,7 @@ bone_rename['Neck'] = [
     'C_Neck_1',
     'NECK',
     'NeckN',
+    'Helmet_Lower',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
@@ -394,6 +394,7 @@ bone_rename['Head'] = [
     'C_Head_1',
     'HEAD',
     'HeadN',
+    'Helmet_Upper',
 ]
 bone_rename['\Left shoulder'] = [
     '\Left_Shoulder',
@@ -411,6 +412,7 @@ bone_rename['\Left shoulder'] = [
     'B_\L_Shoulder',
     '\LCollar',
     '\L_Clavicle',
+    '\L_Clavicle1',
     '\Left_Clavicle',
     '\LeftCollar',
     '\Leftcollar',
@@ -422,6 +424,8 @@ bone_rename['\Left shoulder'] = [
     'Shoulder+_\L',
     'Shol_\L',
     '\Lf_Clavicle',
+    'Clavicle_\L',
+    'Arm_\Left_Sh_1',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',
@@ -459,6 +463,7 @@ bone_rename['\Left arm'] = [
     '\LShoulderJ',
     '\Lf_Shoulder',
     'Arm_Upper_\L',
+    'Arm_\Left_Sh_2',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -599,6 +604,7 @@ bone_rename['\Left ankle'] = [
     '\Left_Ankle_001',
     '\LeftAnkle',
     'Ankle_\L',
+    '\L_Ankle',
     'Mixamorig:\LeftFoot',
     'Leg_\Left_Ankle',
     'Bip_\L_Foot',
@@ -721,7 +727,10 @@ bone_reweight['Head'] = [
 ]
 bone_reweight['\Left shoulder'] = [
     'ShoulderP_\L',
+    'Shoulder1_\L',
     'Shoulder2_\L',
+    'Shoulder3_\L',
+    'Shoulder4_\L',
     'ShoulderSleeve_\L',
     'SleeveShoulderIK_\L',
     '\Left_Shoulder_Weight',
@@ -770,7 +779,6 @@ bone_reweight['\Left arm'] = [
     'ShoulderTwist_\L',
     'ArmW_\L',
     'ArmW2_\L',
-    # 'Sleeve1_\L',
     'SleeveArm_\L',
     'SleeveElbowAux_\L',
     'ArmxcIa_\L',
@@ -814,9 +822,11 @@ bone_reweight['\Left arm'] = [
     '\LeftArmBend',
     '\L_Uptwist_A',
     '\L_Uptwist_B',
-    # 'Elbowb_\L',
-    # 'Elbowc_\L',
-    # 'Elbowd_\L',
+    'Shoulder5_\L',
+    'Shoulder6_\L',
+    'Shoulder7_\L',
+    'ElbowUpper_\L',
+    'Arm_\Left_Sh_Tw',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -860,7 +870,6 @@ bone_reweight['\Left elbow'] = [
     'ElbowTwist2_\L',
     'ElbowW_\L',
     'ElbowW2_\L',
-    # 'Sleeve2_\L',
     'SleeveElbow_\L',
     'Elbow_Sleeve_\L',
     'SleeveMouth_\L',
@@ -908,8 +917,9 @@ bone_reweight['\Left elbow'] = [
     '\LeftForeArmRoll',
     '\LeftForeArmRoll1',
     '\LeftForeArmRoll2',
-    '\L_Foretwist_A',
-    '\L_Foretwist_B',
+    'ElbowMiddle_\L',
+    'ElbowLower1_\L',
+    'ElbowLower2_\L',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1001,6 +1011,30 @@ bone_reweight['\Left leg'] = [
     '\LeftHipsRoll',
     '\LeftUpLegRoll',
     '\LeftKneeUp',
+    'Peaches1_\L',
+    'Peaches1_2_\L',
+    'Peaches2_\L',
+    'Peaches2_2_\L',
+    'Peaches3_\L',
+    'Peaches3_2_\L',
+    'Peaches4_\L',
+    'Peaches4_2_\L',
+    'Peaches5_\L',
+    'Peaches5_2_\L',
+    'Peaches6_\L',
+    'Peaches7_\L',
+    'Peaches8_\L',
+    'Peaches9_\L',
+    'Peaches10_\L',
+    'KneeUpper_\L',
+    'Knee1_\L',
+    'Knee1_2_\L',
+    'Knee2_\L',
+    'Knee2_2_\L',
+    'Knee3_\L',
+    'Knee3_2_\L',
+    'Knee4_\L',
+    'Knee4_2_\L',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -1040,6 +1074,13 @@ bone_reweight['\Left knee'] = [
     'KneeD2_\L',
     '\LeftKneeRoll',
     '\LeftKneeLow',
+    'KneeLower_\L',
+    'Knee5_\L',
+    'Knee5_2_\L',
+    'Knee6_\L',
+    'Knee6_2_\L',
+    'Knee7_\L',
+    'Knee7_2_\L',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',

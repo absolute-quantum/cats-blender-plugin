@@ -61,6 +61,7 @@ import tools.credits
 import tools.decimation
 import tools.shapekey
 import tools.copy_protection
+import tools.importer
 
 
 importlib.reload(mmd_tools_local)
@@ -81,6 +82,7 @@ importlib.reload(tools.credits)
 importlib.reload(tools.decimation)
 importlib.reload(tools.shapekey)
 importlib.reload(tools.copy_protection)
+importlib.reload(tools.importer)
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
@@ -89,13 +91,17 @@ importlib.reload(tools.copy_protection)
 # Search for "show_backface_culling" and set it to False in view.py
 # Done
 
+# How to update googletrans:
+# in the gtoken.py on line 57 update this line to include "verify=False":
+# r = self.session.get(self.host, verify=False)
+
 bl_info = {
     'name': 'Cats Blender Plugin',
     'category': '3D View',
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 8, 1],  # Only change this version and the dev branch var right before publishing the new update!
+    'version': [0, 9, 0],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -214,6 +220,7 @@ class ToolPanel:
         items=[
             ("MMD", "MMD", 'Import .pmx/.pmd files'),
             ("XPS", "XNALara", 'Import .xps/.mesh/.ascii files'),
+            ("SOURCE", "Source", 'Import .smd/.qc/.vta/.dmx files'),
             ("FBX", "FBX", 'Import .fbx files'),
         ],
         default='MMD'
@@ -227,11 +234,20 @@ class ToolPanel:
 
     bpy.types.Scene.full_body = bpy.props.BoolProperty(
         name='Apply Full Body Tracking Fix',
-        description="Applies a general fix for Full Body Tracking.\n"
+        description="Applies a general fix for Full Body Tracking.\n\n"
                     'Can potentially reduce the knee bending of every avatar in VRChat.\n'
                     'You can safely ignore the "Spine length zero" warning in Unity.\n'
                     'If you have problems with the hips ingame, uncheck this option and tell us!\n',
         default=False
+    )
+
+    bpy.types.Scene.combine_mats = bpy.props.BoolProperty(
+        name='Combine Same Materials',
+        description="Combines similar materials into one, reducing draw calls.\n\n"
+                    'Your avatar should visibly look the same after this operation.\n'
+                    'This is a very important step for optimizing your avatar.\n'
+                    'If you have problems with this, uncheck this option and tell us!\n',
+        default=True
     )
 
     bpy.types.Scene.remove_zero_weight = bpy.props.BoolProperty(
@@ -239,6 +255,15 @@ class ToolPanel:
         description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.\n"
                     'Uncheck this if bones you want to keep got deleted',
         default=True
+    )
+
+    bpy.types.Scene.keep_end_bones = bpy.props.BoolProperty(
+        name='Keep End Bones',
+        description="Saves end bones from deletion."
+                    '\n\nThis can improve skirt movement for dynamic bones, but increases the bone count.'
+                    '\nThis can also fix issues with crumbled finger bones in Unity.'
+                    '\nMake sure to always uncheck "Add Leaf Bones" when exporting or use the CATS export button',
+        default=False
     )
 
     bpy.types.Scene.merge_mode = bpy.props.EnumProperty(
@@ -729,19 +754,35 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 col.separator()
 
-        row = col.row(align=True)
-        row.prop(context.scene, 'import_mode', expand=True)
-        row = col.row(align=True)
-        row.scale_y = 1.4
-        row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
-
-        if tools.common.get_armature():
-            row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'import_mode', expand=True)
+        # row = col.row(align=True)
+        # row.scale_y = 1.4
+        # row.operator('armature_manual.import_model', icon='ARMATURE_DATA')
 
         arm_count = len(tools.common.get_armature_objects())
         if arm_count == 0:
+            row = col.row(align=True)
+            row.scale_y = 1
+            subcol = row.split(align=True)
+            subcol.scale_y = 1.7
+            subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            subcol = row.split(align=True)
+            subcol.scale_y = 1.7
+            subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
             return
-        elif arm_count > 1:
+        else:
+            row = col.row(align=True)
+            row.scale_y = 1
+            subcol = row.split(align=True)
+            subcol.scale_y = 1.4
+            subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            subcol.operator('importer.export_model', icon='ARMATURE_DATA')
+            subcol = row.split(align=True)
+            subcol.scale_y = 1.4
+            subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+
+        if arm_count > 1:
             col.separator()
             col.separator()
             col.separator()
@@ -752,12 +793,12 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         col.separator()
         row = col.row(align=True)
-        row.prop(context.scene, 'full_body')
-        row = col.row(align=True)
-        row.prop(context.scene, 'remove_zero_weight')
-        row = col.row(align=True)
-        row.scale_y = 1.4
+        row.scale_y = 1.5
         row.operator('armature.fix', icon='BONE_DATA')
+        subcol = row.row(align=True)
+        subcol.alignment = 'RIGHT'
+        subcol.scale_y = 1.5
+        subcol.operator("armature.settings", text="", icon='MODIFIER')
 
         if context.scene.full_body:
             row = col.row(align=True)
@@ -768,21 +809,22 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()
 
-        col.separator()
-        col.separator()
         ob = bpy.context.active_object
         if not ob or ob.mode != 'POSE':
             row = col.row(align=True)
-            row.scale_y = 1.05
+            row.scale_y = 1.1
             row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')
         else:
             row = col.row(align=True)
-            row.scale_y = 1.05
+            row.scale_y = 1.1
             row.operator('armature_manual.stop_pose_mode', icon='POSE_DATA')
             if not tools.eyetracking.eye_left:
                 row = col.row(align=True)
-                row.scale_y = 1.05
+                row.scale_y = 0.9
                 row.operator('armature_manual.pose_to_shape', icon='SHAPEKEY_DATA')
+                row = col.row(align=True)
+                row.scale_y = 0.9
+                row.operator('armature_manual.pose_to_rest', icon='POSE_HLT')
 
         # addon_updater_ops.update_notice_box_ui(self, context)
 
@@ -808,9 +850,12 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.label("Separate by:", icon='MESH_DATA')
         row.operator('armature_manual.separate_by_materials', text='Materials')
         row.operator('armature_manual.separate_by_loose_parts', text='Loose Parts')
+
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.operator('armature_manual.join_meshes', icon='MESH_DATA')
+        row.label("Join Meshes:", icon='MESH_DATA')
+        row.operator('armature_manual.join_meshes', text='All')
+        row.operator('armature_manual.join_meshes_selected', text='Selected')
 
         col.separator()
         col.separator()
@@ -1285,9 +1330,11 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 1.1
         row.prop(context.scene, 'mouth_ch', icon='SHAPEKEY_DATA')
-        col.separator()
-        row = col.row(align=True)
-        row.prop(context.scene, 'shape_intensity')
+
+        # col.separator()
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'shape_intensity')
+
         col.separator()
         row = col.row(align=True)
         row.operator('auto.viseme', icon='TRIA_RIGHT')
@@ -1359,9 +1406,18 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.1
             row.operator('combine.mats', icon='MATERIAL')
+
             row = col.row(align=True)
             row.scale_y = 1.1
             row.operator('one.tex', icon='TEXTURE')
+            subcol = row.row(align=True)
+            subcol.alignment = 'RIGHT'
+            subcol.scale_y = 1.1
+            subcol.operator("one.tex_only", text="", icon='X')
+
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.operator('textures.standardize', icon='TEXTURE_SHADED')
 
         if context.scene.optimize_mode == 'BONEMERGING':
             if len(tools.common.get_meshes_objects()) > 1:
@@ -1598,18 +1654,32 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
 
 classesToRegister = [
     ArmaturePanel,
-    tools.armature_manual.ImportModel,
-    tools.armature_manual.ExportModel,
-    tools.armature_manual.XpsToolsButton,
+    tools.importer.ImportAnyModel,
+    tools.importer.ExportModel,
+    tools.importer.ModelsPopup,
+    tools.importer.ImportMMD,
+    tools.importer.ImportXPS,
+    tools.importer.ImportSource,
+    tools.importer.ImportFBX,
+
+    tools.importer.EnableMMD,
+    tools.importer.InstallXPS,
+    tools.importer.InstallSource,
+    tools.importer.XpsToolsButton,
+    tools.importer.SourceToolsButton,
+
     tools.armature.FixArmature,
+    tools.armature.ModelSettings,
     tools.armature_manual.StartPoseMode,
     tools.armature_manual.StopPoseMode,
     tools.armature_manual.PoseToShape,
+    tools.armature_manual.PoseToRest,
 
     ManualPanel,
     tools.armature_manual.SeparateByMaterials,
     tools.armature_manual.SeparateByLooseParts,
     tools.armature_manual.JoinMeshes,
+    tools.armature_manual.JoinMeshesSelected,
     tools.armature_manual.MergeWeights,
     tools.armature_manual.RemoveZeroWeight,
     tools.armature_manual.RemoveConstraints,
@@ -1653,6 +1723,8 @@ classesToRegister = [
     tools.atlas.AutoAtlasButton,
     tools.material.CombineMaterialsButton,
     tools.material.OneTexPerMatButton,
+    tools.material.OneTexPerMatOnlyButton,
+    tools.material.StandardizeTextures,
     tools.bonemerge.BoneMergeButton,
 
     CopyProtectionPanel,
@@ -1672,6 +1744,7 @@ classesToRegister = [
     tools.credits.ForumButton,
 
     tools.shapekey.ShapeKeyApplier,
+    tools.common.ShowError,
 ]
 
 
@@ -1686,8 +1759,6 @@ def register():
     if dev_branch and len(version) > 2:
         version[2] += 1
 
-    # thread = Thread(target=tools.supporter.load_supporters, args=[])
-    # thread.start()
     tools.supporter.load_settings()
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
@@ -1724,6 +1795,7 @@ def unregister():
     tools.supporter.unload_icons()
 
     bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
+
     print("### Unloaded CATS successfully!")
 
 

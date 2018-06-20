@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.8.1)
+# Cats Blender Plugin (0.9.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -63,7 +63,7 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/a7S8KnT.png)
+![](https://i.imgur.com/Soz7v0U.png)
 
 This tries to completely fix your model with one click.
 
@@ -92,6 +92,9 @@ This tries to completely fix your model with one click.
 
 ##### Pose to Shape Key
 - Saves your current pose as a new shape key.
+
+##### Apply as Rest Pose
+- Applies the current pose position as the new rest position
 
 
 ## Model Options
@@ -136,6 +139,7 @@ Works by sending a request to the Google Translate service. This feature can be 
 - Merges the selected armature into the selected base armature.
 - **How to use:**
   - Use "Fix Model" on both armatures
+    - Select the armature you want to fix in the list above the Fix Model button
     - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
     - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure (https://i.imgur.com/F5KEt0M.png)
     - DO NOT delete any main bones by yourself! CATS will merge them and deletes all unused bones afterwards
@@ -143,7 +147,7 @@ Works by sending a request to the Google Translate service. This feature can be 
     - You can use Move, Scale and Rotate
     - CATS will position the bones according to the mesh automatically
     - If you want multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
-  - Select the base armature and the armature you want to merge into the base armature
+  - Select the base armature and the armature you want to merge into the base armature in the panel
   - If CATS can't detect the bone structure automatically: select a bone you want to attach the new armature to
     - E.g.: For a hair armature select "Head" as the bone
   - Press the "Merge Armatures" button -> Done!
@@ -156,13 +160,9 @@ Works by sending a request to the Google Translate service. This feature can be 
     - INFO: The mesh will only be assigned to the selected bone
     - E.g.: A jacket won't work, because it requires multiple bones.
     - E.g.: A ring on a finger works perfectly, because the ring only needs one bone to move with (the finger bone)
-  - Select the base armature and the mesh you want to attach to the base armature
-  - Select the bone you want to attach the mesh to
+  - Select the base armature and the mesh you want to attach to the base armature in the panel
+  - Select the bone you want to attach the mesh to in the panel
   - Press the "Attach Mesh" button -> Done!
-
-##### Useful tip:
-- You can change the rest position of your model by using this method:
-https://nixart.wordpress.com/2013/03/28/modifying-the-rest-pose-in-blender/
 
 ##### Support us:
 - We worked hard on this feature. If you like it consider supporting us, it helps a lot!
@@ -324,6 +324,37 @@ It checks for a new version automatically once every day.
 
 
 ## Changelog
+
+#### 0.9.0
+- **Model:**
+  - Added a new "Apply as Rest Pose" button
+    - This will apply the current pose position as the new rest position
+  - Added a new "Join Selected Meshes" button
+  - Fix Model now combines similar materials (toggleable)
+    - This automatically increases the performance for most models
+  - Moved the Fix Model options into a new settings dialog
+    - Open this by clicking the wrench icon next to the Fix Model button
+  - Import Model now can import all the models with one button
+  - Added option to Keep End Bones
+  - Improved support for Source Engine models
+  - Backface culling is now deactivated again
+  - Fixed random important bones disappearing for no reason
+- **Translation:**
+  - Fixed the SSL error
+    - This fixes a lot of instances where translations would not work
+- **Custom Model:**
+  - Greatly improved the combine process and drastically reduced the amount of errors
+    - Armature transform getting reset is now very rare
+    - Much more user friendly
+  - Improved tolerances to allow minimal armature rotations
+  - Getting an error while attaching a mesh doesn't create a new armature anymore
+  - Error messages are now much more persistent
+- **Shapekeys:**
+  - Fixed "Apply Shapekey as Basis" not setting the basis for newly created shape keys
+- **General**
+  - Various optimizations
+  - Improved error messages
+  - Fixed bugs all over the place
 
 #### 0.8.1
 - **Model:**

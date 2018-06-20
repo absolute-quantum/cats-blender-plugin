@@ -25,141 +25,16 @@
 # Edits by: GiveMeAllYourCats
 
 import bpy
-import webbrowser
 import tools.common
 import tools.eyetracking
 
 mmd_tools_installed = False
 try:
     import mmd_tools_local
+
     mmd_tools_installed = True
 except:
     pass
-
-
-class ImportModel(bpy.types.Operator):
-    bl_idname = 'armature_manual.import_model'
-    bl_label = 'Import Model'
-    bl_description = 'Import a model of the selected type'
-    bl_options = {'INTERNAL'}
-
-    def execute(self, context):
-        tools.common.remove_unused_objects()
-        if context.scene.import_mode == 'MMD':
-            if not mmd_tools_installed:
-                bpy.context.window_manager.popup_menu(popup_enable_mmd, title='mmd_tools is not installed!', icon='ERROR')
-                return {'FINISHED'}
-
-            try:
-                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'})
-            except AttributeError:
-                bpy.context.window_manager.popup_menu(popup_enable_mmd, title='mmd_tools is not enabled!', icon='ERROR')
-            except (TypeError, ValueError):
-                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
-
-        elif context.scene.import_mode == 'XPS':
-            try:
-                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
-            except AttributeError:
-                bpy.context.window_manager.popup_menu(popup_install_xps, title='XPS Tools is not installed or enabled!', icon='ERROR')
-            except (TypeError, ValueError):
-                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
-
-        elif context.scene.import_mode == 'FBX':
-            try:
-                bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=True)
-            except (TypeError, ValueError):
-                bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
-
-        return {'FINISHED'}
-
-
-def popup_enable_mmd(self, context):
-    layout = self.layout
-    col = layout.column(align=True)
-
-    row = col.row(align=True)
-    row.label("The plugin 'mmd_tools' is required for this function.")
-    col.separator()
-    row = col.row(align=True)
-    row.label("Please restart Blender.")
-
-
-def popup_enable_xps(self, context):
-    layout = self.layout
-    col = layout.column(align=True)
-
-    row = col.row(align=True)
-    row.label("The plugin 'XPS Tools' is required for this function.")
-    col.separator()
-    row = col.row(align=True)
-    row.label("Please enable it in your User Preferences.")
-
-
-def popup_install_xps(self, context):
-    layout = self.layout
-    col = layout.column(align=True)
-
-    row = col.row(align=True)
-    row.label("The plugin 'XPS Tools' is required for this function.")
-    col.separator()
-    row = col.row(align=True)
-    row.label("If it is not enabled please enable it in your User Preferences.")
-    row = col.row(align=True)
-    row.label("If it is not installed please click here to go to this link to download and install it")
-    col.separator()
-    row = col.row(align=True)
-    row.operator('armature_manual.xps_tools', icon='LOAD_FACTORY')
-
-
-class XpsToolsButton(bpy.types.Operator):
-    bl_idname = 'armature_manual.xps_tools'
-    bl_label = 'Install XPS Tools'
-
-    def execute(self, context):
-        webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
-
-        self.report({'INFO'}, 'XPS Tools link opened')
-        return {'FINISHED'}
-
-
-class ExportModel(bpy.types.Operator):
-    bl_idname = 'armature_manual.export_model'
-    bl_label = 'Export Model'
-    bl_description = 'Export this model as .fbx for Unity.\n' \
-                     '\n' \
-                     'Automatically sets the optimal export settings'
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    def execute(self, context):
-        protected_export = False
-        for mesh in tools.common.get_meshes_objects():
-            if protected_export:
-                break
-            if mesh.data.shape_keys:
-                for shapekey in mesh.data.shape_keys.key_blocks:
-                    if shapekey.name == 'Basis Original':
-                        protected_export = True
-                        break
-
-        try:
-            if protected_export:
-                bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
-                                         object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
-                                         use_mesh_modifiers=False,
-                                         add_leaf_bones=False,
-                                         bake_anim=False,
-                                         mesh_smooth_type='FACE')
-            else:
-                bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
-                                         object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
-                                         use_mesh_modifiers=False,
-                                         add_leaf_bones=False,
-                                         bake_anim=False)
-        except (TypeError, ValueError):
-            bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
-
-        return {'FINISHED'}
 
 
 class StartPoseMode(bpy.types.Operator):
@@ -167,7 +42,7 @@ class StartPoseMode(bpy.types.Operator):
     bl_label = 'Start Pose Mode'
     bl_description = 'Starts the pose mode.\n' \
                      'This lets you test how your model will move'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -177,7 +52,8 @@ class StartPoseMode(bpy.types.Operator):
 
     def execute(self, context):
         current = ""
-        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
+                bpy.context.selected_editable_bones) > 0:
             current = bpy.context.selected_editable_bones[0].name
 
         armature = tools.common.set_default_stage()
@@ -214,7 +90,7 @@ class StopPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.stop_pose_mode'
     bl_label = 'Stop Pose Mode'
     bl_description = 'Stops the pose mode and resets the pose to normal'
-    bl_options = {'REGISTER', 'UNDO'}
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -224,6 +100,8 @@ class StopPoseMode(bpy.types.Operator):
 
     def execute(self, context):
         armature = tools.common.get_armature()
+        tools.common.select(armature)
+
         for pb in armature.data.bones:
             pb.hide = False
             pb.select = True
@@ -265,21 +143,27 @@ class PoseToShape(bpy.types.Operator):
         return meshes and len(meshes) == 1
 
     def execute(self, context):
-        mesh = tools.common.get_meshes_objects()[0]
-        tools.common.unselect_all()
-        tools.common.select(mesh)
-
-        # Apply armature mod
-        mod = mesh.modifiers.new("Pose", 'ARMATURE')
-        mod.object = tools.common.get_armature()
-        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
-
-        armature = tools.common.set_default_stage()
-        tools.common.switch('POSE')
-        armature.data.pose_position = 'POSE'
+        pose_to_shapekey('Pose')
 
         self.report({'INFO'}, 'Pose successfully saved as shape key.')
         return {'FINISHED'}
+
+
+def pose_to_shapekey(name):
+    mesh = tools.common.get_meshes_objects()[0]
+    tools.common.unselect_all()
+    tools.common.select(mesh)
+
+    # Apply armature mod
+    mod = mesh.modifiers.new(name, 'ARMATURE')
+    mod.object = tools.common.get_armature()
+    bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+
+    armature = tools.common.set_default_stage()
+    tools.common.switch('POSE')
+    armature.data.pose_position = 'POSE'
+
+    return armature
 
 
 class PoseToRest(bpy.types.Operator):
@@ -287,7 +171,9 @@ class PoseToRest(bpy.types.Operator):
     bl_label = 'Apply as Rest Pose'
     bl_description = 'INFO: Join your meshes first!' \
                      '\n' \
-                     '\nThis sets your current pose as the default pose.'
+                     '\nThis applies the current pose position as the new rest position.' \
+                     '\n' \
+                     '\nWARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -299,20 +185,28 @@ class PoseToRest(bpy.types.Operator):
         return meshes and len(meshes) == 1
 
     def execute(self, context):
+        pose_to_shapekey('PoseToRest')
+
+        bpy.ops.pose.armature_apply()
+
         mesh = tools.common.get_meshes_objects()[0]
         tools.common.unselect_all()
         tools.common.select(mesh)
 
-        # Apply armature mod
-        mod = mesh.modifiers.new("Pose", 'ARMATURE')
-        mod.object = tools.common.get_armature()
-        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+        mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
+        bpy.ops.object.shape_key_to_basis()
 
-        armature = tools.common.set_default_stage()
-        tools.common.switch('POSE')
-        armature.data.pose_position = 'POSE'
+        # Remove old basis shape key from shape_key_to_basis operation
+        if 'Basis Old.001' not in mesh.data.shape_keys.key_blocks:
+            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                if shapekey.name == 'Basis Old':
+                    mesh.active_shape_key_index = index
+                    bpy.ops.object.shape_key_remove(all=False)
+                    break
 
-        self.report({'INFO'}, 'Pose successfully saved as shape key.')
+        bpy.ops.armature_manual.stop_pose_mode()
+
+        self.report({'INFO'}, 'Pose successfully applied as rest pose.')
         return {'FINISHED'}
 
 
@@ -328,11 +222,37 @@ class JoinMeshes(bpy.types.Operator):
         return meshes and len(meshes) > 0
 
     def execute(self, context):
-        mesh = tools.common.join_meshes()
-        if mesh:
-            tools.common.repair_viseme_order(mesh.name)
+        tools.common.join_meshes()
 
         self.report({'INFO'}, 'Meshes joined.')
+        return {'FINISHED'}
+
+
+class JoinMeshesSelected(bpy.types.Operator):
+    bl_idname = 'armature_manual.join_meshes_selected'
+    bl_label = 'Join Selected Meshes'
+    bl_description = 'Joins the selected model meshes into a single one and applies all unapplied decimation modifiers'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        meshes = tools.common.get_meshes_objects()
+        return meshes and len(meshes) > 0
+
+    def execute(self, context):
+
+        selected_meshes = 0
+        for mesh in tools.common.get_meshes_objects():
+            if mesh.select:
+                selected_meshes += 1
+
+        if selected_meshes == 0:
+            self.report({'ERROR'}, 'No meshes selected! Please select the meshes you want to join in the hierarchy!')
+            return {'FINISHED'}
+
+        tools.common.join_meshes(mode=1)
+
+        self.report({'INFO'}, 'Selected meshes joined.')
         return {'FINISHED'}
 
 
@@ -438,10 +358,12 @@ class MergeWeights(bpy.types.Operator):
         # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
         #     return True
 
-        if bpy.context.active_object.mode == 'EDIT' and bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
+        if bpy.context.active_object.mode == 'EDIT' and bpy.context.selected_editable_bones and len(
+                bpy.context.selected_editable_bones) > 0:
             return True
 
-        if bpy.context.active_object.mode == 'POSE' and bpy.context.selected_pose_bones and len(bpy.context.selected_pose_bones) > 0:
+        if bpy.context.active_object.mode == 'POSE' and bpy.context.selected_pose_bones and len(
+                bpy.context.selected_pose_bones) > 0:
             return True
 
         return False
@@ -488,7 +410,8 @@ class MergeWeights(bpy.types.Operator):
 
         armature_edit_mode.restore()
 
-        self.report({'INFO'}, 'Deleted ' + str(len(self._bone_names_to_work_on)) + ' bones and added their weights to their parents')
+        self.report({'INFO'}, 'Deleted ' + str(
+            len(self._bone_names_to_work_on)) + ' bones and added their weights to their parents')
 
         return {'FINISHED'}
 
@@ -568,6 +491,24 @@ class ArmatureEditMode:
         tools.common.switch(self._armature_mode)
         self._armature.hide = self._armature_hide
         bpy.context.scene.objects.active = self._active_object
+
+
+class ApplyTransformations(bpy.types.Operator):
+    bl_idname = 'armature_manual.apply_transformations'
+    bl_label = 'Apply Transformations'
+    bl_description = "Applies the position, rotation and scale to the armature and it's meshes."
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if tools.common.get_armature():
+            return True
+        return False
+
+    def execute(self, context):
+        # Is this needed?
+        self.report({'INFO'}, 'Transformations applied.')
+        return {'FINISHED'}
 
 
 class RemoveZeroWeight(bpy.types.Operator):

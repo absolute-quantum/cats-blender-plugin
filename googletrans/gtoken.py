@@ -54,7 +54,7 @@ class TokenAcquirer(object):
         if self.tkk and int(self.tkk.split('.')[0]) == now:
             return
 
-        r = self.session.get(self.host)
+        r = self.session.get(self.host, verify=False)
         # this will be the same as python code after stripping out a reserved word 'var'
         code = unicode(self.RE_TKK.search(r.text).group(1)).replace('var ', '')
         # unescape special ascii characters such like a \x3d(=)

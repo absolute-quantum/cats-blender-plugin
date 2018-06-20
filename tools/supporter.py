@@ -45,8 +45,10 @@ supporter_data = None
 settings_data = None
 reloading = False
 button_list = []
+last_update = None
 
 time_format = "%Y-%m-%d %H:%M:%S"
+time_format_github = "%Y-%m-%dT%H:%M:%SZ"
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -202,7 +204,7 @@ def download_file():
     shutil.rmtree(downloads_dir)
 
     # Save update time in settings
-    settings_data['last_supporter_update'] = datetime.now().strftime(time_format)
+    settings_data['last_supporter_update'] = last_update
     save_settings()
 
     # Reload supporters
@@ -232,12 +234,8 @@ def readJson():
 def load_supporters():
     global reloading
 
-    now = datetime.now()
-    if not settings_data \
-            or not settings_data.get('last_supporter_update') \
-            or tools.common.days_between(now.strftime(time_format), settings_data.get('last_supporter_update'), time_format) > 1:
-        # Start asynchronous download of supporter list zip                                # These are the started days.
-        reloading = True                                                                   # So >2 equals 2 full days
+    if update_needed():
+        reloading = True
         thread = Thread(target=download_file, args=[])
         thread.start()
 
@@ -313,7 +311,6 @@ def load_icons(pcoll):
                 pass
 
 
-
 def finish_reloading():
     # Set running false
     global reloading
@@ -354,10 +351,11 @@ def unload_icons():
 
 def ui_refresh():
     # A way to refresh the ui
-    for windowManager in bpy.data.window_managers:
-        for window in windowManager.windows:
-            for area in window.screen.areas:
-                area.tag_redraw()
+    if bpy.data.window_managers:
+        for windowManager in bpy.data.window_managers:
+            for window in windowManager.windows:
+                for area in window.screen.areas:
+                    area.tag_redraw()
 
 
 def load_settings():
@@ -435,3 +433,38 @@ def read_settings_file():
         print('UPDATED MISSING SETTINGS')
 
     return data
+
+
+def update_needed():
+    print('CHECK UPDATE')
+    try:
+        with urllib.request.urlopen("https://api.github.com/repos/Darkblader24/cats_supporter_list/commits/master") as url:
+            data = json.loads(url.read().decode())
+    except urllib.error.URLError:
+        print('URL ERROR')
+        return False
+
+    try:
+        last_commit_date = datetime.strptime(data['commit']['author']['date'], time_format_github)
+    except KeyError:
+        print('DATA NOT READABLE')
+        return False
+
+    global last_update
+    commit_date_str = last_commit_date.strftime(time_format)
+    last_update = commit_date_str
+    print(last_update)
+
+    if not settings_data or not settings_data.get('last_supporter_update'):
+        print('SETTINGS NOT FOUND')
+        return True
+
+    last_update_str = settings_data.get('last_supporter_update')
+    print(last_update_str)
+
+    if commit_date_str == last_update_str:
+        print('COMMIT IDENTICAL')
+        return False
+
+    print('UPDATE NEEDED')
+    return True

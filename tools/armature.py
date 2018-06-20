@@ -185,6 +185,39 @@ class FixArmature(bpy.types.Operator):
                     bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
                 wm.progress_end()
 
+
+        # Perform source engine specific operations
+        # Check if model is source engine model
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+
+        # Remove unused animation data
+        if bpy.context.active_object.animation_data and bpy.context.active_object.animation_data.action.name == 'ragdoll':
+            bpy.context.active_object.animation_data_clear()
+            source_engine = True
+
+        # Delete unused VTA mesh
+        for mesh in tools.common.get_meshes_objects(mode=1):
+            if mesh.name == 'VTA vertices':
+                tools.common.delete_hierarchy(mesh)
+                source_engine = True
+                break
+
+        if source_engine:
+            # Delete unused physics meshes (like rigidbodies)
+            for mesh in tools.common.get_meshes_objects():
+                if mesh.name.endswith('_physics')\
+                        or mesh.name.endswith('_lod1')\
+                        or mesh.name.endswith('_lod2')\
+                        or mesh.name.endswith('_lod3')\
+                        or mesh.name.endswith('_lod4')\
+                        or mesh.name.endswith('_lod5')\
+                        or mesh.name.endswith('_lod6'):
+                    tools.common.delete_hierarchy(mesh)
+
         # Reset to default
         tools.common.set_default_stage()
 
@@ -230,8 +263,28 @@ class FixArmature(bpy.types.Operator):
         # except RuntimeError:
         #     pass
 
+        if source_engine and mesh.data.shape_keys.key_blocks:
+            mesh.data.shape_keys.key_blocks[0].name = "Basis"
+
+        # Save shape key order
+        tools.common.save_shapekey_order(mesh.name)
+
+        # Combines same materials
+        if context.scene.combine_mats:
+            bpy.ops.combine.mats()
+
+        # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
+        all_transparent = True
+        for mat_slot in mesh.material_slots:
+            mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
+            if mat_slot.material.alpha > 0:
+                all_transparent = False
+        if all_transparent:
+            for mat_slot in mesh.material_slots:
+                mat_slot.material.alpha = 1
+
         # Reorders vrc shape keys to the correct order
-        tools.common.repair_viseme_order(mesh.name)
+        tools.common.sort_shape_keys(mesh.name)
 
         # Translate bones with dictionary
         tools.translate.translate_bones(self.dictionary)
@@ -294,6 +347,7 @@ class FixArmature(bpy.types.Operator):
                 .replace('JD_', '')\
                 .replace('JU_', '')\
                 .replace('Armature|', '')\
+                .replace('Bone_', '')\
 
             upper_name = ''
             for i, s in enumerate(name.split('_')):
@@ -522,6 +576,19 @@ class FixArmature(bpy.types.Operator):
             armature.data.edit_bones.get(spines[0]).name = 'Spine'
             armature.data.edit_bones.get(spines[1]).name = 'Chest'
 
+        elif spine_count == 4 and source_engine:  # SOURCE ENGINE SPECIFIC
+            print('SOURCE ENGINE')
+            spine = armature.data.edit_bones.get(spines[0])
+            chest = armature.data.edit_bones.get(spines[2])
+
+            chest.name = 'Chest'
+            spine.name = 'Spine'
+
+            spine.tail = chest.head
+
+            temp_list_reweight_bones[spines[1]] = 'Spine'
+            temp_list_reweight_bones[spines[3]] = 'Chest'
+
         elif spine_count > 2:  # Merge spines
             print('MASS MERGING')
             spine = armature.data.edit_bones.get(spines[0])
@@ -720,6 +787,14 @@ class FixArmature(bpy.types.Operator):
 
                 mesh.rotation_euler = (math.radians(180), 0, 0)
 
+        # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
+        for bone in armature.data.edit_bones:
+            if bone.head[z_cord] == bone.tail[z_cord]:
+                if bone.name == 'Hips' and full_body_tracking:
+                    bone.tail[z_cord] -= 0.1
+                else:
+                    bone.tail[z_cord] += 0.1
+
         # Mixing the weights
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
@@ -754,6 +829,8 @@ class FixArmature(bpy.types.Operator):
                     if bone[0] == bone[1]:
                         print('BUG: ' + bone[0] + ' tried to mix weights with itself!')
                         continue
+
+                    print(bone[0], bone[1])
 
                     vg = mesh.vertex_groups.get(name)
                     # print(bone[1] + " to1 " + bone[0])
@@ -839,8 +916,10 @@ class FixArmature(bpy.types.Operator):
 
         # # This is code for testing
         # print('LOOKING FOR BONES!')
-        #  if 'Eye_L' in tools.common.get_armature().pose.bones:
+        # if 'Head' in tools.common.get_armature().pose.bones:
         #     print('THEY ARE THERE!')
+        # else:
+        #     print('NOT FOUND!!!!!!')
         # return {'FINISHED'}
 
         # At this point, everything should be fixed and now we validate and give errors if needed
@@ -858,14 +937,15 @@ class FixArmature(bpy.types.Operator):
         tools.common.fix_armature_names()
 
         # Fix shading (check for runtime error because of ci tests)
-        try:
-            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-        except RuntimeError:
-            pass
+        if not source_engine:
+            try:
+                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+            except RuntimeError:
+                pass
 
         wm.progress_end()
 
-        if hierarchy_check_hips['result'] is False:
+        if not hierarchy_check_hips['result']:
             self.report({'ERROR'}, hierarchy_check_hips['message'])
             return {'FINISHED'}
 
@@ -875,24 +955,31 @@ class FixArmature(bpy.types.Operator):
 
 def check_hierarchy(check_parenting, correct_hierarchy_array):
     armature = tools.common.set_default_stage()
-    missing = ''
+
+    missing_bones = []
+    missing2 = ['The following bones were not found:', '']
 
     for correct_hierarchy in correct_hierarchy_array:  # For each hierarchy array
-        if len(missing) > 0 and missing[-3:] != ' - ':
-            missing += '\n - '
+        line = ' - '
 
         for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
-            if bone not in missing and bone not in armature.data.bones:
-                missing += bone + ', '
+            if bone not in missing_bones and bone not in armature.data.bones:
+                missing_bones.append(bone)
+                if len(line) > 3:
+                    line += ', '
+                line += bone
 
-    if len(missing) > 0:
-        message = 'The following bones were not found: \n - ' + missing[:-2]
-        if not check_parenting:
-            message += "\nLooks like you found a model which Cats could not fix!" \
-                       "\nIf this is a non modified model we would love to make it compatible." \
-                       "\nReport it to us in the forum or in our discord, links can be found in the Credits panel."
+        if len(line) > 3:
+            missing2.append(line)
 
-        return {'result': False, 'message': message}
+    if len(missing2) > 2 and not check_parenting:
+        missing2.append('')
+        missing2.append('Looks like you found a model which Cats could not fix!')
+        missing2.append('If this is a non modified model we would love to make it compatible.')
+        missing2.append('Report it to us in the forum or in our discord, links can be found in the Credits panel.')
+
+        tools.common.show_error(6.4, missing2)
+        return {'result': True, 'message': ''}
 
     if check_parenting:
         for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
@@ -914,3 +1001,46 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                             return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
 
     return {'result': True}
+
+
+class ModelSettings(bpy.types.Operator):
+    bl_idname = "armature.settings"
+    bl_label = "Fix Model Settings"
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3.25, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.prop(context.scene, 'full_body')
+        row = col.row(align=True)
+        row.active = context.scene.remove_zero_weight
+        row.prop(context.scene, 'keep_end_bones')
+        row = col.row(align=True)
+        row.prop(context.scene, 'combine_mats')
+        row = col.row(align=True)
+        row.prop(context.scene, 'remove_zero_weight')
+
+        if context.scene.full_body:
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label('INFO:', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label('You can safely ignore the', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            col.separator()

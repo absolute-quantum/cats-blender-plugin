@@ -117,7 +117,7 @@ class CopyProtectionEnable(bpy.types.Operator):
             basis_original.relative_key = basis_obfuscated
 
             # Make obfuscated basis the new basis and repair shape key order
-            tools.common.repair_viseme_order(mesh.name)
+            tools.common.sort_shape_keys(mesh.name)
 
         self.report({'INFO'}, 'Model secured!')
         return {'FINISHED'}
@@ -146,7 +146,7 @@ class CopyProtectionDisable(bpy.types.Operator):
                     shapekey.relative_key = shapekey
                     break
 
-            tools.common.repair_viseme_order(mesh.name)
+            tools.common.sort_shape_keys(mesh.name)
 
         self.report({'INFO'}, 'Model un-secured!')
         return {'FINISHED'}

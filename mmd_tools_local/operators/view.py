@@ -77,6 +77,6 @@ class ResetShading(Operator):
         except TypeError:
             pass
         context.area.spaces[0].viewport_shade='SOLID'
-        context.area.spaces[0].show_backface_culling = True
+        context.area.spaces[0].show_backface_culling = False
         bpy.context.scene.game_settings.material_mode = 'MULTITEXTURE'
         return {'FINISHED'}

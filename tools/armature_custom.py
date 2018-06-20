@@ -54,31 +54,28 @@ class MergeArmature(bpy.types.Operator):
         merge_armature = bpy.data.objects[merge_armature_name]
 
         if not merge_armature:
-            self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" could not be found.')
+            tools.common.show_error(5.2, ['The armature "' + merge_armature_name + '" could not be found.'])
             return {'FINISHED'}
         if not base_armature:
-            self.report({'ERROR'}, 'The armature "' + base_armature_name + '" could not be found.')
+            tools.common.show_error(5.2, ['The armature "' + base_armature_name + '" could not be found.'])
             return {'FINISHED'}
 
-        if merge_armature.parent:
-            self.report({'ERROR'}, 'Please use the "Fix Model" feature on the selected armatures first!'
-                                   '\nMake sure to select the armature you want to fix above the "Fix Model" button!'
-                                   '\nAfter that please only move the mesh (not the armature!) to the desired position.')
-            return {'FINISHED'}
-        if base_armature.parent:
-            self.report({'ERROR'}, 'Please use the "Fix Model" feature on the selected armatures first!'
-                                   '\nAfter that please only move the mesh (not the armature!) to the desired position.')
+        if merge_armature.parent or base_armature.parent:
+            tools.common.show_error(6.2,
+                                    ['Please use the "Fix Model" feature on the selected armatures first!',
+                                     'Make sure to select the armature you want to fix above the "Fix Model" button!',
+                                     'After that please only move the mesh (not the armature!) to the desired position.'])
             return {'FINISHED'}
 
         if len(tools.common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
-            self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
+            tools.common.show_error(5.2, ['The armature "' + merge_armature_name + '" does not have any meshes.'])
             return {'FINISHED'}
         if len(tools.common.get_meshes_objects(armature_name=base_armature_name)) == 0:
-            self.report({'ERROR'}, 'The armature "' + merge_armature_name + '" does not have any meshes.')
+            tools.common.show_error(5.2, ['The armature "' + base_armature_name + '" does not have any meshes.'])
             return {'FINISHED'}
 
         # Merge armatures
-        merge_armatures(self, base_armature_name, merge_armature_name, False)
+        merge_armatures(base_armature_name, merge_armature_name, False)
 
         self.report({'INFO'}, 'Armatures successfully joined.')
         return {'FINISHED'}
@@ -137,7 +134,7 @@ class AttachMesh(bpy.types.Operator):
         mod.object = new_armature
 
         # Merge armatures
-        merge_armatures(self, base_armature_name, new_armature.name, True, mesh_name=mesh_name)
+        merge_armatures(base_armature_name, new_armature.name, True, mesh_name=mesh_name)
 
         self.report({'INFO'}, 'Mesh successfully attached to armature.')
         return {'FINISHED'}
@@ -149,99 +146,122 @@ class CustomModelTutorialButton(bpy.types.Operator):
 
     def execute(self, context):
         webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation')
-        # webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/tree/development#custom-model-creation')
 
         self.report({'INFO'}, 'Documentation')
         return {'FINISHED'}
 
 
-def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, mesh_name=None):
+def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_name=None):
+    tolerance = 0.00008726647  # around 0.005 degrees
     base_armature = bpy.data.objects[base_armature_name]
     merge_armature = bpy.data.objects[merge_armature_name]
 
     # Join meshes in both armatures
     mesh_base = tools.common.join_meshes(armature_name=base_armature_name)
-    mesh = tools.common.join_meshes(armature_name=merge_armature_name)
+    mesh_merge = tools.common.join_meshes(armature_name=merge_armature_name)
 
-    # Check for transform on base armature, reset if not default
+    # Applies transforms an the base armature and mesh
+    tools.common.unselect_all()
+    tools.common.select(base_armature)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    tools.common.unselect_all()
+    tools.common.select(mesh_base)
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # # Check for transform on base armature, reset if not default
+    # for i in [0, 1, 2]:
+    #     if base_armature.location[i] != 0 \
+    #             or abs(base_armature.rotation_euler[i]) > tolerance \
+    #             or base_armature.scale[i] != 1 \
+    #             or mesh_base.location[i] != 0 \
+    #             or abs(mesh_base.rotation_euler[i]) > tolerance \
+    #             or mesh_base.scale[i] != 1:
+    #
+    #         # Reset all wrong transforms
+    #         for i2 in [0, 1, 2]:
+    #             base_armature.location[i2] = 0
+    #             base_armature.rotation_euler[i2] = 0
+    #             base_armature.scale[i2] = 1
+    #             mesh_base.location[i2] = 0
+    #             mesh_base.rotation_euler[i2] = 0
+    #             mesh_base.scale[i2] = 1
+    #
+    #         # Check if merge armature also needs it's transforms to be reset (ignore the tolerance here, just reset it)
+    #         if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
+    #             if merge_armature.rotation_euler[i] != 0 or mesh_merge.rotation_euler[i] != 0:
+    #                 for i2 in [0, 1, 2]:
+    #                     merge_armature.location[i2] = 0
+    #                     merge_armature.rotation_euler[i2] = 0
+    #                     merge_armature.scale[i2] = 1
+    #
+    #         # Hide armatures and select the mesh
+    #         merge_armature.hide = True
+    #         base_armature.hide = True
+    #         tools.common.unselect_all()
+    #         tools.common.select(mesh_merge)
+    #         bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
+    #
+    #         # Show error messages
+    #         if mesh_only:
+    #             # remove the temporary armature from the new mesh
+    #             bpy.data.objects.remove(merge_armature)
+    #             mesh_merge.name = mesh_name
+    #
+    #             tools.common.show_error(8,
+    #                                     ["The transforms of your base armature and base mesh don't have the default values!",
+    #                                      '',
+    #                                      "Only move the mesh you want to attach to the desired position.",
+    #                                      '',
+    #                                      'The transforms of the base armature got reset for you and the mesh you have to modify got selected.',
+    #                                      'Please start from here or undo this operation.'])
+    #         else:
+    #             tools.common.show_error(8.1,
+    #                                     ["The transforms of your base armature and base mesh don't have the default values!",
+    #                                      '',
+    #                                      'Maybe you mixed up the base and merge armatures?',
+    #                                      'Only move the mesh of the merge armature to the desired position. The bones will be placed automatically.',
+    #                                      '',
+    #                                      'The transforms of the armatures got reset for you and the mesh you have to modify got selected.',
+    #                                      'Please start from here or undo this operation.'])
+    #         return
+
+    # Check if merge armature is rotated. Because the code can handle everything except rotations
     for i in [0, 1, 2]:
-        if base_armature.location[i] != 0 \
-                or base_armature.rotation_euler[i] != 0 \
-                or base_armature.scale[i] != 1 \
-                or mesh_base.location[i] != 0 \
-                or mesh_base.rotation_euler[i] != 0 \
-                or mesh_base.scale[i] != 1:
+        if abs(merge_armature.rotation_euler[i]) > tolerance or abs(mesh_merge.rotation_euler[i]) > tolerance:
 
-            # Reset all wrong transforms
-            for i2 in [0, 1, 2]:
-                base_armature.location[i2] = 0
-                base_armature.rotation_euler[i2] = 0
-                base_armature.scale[i2] = 1
-                mesh_base.location[i2] = 0
-                mesh_base.rotation_euler[i2] = 0
-                mesh_base.scale[i2] = 1
+            if merge_armature.location[i] != 0 or abs(merge_armature.rotation_euler[i]) > tolerance or merge_armature.scale[i] != 1:
 
-            if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
-                if merge_armature.rotation_euler[i] != 0 or mesh.rotation_euler[i] != 0:
-                    for i2 in [0, 1, 2]:
-                        merge_armature.location[i2] = 0
-                        merge_armature.rotation_euler[i2] = 0
-                        merge_armature.scale[i2] = 1
+                # Reset wrong merge armature rotations
+                for i2 in [0, 1, 2]:
+                    merge_armature.location[i2] = 0
+                    merge_armature.rotation_euler[i2] = 0
+                    merge_armature.scale[i2] = 1
 
-            merge_armature.hide = True
-            base_armature.hide = True
-            tools.common.unselect_all()
-            tools.common.select(mesh)
-            bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
-            self.report({'ERROR'},
-                        'The position of your base armature and mesh has to be at 0! Only move the mesh of the merge armature!'
-                        "\nMaybe you mixed up the base and merge armatures?"
-                        "\nThe positions of the armatures got reset for you and the mesh you have to modify got selected."
-                        "\nPlease start from here or undo this operation.")
-            return {'FINISHED'}
+                tools.common.unselect_all()
+                tools.common.select(mesh_merge)
 
-    # Check for transform on merge armature, reset if not default
-    old_loc = [0, 0, 0]
-    old_scale = [1, 1, 1]
-    for i in [0, 1, 2]:
-        if merge_armature.location[i] != 0 or merge_armature.rotation_euler[i] != 0 or merge_armature.scale[i] != 1:
+                tools.common.show_error(7.5,
+                                        ['If you want to rotate the new part, only modify the mesh instead of the armature!',
+                                         '',
+                                         'The transforms of the merge armature got reset and the mesh you have to modify got selected.',
+                                         'Now place this selected mesh where and how you want it to be and then merge the armatures again.',
+                                         "If you don't want that, undo this operation."])
+                return
 
-            old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
-            old_rot = [merge_armature.rotation_euler[0], merge_armature.rotation_euler[1],
-                       merge_armature.rotation_euler[2]]
-            old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
-
-            # Reset wrong merge armature transforms
-            for i2 in [0, 1, 2]:
-                merge_armature.location[i2] = 0
-                merge_armature.rotation_euler[i2] = 0
-                merge_armature.scale[i2] = 1
-
-            for i2 in [0, 1, 2]:
-                if old_rot[i2] != 0 or mesh.rotation_euler[i2] != 0:
-                    merge_armature.hide = True
-                    base_armature.hide = True
-                    tools.common.unselect_all()
-                    tools.common.select(mesh)
-                    bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
-                    self.report({'ERROR'},
-                                'If you want to rotate the new part, only move the mesh instead of the armature!'
-                                "\nThe position of the merge armature got reset and the mesh you have to modify got selected."
-                                "\nPlease start from here or undo this operation.")
-                    return
-
-            break
+    # Save the transforms of the merge armature
+    old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
+    old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
 
     # Apply transformation from mesh to armature
     for i in [0, 1, 2]:
-        merge_armature.location[i] = (mesh.location[i] * old_scale[i]) + old_loc[i]
-        merge_armature.rotation_euler[i] = mesh.rotation_euler[i]
-        merge_armature.scale[i] = mesh.scale[i] * old_scale[i]
+        merge_armature.location[i] = (mesh_merge.location[i] * old_scale[i]) + old_loc[i]
+        merge_armature.rotation_euler[i] = mesh_merge.rotation_euler[i]
+        merge_armature.scale[i] = mesh_merge.scale[i] * old_scale[i]
 
     tools.common.set_default_stage()
     # Apply all transformations on mesh
     tools.common.unselect_all()
-    tools.common.select(mesh)
+    tools.common.select(mesh_merge)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     # Apply all transformations on armature
@@ -251,13 +271,13 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
 
     # Reset all transformations on mesh
     for i in [0, 1, 2]:
-        mesh.location[i] = old_loc[i]
-        mesh.rotation_euler[i] = 0
-        mesh.scale[i] = old_scale[i]
+        mesh_merge.location[i] = old_loc[i]
+        mesh_merge.rotation_euler[i] = 0
+        mesh_merge.scale[i] = old_scale[i]
 
     # Apply all transformations on mesh again
     tools.common.unselect_all()
-    tools.common.select(mesh)
+    tools.common.select(mesh_merge)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     # Go into edit mode
@@ -298,7 +318,6 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
         if mesh_only:
             mesh_only_bone_name = bone.name
 
-
     # Go back into object mode
     tools.common.set_default_stage()
     tools.common.unselect_all()
@@ -316,9 +335,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
     armature = tools.common.get_armature(armature_name=base_armature_name)
 
     # Join the meshes
-    mesh = tools.common.join_meshes(armature_name=base_armature_name)
-    if mesh:
-        tools.common.repair_viseme_order(mesh.name)
+    mesh_merge = tools.common.join_meshes(armature_name=base_armature_name)
 
     # Go into edit mode
     tools.common.unselect_all()
@@ -341,14 +358,14 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
 
     # Merge bones into existing bones
     replace_bones = []
-    tools.common.select(mesh)
+    tools.common.select(mesh_merge)
     if not mesh_only:
         for bone_name in bones_to_merge:
             bone_base = bone_name
             bone_merge = bone_name + '.merge'
 
-            vg = mesh.vertex_groups.get(bone_base)
-            vg2 = mesh.vertex_groups.get(bone_merge)
+            vg = mesh_merge.vertex_groups.get(bone_base)
+            vg2 = mesh_merge.vertex_groups.get(bone_merge)
 
             if not vg:
                 if vg2:
@@ -358,13 +375,13 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
             if not vg2:
                 continue
 
-            mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
+            mod = mesh_merge.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
             mod.vertex_group_a = bone_base  # to
             mod.vertex_group_b = bone_merge  # from
             mod.mix_mode = 'ADD'
             mod.mix_set = 'B'
             bpy.ops.object.modifier_apply(modifier=mod.name)
-            mesh.vertex_groups.remove(vg2)
+            mesh_merge.vertex_groups.remove(vg2)
 
         # Remove ".merge" from all non duplicate bones
         for bone in armature.pose.bones:
@@ -376,7 +393,7 @@ def merge_armatures(self, base_armature_name, merge_armature_name, mesh_only, me
     elif mesh_name:
         bone = armature.pose.bones.get(mesh_only_bone_name)
         if not bone:
-            self.report({'ERROR'}, 'Something went wrong! Please undo, check your selections and try again.')
+            tools.common.show_error(5.8, ['Something went wrong! Please undo, check your selections and try again.'])
             return
         armature.pose.bones.get(mesh_only_bone_name).name = mesh_name
 

@@ -140,38 +140,19 @@ class AutoDecimateButton(bpy.types.Operator):
                      'You should manually remove unimportant meshes first.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    @classmethod
-    def poll(cls, context):
-        obj = context.active_object
-
-        if obj and obj.type == 'MESH':
-            return True
-
-        i = 0
-        for ob in bpy.data.objects:
-            if ob.type == 'MESH':
-                if ob.parent is not None and ob.parent.type == 'ARMATURE':
-                    i += 1
-        return i == 1
-
     def execute(self, context):
-        obj = context.active_object
-
-        if not obj or (obj and obj.type != 'MESH'):
-            tools.common.unselect_all()
-            meshes = tools.common.get_meshes_objects()
-            if len(meshes) == 0:
-                return {'FINISHED'}
-            obj = meshes[0]
+        meshes = tools.common.get_meshes_objects()
+        if not meshes or len(meshes) == 0:
+            self.report({'ERROR'}, 'No meshes found!')
+            return {'FINISHED'}
 
         if context.scene.decimation_mode != 'CUSTOM':
-            tools.common.separate_by_materials(context, obj)
+            for mesh in meshes:
+                tools.common.separate_by_materials(context, mesh)
 
         self.decimate(context)
 
-        mesh = tools.common.join_meshes()
-        if mesh is not None:
-            tools.common.repair_viseme_order(mesh.name)
+        tools.common.join_meshes()
 
         return {'FINISHED'}
 
@@ -184,6 +165,7 @@ class AutoDecimateButton(bpy.types.Operator):
         half_decimation = context.scene.decimation_mode == 'HALF'
         safe_decimation = context.scene.decimation_mode == 'SAFE'
         decimate_fingers = context.scene.decimate_fingers
+        max_tris = context.scene.max_tris
         meshes = []
         current_tris_count = 0
         tris_count = 0
@@ -231,7 +213,6 @@ class AutoDecimateButton(bpy.types.Operator):
 
             if mesh.data.shape_keys is not None:
                 if full_decimation:
-                    print('FULL')
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris
@@ -242,20 +223,16 @@ class AutoDecimateButton(bpy.types.Operator):
                             found = True
                             break
                     if found:
-                        print('IGNORED')
                         tools.common.unselect_all()
                         continue
-                    print('CUSTOM')
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris
                 elif half_decimation and len(mesh.data.shape_keys.key_blocks) < 4:
-                    print('HALF')
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris
                 elif len(mesh.data.shape_keys.key_blocks) == 1:
-                    print('SAVE')
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris
@@ -268,28 +245,30 @@ class AutoDecimateButton(bpy.types.Operator):
         print(current_tris_count)
         print(tris_count)
 
-        if (current_tris_count - tris_count) > context.scene.max_tris:
-            message = 'This model can not be decimated to the given tris count with the specified settings.\n'
+        if (current_tris_count - tris_count) > max_tris:
+            message = ['This model can not be decimated to ' + str(max_tris) + ' tris with the specified settings.']
             if safe_decimation:
-                message += 'Try to use Custom, Half or Full decimation.'
+                message.append('Try to use Custom, Half or Full decimation.')
             elif half_decimation:
-                message += 'Try to use Custom or Full decimation.'
+                message.append('Try to use Custom or Full decimation.')
             elif custom_decimation:
-                message += 'Select fewer shape keys and/or meshes or use Full decimation.'
+                message.append('Select fewer shape keys and/or meshes or use Full decimation.')
             if decimate_fingers:
-                message = message[:-1] + " or disable 'Save Fingers'."
-            self.report({'ERROR'}, message)
+                message[1] = message[1][:-1]
+                message.append("or disable 'Save Fingers'.")
+            tools.common.show_error(6, message)
             return
 
         try:
-            decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+            decimation = (max_tris - current_tris_count + tris_count) / tris_count
         except ZeroDivisionError:
             decimation = 1
         if decimation >= 1:
-            self.report({'ERROR'}, 'The model already has less tris than given. Nothing had to be decimated.')
+            tools.common.show_error(6, ['The model already has less than ' + str(max_tris) + ' tris. Nothing had to be decimated.'])
             return
         elif decimation <= 0:
-            self.report({'ERROR'}, 'The model could not be decimated to the given tris count. It got decimated as much as possible within the limits.')
+            tools.common.show_error(4.5, ['The model could not be decimated to ' + str(max_tris) + ' tris.',
+                                          'It got decimated as much as possible within the limits.'])
 
         meshes.sort(key=lambda x: x[1])
 
@@ -302,7 +281,7 @@ class AutoDecimateButton(bpy.types.Operator):
 
             # Calculate new decimation ratio
             try:
-                decimation = (context.scene.max_tris - current_tris_count + tris_count) / tris_count
+                decimation = (max_tris - current_tris_count + tris_count) / tris_count
             except ZeroDivisionError:
                 decimation = 1
             print(decimation)
@@ -341,7 +320,7 @@ class AutoDecimateButton(bpy.types.Operator):
         #         tools.common.select(mesh_obj)
         #
         #         # Calculate new decimation ratio
-        #         decimation = (context.scene.max_tris - tris_count) / tris_count
+        #         decimation = (max_tris - tris_count) / tris_count
         #         print(decimation)
         #
         #         # Apply decimation mod
