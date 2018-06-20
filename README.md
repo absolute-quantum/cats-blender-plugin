@@ -147,7 +147,7 @@ Works by sending a request to the Google Translate service. This feature can be 
     - You can use Move, Scale and Rotate
     - CATS will position the bones according to the mesh automatically
     - If you want multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
-  - Select the base armature and the armature you want to merge into the base armature
+  - Select the base armature and the armature you want to merge into the base armature in the panel
   - If CATS can't detect the bone structure automatically: select a bone you want to attach the new armature to
     - E.g.: For a hair armature select "Head" as the bone
   - Press the "Merge Armatures" button -> Done!
@@ -160,8 +160,8 @@ Works by sending a request to the Google Translate service. This feature can be 
     - INFO: The mesh will only be assigned to the selected bone
     - E.g.: A jacket won't work, because it requires multiple bones.
     - E.g.: A ring on a finger works perfectly, because the ring only needs one bone to move with (the finger bone)
-  - Select the base armature and the mesh you want to attach to the base armature
-  - Select the bone you want to attach the mesh to
+  - Select the base armature and the mesh you want to attach to the base armature in the panel
+  - Select the bone you want to attach the mesh to in the panel
   - Press the "Attach Mesh" button -> Done!
 
 ##### Support us:
@@ -343,7 +343,11 @@ It checks for a new version automatically once every day.
   - Fixed the SSL error
     - This fixes a lot of instances where translations would not work
 - **Custom Model:**
+  - Greatly improved the combine process and drastically reduced the amount of errors
+    - Armature transform getting reset is now very rare
+    - Much more user friendly
   - Improved tolerances to allow minimal armature rotations
+  - Getting an error while attaching a mesh doesn't create a new armature anymore
   - Error messages are now much more persistent
 - **Shapekeys:**
   - Fixed "Apply Shapekey as Basis" not setting the basis for newly created shape keys
