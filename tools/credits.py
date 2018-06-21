@@ -47,3 +47,14 @@ class DiscordButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Discord opened')
         return {'FINISHED'}
+
+
+class PatchnotesButton(bpy.types.Operator):
+    bl_idname = 'credits.patchnotes'
+    bl_label = 'Latest Patchnotes'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/releases')
+
+        self.report({'INFO'}, 'patchnotes opened')
+        return {'FINISHED'}

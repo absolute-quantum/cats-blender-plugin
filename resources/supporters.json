@@ -19,6 +19,17 @@
   ],
   "supporters": [
     {
+      "displayname": "Example Person<3             - Name that gets shown and icon name.",
+      "iconname": "Example Person3                 - name of the icon if it differs from the displayname (for incompatible icon chars like '<')",
+      "startdate": "2018-01-24                     - Just an info for us. Date when he got added to the list",
+      "description": "I'm a description            - Description is shown when hovering over the name",
+      "website": "https://www.mycoolwebsite.com    - Makes the name clickable with a link to a website. Setting it to null makes it a button but not clickable",
+      "tier": 1,
+      "disabled": true,
+
+      "other info 1": " tier: 1                    - Puts the name on top of the list. Only 1 is available currently",
+      "other info 2": " disabled: true             - Hides that person in the list"
+    },{
       "displayname": "Xeverian",
       "startdate": "2018-01-05",
       "description": "yare yare daze"
@@ -210,6 +221,10 @@
     },{
       "displayname": "Netrosis",
       "startdate": "2018-06-20"
+    },{
+      "displayname": "Krisu.Miushy",
+      "startdate": "2018-06-21",
+      "description": "DDVR Community leader - I'll support your creations, let's keep the hard work everyone!\n"
     }
   ]
 }

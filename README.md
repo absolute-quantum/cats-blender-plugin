@@ -326,8 +326,11 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.9.1
+- **Credits:**
+  - Added patchnotes button
 - **General:**
   - Slightly reduced startup time
+  - Fixed a small bug
 
 #### 0.9.0
 - **Model:**

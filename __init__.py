@@ -1611,6 +1611,8 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.operator('credits.discord', icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
         row = col.row(align=True)
         row.operator('credits.forum', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
+        row = col.row(align=True)
+        row.operator('credits.patchnotes', icon='WORDWRAP_ON')
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -1742,6 +1744,7 @@ classesToRegister = [
     CreditsPanel,
     tools.credits.DiscordButton,
     tools.credits.ForumButton,
+    tools.credits.PatchnotesButton,
 
     tools.shapekey.ShapeKeyApplier,
     tools.common.ShowError,

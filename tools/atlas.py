@@ -113,7 +113,7 @@ class AutoAtlasButton(bpy.types.Operator):
 
         # Time to bake
         tools.common.switch('EDIT')
-        bpy.data.scenes["Scene"].render.bake_type = "TEXTURE"
+        context.scene.render.bake_type = "TEXTURE"
         bpy.ops.object.bake_image()
 
         # Lets save the generated atlas
