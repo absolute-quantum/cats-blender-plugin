@@ -232,12 +232,11 @@ def readJson():
 
 
 def load_supporters():
+    # Check for update
     global reloading
-
-    if update_needed():
-        reloading = True
-        thread = Thread(target=download_file, args=[])
-        thread.start()
+    reloading = True
+    thread = Thread(target=check_for_update, args=[])
+    thread.start()
 
     # Read existing supporter list
     readJson()
@@ -433,6 +432,13 @@ def read_settings_file():
         print('UPDATED MISSING SETTINGS')
 
     return data
+
+
+def check_for_update():
+    if update_needed():
+        download_file()
+    else:
+        finish_reloading()
 
 
 def update_needed():

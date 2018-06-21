@@ -63,7 +63,7 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/Soz7v0U.png)
+![](https://i.imgur.com/dYYAfb4.png)
 
 This tries to completely fix your model with one click.
 
@@ -325,6 +325,10 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.9.1
+- **General:**
+  - Slightly reduced startup time
+
 #### 0.9.0
 - **Model:**
   - Added a new "Apply as Rest Pose" button
@@ -365,42 +369,6 @@ It checks for a new version automatically once every day.
   - Fixed some shading issues after fixing the model
 - **General:**
   - Updated mmd_tools
-
-#### 0.8.0
-- Model:
-  - Added "Merge Armatures" button!
-    - This merges two selected armatures together.
-  - Added "Attach mesh" button!
-    - This attaches a mesh to a selected bone in an armature.
-    - Custom avatars are a breeze now!
-  - Added support for Source Engine Models!
-  - Added new "Custom Model Creation" panel
-  - Moved some model options into a new "Model Options" panel
-  - Added a lot of new model options to that panel
-  - "Fix Model" now sets the roll of all bones to 0
-    - This fixes a lot of finger issues in Unity!
-  - "Fix Model" now removes the standard lamp, camera and cube
-  - Full Body Tracking Fix is not longer enabled by default
-  - More models are now compatible (please report non working models to us)
-  - Fixed: Undoing the operation after a model import no longer undoes the import as well
-- Eye Tracking:
-  - Now shows a warning when important objects aren't named correctly
-- Copy Protection:
-  - Added Export button into the panel after enabling the protection
-  - Now automatically triangulates the model
-    - Fixes holes appearing after export to Unity
-  - Updated documentation
-    - Step 6 now shows how to fix all remaining lighting issues
-- Atlas:
-  - Changed: Meshes no longer need an armature to be selectable
-- Supporters:
-  - The supporter list is now synced with an online repository
-    - It can now be updated on the fly without having to update the whole plugin
-  - New supporter list features are available now, check them out!
-- General:
-  - Mesh selections are no longer shown if there is only one mesh
-  - Updated mmd_tools
-  - Fixed lots of bugs and typos
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
