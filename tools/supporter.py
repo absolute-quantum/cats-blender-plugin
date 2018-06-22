@@ -467,15 +467,15 @@ def update_needed():
 
     last_update_str = settings_data.get('last_supporter_update')
 
-    if commit_date_str == last_update_str:
-        print('COMMIT IDENTICAL')
-        return False
-
     utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
     time_delta = abs((utc_now - last_commit_date).seconds)
 
     print(utc_now)
     print(time_delta)
+
+    if commit_date_str == last_update_str:
+        print('COMMIT IDENTICAL')
+        return False
 
     if time_delta <= 120:
         print('COMMIT TOO CLOSE')
