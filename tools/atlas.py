@@ -155,11 +155,6 @@ class AutoAtlasButton(bpy.types.Operator):
                 mat_slot.material.transparency_method = 'MASK'
                 mat_slot.material.alpha = 0
 
-        try:
-            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-        except:
-            print('mmd_tools probably not activated.')
-
         self.report({'INFO'}, 'Auto Atlas finished!')
 
         return {'FINISHED'}
