@@ -326,11 +326,13 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.9.1
+- **Model:**
+  - Fixed files with capital letters in the file extension not importing correctly
 - **Credits:**
   - Added patchnotes button
 - **General:**
-  - Slightly reduced startup time
-  - Fixed a small bug
+  - Reduced startup time
+  - Fixed multiple small bugs
 
 #### 0.9.0
 - **Model:**

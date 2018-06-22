@@ -195,8 +195,8 @@ class FixArmature(bpy.types.Operator):
                 break
 
         # Remove unused animation data
-        if bpy.context.active_object.animation_data and bpy.context.active_object.animation_data.action.name == 'ragdoll':
-            bpy.context.active_object.animation_data_clear()
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
             source_engine = True
 
         # Delete unused VTA mesh
