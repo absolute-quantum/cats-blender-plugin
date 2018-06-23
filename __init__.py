@@ -907,11 +907,12 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.label("Translation:", icon='FILE_REFRESH')
         row = col.row(align=True)
         row.scale_y = 1.05
+        row.operator('translate.all', text='All', icon='META_BALL')
         row.operator('translate.shapekeys', icon='SHAPEKEY_DATA')
         row.operator('translate.bones', icon='BONE_DATA')
         row = col.row(align=True)
         row.scale_y = 1.05
-        row.operator('translate.meshes', icon='MESH_DATA')
+        row.operator('translate.objects', icon='MESH_DATA')
         row.operator('translate.materials', icon='MATERIAL')
 
 
@@ -1714,8 +1715,9 @@ classesToRegister = [
     tools.armature_manual.FlipNormals,
     tools.translate.TranslateShapekeyButton,
     tools.translate.TranslateBonesButton,
-    tools.translate.TranslateMeshesButton,
+    tools.translate.TranslateObjectsButton,
     tools.translate.TranslateMaterialsButton,
+    tools.translate.TranslateAllButton,
 
     CustomPanel,
     tools.armature_custom.MergeArmature,
@@ -1787,11 +1789,6 @@ def register():
     if dev_branch and len(version) > 2:
         version[2] += 1
 
-    tools.supporter.load_settings()
-    tools.supporter.load_other_icons()
-    tools.supporter.load_supporters()
-    tools.supporter.register_dynamic_buttons()
-
     try:
         addon_updater_ops.register(bl_info)
     except ValueError:
@@ -1800,6 +1797,13 @@ def register():
 
     for value in classesToRegister:
         bpy.utils.register_class(value)
+
+    tools.supporter.load_settings()
+    tools.supporter.load_other_icons()
+    tools.supporter.load_supporters()
+    tools.supporter.register_dynamic_buttons()
+
+    tools.translate.load_translations()
 
     bpy.context.user_preferences.system.use_international_fonts = True
     bpy.context.user_preferences.filepaths.use_file_compression = True

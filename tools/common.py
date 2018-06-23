@@ -31,6 +31,7 @@ import bmesh
 import numpy as np
 import tools.supporter
 import tools.decimation
+import tools.translate
 import tools.armature_bones as Bones
 from mathutils import Vector
 from math import degrees
@@ -357,11 +358,11 @@ def get_shapekeys_mouth_ah(self, context):
 
 
 def get_shapekeys_mouth_oh(self, context):
-    return get_shapekeys(context, ['Your', 'O'], True, False, False, False)
+    return get_shapekeys(context, ['Your', 'Oh', 'O'], True, False, False, False)
 
 
 def get_shapekeys_mouth_ch(self, context):
-    return get_shapekeys(context, ['Glue', 'There', 'I'], True, False, False, False)
+    return get_shapekeys(context, ['Glue', 'There', 'Ch', 'I'], True, False, False, False)
 
 
 def get_shapekeys_eye_blink_l(self, context):
@@ -369,8 +370,7 @@ def get_shapekeys_eye_blink_l(self, context):
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False,
-                         False, False, False)
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_low_l(self, context):
@@ -804,7 +804,7 @@ def repair_shapekey_order(mesh_name):
     sort_shape_keys(mesh_name, shape_key_order)
 
 
-def update_shapekey_orders(translations):
+def update_shapekey_orders():
     for armature in get_armature_objects():
         shape_key_order = []
 
@@ -813,16 +813,13 @@ def update_shapekey_orders(translations):
         if not custom_data or not custom_data.get('shape_key_order'):
             continue
 
-        # Create shape key list for description
+        # Get shape keys from string and translate them
         order_string = custom_data.get('shape_key_order')
         for shape_name in order_string.split(',,,'):
-            if translations.get(shape_name):
-                shape_key_order.append(translations.get(shape_name))
-            else:
-                shape_key_order.append(shape_name)
+            shape_key_order.append(tools.translate.translate(shape_name)[0])
         print(order_string)
 
-        # Create shape key list for properties
+        # Create translated shape key list string for properties
         order_string = ''
         for i, shapekey in enumerate(shape_key_order):
             if i > 0:

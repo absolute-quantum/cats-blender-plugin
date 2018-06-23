@@ -72,7 +72,6 @@ class FixArmature(bpy.types.Operator):
 
         wm = bpy.context.window_manager
         armature = tools.common.set_default_stage()
-        dictionary = 'INTERNAL'
 
         # Check if bone matrix == world matrix, important for xps models
         x_cord = 0
@@ -290,8 +289,13 @@ class FixArmature(bpy.types.Operator):
         # Reorders vrc shape keys to the correct order
         tools.common.sort_shape_keys(mesh.name)
 
-        # Translate bones with dictionary
-        tools.translate.translate_bones(dictionary)
+        # Translate bones
+        to_translate = []
+        for bone in armature.data.bones:
+            to_translate.append(bone.name)
+        tools.translate.update_dictionary(to_translate)
+        for bone in armature.data.bones:
+            bone.name, translated = tools.translate.translate(bone.name)
 
         # Armature should be selected and in edit mode
         tools.common.unselect_all()
