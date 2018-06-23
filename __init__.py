@@ -781,6 +781,31 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             subcol = row.split(align=True)
             subcol.scale_y = 1.4
             subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            #
+            # col.separator()
+            # col.separator()
+            # row = col.row(align=True)
+            # row.scale_y = 1
+            # subcol = row.split(align=True)
+            # subcol.scale_y = 1.4
+            # subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            # subcol = row.split(align=True)
+            # subcol.scale_y = 1.4
+            # subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # row.scale_y = 1.4
+            # row.operator('importer.export_model', icon='ARMATURE_DATA')
+
+            # row = col.row(align=True)
+            # row.scale_y = 1
+            # subcol = row.row(align=True)
+            # subcol.alignment = 'LEFT'
+            # subcol.scale_y = 1.4
+            # subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # row.scale_y = 1.4
+            # row.operator('importer.import_any_model', text="Import Model", icon='ARMATURE_DATA')
+            # row = row.split(align=True)
+            # row.scale_y = 1.4
+            # row.operator('importer.export_model', icon='ARMATURE_DATA')
 
         if arm_count > 1:
             col.separator()
@@ -1331,9 +1356,9 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 1.1
         row.prop(context.scene, 'mouth_ch', icon='SHAPEKEY_DATA')
 
-        # col.separator()
-        # row = col.row(align=True)
-        # row.prop(context.scene, 'shape_intensity')
+        col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'shape_intensity')
 
         col.separator()
         row = col.row(align=True)
