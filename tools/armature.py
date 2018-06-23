@@ -226,6 +226,7 @@ class FixArmature(bpy.types.Operator):
         armature.draw_type = 'WIRE'
         armature.show_x_ray = True
         armature.data.show_bone_custom_shapes = False
+        armature.layers[0] = True
 
         # Disable backface culling
         if context.area:
@@ -235,6 +236,15 @@ class FixArmature(bpy.types.Operator):
         for obj in bpy.data.objects:
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
+
+        # Remove objects from  different layers and things that are not meshes
+        for child in armature.children:
+            for child2 in child.children:
+                if not child2.layers[0] or child2.type != 'MESH':
+                    tools.common.delete(child2)
+
+            if not child.layers[0] or child.type != 'MESH':
+                tools.common.delete(child)
 
         # Remove empty mmd object and unused objects
         tools.common.remove_empty()

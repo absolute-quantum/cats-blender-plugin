@@ -505,8 +505,11 @@ def get_meshes_objects(armature_name=None, mode=0):
             if mode == 0:
                 if not armature_name:
                     armature_name = bpy.context.scene.armature
-                if ob.parent and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
-                    meshes.append(ob)
+                if ob.parent:
+                    if ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
+                        meshes.append(ob)
+                    elif ob.parent.parent and ob.parent.parent.type == 'ARMATURE' and ob.parent.parent.name == armature_name:
+                        meshes.append(ob)
 
             elif mode == 1:
                 if not ob.parent:
@@ -982,6 +985,26 @@ def delete_hierarchy(obj):
     result = bpy.ops.object.delete()
 
     bpy.context.scene.objects.unlink(obj)
+    bpy.data.objects.remove(obj)
+
+    if result == {'FINISHED'}:
+        print("Successfully deleted object")
+    else:
+        print("Could not delete object")
+
+
+def delete(obj):
+    unselect_all()
+    select(obj)
+
+    if obj.parent:
+        for child in obj.children:
+            child.parent = obj.parent
+
+    obj.animation_data_clear()
+    result = bpy.ops.object.delete()
+
+    #bpy.context.scene.objects.unlink(obj)
     bpy.data.objects.remove(obj)
 
     if result == {'FINISHED'}:
