@@ -46,7 +46,11 @@ class MMDBonePanel(Panel):
         row.prop(mmd_bone, 'ik_rotation_constraint')
 
         c = layout.column(align=True)
-        c.prop(mmd_bone, 'enabled_fixed_axis')
+        row = c.row(align=True)
+        row.prop(mmd_bone, 'enabled_fixed_axis')
+        row.operator('mmd_tools.bone_fixed_axis_setup', text='', icon='X').type = 'DISABLE'
+        row.operator('mmd_tools.bone_fixed_axis_setup', text='Load').type = 'LOAD'
+        row.operator('mmd_tools.bone_fixed_axis_setup', text='Apply').type = 'APPLY'
         row = c.row()
         row.active = mmd_bone.enabled_fixed_axis
         row.column(align=True).prop(mmd_bone, 'fixed_axis', text='')

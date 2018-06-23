@@ -33,7 +33,6 @@ import tools.common
 import tools.translate
 import tools.armature_bones as Bones
 import mmd_tools_local.operators.morph
-from mmd_tools_local.translations import DictionaryEnum
 
 import math
 from mathutils import Matrix
@@ -56,12 +55,6 @@ class FixArmature(bpy.types.Operator):
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-    )
-
     @classmethod
     def poll(cls, context):
         if tools.common.get_armature() is None:
@@ -79,6 +72,7 @@ class FixArmature(bpy.types.Operator):
 
         wm = bpy.context.window_manager
         armature = tools.common.set_default_stage()
+        dictionary = 'INTERNAL'
 
         # Check if bone matrix == world matrix, important for xps models
         x_cord = 0
@@ -273,7 +267,7 @@ class FixArmature(bpy.types.Operator):
         # except RuntimeError:
         #     pass
 
-        if source_engine and mesh.data.shape_keys.key_blocks:
+        if source_engine and mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
             mesh.data.shape_keys.key_blocks[0].name = "Basis"
 
         # Save shape key order
@@ -297,7 +291,7 @@ class FixArmature(bpy.types.Operator):
         tools.common.sort_shape_keys(mesh.name)
 
         # Translate bones with dictionary
-        tools.translate.translate_bones(self.dictionary)
+        tools.translate.translate_bones(dictionary)
 
         # Armature should be selected and in edit mode
         tools.common.unselect_all()

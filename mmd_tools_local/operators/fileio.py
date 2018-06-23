@@ -106,6 +106,11 @@ class ImportPmx(Operator, ImportHelper):
         description='Fix IK links to be blender suitable',
         default=False,
         )
+    apply_bone_fixed_axis = bpy.props.BoolProperty(
+        name='Apply Bone Fixed Axis',
+        description="Apply bone's fixed axis to be blender suitable",
+        default=False,
+        )
     rename_bones = bpy.props.BoolProperty(
         name='Rename Bones - L / R Suffix',
         description='Use Blender naming conventions for Left / Right paired bones',
@@ -180,6 +185,7 @@ class ImportPmx(Operator, ImportHelper):
                 clean_model=self.clean_model,
                 remove_doubles=self.remove_doubles,
                 fix_IK_links=self.fix_IK_links,
+                apply_bone_fixed_axis=self.apply_bone_fixed_axis,
                 rename_LR_bones=self.rename_bones,
                 use_underscore=self.use_underscore,
                 translator=self.__translator,

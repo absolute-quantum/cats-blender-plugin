@@ -13,6 +13,7 @@ if "bpy" in locals():
     importlib.reload(tool)
     importlib.reload(util_tools)
     importlib.reload(view_prop)
+    importlib.reload(view_header)
 else:
     import bpy
     from . import (
@@ -24,5 +25,6 @@ else:
         tool,
         util_tools,
         view_prop,
+        view_header
         )
 

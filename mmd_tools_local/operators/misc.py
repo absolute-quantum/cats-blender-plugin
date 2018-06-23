@@ -10,6 +10,7 @@ from mmd_tools_local.bpyutils import ObjectOp
 from mmd_tools_local.core import model as mmd_model
 from mmd_tools_local.core.morph import FnMorph
 from mmd_tools_local.core.material import FnMaterial
+from mmd_tools_local.core.bone import FnBone
 
 
 class MoveObject(Operator, utils.ItemMoveOp):
@@ -297,3 +298,29 @@ class ChangeMMDIKLoopFactor(Operator):
                 c.iterations = iterations
         return { 'FINISHED' }
 
+class RecalculateBoneRoll(Operator):
+    bl_idname = 'mmd_tools.recalculate_bone_roll'
+    bl_label = 'Recalculate bone roll'
+    bl_description = 'Recalculate bone roll for arm related bones'
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        return obj and obj.type == 'ARMATURE'
+
+    def invoke(self, context, event):
+        arm = context.active_object
+        vm = context.window_manager
+        return vm.invoke_props_dialog(self)
+
+    def draw(self, context):
+        layout = self.layout
+        c = layout.column()
+        c.label(text='This operation will break existing f-curve/action.', icon='QUESTION')
+        c.label(text='Click [OK] to run the operation.')
+
+    def execute(self, context):
+        arm = context.active_object
+        FnBone.apply_auto_bone_roll(arm)
+        return { 'FINISHED' }

@@ -501,7 +501,7 @@ class Model:
 
             logging.info('%s %d: %s', m.__class__.__name__, i, m.name)
             logging.debug('  Name(english): %s', m.name_e)
-            logging.debug('  Category: %s', display_categories[m.category])
+            logging.debug('  Category: %s (%d)', display_categories.get(m.category, '#Invalid'), m.category)
             logging.debug('')
         logging.info('----- Loaded %d morphs.', len(self.morphs))
 
@@ -536,7 +536,7 @@ class Model:
             logging.info('Rigid Body %d: %s', i, r.name)
             logging.debug('  Name(english): %s', r.name_e)
             logging.debug('  Type: %s', rigid_types[r.type])
-            logging.debug('  Mode: %s', rigid_modes[r.mode])
+            logging.debug('  Mode: %s (%d)', rigid_modes.get(r.mode, '#Invalid'), r.mode)
             logging.debug('  Related bone: %s', r.bone)
             logging.debug('  Collision group: %d', r.collision_group_number)
             logging.debug('  Collision group mask: 0x%x', r.collision_group_mask)

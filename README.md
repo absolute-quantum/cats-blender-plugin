@@ -328,10 +328,13 @@ It checks for a new version automatically once every day.
 #### 0.9.1
 - **Model:**
   - Fixed files with capital letters in the file extension not importing correctly
+- **Visemes:**
+  - Shape Keys Mix Intensity slider is back
 - **Credits:**
   - Added patchnotes button
 - **General:**
   - Reduced startup time
+  - Updated mmd_tools
   - Fixed multiple small bugs
 
 #### 0.9.0

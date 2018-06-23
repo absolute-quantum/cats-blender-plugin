@@ -86,6 +86,8 @@ class MMDBone(PropertyGroup):
         description='Fixed axis',
         subtype='XYZ',
         size=3,
+        precision=3,
+        step=0.1, # 0.1 / 100
         default=[0, 0, 0],
         )
 
@@ -100,6 +102,8 @@ class MMDBone(PropertyGroup):
         description='Local x-axis',
         subtype='XYZ',
         size=3,
+        precision=3,
+        step=0.1,
         default=[1, 0, 0],
         )
 
@@ -108,6 +112,8 @@ class MMDBone(PropertyGroup):
         description='Local z-axis',
         subtype='XYZ',
         size=3,
+        precision=3,
+        step=0.1,
         default=[0, 0, 1],
         )
 

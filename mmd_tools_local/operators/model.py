@@ -93,6 +93,36 @@ class ApplyAdditionalTransformConstraints(Operator):
         context.scene.objects.active = obj
         return {'FINISHED'}
 
+class SetupBoneFixedAxes(Operator):
+    bl_idname = 'mmd_tools.bone_fixed_axis_setup'
+    bl_label = 'Setup Bone Fixed Axis'
+    bl_description = 'Setup fixed axis of selected bones'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    type = bpy.props.EnumProperty(
+        name='Type',
+        description='Select type',
+        items = [
+            ('DISABLE', 'Disable', 'Disable MMD fixed axis of selected bones', 0),
+            ('LOAD', 'Load', 'Load/Enable MMD fixed axis of selected bones from their Y-axis or the only rotatable axis', 1),
+            ('APPLY', 'Apply', 'Align bone axes to MMD fixed axis of each bone', 2),
+            ],
+        default='LOAD',
+        )
+
+    def execute(self, context):
+        arm = context.active_object
+        if not arm or arm.type != 'ARMATURE':
+            self.report({'ERROR'}, 'Active object is not an armature object')
+            return {'CANCELLED'}
+
+        if self.type == 'APPLY':
+            FnBone.apply_bone_fixed_axis(arm)
+            FnBone.apply_additional_transformation(arm)
+        else:
+            FnBone.load_bone_fixed_axis(arm, enable=(self.type=='LOAD'))
+        return {'FINISHED'}
+
 class SetupBoneLocalAxes(Operator):
     bl_idname = 'mmd_tools.bone_local_axes_setup'
     bl_label = 'Setup Bone Local Axes'
@@ -118,7 +148,7 @@ class SetupBoneLocalAxes(Operator):
 
         if self.type == 'APPLY':
             FnBone.apply_bone_local_axes(arm)
-            #FnBone.apply_additional_transformation(arm)
+            FnBone.apply_additional_transformation(arm)
         else:
             FnBone.load_bone_local_axes(arm, enable=(self.type=='LOAD'))
         return {'FINISHED'}

@@ -81,7 +81,7 @@ class SelectRigidBody(Operator):
 class AddRigidBody(Operator):
     bl_idname = 'mmd_tools.add_rigid_body'
     bl_label = 'Add Rigid Body'
-    bl_description = 'Adds a Rigid Body'
+    bl_description = 'Add Rigid Bodies to selected bones'
     bl_options = {'REGISTER', 'UNDO', 'PRESET', 'INTERNAL'}
 
     name_j = bpy.props.StringProperty(
@@ -94,7 +94,6 @@ class AddRigidBody(Operator):
         description='The english name of rigid body ($name_e means use the english name of target bone)',
         default='$name_e',
         )
-
     collision_group_number = bpy.props.IntProperty(
         name='Collision Group',
         description='The collision group of the object',
@@ -111,9 +110,12 @@ class AddRigidBody(Operator):
         name='Rigid Type',
         description='Select rigid type',
         items = [
-            (str(rigid_body.MODE_STATIC), 'Bone', '', 1),
-            (str(rigid_body.MODE_DYNAMIC), 'Physics', '', 2),
-            (str(rigid_body.MODE_DYNAMIC_BONE), 'Physics + Bone', '', 3),
+            (str(rigid_body.MODE_STATIC), 'Bone',
+                "Rigid body's orientation completely determined by attached bone", 1),
+            (str(rigid_body.MODE_DYNAMIC), 'Physics',
+                "Attached bone's orientation completely determined by rigid body", 2),
+            (str(rigid_body.MODE_DYNAMIC_BONE), 'Physics + Bone',
+                "Bone determined by combination of parent and attached rigid body", 3),
             ],
         )
     rigid_shape = bpy.props.EnumProperty(
@@ -125,13 +127,54 @@ class AddRigidBody(Operator):
             ('CAPSULE', 'Capsule', '', 3),
             ],
         )
+    size = bpy.props.FloatVectorProperty(
+        name='Size',
+        description='Size of the object, the values will multiply the length of target bone',
+        subtype='XYZ',
+        size=3,
+        min=0,
+        default=[0.6, 0.6, 0.6],
+        )
+    mass = bpy.props.FloatProperty(
+        name='Mass',
+        description="How much the object 'weights' irrespective of gravity",
+        min=0.001,
+        default=1,
+        )
+    friction = bpy.props.FloatProperty(
+        name='Friction',
+        description='Resistance of object to movement',
+        min=0,
+        soft_max=1,
+        default=0.5,
+        )
+    bounce = bpy.props.FloatProperty(
+        name='Restitution',
+        description='Tendency of object to bounce after colliding with another (0 = stays still, 1 = perfectly elastic)',
+        min=0,
+        soft_max=1,
+        )
+    linear_damping = bpy.props.FloatProperty(
+        name='Linear Damping',
+        description='Amount of linear velocity that is lost over time',
+        min=0,
+        max=1,
+        default=0.04,
+        )
+    angular_damping = bpy.props.FloatProperty(
+        name='Angular Damping',
+        description='Amount of angular velocity that is lost over time',
+        min=0,
+        max=1,
+        default=0.1,
+        )
 
     def __add_rigid_body(self, rig, arm_obj=None, pose_bone=None):
         name_j = self.name_j
         name_e = self.name_e
+        size = self.size.copy()
         loc = (0.0, 0.0, 0.0)
         rot = (0.0, 0.0, 0.0)
-        size = mathutils.Vector([0.6, 0.6, 0.6])
         bone_name = None
 
         if pose_bone:
@@ -146,7 +189,9 @@ class AddRigidBody(Operator):
             rot.rotate_axis('X', math.pi/2)
 
             size *= target_bone.length
-            if self.rigid_shape == 'SPHERE':
+            if 1:
+                pass # bypass resizing
+            elif self.rigid_shape == 'SPHERE':
                 size.x *= 0.8
             elif self.rigid_shape == 'BOX':
                 size.x /= 3
@@ -158,21 +203,21 @@ class AddRigidBody(Operator):
             size *= rig.rootObject().empty_draw_size
 
         return rig.createRigidBody(
-                name = name_j,
-                name_e = name_e,
-                shape_type = rigid_body.shapeType(self.rigid_shape),
-                dynamics_type = int(self.rigid_type),
-                location = loc,
-                rotation = rot,
-                size = size,
-                collision_group_number = self.collision_group_number,
-                collision_group_mask = self.collision_group_mask,
-                mass=1,
-                friction = 0.0,
-                angular_damping = 0.5,
-                linear_damping = 0.5,
-                bounce = 0.5,
-                bone = bone_name,
+                name=name_j,
+                name_e=name_e,
+                location=loc,
+                rotation=rot,
+                size=size,
+                shape_type=rigid_body.shapeType(self.rigid_shape),
+                dynamics_type=int(self.rigid_type),
+                collision_group_number=self.collision_group_number,
+                collision_group_mask=self.collision_group_mask,
+                mass=self.mass,
+                friction=self.friction,
+                bounce=self.bounce,
+                linear_damping=self.linear_damping,
+                angular_damping=self.angular_damping,
+                bone=bone_name,
                 )
 
     def execute(self, context):
@@ -241,12 +286,56 @@ class AddJoint(Operator):
     bl_idname = 'mmd_tools.add_joint'
     bl_label = 'Add Joint'
     bl_description = 'Add Joint(s) to selected rigidbody objects'
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO', 'PRESET', 'INTERNAL'}
 
     use_bone_rotation = bpy.props.BoolProperty(
         name='Use Bone Rotation',
         description='Match joint orientation to bone orientation if enabled',
         default=True,
+        )
+    limit_linear_lower = bpy.props.FloatVectorProperty(
+        name='Limit Linear Lower',
+        description='Lower limit of translation',
+        subtype='XYZ',
+        size=3,
+        )
+    limit_linear_upper = bpy.props.FloatVectorProperty(
+        name='Limit Linear Upper',
+        description='Upper limit of translation',
+        subtype='XYZ',
+        size=3,
+        )
+    limit_angular_lower = bpy.props.FloatVectorProperty(
+        name='Limit Angular Lower',
+        description='Lower limit of rotation',
+        subtype='EULER',
+        size=3,
+        min=-math.pi*2,
+        max=math.pi*2,
+        default=[-math.pi/4]*3,
+        )
+    limit_angular_upper = bpy.props.FloatVectorProperty(
+        name='Limit Angular Upper',
+        description='Upper limit of rotation',
+        subtype='EULER',
+        size=3,
+        min=-math.pi*2,
+        max=math.pi*2,
+        default=[math.pi/4]*3,
+        )
+    spring_linear = bpy.props.FloatVectorProperty(
+        name='Spring(Linear)',
+        description='Spring constant of movement',
+        subtype='XYZ',
+        size=3,
+        min=0,
+        )
+    spring_angular = bpy.props.FloatVectorProperty(
+        name='Spring(Angular)',
+        description='Spring constant of rotation',
+        subtype='XYZ',
+        size=3,
+        min=0,
         )
 
     def __enumerate_rigid_pair(self, bone_map):
@@ -282,18 +371,18 @@ class AddJoint(Operator):
         name_j = rigid_b.mmd_rigid.name_j or rigid_b.name
         name_e = rigid_b.mmd_rigid.name_e or rigid_b.name
         return rig.createJoint(
-                name = name_j,
-                name_e = name_e,
-                location = loc,
-                rotation = rot,
-                rigid_a = rigid_a,
-                rigid_b = rigid_b,
-                maximum_location = [0, 0, 0],
-                minimum_location = [0, 0, 0],
-                maximum_rotation = [math.pi/4]*3,
-                minimum_rotation = [-math.pi/4]*3,
-                spring_linear = [0, 0, 0],
-                spring_angular = [0, 0, 0],
+                name=name_j,
+                name_e=name_e,
+                location=loc,
+                rotation=rot,
+                rigid_a=rigid_a,
+                rigid_b=rigid_b,
+                maximum_location=self.limit_linear_upper,
+                minimum_location=self.limit_linear_lower,
+                maximum_rotation=self.limit_angular_upper,
+                minimum_rotation=self.limit_angular_lower,
+                spring_linear=self.spring_linear,
+                spring_angular=self.spring_angular,
                 )
 
     def execute(self, context):
