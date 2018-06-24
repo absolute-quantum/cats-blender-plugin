@@ -459,10 +459,8 @@ def fix_armature_names(armature_name=None):
     armature = get_armature(armature_name=armature_name)
     armature.name = 'Armature'
     if not armature.data.name.startswith('Armature'):
-        try:
-            armature.data.name = 'Armature (' + Translator().translate(armature.data.name).text + ')'
-        except:
-            armature.data.name = 'Armature'
+        tools.translate.update_dictionary(armature.data.name)
+        armature.data.name = 'Armature (' + tools.translate.translate(armature.data.name, add_space=True)[0] + ')'
 
     # Reset the armature lists
     try:

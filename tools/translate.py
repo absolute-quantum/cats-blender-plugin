@@ -64,7 +64,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
                     if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
                         to_translate.append(shapekey.name)
 
-        update_dictionary(to_translate)
+        if not update_dictionary(to_translate):
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         tools.common.update_shapekey_orders()
 
@@ -107,7 +108,8 @@ class TranslateBonesButton(bpy.types.Operator):
         for bone in tools.common.get_armature().data.bones:
             to_translate.append(bone.name)
 
-        update_dictionary(to_translate)
+        if not update_dictionary(to_translate):
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         count = 0
         for bone in tools.common.get_armature().data.bones:
@@ -150,7 +152,8 @@ class TranslateObjectsButton(bpy.types.Operator):
                 if obj.animation_data and obj.animation_data.action:
                     to_translate.append(obj.animation_data.action.name)
 
-        update_dictionary(to_translate)
+        if not update_dictionary(to_translate):
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         i = 0
         for obj in bpy.data.objects:
@@ -198,7 +201,8 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 if matslot.name not in to_translate:
                     to_translate.append(matslot.name)
 
-        update_dictionary(to_translate)
+        if not update_dictionary(to_translate):
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         i = 0
         for mesh in tools.common.get_meshes_objects(mode=2):
@@ -358,13 +362,17 @@ def update_dictionary(to_translate_list):
                     if name not in google_input and name not in dictionary.keys():
                         google_input.append(name)
 
+    if not google_input:
+        print('GOOGLE LIST EMPTY')
+        return True
+
     # Translate the list with google translate
     print('GOOGLE DICT UPDATE!')
     try:
         translations = translator.translate(google_input)
     except requests.exceptions.ConnectionError:
         print('DICTIONARY UPDATE FAILED!')
-        return
+        return False
 
     # Update the dictionary
     for i, translation in enumerate(translations):
@@ -372,6 +380,7 @@ def update_dictionary(to_translate_list):
         print(google_input[i], translation.text.capitalize())
 
     print('DICTIONARY UPDATE SUCCEEDED!')
+    return True
 
 
 def translate(to_translate, add_space=False):
@@ -403,7 +412,7 @@ def translate(to_translate, add_space=False):
 
     to_translate = to_translate.replace('.L', '_L').replace('.R', '_R').replace('  ', ' ').strip()
 
-    print(to_translate)
+    # print(to_translate)
 
     return to_translate, pre_translation != to_translate
 
