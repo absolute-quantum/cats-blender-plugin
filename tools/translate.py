@@ -319,6 +319,8 @@ def update_dictionary(to_translate_list):
         length = len(to_translate)
         translated_count = 0
 
+        to_translate = fix_jp_chars(to_translate)
+
         # Remove spaces, there are no spaces in japan
         match = re.findall(regex, to_translate)
         if match:
@@ -376,6 +378,8 @@ def translate(to_translate, add_space=False):
     if add_space:
         addition = ' '
 
+    to_translate = fix_jp_chars(to_translate)
+
     # Remove spaces, there are no spaces in japan
     match = re.findall(regex, to_translate)
     if match:
@@ -384,7 +388,10 @@ def translate(to_translate, add_space=False):
     # Translate with internal dictionary
     for key, value in dictionary.items():
         if key in to_translate:
-            to_translate = to_translate.replace(key, addition + value)
+            if value:
+                to_translate = to_translate.replace(key, addition + value)
+            else:
+                to_translate = to_translate.replace(key, value)
 
             # Check if string is fully translated
             translated_count += len(key)
@@ -398,5 +405,8 @@ def translate(to_translate, add_space=False):
     return to_translate, pre_translation != to_translate
 
 
-
-
+def fix_jp_chars(name):
+    for values in mmd_tools_local.translations.jp_half_to_full_tuples:
+        if values[0] in name:
+            name = name.replace(values[0], values[1])
+    return name
