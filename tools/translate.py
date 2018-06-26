@@ -285,6 +285,7 @@ def load_translations():
                     translation = translation[1:-1]
 
                 temp_dict[name] = translation
+                print('DICTIONARY LOADED!')
     except FileNotFoundError:
         print('DICTIONARY NOT FOUND!')
         pass
