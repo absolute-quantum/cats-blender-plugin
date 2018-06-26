@@ -39,7 +39,7 @@ dictionary = None
 
 class TranslateShapekeyButton(bpy.types.Operator):
     bl_idname = 'translate.shapekeys'
-    bl_label = 'Shape Keys'
+    bl_label = 'Translate Shape Keys'
     bl_description = "Translates all shape keys with Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -49,12 +49,6 @@ class TranslateShapekeyButton(bpy.types.Operator):
             return {'FINISHED'}
 
         tools.common.unhide_all()
-
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
 
         to_translate = []
 
@@ -84,25 +78,18 @@ class TranslateShapekeyButton(bpy.types.Operator):
 
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
-    bl_label = 'Bones'
+    bl_label = 'Translate Bones'
     bl_description = 'Translates all bones with the build-in dictionary and the untranslated parts with Google Translate'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if not tools.common.get_armature():
             return False
         return True
 
     def execute(self, context):
-        dictionary = 'INTERNAL'
         tools.common.unhide_all()
-
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
 
         to_translate = []
         for bone in tools.common.get_armature().data.bones:
@@ -117,15 +104,13 @@ class TranslateBonesButton(bpy.types.Operator):
             if translated:
                 count += 1
 
-        # count = translate_bones(dictionary)
-
         self.report({'INFO'}, 'Translated ' + str(count) + ' bones.')
         return {'FINISHED'}
 
 
 class TranslateObjectsButton(bpy.types.Operator):
     bl_idname = 'translate.objects'
-    bl_label = 'Meshes & Objects'
+    bl_label = 'Translate Meshes & Objects'
     bl_description = "Translates all meshes and objects with Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -135,12 +120,6 @@ class TranslateObjectsButton(bpy.types.Operator):
             return {'FINISHED'}
 
         tools.common.unhide_all()
-
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
 
         to_translate = []
         for obj in bpy.data.objects:
@@ -178,7 +157,7 @@ class TranslateObjectsButton(bpy.types.Operator):
 
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'translate.materials'
-    bl_label = 'Materials'
+    bl_label = 'Translate Materials'
     bl_description = "Translates all materials with Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -188,12 +167,6 @@ class TranslateMaterialsButton(bpy.types.Operator):
             return {'FINISHED'}
 
         tools.common.unhide_all()
-
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
 
         to_translate = []
         for mesh in tools.common.get_meshes_objects(mode=2):
@@ -222,23 +195,16 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
-    bl_label = 'Textures'
+    bl_label = 'Translate Textures'
     bl_description = "Translates all textures with Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-
         # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
         self.report({'INFO'}, 'Translated all textures')
         return {'FINISHED'}
 
         tools.common.unhide_all()
-
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
 
         translator = Translator()
 
@@ -291,7 +257,6 @@ class TranslateAllButton(bpy.types.Operator):
         bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
         bpy.ops.translate.objects('INVOKE_DEFAULT')
         bpy.ops.translate.materials('INVOKE_DEFAULT')
-
 
         self.report({'INFO'}, 'Translated everything.')
         return {'FINISHED'}

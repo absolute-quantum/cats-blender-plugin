@@ -190,6 +190,9 @@ bone_list_conflicting_names = [
     (['Strengthen_The_Spine'], 'Spine6', 'Backbone6'),
     (['Strengthen_The_Spine'], 'Spine7', 'Backbone7'),
 
+    (['\Left_Heel', '\Left_Shin'], '\Left_Calf', '\Left_Leg'),
+    (['\Left_Heel', '\Left_Shin'], '\Left_Foot', '\Left_Ankle_D'),
+
     # (['Elbowb_\L', 'Elbowc_\L'], 'Elbowa_\L', 'Arm05_\L'),
 ]
 bone_finger_list = [
@@ -503,6 +506,7 @@ bone_rename['\Left elbow'] = [
     'LowerArm_\L',
     '\Lf_Elbow',
     'Arm_Lower_\L',
+    '\Left_Forarm',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -529,6 +533,12 @@ bone_rename['\Left wrist'] = [
     '\LFingerBaseN',
     '\Lf_Wrist',
     'Palm_\L',
+]
+bone_rename['Left wrist'] = [
+    'Left_Hand_003'
+]
+bone_rename['Right wrist'] = [
+    'Right_Hand_002'
 ]
 bone_rename['\Left leg'] = [
     '\Left_Leg',
@@ -625,6 +635,7 @@ bone_rename['\Left ankle'] = [
     '\L_FOOT1',
     '\LFootJ',
     '\Lf_Ankle',
+    '\Left_Heel',
 ]
 bone_rename['\Left toe'] = [
     '\Left_Toe',
@@ -702,6 +713,8 @@ bone_reweight['Hips'] = [
     'Lowerbody2',
     'Pelvis_Adj',
     'Waist',
+    'Left_Hip',
+    'Right_Hip',
 ]
 bone_reweight['Spine'] = [
     'UpperBodyx',
@@ -947,6 +960,16 @@ bone_reweight['\Left wrist'] = [
     '\LeftHandRing0',
     '\LeftHandPinky0',
     '\Lf_Metacarpal',
+    '\Left_Hand_001',
+    '\Left_Hand_005',
+]
+bone_reweight['Left wrist'] = [
+    'Left_Hand_002',
+    'Left_Hand_006',
+]
+bone_reweight['Right wrist'] = [
+    'Right_Hand_003',
+    'Right_Hand_004',
 ]
 bone_reweight['\Left leg'] = [
     'LegD_\L',

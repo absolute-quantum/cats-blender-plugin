@@ -213,7 +213,7 @@ class PoseToRest(bpy.types.Operator):
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
-    bl_description = 'Joins the model meshes into a single one and applies all unapplied decimation modifiers'
+    bl_description = 'Joins the model meshes into a single one, sorts all shape keys and applies all transforms as well as all unapplied decimation modifiers'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -231,7 +231,7 @@ class JoinMeshes(bpy.types.Operator):
 class JoinMeshesSelected(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes_selected'
     bl_label = 'Join Selected Meshes'
-    bl_description = 'Joins the selected model meshes into a single one and applies all unapplied decimation modifiers'
+    bl_description = 'Joins the selected model meshes into a single one, sorts all shape keys and applies all transforms as well as all unapplied decimation modifiers'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -496,7 +496,7 @@ class ArmatureEditMode:
 class ApplyTransformations(bpy.types.Operator):
     bl_idname = 'armature_manual.apply_transformations'
     bl_label = 'Apply Transformations'
-    bl_description = "Applies the position, rotation and scale to the armature and it's meshes."
+    bl_description = "Applies the position, rotation and scale to the armature and it's meshes"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -506,7 +506,8 @@ class ApplyTransformations(bpy.types.Operator):
         return False
 
     def execute(self, context):
-        # Is this needed?
+        tools.common.apply_transforms()
+
         self.report({'INFO'}, 'Transformations applied.')
         return {'FINISHED'}
 

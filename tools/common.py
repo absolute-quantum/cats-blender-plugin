@@ -558,6 +558,8 @@ def join_meshes(armature_name=None, mode=0):
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
+    apply_transforms(armature_name=armature_name)
+
     # Join the meshes
     if bpy.ops.object.join.poll():
         bpy.ops.object.join()
@@ -585,6 +587,19 @@ def join_meshes(armature_name=None, mode=0):
     reset_context_scenes()
 
     return mesh
+
+
+def apply_transforms(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
+
+    tools.common.unselect_all()
+    tools.common.select(get_armature(armature_name=armature_name))
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    for mesh in get_meshes_objects(armature_name=armature_name):
+        tools.common.unselect_all()
+        tools.common.select(mesh)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
 
 def separate_by_materials(context, mesh):

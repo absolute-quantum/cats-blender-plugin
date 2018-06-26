@@ -862,6 +862,8 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
+        button_height = 1
+
         col = box.column(align=True)
         # if not context.scene.show_manual_options:
         #     row = col.row(align=False)
@@ -871,13 +873,13 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_DOWN')
 
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.label("Separate by:", icon='MESH_DATA')
         row.operator('armature_manual.separate_by_materials', text='Materials')
         row.operator('armature_manual.separate_by_loose_parts', text='Loose Parts')
 
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.label("Join Meshes:", icon='MESH_DATA')
         row.operator('armature_manual.join_meshes', text='All')
         row.operator('armature_manual.join_meshes_selected', text='Selected')
@@ -885,18 +887,21 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         col.separator()
         row = col.split(percentage=0.23, align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.label("Delete:", icon='X')
         row.operator('armature_manual.remove_zero_weight', text='Zero Weight Bones')
         row.operator('armature_manual.remove_constraints', text='Constraints')
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.operator('armature_manual.merge_weights', icon='BONE_DATA')
+        row = col.row(align=True)
+        row.scale_y = button_height
+        row.operator('armature_manual.apply_transformations', icon='OUTLINER_DATA_ARMATURE')
 
         col.separator()
         col.separator()
         row = col.split(percentage=0.27, align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.label("Normals:", icon='SNAP_NORMAL')
         row.operator('armature_manual.recalculate_normals', text='Recalculate')
         row.operator('armature_manual.flip_normals', text='Flip')
@@ -906,14 +911,14 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         # row.label("Translation:", icon_value=tools.supporter.preview_collections["custom_icons"]["TRANSLATE"].icon_id)
         row.label("Translation:", icon='FILE_REFRESH')
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.operator('translate.all', text='All', icon='META_BALL')
-        row.operator('translate.shapekeys', icon='SHAPEKEY_DATA')
-        row.operator('translate.bones', icon='BONE_DATA')
+        row.operator('translate.shapekeys', text='Shape Keys', icon='SHAPEKEY_DATA')
+        row.operator('translate.bones', text='Bones', icon='BONE_DATA')
         row = col.row(align=True)
-        row.scale_y = 1.05
-        row.operator('translate.objects', icon='MESH_DATA')
-        row.operator('translate.materials', icon='MATERIAL')
+        row.scale_y = button_height
+        row.operator('translate.objects', text='Meshes & Objects', icon='MESH_DATA')
+        row.operator('translate.materials', text='Materials', icon='MATERIAL')
 
 
 class CustomPanel(ToolPanel, bpy.types.Panel):
@@ -1491,8 +1496,7 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
             row = col.row(align=True)
-            col.separator()
-            row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
+            row.operator('importer.export_model', icon='ARMATURE_DATA')
         else:
             row.operator('copyprotection.enable', icon='KEY_HLT')
 
@@ -1709,6 +1713,7 @@ classesToRegister = [
     tools.armature_manual.JoinMeshes,
     tools.armature_manual.JoinMeshesSelected,
     tools.armature_manual.MergeWeights,
+    tools.armature_manual.ApplyTransformations,
     tools.armature_manual.RemoveZeroWeight,
     tools.armature_manual.RemoveConstraints,
     tools.armature_manual.RecalculateNormals,

@@ -53,7 +53,7 @@ class ImportModel(bpy.types.Operator):
                 return {'FINISHED'}
 
             try:
-                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'})
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'}, log_level='WARNING')
             except AttributeError:
                 bpy.ops.enable.mmd('INVOKE_DEFAULT')
             except (TypeError, ValueError):
@@ -127,7 +127,8 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                                                    files=[{'name': file_name}],
                                                    directory=self.directory,
                                                    scale=0.08,
-                                                   types={'MESH', 'ARMATURE', 'MORPHS'})
+                                                   types={'MESH', 'ARMATURE', 'MORPHS'},
+                                                   log_level='WARNING')
                 except AttributeError:
                     bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
                 except (TypeError, ValueError):
@@ -217,7 +218,7 @@ class ImportMMD(bpy.types.Operator):
             return {'FINISHED'}
 
         try:
-            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'})
+            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'}, log_level='WARNING')
         except AttributeError:
             bpy.ops.enable.mmd('INVOKE_DEFAULT')
         except (TypeError, ValueError):
