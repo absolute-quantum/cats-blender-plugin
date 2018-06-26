@@ -30,6 +30,7 @@ import csv
 import pathlib
 import tools.common
 import requests.exceptions
+import mmd_tools_local.translations
 
 from googletrans import Translator
 from collections import OrderedDict
@@ -269,22 +270,36 @@ def load_translations():
 
     global dictionary
     dictionary = OrderedDict()
+    temp_dict = {}
 
-    with open(supporters_file) as file:
-        data = csv.reader(file, delimiter=',')
-        for row in data:
-            name = row[0]
-            translation = row[1]
+    try:
+        with open(supporters_file) as file:
+            data = csv.reader(file, delimiter=',')
+            for row in data:
+                name = row[0]
+                translation = row[1]
 
-            if translation.startswith(' "'):
-                translation = translation[2:-1]
-            if translation.startswith('"'):
-                translation = translation[1:-1]
+                if translation.startswith(' "'):
+                    translation = translation[2:-1]
+                if translation.startswith('"'):
+                    translation = translation[1:-1]
 
-            dictionary[name] = translation
+                temp_dict[name] = translation
+    except FileNotFoundError:
+        print('DICTIONARY NOT FOUND!')
+        pass
 
-    for key in dictionary.keys():
-        print('"' + key + '" - "' + dictionary[key] + '"')
+    for translation in mmd_tools_local.translations.jp_to_en_tuples:
+        if translation[0] not in temp_dict.keys() and translation[0] != '.':
+            temp_dict[translation[0]] = translation[1]
+            # print('"' + translation[0] + '" - "' + translation[1] + '"')
+
+    # Sort dictionary
+    for key in sorted(temp_dict, key=lambda k: len(k), reverse=True):
+        dictionary[key] = temp_dict[key]
+
+    # for key in dictionary.keys():
+    #     print('"' + key + '" - "' + dictionary[key] + '"')
 
 
 def update_dictionary(to_translate_list):
