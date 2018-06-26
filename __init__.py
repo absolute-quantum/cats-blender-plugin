@@ -205,6 +205,8 @@ supporters = [
 
 current_supporters = None
 
+dict_found = False
+
 
 class ToolPanel:
     bl_label = 'Cats Blender Plugin'
@@ -701,9 +703,15 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         if bpy.app.version < (2, 79, 0):
             col.separator()
-            col.label('Old Blender version detected!', icon='ERROR')
-            col.label('Some features might not work!', icon='ERROR')
-            col.label('Please update to Blender 2.79!', icon='ERROR')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Old Blender version detected!', icon='ERROR')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Some features might not work!', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Please update to Blender 2.79!', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()
             col.separator()
 
@@ -721,8 +729,23 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         if addon_updater_ops.updater.update_ready:
             col.separator()
-            col.label('New Cats version available!', icon='INFO')
-            col.label('Check the Updater panel!', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('New Cats version available!', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Check the Updater panel!', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            col.separator()
+            col.separator()
+
+        if not dict_found:
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Dictionary not found!', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Reinstall Cats to fix this.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()
             col.separator()
 
@@ -1785,6 +1808,7 @@ classesToRegister = [
 
 def register():
     print("\n### Loading CATS...")
+    global dict_found
     # bpy.utils.unregister_module("mmd_tools")
     try:
         mmd_tools_local.register()
@@ -1808,7 +1832,7 @@ def register():
     tools.supporter.load_supporters()
     tools.supporter.register_dynamic_buttons()
 
-    tools.translate.load_translations()
+    dict_found = tools.translate.load_translations()
 
     bpy.context.user_preferences.system.use_international_fonts = True
     bpy.context.user_preferences.filepaths.use_file_compression = True

@@ -271,6 +271,7 @@ def load_translations():
     global dictionary
     dictionary = OrderedDict()
     temp_dict = {}
+    dict_found = False
 
     try:
         with open(supporters_file) as file:
@@ -285,6 +286,7 @@ def load_translations():
                     translation = translation[1:-1]
 
                 temp_dict[name] = translation
+            dict_found = True
             print('DICTIONARY LOADED!')
     except FileNotFoundError:
         print('DICTIONARY NOT FOUND!')
@@ -301,6 +303,8 @@ def load_translations():
 
     # for key in dictionary.keys():
     #     print('"' + key + '" - "' + dictionary[key] + '"')
+
+    return dict_found
 
 
 def update_dictionary(to_translate_list):
@@ -374,10 +378,12 @@ def translate(to_translate, add_space=False):
     length = len(to_translate)
     translated_count = 0
 
+    # Add space for shape keys
     addition = ''
     if add_space:
         addition = ' '
 
+    # Convert half chars into full chars
     to_translate = fix_jp_chars(to_translate)
 
     # Remove spaces, there are no spaces in japan

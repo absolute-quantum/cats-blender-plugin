@@ -331,6 +331,7 @@ It checks for a new version automatically once every day.
   - Fixed files with capital letters in the file extension not importing correctly
 - **Translations:**
   - Greatly improved translations by using a new internal dictionary
+    - Much better shape key translation
   - Greatly improved translation speed
   - Added "Translate Everything" button
   - No longer removes rigidbodies and joints
