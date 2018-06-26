@@ -354,15 +354,15 @@ def get_bones(names=None, armature_name=None):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow', 'A'], True, False, False, False)
+    return get_shapekeys(context, ['Ah', 'A'], True, False, False, False)
 
 
 def get_shapekeys_mouth_oh(self, context):
-    return get_shapekeys(context, ['Your', 'Oh', 'O'], True, False, False, False)
+    return get_shapekeys(context, ['Oh', 'O', 'Your'], True, False, False, False)
 
 
 def get_shapekeys_mouth_ch(self, context):
-    return get_shapekeys(context, ['Glue', 'There', 'Ch', 'I'], True, False, False, False)
+    return get_shapekeys(context, ['Glue', 'Ch', 'I', 'There'], True, False, False, False)
 
 
 def get_shapekeys_eye_blink_l(self, context):
@@ -383,14 +383,12 @@ def get_shapekeys_eye_low_r(self, context):
 
 def get_shapekeys_decimation(self, context):
     return get_shapekeys(context,
-                         ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2',
-                          'Wink right'], False, True, True, False)
+                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, False)
 
 
 def get_shapekeys_decimation_list(self, context):
     return get_shapekeys(context,
-                         ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2',
-                          'Wink right'], False, True, True, True)
+                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, True)
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models

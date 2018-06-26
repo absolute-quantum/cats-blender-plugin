@@ -289,6 +289,14 @@ class FixArmature(bpy.types.Operator):
         # Reorders vrc shape keys to the correct order
         tools.common.sort_shape_keys(mesh.name)
 
+        # Fix all shape key names of half jp chars
+        for mesh in tools.common.get_meshes_objects():
+            if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+                for shapekey in mesh.data.shape_keys.key_blocks:
+                    shapekey.name = tools.translate.fix_jp_chars(shapekey.name)
+
+        # return {'FINISHED'}
+
         # Translate bones
         to_translate = []
         for bone in armature.data.bones:
@@ -808,6 +816,12 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
         tools.common.select(mesh)
+
+        # for bone_name in temp_rename_bones.keys():
+        #     bone = armature.data.bones.get(bone_name)
+        #     if bone:
+        #         print(bone_name)
+        #         bone.hide = False
 
         for bone_new, bones_old in temp_reweight_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:

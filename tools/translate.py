@@ -23,6 +23,7 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
+import copy
 import re
 import os
 import bpy
@@ -326,14 +327,14 @@ def update_dictionary(to_translate_list):
         to_translate = fix_jp_chars(to_translate)
 
         # Remove spaces, there are no spaces in japan
-        match = re.findall(regex, to_translate)
-        if match:
-            to_translate = to_translate.replace(' ', '')
 
         # Translate with internal dictionary
         for key, value in dictionary.items():
             if key in to_translate:
-                to_translate = to_translate.replace(key, value)
+                if value:
+                    to_translate = to_translate.replace(key, value)
+                else:
+                    continue
 
                 # Check if string is fully translated
                 translated_count += len(key)
@@ -342,7 +343,6 @@ def update_dictionary(to_translate_list):
 
         # If not fully translated, translate the rest with Google
         if translated_count < length:
-
             match = re.findall(regex, to_translate)
             if match:
                 for name in match:
@@ -366,6 +366,12 @@ def update_dictionary(to_translate_list):
         dictionary[google_input[i]] = translation.text.capitalize()
         print(google_input[i], translation.text.capitalize())
 
+    # Sort dictionary
+    temp_dict = copy.deepcopy(dictionary)
+    dictionary = OrderedDict()
+    for key in sorted(temp_dict, key=lambda k: len(k), reverse=True):
+        dictionary[key] = temp_dict[key]
+
     print('DICTIONARY UPDATE SUCCEEDED!')
     return True
 
@@ -386,25 +392,21 @@ def translate(to_translate, add_space=False):
     # Convert half chars into full chars
     to_translate = fix_jp_chars(to_translate)
 
-    # Remove spaces, there are no spaces in japan
-    match = re.findall(regex, to_translate)
-    if match:
-        to_translate = to_translate.replace(' ', '')
-
     # Translate with internal dictionary
     for key, value in dictionary.items():
         if key in to_translate:
-            if value:
-                to_translate = to_translate.replace(key, addition + value)
-            else:
-                to_translate = to_translate.replace(key, value)
+            # If string is empty, don't replace it. This will be done at the end
+            if not value:
+                continue
+
+            to_translate = to_translate.replace(key, addition + value)
 
             # Check if string is fully translated
             translated_count += len(key)
             if translated_count >= length:
                 break
 
-    to_translate = to_translate.replace('.L', '_L').replace('.R', '_R').replace('  ', ' ').strip()
+    to_translate = to_translate.replace('.L', '_L').replace('.R', '_R').replace('  ', ' ').replace('し', '').replace('っ', '').strip()
 
     # print(to_translate)
 

@@ -566,7 +566,7 @@ class ToolPanel:
         description='Controls the strength in the creation of the shape keys. Lower for less mouth movement strength',
         default=1.0,
         min=0.0,
-        max=1.0,
+        max=10.0,
         step=0.1,
         precision=2,
         subtype='FACTOR'

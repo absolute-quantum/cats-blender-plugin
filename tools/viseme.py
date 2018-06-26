@@ -68,12 +68,18 @@ class AutoVisemeButton(bpy.types.Operator):
 
             for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
                 if selector == shapekey.name:
-                    mesh.active_shape_key_index = index
+                    # mesh.active_shape_key_index = index
+                    shapekey.slider_max = 10
                     shapekey.value = shapekey_value * intensity
 
         # Create the new shape key
         mesh.shape_key_add(name=rename_to, from_mix=True)
+
+        # Reset all shape keys and sliders
         bpy.ops.object.shape_key_clear()
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if selector == shapekey.name:
+                shapekey.slider_max = 1
 
         # Select the created shapekey
         mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1

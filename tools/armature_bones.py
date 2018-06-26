@@ -193,6 +193,8 @@ bone_list_conflicting_names = [
     (['\Left_Heel', '\Left_Shin'], '\Left_Calf', '\Left_Leg'),
     (['\Left_Heel', '\Left_Shin'], '\Left_Foot', '\Left_Ankle_D'),
 
+    (['Tsumasaki_\L'], 'Tsumasaki_Linkage_\L', '\Left toe'),
+
     # (['Elbowb_\L', 'Elbowc_\L'], 'Elbowa_\L', 'Arm05_\L'),
 ]
 bone_finger_list = [
@@ -668,6 +670,7 @@ bone_rename['\Left toe'] = [
     'ToeTip_\L',
     'ToeTip2_\L',
     '\Lf_Toe',
+    'Tsumasaki_\L',
 ]
 bone_rename['Eye_\L'] = [
     '\Left_Eye',

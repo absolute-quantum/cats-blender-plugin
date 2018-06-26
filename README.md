@@ -338,6 +338,7 @@ It checks for a new version automatically once every day.
     - Only Fix Model removes them now
 - **Visemes:**
   - Shape Keys Mix Intensity slider is back
+  - Increased the range of the intensity slider
 - **Credits:**
   - Added patchnotes button
 - **General:**
