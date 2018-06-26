@@ -266,7 +266,7 @@ class TranslateAllButton(bpy.types.Operator):
 def load_translations():
     main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
     resources_dir = os.path.join(str(main_dir), "resources")
-    supporters_file = os.path.join(resources_dir, "dictionary.csv")
+    dictionary_file = os.path.join(resources_dir, "dictionary.csv")
 
     global dictionary
     dictionary = OrderedDict()
@@ -274,7 +274,7 @@ def load_translations():
     dict_found = False
 
     try:
-        with open(supporters_file) as file:
+        with open(dictionary_file, encoding="utf8") as file:
             data = csv.reader(file, delimiter=',')
             for row in data:
                 name = row[0]

@@ -222,7 +222,7 @@ def readJson():
 
     print("SUPPORTER LIST FILE FOUND!")
     try:
-        with open(supporters_file) as f:
+        with open(supporters_file, encoding="utf8") as f:
             data = json.load(f)
     except json.decoder.JSONDecodeError:
         return
@@ -368,7 +368,7 @@ def load_settings():
 def save_settings():
     settings_file = os.path.join(resources_dir, "settings.json")
 
-    with open(settings_file, 'w') as outfile:
+    with open(settings_file, 'w', encoding="utf8") as outfile:
         json.dump(settings_data, outfile)
 
 
@@ -383,13 +383,13 @@ def read_settings_file():
     # Check for existing settings file
     if not os.path.isfile(settings_file):
         print("SETTINGS LIST FILE NOT FOUND!")
-        with open(settings_file, 'w') as outfile:
+        with open(settings_file, 'w', encoding="utf8") as outfile:
             json.dump(data_default, outfile)
         return data_default
 
     # Read settings and recreate it if error  is found
     try:
-        with open(settings_file) as f:
+        with open(settings_file, encoding="utf8") as f:
             data = json.load(f)
     except json.decoder.JSONDecodeError:
         print("ERROR FOUND IN SETTINGS FILE")
@@ -427,7 +427,7 @@ def read_settings_file():
 
     # If data changed, update settings file
     if changed:
-        with open(settings_file, 'w') as outfile:
+        with open(settings_file, 'w', encoding="utf8") as outfile:
             json.dump(data, outfile)
         print('UPDATED MISSING SETTINGS')
 

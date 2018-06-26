@@ -489,6 +489,7 @@ bone_rename['\Left elbow'] = [
     'Forearm_\L',
     '\LForeArm',
     '\L_Forearm',
+    '\L_ForeArm',
     '\LeftLowArm',
     '\Left_Forearm',
     '\L_Foarm',
