@@ -745,6 +745,9 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('Dictionary not found!', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.75
+            row.label('Translations will work, but are not optimized.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row = col.row(align=True)
+            row.scale_y = 0.75
             row.label('Reinstall Cats to fix this.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()
             col.separator()
