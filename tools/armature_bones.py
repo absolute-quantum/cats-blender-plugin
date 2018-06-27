@@ -400,6 +400,7 @@ bone_rename['Head'] = [
     'HEAD',
     'HeadN',
     'Helmet_Upper',
+    'Head_001',
 ]
 bone_rename['\Left shoulder'] = [
     '\Left_Shoulder',

@@ -516,7 +516,7 @@ def get_meshes_objects(armature_name=None, mode=0):
     return meshes
 
 
-def join_meshes(armature_name=None, mode=0):
+def join_meshes(armature_name=None, mode=0, apply_transformations=True):
     # Modes:
     # 0 - Join all meshes
     # 1 - Join selected only
@@ -556,7 +556,8 @@ def join_meshes(armature_name=None, mode=0):
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
-    apply_transforms(armature_name=armature_name)
+    if apply_transformations:
+        apply_transforms(armature_name=armature_name)
 
     # Join the meshes
     if bpy.ops.object.join.poll():
@@ -846,6 +847,7 @@ def sort_shape_keys(mesh_name, shape_key_order=None):
     mesh = bpy.data.objects[mesh_name]
     if not mesh.data.shape_keys or not mesh.data.shape_keys.key_blocks:
         return
+    select(mesh)
 
     if not shape_key_order:
         shape_key_order = []

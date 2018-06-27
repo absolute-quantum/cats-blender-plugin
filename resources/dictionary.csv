@@ -244,6 +244,7 @@
 "髪色調整", "HairColor", "kami shoku chōsei",
 "グルグル", "Swirl",
 "くやしい", "Mad"
+"シイタケ", "Cross Star"
 "サビオ", "Bandage", "sahi o",
 "ジャケ", "Jacket",
 "ダミー", "Dummy", "damii",
@@ -274,6 +275,7 @@
 "にしわ", "Wrinkle", "ni shiwa",
 "にやり", "Grin", "ni yari",
 "はぁと", "Heart", "haato",
+"ハート", "Heart",
 "はちゅ", "Hachu", "hachu",
 "ぱんつ", "Pants", "pantsu",
 "ひいろ", "Scarlet", "hiiro",
@@ -341,7 +343,7 @@
 "マント", "Cloak", "manto",
 "メイコ", "Meiko",
 "メイド", "Maid", "meido",
-"メガネ", "Eyeglasses", "megane",
+"メガネ", "Glasses", "megane",
 "モーフ", "Morph",
 "モーブ", "Mauve", "moobu",
 "リボン", "Ribbon", "ribon",
@@ -621,6 +623,7 @@
 "う", "U", "u",
 "え", "E", "e",
 "お", "Oh", "o",
+"ん", "Hmm",
 "し", "",
 "っ", "",
 "の", "no", "no",

@@ -47,71 +47,11 @@ class AutoVisemeButton(bpy.types.Operator):
 
         return True
 
-    def mix_shapekey(self, context, shapes, shapekey_data, new_index, rename_to, intensity):
-        mesh = bpy.data.objects[context.scene.mesh_name_viseme]
-
-        # Remove existing shapekey
-        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if shapekey.name == rename_to:
-                bpy.context.active_object.active_shape_key_index = index
-                bpy.ops.object.shape_key_remove()
-                break
-
-        # rename shapekey if it already exists and set value to 0
-        for shapekey in mesh.data.shape_keys.key_blocks:
-            shapekey.value = 0
-
-        # Set the shape key values
-        for shapekey_data_context in shapekey_data:
-            selector = shapekey_data_context[0]
-            shapekey_value = shapekey_data_context[1]
-
-            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                if selector == shapekey.name:
-                    # mesh.active_shape_key_index = index
-                    shapekey.slider_max = 10
-                    shapekey.value = shapekey_value * intensity
-
-        # Create the new shape key
-        mesh.shape_key_add(name=rename_to, from_mix=True)
-
-        # Reset all shape keys and sliders
-        bpy.ops.object.shape_key_clear()
-        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if selector == shapekey.name:
-                shapekey.slider_max = 1
-
-        # Select the created shapekey
-        mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
-
-        # Re-adjust index position
-        too_long = len(mesh.data.shape_keys.key_blocks) > 9
-        position_correct = False
-        if too_long:
-            bpy.ops.object.shape_key_move(type='TOP')
-        while position_correct is False:
-            if mesh.active_shape_key_index != new_index:
-                if too_long:
-                    if mesh.active_shape_key_index == len(mesh.data.shape_keys.key_blocks)-1:
-                        position_correct = True
-                    else:
-                        bpy.ops.object.shape_key_move(type='DOWN')
-                elif mesh.active_shape_key_index >= new_index:
-                    bpy.ops.object.shape_key_move(type='UP')
-                else:
-                    position_correct = True
-            else:
-                position_correct = True
-
-        # Reset context scenes
-        context.scene.mouth_a = shapes[0]
-        context.scene.mouth_o = shapes[1]
-        context.scene.mouth_ch = shapes[2]
-
     def execute(self, context):
         wm = bpy.context.window_manager
         tools.common.set_default_stage()
-        tools.common.select(bpy.data.objects[context.scene.mesh_name_viseme])
+        mesh = bpy.data.objects[context.scene.mesh_name_viseme]
+        tools.common.select(mesh)
 
         # Fix a small bug
         bpy.context.object.show_only_shape_key = False
@@ -147,101 +87,86 @@ class AutoVisemeButton(bpy.types.Operator):
         # Set up the shape keys. Some values are made in order to keep Blender from deleting them. There should never be duplicate shape keys!
         shapekey_data = OrderedDict()
         shapekey_data['vrc.v_aa'] = {
-            'index': 5,
             'mix': [
                 [(shape_a), (0.9999)]
             ]
         }
         shapekey_data['vrc.v_ch'] = {
-            'index': 6,
             'mix': [
                 [(shape_ch), (0.9998)]
             ]
         }
         shapekey_data['vrc.v_dd'] = {
-            'index': 7,
             'mix': [
                 [(shape_a), (0.3)],
                 [(shape_ch), (0.7)]
             ]
         }
         shapekey_data['vrc.v_e'] = {
-            'index': 8,
             'mix': [
                 [(shape_ch), (0.7)],
                 [(shape_o), (0.3)]
             ]
         }
         shapekey_data['vrc.v_ff'] = {
-            'index': 9,
             'mix': [
                 [(shape_a), (0.2)],
                 [(shape_ch), (0.4)]
             ]
         }
         shapekey_data['vrc.v_ih'] = {
-            'index': 10,
             'mix': [
                 [(shape_a), (0.5)],
                 [(shape_ch), (0.2)]
             ]
         }
         shapekey_data['vrc.v_kk'] = {
-            'index': 11,
             'mix': [
                 [(shape_a), (0.7)],
                 [(shape_ch), (0.4)]
             ]
         }
         shapekey_data['vrc.v_nn'] = {
-            'index': 12,
             'mix': [
                 [(shape_a), (0.2)],
                 [(shape_ch), (0.7)]
             ]
         }
         shapekey_data['vrc.v_oh'] = {
-            'index': 13,
             'mix': [
                 [(shape_a), (0.2)],
                 [(shape_o), (0.8)]
             ]
         }
         shapekey_data['vrc.v_ou'] = {
-            'index': 14,
             'mix': [
                 [(shape_o), (0.9997)]
             ]
         }
         shapekey_data['vrc.v_pp'] = {
-            'index': 15,
             'mix': [
                 [(shape_a), (0.0004)],
                 [(shape_o), (0.0004)]
             ]
         }
         shapekey_data['vrc.v_rr'] = {
-            'index': 16,
             'mix': [
                 [(shape_ch), (0.5)],
                 [(shape_o), (0.3)]
             ]
         }
         shapekey_data['vrc.v_sil'] = {
-            'index': 17,
             'mix': [
                 [(shape_a), (0.0002)],
                 [(shape_ch), (0.0002)]
             ]
         }
         shapekey_data['vrc.v_ss'] = {
-            'index': 18,
             'mix': [
                 [(shape_ch), (0.8)],
             ]
         }
         shapekey_data['vrc.v_th'] = {
-            'index': 19,
             'mix': [
                 [(shape_a), (0.4)],
                 [(shape_o), (0.15)]
@@ -255,7 +180,7 @@ class AutoVisemeButton(bpy.types.Operator):
         for index, key in enumerate(shapekey_data):
             obj = shapekey_data[key]
             wm.progress_update(index)
-            self.mix_shapekey(context, renamed_shapes, obj['mix'], obj['index'], key, context.scene.shape_intensity)
+            self.mix_shapekey(context, renamed_shapes, obj['mix'], key, context.scene.shape_intensity)
 
         # Rename shapes back
         if shapes[0] not in mesh.data.shape_keys.key_blocks:
@@ -305,10 +230,51 @@ class AutoVisemeButton(bpy.types.Operator):
         # Fix armature name
         tools.common.fix_armature_names()
 
-        # tools.common.repair_shapekeys()
+        # Sort visemes
+        tools.common.sort_shape_keys(mesh.name)
 
         wm.progress_end()
 
         self.report({'INFO'}, 'Created mouth visemes!')
 
         return {'FINISHED'}
+
+    def mix_shapekey(self, context, shapes, shapekey_data, rename_to, intensity):
+        mesh = bpy.data.objects[context.scene.mesh_name_viseme]
+
+        # Remove existing shapekey
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if shapekey.name == rename_to:
+                bpy.context.active_object.active_shape_key_index = index
+                bpy.ops.object.shape_key_remove()
+                break
+
+        # rename shapekey if it already exists and set value to 0
+        for shapekey in mesh.data.shape_keys.key_blocks:
+            shapekey.value = 0
+
+        # Set the shape key values
+        for shapekey_data_context in shapekey_data:
+            selector = shapekey_data_context[0]
+            shapekey_value = shapekey_data_context[1]
+
+            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                if selector == shapekey.name:
+                    # mesh.active_shape_key_index = index
+                    shapekey.slider_max = 10
+                    shapekey.value = shapekey_value * intensity
+
+        # Create the new shape key
+        mesh.shape_key_add(name=rename_to, from_mix=True)
+
+        # Reset all shape keys and sliders
+        bpy.ops.object.shape_key_clear()
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if selector == shapekey.name:
+                shapekey.slider_max = 1
+        mesh.active_shape_key_index = 0
+
+        # Reset context scenes
+        context.scene.mouth_a = shapes[0]
+        context.scene.mouth_o = shapes[1]
+        context.scene.mouth_ch = shapes[2]
