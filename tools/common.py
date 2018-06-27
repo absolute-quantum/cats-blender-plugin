@@ -537,6 +537,9 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True):
     set_default_stage()
     unselect_all()
 
+    if apply_transformations:
+        apply_transforms(armature_name=armature_name)
+
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:
         if mesh.name in meshes_to_join:
@@ -555,9 +558,6 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True):
                     if mesh.data.shape_keys is not None:
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
-
-    if apply_transformations:
-        apply_transforms(armature_name=armature_name)
 
     # Join the meshes
     if bpy.ops.object.join.poll():
