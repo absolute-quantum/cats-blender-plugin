@@ -103,6 +103,9 @@ def register_dynamic_buttons():
 
     temp_idnames = []
     for supporter in supporter_data.get('supporters'):
+        if supporter.get('disabled'):
+            continue
+
         name = supporter.get('displayname')
         idname = 'support.' + ''.join(filter(str.isalpha, name.lower()))
 
@@ -284,6 +287,9 @@ def load_icons(pcoll):
 
     if supporter_data:
         for supporter in supporter_data['supporters']:
+            if supporter.get('disabled'):
+                continue
+
             name = supporter['displayname']
             iconname = supporter.get('iconname')
 
@@ -301,7 +307,7 @@ def load_icons(pcoll):
         for news in supporter_data['news']:
             custom_icon = news.get('custom_icon')
 
-            if not custom_icon or custom_icon in pcoll:
+            if news.get('disabled') or not news.get('info') or not custom_icon or custom_icon in pcoll:
                 continue
 
             try:
@@ -335,7 +341,7 @@ def load_other_icons():
     pcoll.load('cats1', os.path.join(icons_other_dir, 'cats1.png'), 'IMAGE')
     pcoll.load('empty', os.path.join(icons_other_dir, 'empty.png'), 'IMAGE')
     pcoll.load('UP_ARROW', os.path.join(icons_other_dir, 'blender_up_arrow.png'), 'IMAGE')
-    pcoll.load('TRANSLATE', os.path.join(icons_other_dir, 'translate.png'), 'IMAGE')
+    # pcoll.load('TRANSLATE', os.path.join(icons_other_dir, 'translate.png'), 'IMAGE')
 
     preview_collections['custom_icons'] = pcoll
 

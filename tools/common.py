@@ -516,7 +516,7 @@ def get_meshes_objects(armature_name=None, mode=0):
     return meshes
 
 
-def join_meshes(armature_name=None, mode=0, apply_transformations=True):
+def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_shape_keys=True):
     # Modes:
     # 0 - Join all meshes
     # 1 - Join selected only
@@ -540,6 +540,8 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True):
     if apply_transformations:
         apply_transforms(armature_name=armature_name)
 
+    unselect_all()
+
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:
         if mesh.name in meshes_to_join:
@@ -555,7 +557,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True):
                         mesh.modifiers.remove(mod)
                         continue
 
-                    if mesh.data.shape_keys is not None:
+                    if mesh.data.shape_keys:
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
@@ -581,7 +583,8 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True):
                 mod.object = get_armature(armature_name=armature_name)
                 mod_count += 1
 
-        repair_shapekey_order(mesh.name)
+        if repair_shape_keys:
+            repair_shapekey_order(mesh.name)
 
     reset_context_scenes()
 

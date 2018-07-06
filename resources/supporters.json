@@ -2,16 +2,13 @@
   "news": [
     {
       "info2": "It is wednesday my dudes"
-    },
-    {
+    },{
       "info2": "Have a nice weekend!",
       "custom_icon": "fire"
-    },
-    {
+    },{
       "info2": "Happy",
       "icon": "INFO"
-    },
-    {
+    },{
       "info2": "Happy Halloween!",
       "custom_icon": "halloween",
       "disabled": false
@@ -225,7 +222,12 @@
       "displayname": "Krisu.Miushy",
       "startdate": "2018-06-21",
       "description": "DDVR Community leader - I'll support your creations, let's keep the hard work everyone!\n",
+      "website": "https://youtu.be/TSXnXiUBn8s",
       "tier": 1
+    },{
+      "displayname": "Murakuumoo",
+      "startdate": "2018-07-02",
+      "info": "Was added 4 months late."
     }
   ]
 }

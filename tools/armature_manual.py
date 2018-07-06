@@ -240,7 +240,6 @@ class JoinMeshesSelected(bpy.types.Operator):
         return meshes and len(meshes) > 0
 
     def execute(self, context):
-
         selected_meshes = 0
         for mesh in tools.common.get_meshes_objects():
             if mesh.select:
