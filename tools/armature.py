@@ -195,7 +195,7 @@ class FixArmature(bpy.types.Operator):
                 break
 
         # Remove unused animation data
-        if bpy.context.active_object.animation_data and bpy.context.active_object.animation_data.action.name == 'ragdoll':
+        if bpy.context.active_object.animation_data and bpy.context.active_object.animation_data.action and bpy.context.active_object.animation_data.action.name == 'ragdoll':
             bpy.context.active_object.animation_data_clear()
             source_engine = True
 
