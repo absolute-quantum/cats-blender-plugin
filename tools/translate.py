@@ -105,17 +105,20 @@ class TranslateBonesButton(bpy.types.Operator):
         tools.common.unhide_all()
 
         to_translate = []
-        for bone in tools.common.get_armature().data.bones:
-            to_translate.append(bone.name)
+        for armature in tools.common.get_armature_objects():
+            for bone in armature:
+                to_translate.append(bone.name)
 
         if not update_dictionary(to_translate):
             self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         count = 0
-        for bone in tools.common.get_armature().data.bones:
-            bone.name, translated = translate(bone.name)
-            if translated:
-                count += 1
+
+        for armature in tools.common.get_armature_objects():
+            for bone in armature.data.bones:
+                bone.name, translated = translate(bone.name)
+                if translated:
+                    count += 1
 
         self.report({'INFO'}, 'Translated ' + str(count) + ' bones.')
         return {'FINISHED'}
