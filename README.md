@@ -331,7 +331,7 @@ It checks for a new version automatically once every day.
   - Fixed files with capital letters in the file extension not importing correctly
 - **Translations:**
   - Greatly improved translations by using a new internal dictionary
-    - Much better shape key translation
+    - Much better shape key translation^2-aq<y
   - Greatly improved translation speed by storing the google translations locally
     - This local google dictionary gets reset every thirty days to stay updated with new translations
   - Added "Translate Everything" button
