@@ -106,7 +106,7 @@ class TranslateBonesButton(bpy.types.Operator):
 
         to_translate = []
         for armature in tools.common.get_armature_objects():
-            for bone in armature:
+            for bone in armature.data.bones:
                 to_translate.append(bone.name)
 
         if not update_dictionary(to_translate):
