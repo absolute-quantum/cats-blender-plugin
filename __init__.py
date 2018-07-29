@@ -134,11 +134,11 @@ supporters = [
     # ['migero', 'migero', '2018-01-05', 0],
     ['Ashe', 'ashe', '2018-01-05', 0],  # 50
     ['Quadriple', 'quadriple', '2018-01-05', 0],  # 30
-    ['abrownbag', 'abrownbag', '2018-01-05', 1],  # cancelled april, remove soon
+    # ['abrownbag', 'abrownbag', '2018-01-05', 1],
     ['Azuth', 'Azuth', '2018-01-05', 0],
     ['goblox', 'goblox', '2018-01-05', 1],
     # ['Rikku', 'Rikku', '2018-01-05', 0],
-    ['azupwn', 'azupwn', '2018-01-05', 0],  # cancelled may, remove soon
+    # ['azupwn', 'azupwn', '2018-01-05', 0],
     ['m o t h', 'm o t h', '2018-01-05', 0],
     # ['Yorx', 'Yorx', '2018-01-05', 0],
     # ['Buffy', 'Buffy', '2018-01-05', 0],
@@ -149,7 +149,7 @@ supporters = [
     ['Shanie', 'Shanie-senpai', '2018-01-05', 0],  # -shan
     # ['Kal [Thramis]', 'Kal', '2018-01-12', 0],
     ['Sifu', 'Sifu', '2018-01-12', 0],  # -ylon
-    ['Lil Clone', 'Lil Clone', '2018-01-12', 0],  # cancelled april, remove soon
+    # ['Lil Clone', 'Lil Clone', '2018-01-12', 0],
     ['Naranar', 'Naranar', '2018-01-12', 1],
     # ['gwigz', 'gwigz', '2018-01-12', 0],
     # ['Lux', 'Lux', '2018-01-12', 0],

@@ -325,14 +325,15 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
-#### 0.9.1
+#### 0.10.0
 - **Model:**
   - Join meshes now applies all transforms
   - Fixed files with capital letters in the file extension not importing correctly
 - **Translations:**
   - Greatly improved translations by using a new internal dictionary
     - Much better shape key translation
-  - Greatly improved translation speed
+  - Greatly improved translation speed by storing the google translations locally
+    - This local google dictionary gets reset every thirty days to stay updated with new translations
   - Added "Translate Everything" button
   - No longer removes rigidbodies and joints
     - Only Fix Model removes them now
@@ -340,11 +341,12 @@ It checks for a new version automatically once every day.
   - Shape Keys Mix Intensity slider is back
   - Increased the range of the intensity slider
 - **Credits:**
-  - Added patchnotes button
+  - Added a patchnotes button
 - **General:**
   - Reduced startup time
   - Updated mmd_tools
-  - Fixed multiple small bugs
+  - Fixed some typos
+  - Fixed multiple bugs
 
 #### 0.9.0
 - **Model:**

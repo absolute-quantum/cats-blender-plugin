@@ -32,7 +32,8 @@
       "description": "yare yare daze"
     },{
       "displayname": "Tupper",
-      "startdate": "2018-02-05"
+      "startdate": "2018-02-05",
+      "disabled": true
     },{
       "displayname": "idea",
       "startdate": "2018-03-05"
@@ -68,7 +69,9 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "abrownbag",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "Cancelled April",
+      "disabled": true
     },{
       "displayname": "Azuth",
       "startdate": "2018-04-05"
@@ -77,7 +80,9 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "azupwn",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "Cancelled May",
+      "disabled": true
     },{
       "displayname": "m o t h",
       "startdate": "2018-04-05"
@@ -86,9 +91,6 @@
       "startdate": "2018-05-21"
     },{
       "displayname": "Tomnautical",
-      "startdate": "2018-04-05"
-    },{
-      "displayname": "Atirion",
       "startdate": "2018-04-05"
     },{
       "displayname": "Lydania",
@@ -101,13 +103,17 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "Lil Clone",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "Cancelled April",
+      "disabled": true
     },{
       "displayname": "Naranar",
       "startdate": "2018-04-05"
     },{
       "displayname": "liquid (retso)",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "Cancelled May",
+      "disabled": true
     },{
       "displayname": "Mute_",
       "startdate": "2018-04-05"
@@ -225,9 +231,19 @@
       "website": "https://youtu.be/TSXnXiUBn8s",
       "tier": 1
     },{
+      "displayname": "Atirion",
+      "startdate": "2018-04-05",
+      "description": "Cats Blender Plugin has given me the opportunity to meet so many awesome people and make so many memories. Biggest thanks to the team!\n",
+      "website": "https://www.twitch.tv/atiriontv",
+      "tier": 1
+    },{
       "displayname": "Murakuumoo",
       "startdate": "2018-07-02",
       "info": "Was added 4 months late."
+    },{
+      "displayname": "Tupper",
+      "startdate": "2018-02-05",
+      "tier": 1
     }
   ]
 }

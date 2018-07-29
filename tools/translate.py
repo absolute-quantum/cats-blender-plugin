@@ -23,7 +23,9 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
+
 import copy
+import json
 import re
 import os
 import bpy
@@ -33,10 +35,19 @@ import tools.common
 import requests.exceptions
 import mmd_tools_local.translations
 
+from datetime import datetime, timezone
 from googletrans import Translator
 from collections import OrderedDict
 
 dictionary = None
+dictionary_google = None
+
+time_format = "%Y-%m-%d %H:%M:%S"
+
+main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
+resources_dir = os.path.join(str(main_dir), "resources")
+dictionary_file = os.path.join(resources_dir, "dictionary.csv")
+dictionary_google_file = os.path.join(resources_dir, "dictionary_google.json")
 
 
 class TranslateShapekeyButton(bpy.types.Operator):
@@ -265,15 +276,12 @@ class TranslateAllButton(bpy.types.Operator):
 
 
 def load_translations():
-    main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
-    resources_dir = os.path.join(str(main_dir), "resources")
-    dictionary_file = os.path.join(resources_dir, "dictionary.csv")
-
     global dictionary
     dictionary = OrderedDict()
     temp_dict = {}
     dict_found = False
 
+    # Load internal dictionary
     try:
         with open(dictionary_file, encoding="utf8") as file:
             data = csv.reader(file, delimiter=',')
@@ -293,12 +301,46 @@ def load_translations():
         print('DICTIONARY NOT FOUND!')
         pass
 
+    # Load local google dictionary and add it to the temp dict
+    try:
+        with open(dictionary_google_file, encoding="utf8") as file:
+            global dictionary_google
+            dictionary_google = json.load(file)
+
+            if not dictionary_google.get('created') or not dictionary_google.get('translations') or google_dict_too_old():
+                reset_google_dict()
+            else:
+                for trans in dictionary_google.get('translations'):
+                    # Check if string is empty
+                    if not trans:
+                        continue
+
+                    translation = trans.split(', ')
+
+                    if translation[0] in temp_dict.keys():
+                        print(translation[0], 'ALREADY IN INTERNAL DICT!')
+                        continue
+
+                    temp_dict[translation[0]] = translation[1]
+                    # print(translation[0], translation[1])
+
+            print('GOOGLE DICTIONARY LOADED!')
+    except FileNotFoundError:
+        print('GOOGLE DICTIONARY NOT FOUND!')
+        reset_google_dict()
+        pass
+    except json.decoder.JSONDecodeError:
+        print("ERROR FOUND IN GOOOGLE DICTIONARY")
+        reset_google_dict()
+        pass
+
+    # Add the tuples to the temp dict
     for translation in mmd_tools_local.translations.jp_to_en_tuples:
         if translation[0] not in temp_dict.keys() and translation[0] != '.':
             temp_dict[translation[0]] = translation[1]
             # print('"' + translation[0] + '" - "' + translation[1] + '"')
 
-    # Sort dictionary
+    # Sort temp dictionary by lenght and put it into the global dict
     for key in sorted(temp_dict, key=lambda k: len(k), reverse=True):
         dictionary[key] = temp_dict[key]
 
@@ -309,7 +351,7 @@ def load_translations():
 
 
 def update_dictionary(to_translate_list):
-    global dictionary
+    global dictionary, dictionary_google
     translator = Translator()
     regex = u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+'  # Regex to look for japanese chars
 
@@ -319,7 +361,7 @@ def update_dictionary(to_translate_list):
 
     google_input = []
 
-    # Translate every
+    # Translate everything
     for to_translate in to_translate_list:
         length = len(to_translate)
         translated_count = 0
@@ -361,9 +403,14 @@ def update_dictionary(to_translate_list):
         print('DICTIONARY UPDATE FAILED!')
         return False
 
-    # Update the dictionary
+    # Update the dictionaries
     for i, translation in enumerate(translations):
-        dictionary[google_input[i]] = translation.text.capitalize()
+        name = google_input[i]
+        translated_name = translation.text.capitalize()
+
+        dictionary[name] = translated_name
+        dictionary_google.get('translations').append(name + ', ' + translated_name)
+
         print(google_input[i], translation.text.capitalize())
 
     # Sort dictionary
@@ -372,13 +419,15 @@ def update_dictionary(to_translate_list):
     for key in sorted(temp_dict, key=lambda k: len(k), reverse=True):
         dictionary[key] = temp_dict[key]
 
+    # Save the google dict locally
+    save_google_dict()
+
     print('DICTIONARY UPDATE SUCCEEDED!')
     return True
 
 
 def translate(to_translate, add_space=False):
     global dictionary
-    regex = u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+'  # Regex to look for japanese chars
 
     pre_translation = to_translate
     length = len(to_translate)
@@ -418,3 +467,36 @@ def fix_jp_chars(name):
         if values[0] in name:
             name = name.replace(values[0], values[1])
     return name
+
+
+def google_dict_too_old():
+    created = datetime.strptime(dictionary_google.get('created'), time_format)
+    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
+
+    time_delta = abs((utc_now - created).days)
+
+    print('DAYS SINCE GOOGLE DICT CREATION:', time_delta)
+
+    if time_delta <= 30:
+        return False
+
+    print('DICT TOO OLD')
+    return True
+
+
+def reset_google_dict():
+    global dictionary_google
+    dictionary_google = {}
+
+    now_utc = datetime.now(timezone.utc).strftime(time_format)
+
+    dictionary_google['created'] = now_utc
+    dictionary_google['translations'] = ['']
+
+    save_google_dict()
+    print('GOOGLE DICT RESET')
+
+
+def save_google_dict():
+    with open(dictionary_google_file, 'w', encoding="utf8") as outfile:
+        json.dump(dictionary_google, outfile, ensure_ascii=False)

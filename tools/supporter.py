@@ -34,7 +34,6 @@ import urllib.request
 import urllib.error
 import shutil
 import webbrowser
-import tools.common
 from datetime import datetime, timezone
 from threading import Thread
 from pprint import pprint
@@ -375,7 +374,7 @@ def save_settings():
     settings_file = os.path.join(resources_dir, "settings.json")
 
     with open(settings_file, 'w', encoding="utf8") as outfile:
-        json.dump(settings_data, outfile)
+        json.dump(settings_data, outfile, ensure_ascii=False)
 
 
 def read_settings_file():
@@ -390,7 +389,7 @@ def read_settings_file():
     if not os.path.isfile(settings_file):
         print("SETTINGS LIST FILE NOT FOUND!")
         with open(settings_file, 'w', encoding="utf8") as outfile:
-            json.dump(data_default, outfile)
+            json.dump(settings_data, outfile, ensure_ascii=False)
         return data_default
 
     # Read settings and recreate it if error  is found
@@ -434,7 +433,7 @@ def read_settings_file():
     # If data changed, update settings file
     if changed:
         with open(settings_file, 'w', encoding="utf8") as outfile:
-            json.dump(data, outfile)
+            json.dump(settings_data, outfile, ensure_ascii=False)
         print('UPDATED MISSING SETTINGS')
 
     return data

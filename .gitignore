@@ -10,4 +10,5 @@ tmp
 tests/armatures/*.png
 resources/downloads
 resources/settings.json
+resources/dictionary_google.json
 .coverage

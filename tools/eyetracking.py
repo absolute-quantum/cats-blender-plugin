@@ -481,7 +481,7 @@ class StartTestingButton(bpy.types.Operator):
     bl_label = 'Start Eye Testing'
     bl_description = 'This will let you test how the eye movement will look ingame.\n' \
                      "Don't forget to stop the Testing process afterwards.\n" \
-                     'Bones "EyeLeft" and "EyeRight" are required'
+                     'Bones "LeftEye" and "RightEye" are required'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
