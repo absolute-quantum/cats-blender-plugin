@@ -27,6 +27,7 @@
 import os
 import sys
 import copy
+import requests
 import importlib
 import bpy.utils.previews
 
@@ -1841,6 +1842,10 @@ def register():
     bpy.context.user_preferences.filepaths.use_file_compression = True
 
     bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+
+    # Disable request warning when using google translate
+    requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
     print("### Loaded CATS successfully!")
 
 

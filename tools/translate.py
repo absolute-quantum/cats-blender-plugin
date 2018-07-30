@@ -23,7 +23,7 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
-
+import collections
 import copy
 import json
 import re
@@ -42,11 +42,12 @@ from collections import OrderedDict
 dictionary = None
 dictionary_google = None
 
+translation_splitter = "---"
 time_format = "%Y-%m-%d %H:%M:%S"
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
-dictionary_file = os.path.join(resources_dir, "dictionary.csv")
+dictionary_file = os.path.join(resources_dir, "dictionary.json")
 dictionary_google_file = os.path.join(resources_dir, "dictionary_google.json")
 
 
@@ -281,23 +282,13 @@ class TranslateAllButton(bpy.types.Operator):
 def load_translations():
     global dictionary
     dictionary = OrderedDict()
-    temp_dict = {}
+    temp_dict = OrderedDict()
     dict_found = False
 
     # Load internal dictionary
     try:
         with open(dictionary_file, encoding="utf8") as file:
-            data = csv.reader(file, delimiter=',')
-            for row in data:
-                name = row[0]
-                translation = row[1]
-
-                if translation.startswith(' "'):
-                    translation = translation[2:-1]
-                if translation.startswith('"'):
-                    translation = translation[1:-1]
-
-                temp_dict[name] = translation
+            temp_dict = json.load(file, object_pairs_hook=collections.OrderedDict)
             dict_found = True
             print('DICTIONARY LOADED!')
     except FileNotFoundError:
@@ -308,24 +299,20 @@ def load_translations():
     try:
         with open(dictionary_google_file, encoding="utf8") as file:
             global dictionary_google
-            dictionary_google = json.load(file)
+            dictionary_google = json.load(file, object_pairs_hook=collections.OrderedDict)
 
             if not dictionary_google.get('created') or not dictionary_google.get('translations') or google_dict_too_old():
                 reset_google_dict()
             else:
-                for trans in dictionary_google.get('translations'):
-                    # Check if string is empty
-                    if not trans:
+                for name, trans in dictionary_google.get('translations').items():
+                    if not name:
                         continue
 
-                    translation = trans.split(', ')
-
-                    if translation[0] in temp_dict.keys():
-                        print(translation[0], 'ALREADY IN INTERNAL DICT!')
+                    if name in temp_dict.keys():
+                        print(name, 'ALREADY IN INTERNAL DICT!')
                         continue
 
-                    temp_dict[translation[0]] = translation[1]
-                    # print(translation[0], translation[1])
+                    temp_dict[name] = trans
 
             print('GOOGLE DICTIONARY LOADED!')
     except FileNotFoundError:
@@ -337,18 +324,12 @@ def load_translations():
         reset_google_dict()
         pass
 
-    # Add the tuples to the temp dict
-    for translation in mmd_tools_local.translations.jp_to_en_tuples:
-        if translation[0] not in temp_dict.keys() and translation[0] != '.':
-            temp_dict[translation[0]] = translation[1]
-            # print('"' + translation[0] + '" - "' + translation[1] + '"')
-
     # Sort temp dictionary by lenght and put it into the global dict
     for key in sorted(temp_dict, key=lambda k: len(k), reverse=True):
         dictionary[key] = temp_dict[key]
 
-    # for key in dictionary.keys():
-    #     print('"' + key + '" - "' + dictionary[key] + '"')
+    # for key, value in dictionary.items():
+    #     print('"' + key + '" - "' + value + '"')
 
     return dict_found
 
@@ -395,7 +376,7 @@ def update_dictionary(to_translate_list):
                         google_input.append(name)
 
     if not google_input:
-        print('GOOGLE LIST EMPTY')
+        # print('NO GOOGLE TRANSLATIONS')
         return True
 
     # Translate the list with google translate
@@ -412,7 +393,7 @@ def update_dictionary(to_translate_list):
         translated_name = translation.text.capitalize()
 
         dictionary[name] = translated_name
-        dictionary_google.get('translations').append(name + ', ' + translated_name)
+        dictionary_google['translations'][name] = translated_name
 
         print(google_input[i], translation.text.capitalize())
 
@@ -489,17 +470,49 @@ def google_dict_too_old():
 
 def reset_google_dict():
     global dictionary_google
-    dictionary_google = {}
+    dictionary_google = OrderedDict()
 
     now_utc = datetime.now(timezone.utc).strftime(time_format)
 
     dictionary_google['created'] = now_utc
-    dictionary_google['translations'] = ['']
+    dictionary_google['translations'] = {}  # This should always contain one argument, else it is a None object
+    dictionary_google['translations'][''] = ''  # This should always contain one argument, else it is a None object
 
     save_google_dict()
     print('GOOGLE DICT RESET')
 
 
 def save_google_dict():
+    if not dictionary_google.get('translations'):
+        reset_google_dict()
+
     with open(dictionary_google_file, 'w', encoding="utf8") as outfile:
-        json.dump(dictionary_google, outfile, ensure_ascii=False)
+        json.dump(dictionary_google, outfile, ensure_ascii=False, indent=4)
+
+
+# def cvs_to_json():
+#     temp_dict = OrderedDict()
+#
+#     # Load internal dictionary
+#     try:
+#         with open(dictionary_file, encoding="utf8") as file:
+#             data = csv.reader(file, delimiter=',')
+#             for row in data:
+#                 name = fix_jp_chars(str(row[0]))
+#                 translation = row[1]
+#
+#                 if translation.startswith(' "'):
+#                     translation = translation[2:-1]
+#                 if translation.startswith('"'):
+#                     translation = translation[1:-1]
+#
+#                 temp_dict[name] = translation
+#             print('DICTIONARY LOADED!')
+#     except FileNotFoundError:
+#         print('DICTIONARY NOT FOUND!')
+#         pass
+#
+#     # # Create json from cvs
+#     dictionary_file_new = os.path.join(resources_dir, "dictionary2.json")
+#     with open(dictionary_file_new, 'w', encoding="utf8") as outfile:
+#         json.dump(temp_dict, outfile, ensure_ascii=False, indent=4)
