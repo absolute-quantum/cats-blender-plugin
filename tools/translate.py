@@ -279,6 +279,7 @@ class TranslateAllButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# Loads the dictionaries at the start of blender
 def load_translations():
     global dictionary
     dictionary = OrderedDict()
@@ -294,6 +295,9 @@ def load_translations():
     except FileNotFoundError:
         print('DICTIONARY NOT FOUND!')
         pass
+    except json.decoder.JSONDecodeError:
+        print("ERROR FOUND IN DICTIONARY")
+        pass
 
     # Load local google dictionary and add it to the temp dict
     try:
@@ -301,7 +305,7 @@ def load_translations():
             global dictionary_google
             dictionary_google = json.load(file, object_pairs_hook=collections.OrderedDict)
 
-            if not dictionary_google.get('created') or not dictionary_google.get('translations') or google_dict_too_old():
+            if 'created' not in dictionary_google or 'translations' not in dictionary_google or google_dict_too_old():
                 reset_google_dict()
             else:
                 for name, trans in dictionary_google.get('translations').items():
@@ -336,7 +340,6 @@ def load_translations():
 
 def update_dictionary(to_translate_list):
     global dictionary, dictionary_google
-    translator = Translator()
     regex = u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+'  # Regex to look for japanese chars
 
     # Check if single string is given and put it into an array
@@ -381,6 +384,7 @@ def update_dictionary(to_translate_list):
 
     # Translate the list with google translate
     print('GOOGLE DICT UPDATE!')
+    translator = Translator()
     try:
         translations = translator.translate(google_input)
     except requests.exceptions.ConnectionError:
@@ -475,17 +479,13 @@ def reset_google_dict():
     now_utc = datetime.now(timezone.utc).strftime(time_format)
 
     dictionary_google['created'] = now_utc
-    dictionary_google['translations'] = {}  # This should always contain one argument, else it is a None object
-    dictionary_google['translations'][''] = ''  # This should always contain one argument, else it is a None object
+    dictionary_google['translations'] = {}
 
     save_google_dict()
     print('GOOGLE DICT RESET')
 
 
 def save_google_dict():
-    if not dictionary_google.get('translations'):
-        reset_google_dict()
-
     with open(dictionary_google_file, 'w', encoding="utf8") as outfile:
         json.dump(dictionary_google, outfile, ensure_ascii=False, indent=4)
 

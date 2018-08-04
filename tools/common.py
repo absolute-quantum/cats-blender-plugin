@@ -848,7 +848,7 @@ def update_shapekey_orders():
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
     mesh = bpy.data.objects[mesh_name]
-    if not mesh.data.shape_keys or not mesh.data.shape_keys.key_blocks:
+    if not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
         return
     select(mesh)
 

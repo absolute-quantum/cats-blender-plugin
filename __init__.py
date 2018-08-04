@@ -63,6 +63,7 @@ import tools.decimation
 import tools.shapekey
 import tools.copy_protection
 import tools.importer
+import tools.settings
 
 
 importlib.reload(mmd_tools_local)
@@ -84,6 +85,7 @@ importlib.reload(tools.decimation)
 importlib.reload(tools.shapekey)
 importlib.reload(tools.copy_protection)
 importlib.reload(tools.importer)
+importlib.reload(tools.settings)
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
@@ -95,6 +97,9 @@ importlib.reload(tools.importer)
 # How to update googletrans:
 # in the gtoken.py on line 57 update this line to include "verify=False":
 # r = self.session.get(self.host, verify=False)
+# In client.py on line 42 remove the Hyper part, it's not faster at all!
+# Just comment it out.
+# Done
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -673,6 +678,24 @@ class ToolPanel:
         items=tools.rootbone.get_parent_root_bones,
     )
 
+    # Settings
+    bpy.types.Scene.use_custom_mmd_tools = bpy.props.BoolProperty(
+        name='Use Custom mmd_tools',
+        description='Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools ',
+        default=False,
+        update=tools.settings.set_use_custom_mmd_tools
+    )
+
+    bpy.types.Scene.disable_vrchat_features = bpy.props.BoolProperty(
+        name='Disable VRChat Only Features',
+        description='This will disable features which are solely used for VRChat.'
+                    '\nThe following will be disabled:'
+                    '\n- Eye Tracking'
+                    '\n- Visemes',
+        default=False,
+        update=tools.settings.set_use_custom_mmd_tools
+    )
+
     # Copy Protection - obsolete
     # bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
     #     name="Randomization Level",
@@ -709,10 +732,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('Old Blender version detected!', icon='ERROR')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Some features might not work!', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label('Some features might not work!', icon_value=get_emtpy_icon())
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Please update to Blender 2.79!', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label('Please update to Blender 2.79!', icon_value=get_emtpy_icon())
             col.separator()
             col.separator()
 
@@ -735,7 +758,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('New Cats version available!', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Check the Updater panel!', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label('Check the Updater panel!', icon_value=get_emtpy_icon())
             col.separator()
             col.separator()
 
@@ -746,10 +769,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('Dictionary not found!', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Translations will work, but are not optimized.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label('Translations will work, but are not optimized.', icon_value=get_emtpy_icon())
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Reinstall Cats to fix this.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label('Reinstall Cats to fix this.', icon_value=get_emtpy_icon())
             col.separator()
             col.separator()
 
@@ -858,7 +881,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('You can safely ignore the', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.5
-            row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label('"Spine length zero" warning in Unity.', icon_value=get_emtpy_icon())
             col.separator()
 
         ob = bpy.context.active_object
@@ -1530,10 +1553,30 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v2'
+    # bl_label = 'Settings & Updates'
     bl_label = 'Updater'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
+        # layout = self.layout
+        # box = layout.box()
+        # col = box.column(align=True)
+        #
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'use_custom_mmd_tools')
+        # # row = col.row(align=True)
+        # # row.prop(context.scene, 'disable_vrchat_features')
+        #
+        # if tools.settings.settings_changed():
+        #     col.separator()
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.8
+        #     row.label('Settings have changed.', icon='ERROR')
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.8
+        #     row.label('Restart Blender to apply them.', icon_value=get_emtpy_icon())
+
+        # Updater
         # addon_updater_ops.check_for_update_background()
         addon_updater_ops.update_settings_ui(self, context)
 
@@ -1711,6 +1754,10 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
         addon_updater_ops.update_settings_ui(self, context)
 
 
+def get_emtpy_icon():
+    return tools.supporter.preview_collections["custom_icons"]["empty"].icon_id
+
+
 classesToRegister = [
     ArmaturePanel,
     tools.importer.ImportAnyModel,
@@ -1813,14 +1860,16 @@ classesToRegister = [
 def register():
     print("\n### Loading CATS...")
     global dict_found
-    # bpy.utils.unregister_module("mmd_tools")
+
+    # Load settings
+    tools.settings.load_settings()
+
+    # if not tools.settings.use_custom_mmd_tools():
+    #     bpy.utils.unregister_module("mmd_tools")
     try:
         mmd_tools_local.register()
     except AttributeError:
         pass
-
-    if dev_branch and len(version) > 2:
-        version[2] += 1
 
     try:
         addon_updater_ops.register(bl_info)
@@ -1831,7 +1880,9 @@ def register():
     for value in classesToRegister:
         bpy.utils.register_class(value)
 
-    tools.supporter.load_settings()
+    if dev_branch and len(version) > 2:
+        version[2] += 1
+
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
     tools.supporter.register_dynamic_buttons()
@@ -1845,6 +1896,8 @@ def register():
 
     # Disable request warning when using google translate
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
+    # tools.settings.start_apply_settings_timer()
 
     print("### Loaded CATS successfully!")
 

@@ -88,12 +88,12 @@ class AutoVisemeButton(bpy.types.Operator):
         shapekey_data = OrderedDict()
         shapekey_data['vrc.v_aa'] = {
             'mix': [
-                [(shape_a), (0.9999)]
+                [(shape_a), (0.9998)]
             ]
         }
         shapekey_data['vrc.v_ch'] = {
             'mix': [
-                [(shape_ch), (0.9998)]
+                [(shape_ch), (0.9996)]
             ]
         }
         shapekey_data['vrc.v_dd'] = {
@@ -140,7 +140,7 @@ class AutoVisemeButton(bpy.types.Operator):
         }
         shapekey_data['vrc.v_ou'] = {
             'mix': [
-                [(shape_o), (0.9997)]
+                [(shape_o), (0.9994)]
             ]
         }
         shapekey_data['vrc.v_pp'] = {

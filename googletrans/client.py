@@ -39,12 +39,14 @@ class Translator(object):
         self.service_urls = service_urls or ['translate.google.com']
         self.token_acquirer = TokenAcquirer(session=self.session, host=self.service_urls[0])
 
-        # Use HTTP2 Adapter if hyper is installed
-        try:  # pragma: nocover
-            from hyper.contrib import HTTP20Adapter
-            self.session.mount(urls.BASE, HTTP20Adapter())
-        except ImportError:  # pragma: nocover
-            pass
+        # # Use HTTP2 Adapter if hyper is installed
+        # try:  # pragma: nocover
+        #     from hyper.contrib import HTTP20Adapter
+        #     self.session.mount(urls.BASE, HTTP20Adapter())
+        #     print('USING HYPER!!!')
+        # except ImportError:  # pragma: nocover
+        #     print('NOT USING HYPER!!!')
+        #     pass
 
     def _pick_service_url(self):
         if len(self.service_urls) == 1:

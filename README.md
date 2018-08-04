@@ -328,12 +328,14 @@ It checks for a new version automatically once every day.
 #### 0.10.0
 - **Model:**
   - Join meshes now applies all transforms
+  - Added new Apply Transforms button
   - Fixed files with capital letters in the file extension not importing correctly
 - **Translations:**
   - Greatly improved translations by using a new internal dictionary
-    - Much better shape key translation^2-aq<y
+    - Much better shape key translation
+    - Example: No more Ah, Your and There but Ah, Oh and Ch
   - Greatly improved translation speed by storing the google translations locally
-    - This local google dictionary gets reset every thirty days to stay updated with new translations
+    - This local google dictionary gets reset every 30 days to stay updated with new translations
   - Added "Translate Everything" button
   - No longer removes rigidbodies and joints
     - Only Fix Model removes them now
