@@ -346,6 +346,10 @@ class FixArmature(bpy.types.Operator):
             else:
                 name = bone.name
 
+            name_split = name.split(' - ')
+            if len(name_split) == 2 and name_split[0].isdigit():
+                name = name_split[1]
+
             name = name[:1].upper() + name[1:]
 
             name = name.replace(' ', '_')\
