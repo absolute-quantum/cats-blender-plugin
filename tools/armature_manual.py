@@ -56,6 +56,8 @@ class StartPoseMode(bpy.types.Operator):
                 bpy.context.selected_editable_bones) > 0:
             current = bpy.context.selected_editable_bones[0].name
 
+        bpy.context.space_data.use_pivot_point_align = False
+
         armature = tools.common.set_default_stage()
         tools.common.switch('POSE')
         armature.data.pose_position = 'POSE'

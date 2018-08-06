@@ -72,7 +72,7 @@ def get_armature_objects():
 
 
 def unhide_all():
-    if bpy.app.version < (2, 79, 9):
+    if version_2_79_or_older():
         for obj in bpy.data.objects:
             obj.hide = False
     else:
@@ -1228,6 +1228,10 @@ class ShowError(bpy.types.Operator):
         print('Report: Error')
         for line in error:
             print('    ' + line)
+
+
+def version_2_79_or_older():
+    return bpy.app.version < (2, 79, 9)
 
 
 # === THIS CODE COULD BE USEFUL ===

@@ -54,7 +54,7 @@ dictionary_google_file = os.path.join(resources_dir, "dictionary_google.json")
 class TranslateShapekeyButton(bpy.types.Operator):
     bl_idname = 'translate.shapekeys'
     bl_label = 'Translate Shape Keys'
-    bl_description = "Translates all shape keys with Google Translate"
+    bl_description = "Translates all shape keys using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -93,7 +93,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
     bl_label = 'Translate Bones'
-    bl_description = 'Translates all bones with the build-in dictionary and the untranslated parts with Google Translate'
+    bl_description = "Translates all bones using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -128,7 +128,7 @@ class TranslateBonesButton(bpy.types.Operator):
 class TranslateObjectsButton(bpy.types.Operator):
     bl_idname = 'translate.objects'
     bl_label = 'Translate Meshes & Objects'
-    bl_description = "Translates all meshes and objects with Google Translate"
+    bl_description = "Translates all meshes and objects using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -175,7 +175,7 @@ class TranslateObjectsButton(bpy.types.Operator):
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'translate.materials'
     bl_label = 'Translate Materials'
-    bl_description = "Translates all materials with Google Translate"
+    bl_description = "Translates all materials using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -213,7 +213,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
     bl_label = 'Translate Textures'
-    bl_description = "Translates all textures with Google Translate"
+    bl_description = "Translates all textures using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -261,7 +261,7 @@ class TranslateTexturesButton(bpy.types.Operator):
 
 class TranslateAllButton(bpy.types.Operator):
     bl_idname = 'translate.all'
-    bl_label = 'Translate Everything'
+    bl_label = 'Translate everything using the internal dictionary and Google Translate'
     bl_description = "Translates everything"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 

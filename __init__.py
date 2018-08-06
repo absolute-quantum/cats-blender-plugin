@@ -956,19 +956,44 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.operator('armature_manual.recalculate_normals', text='Recalculate')
         row.operator('armature_manual.flip_normals', text='Flip')
 
+        # Translate
         col.separator()
         row = col.row(align=True)
-        # row.label("Translation:", icon_value=tools.supporter.preview_collections["custom_icons"]["TRANSLATE"].icon_id)
-        row.label("Translation:", icon='FILE_REFRESH')
-        row = col.row(align=True)
-        row.scale_y = button_height
+        row.label("Translate:", icon='FILE_REFRESH')
+
+        split = col.split(percentage=0.27, align=True)
+
+        row = split.row(align=True)
+        row.scale_y = 2
         row.operator('translate.all', text='All', icon='META_BALL')
+
+        row = split.column(align=True)
         row.operator('translate.shapekeys', text='Shape Keys', icon='SHAPEKEY_DATA')
+        row.operator('translate.objects', text='Objects', icon='MESH_DATA')
+
+        row = split.column(align=True)
         row.operator('translate.bones', text='Bones', icon='BONE_DATA')
-        row = col.row(align=True)
-        row.scale_y = button_height
-        row.operator('translate.objects', text='Meshes & Objects', icon='MESH_DATA')
         row.operator('translate.materials', text='Materials', icon='MATERIAL')
+
+
+class ManualPanel2(ToolPanel, bpy.types.Panel):
+    bl_idname = 'VIEW3D_PT_manual_v12'
+    bl_label = 'Model Options'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw(self, context):
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
+        col.separator()
+        row = col.row(align=True)
+        row.scale_y = 1
+        row.operator('translate.all', text='All', icon='META_BALL')
+
+        subcol = row.column(align=True)
+        subcol.operator('translate.shapekeys', text='Shape Keys', icon='SHAPEKEY_DATA')
+        subcol.operator('translate.objects', text='Objects', icon='MESH_DATA')
 
 
 class CustomPanel(ToolPanel, bpy.types.Panel):
