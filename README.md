@@ -344,6 +344,11 @@ It checks for a new version automatically once every day.
   - Increased the range of the intensity slider
 - **Credits:**
   - Added a patchnotes button
+- **Shapekeys:**
+  - Improved "Apply Shapekey as Basis"
+  - The "Original Basis" is now renamed to "Name - Reversed"
+  - Reversed shape keys now can be applied as the Basis
+    - This removes them from the Basis
 - **General:**
   - Reduced startup time
   - Updated mmd_tools

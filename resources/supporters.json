@@ -246,6 +246,21 @@
       "description": "Thank you to the Cats Plugin team for making it easy to be who you want to be in VRChat, and to the VRChat community for being the best community on the internet to manage. Don't forget to atlas! (If you don't, I'll know)",
       "website": "http://dtupper.com/",
       "tier": 1
+    },{
+      "displayname": "baffler",
+      "startdate": "2018-08-07",
+      "info": "Was added 2 months late."
+    },{
+      "displayname": "Aliquem",
+      "startdate": "2018-08-07",
+      "info": "Was added 1 months late.",
+      "description": "All you darlings out there are fabulous! Knock em dead with your avatars!\n"
+    },{
+      "displayname": "VRCMods",
+      "startdate": "2018-08-07",
+      "description": "We <3 the VRChat Community",
+      "website": "https://vrcmods.com/",
+      "tier": 1
     }
   ]
 }

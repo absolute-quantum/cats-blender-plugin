@@ -261,8 +261,8 @@ class TranslateTexturesButton(bpy.types.Operator):
 
 class TranslateAllButton(bpy.types.Operator):
     bl_idname = 'translate.all'
-    bl_label = 'Translate everything using the internal dictionary and Google Translate'
-    bl_description = "Translates everything"
+    bl_label = 'Translate Everything'
+    bl_description = "Translates everything using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):

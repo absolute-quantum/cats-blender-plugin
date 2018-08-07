@@ -41,60 +41,71 @@ class ShapeKeyApplier(bpy.types.Operator):
 
     def execute(self, context):
         mesh = bpy.context.scene.objects.active
-        mesh.show_only_shape_key = False
-        bpy.ops.object.shape_key_clear()
 
+        # Get shapekey which will be the new basis
         new_basis_shapekey = mesh.active_shape_key
-        new_basis_shapekey.value = 1
         new_basis_shapekey_name = new_basis_shapekey.name
 
-        old_basis_shapekey = None
+        # Check for reverted shape keys
+        if ' - Reverted' in new_basis_shapekey_name and new_basis_shapekey.relative_key.name != 'Basis':
+            tools.common.show_error(9.3, ['To apply reverted shape keys as the new Basis please apply them in the opposite order as you originally applied them as Basis.',
+                                          'Start with the reverted shape key with the relative key called "Basis".'])
+            return {'FINISHED'}
 
+        # Set up shape keys
+        mesh.show_only_shape_key = False
+        bpy.ops.object.shape_key_clear()
+        new_basis_shapekey.value = 1
+
+        # Find old basis and rename it
+        old_basis_shapekey = None
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if index == 0:
-                shapekey.name = 'Basis Old'
+                shapekey.name = new_basis_shapekey_name + ' - Reverted'
+                shapekey.relative_key = new_basis_shapekey
                 old_basis_shapekey = shapekey
                 break
 
-        # mesh.active_shape_key_index = 0
-        # bpy.ops.object.shape_key_remove(all=False)
-
+        # Rename new basis after old basis was renamed
         new_basis_shapekey.name = 'Basis'
 
+        # Mix every shape keys with the new basis
         for index in range(0, len(mesh.data.shape_keys.key_blocks)):
             mesh.active_shape_key_index = index
             shapekey = mesh.active_shape_key
-            if shapekey and shapekey.name != 'Basis' and 'Basis Old' not in shapekey.name:
+            if shapekey and shapekey.name != 'Basis' and ' - Reverted' not in shapekey.name:
                 shapekey.value = 1
                 mesh.shape_key_add(name=shapekey.name + '-New', from_mix=True)
                 shapekey.value = 0
 
+        # Remove all the unmixed shape keys except basis and the reverted ones
         for index in reversed(range(0, len(mesh.data.shape_keys.key_blocks))):
             mesh.active_shape_key_index = index
             shapekey = mesh.active_shape_key
-            if shapekey and not shapekey.name.endswith('-New') and shapekey.name != 'Basis' and 'Basis Old' not in shapekey.name:
+            if shapekey and not shapekey.name.endswith('-New') and shapekey.name != 'Basis' and ' - Reverted' not in shapekey.name:
                 bpy.ops.object.shape_key_remove(all=False)
 
+        # Fix the names and the relative shape key
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if shapekey and shapekey.name.endswith('-New'):
                 shapekey.name = shapekey.name[:-4]
                 shapekey.relative_key = new_basis_shapekey
 
-        # # Create old basis shape key
-        # mesh.shape_key_add(name='Basis Old2', from_mix=True)
-        # mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
-        # bpy.ops.object.shape_key_move(type='TOP')
-
         # Repair important shape key order
         tools.common.sort_shape_keys(mesh.name)
 
-        # Do this to correctly apply the new basis as basis
+        # Correctly apply the new basis as basis (important step, doesn't work otherwise)
         tools.common.switch('EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.mesh.remove_doubles()
         tools.common.switch('OBJECT')
 
-        self.report({'INFO'}, 'Successfully set shapekey ' + new_basis_shapekey_name + ' as the new Basis.')
+        # If a reversed shapekey was applied as basis, fix the name
+        if ' - Reverted - Reverted' in old_basis_shapekey.name:
+            old_basis_shapekey.name = old_basis_shapekey.name.replace(' - Reverted - Reverted', '')
+            self.report({'INFO'}, 'Successfully removed shapekey ' + old_basis_shapekey.name + ' from the Basis.')
+        else:
+            self.report({'INFO'}, 'Successfully set shapekey ' + new_basis_shapekey_name + ' as the new Basis.')
         return {'FINISHED'}
 
 
