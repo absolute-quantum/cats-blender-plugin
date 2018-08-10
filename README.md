@@ -25,7 +25,7 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
  - Merging bone groups to reduce overall bone count
- - Copy protection to protect your avatars from game cache ripping
+ - Protecting your avatars from game cache ripping
  - Auto updater
 
 *More to come!*
@@ -315,6 +315,14 @@ People that try to steal your avatar will then only see a box of mangled waifu t
   **special thanks to @zarniwoop#6081**
 
 
+## Shape Key
+
+![](https://i.imgur.com/LgFK4KO.png)
+
+**Apply Shape Key as Basis**
+- Applies the selected shape key as the new Basis and creates a reverted shape key from the selected one.
+
+
 ## Update Plugin
 
 ![](https://i.imgur.com/ltcTRlR.png)
@@ -326,10 +334,6 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.10.0
-- **Model:**
-  - Join meshes now applies all transforms
-  - Added new Apply Transforms button
-  - Fixed files with capital letters in the file extension not importing correctly
 - **Translations:**
   - Greatly improved translations by using a new internal dictionary
     - Much better shape key translation
@@ -339,18 +343,20 @@ It checks for a new version automatically once every day.
   - Added "Translate Everything" button
   - No longer removes rigidbodies and joints
     - Only Fix Model removes them now
+- **Model:**
+  - Join meshes now applies all transforms
+  - Added new Apply Transforms button
+  - Fixed files with capital letters in the file extension not importing correctly
 - **Visemes:**
   - Shape Keys Mix Intensity slider is back
   - Increased the range of the intensity slider
 - **Credits:**
   - Added a patchnotes button
 - **Shapekeys:**
-  - Improved "Apply Shapekey as Basis"
-  - The "Original Basis" is now renamed to "Name - Reversed"
-  - Reversed shape keys now can be applied as the Basis
-    - This removes them from the Basis
+  - Greatly improved "Apply Shapekey as Basis"
+  - Shape keys added to the Basis can be reverted now
 - **General:**
-  - Reduced startup time
+  - Slightly reduced startup time
   - Updated mmd_tools
   - Fixed some typos
   - Fixed multiple bugs

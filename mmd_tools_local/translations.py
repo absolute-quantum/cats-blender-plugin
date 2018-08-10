@@ -139,7 +139,7 @@ jp_to_en_tuples = [
   ('光', 'Light'),
   ('戻', 'Return'),
   ('羽', 'Wing'),
-  ('根', 'Base'),  # ideally 'Root' but to avoid confusion
+  ('根', 'Base'), # ideally 'Root' but to avoid confusion
   ('毛', 'Strand'),
   ('尾', 'Tail'),
   ('尻', 'Butt'),

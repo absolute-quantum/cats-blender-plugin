@@ -310,7 +310,6 @@ class RecalculateBoneRoll(Operator):
         return obj and obj.type == 'ARMATURE'
 
     def invoke(self, context, event):
-        arm = context.active_object
         vm = context.window_manager
         return vm.invoke_props_dialog(self)
 

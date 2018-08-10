@@ -335,40 +335,38 @@ class FixArmature(bpy.types.Operator):
         current_step = 0
         wm.progress_begin(current_step, steps)
 
-        # Standardize bone names
+        # List of chars to replace if they are at the start of a bone name
+        starts_with = [
+            ('_', ''),
+            ('ValveBiped_', ''),
+            ('Bip1_', 'Bip_'),
+            ('Bip01_', 'Bip_'),
+            ('Bip001_', 'Bip_'),
+            ('Character1_', ''),
+            ('HLP_', ''),
+            ('JD_', ''),
+            ('JU_', ''),
+            ('Armature|', ''),
+            ('Bone_', ''),
+            ('C_', ''),
+            ('Cf_S_', ''),
+            ('Cf_J_', ''),
+        ]
+
+        # Standardize names
         for bone in armature.data.edit_bones:
             current_step += 1
             wm.progress_update(current_step)
 
-            name_split = bone.name.split('"')
-            if len(name_split) > 3:
-                name = name_split[1]
-            else:
-                name = bone.name
-
-            name_split = name.split(' - ')
-            if len(name_split) == 2 and name_split[0].isdigit():
-                name = name_split[1]
-
-            name = name[:1].upper() + name[1:]
-
-            name = name.replace(' ', '_')\
+            # Make all the underscores!
+            name = bone.name.replace(' ', '_')\
                 .replace('-', '_')\
                 .replace('.', '_')\
                 .replace('____', '_')\
                 .replace('___', '_')\
                 .replace('__', '_')\
-                .replace('ValveBiped_', '')\
-                .replace('Bip1_', 'Bip_')\
-                .replace('Bip01_', 'Bip_')\
-                .replace('Bip001_', 'Bip_')\
-                .replace('Character1_', '')\
-                .replace('HLP_', '')\
-                .replace('JD_', '')\
-                .replace('JU_', '')\
-                .replace('Armature|', '')\
-                .replace('Bone_', '')\
 
+            # Always uppercase at the start and after an underscore
             upper_name = ''
             for i, s in enumerate(name.split('_')):
                 if i != 0:
@@ -376,6 +374,24 @@ class FixArmature(bpy.types.Operator):
                 upper_name += s[:1].upper() + s[1:]
             name = upper_name
 
+            # Replace if name starts with specified chars
+            for replacement in starts_with:
+                if name.startswith(replacement[0]):
+                    print(name)
+                    name = replacement[1] + name[len(replacement[0]):]
+                    print(name)
+
+            # Remove digits from the start
+            name_split = name.split('_')
+            if len(name_split) > 1 and name_split[0].isdigit():
+                name = name_split[1]
+
+            # Specific condition
+            name_split = name.split('"')
+            if len(name_split) > 3:
+                name = name_split[1]
+
+            # Another specific condition
             if ':' in name:
                 for i, split in enumerate(name.split(':')):
                     if i == 0:
@@ -383,16 +399,9 @@ class FixArmature(bpy.types.Operator):
                     else:
                         name += split
 
+            # Remove S0 from the end
             if name[-2:] == 'S0':
                 name = name[:-2]
-
-            # Remove '_01_' from beginning
-            if len(name) > 4 and name[0] == '_' and name[3] == '_' and name[1].isdigit() and name[2].isdigit():
-                name = name[4:]
-
-            # Remove '_01_' from beginning
-            if name.startswith('C_'):
-                name = name[2:]
 
             bone.name = name
 

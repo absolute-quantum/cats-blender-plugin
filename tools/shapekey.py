@@ -32,7 +32,7 @@ class ShapeKeyApplier(bpy.types.Operator):
     # Replace the 'Basis' shape key with the currently selected shape key
     bl_idname = "object.shape_key_to_basis"
     bl_label = "Apply Selected Shapekey as Basis"
-    bl_description = 'Applies the selected shape key as the new Basis'
+    bl_description = 'Applies the selected shape key as the new Basis and creates a reverted shape key from the selected one'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -48,8 +48,18 @@ class ShapeKeyApplier(bpy.types.Operator):
 
         # Check for reverted shape keys
         if ' - Reverted' in new_basis_shapekey_name and new_basis_shapekey.relative_key.name != 'Basis':
-            tools.common.show_error(9.3, ['To apply reverted shape keys as the new Basis please apply them in the opposite order as you originally applied them as Basis.',
-                                          'Start with the reverted shape key with the relative key called "Basis".'])
+            for shapekey in mesh.data.shape_keys.key_blocks:
+                if ' - Reverted' in shapekey.name and shapekey.relative_key.name == 'Basis':
+                    tools.common.show_error(7.3, ['To revert the shape keys, please apply the "Reverted" shape keys in reverse order.',
+                                                  'Start with the shape key called "' + shapekey.name + '".',
+                                                  '',
+                                                  "If you didn't change the shape key order, you can revert the shape keys from top to bottom."])
+                    return {'FINISHED'}
+
+            tools.common.show_error(7.3, ['To revert the shape keys, please apply the "Reverted" shape keys in reverse order.',
+                                          'Start with the reverted shape key that uses the relative key called "Basis".',
+                                          '',
+                                          "If you didn't change the shape key order, you can revert the shape keys from top to bottom."])
             return {'FINISHED'}
 
         # Set up shape keys

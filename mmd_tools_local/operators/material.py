@@ -81,7 +81,7 @@ class OpenSphereTextureSlot(Operator, _OpenTextureBase):
     def execute(self, context):
         mat = context.active_object.active_material
         fnMat = FnMaterial(mat)
-        fnMat.create_sphere_texture(self.filepath)
+        fnMat.create_sphere_texture(self.filepath, context.active_object)
         return {'FINISHED'}
 
 

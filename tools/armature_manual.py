@@ -199,12 +199,11 @@ class PoseToRest(bpy.types.Operator):
         bpy.ops.object.shape_key_to_basis()
 
         # Remove old basis shape key from shape_key_to_basis operation
-        if 'Basis Old.001' not in mesh.data.shape_keys.key_blocks:
-            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                if shapekey.name == 'Basis Old':
-                    mesh.active_shape_key_index = index
-                    bpy.ops.object.shape_key_remove(all=False)
-                    break
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if index == 1:
+                mesh.active_shape_key_index = index
+                bpy.ops.object.shape_key_remove(all=False)
+                break
 
         bpy.ops.armature_manual.stop_pose_mode()
 

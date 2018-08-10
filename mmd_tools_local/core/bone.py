@@ -25,9 +25,9 @@ def remove_edit_bones(edit_bones, bone_names):
 
 
 class FnBone(object):
-    AUTO_LOCAL_AXIS_ARMS = ('左腕', '左ひじ', '左手首', '右腕', '右ひじ', '右手首')
+    AUTO_LOCAL_AXIS_ARMS = ('左肩', '左腕', '左ひじ', '左手首', '右腕', '右肩', '右ひじ', '右手首')
     AUTO_LOCAL_AXIS_FINGERS = ('親指','人指', '中指', '薬指','小指')
-    AUTO_LOCAL_AXIS_SEMI_STANDARD_ARMS = ('左腕捩', '左手捩', '左ダミー', '右腕捩', '右手捩', '右ダミー')
+    AUTO_LOCAL_AXIS_SEMI_STANDARD_ARMS = ('左腕捩', '左手捩', '左肩P', '左ダミー', '右腕捩', '右手捩', '右肩P', '右ダミー')
 
     def __init__(self, pose_bone=None):
         if pose_bone is not None and not isinstance(pose_bone, PoseBone):
@@ -76,13 +76,18 @@ class FnBone(object):
         for b in cls.get_selected_pose_bones(armature):
             mmd_bone = b.mmd_bone
             mmd_bone.enabled_fixed_axis = enable
+            lock_rotation = b.lock_rotation[:]
             if enable:
                 axes = b.bone.matrix_local.to_3x3().transposed()
-                lock_rotation = b.lock_rotation[:]
                 if lock_rotation.count(False) == 1:
                     mmd_bone.fixed_axis = axes[lock_rotation.index(False)].xzy
                 else:
                     mmd_bone.fixed_axis = axes[1].xzy # Y-axis
+            elif all(b.lock_location) and lock_rotation.count(True) > 1 and \
+                    lock_rotation == (b.lock_ik_x, b.lock_ik_y, b.lock_ik_z):
+                # unlock transform locks if fixed axis was applied
+                b.lock_ik_x, b.lock_ik_y, b.lock_ik_z = b.lock_rotation = (False, False, False)
+                b.lock_location = b.lock_scale = (False, False, False)
 
     @classmethod
     def apply_bone_fixed_axis(cls, armature):

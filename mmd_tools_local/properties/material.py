@@ -29,7 +29,7 @@ def _updateIsDoubleSided(prop, context):
     FnMaterial(prop.id_data).update_is_double_sided()
 
 def _updateSphereMapType(prop, context):
-    FnMaterial(prop.id_data).update_sphere_texture_type()
+    FnMaterial(prop.id_data).update_sphere_texture_type(context.active_object)
 
 def _updateToonTexture(prop, context):
     FnMaterial(prop.id_data).update_toon_texture()

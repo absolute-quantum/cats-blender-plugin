@@ -31,13 +31,9 @@ import requests
 import importlib
 import bpy.utils.previews
 
-from . import addon_updater_ops
-from datetime import datetime
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
 
-import mmd_tools_local
 # print("\n", mmd_tools_local.bl_info["version"])
 # if mmd_tools_local.bl_info["version"] == (0, 5, 0):
 #     print("mmd_tools deleting!")
@@ -45,47 +41,53 @@ import mmd_tools_local
 #     print("mmd_tools deleted!")
 #     import mmd_tools_local
 
-import tools.viseme
-import tools.atlas
-import tools.eyetracking
-import tools.bonemerge
-import tools.rootbone
-import tools.translate
-import tools.armature
-import tools.armature_bones
-import tools.armature_manual
-import tools.armature_custom
-import tools.material
-import tools.common
-import tools.supporter
-import tools.credits
-import tools.decimation
-import tools.shapekey
-import tools.copy_protection
-import tools.importer
-import tools.settings
+if "tools" not in locals():
+    print('STARTUP!!')
+    from . import addon_updater_ops
+    import mmd_tools_local
+    import tools.armature
+    import tools.armature_bones
+    import tools.armature_manual
+    import tools.armature_custom
+    import tools.atlas
+    import tools.bonemerge
+    import tools.common
+    import tools.copy_protection
+    import tools.credits
+    import tools.decimation
+    import tools.eyetracking
+    import tools.importer
+    import tools.material
+    import tools.rootbone
+    import tools.settings
+    import tools.shapekey
+    import tools.supporter
+    import tools.translate
+    import tools.viseme
+else:
+    print('RELOAD!!')
+    importlib.reload(mmd_tools_local)
+    importlib.reload(addon_updater_ops)
+    importlib.reload(tools.armature)
+    importlib.reload(tools.armature_bones)
+    importlib.reload(tools.armature_manual)
+    importlib.reload(tools.armature_custom)
+    importlib.reload(tools.atlas)
+    importlib.reload(tools.bonemerge)
+    importlib.reload(tools.common)
+    importlib.reload(tools.copy_protection)
+    importlib.reload(tools.credits)
+    importlib.reload(tools.decimation)
+    importlib.reload(tools.eyetracking)
+    importlib.reload(tools.importer)
+    importlib.reload(tools.material)
+    importlib.reload(tools.rootbone)
+    importlib.reload(tools.settings)
+    importlib.reload(tools.shapekey)
+    importlib.reload(tools.supporter)
+    importlib.reload(tools.translate)
+    importlib.reload(tools.viseme)
 
-
-importlib.reload(mmd_tools_local)
-importlib.reload(tools.viseme)
-importlib.reload(tools.atlas)
-importlib.reload(tools.eyetracking)
-importlib.reload(tools.bonemerge)
-importlib.reload(tools.rootbone)
-importlib.reload(tools.translate)
-importlib.reload(tools.armature)
-importlib.reload(tools.armature_bones)
-importlib.reload(tools.armature_manual)
-importlib.reload(tools.armature_custom)
-importlib.reload(tools.material)
-importlib.reload(tools.common)
-importlib.reload(tools.supporter)
-importlib.reload(tools.credits)
-importlib.reload(tools.decimation)
-importlib.reload(tools.shapekey)
-importlib.reload(tools.copy_protection)
-importlib.reload(tools.importer)
-importlib.reload(tools.settings)
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
