@@ -53,7 +53,7 @@ class ImportModel(bpy.types.Operator):
                 return {'FINISHED'}
 
             try:
-                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'})
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'}, log_level='WARNING')
             except AttributeError:
                 bpy.ops.enable.mmd('INVOKE_DEFAULT')
             except (TypeError, ValueError):
@@ -118,22 +118,24 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         for f in self.files:
             file_name = f['name']
             filepath = os.path.join(self.directory, file_name)
+            file_ending = file_name.split('.')[-1].lower()
 
             # MMD
-            if file_name.endswith('.pmx') or file_name.endswith('.pmd'):
+            if file_ending == 'pmx' or file_ending == 'pmd':
                 try:
                     bpy.ops.mmd_tools.import_model('EXEC_DEFAULT',
                                                    files=[{'name': file_name}],
                                                    directory=self.directory,
                                                    scale=0.08,
-                                                   types={'MESH', 'ARMATURE', 'MORPHS'})
+                                                   types={'MESH', 'ARMATURE', 'MORPHS'},
+                                                   log_level='WARNING')
                 except AttributeError:
                     bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
                 except (TypeError, ValueError):
                     bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
 
             # XNALara
-            elif file_name.endswith('.xps') or file_name.endswith('.mesh') or file_name.endswith('.ascii'):
+            elif file_ending == 'xps' or file_ending == 'mesh' or file_ending == 'ascii':
                 try:
                     bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
                                                    filepath=filepath)
@@ -141,8 +143,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                     bpy.ops.install.xps('INVOKE_DEFAULT')
 
             # Source Engine
-            elif file_name.endswith('.smd') or file_name.endswith('.qc') or file_name.endswith(
-                    '.qci') or file_name.endswith('.vta') or file_name.endswith('.dmx'):
+            elif file_ending == 'smd' or file_ending == 'qc' or file_ending == 'qci' or file_ending == 'vta' or file_ending == 'dmx':
                 try:
                     bpy.ops.import_scene.smd('EXEC_DEFAULT',
                                              files=[{'name': file_name}],
@@ -151,7 +152,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                     bpy.ops.install.source('INVOKE_DEFAULT')
 
             # FBX
-            elif file_name.endswith('.fbx'):
+            elif file_ending == 'fbx':
                 try:
                     bpy.ops.import_scene.fbx('EXEC_DEFAULT',
                                              filepath=filepath,
@@ -161,7 +162,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
             # DAE - not working currently because of bug:
             # https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
-            elif file_name.endswith('.dae'):
+            elif file_ending == 'dae':
                 try:
                     bpy.ops.wm.collada_import('EXEC_DEFAULT',
                                               filepath=filepath,
@@ -217,7 +218,7 @@ class ImportMMD(bpy.types.Operator):
             return {'FINISHED'}
 
         try:
-            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'})
+            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'}, log_level='WARNING')
         except AttributeError:
             bpy.ops.enable.mmd('INVOKE_DEFAULT')
         except (TypeError, ValueError):

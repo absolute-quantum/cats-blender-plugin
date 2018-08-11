@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.9.0)
+# Cats Blender Plugin (0.10.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -25,7 +25,7 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
  - Merging bone groups to reduce overall bone count
- - Copy protection to protect your avatars from game cache ripping
+ - Protecting your avatars from game cache ripping
  - Auto updater
 
 *More to come!*
@@ -63,7 +63,7 @@ https://catsblenderplugin.com
 
 
 ## Model
-![](https://i.imgur.com/Soz7v0U.png)
+![](https://i.imgur.com/dYYAfb4.png)
 
 This tries to completely fix your model with one click.
 
@@ -99,13 +99,17 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/Y7rYJYQ.png)
+![](https://i.imgur.com/jPcDvaW.png)
+
+##### Translation
+- Translate certain entities from any japanese to english.
+This uses an internal dictionary and Google Translate.
 
 ##### Separate by material / loose parts
 - Separates a mesh by materials or loose parts
 
 ##### Join meshes
-- Joins all meshes into one
+- Joins all meshes together
 
 ##### Delete Zero Weight Bones
 - Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices
@@ -123,9 +127,11 @@ This tries to completely fix your model with one click.
 ##### Flip Normals
 - Flips the direction of the faces' normals of the selected mesh.
 
-##### Translation
-- Translate certain entities from any language to english.
-Works by sending a request to the Google Translate service. This feature can be slow for entities with a large amount of items.
+##### Apply Transformations
+- Applies the position, rotation and scale to the armature and its meshes.
+
+##### Remove Doubles
+- Merges duplicated faces and vertices of the selected meshes.
 
 
 ## Custom Model Creation
@@ -207,7 +213,7 @@ It's a good idea to check the eye movement in the testing tab after this operati
 
 
 ## Visemes (Lip Sync)
-![](https://i.imgur.com/zReTmcv.png)
+![](https://i.imgur.com/muM2PTS.png)
 
 **Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone.**
 The script generates 15 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
@@ -315,6 +321,14 @@ People that try to steal your avatar will then only see a box of mangled waifu t
   **special thanks to @zarniwoop#6081**
 
 
+## Shape Key
+
+![](https://i.imgur.com/LgFK4KO.png)
+
+**Apply Shape Key as Basis**
+- Applies the selected shape key as the new Basis and creates a reverted shape key from the selected one.
+
+
 ## Update Plugin
 
 ![](https://i.imgur.com/ltcTRlR.png)
@@ -324,6 +338,39 @@ It checks for a new version automatically once every day.
 
 
 ## Changelog
+
+#### 0.10.0
+- **Translations:**
+  - Greatly improved translations by using a new internal dictionary
+    - Much better shape key translation
+    - Example: No more Ah, Your and There but Ah, Oh and Ch
+  - Greatly improved translation speed by storing the google translations locally
+    - This local google dictionary gets reset every 30 days to stay updated with new translations
+  - Added "Translate Everything" button
+  - No longer removes rigidbodies and joints
+    - Only Fix Model removes them now
+- **Model:**
+  - Join meshes now applies all transforms
+  - Added new Apply Transforms button
+  - Added new Remove Doubles button
+    - More precise than doing it manually but removes less vertices overall
+    - A little extra button at the end lets you remove doubles like you would do manually
+  - Fixed files with capital letters in the file extension not importing correctly
+  - Fixed "Separate by Loose Parts" creating multiple extremely small meshes
+    - This makes "Separate by Loose Parts" actually useful and not a laggy mess
+- **Visemes:**
+  - Shape Keys Mix Intensity slider is back
+  - Increased the range of the intensity slider
+- **Shapekeys:**
+  - Greatly improved "Apply Shapekey as Basis"
+  - Shape keys added to the Basis can be reverted now
+- **Credits:**
+  - Added a patchnotes button
+- **General:**
+  - Slightly reduced startup time
+  - Updated mmd_tools
+  - Fixed some typos
+  - Fixed multiple bugs
 
 #### 0.9.0
 - **Model:**
@@ -365,42 +412,6 @@ It checks for a new version automatically once every day.
   - Fixed some shading issues after fixing the model
 - **General:**
   - Updated mmd_tools
-
-#### 0.8.0
-- Model:
-  - Added "Merge Armatures" button!
-    - This merges two selected armatures together.
-  - Added "Attach mesh" button!
-    - This attaches a mesh to a selected bone in an armature.
-    - Custom avatars are a breeze now!
-  - Added support for Source Engine Models!
-  - Added new "Custom Model Creation" panel
-  - Moved some model options into a new "Model Options" panel
-  - Added a lot of new model options to that panel
-  - "Fix Model" now sets the roll of all bones to 0
-    - This fixes a lot of finger issues in Unity!
-  - "Fix Model" now removes the standard lamp, camera and cube
-  - Full Body Tracking Fix is not longer enabled by default
-  - More models are now compatible (please report non working models to us)
-  - Fixed: Undoing the operation after a model import no longer undoes the import as well
-- Eye Tracking:
-  - Now shows a warning when important objects aren't named correctly
-- Copy Protection:
-  - Added Export button into the panel after enabling the protection
-  - Now automatically triangulates the model
-    - Fixes holes appearing after export to Unity
-  - Updated documentation
-    - Step 6 now shows how to fix all remaining lighting issues
-- Atlas:
-  - Changed: Meshes no longer need an armature to be selectable
-- Supporters:
-  - The supporter list is now synced with an online repository
-    - It can now be updated on the fly without having to update the whole plugin
-  - New supporter list features are available now, check them out!
-- General:
-  - Mesh selections are no longer shown if there is only one mesh
-  - Updated mmd_tools
-  - Fixed lots of bugs and typos
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

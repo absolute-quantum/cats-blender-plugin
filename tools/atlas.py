@@ -113,7 +113,7 @@ class AutoAtlasButton(bpy.types.Operator):
 
         # Time to bake
         tools.common.switch('EDIT')
-        bpy.data.scenes["Scene"].render.bake_type = "TEXTURE"
+        context.scene.render.bake_type = "TEXTURE"
         bpy.ops.object.bake_image()
 
         # Lets save the generated atlas
@@ -154,11 +154,6 @@ class AutoAtlasButton(bpy.types.Operator):
                 mat_slot.material.use_transparency = True
                 mat_slot.material.transparency_method = 'MASK'
                 mat_slot.material.alpha = 0
-
-        try:
-            bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-        except:
-            print('mmd_tools probably not activated.')
 
         self.report({'INFO'}, 'Auto Atlas finished!')
 

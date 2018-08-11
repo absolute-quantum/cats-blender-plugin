@@ -24,25 +24,23 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats
 
-import bpy
 import os
+import bpy
 import json
-import json.decoder
+import shutil
 import pathlib
 import zipfile
-import urllib.request
-import urllib.error
-import shutil
 import webbrowser
-import tools.common
-from datetime import datetime
+import json.decoder
+import urllib.error
+import urllib.request
+import tools.settings
 from threading import Thread
-from pprint import pprint
+from datetime import datetime, timezone
 
 # global variables
 preview_collections = {}
 supporter_data = None
-settings_data = None
 reloading = False
 button_list = []
 last_update = None
@@ -103,6 +101,9 @@ def register_dynamic_buttons():
 
     temp_idnames = []
     for supporter in supporter_data.get('supporters'):
+        if supporter.get('disabled'):
+            continue
+
         name = supporter.get('displayname')
         idname = 'support.' + ''.join(filter(str.isalpha, name.lower()))
 
@@ -204,8 +205,7 @@ def download_file():
     shutil.rmtree(downloads_dir)
 
     # Save update time in settings
-    settings_data['last_supporter_update'] = last_update
-    save_settings()
+    tools.settings.set_last_supporter_update(last_update)
 
     # Reload supporters
     reload_supporters()
@@ -222,7 +222,7 @@ def readJson():
 
     print("SUPPORTER LIST FILE FOUND!")
     try:
-        with open(supporters_file) as f:
+        with open(supporters_file, encoding="utf8") as f:
             data = json.load(f)
     except json.decoder.JSONDecodeError:
         return
@@ -232,12 +232,11 @@ def readJson():
 
 
 def load_supporters():
+    # Check for update
     global reloading
-
-    if update_needed():
-        reloading = True
-        thread = Thread(target=download_file, args=[])
-        thread.start()
+    reloading = True
+    thread = Thread(target=check_for_update, args=[])
+    thread.start()
 
     # Read existing supporter list
     readJson()
@@ -285,6 +284,9 @@ def load_icons(pcoll):
 
     if supporter_data:
         for supporter in supporter_data['supporters']:
+            if supporter.get('disabled'):
+                continue
+
             name = supporter['displayname']
             iconname = supporter.get('iconname')
 
@@ -302,7 +304,7 @@ def load_icons(pcoll):
         for news in supporter_data['news']:
             custom_icon = news.get('custom_icon')
 
-            if not custom_icon or custom_icon in pcoll:
+            if news.get('disabled') or not news.get('info') or not custom_icon or custom_icon in pcoll:
                 continue
 
             try:
@@ -336,7 +338,7 @@ def load_other_icons():
     pcoll.load('cats1', os.path.join(icons_other_dir, 'cats1.png'), 'IMAGE')
     pcoll.load('empty', os.path.join(icons_other_dir, 'empty.png'), 'IMAGE')
     pcoll.load('UP_ARROW', os.path.join(icons_other_dir, 'blender_up_arrow.png'), 'IMAGE')
-    pcoll.load('TRANSLATE', os.path.join(icons_other_dir, 'translate.png'), 'IMAGE')
+    # pcoll.load('TRANSLATE', os.path.join(icons_other_dir, 'translate.png'), 'IMAGE')
 
     preview_collections['custom_icons'] = pcoll
 
@@ -358,81 +360,11 @@ def ui_refresh():
                     area.tag_redraw()
 
 
-def load_settings():
-    print('READING SETTINGS FILE')
-    global settings_data
-    settings_data = read_settings_file()
-
-    pprint(settings_data)
-
-
-def save_settings():
-    settings_file = os.path.join(resources_dir, "settings.json")
-
-    with open(settings_file, 'w') as outfile:
-        json.dump(settings_data, outfile)
-
-
-def read_settings_file():
-    settings_file = os.path.join(resources_dir, "settings.json")
-
-    # default data
-    data_default = {
-        'last_supporter_update': None
-    }
-
-    # Check for existing settings file
-    if not os.path.isfile(settings_file):
-        print("SETTINGS LIST FILE NOT FOUND!")
-        with open(settings_file, 'w') as outfile:
-            json.dump(data_default, outfile)
-        return data_default
-
-    # Read settings and recreate it if error  is found
-    try:
-        with open(settings_file) as f:
-            data = json.load(f)
-    except json.decoder.JSONDecodeError:
-        print("ERROR FOUND IN SETTINGS FILE")
-        os.remove(settings_file)
-        return read_settings_file()
-
-    # Check for unwanted settings entries
-    changed = False
-    remove_list = []
-    for key in data.keys():
-        if key not in data_default:
-            remove_list.append(key)
-
-    # Remove unwanted settings
-    for key in remove_list:
-        data.pop(key, None)
-        changed = True
-        print('REMOVED', key)
-
-    # Check for missing settings entries
-    for key, value in data_default.items():
-        if key not in data:
-            data[key] = value
-            changed = True
-            print('ADDED', key)
-
-    # Check if timestamps are correct
-    if data.get('last_supporter_update'):
-        try:
-            datetime.strptime(data.get('last_supporter_update'), time_format)
-        except ValueError:
-            data['last_supporter_update'] = None
-            changed = True
-            print('RESET TIME')
-
-    # If data changed, update settings file
-    if changed:
-        with open(settings_file, 'w') as outfile:
-            json.dump(data, outfile)
-        print('UPDATED MISSING SETTINGS')
-
-    return data
+def check_for_update():
+    if update_needed():
+        download_file()
+    else:
+        finish_reloading()
 
 
 def update_needed():
@@ -455,15 +387,24 @@ def update_needed():
     last_update = commit_date_str
     print(last_update)
 
-    if not settings_data or not settings_data.get('last_supporter_update'):
+    if not tools.settings.get_last_supporter_update():
         print('SETTINGS NOT FOUND')
         return True
 
-    last_update_str = settings_data.get('last_supporter_update')
-    print(last_update_str)
+    last_update_str = tools.settings.get_last_supporter_update()
 
     if commit_date_str == last_update_str:
         print('COMMIT IDENTICAL')
+        return False
+
+    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
+    time_delta = abs((utc_now - last_commit_date).seconds)
+
+    print(utc_now)
+    print(time_delta)
+
+    if time_delta <= 120:
+        print('COMMIT TOO CLOSE')
         return False
 
     print('UPDATE NEEDED')

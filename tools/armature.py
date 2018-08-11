@@ -33,7 +33,6 @@ import tools.common
 import tools.translate
 import tools.armature_bones as Bones
 import mmd_tools_local.operators.morph
-from mmd_tools_local.translations import DictionaryEnum
 
 import math
 from mathutils import Matrix
@@ -55,12 +54,6 @@ class FixArmature(bpy.types.Operator):
                      '- Corrects shading'
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-    )
 
     @classmethod
     def poll(cls, context):
@@ -195,8 +188,8 @@ class FixArmature(bpy.types.Operator):
                 break
 
         # Remove unused animation data
-        if bpy.context.active_object.animation_data and bpy.context.active_object.animation_data.action.name == 'ragdoll':
-            bpy.context.active_object.animation_data_clear()
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
             source_engine = True
 
         # Delete unused VTA mesh
@@ -226,6 +219,7 @@ class FixArmature(bpy.types.Operator):
         armature.draw_type = 'WIRE'
         armature.show_x_ray = True
         armature.data.show_bone_custom_shapes = False
+        armature.layers[0] = True
 
         # Disable backface culling
         if context.area:
@@ -235,6 +229,15 @@ class FixArmature(bpy.types.Operator):
         for obj in bpy.data.objects:
             if 'rigidbodies' in obj.name or 'joints' in obj.name:
                 tools.common.delete_hierarchy(obj)
+
+        # Remove objects from  different layers and things that are not meshes
+        for child in armature.children:
+            for child2 in child.children:
+                if not child2.layers[0] or child2.type != 'MESH':
+                    tools.common.delete(child2)
+
+            if not child.layers[0] or child.type != 'MESH':
+                tools.common.delete(child)
 
         # Remove empty mmd object and unused objects
         tools.common.remove_empty()
@@ -263,7 +266,7 @@ class FixArmature(bpy.types.Operator):
         # except RuntimeError:
         #     pass
 
-        if source_engine and mesh.data.shape_keys.key_blocks:
+        if source_engine and mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
             mesh.data.shape_keys.key_blocks[0].name = "Basis"
 
         # Save shape key order
@@ -272,6 +275,9 @@ class FixArmature(bpy.types.Operator):
         # Combines same materials
         if context.scene.combine_mats:
             bpy.ops.combine.mats()
+        else:
+            # At least clean material names. Combining mats would do this otherwise
+            tools.common.clean_material_names(mesh)
 
         # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
         all_transparent = True
@@ -286,8 +292,21 @@ class FixArmature(bpy.types.Operator):
         # Reorders vrc shape keys to the correct order
         tools.common.sort_shape_keys(mesh.name)
 
-        # Translate bones with dictionary
-        tools.translate.translate_bones(self.dictionary)
+        # Fix all shape key names of half jp chars
+        for mesh in tools.common.get_meshes_objects():
+            if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+                for shapekey in mesh.data.shape_keys.key_blocks:
+                    shapekey.name = tools.translate.fix_jp_chars(shapekey.name)
+
+        # return {'FINISHED'}
+
+        # Translate bones
+        to_translate = []
+        for bone in armature.data.bones:
+            to_translate.append(bone.name)
+        tools.translate.update_dictionary(to_translate)
+        for bone in armature.data.bones:
+            bone.name, translated = tools.translate.translate(bone.name)
 
         # Armature should be selected and in edit mode
         tools.common.unselect_all()
@@ -319,36 +338,38 @@ class FixArmature(bpy.types.Operator):
         current_step = 0
         wm.progress_begin(current_step, steps)
 
-        # Standardize bone names
+        # List of chars to replace if they are at the start of a bone name
+        starts_with = [
+            ('_', ''),
+            ('ValveBiped_', ''),
+            ('Bip1_', 'Bip_'),
+            ('Bip01_', 'Bip_'),
+            ('Bip001_', 'Bip_'),
+            ('Character1_', ''),
+            ('HLP_', ''),
+            ('JD_', ''),
+            ('JU_', ''),
+            ('Armature|', ''),
+            ('Bone_', ''),
+            ('C_', ''),
+            ('Cf_S_', ''),
+            ('Cf_J_', ''),
+        ]
+
+        # Standardize names
         for bone in armature.data.edit_bones:
             current_step += 1
             wm.progress_update(current_step)
 
-            name_split = bone.name.split('"')
-            if len(name_split) > 3:
-                name = name_split[1]
-            else:
-                name = bone.name
-
-            name = name[:1].upper() + name[1:]
-
-            name = name.replace(' ', '_')\
+            # Make all the underscores!
+            name = bone.name.replace(' ', '_')\
                 .replace('-', '_')\
                 .replace('.', '_')\
                 .replace('____', '_')\
                 .replace('___', '_')\
                 .replace('__', '_')\
-                .replace('ValveBiped_', '')\
-                .replace('Bip1_', 'Bip_')\
-                .replace('Bip01_', 'Bip_')\
-                .replace('Bip001_', 'Bip_')\
-                .replace('Character1_', '')\
-                .replace('HLP_', '')\
-                .replace('JD_', '')\
-                .replace('JU_', '')\
-                .replace('Armature|', '')\
-                .replace('Bone_', '')\
 
+            # Always uppercase at the start and after an underscore
             upper_name = ''
             for i, s in enumerate(name.split('_')):
                 if i != 0:
@@ -356,6 +377,24 @@ class FixArmature(bpy.types.Operator):
                 upper_name += s[:1].upper() + s[1:]
             name = upper_name
 
+            # Replace if name starts with specified chars
+            for replacement in starts_with:
+                if name.startswith(replacement[0]):
+                    print(name)
+                    name = replacement[1] + name[len(replacement[0]):]
+                    print(name)
+
+            # Remove digits from the start
+            name_split = name.split('_')
+            if len(name_split) > 1 and name_split[0].isdigit():
+                name = name_split[1]
+
+            # Specific condition
+            name_split = name.split('"')
+            if len(name_split) > 3:
+                name = name_split[1]
+
+            # Another specific condition
             if ':' in name:
                 for i, split in enumerate(name.split(':')):
                     if i == 0:
@@ -363,16 +402,9 @@ class FixArmature(bpy.types.Operator):
                     else:
                         name += split
 
+            # Remove S0 from the end
             if name[-2:] == 'S0':
                 name = name[:-2]
-
-            # Remove '_01_' from beginning
-            if len(name) > 4 and name[0] == '_' and name[3] == '_' and name[1].isdigit() and name[2].isdigit():
-                name = name[4:]
-
-            # Remove '_01_' from beginning
-            if name.startswith('C_'):
-                name = name[2:]
 
             bone.name = name
 
@@ -701,43 +733,44 @@ class FixArmature(bpy.types.Operator):
                             #         bone.tail[z_cord] = bone.head[z_cord] + bone_length
 
                             else:
-                                hips.head[x_cord] = 0
-                                hips.tail[x_cord] = 0
+                                if left_leg and left_knee and right_leg and right_knee:
+                                    hips.head[x_cord] = 0
+                                    hips.tail[x_cord] = 0
 
-                                hips.tail[y_cord] = hips.head[y_cord]
+                                    hips.tail[y_cord] = hips.head[y_cord]
 
-                                hips.head[z_cord] = spine.head[z_cord]
-                                hips.tail[z_cord] = right_leg.head[z_cord]
+                                    hips.head[z_cord] = spine.head[z_cord]
+                                    hips.tail[z_cord] = right_leg.head[z_cord]
 
-                                left_leg_top = armature.data.edit_bones.new('Left leg top')
-                                right_leg_top = armature.data.edit_bones.new('Right leg top')
+                                    left_leg_top = armature.data.edit_bones.new('Left leg top')
+                                    right_leg_top = armature.data.edit_bones.new('Right leg top')
 
-                                left_leg_top.head = left_leg.head
-                                left_leg_top.tail = left_leg.head
-                                left_leg_top.tail[z_cord] = left_leg.head[z_cord] + 0.1
+                                    left_leg_top.head = left_leg.head
+                                    left_leg_top.tail = left_leg.head
+                                    left_leg_top.tail[z_cord] = left_leg.head[z_cord] + 0.1
 
-                                right_leg_top.head = right_leg.head
-                                right_leg_top.tail = right_leg.head
-                                right_leg_top.tail[z_cord] = right_leg.head[z_cord] + 0.1
+                                    right_leg_top.head = right_leg.head
+                                    right_leg_top.tail = right_leg.head
+                                    right_leg_top.tail[z_cord] = right_leg.head[z_cord] + 0.1
 
-                                spine.head = hips.head
-                                # hips.head[z_cord] -= 0.0025
-                                # spine.head[z_cord] += 0.0025
+                                    spine.head = hips.head
+                                    # hips.head[z_cord] -= 0.0025
+                                    # spine.head[z_cord] += 0.0025
 
-                                left_leg.name = "Left leg 2"
-                                right_leg.name = "Right leg 2"
+                                    left_leg.name = "Left leg 2"
+                                    right_leg.name = "Right leg 2"
 
-                                left_leg_top.name = "Left leg"
-                                right_leg_top.name = "Right leg"
+                                    left_leg_top.name = "Left leg"
+                                    right_leg_top.name = "Right leg"
 
-                                left_leg_top.parent = hips
-                                right_leg_top.parent = hips
+                                    left_leg_top.parent = hips
+                                    right_leg_top.parent = hips
 
-                                left_leg.parent = left_leg_top
-                                right_leg.parent = right_leg_top
+                                    left_leg.parent = left_leg_top
+                                    right_leg.parent = right_leg_top
 
-                                left_knee.parent = left_leg_top
-                                right_knee.parent = right_leg_top
+                                    left_knee.parent = left_leg_top
+                                    right_knee.parent = right_leg_top
 
                             # # Fixing legs
                             # right_knee = armature.data.edit_bones.get('Right knee')
@@ -799,6 +832,12 @@ class FixArmature(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
         tools.common.select(mesh)
+
+        # for bone_name in temp_rename_bones.keys():
+        #     bone = armature.data.bones.get(bone_name)
+        #     if bone:
+        #         print(bone_name)
+        #         bone.hide = False
 
         for bone_new, bones_old in temp_reweight_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:

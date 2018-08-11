@@ -31,6 +31,7 @@ import bmesh
 import numpy as np
 import tools.supporter
 import tools.decimation
+import tools.translate
 import tools.armature_bones as Bones
 from mathutils import Vector
 from math import degrees
@@ -71,7 +72,7 @@ def get_armature_objects():
 
 
 def unhide_all():
-    if bpy.app.version < (2, 79, 9):
+    if version_2_79_or_older():
         for obj in bpy.data.objects:
             obj.hide = False
     else:
@@ -353,15 +354,15 @@ def get_bones(names=None, armature_name=None):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah', 'Wow', 'A'], True, False, False, False)
+    return get_shapekeys(context, ['Ah', 'A'], True, False, False, False)
 
 
 def get_shapekeys_mouth_oh(self, context):
-    return get_shapekeys(context, ['Your', 'O'], True, False, False, False)
+    return get_shapekeys(context, ['Oh', 'O', 'Your'], True, False, False, False)
 
 
 def get_shapekeys_mouth_ch(self, context):
-    return get_shapekeys(context, ['Glue', 'There', 'I'], True, False, False, False)
+    return get_shapekeys(context, ['Glue', 'Ch', 'I', 'There'], True, False, False, False)
 
 
 def get_shapekeys_eye_blink_l(self, context):
@@ -369,8 +370,7 @@ def get_shapekeys_eye_blink_l(self, context):
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False,
-                         False, False, False)
+    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_low_l(self, context):
@@ -383,14 +383,12 @@ def get_shapekeys_eye_low_r(self, context):
 
 def get_shapekeys_decimation(self, context):
     return get_shapekeys(context,
-                         ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2',
-                          'Wink right'], False, True, True, False)
+                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, False)
 
 
 def get_shapekeys_decimation_list(self, context):
     return get_shapekeys(context,
-                         ['Ah', 'Wow', 'Your', 'Glue', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2',
-                          'Wink right'], False, True, True, True)
+                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, True)
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
@@ -459,10 +457,8 @@ def fix_armature_names(armature_name=None):
     armature = get_armature(armature_name=armature_name)
     armature.name = 'Armature'
     if not armature.data.name.startswith('Armature'):
-        try:
-            armature.data.name = 'Armature (' + Translator().translate(armature.data.name).text + ')'
-        except:
-            armature.data.name = 'Armature'
+        tools.translate.update_dictionary(armature.data.name)
+        armature.data.name = 'Armature (' + tools.translate.translate(armature.data.name, add_space=True)[0] + ')'
 
     # Reset the armature lists
     try:
@@ -498,6 +494,7 @@ def get_meshes_objects(armature_name=None, mode=0):
     # 0 = With armatures only
     # 1 = Top level only
     # 2 = All meshes
+    # 3 = Selected only
 
     meshes = []
     for ob in bpy.data.objects:
@@ -505,8 +502,11 @@ def get_meshes_objects(armature_name=None, mode=0):
             if mode == 0:
                 if not armature_name:
                     armature_name = bpy.context.scene.armature
-                if ob.parent and ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
-                    meshes.append(ob)
+                if ob.parent:
+                    if ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
+                        meshes.append(ob)
+                    elif ob.parent.parent and ob.parent.parent.type == 'ARMATURE' and ob.parent.parent.name == armature_name:
+                        meshes.append(ob)
 
             elif mode == 1:
                 if not ob.parent:
@@ -514,10 +514,14 @@ def get_meshes_objects(armature_name=None, mode=0):
 
             elif mode == 2:
                 meshes.append(ob)
+
+            elif mode == 3:
+                if ob.select:
+                    meshes.append(ob)
     return meshes
 
 
-def join_meshes(armature_name=None, mode=0):
+def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_shape_keys=True):
     # Modes:
     # 0 - Join all meshes
     # 1 - Join selected only
@@ -538,6 +542,11 @@ def join_meshes(armature_name=None, mode=0):
     set_default_stage()
     unselect_all()
 
+    if apply_transformations:
+        apply_transforms(armature_name=armature_name)
+
+    unselect_all()
+
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:
         if mesh.name in meshes_to_join:
@@ -553,7 +562,7 @@ def join_meshes(armature_name=None, mode=0):
                         mesh.modifiers.remove(mod)
                         continue
 
-                    if mesh.data.shape_keys is not None:
+                    if mesh.data.shape_keys:
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
@@ -573,17 +582,31 @@ def join_meshes(armature_name=None, mode=0):
         for mod in mesh.modifiers:
             mod.show_expanded = False
             if mod.type == 'ARMATURE':
-                if mod_count > 0:
+                mod_count += 1
+                if mod_count > 1:
                     bpy.ops.object.modifier_remove(modifier=mod.name)
                     continue
                 mod.object = get_armature(armature_name=armature_name)
-                mod_count += 1
 
-        repair_shapekey_order(mesh.name)
+        if repair_shape_keys:
+            repair_shapekey_order(mesh.name)
 
     reset_context_scenes()
 
     return mesh
+
+
+def apply_transforms(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
+
+    tools.common.unselect_all()
+    tools.common.select(get_armature(armature_name=armature_name))
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    for mesh in get_meshes_objects(armature_name=armature_name):
+        tools.common.unselect_all()
+        tools.common.select(mesh)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
 
 def separate_by_materials(context, mesh):
@@ -602,6 +625,15 @@ def separate_by_materials(context, mesh):
             mesh.modifiers.remove(mod)
         else:
             mod.show_expanded = False
+
+    clean_material_names(mesh)
+
+    # Correctly put mesh together. This is done to prevent extremely small pieces.
+    # This essentially does nothing but merges the extremely small parts together.
+    switch('EDIT')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.mesh.remove_doubles(threshold=0)
+    switch('OBJECT')
 
     utils.separateByMaterials(mesh)
 
@@ -631,7 +663,14 @@ def separate_by_loose_parts(context, mesh):
         else:
             mod.show_expanded = False
 
+    clean_material_names(mesh)
+
+    # Correctly put mesh together. This is done to prevent extremely small pieces.
+    # This essentially does nothing but merges the extremely small parts together.
+    remove_doubles(mesh, 0)
+
     utils.separateByMaterials(mesh)
+
     meshes = []
     for ob in context.selected_objects:
         if ob.type == 'MESH':
@@ -801,7 +840,7 @@ def repair_shapekey_order(mesh_name):
     sort_shape_keys(mesh_name, shape_key_order)
 
 
-def update_shapekey_orders(translations):
+def update_shapekey_orders():
     for armature in get_armature_objects():
         shape_key_order = []
 
@@ -810,16 +849,13 @@ def update_shapekey_orders(translations):
         if not custom_data or not custom_data.get('shape_key_order'):
             continue
 
-        # Create shape key list for description
+        # Get shape keys from string and translate them
         order_string = custom_data.get('shape_key_order')
         for shape_name in order_string.split(',,,'):
-            if translations.get(shape_name):
-                shape_key_order.append(translations.get(shape_name))
-            else:
-                shape_key_order.append(shape_name)
+            shape_key_order.append(tools.translate.translate(shape_name)[0])
         print(order_string)
 
-        # Create shape key list for properties
+        # Create translated shape key list string for properties
         order_string = ''
         for i, shapekey in enumerate(shape_key_order):
             if i > 0:
@@ -833,8 +869,9 @@ def update_shapekey_orders(translations):
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
     mesh = bpy.data.objects[mesh_name]
-    if not mesh.data.shape_keys or not mesh.data.shape_keys.key_blocks:
+    if not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
         return
+    select(mesh)
 
     if not shape_key_order:
         shape_key_order = []
@@ -982,6 +1019,26 @@ def delete_hierarchy(obj):
     result = bpy.ops.object.delete()
 
     bpy.context.scene.objects.unlink(obj)
+    bpy.data.objects.remove(obj)
+
+    if result == {'FINISHED'}:
+        print("Successfully deleted object")
+    else:
+        print("Could not delete object")
+
+
+def delete(obj):
+    unselect_all()
+    select(obj)
+
+    if obj.parent:
+        for child in obj.children:
+            child.parent = obj.parent
+
+    obj.animation_data_clear()
+    result = bpy.ops.object.delete()
+
+    #bpy.context.scene.objects.unlink(obj)
     bpy.data.objects.remove(obj)
 
     if result == {'FINISHED'}:
@@ -1192,6 +1249,35 @@ class ShowError(bpy.types.Operator):
         print('Report: Error')
         for line in error:
             print('    ' + line)
+
+
+def remove_doubles(mesh, threshold):
+    if not mesh:
+        return 0
+
+    pre_tris = len(mesh.data.polygons)
+
+    tools.common.select(mesh)
+    tools.common.switch('EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.remove_doubles(threshold=threshold)
+    tools.common.switch('OBJECT')
+
+    return pre_tris - len(mesh.data.polygons)
+
+
+def clean_material_names(mesh):
+        for j, mat in enumerate(mesh.material_slots):
+            if mat.name.endswith('.001'):
+                mesh.active_material_index = j
+                mesh.active_material.name = mat.name[:-4]
+            if mat.name.endswith('. 001') or mat.name.endswith(' .001'):
+                mesh.active_material_index = j
+                mesh.active_material.name = mat.name[:-5]
+
+
+def version_2_79_or_older():
+    return bpy.app.version < (2, 79, 9)
 
 
 # === THIS CODE COULD BE USEFUL ===

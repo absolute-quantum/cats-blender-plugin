@@ -4,7 +4,8 @@ import bpy
 from bpy.types import PoseBone
 
 from math import pi
-from mathutils import Vector
+import math
+from mathutils import Vector, Quaternion, Matrix
 from mmd_tools_local import bpyutils
 from mmd_tools_local.bpyutils import TransformConstraintOp
 
@@ -24,6 +25,9 @@ def remove_edit_bones(edit_bones, bone_names):
 
 
 class FnBone(object):
+    AUTO_LOCAL_AXIS_ARMS = ('左肩', '左腕', '左ひじ', '左手首', '右腕', '右肩', '右ひじ', '右手首')
+    AUTO_LOCAL_AXIS_FINGERS = ('親指','人指', '中指', '薬指','小指')
+    AUTO_LOCAL_AXIS_SEMI_STANDARD_ARMS = ('左腕捩', '左手捩', '左肩P', '左ダミー', '右腕捩', '右手捩', '右肩P', '右ダミー')
 
     def __init__(self, pose_bone=None):
         if pose_bone is not None and not isinstance(pose_bone, PoseBone):
@@ -68,6 +72,72 @@ class FnBone(object):
         return (bones[b.name] for b in context_selected_bones if not bones[b.name].is_mmd_shadow_bone)
 
     @classmethod
+    def load_bone_fixed_axis(cls, armature, enable=True):
+        for b in cls.get_selected_pose_bones(armature):
+            mmd_bone = b.mmd_bone
+            mmd_bone.enabled_fixed_axis = enable
+            lock_rotation = b.lock_rotation[:]
+            if enable:
+                axes = b.bone.matrix_local.to_3x3().transposed()
+                if lock_rotation.count(False) == 1:
+                    mmd_bone.fixed_axis = axes[lock_rotation.index(False)].xzy
+                else:
+                    mmd_bone.fixed_axis = axes[1].xzy # Y-axis
+            elif all(b.lock_location) and lock_rotation.count(True) > 1 and \
+                    lock_rotation == (b.lock_ik_x, b.lock_ik_y, b.lock_ik_z):
+                # unlock transform locks if fixed axis was applied
+                b.lock_ik_x, b.lock_ik_y, b.lock_ik_z = b.lock_rotation = (False, False, False)
+                b.lock_location = b.lock_scale = (False, False, False)
+
+    @classmethod
+    def apply_bone_fixed_axis(cls, armature):
+        bone_map = {}
+        for b in armature.pose.bones:
+            if b.is_mmd_shadow_bone or not b.mmd_bone.enabled_fixed_axis:
+                continue
+            mmd_bone = b.mmd_bone
+            parent_tip = b.parent and not b.parent.is_mmd_shadow_bone and b.parent.mmd_bone.is_tip
+            bone_map[b.name] = (mmd_bone.fixed_axis.normalized(), mmd_bone.is_tip, parent_tip)
+
+        force_align = True
+        with bpyutils.edit_object(armature) as data:
+            for bone in data.edit_bones:
+                if bone.name not in bone_map:
+                    bone.select = False
+                    continue
+                fixed_axis, is_tip, parent_tip = bone_map[bone.name]
+                if fixed_axis.length:
+                    axes = [bone.x_axis, bone.y_axis, bone.z_axis]
+                    direction = fixed_axis.normalized().xzy
+                    idx, val = max([(i, direction.dot(v)) for i, v in enumerate(axes)], key=lambda x: abs(x[1]))
+                    idx_1, idx_2 = (idx+1)%3, (idx+2)%3
+                    axes[idx] = -direction if val < 0 else direction
+                    axes[idx_2] = axes[idx].cross(axes[idx_1])
+                    axes[idx_1] = axes[idx_2].cross(axes[idx])
+                    if parent_tip and bone.use_connect:
+                        bone.use_connect = False
+                        bone.head = bone.parent.head
+                    if force_align:
+                        tail = bone.head + axes[1].normalized()*bone.length
+                        if is_tip or (tail - bone.tail).length > 1e-4:
+                            for c in bone.children:
+                                if c.use_connect:
+                                    c.use_connect = False
+                                    if is_tip:
+                                        c.head = bone.head
+                        bone.tail = tail
+                    bone.align_roll(axes[2])
+                    bone_map[bone.name] = tuple(i!=idx for i in range(3))
+                else:
+                    bone_map[bone.name] = (True, True, True)
+                bone.select = True
+
+        for bone_name, locks in bone_map.items():
+            b = armature.pose.bones[bone_name]
+            b.lock_location = (True, True, True)
+            b.lock_ik_x, b.lock_ik_y, b.lock_ik_z = b.lock_rotation = locks
+
+    @classmethod
     def load_bone_local_axes(cls, armature, enable=True):
         for b in cls.get_selected_pose_bones(armature):
             mmd_bone = b.mmd_bone
@@ -105,10 +175,57 @@ class FnBone(object):
     def get_axes(mmd_local_axis_x, mmd_local_axis_z):
         x_axis = Vector(mmd_local_axis_x).normalized().xzy
         z_axis = Vector(mmd_local_axis_z).normalized().xzy
-        y_axis = z_axis.cross(x_axis)
-        z_axis = x_axis.cross(y_axis) # correction
+        y_axis = z_axis.cross(x_axis).normalized()
+        z_axis = x_axis.cross(y_axis).normalized() # correction
         return (x_axis, y_axis, z_axis)
 
+    @classmethod
+    def apply_auto_bone_roll(cls, armature):
+        bone_names = []
+        for b in armature.pose.bones:
+            if (not b.is_mmd_shadow_bone and
+                    not b.mmd_bone.enabled_local_axes and
+                    cls.has_auto_local_axis(b.mmd_bone.name_j)):
+                bone_names.append(b.name)
+        with bpyutils.edit_object(armature) as data:
+            for bone in data.edit_bones:
+                if bone.name not in bone_names:
+                    select = False
+                    continue
+                cls.update_auto_bone_roll(bone)
+                bone.select = True
+
+    @classmethod
+    def update_auto_bone_roll(cls, edit_bone):
+        # make a triangle face (p1,p2,p3)
+        p1 = edit_bone.head.copy()
+        p2 = edit_bone.tail.copy()
+        p3 = p2.copy()
+        # translate p3 in xz plane
+        # the normal vector of the face tracks -Y direction
+        xz = Vector((p2.x - p1.x, p2.z - p1.z))
+        xz.normalize()
+        theta = math.atan2(xz.y, xz.x)
+        norm = edit_bone.vector.length
+        p3.z += norm * math.cos(theta)
+        p3.x -= norm * math.sin(theta)
+        # calculate the normal vector of the face
+        y = (p2 - p1).normalized()
+        z_tmp = (p3 - p1).normalized()
+        x = y.cross(z_tmp) # normal vector
+        # z = x.cross(y)
+        cls.update_bone_roll(edit_bone, y.xzy, x.xzy)
+
+    @classmethod
+    def has_auto_local_axis(cls, name_j):
+        if name_j:
+            if (name_j in cls.AUTO_LOCAL_AXIS_ARMS or
+                    name_j in cls.AUTO_LOCAL_AXIS_SEMI_STANDARD_ARMS):
+                return True
+            for finger_name in cls.AUTO_LOCAL_AXIS_FINGERS:
+                if finger_name in name_j:
+                    return True
+        return False
 
     @classmethod
     def clean_additional_transformation(cls, armature):

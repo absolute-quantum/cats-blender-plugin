@@ -23,21 +23,38 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
-
+import collections
+import copy
+import json
 import re
+import os
 import bpy
+import csv
+import pathlib
 import tools.common
 import requests.exceptions
+import mmd_tools_local.translations
 
+from datetime import datetime, timezone
 from googletrans import Translator
-from mmd_tools_local import utils
-from mmd_tools_local.translations import DictionaryEnum
+from collections import OrderedDict
+
+dictionary = None
+dictionary_google = None
+
+translation_splitter = "---"
+time_format = "%Y-%m-%d %H:%M:%S"
+
+main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
+resources_dir = os.path.join(str(main_dir), "resources")
+dictionary_file = os.path.join(resources_dir, "dictionary.json")
+dictionary_google_file = os.path.join(resources_dir, "dictionary_google.json")
 
 
 class TranslateShapekeyButton(bpy.types.Operator):
     bl_idname = 'translate.shapekeys'
-    bl_label = 'Shape Keys'
-    bl_description = "Translates all shape keys with Google Translate"
+    bl_label = 'Translate Shape Keys'
+    bl_description = "Translates all shape keys using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -47,41 +64,26 @@ class TranslateShapekeyButton(bpy.types.Operator):
 
         tools.common.unhide_all()
 
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
-
         to_translate = []
-        translated = {}
 
-        for obj in bpy.data.objects:
-            if hasattr(obj.data, 'shape_keys'):
-                if hasattr(obj.data.shape_keys, 'key_blocks'):
-                    for shapekey in obj.data.shape_keys.key_blocks:
-                        if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
-                            to_translate.append(shapekey.name)
+        for mesh in tools.common.get_meshes_objects(mode=2):
+            if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+                for shapekey in mesh.data.shape_keys.key_blocks:
+                    if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
+                        to_translate.append(shapekey.name)
 
-        translator = Translator()
-        try:
-            translations = translator.translate(to_translate)
-        except requests.exceptions.ConnectionError:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-            return {'FINISHED'}
+        if not update_dictionary(to_translate):
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
-        for i, translation in enumerate(translations):
-            translated[to_translate[i]] = translation.text
-
-        tools.common.update_shapekey_orders(translated)
+        tools.common.update_shapekey_orders()
 
         i = 0
-        for obj in bpy.data.objects:
-            if hasattr(obj.data, 'shape_keys'):
-                if hasattr(obj.data.shape_keys, 'key_blocks'):
-                    for shapekey in obj.data.shape_keys.key_blocks:
-                        if 'vrc.' not in shapekey.name:
-                            shapekey.name = translated[shapekey.name]
+        for mesh in tools.common.get_meshes_objects(mode=2):
+            if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+                for shapekey in mesh.data.shape_keys.key_blocks:
+                    if 'vrc.' not in shapekey.name:
+                        shapekey.name, translated = translate(shapekey.name, add_space=True)
+                        if translated:
                             i += 1
 
         self.report({'INFO'}, 'Translated ' + str(i) + ' shape keys.')
@@ -90,44 +92,43 @@ class TranslateShapekeyButton(bpy.types.Operator):
 
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
-    bl_label = 'Bones'
-    bl_description = 'Translates all bones with the build-in dictionary and the untranslated parts with Google Translate'
+    bl_label = 'Translate Bones'
+    bl_description = "Translates all bones using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-    )
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if not tools.common.get_armature():
             return False
         return True
 
     def execute(self, context):
         tools.common.unhide_all()
 
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
+        to_translate = []
+        for armature in tools.common.get_armature_objects():
+            for bone in armature.data.bones:
+                to_translate.append(bone.name)
 
-        count = translate_bones(self.dictionary)
+        if not update_dictionary(to_translate):
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
-        if count[1] == 0:
-            self.report({'INFO'}, 'Translated ' + str(count[0]) + ' bones.')
-        else:
-            self.report({'INFO'}, 'Translated ' + str(count[0]) + ' bones, ' + str(count[1]) + ' of them with Google Tanslate.')
+        count = 0
+
+        for armature in tools.common.get_armature_objects():
+            for bone in armature.data.bones:
+                bone.name, translated = translate(bone.name)
+                if translated:
+                    count += 1
+
+        self.report({'INFO'}, 'Translated ' + str(count) + ' bones.')
         return {'FINISHED'}
 
 
-class TranslateMeshesButton(bpy.types.Operator):
-    bl_idname = 'translate.meshes'
-    bl_label = 'Meshes & Objects'
-    bl_description = "Translates all meshes and objects with Google Translate"
+class TranslateObjectsButton(bpy.types.Operator):
+    bl_idname = 'translate.objects'
+    bl_label = 'Translate Meshes & Objects'
+    bl_description = "Translates all meshes and objects using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -137,33 +138,35 @@ class TranslateMeshesButton(bpy.types.Operator):
 
         tools.common.unhide_all()
 
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
-
         to_translate = []
-        translated = []
-        translator = Translator()
+        for obj in bpy.data.objects:
+            if obj.name not in to_translate:
+                to_translate.append(obj.name)
+            if obj.type == 'ARMATURE':
+                if obj.data and obj.data.name not in to_translate:
+                    to_translate.append(obj.data.name)
+                if obj.animation_data and obj.animation_data.action:
+                    to_translate.append(obj.animation_data.action.name)
 
-        objects = bpy.data.objects
-        for obj in objects:
-            to_translate.append(obj.name)
-
-        try:
-            translations = translator.translate(to_translate)
-        except requests.exceptions.ConnectionError:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-            return {'FINISHED'}
-
-        for translation in translations:
-            translated.append(translation.text)
+        if not update_dictionary(to_translate):
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         i = 0
-        for obj_name in to_translate:
-            bpy.data.objects[obj_name].name = translated[i]
-            i += 1
+        for obj in bpy.data.objects:
+            obj.name, translated = translate(obj.name)
+            if translated:
+                i += 1
+
+            if obj.type == 'ARMATURE':
+                if obj.data:
+                    obj.data.name, translated = translate(obj.data.name)
+                    if translated:
+                        i += 1
+
+                if obj.animation_data and obj.animation_data.action:
+                    obj.animation_data.action.name, translated = translate(obj.animation_data.action.name)
+                    if translated:
+                        i += 1
 
         self.report({'INFO'}, 'Translated ' + str(i) + ' meshes and objects.')
         return {'FINISHED'}
@@ -171,8 +174,8 @@ class TranslateMeshesButton(bpy.types.Operator):
 
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'translate.materials'
-    bl_label = 'Materials'
-    bl_description = "Translates all materials with Google Translate"
+    bl_label = 'Translate Materials'
+    bl_description = "Translates all materials using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -182,39 +185,24 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
         tools.common.unhide_all()
 
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
-
         to_translate = []
-        for ob in bpy.data.objects:
-            if ob.type == 'MESH':
-                tools.common.select(ob)
-                ob.active_material_index = 0
-
-                for matslot in ob.material_slots:
+        for mesh in tools.common.get_meshes_objects(mode=2):
+            for matslot in mesh.material_slots:
+                if matslot.name not in to_translate:
                     to_translate.append(matslot.name)
 
-        translated = []
-        translator = Translator()
-        try:
-            translations = translator.translate(to_translate)
-        except requests.exceptions.ConnectionError:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
-            return {'FINISHED'}
-
-        for translation in translations:
-            translated.append(translation.text)
+        if not update_dictionary(to_translate):
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         i = 0
-        for ob in bpy.data.objects:
-            if ob.type == 'MESH':
-                for index, matslot in enumerate(ob.material_slots):
-                    ob.active_material_index = index
-                    bpy.context.object.active_material.name = translated[i]
-                    i += 1
+        for mesh in tools.common.get_meshes_objects(mode=2):
+            tools.common.select(mesh)
+            for index, matslot in enumerate(mesh.material_slots):
+                mesh.active_material_index = index
+                if bpy.context.object.active_material:
+                    bpy.context.object.active_material.name, translated = translate(bpy.context.object.active_material.name)
+                    if translated:
+                        i += 1
 
         tools.common.unselect_all()
 
@@ -224,23 +212,16 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
-    bl_label = 'Textures'
-    bl_description = "Translates all textures with Google Translate"
+    bl_label = 'Translate Textures'
+    bl_description = "Translates all textures using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-
         # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
         self.report({'INFO'}, 'Translated all textures')
         return {'FINISHED'}
 
         tools.common.unhide_all()
-
-        # Remove Rigidbodies and joints
-        tools.common.switch('OBJECT')
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
 
         translator = Translator()
 
@@ -249,7 +230,7 @@ class TranslateTexturesButton(bpy.types.Operator):
             if ob.type == 'MESH':
                 for matslot in ob.material_slots:
                     for texslot in bpy.data.materials[matslot.name].texture_slots:
-                        if texslot is not None:
+                        if texslot:
                             print(texslot.name)
                             to_translate.append(texslot.name)
 
@@ -268,7 +249,7 @@ class TranslateTexturesButton(bpy.types.Operator):
             if ob.type == 'MESH':
                 for matslot in ob.material_slots:
                     for texslot in bpy.data.materials[matslot.name].texture_slots:
-                        if texslot is not None:
+                        if texslot:
                             bpy.data.textures[texslot.name].name = translated[i]
                             i += 1
 
@@ -278,49 +259,260 @@ class TranslateTexturesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def translate_bones(dictionary):
-    armature = tools.common.get_armature().data
-    translator = DictionaryEnum.get_translator(dictionary)
+class TranslateAllButton(bpy.types.Operator):
+    bl_idname = 'translate.all'
+    bl_label = 'Translate Everything'
+    bl_description = "Translates everything using the internal dictionary and Google Translate"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        if bpy.app.version < (2, 79, 0):
+            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            return {'FINISHED'}
+
+        bpy.ops.translate.bones('INVOKE_DEFAULT')
+        bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
+        bpy.ops.translate.objects('INVOKE_DEFAULT')
+        bpy.ops.translate.materials('INVOKE_DEFAULT')
+
+        self.report({'INFO'}, 'Translated everything.')
+        return {'FINISHED'}
+
+
+# Loads the dictionaries at the start of blender
+def load_translations():
+    global dictionary
+    dictionary = OrderedDict()
+    temp_dict = OrderedDict()
+    dict_found = False
+
+    # Load internal dictionary
+    try:
+        with open(dictionary_file, encoding="utf8") as file:
+            temp_dict = json.load(file, object_pairs_hook=collections.OrderedDict)
+            dict_found = True
+            print('DICTIONARY LOADED!')
+    except FileNotFoundError:
+        print('DICTIONARY NOT FOUND!')
+        pass
+    except json.decoder.JSONDecodeError:
+        print("ERROR FOUND IN DICTIONARY")
+        pass
+
+    # Load local google dictionary and add it to the temp dict
+    try:
+        with open(dictionary_google_file, encoding="utf8") as file:
+            global dictionary_google
+            dictionary_google = json.load(file, object_pairs_hook=collections.OrderedDict)
+
+            if 'created' not in dictionary_google or 'translations' not in dictionary_google or google_dict_too_old():
+                reset_google_dict()
+            else:
+                for name, trans in dictionary_google.get('translations').items():
+                    if not name:
+                        continue
+
+                    if name in temp_dict.keys():
+                        print(name, 'ALREADY IN INTERNAL DICT!')
+                        continue
+
+                    temp_dict[name] = trans
+
+            print('GOOGLE DICTIONARY LOADED!')
+    except FileNotFoundError:
+        print('GOOGLE DICTIONARY NOT FOUND!')
+        reset_google_dict()
+        pass
+    except json.decoder.JSONDecodeError:
+        print("ERROR FOUND IN GOOOGLE DICTIONARY")
+        reset_google_dict()
+        pass
+
+    # Sort temp dictionary by lenght and put it into the global dict
+    for key in sorted(temp_dict, key=lambda k: len(k), reverse=True):
+        dictionary[key] = temp_dict[key]
+
+    # for key, value in dictionary.items():
+    #     print('"' + key + '" - "' + value + '"')
+
+    return dict_found
+
+
+def update_dictionary(to_translate_list):
+    global dictionary, dictionary_google
     regex = u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+'  # Regex to look for japanese chars
 
+    # Check if single string is given and put it into an array
+    if type(to_translate_list) is str:
+        to_translate_list = [to_translate_list]
+
     google_input = []
-    google_output = []
 
-    count = [0, 0]
+    # Translate everything
+    for to_translate in to_translate_list:
+        length = len(to_translate)
+        translated_count = 0
 
-    # Translate with the local mmd_tools dictionary
-    for bone in armature.bones:
-        translated_name = utils.convertNameToLR(bone.name, True)
-        translated_name = translator.translate(translated_name)
-        bone.name = translated_name
-        count[0] += 1
+        to_translate = fix_jp_chars(to_translate)
 
-        # Check if name contains untranslated chars and add them to the list
-        match = re.findall(regex, translated_name)
-        if match is not None:
-            for name in match:
-                if name not in google_input:
-                    google_input.append(name)
+        # Remove spaces, there are no spaces in japan
+
+        # Translate with internal dictionary
+        for key, value in dictionary.items():
+            if key in to_translate:
+                if value:
+                    to_translate = to_translate.replace(key, value)
+                else:
+                    continue
+
+                # Check if string is fully translated
+                translated_count += len(key)
+                if translated_count >= length:
+                    break
+
+        # If not fully translated, translate the rest with Google
+        if translated_count < length:
+            match = re.findall(regex, to_translate)
+            if match:
+                for name in match:
+                    if name not in google_input and name not in dictionary.keys():
+                        google_input.append(name)
+
+    if not google_input:
+        # print('NO GOOGLE TRANSLATIONS')
+        return True
 
     # Translate the list with google translate
+    print('GOOGLE DICT UPDATE!')
+    translator = Translator()
     try:
-        translator = Translator()
         translations = translator.translate(google_input)
-    except:
-        return count
+    except requests.exceptions.ConnectionError:
+        print('DICTIONARY UPDATE FAILED!')
+        return False
 
-    for translation in translations:
-        google_output.append(translation.text.capitalize())
+    # Update the dictionaries
+    for i, translation in enumerate(translations):
+        name = google_input[i]
+        translated_name = translation.text.capitalize()
 
-    # Replace all untranslated parts in the bones with translations
-    for bone in armature.bones:
-        bone_name = bone.name
-        match = re.findall(regex, bone_name)
-        if match and len(match) > 0:
-            for index, name in enumerate(google_input):
-                if name in match:
-                    bone_name = bone_name.replace(name, google_output[index])
-            bone.name = bone_name
-            count[1] += 1
+        dictionary[name] = translated_name
+        dictionary_google['translations'][name] = translated_name
 
-    return count
+        print(google_input[i], translation.text.capitalize())
+
+    # Sort dictionary
+    temp_dict = copy.deepcopy(dictionary)
+    dictionary = OrderedDict()
+    for key in sorted(temp_dict, key=lambda k: len(k), reverse=True):
+        dictionary[key] = temp_dict[key]
+
+    # Save the google dict locally
+    save_google_dict()
+
+    print('DICTIONARY UPDATE SUCCEEDED!')
+    return True
+
+
+def translate(to_translate, add_space=False):
+    global dictionary
+
+    pre_translation = to_translate
+    length = len(to_translate)
+    translated_count = 0
+
+    # Add space for shape keys
+    addition = ''
+    if add_space:
+        addition = ' '
+
+    # Convert half chars into full chars
+    to_translate = fix_jp_chars(to_translate)
+
+    # Translate with internal dictionary
+    for key, value in dictionary.items():
+        if key in to_translate:
+            # If string is empty, don't replace it. This will be done at the end
+            if not value:
+                continue
+
+            to_translate = to_translate.replace(key, addition + value)
+
+            # Check if string is fully translated
+            translated_count += len(key)
+            if translated_count >= length:
+                break
+
+    to_translate = to_translate.replace('.L', '_L').replace('.R', '_R').replace('  ', ' ').replace('し', '').replace('っ', '').strip()
+
+    # print(to_translate)
+
+    return to_translate, pre_translation != to_translate
+
+
+def fix_jp_chars(name):
+    for values in mmd_tools_local.translations.jp_half_to_full_tuples:
+        if values[0] in name:
+            name = name.replace(values[0], values[1])
+    return name
+
+
+def google_dict_too_old():
+    created = datetime.strptime(dictionary_google.get('created'), time_format)
+    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
+
+    time_delta = abs((utc_now - created).days)
+
+    print('DAYS SINCE GOOGLE DICT CREATION:', time_delta)
+
+    if time_delta <= 30:
+        return False
+
+    print('DICT TOO OLD')
+    return True
+
+
+def reset_google_dict():
+    global dictionary_google
+    dictionary_google = OrderedDict()
+
+    now_utc = datetime.now(timezone.utc).strftime(time_format)
+
+    dictionary_google['created'] = now_utc
+    dictionary_google['translations'] = {}
+
+    save_google_dict()
+    print('GOOGLE DICT RESET')
+
+
+def save_google_dict():
+    with open(dictionary_google_file, 'w', encoding="utf8") as outfile:
+        json.dump(dictionary_google, outfile, ensure_ascii=False, indent=4)
+
+
+# def cvs_to_json():
+#     temp_dict = OrderedDict()
+#
+#     # Load internal dictionary
+#     try:
+#         with open(dictionary_file, encoding="utf8") as file:
+#             data = csv.reader(file, delimiter=',')
+#             for row in data:
+#                 name = fix_jp_chars(str(row[0]))
+#                 translation = row[1]
+#
+#                 if translation.startswith(' "'):
+#                     translation = translation[2:-1]
+#                 if translation.startswith('"'):
+#                     translation = translation[1:-1]
+#
+#                 temp_dict[name] = translation
+#             print('DICTIONARY LOADED!')
+#     except FileNotFoundError:
+#         print('DICTIONARY NOT FOUND!')
+#         pass
+#
+#     # # Create json from cvs
+#     dictionary_file_new = os.path.join(resources_dir, "dictionary2.json")
+#     with open(dictionary_file_new, 'w', encoding="utf8") as outfile:
+#         json.dump(temp_dict, outfile, ensure_ascii=False, indent=4)

@@ -35,7 +35,7 @@ def _toggleUseSphereTexture(self, context):
         for m in i.data.materials:
             if m is None:
                 continue
-            FnMaterial(m).use_sphere_texture(use_sphere)
+            FnMaterial(m).use_sphere_texture(use_sphere, i)
 
 def _toggleVisibilityOfMeshes(self, context):
     root = self.id_data

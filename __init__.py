@@ -27,16 +27,13 @@
 import os
 import sys
 import copy
+import requests
 import importlib
 import bpy.utils.previews
-
-from . import addon_updater_ops
-from datetime import datetime
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
 
-import mmd_tools_local
 # print("\n", mmd_tools_local.bl_info["version"])
 # if mmd_tools_local.bl_info["version"] == (0, 5, 0):
 #     print("mmd_tools deleting!")
@@ -44,45 +41,53 @@ import mmd_tools_local
 #     print("mmd_tools deleted!")
 #     import mmd_tools_local
 
-import tools.viseme
-import tools.atlas
-import tools.eyetracking
-import tools.bonemerge
-import tools.rootbone
-import tools.translate
-import tools.armature
-import tools.armature_bones
-import tools.armature_manual
-import tools.armature_custom
-import tools.material
-import tools.common
-import tools.supporter
-import tools.credits
-import tools.decimation
-import tools.shapekey
-import tools.copy_protection
-import tools.importer
+if "tools" not in locals():
+    print('STARTUP!!')
+    from . import addon_updater_ops
+    import mmd_tools_local
+    import tools.armature
+    import tools.armature_bones
+    import tools.armature_manual
+    import tools.armature_custom
+    import tools.atlas
+    import tools.bonemerge
+    import tools.common
+    import tools.copy_protection
+    import tools.credits
+    import tools.decimation
+    import tools.eyetracking
+    import tools.importer
+    import tools.material
+    import tools.rootbone
+    import tools.settings
+    import tools.shapekey
+    import tools.supporter
+    import tools.translate
+    import tools.viseme
+else:
+    print('RELOAD!!')
+    importlib.reload(mmd_tools_local)
+    importlib.reload(addon_updater_ops)
+    importlib.reload(tools.armature)
+    importlib.reload(tools.armature_bones)
+    importlib.reload(tools.armature_manual)
+    importlib.reload(tools.armature_custom)
+    importlib.reload(tools.atlas)
+    importlib.reload(tools.bonemerge)
+    importlib.reload(tools.common)
+    importlib.reload(tools.copy_protection)
+    importlib.reload(tools.credits)
+    importlib.reload(tools.decimation)
+    importlib.reload(tools.eyetracking)
+    importlib.reload(tools.importer)
+    importlib.reload(tools.material)
+    importlib.reload(tools.rootbone)
+    importlib.reload(tools.settings)
+    importlib.reload(tools.shapekey)
+    importlib.reload(tools.supporter)
+    importlib.reload(tools.translate)
+    importlib.reload(tools.viseme)
 
-
-importlib.reload(mmd_tools_local)
-importlib.reload(tools.viseme)
-importlib.reload(tools.atlas)
-importlib.reload(tools.eyetracking)
-importlib.reload(tools.bonemerge)
-importlib.reload(tools.rootbone)
-importlib.reload(tools.translate)
-importlib.reload(tools.armature)
-importlib.reload(tools.armature_bones)
-importlib.reload(tools.armature_manual)
-importlib.reload(tools.armature_custom)
-importlib.reload(tools.material)
-importlib.reload(tools.common)
-importlib.reload(tools.supporter)
-importlib.reload(tools.credits)
-importlib.reload(tools.decimation)
-importlib.reload(tools.shapekey)
-importlib.reload(tools.copy_protection)
-importlib.reload(tools.importer)
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
@@ -94,6 +99,9 @@ importlib.reload(tools.importer)
 # How to update googletrans:
 # in the gtoken.py on line 57 update this line to include "verify=False":
 # r = self.session.get(self.host, verify=False)
+# In client.py on line 42 remove the Hyper part, it's not faster at all!
+# Just comment it out.
+# Done
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -101,7 +109,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 9, 0],  # Only change this version and the dev branch var right before publishing the new update!
+    'version': [0, 10, 0],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -134,11 +142,11 @@ supporters = [
     # ['migero', 'migero', '2018-01-05', 0],
     ['Ashe', 'ashe', '2018-01-05', 0],  # 50
     ['Quadriple', 'quadriple', '2018-01-05', 0],  # 30
-    ['abrownbag', 'abrownbag', '2018-01-05', 1],  # cancelled april, remove soon
+    # ['abrownbag', 'abrownbag', '2018-01-05', 1],
     ['Azuth', 'Azuth', '2018-01-05', 0],
     ['goblox', 'goblox', '2018-01-05', 1],
     # ['Rikku', 'Rikku', '2018-01-05', 0],
-    ['azupwn', 'azupwn', '2018-01-05', 0],  # cancelled may, remove soon
+    # ['azupwn', 'azupwn', '2018-01-05', 0],
     ['m o t h', 'm o t h', '2018-01-05', 0],
     # ['Yorx', 'Yorx', '2018-01-05', 0],
     # ['Buffy', 'Buffy', '2018-01-05', 0],
@@ -149,7 +157,7 @@ supporters = [
     ['Shanie', 'Shanie-senpai', '2018-01-05', 0],  # -shan
     # ['Kal [Thramis]', 'Kal', '2018-01-12', 0],
     ['Sifu', 'Sifu', '2018-01-12', 0],  # -ylon
-    ['Lil Clone', 'Lil Clone', '2018-01-12', 0],  # cancelled april, remove soon
+    # ['Lil Clone', 'Lil Clone', '2018-01-12', 0],
     ['Naranar', 'Naranar', '2018-01-12', 1],
     # ['gwigz', 'gwigz', '2018-01-12', 0],
     # ['Lux', 'Lux', '2018-01-12', 0],
@@ -204,6 +212,8 @@ supporters = [
 ]
 
 current_supporters = None
+
+dict_found = False
 
 
 class ToolPanel:
@@ -564,7 +574,7 @@ class ToolPanel:
         description='Controls the strength in the creation of the shape keys. Lower for less mouth movement strength',
         default=1.0,
         min=0.0,
-        max=1.0,
+        max=10.0,
         step=0.1,
         precision=2,
         subtype='FACTOR'
@@ -670,6 +680,24 @@ class ToolPanel:
         items=tools.rootbone.get_parent_root_bones,
     )
 
+    # Settings
+    bpy.types.Scene.use_custom_mmd_tools = bpy.props.BoolProperty(
+        name='Use Custom mmd_tools',
+        description='Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools ',
+        default=False,
+        update=tools.settings.set_use_custom_mmd_tools
+    )
+
+    bpy.types.Scene.disable_vrchat_features = bpy.props.BoolProperty(
+        name='Disable VRChat Only Features',
+        description='This will disable features which are solely used for VRChat.'
+                    '\nThe following will be disabled:'
+                    '\n- Eye Tracking'
+                    '\n- Visemes',
+        default=False,
+        update=tools.settings.set_use_custom_mmd_tools
+    )
+
     # Copy Protection - obsolete
     # bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
     #     name="Randomization Level",
@@ -701,9 +729,15 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         if bpy.app.version < (2, 79, 0):
             col.separator()
-            col.label('Old Blender version detected!', icon='ERROR')
-            col.label('Some features might not work!', icon='ERROR')
-            col.label('Please update to Blender 2.79!', icon='ERROR')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Old Blender version detected!', icon='ERROR')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Some features might not work!', icon_value=get_emtpy_icon())
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Please update to Blender 2.79!', icon_value=get_emtpy_icon())
             col.separator()
             col.separator()
 
@@ -721,8 +755,26 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         if addon_updater_ops.updater.update_ready:
             col.separator()
-            col.label('New Cats version available!', icon='INFO')
-            col.label('Check the Updater panel!', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('New Cats version available!', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Check the Updater panel!', icon_value=get_emtpy_icon())
+            col.separator()
+            col.separator()
+
+        if not dict_found:
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Dictionary not found!', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Translations will work, but are not optimized.', icon_value=get_emtpy_icon())
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Reinstall Cats to fix this.', icon_value=get_emtpy_icon())
             col.separator()
             col.separator()
 
@@ -781,6 +833,31 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             subcol = row.split(align=True)
             subcol.scale_y = 1.4
             subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            #
+            # col.separator()
+            # col.separator()
+            # row = col.row(align=True)
+            # row.scale_y = 1
+            # subcol = row.split(align=True)
+            # subcol.scale_y = 1.4
+            # subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            # subcol = row.split(align=True)
+            # subcol.scale_y = 1.4
+            # subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # row.scale_y = 1.4
+            # row.operator('importer.export_model', icon='ARMATURE_DATA')
+
+            # row = col.row(align=True)
+            # row.scale_y = 1
+            # subcol = row.row(align=True)
+            # subcol.alignment = 'LEFT'
+            # subcol.scale_y = 1.4
+            # subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # row.scale_y = 1.4
+            # row.operator('importer.import_any_model', text="Import Model", icon='ARMATURE_DATA')
+            # row = row.split(align=True)
+            # row.scale_y = 1.4
+            # row.operator('importer.export_model', icon='ARMATURE_DATA')
 
         if arm_count > 1:
             col.separator()
@@ -806,7 +883,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label('You can safely ignore the', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.5
-            row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label('"Spine length zero" warning in Unity.', icon_value=get_emtpy_icon())
             col.separator()
 
         ob = bpy.context.active_object
@@ -837,6 +914,8 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         box = layout.box()
+        button_height = 1
+
         col = box.column(align=True)
         # if not context.scene.show_manual_options:
         #     row = col.row(align=False)
@@ -846,13 +925,13 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_DOWN')
 
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.label("Separate by:", icon='MESH_DATA')
         row.operator('armature_manual.separate_by_materials', text='Materials')
         row.operator('armature_manual.separate_by_loose_parts', text='Loose Parts')
 
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.label("Join Meshes:", icon='MESH_DATA')
         row.operator('armature_manual.join_meshes', text='All')
         row.operator('armature_manual.join_meshes_selected', text='Selected')
@@ -860,34 +939,52 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         col.separator()
         row = col.split(percentage=0.23, align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.label("Delete:", icon='X')
         row.operator('armature_manual.remove_zero_weight', text='Zero Weight Bones')
         row.operator('armature_manual.remove_constraints', text='Constraints')
         row = col.row(align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.operator('armature_manual.merge_weights', icon='BONE_DATA')
 
         col.separator()
         col.separator()
         row = col.split(percentage=0.27, align=True)
-        row.scale_y = 1.05
+        row.scale_y = button_height
         row.label("Normals:", icon='SNAP_NORMAL')
         row.operator('armature_manual.recalculate_normals', text='Recalculate')
         row.operator('armature_manual.flip_normals', text='Flip')
+        row = col.row(align=True)
+        row.scale_y = button_height
+        row.operator('armature_manual.apply_transformations', icon='OUTLINER_DATA_ARMATURE')
 
+        row = col.row(align=True)
+        row.scale_y = 1
+        subcol = row.split(align=True)
+        subcol.scale_y = button_height
+        subcol.operator('armature_manual.remove_doubles', icon='STICKY_UVS_VERT')
+        subcol = row.split(align=True)
+        subcol.scale_y = button_height
+        subcol.operator('armature_manual.remove_doubles_normal', text="", icon='X')
+
+        # Translate
         col.separator()
         row = col.row(align=True)
-        # row.label("Translation:", icon_value=tools.supporter.preview_collections["custom_icons"]["TRANSLATE"].icon_id)
-        row.label("Translation:", icon='FILE_REFRESH')
-        row = col.row(align=True)
-        row.scale_y = 1.05
-        row.operator('translate.shapekeys', icon='SHAPEKEY_DATA')
-        row.operator('translate.bones', icon='BONE_DATA')
-        row = col.row(align=True)
-        row.scale_y = 1.05
-        row.operator('translate.meshes', icon='MESH_DATA')
-        row.operator('translate.materials', icon='MATERIAL')
+        row.label("Translate:", icon='FILE_REFRESH')
+
+        split = col.split(percentage=0.27, align=True)
+
+        row = split.row(align=True)
+        row.scale_y = 2
+        row.operator('translate.all', text='All', icon='META_BALL')
+
+        row = split.column(align=True)
+        row.operator('translate.shapekeys', text='Shape Keys', icon='SHAPEKEY_DATA')
+        row.operator('translate.objects', text='Objects', icon='MESH_DATA')
+
+        row = split.column(align=True)
+        row.operator('translate.bones', text='Bones', icon='BONE_DATA')
+        row.operator('translate.materials', text='Materials', icon='MATERIAL')
 
 
 class CustomPanel(ToolPanel, bpy.types.Panel):
@@ -1331,9 +1428,9 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 1.1
         row.prop(context.scene, 'mouth_ch', icon='SHAPEKEY_DATA')
 
-        # col.separator()
-        # row = col.row(align=True)
-        # row.prop(context.scene, 'shape_intensity')
+        col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'shape_intensity')
 
         col.separator()
         row = col.row(align=True)
@@ -1465,18 +1562,37 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
             row = col.row(align=True)
-            col.separator()
-            row.operator('armature_manual.export_model', icon='ARMATURE_DATA')
+            row.operator('importer.export_model', icon='ARMATURE_DATA')
         else:
             row.operator('copyprotection.enable', icon='KEY_HLT')
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v2'
+    # bl_label = 'Settings & Updates'
     bl_label = 'Updater'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
+        # layout = self.layout
+        # box = layout.box()
+        # col = box.column(align=True)
+        #
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'use_custom_mmd_tools')
+        # # row = col.row(align=True)
+        # # row.prop(context.scene, 'disable_vrchat_features')
+        #
+        # if tools.settings.settings_changed():
+        #     col.separator()
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.8
+        #     row.label('Settings have changed.', icon='ERROR')
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.8
+        #     row.label('Restart Blender to apply them.', icon_value=get_emtpy_icon())
+
+        # Updater
         # addon_updater_ops.check_for_update_background()
         addon_updater_ops.update_settings_ui(self, context)
 
@@ -1611,6 +1727,8 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.operator('credits.discord', icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
         row = col.row(align=True)
         row.operator('credits.forum', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
+        row = col.row(align=True)
+        row.operator('credits.patchnotes', icon='WORDWRAP_ON')
 
 
 class UpdaterPreferences(bpy.types.AddonPreferences):
@@ -1652,6 +1770,10 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
         addon_updater_ops.update_settings_ui(self, context)
 
 
+def get_emtpy_icon():
+    return tools.supporter.preview_collections["custom_icons"]["empty"].icon_id
+
+
 classesToRegister = [
     ArmaturePanel,
     tools.importer.ImportAnyModel,
@@ -1681,14 +1803,18 @@ classesToRegister = [
     tools.armature_manual.JoinMeshes,
     tools.armature_manual.JoinMeshesSelected,
     tools.armature_manual.MergeWeights,
+    tools.armature_manual.ApplyTransformations,
     tools.armature_manual.RemoveZeroWeight,
     tools.armature_manual.RemoveConstraints,
     tools.armature_manual.RecalculateNormals,
     tools.armature_manual.FlipNormals,
+    tools.armature_manual.RemoveDoubles,
+    tools.armature_manual.RemoveDoublesNormal,
     tools.translate.TranslateShapekeyButton,
     tools.translate.TranslateBonesButton,
-    tools.translate.TranslateMeshesButton,
+    tools.translate.TranslateObjectsButton,
     tools.translate.TranslateMaterialsButton,
+    tools.translate.TranslateAllButton,
 
     CustomPanel,
     tools.armature_custom.MergeArmature,
@@ -1742,6 +1868,7 @@ classesToRegister = [
     CreditsPanel,
     tools.credits.DiscordButton,
     tools.credits.ForumButton,
+    tools.credits.PatchnotesButton,
 
     tools.shapekey.ShapeKeyApplier,
     tools.common.ShowError,
@@ -1750,19 +1877,17 @@ classesToRegister = [
 
 def register():
     print("\n### Loading CATS...")
-    # bpy.utils.unregister_module("mmd_tools")
+    global dict_found
+
+    # Load settings
+    tools.settings.load_settings()
+
+    # if not tools.settings.use_custom_mmd_tools():
+    #     bpy.utils.unregister_module("mmd_tools")
     try:
         mmd_tools_local.register()
     except AttributeError:
         pass
-
-    if dev_branch and len(version) > 2:
-        version[2] += 1
-
-    tools.supporter.load_settings()
-    tools.supporter.load_other_icons()
-    tools.supporter.load_supporters()
-    tools.supporter.register_dynamic_buttons()
 
     try:
         addon_updater_ops.register(bl_info)
@@ -1773,10 +1898,25 @@ def register():
     for value in classesToRegister:
         bpy.utils.register_class(value)
 
+    if dev_branch and len(version) > 2:
+        version[2] += 1
+
+    tools.supporter.load_other_icons()
+    tools.supporter.load_supporters()
+    tools.supporter.register_dynamic_buttons()
+
+    dict_found = tools.translate.load_translations()
+
     bpy.context.user_preferences.system.use_international_fonts = True
     bpy.context.user_preferences.filepaths.use_file_compression = True
 
     bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+
+    # Disable request warning when using google translate
+    requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
+    # tools.settings.start_apply_settings_timer()
+
     print("### Loaded CATS successfully!")
 
 

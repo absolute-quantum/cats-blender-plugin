@@ -206,7 +206,7 @@ class Model:
 
         obj.mmd_rigid.shape = rigid_body.collisionShape(shape_type)
         obj.mmd_rigid.size = size
-        obj.mmd_rigid.type = str(dynamics_type)
+        obj.mmd_rigid.type = str(dynamics_type) if dynamics_type in range(3) else '1'
 
         if collision_group_number is not None:
             obj.mmd_rigid.collision_group_number = collision_group_number

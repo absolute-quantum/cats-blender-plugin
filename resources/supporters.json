@@ -2,16 +2,13 @@
   "news": [
     {
       "info2": "It is wednesday my dudes"
-    },
-    {
+    },{
       "info2": "Have a nice weekend!",
       "custom_icon": "fire"
-    },
-    {
+    },{
       "info2": "Happy",
       "icon": "INFO"
-    },
-    {
+    },{
       "info2": "Happy Halloween!",
       "custom_icon": "halloween",
       "disabled": false
@@ -19,12 +16,24 @@
   ],
   "supporters": [
     {
+      "displayname": "Example Person<3             - Name that gets shown and icon name.",
+      "iconname": "Example Person3                 - name of the icon if it differs from the displayname (for incompatible icon chars like '<')",
+      "startdate": "2018-01-24                     - Just an info for us. Date when he got added to the list",
+      "description": "I'm a description            - Description is shown when hovering over the name",
+      "website": "https://www.mycoolwebsite.com    - Makes the name clickable with a link to a website. Setting it to null makes it a button but not clickable",
+      "tier": 1,
+      "disabled": true,
+
+      "other info 1": " tier: 1                    - Puts the name on top of the list. Only 1 is available currently",
+      "other info 2": " disabled: true             - Hides that person in the list"
+    },{
       "displayname": "Xeverian",
       "startdate": "2018-01-05",
       "description": "yare yare daze"
     },{
       "displayname": "Tupper",
-      "startdate": "2018-02-05"
+      "startdate": "2018-02-05",
+      "disabled": true
     },{
       "displayname": "idea",
       "startdate": "2018-03-05"
@@ -60,7 +69,9 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "abrownbag",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "Cancelled April",
+      "disabled": true
     },{
       "displayname": "Azuth",
       "startdate": "2018-04-05"
@@ -69,7 +80,9 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "azupwn",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "Cancelled May",
+      "disabled": true
     },{
       "displayname": "m o t h",
       "startdate": "2018-04-05"
@@ -78,9 +91,6 @@
       "startdate": "2018-05-21"
     },{
       "displayname": "Tomnautical",
-      "startdate": "2018-04-05"
-    },{
-      "displayname": "Atirion",
       "startdate": "2018-04-05"
     },{
       "displayname": "Lydania",
@@ -93,13 +103,17 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "Lil Clone",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "Cancelled April",
+      "disabled": true
     },{
       "displayname": "Naranar",
       "startdate": "2018-04-05"
     },{
       "displayname": "liquid (retso)",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "Cancelled May",
+      "disabled": true
     },{
       "displayname": "Mute_",
       "startdate": "2018-04-05"
@@ -210,6 +224,43 @@
     },{
       "displayname": "Netrosis",
       "startdate": "2018-06-20"
+    },{
+      "displayname": "Krisu.Miushy",
+      "startdate": "2018-06-21",
+      "description": "DDVR Community leader - I'll support your creations, let's keep the hard work everyone!\n",
+      "website": "https://youtu.be/TSXnXiUBn8s",
+      "tier": 1
+    },{
+      "displayname": "Atirion",
+      "startdate": "2018-04-05",
+      "description": "Cats Blender Plugin has given me the opportunity to meet so many awesome people and make so many memories. Biggest thanks to the team!\n",
+      "website": "https://www.twitch.tv/atiriontv",
+      "tier": 1
+    },{
+      "displayname": "Murakuumoo",
+      "startdate": "2018-07-02",
+      "info": "Was added 4 months late."
+    },{
+      "displayname": "Tupper",
+      "startdate": "2018-02-05",
+      "description": "Thank you to the Cats Plugin team for making it easy to be who you want to be in VRChat, and to the VRChat community for being the best community on the internet to manage. Don't forget to atlas! (If you don't, I'll know)",
+      "website": "http://dtupper.com/",
+      "tier": 1
+    },{
+      "displayname": "baffler",
+      "startdate": "2018-08-07",
+      "info": "Was added 2 months late."
+    },{
+      "displayname": "Aliquem",
+      "startdate": "2018-08-07",
+      "info": "Was added 1 months late.",
+      "description": "All you darlings out there are fabulous! Knock em dead with your avatars!\n"
+    },{
+      "displayname": "VRCMods",
+      "startdate": "2018-08-07",
+      "description": "We <3 the VRChat Community",
+      "website": "https://vrcmods.com/",
+      "tier": 1
     }
   ]
 }

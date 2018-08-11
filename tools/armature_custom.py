@@ -157,8 +157,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     merge_armature = bpy.data.objects[merge_armature_name]
 
     # Join meshes in both armatures
-    mesh_base = tools.common.join_meshes(armature_name=base_armature_name)
-    mesh_merge = tools.common.join_meshes(armature_name=merge_armature_name)
+    mesh_base = tools.common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
+    mesh_merge = tools.common.join_meshes(armature_name=merge_armature_name, apply_transformations=False)
 
     # Applies transforms an the base armature and mesh
     tools.common.unselect_all()
@@ -335,7 +335,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     armature = tools.common.get_armature(armature_name=base_armature_name)
 
     # Join the meshes
-    mesh_merge = tools.common.join_meshes(armature_name=base_armature_name)
+    mesh_merge = tools.common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
 
     # Go into edit mode
     tools.common.unselect_all()

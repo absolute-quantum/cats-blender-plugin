@@ -230,6 +230,8 @@ class CreateEyesButton(bpy.types.Operator):
 
         wm.progress_end()
 
+        tools.common.sort_shape_keys(mesh_name)
+
         if not is_correct['result']:
             self.report({'ERROR'}, is_correct['message'])
             self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head'
@@ -259,7 +261,7 @@ class CreateEyesButton(bpy.types.Operator):
         blinking = not context.scene.disable_eye_blinking
         new_name = new_names[new_index - 1]
 
-        # rename shapekey if it already exists and set all values to 0
+        # Rename shapekey if it already exists and set all values to 0
         for shapekey in mesh.data.shape_keys.key_blocks:
             shapekey.value = 0
             if shapekey.name == new_name:
@@ -267,7 +269,7 @@ class CreateEyesButton(bpy.types.Operator):
                 if from_shape == new_name:
                     from_shape = shapekey.name
 
-        # create new shape key
+        # Create new shape key
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if from_shape == shapekey.name:
                 mesh.active_shape_key_index = index
@@ -275,22 +277,9 @@ class CreateEyesButton(bpy.types.Operator):
                 mesh.shape_key_add(name=new_name, from_mix=blinking)
                 break
 
-        # Select the created shapekey
-        mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
-
-        # Re-adjust index position
-        position_correct = False
-        bpy.ops.object.shape_key_move(type='TOP')
-        while position_correct is False:
-            if mesh.active_shape_key_index != new_index:
-                bpy.ops.object.shape_key_move(type='DOWN')
-            else:
-                position_correct = True
-
-        # reset shape values back to 0
+        # Reset shape keys
         for shapekey in mesh.data.shape_keys.key_blocks:
             shapekey.value = 0
-
         mesh.active_shape_key_index = 0
         return from_shape
 
@@ -492,7 +481,7 @@ class StartTestingButton(bpy.types.Operator):
     bl_label = 'Start Eye Testing'
     bl_description = 'This will let you test how the eye movement will look ingame.\n' \
                      "Don't forget to stop the Testing process afterwards.\n" \
-                     'Bones "EyeLeft" and "EyeRight" are required'
+                     'Bones "LeftEye" and "RightEye" are required'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod

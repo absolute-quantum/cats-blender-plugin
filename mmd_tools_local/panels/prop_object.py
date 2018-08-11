@@ -34,7 +34,7 @@ class MMDModelObjectPanel(_PanelBase, Panel):
         c.prop_search(root.mmd_root, 'comment_e_text', search_data=bpy.data, search_property='texts')
         c = layout.column()
         c.operator('mmd_tools.change_mmd_ik_loop_factor', text='Change MMD IK Loop Factor')
-
+        c.operator('mmd_tools.recalculate_bone_roll', text='Recalculate bone roll')
 
 class MMDRigidPanel(_PanelBase, Panel):
     bl_idname = 'RIGID_PT_mmd_tools_bone'

@@ -147,8 +147,8 @@ class AutoDecimateButton(bpy.types.Operator):
             return {'FINISHED'}
 
         if context.scene.decimation_mode != 'CUSTOM':
-            for mesh in meshes:
-                tools.common.separate_by_materials(context, mesh)
+            mesh = tools.common.join_meshes(repair_shape_keys=False)
+            tools.common.separate_by_materials(context, mesh)
 
         self.decimate(context)
 
@@ -164,7 +164,7 @@ class AutoDecimateButton(bpy.types.Operator):
         full_decimation = context.scene.decimation_mode == 'FULL'
         half_decimation = context.scene.decimation_mode == 'HALF'
         safe_decimation = context.scene.decimation_mode == 'SAFE'
-        decimate_fingers = context.scene.decimate_fingers
+        save_fingers = context.scene.decimate_fingers
         max_tris = context.scene.max_tris
         meshes = []
         current_tris_count = 0
@@ -179,7 +179,7 @@ class AutoDecimateButton(bpy.types.Operator):
             tools.common.switch('OBJECT')
             current_tris_count += len(mesh.data.polygons)
 
-        if decimate_fingers:
+        if save_fingers:
             for mesh in meshes_obj:
                 if len(mesh.vertex_groups) > 0:
                     tools.common.select(mesh)
@@ -253,7 +253,7 @@ class AutoDecimateButton(bpy.types.Operator):
                 message.append('Try to use Custom or Full decimation.')
             elif custom_decimation:
                 message.append('Select fewer shape keys and/or meshes or use Full decimation.')
-            if decimate_fingers:
+            if save_fingers:
                 message[1] = message[1][:-1]
                 message.append("or disable 'Save Fingers'.")
             tools.common.show_error(6, message)

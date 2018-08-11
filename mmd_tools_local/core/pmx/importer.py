@@ -263,8 +263,17 @@ class PMXImporter:
             for b_bone, m_bone in zip(editBoneTable, pmx_bones):
                 # Set the length of too short bones to 1 because Blender delete them.
                 if b_bone.length < 0.001:
-                    loc = mathutils.Vector([0, 0, 1]) * self.__scale
-                    b_bone.tail = b_bone.head + loc
+                    if not self.__apply_bone_fixed_axis and m_bone.axis is not None:
+                        fixed_axis = mathutils.Vector(m_bone.axis)
+                        if fixed_axis.length:
+                            loc = (fixed_axis * self.TO_BLE_MATRIX).normalized() * self.__scale
+                            b_bone.tail = b_bone.head + loc
+                        else:
+                            loc = mathutils.Vector([0, 0, 1]) * self.__scale
+                            b_bone.tail = b_bone.head + loc
+                    else:
+                        loc = mathutils.Vector([0, 0, 1]) * self.__scale
+                        b_bone.tail = b_bone.head + loc
                     if m_bone.displayConnection != -1 and m_bone.displayConnection != [0.0, 0.0, 0.0]:
                         logging.debug(' * special tip bone %s, display %s', b_bone.name, str(m_bone.displayConnection))
                         specialTipBones.append(b_bone.name)
@@ -272,6 +281,8 @@ class PMXImporter:
             for b_bone, m_bone in zip(editBoneTable, pmx_bones):
                 if m_bone.localCoordinate is not None:
                     FnBone.update_bone_roll(b_bone, m_bone.localCoordinate.x_axis, m_bone.localCoordinate.z_axis)
+                elif FnBone.has_auto_local_axis(m_bone.name):
+                    FnBone.update_auto_bone_roll(b_bone)
 
         return nameTable, specialTipBones
 
@@ -443,10 +454,10 @@ class PMXImporter:
                 mmd_bone.enabled_fixed_axis = True
                 mmd_bone.fixed_axis = pmx_bone.axis
 
-            #if mmd_bone.is_tip:
-            #    b_bone.lock_rotation = [True, True, True]
-            #    b_bone.lock_location = [True, True, True]
-            #    b_bone.lock_scale = [True, True, True]
+                if not self.__apply_bone_fixed_axis and mmd_bone.is_tip:
+                    b_bone.lock_rotation = [True, False, True]
+                    b_bone.lock_location = [True, True, True]
+                    b_bone.lock_scale = [True, True, True]
 
     def __importRigids(self):
         start_time = time.time()
@@ -569,6 +580,9 @@ class PMXImporter:
             if i.sphere_texture != -1 and amount != 0.0:
                 texture_slot = fnMat.create_sphere_texture(self.__textureTable[i.sphere_texture])
                 texture_slot.diffuse_color_factor = amount
+                if i.sphere_texture_mode == 3 and getattr(pmxModel.header, 'additional_uvs', 0):
+                    texture_slot.uv_layer = 'UV1' # for SubTexture
+                    mmd_mat.sphere_texture_type = mmd_mat.sphere_texture_type # re-update
 
     def __importFaces(self):
         pmxModel = self.__model
@@ -795,6 +809,7 @@ class PMXImporter:
         self.__sph_blend_factor = args.get('sph_blend_factor', 1.0)
         self.__spa_blend_factor = args.get('spa_blend_factor', 1.0)
         self.__fix_IK_links = args.get('fix_IK_links', False)
+        self.__apply_bone_fixed_axis = args.get('apply_bone_fixed_axis', False)
         self.__translator = args.get('translator', None)
 
         logging.info('****************************************')
@@ -832,7 +847,9 @@ class PMXImporter:
                 self.__renameLRBones(use_underscore)
             if self.__translator:
                 self.__translateBoneNames()
-            self.__rig.applyAdditionalTransformConstraints()
+            if self.__apply_bone_fixed_axis:
+                FnBone.apply_bone_fixed_axis(self.__armObj)
+            FnBone.apply_additional_transformation(self.__armObj)
 
         if 'PHYSICS' in types:
             self.__importRigids()
