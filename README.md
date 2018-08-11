@@ -363,9 +363,6 @@ It checks for a new version automatically once every day.
   - Increased the range of the intensity slider
 - **Credits:**
   - Added a patchnotes button
-- **Shapekeys:**
-  - Greatly improved "Apply Shapekey as Basis"
-  - Shape keys added to the Basis can be reverted now
 - **General:**
   - Slightly reduced startup time
   - Updated mmd_tools
