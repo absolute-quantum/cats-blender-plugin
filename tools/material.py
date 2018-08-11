@@ -218,10 +218,10 @@ class CombineMaterialsButton(bpy.types.Operator):
         tools.common.switch('OBJECT')
         i = 0
 
-        for index, obj in enumerate(tools.common.get_meshes_objects()):
+        for index, mesh in enumerate(tools.common.get_meshes_objects()):
 
             tools.common.unselect_all()
-            tools.common.select(obj)
+            tools.common.select(mesh)
             for file in self.combined_tex:  # for each combined mat slot of scene object
                 combined_textures = self.combined_tex[file]
 
@@ -233,11 +233,12 @@ class CombineMaterialsButton(bpy.types.Operator):
                 # print('NEW', file, combined_textures, len(combined_textures))
                 tools.common.switch('EDIT')
                 bpy.ops.mesh.select_all(action='DESELECT')
+
                 # print('UNSELECT ALL')
-                for mat in bpy.context.object.material_slots:  # for each scene object material slot
+                for mat in mesh.material_slots:  # for each scene object material slot
                     for tex in combined_textures:
                         if mat.name == tex['mat']:
-                            bpy.context.object.active_material_index = tex['index']
+                            mesh.active_material_index = tex['index']
                             bpy.ops.object.material_slot_select()
                             # print('SELECT', tex['mat'], tex['index'])
 
@@ -246,18 +247,12 @@ class CombineMaterialsButton(bpy.types.Operator):
                 bpy.ops.mesh.select_all(action='DESELECT')
 
             tools.common.unselect_all()
-            tools.common.select(obj)
+            tools.common.select(mesh)
             tools.common.switch('OBJECT')
             self.cleanmatslots()
 
             # Clean material names
-            for j, mat in enumerate(bpy.context.object.material_slots):
-                if mat.name.endswith('.001'):
-                    bpy.context.object.active_material_index = j
-                    bpy.context.object.active_material.name = mat.name[:-4]
-                if mat.name.endswith('. 001') or mat.name.endswith(' .001'):
-                    bpy.context.object.active_material_index = j
-                    bpy.context.object.active_material.name = mat.name[:-5]
+            tools.common.clean_material_names(mesh)
 
             # print('CLEANED MAT SLOTS')
 

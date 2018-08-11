@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.9.0)
+# Cats Blender Plugin (0.10.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -99,13 +99,17 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/Y7rYJYQ.png)
+![](https://i.imgur.com/jPcDvaW.png)
+
+##### Translation
+- Translate certain entities from any japanese to english.
+This uses an internal dictionary and Google Translate.
 
 ##### Separate by material / loose parts
 - Separates a mesh by materials or loose parts
 
 ##### Join meshes
-- Joins all meshes into one
+- Joins all meshes together
 
 ##### Delete Zero Weight Bones
 - Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices
@@ -123,9 +127,11 @@ This tries to completely fix your model with one click.
 ##### Flip Normals
 - Flips the direction of the faces' normals of the selected mesh.
 
-##### Translation
-- Translate certain entities from any language to english.
-Works by sending a request to the Google Translate service. This feature can be slow for entities with a large amount of items.
+##### Apply Transformations
+- Applies the position, rotation and scale to the armature and its meshes.
+
+##### Remove Doubles
+- Merges duplicated faces and vertices of the selected meshes.
 
 
 ## Custom Model Creation
@@ -207,7 +213,7 @@ It's a good idea to check the eye movement in the testing tab after this operati
 
 
 ## Visemes (Lip Sync)
-![](https://i.imgur.com/zReTmcv.png)
+![](https://i.imgur.com/muM2PTS.png)
 
 **Mouth visemes are used to show more realistic mouth movement in-game when talking over the microphone.**
 The script generates 15 shape keys from the 3 shape keys you specified. It uses the mouth visemes A, OH and CH to generate this output.
@@ -346,7 +352,12 @@ It checks for a new version automatically once every day.
 - **Model:**
   - Join meshes now applies all transforms
   - Added new Apply Transforms button
+  - Added new Remove Doubles button
+    - More precise than doing it manually but removes less vertices overall
+    - A little extra button at the end lets you remove doubles like you would do manually
   - Fixed files with capital letters in the file extension not importing correctly
+  - Fixed "Separate by Loose Parts" creating multiple extremely small meshes
+    - This makes "Separate by Loose Parts" actually useful and not a laggy mess
 - **Visemes:**
   - Shape Keys Mix Intensity slider is back
   - Increased the range of the intensity slider

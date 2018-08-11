@@ -214,7 +214,12 @@ class PoseToRest(bpy.types.Operator):
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
-    bl_description = 'Joins the model meshes into a single one, sorts all shape keys and applies all transforms as well as all unapplied decimation modifiers'
+    bl_description = 'Joins all meshes of this model together.' \
+                     '\nIt also:' \
+                     '\n  - Reorders all shape keys correctly' \
+                     '\n  - Applies all transformations' \
+                     '\n  - Applies all unapplied decimation modifiers' \
+                     '\n  - Repairs broken armature modifiers'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -232,7 +237,12 @@ class JoinMeshes(bpy.types.Operator):
 class JoinMeshesSelected(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes_selected'
     bl_label = 'Join Selected Meshes'
-    bl_description = 'Joins the selected model meshes into a single one, sorts all shape keys and applies all transforms as well as all unapplied decimation modifiers'
+    bl_description = 'Joins all meshes of this model together.' \
+                     '\nIt also:' \
+                     '\n  - Reorders all shape keys correctly' \
+                     '\n  - Applies all transformations' \
+                     '\n  - Applies all unapplied decimation modifiers' \
+                     '\n  - Repairs broken armature modifiers'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -298,10 +308,8 @@ class SeparateByMaterials(bpy.types.Operator):
 class SeparateByLooseParts(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_loose_parts'
     bl_label = 'Separate by Loose Parts'
-    bl_description = 'Can cause a lot of lag depending on the model!\n' \
-                     '\n' \
-                     'Separates selected mesh by loose parts sorted by materials.\n' \
-                     'This acts like separating by materials but creates more meshes for more precision.\n'
+    bl_description = 'Separates selected mesh by loose parts.\n' \
+                     'This acts like separating by materials but creates more meshes for more precision'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -570,7 +578,7 @@ class RecalculateNormals(bpy.types.Operator):
             return True
 
         meshes = tools.common.get_meshes_objects()
-        return meshes and len(meshes) == 1
+        return meshes
 
     def execute(self, context):
         obj = context.active_object
@@ -608,7 +616,7 @@ class FlipNormals(bpy.types.Operator):
             return True
 
         meshes = tools.common.get_meshes_objects()
-        return meshes and len(meshes) == 1
+        return meshes
 
     def execute(self, context):
         obj = context.active_object
@@ -630,4 +638,72 @@ class FlipNormals(bpy.types.Operator):
         tools.common.set_default_stage()
 
         self.report({'INFO'}, 'Recalculated all normals.')
+        return {'FINISHED'}
+
+
+class RemoveDoubles(bpy.types.Operator):
+    bl_idname = 'armature_manual.remove_doubles'
+    bl_label = 'Remove Doubles'
+    bl_description = "Merges duplicated faces and vertices of the selected meshes." \
+                     "\nThis is more precise than doing it manually:" \
+                     "\n  - prevents deletion of unwanted vertices" \
+                     "\n  - but removes less doubles overall"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        if obj and obj.type == 'MESH':
+            return True
+
+        meshes = tools.common.get_meshes_objects()
+        return meshes
+
+    def execute(self, context):
+        removed_tris = 0
+        meshes = tools.common.get_meshes_objects(mode=3)
+        if not meshes:
+            meshes = [tools.common.get_meshes_objects()[0]]
+
+        tools.common.set_default_stage()
+
+        for mesh in meshes:
+            removed_tris += tools.common.remove_doubles(mesh, 0.00002)
+
+        tools.common.set_default_stage()
+
+        self.report({'INFO'}, 'Removed ' + str(removed_tris) + ' vertices.')
+        return {'FINISHED'}
+
+
+class RemoveDoublesNormal(bpy.types.Operator):
+    bl_idname = 'armature_manual.remove_doubles_normal'
+    bl_label = 'Remove Doubles Normally'
+    bl_description = "Merges duplicated faces and vertices of the selected meshes." \
+                     "\nThis is exactly like doing it manually"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        if obj and obj.type == 'MESH':
+            return True
+
+        meshes = tools.common.get_meshes_objects()
+        return meshes
+
+    def execute(self, context):
+        removed_tris = 0
+        meshes = tools.common.get_meshes_objects(mode=3)
+        if not meshes:
+            meshes = [tools.common.get_meshes_objects()[0]]
+
+        tools.common.set_default_stage()
+
+        for mesh in meshes:
+            removed_tris += tools.common.remove_doubles(mesh, 0.0001)
+
+        tools.common.set_default_stage()
+
+        self.report({'INFO'}, 'Removed ' + str(removed_tris) + ' vertices.')
         return {'FINISHED'}

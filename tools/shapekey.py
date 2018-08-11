@@ -107,7 +107,7 @@ class ShapeKeyApplier(bpy.types.Operator):
         # Correctly apply the new basis as basis (important step, doesn't work otherwise)
         tools.common.switch('EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
-        bpy.ops.mesh.remove_doubles()
+        bpy.ops.mesh.remove_doubles(threshold=0)
         tools.common.switch('OBJECT')
 
         # If a reversed shapekey was applied as basis, fix the name

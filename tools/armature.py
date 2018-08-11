@@ -275,6 +275,9 @@ class FixArmature(bpy.types.Operator):
         # Combines same materials
         if context.scene.combine_mats:
             bpy.ops.combine.mats()
+        else:
+            # At least clean material names. Combining mats would do this otherwise
+            tools.common.clean_material_names(mesh)
 
         # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
         all_transparent = True

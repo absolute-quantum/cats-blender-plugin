@@ -494,6 +494,7 @@ def get_meshes_objects(armature_name=None, mode=0):
     # 0 = With armatures only
     # 1 = Top level only
     # 2 = All meshes
+    # 3 = Selected only
 
     meshes = []
     for ob in bpy.data.objects:
@@ -513,6 +514,10 @@ def get_meshes_objects(armature_name=None, mode=0):
 
             elif mode == 2:
                 meshes.append(ob)
+
+            elif mode == 3:
+                if ob.select:
+                    meshes.append(ob)
     return meshes
 
 
@@ -577,11 +582,11 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
         for mod in mesh.modifiers:
             mod.show_expanded = False
             if mod.type == 'ARMATURE':
-                if mod_count > 0:
+                mod_count += 1
+                if mod_count > 1:
                     bpy.ops.object.modifier_remove(modifier=mod.name)
                     continue
                 mod.object = get_armature(armature_name=armature_name)
-                mod_count += 1
 
         if repair_shape_keys:
             repair_shapekey_order(mesh.name)
@@ -621,6 +626,15 @@ def separate_by_materials(context, mesh):
         else:
             mod.show_expanded = False
 
+    clean_material_names(mesh)
+
+    # Correctly put mesh together. This is done to prevent extremely small pieces.
+    # This essentially does nothing but merges the extremely small parts together.
+    switch('EDIT')
+    bpy.ops.mesh.select_all(action='DESELECT')
+    bpy.ops.mesh.remove_doubles(threshold=0)
+    switch('OBJECT')
+
     utils.separateByMaterials(mesh)
 
     for ob in context.selected_objects:
@@ -649,7 +663,14 @@ def separate_by_loose_parts(context, mesh):
         else:
             mod.show_expanded = False
 
+    clean_material_names(mesh)
+
+    # Correctly put mesh together. This is done to prevent extremely small pieces.
+    # This essentially does nothing but merges the extremely small parts together.
+    remove_doubles(mesh, 0)
+
     utils.separateByMaterials(mesh)
+
     meshes = []
     for ob in context.selected_objects:
         if ob.type == 'MESH':
@@ -1228,6 +1249,31 @@ class ShowError(bpy.types.Operator):
         print('Report: Error')
         for line in error:
             print('    ' + line)
+
+
+def remove_doubles(mesh, threshold):
+    if not mesh:
+        return 0
+
+    pre_tris = len(mesh.data.polygons)
+
+    tools.common.select(mesh)
+    tools.common.switch('EDIT')
+    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.remove_doubles(threshold=threshold)
+    tools.common.switch('OBJECT')
+
+    return pre_tris - len(mesh.data.polygons)
+
+
+def clean_material_names(mesh):
+        for j, mat in enumerate(mesh.material_slots):
+            if mat.name.endswith('.001'):
+                mesh.active_material_index = j
+                mesh.active_material.name = mat.name[:-4]
+            if mat.name.endswith('. 001') or mat.name.endswith(' .001'):
+                mesh.active_material_index = j
+                mesh.active_material.name = mat.name[:-5]
 
 
 def version_2_79_or_older():
