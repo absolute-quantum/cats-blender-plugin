@@ -361,6 +361,9 @@ It checks for a new version automatically once every day.
 - **Visemes:**
   - Shape Keys Mix Intensity slider is back
   - Increased the range of the intensity slider
+- **Shapekeys:**
+  - Greatly improved "Apply Shapekey as Basis"
+  - Shape keys added to the Basis can be reverted now
 - **Credits:**
   - Added a patchnotes button
 - **General:**
