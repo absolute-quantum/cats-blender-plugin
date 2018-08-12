@@ -72,7 +72,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
                     if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
                         to_translate.append(shapekey.name)
 
-        if not update_dictionary(to_translate):
+        if not update_dictionary(to_translate, translating_shapes=True):
             self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         tools.common.update_shapekey_orders()
@@ -82,7 +82,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
             if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if 'vrc.' not in shapekey.name:
-                        shapekey.name, translated = translate(shapekey.name, add_space=True)
+                        shapekey.name, translated = translate(shapekey.name, add_space=True, translating_shapes=True)
                         if translated:
                             i += 1
 
@@ -305,7 +305,10 @@ def load_translations():
             global dictionary_google
             dictionary_google = json.load(file, object_pairs_hook=collections.OrderedDict)
 
-            if 'created' not in dictionary_google or 'translations' not in dictionary_google or google_dict_too_old():
+            if 'created' not in dictionary_google \
+                    or 'translations' not in dictionary_google \
+                    or 'translations_full' not in dictionary_google \
+                    or google_dict_too_old():
                 reset_google_dict()
             else:
                 for name, trans in dictionary_google.get('translations').items():
@@ -338,9 +341,13 @@ def load_translations():
     return dict_found
 
 
-def update_dictionary(to_translate_list):
+def update_dictionary(to_translate_list, translating_shapes=False):
     global dictionary, dictionary_google
     regex = u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+'  # Regex to look for japanese chars
+
+    use_google_only = False
+    if translating_shapes and bpy.context.scene.use_google_only:
+        use_google_only = True
 
     # Check if single string is given and put it into an array
     if type(to_translate_list) is str:
@@ -355,28 +362,41 @@ def update_dictionary(to_translate_list):
 
         to_translate = fix_jp_chars(to_translate)
 
-        # Remove spaces, there are no spaces in japan
+        # Translate shape keys with Google Translator only, if the user chose this
+        if use_google_only:
+            # If name doesn't contain any jp chars, don't translate
+            if not re.findall(regex, to_translate):
+                continue
+
+            translated = False
+            for key, value in dictionary_google.get('translations_full').items():
+                if to_translate == key and value:
+                    translated = True
+
+            if not translated:
+                google_input.append(to_translate)
 
         # Translate with internal dictionary
-        for key, value in dictionary.items():
-            if key in to_translate:
-                if value:
-                    to_translate = to_translate.replace(key, value)
-                else:
-                    continue
+        else:
+            for key, value in dictionary.items():
+                if key in to_translate:
+                    if value:
+                        to_translate = to_translate.replace(key, value)
+                    else:
+                        continue
 
-                # Check if string is fully translated
-                translated_count += len(key)
-                if translated_count >= length:
-                    break
+                    # Check if string is fully translated
+                    translated_count += len(key)
+                    if translated_count >= length:
+                        break
 
-        # If not fully translated, translate the rest with Google
-        if translated_count < length:
-            match = re.findall(regex, to_translate)
-            if match:
-                for name in match:
-                    if name not in google_input and name not in dictionary.keys():
-                        google_input.append(name)
+            # If not fully translated, translate the rest with Google
+            if translated_count < length:
+                match = re.findall(regex, to_translate)
+                if match:
+                    for name in match:
+                        if name not in google_input and name not in dictionary.keys():
+                            google_input.append(name)
 
     if not google_input:
         # print('NO GOOGLE TRANSLATIONS')
@@ -394,10 +414,13 @@ def update_dictionary(to_translate_list):
     # Update the dictionaries
     for i, translation in enumerate(translations):
         name = google_input[i]
-        translated_name = translation.text.capitalize()
 
-        dictionary[name] = translated_name
-        dictionary_google['translations'][name] = translated_name
+        if use_google_only:
+            dictionary_google['translations_full'][name] = translation.text
+        else:
+            translated_name = translation.text.capitalize()
+            dictionary[name] = translated_name
+            dictionary_google['translations'][name] = translated_name
 
         print(google_input[i], translation.text.capitalize())
 
@@ -414,12 +437,17 @@ def update_dictionary(to_translate_list):
     return True
 
 
-def translate(to_translate, add_space=False):
+def translate(to_translate, add_space=False, translating_shapes=False):
     global dictionary
 
     pre_translation = to_translate
     length = len(to_translate)
     translated_count = 0
+
+    # Figure out whether to use google only or not
+    use_google_only = False
+    if translating_shapes and bpy.context.scene.use_google_only:
+        use_google_only = True
 
     # Add space for shape keys
     addition = ''
@@ -429,19 +457,26 @@ def translate(to_translate, add_space=False):
     # Convert half chars into full chars
     to_translate = fix_jp_chars(to_translate)
 
+    # Translate shape keys with Google Translator only, if the user chose this
+    if use_google_only:
+        for key, value in dictionary_google.get('translations_full').items():
+            if to_translate == key and value:
+                to_translate = value
+
     # Translate with internal dictionary
-    for key, value in dictionary.items():
-        if key in to_translate:
-            # If string is empty, don't replace it. This will be done at the end
-            if not value:
-                continue
+    else:
+        for key, value in dictionary.items():
+            if key in to_translate:
+                # If string is empty, don't replace it. This will be done at the end
+                if not value:
+                    continue
 
-            to_translate = to_translate.replace(key, addition + value)
+                to_translate = to_translate.replace(key, addition + value)
 
-            # Check if string is fully translated
-            translated_count += len(key)
-            if translated_count >= length:
-                break
+                # Check if string is fully translated
+                translated_count += len(key)
+                if translated_count >= length:
+                    break
 
     to_translate = to_translate.replace('.L', '_L').replace('.R', '_R').replace('  ', ' ').replace('し', '').replace('っ', '').strip()
 
@@ -480,6 +515,7 @@ def reset_google_dict():
 
     dictionary_google['created'] = now_utc
     dictionary_google['translations'] = {}
+    dictionary_google['translations_full'] = {}
 
     save_google_dict()
     print('GOOGLE DICT RESET')

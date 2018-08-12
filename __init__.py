@@ -116,7 +116,7 @@ bl_info = {
     'warning': '',
 }
 
-dev_branch = False
+dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
 # List all the supporters here
@@ -273,6 +273,16 @@ class ToolPanel:
                     '\n\nThis can improve skirt movement for dynamic bones, but increases the bone count.'
                     '\nThis can also fix issues with crumbled finger bones in Unity.'
                     '\nMake sure to always uncheck "Add Leaf Bones" when exporting or use the CATS export button',
+        default=False
+    )
+
+    bpy.types.Scene.use_google_only = bpy.props.BoolProperty(
+        name='Ignore Internal Dictionary (not recommended)',
+        description="Only use the Google Translator for shape key translations."
+                    "\n"
+                    '\nThis will result in slower translation speed and worse translations, but the translations will be like in CATS version 0.9.0 and older.'
+                    '\n'
+                    "\nOnly use this if you have animations which rely on the old translations and you don't want to convert them to the new ones",
         default=False
     )
 
@@ -971,6 +981,10 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.label("Translate:", icon='FILE_REFRESH')
+
+        row = col.row(align=True)
+        row.scale_y = button_height
+        row.prop(context.scene, 'use_google_only')
 
         split = col.split(percentage=0.27, align=True)
 
