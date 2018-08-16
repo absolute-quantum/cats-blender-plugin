@@ -277,11 +277,10 @@ class ToolPanel:
     )
 
     bpy.types.Scene.use_google_only = bpy.props.BoolProperty(
-        name='Ignore Internal Dictionary (not recommended)',
-        description="Only use the Google Translator for shape key translations."
+        name='Use Old Translations (not recommended)',
+        description="Ignores the internal dictionary and only uses the Google Translator for shape key translations."
                     "\n"
                     '\nThis will result in slower translation speed and worse translations, but the translations will be like in CATS version 0.9.0 and older.'
-                    '\n'
                     "\nOnly use this if you have animations which rely on the old translations and you don't want to convert them to the new ones",
         default=False
     )

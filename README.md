@@ -99,7 +99,7 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/eGb1pRr.png)
+![](https://i.imgur.com/jlxQCvH.png)
 
 ##### Translation
 - Translate certain entities from any japanese to english.
@@ -340,8 +340,10 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.10.1
+- **Model:**
+  - Fixed "Apply as Rest Pose" deleting important shape keys
 - **Translations:**
-  - Added option to ignore the internal dictionary for shapekey translations
+  - Added option to use the old translations for shapekey translations
 
 #### 0.10.0
 - **Translations:**
