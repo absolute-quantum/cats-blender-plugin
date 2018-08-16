@@ -344,6 +344,8 @@ It checks for a new version automatically once every day.
   - Fixed "Apply as Rest Pose" deleting important shape keys
 - **Translations:**
   - Added option to use the old translations for shapekey translations
+- **Optimization:**
+  - Fixed rare error when combining materials
 
 #### 0.10.0
 - **Translations:**
