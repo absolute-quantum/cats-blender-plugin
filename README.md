@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.10.0)
+# Cats Blender Plugin (0.10.1)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -99,7 +99,7 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/jPcDvaW.png)
+![](https://i.imgur.com/jlxQCvH.png)
 
 ##### Translation
 - Translate certain entities from any japanese to english.
@@ -339,6 +339,14 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.10.1
+- **Model:**
+  - Fixed "Apply as Rest Pose" deleting important shape keys
+- **Translations:**
+  - Added option to use the old translations for shapekey translations
+- **Optimization:**
+  - Fixed rare error when combining materials
+
 #### 0.10.0
 - **Translations:**
   - Greatly improved translations by using a new internal dictionary
@@ -402,16 +410,6 @@ It checks for a new version automatically once every day.
   - Various optimizations
   - Improved error messages
   - Fixed bugs all over the place
-
-#### 0.8.1
-- **Model:**
-  - Now straightens up the head bone
-  - Fixed bone morphs not converting correctly
-  - Fixed bones rotating the mesh twice as far
-  - Fixed eye rotation testing no longer working after changing the eye movement scale
-  - Fixed some shading issues after fixing the model
-- **General:**
-  - Updated mmd_tools
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

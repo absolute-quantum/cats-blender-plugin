@@ -177,6 +177,7 @@ class AutoDecimateButton(bpy.types.Operator):
             tools.common.switch('EDIT')
             bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
             tools.common.switch('OBJECT')
+            tools.common.remove_doubles(mesh, 0.00001)
             current_tris_count += len(mesh.data.polygons)
 
         if save_fingers:
