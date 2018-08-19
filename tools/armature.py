@@ -293,10 +293,17 @@ class FixArmature(bpy.types.Operator):
         tools.common.sort_shape_keys(mesh.name)
 
         # Fix all shape key names of half jp chars
-        for mesh in tools.common.get_meshes_objects():
-            if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
-                for shapekey in mesh.data.shape_keys.key_blocks:
-                    shapekey.name = tools.translate.fix_jp_chars(shapekey.name)
+        if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+            for shapekey in mesh.data.shape_keys.key_blocks:
+                shapekey.name = tools.translate.fix_jp_chars(shapekey.name)
+
+        # Fix faulty UV coordinates
+        for uv in mesh.data.uv_layers:
+            for vert in range(len(uv.data) - 1):
+                if math.isnan(uv.data[vert].uv.x):
+                    uv.data[vert].uv.x = 0
+                if math.isnan(uv.data[vert].uv.y):
+                    uv.data[vert].uv.y = 0
 
         # return {'FINISHED'}
 

@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.10.1)
+# Cats Blender Plugin (0.10.2)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -339,6 +339,10 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.10.2
+- **Model:**
+  - Added fix for bad uv coordinates (Thanks shotariya!)
+
 #### 0.10.1
 - **Model:**
   - Fixed "Apply as Rest Pose" deleting important shape keys
@@ -379,37 +383,6 @@ It checks for a new version automatically once every day.
   - Updated mmd_tools
   - Fixed some typos
   - Fixed multiple bugs
-
-#### 0.9.0
-- **Model:**
-  - Added a new "Apply as Rest Pose" button
-    - This will apply the current pose position as the new rest position
-  - Added a new "Join Selected Meshes" button
-  - Fix Model now combines similar materials (toggleable)
-    - This automatically increases the performance for most models
-  - Moved the Fix Model options into a new settings dialog
-    - Open this by clicking the wrench icon next to the Fix Model button
-  - Import Model now can import all the models with one button
-  - Added option to Keep End Bones
-  - Improved support for Source Engine models
-  - Backface culling is now deactivated again
-  - Fixed random important bones disappearing for no reason
-- **Translation:**
-  - Fixed the SSL error
-    - This fixes a lot of instances where translations would not work
-- **Custom Model:**
-  - Greatly improved the combine process and drastically reduced the amount of errors
-    - Armature transform getting reset is now very rare
-    - Much more user friendly
-  - Improved tolerances to allow minimal armature rotations
-  - Getting an error while attaching a mesh doesn't create a new armature anymore
-  - Error messages are now much more persistent
-- **Shapekeys:**
-  - Fixed "Apply Shapekey as Basis" not setting the basis for newly created shape keys
-- **General**
-  - Various optimizations
-  - Improved error messages
-  - Fixed bugs all over the place
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
