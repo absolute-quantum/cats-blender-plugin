@@ -823,49 +823,43 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         arm_count = len(tools.common.get_armature_objects())
         if arm_count == 0:
-            row = col.row(align=True)
-            row.scale_y = 1
-            subcol = row.split(align=True)
-            subcol.scale_y = 1.7
-            subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            subcol = row.split(align=True)
-            subcol.scale_y = 1.7
-            subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            split = col.row(align=True)
+            row = split.row(align=True)
+            row.scale_y = 1.7
+            row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            row = split.row(align=True)
+            row.alignment = 'RIGHT'
+            row.scale_y = 1.7
+            row.operator("model.popup", text="", icon='COLLAPSEMENU')
             return
         else:
-            row = col.row(align=True)
-            row.scale_y = 1
-            subcol = row.split(align=True)
-            subcol.scale_y = 1.4
-            subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            subcol.operator('importer.export_model', icon='ARMATURE_DATA')
-            subcol = row.split(align=True)
-            subcol.scale_y = 1.4
-            subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
-            #
-            # col.separator()
-            # col.separator()
-            # row = col.row(align=True)
-            # row.scale_y = 1
-            # subcol = row.split(align=True)
-            # subcol.scale_y = 1.4
-            # subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            # subcol = row.split(align=True)
-            # subcol.scale_y = 1.4
-            # subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            split = col.row(align=True)
+            row = split.row(align=True)
+            row.scale_y = 1.4
+            row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            row.operator('importer.export_model', icon='ARMATURE_DATA')
+            row = split.row(align=True)
+            row.scale_y = 1.4
+            row.operator("model.popup", text="", icon='COLLAPSEMENU')
+
+            # split = col.row(align=True)
+            # row = split.row(align=True)
+            # row.scale_y = 1.4
+            # row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            # row = split.row(align=True)
+            # row.scale_y = 1.4
+            # row.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # row = split.row(align=True)
             # row.scale_y = 1.4
             # row.operator('importer.export_model', icon='ARMATURE_DATA')
-
-            # row = col.row(align=True)
-            # row.scale_y = 1
-            # subcol = row.row(align=True)
-            # subcol.alignment = 'LEFT'
-            # subcol.scale_y = 1.4
-            # subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            #
+            # split = col.row(align=True)
+            # row = split.row(align=True)
             # row.scale_y = 1.4
-            # row.operator('importer.import_any_model', text="Import Model", icon='ARMATURE_DATA')
-            # row = row.split(align=True)
+            # row.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # row = split.row(align=True)
             # row.scale_y = 1.4
+            # row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
             # row.operator('importer.export_model', icon='ARMATURE_DATA')
 
         if arm_count > 1:
@@ -878,13 +872,14 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         col.separator()
-        row = col.row(align=True)
+        split = col.row(align=True)
+        row = split.row(align=True)
         row.scale_y = 1.5
         row.operator('armature.fix', icon='BONE_DATA')
-        subcol = row.row(align=True)
-        subcol.alignment = 'RIGHT'
-        subcol.scale_y = 1.5
-        subcol.operator("armature.settings", text="", icon='MODIFIER')
+        row = split.row(align=True)
+        row.alignment = 'RIGHT'
+        row.scale_y = 1.5
+        row.operator("armature.settings", text="", icon='MODIFIER')
 
         if context.scene.full_body:
             row = col.row(align=True)
@@ -893,6 +888,9 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 0.5
             row.label('"Spine length zero" warning in Unity.', icon_value=get_emtpy_icon())
+            col.separator()
+        else:
+            col.separator()
             col.separator()
 
         ob = bpy.context.active_object

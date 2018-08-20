@@ -270,7 +270,7 @@ class AutoVisemeButton(bpy.types.Operator):
         # Reset all shape keys and sliders
         bpy.ops.object.shape_key_clear()
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if selector == shapekey.name:
+            if shapekey.name in shapes:
                 shapekey.slider_max = 1
         mesh.active_shape_key_index = 0
 
