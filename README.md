@@ -342,6 +342,7 @@ It checks for a new version automatically once every day.
 #### 0.10.2
 - **Model:**
   - Added fix for bad uv coordinates (Thanks shotariya!)
+  - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
 
 #### 0.10.1
 - **Model:**

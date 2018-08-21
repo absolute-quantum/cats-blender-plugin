@@ -204,6 +204,8 @@ class PoseToRest(bpy.types.Operator):
             if 'PoseToRest - Reverted' in mesh.active_shape_key.name:
                 bpy.ops.object.shape_key_remove(all=False)
 
+        mesh.active_shape_key_index = 0
+
         bpy.ops.armature_manual.stop_pose_mode()
 
         self.report({'INFO'}, 'Pose successfully applied as rest pose.')
