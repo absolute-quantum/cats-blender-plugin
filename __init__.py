@@ -1487,9 +1487,11 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label('You need the plugin "Material Combiner",')
+            col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Made by shotaryia')
+            row.label('Made by shotaryia', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
+            col.separator()
             col.separator()
 
             row = col.row(align=True)
