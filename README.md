@@ -340,6 +340,13 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.10.2
+- **Optimization:**
+  - Added new greatly improved Auto Atlasing method made by **shotariya**!
+    - This new method will create near perfect texture atlases automatically
+    - You will need to install the (extremely awesome) plugin "Material Combiner" made by shotariya
+    - If you don't have it installed, CATS will provide you with a download link
+    - CATS packs the functions into a single-click button
+    - If you want more options, use the plugin tab "shotariya"
 - **Model:**
   - Added fix for bad uv coordinates (Thanks shotariya!)
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation

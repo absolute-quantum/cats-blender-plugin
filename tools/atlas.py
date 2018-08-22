@@ -22,11 +22,161 @@
 
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats
+# Edits by: Hotox
 
+import os
 import bpy
-import tools.common
 import random
+import webbrowser
+import tools.common
+
+
+class AutoAtlasNewButton(bpy.types.Operator):
+    bl_idname = 'auto.atlas_new'
+    bl_label = 'Create Atlas'
+    bl_description = 'Generates a texture atlas for this model.' \
+                     '\n' \
+                     '\nThis is a shortcut to shotariyas plugin'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+        # Checking if shotaiyas plugin is installed
+        try:
+            bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_MAT')
+        except AttributeError:
+            bpy.ops.install.shotariya('INVOKE_DEFAULT')
+            return {'CANCELLED'}
+
+        # Check if there are meshes
+        if not tools.common.get_meshes_objects():
+            self.report({'ERROR'}, 'No model with meshes was found!')
+            return {'CANCELLED'}
+
+        # Check if Blend file is saved
+        if not bpy.data.is_saved:
+            tools.common.show_error(6.5, ['You have to save this Blender file first!',
+                                          'Please save it to your assets folder so Unity can discover the generated atlas file.'])
+            return {'CANCELLED'}
+
+        # Getting the directory of the currently saved blend file
+        filepath = bpy.data.filepath
+        directory = os.path.dirname(filepath)
+
+        # Saves all the files in the current directory for later comparison
+        files = []
+        for file in os.listdir(directory):
+            files.append(file)
+
+        # Filling the list with textures and concurrently checking if shotaiyas plugin is installed
+        tools.common.set_default_stage()
+        bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='GENERATE_TEX')
+
+        # Sets the folder for saving the generated textures
+        bpy.ops.shotariya.tex_folder('EXEC_DEFAULT', filepath=directory)
+
+        # Deselects all textures and then selects only the ones from the current model
+        bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_TEX')
+        for mesh in tools.common.get_meshes_objects():
+            for mat_slot in mesh.material_slots:
+                if mat_slot:
+                    for tex_slot in mat_slot.material.texture_slots:
+                        if tex_slot:
+                            bpy.data.textures[tex_slot.texture.name].to_save = True
+
+        # Generating the textures of UVs with bounds greater than 1
+        try:
+            bpy.ops.shotariya.gen_tex('INVOKE_DEFAULT')
+        except RuntimeError:
+            pass
+
+        # Filling the list with the materials and setting the folder to save the created atlas
+        bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='GENERATE_MAT')
+        bpy.ops.shotariya.combined_folder('EXEC_DEFAULT', filepath=directory)
+
+        # Deselects all materials and then selects only the ones from the current model
+        bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_MAT')
+        for mesh in tools.common.get_meshes_objects():
+            for mat_slot in mesh.material_slots:
+                bpy.data.materials[mat_slot.material.name].to_combine = True
+
+        # Generating the atlas
+        error = None
+        try:
+            bpy.ops.shotariya.gen_mat('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            error = str(e)
+
+        # Deleting generated textures and searching for generated atlas
+        atlas_name = None
+        for file in os.listdir(directory):
+            if file not in files:
+                if file.endswith('_uv.png'):
+                    os.remove(os.path.join(directory, file))
+                    print('Deleted', file)
+                if file.startswith('combined_image_'):
+                    atlas_name = file
+
+        # Check if the atlas was successfully generated
+        if not error and not atlas_name:
+            error = 'Generated atlas could not be found!'
+
+        # Finish
+        tools.common.set_default_stage()
+        if error:
+            self.report({'ERROR'}, error)
+        else:
+            self.report({'INFO'}, 'Auto Atlas finished! Atlas saved as "' + atlas_name + '"')
+        return {'FINISHED'}
+
+
+class InstallShotariya(bpy.types.Operator):
+    bl_idname = "install.shotariya"
+    bl_label = 'Material Combiner is not installed or enabled!'
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5.3, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.scale_y = 0.75
+        row.label("The plugin 'Material Combiner' by shotariya is required for this function.")
+        col.separator()
+        row = col.row(align=True)
+        row.label("If it is not enabled please enable it in your User Preferences.")
+        row.scale_y = 0.75
+        row = col.row(align=True)
+        row.label("If it is not installed please download and install it manually.")
+        row.scale_y = 0.75
+        col.separator()
+        row = col.row(align=True)
+        row.operator('download.shotariya', icon='LOAD_FACTORY')
+        col.separator()
+
+
+class ShotariyaButton(bpy.types.Operator):
+    bl_idname = 'download.shotariya'
+    bl_label = 'Download Material Combiner'
+
+    def execute(self, context):
+        webbrowser.open('https://vrcat.club/threads/material-combiner-blender-addon-1-1-3.2255/')
+
+        self.report({'INFO'}, 'Material Combiner link opened')
+        return {'FINISHED'}
 
 
 class AutoAtlasButton(bpy.types.Operator):

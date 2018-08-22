@@ -601,7 +601,8 @@ class ToolPanel:
         name="Optimize Mode",
         description="Mode",
         items=[
-            ("ATLAS", "Atlas", "Allows you to make a texture atlas."),
+            ("ATLAS2", "Atlas New", "Allows you to make a texture atlas."),
+            ("ATLAS", "Atlas Old", "Allows you to make a texture atlas."),
             ("MATERIAL", "Material", "Some various options on material manipulation."),
             ("BONEMERGING", "Bone Merging", "Allows child bones to be merged into their parents."),
         ]
@@ -1477,7 +1478,25 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'optimize_mode', expand=True)
 
-        if context.scene.optimize_mode == 'ATLAS':
+        if context.scene.optimize_mode == 'ATLAS2':
+
+            col = box.column(align=True)
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('This is a greatly improved Atlas Generator.')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('You need the plugin "Material Combiner",')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('Made by shotaryia')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 1.7
+            row.operator('auto.atlas_new', icon='TRIA_RIGHT')
+
+        elif context.scene.optimize_mode == 'ATLAS':
             col.separator()
 
             mesh_count = len(tools.common.get_meshes_objects(mode=2))
@@ -1509,7 +1528,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row = box.row(align=True)
             row.operator('auto.atlas', icon='TRIA_RIGHT')
 
-        if context.scene.optimize_mode == 'MATERIAL':
+        elif context.scene.optimize_mode == 'MATERIAL':
             col = box.column(align=True)
             row = col.row(align=True)
             row.scale_y = 1.1
@@ -1527,7 +1546,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.1
             row.operator('textures.standardize', icon='TEXTURE_SHADED')
 
-        if context.scene.optimize_mode == 'BONEMERGING':
+        elif context.scene.optimize_mode == 'BONEMERGING':
             if len(tools.common.get_meshes_objects()) > 1:
                 row = box.row(align=True)
                 row.prop(context.scene, 'merge_mesh')
@@ -1857,6 +1876,9 @@ classesToRegister = [
     tools.rootbone.RootButton,
 
     OptimizePanel,
+    tools.atlas.AutoAtlasNewButton,
+    tools.atlas.InstallShotariya,
+    tools.atlas.ShotariyaButton,
     tools.atlas.AutoAtlasButton,
     tools.material.CombineMaterialsButton,
     tools.material.OneTexPerMatButton,
