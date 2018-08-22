@@ -45,7 +45,7 @@ class AutoAtlasNewButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        # Checking if shotaiyas plugin is installed
+        # Checking if shotaiyas plugin is installed. If it is not installed, open a popup with a link to it
         try:
             bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_MAT')
         except AttributeError:
@@ -84,9 +84,7 @@ class AutoAtlasNewButton(bpy.types.Operator):
         for mesh in tools.common.get_meshes_objects():
             for mat_slot in mesh.material_slots:
                 if mat_slot:
-                    for tex_slot in mat_slot.material.texture_slots:
-                        if tex_slot:
-                            bpy.data.textures[tex_slot.texture.name].to_save = True
+                    bpy.data.materials[mat_slot.material.name].to_tex = True
 
         # Generating the textures of UVs with bounds greater than 1
         try:
@@ -102,14 +100,15 @@ class AutoAtlasNewButton(bpy.types.Operator):
         bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_MAT')
         for mesh in tools.common.get_meshes_objects():
             for mat_slot in mesh.material_slots:
-                bpy.data.materials[mat_slot.material.name].to_combine = True
+                if mat_slot:
+                    bpy.data.materials[mat_slot.material.name].to_combine = True
 
         # Generating the atlas
         error = None
         try:
             bpy.ops.shotariya.gen_mat('INVOKE_DEFAULT')
         except RuntimeError as e:
-            error = str(e)
+            error = str(e).replace('Error: ', '')
 
         # Deleting generated textures and searching for generated atlas
         atlas_name = None

@@ -601,8 +601,7 @@ class ToolPanel:
         name="Optimize Mode",
         description="Mode",
         items=[
-            ("ATLAS2", "Atlas New", "Allows you to make a texture atlas."),
-            ("ATLAS", "Atlas Old", "Allows you to make a texture atlas."),
+            ("ATLAS", "Atlas", "Allows you to make a texture atlas."),
             ("MATERIAL", "Material", "Some various options on material manipulation."),
             ("BONEMERGING", "Bone Merging", "Allows child bones to be merged into their parents."),
         ]
@@ -1478,7 +1477,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'optimize_mode', expand=True)
 
-        if context.scene.optimize_mode == 'ATLAS2':
+        if context.scene.optimize_mode == 'ATLAS':
 
             col = box.column(align=True)
             row = col.row(align=True)
@@ -1498,37 +1497,37 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.7
             row.operator('auto.atlas_new', icon='TRIA_RIGHT')
 
-        elif context.scene.optimize_mode == 'ATLAS':
-            col.separator()
-
-            mesh_count = len(tools.common.get_meshes_objects(mode=2))
-            if mesh_count == 0:
-                row = col.row(align=True)
-                row.label('No meshes found!', icon='ERROR')
-            elif mesh_count > 1:
-                col.separator()
-                row = col.row(align=True)
-                row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
-            else:
-                col.separator()
-
-            row = col.row(align=True)
-            row.prop(context.scene, 'texture_size', icon='TEXTURE')
-
-            col.separator()
-            row = col.row(align=True)
-            row.prop(context.scene, 'island_margin')
-            row = col.row(align=True)
-            row.prop(context.scene, 'angle_limit')
-            row = col.row(align=True)
-            row.prop(context.scene, 'area_weight')
-
-            row = box.row(align=True)
-            row.scale_y = 1.1
-            row.prop(context.scene, 'one_texture')
-            row.prop(context.scene, 'pack_islands')
-            row = box.row(align=True)
-            row.operator('auto.atlas', icon='TRIA_RIGHT')
+        # elif context.scene.optimize_mode == 'ATLAS_OLD':
+        #     col.separator()
+        #
+        #     mesh_count = len(tools.common.get_meshes_objects(mode=2))
+        #     if mesh_count == 0:
+        #         row = col.row(align=True)
+        #         row.label('No meshes found!', icon='ERROR')
+        #     elif mesh_count > 1:
+        #         col.separator()
+        #         row = col.row(align=True)
+        #         row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
+        #     else:
+        #         col.separator()
+        #
+        #     row = col.row(align=True)
+        #     row.prop(context.scene, 'texture_size', icon='TEXTURE')
+        #
+        #     col.separator()
+        #     row = col.row(align=True)
+        #     row.prop(context.scene, 'island_margin')
+        #     row = col.row(align=True)
+        #     row.prop(context.scene, 'angle_limit')
+        #     row = col.row(align=True)
+        #     row.prop(context.scene, 'area_weight')
+        #
+        #     row = box.row(align=True)
+        #     row.scale_y = 1.1
+        #     row.prop(context.scene, 'one_texture')
+        #     row.prop(context.scene, 'pack_islands')
+        #     row = box.row(align=True)
+        #     row.operator('auto.atlas', icon='TRIA_RIGHT')
 
         elif context.scene.optimize_mode == 'MATERIAL':
             col = box.column(align=True)
