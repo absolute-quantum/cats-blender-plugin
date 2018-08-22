@@ -36,7 +36,8 @@ class AutoAtlasNewButton(bpy.types.Operator):
     bl_label = 'Create Atlas'
     bl_description = 'Generates a texture atlas for this model.' \
                      '\n' \
-                     '\nThis is a shortcut to shotariyas plugin'
+                     '\nThis is a shortcut to shotariyas plugin.' \
+                     '\nIf you want more options, use the plugin tab "shotariya"'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
