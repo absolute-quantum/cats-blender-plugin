@@ -239,7 +239,8 @@ class ToolPanel:
     bpy.types.Scene.armature = bpy.props.EnumProperty(
         name='Armature',
         description='Select the armature which will be used by Cats',
-        items=tools.common.get_armature_list
+        items=tools.common.get_armature_list,
+        update=tools.atlas.update_material_list
     )
 
     bpy.types.Scene.full_body = bpy.props.BoolProperty(
@@ -607,62 +608,74 @@ class ToolPanel:
         ]
     )
 
-    bpy.types.Scene.island_margin = bpy.props.FloatProperty(
-        name='Margin',
-        description='Margin to reduce bleed of adjacent islands',
-        default=0.01,
-        min=0.0,
-        max=1.0,
-        step=0.1,
-        precision=2,
-        subtype='FACTOR'
-    )
-
-    bpy.types.Scene.area_weight = bpy.props.FloatProperty(
-        name='Area Weight',
-        description='Weight projections vector by faces with larger areas',
-        default=0.0,
-        min=0.0,
-        max=1.0,
-        step=0.1,
-        precision=2,
-        subtype='FACTOR'
-    )
-
-    bpy.types.Scene.angle_limit = bpy.props.FloatProperty(
-        name='Angle',
-        description='Lower for more projection groups, higher for less distortion',
-        default=82.0,
-        min=1.0,
-        max=89.0,
-        step=10.0,
-        precision=1,
-        subtype='FACTOR'
-    )
-
-    bpy.types.Scene.texture_size = bpy.props.EnumProperty(
-        name='Texture Size',
-        description='Lower for faster bake time, higher for more detail',
-        items=tools.common.get_texture_sizes
-    )
-
-    bpy.types.Scene.one_texture = bpy.props.BoolProperty(
-        name='One Texture Material',
-        description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this',
-        default=True
-    )
-
-    bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
-        name='Pack Islands',
-        description='Transform all islands so that they will fill up the UV space as much as possible',
+    # Atlas
+    bpy.types.Material.add_to_atlas = bpy.props.BoolProperty(
+        description='Add this material to the atlas',
         default=False
     )
 
-    bpy.types.Scene.mesh_name_atlas = bpy.props.EnumProperty(
-        name='Target Mesh',
-        description='The mesh that you want to create a atlas from',
-        items=tools.common.get_all_meshes
+    bpy.types.Scene.clear_mats = bpy.props.BoolProperty(
+        description='Clear materials checkbox',
+        default=True
     )
+
+    # Atlas Old
+    # bpy.types.Scene.island_margin = bpy.props.FloatProperty(
+    #     name='Margin',
+    #     description='Margin to reduce bleed of adjacent islands',
+    #     default=0.01,
+    #     min=0.0,
+    #     max=1.0,
+    #     step=0.1,
+    #     precision=2,
+    #     subtype='FACTOR'
+    # )
+    #
+    # bpy.types.Scene.area_weight = bpy.props.FloatProperty(
+    #     name='Area Weight',
+    #     description='Weight projections vector by faces with larger areas',
+    #     default=0.0,
+    #     min=0.0,
+    #     max=1.0,
+    #     step=0.1,
+    #     precision=2,
+    #     subtype='FACTOR'
+    # )
+    #
+    # bpy.types.Scene.angle_limit = bpy.props.FloatProperty(
+    #     name='Angle',
+    #     description='Lower for more projection groups, higher for less distortion',
+    #     default=82.0,
+    #     min=1.0,
+    #     max=89.0,
+    #     step=10.0,
+    #     precision=1,
+    #     subtype='FACTOR'
+    # )
+    #
+    # bpy.types.Scene.texture_size = bpy.props.EnumProperty(
+    #     name='Texture Size',
+    #     description='Lower for faster bake time, higher for more detail',
+    #     items=tools.common.get_texture_sizes
+    # )
+    #
+    # bpy.types.Scene.one_texture = bpy.props.BoolProperty(
+    #     name='One Texture Material',
+    #     description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this',
+    #     default=True
+    # )
+    #
+    # bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
+    #     name='Pack Islands',
+    #     description='Transform all islands so that they will fill up the UV space as much as possible',
+    #     default=False
+    # )
+    #
+    # bpy.types.Scene.mesh_name_atlas = bpy.props.EnumProperty(
+    #     name='Target Mesh',
+    #     description='The mesh that you want to create a atlas from',
+    #     items=tools.common.get_all_meshes
+    # )
 
     # Bone Merging
     bpy.types.Scene.merge_ratio = bpy.props.FloatProperty(
@@ -1463,6 +1476,16 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
         row.operator('root.function', icon='TRIA_RIGHT')
 
 
+class AtlasList(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        mat = item.material
+        row = layout.row()
+        row.prop(mat, 'name', emboss=False, text='', icon_value=layout.icon(mat))
+        sub_row = row.row()
+        sub_row.scale_x = 0.2
+        row.prop(mat, 'add_to_atlas', text='')
+
+
 class OptimizePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_optimize_v1'
     bl_label = 'Optimization'
@@ -1493,41 +1516,29 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
+            if len(context.scene.material_list) == 0:
+                row = col.row(align=True)
+                row.scale_y = 1.2
+                row.operator('atlas.gen_mat_list', icon='TRIA_RIGHT')
+                col.separator()
+            else:
+                row = col.row(align=True)
+                row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=4, type='DEFAULT')
+
+                row = col.split(percentage=0.8, align=True)
+                row.scale_y = 1.2
+                row.operator('atlas.gen_mat_list', text='Update Material List', icon='FILE_REFRESH')
+                if context.scene.clear_mats:
+                    row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_HLT')
+                else:
+                    row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_DEHLT')
+
+                row.operator('atlas.clear_mat_list', text='', icon='X')
+                col.separator()
+
             row = col.row(align=True)
             row.scale_y = 1.7
-            row.operator('auto.atlas_new', icon='TRIA_RIGHT')
-
-        # elif context.scene.optimize_mode == 'ATLAS_OLD':
-        #     col.separator()
-        #
-        #     mesh_count = len(tools.common.get_meshes_objects(mode=2))
-        #     if mesh_count == 0:
-        #         row = col.row(align=True)
-        #         row.label('No meshes found!', icon='ERROR')
-        #     elif mesh_count > 1:
-        #         col.separator()
-        #         row = col.row(align=True)
-        #         row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
-        #     else:
-        #         col.separator()
-        #
-        #     row = col.row(align=True)
-        #     row.prop(context.scene, 'texture_size', icon='TEXTURE')
-        #
-        #     col.separator()
-        #     row = col.row(align=True)
-        #     row.prop(context.scene, 'island_margin')
-        #     row = col.row(align=True)
-        #     row.prop(context.scene, 'angle_limit')
-        #     row = col.row(align=True)
-        #     row.prop(context.scene, 'area_weight')
-        #
-        #     row = box.row(align=True)
-        #     row.scale_y = 1.1
-        #     row.prop(context.scene, 'one_texture')
-        #     row.prop(context.scene, 'pack_islands')
-        #     row = box.row(align=True)
-        #     row.operator('auto.atlas', icon='TRIA_RIGHT')
+            row.operator('atlas.generate', icon='TRIA_RIGHT')
 
         elif context.scene.optimize_mode == 'MATERIAL':
             col = box.column(align=True)
@@ -1880,7 +1891,12 @@ classesToRegister = [
     tools.atlas.AutoAtlasNewButton,
     tools.atlas.InstallShotariya,
     tools.atlas.ShotariyaButton,
-    tools.atlas.AutoAtlasButton,
+    #tools.atlas.AutoAtlasButton,
+    tools.atlas.MaterialsGroup,
+    tools.atlas.GenerateMaterialListButton,
+    tools.atlas.CheckMaterialListButton,
+    tools.atlas.ClearMaterialListButton,
+    AtlasList,
     tools.material.CombineMaterialsButton,
     tools.material.OneTexPerMatButton,
     tools.material.OneTexPerMatOnlyButton,
@@ -1932,6 +1948,9 @@ def register():
     for value in classesToRegister:
         bpy.utils.register_class(value)
 
+    bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
+    bpy.types.Scene.material_list_index = bpy.props.IntProperty(default=0)
+
     if dev_branch and len(version) > 2:
         version[2] += 1
 
@@ -1961,7 +1980,7 @@ def unregister():
     except AttributeError:
         pass
 
-    for value in classesToRegister:
+    for value in reversed(classesToRegister):
         bpy.utils.unregister_class(value)
     tools.supporter.unregister_dynamic_buttons()
     addon_updater_ops.unregister()
