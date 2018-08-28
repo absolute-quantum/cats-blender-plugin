@@ -778,7 +778,7 @@ def reset_context_scenes():
         mesh = meshes[0][0]
         bpy.context.scene.mesh_name_eye = mesh
         bpy.context.scene.mesh_name_viseme = mesh
-        bpy.context.scene.mesh_name_atlas = mesh
+        # bpy.context.scene.mesh_name_atlas = mesh # TODO remove this
         bpy.context.scene.merge_mesh = mesh
 
 
