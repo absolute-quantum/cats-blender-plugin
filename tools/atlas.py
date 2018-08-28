@@ -405,7 +405,7 @@ class CheckMaterialListButton(bpy.types.Operator):
 
 def shotariya_installed():
     addon_name = "Shotariya-don"
-    min_version = [1, 1, 4]
+    min_version = [1, 1, 5]
     installed = False
     correct_version = False
 
