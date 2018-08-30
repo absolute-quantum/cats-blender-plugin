@@ -305,7 +305,8 @@ class FixArmature(bpy.types.Operator):
                 if math.isnan(uv.data[vert].uv.y):
                     uv.data[vert].uv.y = 0
 
-        # return {'FINISHED'}
+        # Standardize UV maps name
+        mesh.data.uv_textures[0].name = 'UVMap'
 
         # Translate bones
         to_translate = []

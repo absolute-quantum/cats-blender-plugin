@@ -349,7 +349,10 @@ It checks for a new version automatically once every day.
     - If you want more options, use the plugin tab "shotariya"
 - **Model:**
   - Added fix for bad uv coordinates (Thanks shotariya!)
+  - Join Meshes now adds missing armature modifiers
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
+- **Custom Model:**
+  - Merging armatures now renames UV Maps the same
 
 #### 0.10.1
 - **Model:**

@@ -219,7 +219,7 @@ class JoinMeshes(bpy.types.Operator):
                      '\nIt also:' \
                      '\n  - Reorders all shape keys correctly' \
                      '\n  - Applies all transformations' \
-                     '\n  - Applies all unapplied decimation modifiers' \
+                     '\n  - Applies all decimation modifiers' \
                      '\n  - Repairs broken armature modifiers'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -238,11 +238,11 @@ class JoinMeshes(bpy.types.Operator):
 class JoinMeshesSelected(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes_selected'
     bl_label = 'Join Selected Meshes'
-    bl_description = 'Joins all meshes of this model together.' \
+    bl_description = 'Joins all selected meshes of this model together.' \
                      '\nIt also:' \
                      '\n  - Reorders all shape keys correctly' \
                      '\n  - Applies all transformations' \
-                     '\n  - Applies all unapplied decimation modifiers' \
+                     '\n  - Applies all decimation modifiers' \
                      '\n  - Repairs broken armature modifiers'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 

@@ -578,6 +578,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
         mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
 
+        # Remove duplicate armature modifiers
         mod_count = 0
         for mod in mesh.modifiers:
             mod.show_expanded = False
@@ -587,6 +588,11 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                     bpy.ops.object.modifier_remove(modifier=mod.name)
                     continue
                 mod.object = get_armature(armature_name=armature_name)
+
+        # Add armature mod if there is none
+        if mod_count == 0:
+            mod = mesh.modifiers.new("Armature", 'ARMATURE')
+            mod.object = get_armature(armature_name=armature_name)
 
         if repair_shape_keys:
             repair_shapekey_order(mesh.name)
