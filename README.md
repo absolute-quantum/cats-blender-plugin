@@ -341,18 +341,19 @@ It checks for a new version automatically once every day.
 
 #### 0.10.2
 - **Optimization:**
-  - Added new greatly improved Auto Atlasing method made by **shotariya**!
+  - Added new greatly improved Auto Atlas method made by **shotariya**!
     - This new method will create near perfect texture atlases automatically
     - You will need to install the (extremely awesome) plugin "Material Combiner" made by shotariya
     - If you don't have it installed, CATS will provide you with a download link
     - CATS packs the functions into a single-click button
     - If you want more options, use the plugin tab "shotariya"
 - **Model:**
+  - More models are now compatible
   - Added fix for bad uv coordinates (Thanks shotariya!)
   - Join Meshes now adds missing armature modifiers
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
 - **Custom Model:**
-  - Merging armatures now renames UV Maps the same
+  - Merging armatures now renames all UV Maps "UVMap"
 
 #### 0.10.1
 - **Model:**

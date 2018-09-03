@@ -32,6 +32,10 @@ import tools.common
 import addon_utils
 
 
+addon_name = "Shotariya-don"
+min_version = [1, 1, 6]
+
+
 class AutoAtlasNewButton(bpy.types.Operator):
     bl_idname = 'atlas.generate'
     bl_label = 'Create Atlas'
@@ -98,7 +102,10 @@ class AutoAtlasNewButton(bpy.types.Operator):
 
         # Check if there is an atlas already
         if len(material_list) == 0:
-            tools.common.show_error(2.3, ['No materials found!'])
+            if len(context.scene.material_list) == 0:
+                tools.common.show_error(2.3, ['No materials found!'])
+            else:
+                tools.common.show_error(2.3, ['No materials selected!'])
             return {'CANCELLED'}
 
         # Check if there is an atlas already
@@ -261,7 +268,7 @@ class GenerateMaterialListButton(bpy.types.Operator):
 
         scene = context.scene
         scene.material_list.clear()
-        scene.clear_mats = True
+        scene.clear_materials = True
         scene.material_list_index = 0
 
         for mesh in tools.common.get_meshes_objects():
@@ -397,21 +404,18 @@ class CheckMaterialListButton(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        scene.clear_mats = not scene.clear_mats
+        scene.clear_materials = not scene.clear_materials
         for item in scene.material_list:
-            item.material.add_to_atlas = scene.clear_mats
+            item.material.add_to_atlas = scene.clear_materials
         return {'FINISHED'}
 
 
 def shotariya_installed():
-    addon_name = "Shotariya-don"
-    min_version = [1, 1, 5]
     installed = False
     correct_version = False
 
     for mod2 in addon_utils.modules():
         if mod2.bl_info.get('name') == addon_name:
-            print(mod2.bl_info.get('name'), mod2.bl_info.get('version'))
             installed = True
             if mod2.bl_info.get('version') >= min_version:
                 correct_version = True
@@ -428,6 +432,7 @@ def shotariya_installed():
 
     try:
         bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_MAT')
+        bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='ALL_MAT')
     except AttributeError:
         print(addon_name + " not enabled.")
         bpy.ops.install.shotariya('INVOKE_DEFAULT', action='ENABLE')

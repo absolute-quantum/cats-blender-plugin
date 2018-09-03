@@ -614,7 +614,7 @@ class ToolPanel:
         default=False
     )
 
-    bpy.types.Scene.clear_mats = bpy.props.BoolProperty(
+    bpy.types.Scene.clear_materials = bpy.props.BoolProperty(
         description='Clear materials checkbox',
         default=True
     )
@@ -1507,13 +1507,8 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 0.75
             row.label('This is a greatly improved Atlas Generator.')
             row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label('You need the plugin "Material Combiner",')
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 0.75
+            row.scale_y = 1
             row.label('Made by shotaryia', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
-            col.separator()
             col.separator()
 
             if len(context.scene.material_list) == 0:
@@ -1522,13 +1517,16 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 row.operator('atlas.gen_mat_list', icon='TRIA_RIGHT')
                 col.separator()
             else:
+                # row = col.row(align=True)
+                # row.scale_y = 0.75
+                # row.label('Select Materials to Combine:')
                 row = col.row(align=True)
-                row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=4, type='DEFAULT')
+                row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=8, type='DEFAULT')
 
                 row = col.split(percentage=0.8, align=True)
                 row.scale_y = 1.2
                 row.operator('atlas.gen_mat_list', text='Update Material List', icon='FILE_REFRESH')
-                if context.scene.clear_mats:
+                if context.scene.clear_materials:
                     row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_HLT')
                 else:
                     row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_DEHLT')

@@ -259,6 +259,8 @@ bone_rename['Hips'] = [
     'Waist01',
     'Waist02',
     'Unused_Root_Hips',
+    'Root_Hips_1',
+    'Root_Hips_2',
 ]
 bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
     'Spine',  # First entry!
@@ -863,6 +865,8 @@ bone_reweight['\Left arm'] = [
     'Shoulder7_\L',
     'ElbowUpper_\L',
     'Arm_\Left_Sh_Tw',
+    'Arm_\Left_Shoulder_Ctrl_1',
+    'Arm_\Left_Shoulder_Ctrl_2',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -956,6 +960,9 @@ bone_reweight['\Left elbow'] = [
     'ElbowMiddle_\L',
     'ElbowLower1_\L',
     'ElbowLower2_\L',
+    'Arm_\Left_Elbow_Ctrl',
+    'Arm_\Left_Wrist_Ctrl_1',
+    'Arm_\Left_Wrist_Ctrl_2',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -985,6 +992,8 @@ bone_reweight['\Left wrist'] = [
     '\Lf_Metacarpal',
     '\Left_Hand_001',
     '\Left_Hand_005',
+    'Unusedopt_Hand_*_Metacarpal04_1_\L',
+    '\L_Finger_Ctr',
 ]
 bone_reweight['Left wrist'] = [
     'Left_Hand_002',
@@ -1037,6 +1046,9 @@ bone_reweight['\Left leg'] = [
     'B_\L_LegHelper',
     'B_\L_Knee',
     'Leg_\Left_Thigh_Ctr',
+    'Leg_\Left_Thigh_Ctrl_1',
+    'Leg_\Left_Thigh_Ctrl_2',
+    'Leg_\Left_Thigh_Ctrl_3',
     'Leg_\Left_Knee_Ctr',
     'B_\L_Hiza01',
     'B_\L_Pelvis_Hojo01',
@@ -1127,6 +1139,7 @@ bone_reweight['\Left knee'] = [
     'Knee6_2_\L',
     'Knee7_\L',
     'Knee7_2_\L',
+    'Leg_\Left_Knee_Ctrl',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',

@@ -298,12 +298,15 @@ class FixArmature(bpy.types.Operator):
                 shapekey.name = tools.translate.fix_jp_chars(shapekey.name)
 
         # Fix faulty UV coordinates
+        fixed_uv_coords = 0
         for uv in mesh.data.uv_layers:
             for vert in range(len(uv.data) - 1):
                 if math.isnan(uv.data[vert].uv.x):
                     uv.data[vert].uv.x = 0
+                    fixed_uv_coords += 1
                 if math.isnan(uv.data[vert].uv.y):
                     uv.data[vert].uv.y = 0
+                    fixed_uv_coords += 1
 
         # Standardize UV maps name
         mesh.data.uv_textures[0].name = 'UVMap'
@@ -995,6 +998,12 @@ class FixArmature(bpy.types.Operator):
 
         if not hierarchy_check_hips['result']:
             self.report({'ERROR'}, hierarchy_check_hips['message'])
+            return {'FINISHED'}
+
+        if fixed_uv_coords:
+            tools.common.show_error(6.2, ['The model was successfully fixed, but there were ' + str(fixed_uv_coords) + ' faulty UV coordinates.',
+                                          'This could result in broken textures and you might have to fix them manually.',
+                                          'This issue is often caused by edits in PMX editor.'])
             return {'FINISHED'}
 
         self.report({'INFO'}, 'Model successfully fixed.')
