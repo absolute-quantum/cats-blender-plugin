@@ -74,19 +74,7 @@ class FixArmature(bpy.types.Operator):
         armature = tools.common.set_default_stage()
 
         # Check if bone matrix == world matrix, important for xps models
-        x_cord = 0
-        y_cord = 1
-        z_cord = 2
-        fbx = False
-        for index, bone in enumerate(armature.pose.bones):
-            if index == 5:
-                bone_pos = bone.matrix
-                world_pos = armature.matrix_world * bone.matrix
-                if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
-                    z_cord = 1
-                    y_cord = 2
-                    fbx = True
-                    break
+        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
 
         # Add rename bones to reweight bones
         temp_rename_bones = copy.deepcopy(Bones.bone_rename)
@@ -704,8 +692,6 @@ class FixArmature(bpy.types.Operator):
                                 if hips.tail[z_cord] < hips.head[z_cord]:
                                     hips.tail[z_cord] = hips.tail[z_cord] + 0.1
 
-
-
                                 # if hips.tail[z_cord] < hips.head[z_cord]:
                                 #     hips_height = hips.head[z_cord]
                                 #     hips.head = hips.tail
@@ -834,11 +820,16 @@ class FixArmature(bpy.types.Operator):
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
         for bone in armature.data.edit_bones:
-            if bone.head[z_cord] == bone.tail[z_cord]:
+            if round(bone.head[z_cord], 4) == round(bone.tail[z_cord], 4):
+                if bone.name == 'Head':
+                    print('FIXED')
                 if bone.name == 'Hips' and full_body_tracking:
                     bone.tail[z_cord] -= 0.1
                 else:
                     bone.tail[z_cord] += 0.1
+
+            if bone.name == 'Head':
+                print(bone.head, bone.tail)
 
         # Mixing the weights
         tools.common.unselect_all()

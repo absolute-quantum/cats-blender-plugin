@@ -352,8 +352,11 @@ It checks for a new version automatically once every day.
   - Added fix for bad uv coordinates (Thanks shotariya!)
   - Join Meshes now adds missing armature modifiers
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
+  - Finally fixed CATS deleting bones and then claiming that they are missing
 - **Custom Model:**
   - Merging armatures now renames all UV Maps "UVMap"
+- **Eye Tracking:**
+  - Eye bones should no longer be created in weird places
 
 #### 0.10.1
 - **Model:**

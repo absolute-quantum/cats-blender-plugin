@@ -438,19 +438,8 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
     # print(2 ** 2)
     # print(dist4)
 
-    # Check if bone matrix == world matrix
-    armature = tools.common.get_armature()
-    x_cord = 0
-    y_cord = 1
-    z_cord = 2
-    for index, bone in enumerate(armature.pose.bones):
-        if index == 5:
-            bone_pos = bone.matrix
-            world_pos = armature.matrix_world * bone.matrix
-            if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
-                z_cord = 1
-                y_cord = 2
-                break
+    # Check if bone matrix == world matrix, important for xps models
+    x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
 
     if context.scene.disable_eye_movement:
         if head is not None:
