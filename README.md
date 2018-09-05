@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.10.2)
+# Cats Blender Plugin (0.11.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -339,7 +339,7 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
-#### 0.10.2
+#### 0.11.0
 - **Optimization:**
   - Added new greatly improved Auto Atlas method made by **shotariya**!
     - This new method will create near perfect texture atlases automatically
@@ -348,7 +348,7 @@ It checks for a new version automatically once every day.
     - CATS packs the functions into a single-click button
     - If you want more options, use the plugin tab "shotariya"
 - **Model:**
-  - More models are now compatible
+  - A lot more models are now compatible
   - Added fix for bad uv coordinates (Thanks shotariya!)
   - Join Meshes now adds missing armature modifiers
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation

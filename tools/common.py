@@ -1282,10 +1282,10 @@ def get_bone_orientations():
     for index, bone in enumerate(armature.pose.bones):
         if index == 5:
             bone_pos = bone.matrix
-            print(bone_pos)
+            # print(bone_pos)
             world_pos = armature.matrix_world * bone.matrix
-            print(world_pos)
-            print(bone_pos[0][0], world_pos[0][0])
+            # print(world_pos)
+            # print(bone_pos[0][0], world_pos[0][0])
             if round(abs(bone_pos[0][0]), 4) != round(abs(world_pos[0][0]), 4):
                 z_cord = 1
                 y_cord = 2
@@ -1303,6 +1303,16 @@ def clean_material_names(mesh):
             if mat.name.endswith('. 001') or mat.name.endswith(' .001'):
                 mesh.active_material_index = j
                 mesh.active_material.name = mat.name[:-5]
+
+
+def mix_weights(mesh, vg_from, vg_to):
+    mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
+    mod.vertex_group_a = vg_to
+    mod.vertex_group_b = vg_from
+    mod.mix_mode = 'ADD'
+    mod.mix_set = 'B'
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
 
 
 def version_2_79_or_older():

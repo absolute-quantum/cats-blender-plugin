@@ -130,15 +130,7 @@ class BoneMergeButton(bpy.types.Operator):
                 vg = mesh.vertex_groups.get(bone_name)
                 vg2 = mesh.vertex_groups.get(parent_name)
                 if vg is not None and vg2 is not None:
-                    # NOTE: Mixes B into A
-                    mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
-                    mod.vertex_group_a = parent_name
-                    mod.vertex_group_b = bone_name
-                    mod.mix_mode = 'ADD'
-                    mod.mix_set = 'B'
-                    bpy.ops.object.modifier_move_up(modifier=mod.name)
-                    bpy.ops.object.modifier_apply(modifier=mod.name)
-                    mesh.vertex_groups.remove(vg)
+                    tools.common.mix_weights(mesh, bone_name, parent_name)
 
                 tools.common.set_default_stage()
 

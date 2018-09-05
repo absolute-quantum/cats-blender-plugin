@@ -379,13 +379,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
             if not vg2:
                 continue
 
-            mod = mesh_merge.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
-            mod.vertex_group_a = bone_base  # to
-            mod.vertex_group_b = bone_merge  # from
-            mod.mix_mode = 'ADD'
-            mod.mix_set = 'B'
-            bpy.ops.object.modifier_apply(modifier=mod.name)
-            mesh_merge.vertex_groups.remove(vg2)
+            tools.common.mix_weights(mesh_merge, bone_merge, bone_base)
 
         # Remove ".merge" from all non duplicate bones
         for bone in armature.pose.bones:
