@@ -248,10 +248,6 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
                                          "If you don't want that, undo this operation."])
                 return
 
-    # Name both UVMaps the same
-    mesh_base.data.uv_textures[0].name = 'UVMap'
-    mesh_merge.data.uv_textures[0].name = 'UVMap'
-
     # Save the transforms of the merge armature
     old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
     old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]

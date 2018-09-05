@@ -243,7 +243,8 @@ class JoinMeshesSelected(bpy.types.Operator):
                      '\n  - Reorders all shape keys correctly' \
                      '\n  - Applies all transformations' \
                      '\n  - Applies all decimation modifiers' \
-                     '\n  - Repairs broken armature modifiers'
+                     '\n  - Repairs broken armature modifiers' \
+                     '\n  - Merges UVMaps correctly'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod

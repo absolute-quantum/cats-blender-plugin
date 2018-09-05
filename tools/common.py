@@ -553,6 +553,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
             mesh.select = True
             bpy.context.scene.objects.active = mesh
 
+            # Apply decimation modifiers
             for mod in mesh.modifiers:
                 if mod.type == 'DECIMATE':
                     if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
@@ -565,6 +566,9 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                     if mesh.data.shape_keys:
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+
+            # Standardize UV maps name
+            mesh.data.uv_textures[0].name = 'UVMap'
 
     # Join the meshes
     if bpy.ops.object.join.poll():

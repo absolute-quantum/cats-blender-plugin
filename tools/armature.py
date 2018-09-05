@@ -298,9 +298,6 @@ class FixArmature(bpy.types.Operator):
                     uv.data[vert].uv.y = 0
                     fixed_uv_coords += 1
 
-        # Standardize UV maps name
-        mesh.data.uv_textures[0].name = 'UVMap'
-
         # Translate bones
         to_translate = []
         for bone in armature.data.bones:
