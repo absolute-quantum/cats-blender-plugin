@@ -680,6 +680,8 @@ class FixArmature(bpy.types.Operator):
             head = armature.data.edit_bones.get('Head')
             head.tail[x_cord] = head.head[x_cord]
             head.tail[y_cord] = head.head[y_cord]
+            if head.tail[z_cord] < head.head[z_cord]:
+                head.tail[z_cord] = head.head[z_cord] + 0.1
 
         # Correct arm bone positions for better looks
         tools.common.correct_bone_positions()
@@ -847,8 +849,6 @@ class FixArmature(bpy.types.Operator):
             if round(bone.head[x_cord], 5) == round(bone.tail[x_cord], 5)\
                     and round(bone.head[y_cord], 5) == round(bone.tail[y_cord], 5)\
                     and round(bone.head[z_cord], 5) == round(bone.tail[z_cord], 5):
-                if bone.name == 'Head':
-                    print('FIXED')
                 if bone.name == 'Hips' and full_body_tracking:
                     bone.tail[z_cord] -= 0.1
                 else:

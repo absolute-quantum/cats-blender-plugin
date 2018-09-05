@@ -1281,20 +1281,21 @@ def get_bone_orientations():
     y_cord = 1
     z_cord = 2
     fbx = False
-    armature = get_armature()
-
-    for index, bone in enumerate(armature.pose.bones):
-        if index == 5:
-            bone_pos = bone.matrix
-            # print(bone_pos)
-            world_pos = armature.matrix_world * bone.matrix
-            # print(world_pos)
-            # print(bone_pos[0][0], world_pos[0][0])
-            if round(abs(bone_pos[0][0]), 4) != round(abs(world_pos[0][0]), 4):
-                z_cord = 1
-                y_cord = 2
-                fbx = True
-                break
+    # armature = get_armature()
+    #
+    # for index, bone in enumerate(armature.pose.bones):
+    #     if 'Head' in bone.name:
+    #     #if index == 5:
+    #         bone_pos = bone.matrix
+    #         print(bone_pos)
+    #         world_pos = armature.matrix_world * bone.matrix
+    #         print(world_pos)
+    #         print(bone_pos[0][0], world_pos[0][0])
+    #         if round(abs(bone_pos[0][0]), 4) != round(abs(world_pos[0][0]), 4):
+    #             z_cord = 1
+    #             y_cord = 2
+    #             fbx = True
+    #             break
 
     return x_cord, y_cord, z_cord, fbx
 

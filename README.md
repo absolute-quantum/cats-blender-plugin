@@ -356,6 +356,8 @@ It checks for a new version automatically once every day.
   - Finally fixed CATS deleting bones and then claiming that they are missing
 - **Eye Tracking:**
   - Eye bones should no longer be created in weird places
+- **General:**
+  - Lots of bug fixes
 
 #### 0.10.1
 - **Model:**
