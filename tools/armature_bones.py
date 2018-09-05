@@ -145,6 +145,10 @@ bone_list_rename_unknown_side = {
 }
 bone_reweigth_to_parent = [
     'ShoulderC_\L',
+    'Arm_\Left_Shoulder_Adj_1',
+    'Arm_\Left_Shoulder_Adj_2',
+    'Arm_\Left_Shoulder_Adj_3',
+    'Arm_\Left_Shoulder_Adj_4',
 ]
 bone_list_conflicting_names = [
     (['\L_Clavicle'], '\L_Shoulder', 'Arm_\L'),
@@ -259,6 +263,7 @@ bone_rename['Hips'] = [
     'Waist02',
     'Root_Hips_1',
     'Root_Hips_2',
+    'Pelvis_Def',
 ]
 bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
     'Spine',  # First entry!
@@ -268,7 +273,6 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Upper_Body',
     'Upper_Waist',
     'UpperBody2',
-    'UpperBody2_001',
     'Upper_Body_2',
     'Upper_Waist_2',
     'Waist_Upper_2',
@@ -382,6 +386,9 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'SpB',
     'SpC',
 
+    'Stomach_Def',
+    'Chest_Def',
+
     'SpineTop',
 
     'Chest'  # Last entry!
@@ -397,6 +404,7 @@ bone_rename['Neck'] = [
     'NECK',
     'NeckN',
     'Helmet_Lower',
+    'Neck_Dev',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
@@ -419,6 +427,7 @@ bone_rename['\Left shoulder'] = [
     'Shoulder\L',
     '\L_Shoulder',
     'Mixamorig:\LeftShoulder',
+    'Arm_\Left_Shoulder',
     'Arm_\Left_Shoulder_1',
     'ShoulderArm_\L',
     'Bip_\L_Clavicle',
@@ -431,7 +440,6 @@ bone_rename['\Left shoulder'] = [
     '\LeftCollar',
     '\Left_Collar',
     '\L_Collar',
-    'Arm_\Left_Shoulder',
     '\L_Clavicle_1',
     '\L_CBONE',
     'Shoulder+_\L',
@@ -472,6 +480,7 @@ bone_rename['\Left arm'] = [
     '\Lf_Shoulder',
     'Arm_Upper_\L',
     'Arm_\Left_Sh_2',
+    '\Larm1',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -508,6 +517,7 @@ bone_rename['\Left elbow'] = [
     '\Lf_Elbow',
     'Arm_Lower_\L',
     '\Left_Forarm',
+    '\Larm2',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -576,6 +586,7 @@ bone_rename['\Left leg'] = [
     '\Lf_Leg',
     '\L_UpLeg',
     'Thigh00_\L',
+    '\Lfoot1',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -609,6 +620,7 @@ bone_rename['\Left knee'] = [
     '\Lf_Knee',
     '\L_Knee',
     'Leg01_\L',
+    '\Lfoot2',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
@@ -748,7 +760,6 @@ bone_reweight['\Left shoulder'] = [
     '\Left_Shoulder_Weight',
     'ShoulderS_\L',
     'ShoulderW_\L',
-    'Arm_\Left_Shoulder_Adj_1',
     'B_\L_ArmorParts',
     'Bip_\L_Shoulder',
     'Kata_\L',
@@ -800,9 +811,6 @@ bone_reweight['\Left arm'] = [
     'DEF_Upper_Arm_Twist_25_\L',
     'DEF_Upper_Arm_Twist_50_\L',
     'DEF_Upper_Arm_Twist_75_\L',
-    'Arm_\Left_Shoulder_Adj_2',
-    'Arm_\Left_Shoulder_Adj_3',
-    'Arm_\Left_Shoulder_Adj_4',
     'Arm_\Left_Bicep',
     '\LArmB',
     '\L_Sub_Shoulder',

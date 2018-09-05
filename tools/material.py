@@ -160,6 +160,8 @@ class CombineMaterialsButton(bpy.types.Operator):
                 me = ob.data
                 for f in me.polygons:
                     faceindex = f.material_index
+                    if faceindex >= len(mats):
+                        continue
 
                     currentfacemat = mats[faceindex]
                     faceMats.append(currentfacemat)
@@ -182,6 +184,8 @@ class CombineMaterialsButton(bpy.types.Operator):
 
                 i = 0
                 for f in me.polygons:
+                    if i >= len(faceMats):
+                        continue
                     matindex = mnames.index(faceMats[i])
                     f.material_index = matindex
                     i += 1
