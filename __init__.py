@@ -321,7 +321,8 @@ class ToolPanel:
 
     bpy.types.Scene.merge_same_bones = bpy.props.BoolProperty(
         name='Merge Similar Named Bones',
-        description='Merges all bones together that have the same name. You have to make sure that all the important bone names match.'
+        description='Merges all bones together that have the same name.'
+                    '\nYou will have to make sure that all the bones you want to merge have the same name.'
                     '\n'
                     "\nIf this is checked, you won't need to fix the model with CATS beforehand but it is still advised to do so."
                     "\nIf this is unchecked, CATS will only merge the base bones (Hips, Spine, etc)."

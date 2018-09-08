@@ -359,6 +359,7 @@ It checks for a new version automatically once every day.
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
   - Finally fixed CATS deleting bones and then claiming that they are missing
 - **Custom Model:**
+  - Added option to merge all bones that have the same name
   - Merge Armatures and Attach Mesh now remove all empty shapekeys afterwards
 - **Eye Tracking:**
   - Eye bones should no longer be created in weird places
