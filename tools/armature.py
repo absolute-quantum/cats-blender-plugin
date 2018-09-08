@@ -259,7 +259,8 @@ class FixArmature(bpy.types.Operator):
         if source_engine and mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
             mesh.data.shape_keys.key_blocks[0].name = "Basis"
 
-        # Save shape key order
+        # Remove empty shape keys and then save the shape key order
+        tools.common.clean_shapekeys(mesh)
         tools.common.save_shapekey_order(mesh.name)
 
         # Combines same materials

@@ -53,6 +53,8 @@ https://catsblenderplugin.com
 
 [![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
+Skip the step where he installs "mmd_tools" in the video below, it's not needed anymore!
+
 [![VRChat - Importing an MMD to VRChat Megatutorial!](https://img.youtube.com/vi/7P0ljQ6hU0A/0.jpg)](https://www.youtube.com/watch?v=7P0ljQ6hU0A)
 
 ## Code contributors:
@@ -354,6 +356,8 @@ It checks for a new version automatically once every day.
   - Join Meshes now merges UV Maps correctly
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
   - Finally fixed CATS deleting bones and then claiming that they are missing
+- **Custom Model:**
+  - Merge Armatures and Attach Mesh now remove all empty shapekeys afterwards
 - **Eye Tracking:**
   - Eye bones should no longer be created in weird places
 - **General:**

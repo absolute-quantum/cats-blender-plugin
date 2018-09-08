@@ -569,6 +569,11 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
             # Standardize UV maps name
             mesh.data.uv_textures[0].name = 'UVMap'
+            for mat_slot in mesh.material_slots:
+                if mat_slot and mat_slot.material:
+                    for tex_slot in mat_slot.material.texture_slots:
+                        if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
+                            tex_slot.uv_layer = 'UVMap'
 
     # Join the meshes
     if bpy.ops.object.join.poll():
@@ -648,10 +653,8 @@ def separate_by_materials(context, mesh):
     utils.separateByMaterials(mesh)
 
     for ob in context.selected_objects:
-        if ob.type == 'MESH' and ob.data.shape_keys:
-            for kb in ob.data.shape_keys.key_blocks:
-                if can_remove(kb):
-                    ob.shape_key_remove(kb)
+        if ob.type == 'MESH':
+            clean_shapekeys(ob)
 
     utils.clearUnusedMeshes()
 
@@ -710,10 +713,7 @@ def separate_by_loose_parts(context, mesh):
         #         unselect_all()
 
         for mesh2 in meshes2:
-            if mesh2 and mesh2.data.shape_keys:
-                for kb in mesh2.data.shape_keys.key_blocks:
-                    if can_remove(kb):
-                        mesh2.shape_key_remove(kb)
+            clean_shapekeys(mesh2)
 
         current_step += 1
         wm.progress_update(current_step)
@@ -751,7 +751,14 @@ def separate_by_loose_parts(context, mesh):
     utils.clearUnusedMeshes()
 
 
-def can_remove(key_block):
+def clean_shapekeys(mesh):
+    if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+        for kb in mesh.data.shape_keys.key_blocks:
+            if can_remove_shapekey(kb):
+                mesh.shape_key_remove(kb)
+
+
+def can_remove_shapekey(key_block):
     if 'mmd_' in key_block.name:
         return True
     if key_block.relative_key == key_block:

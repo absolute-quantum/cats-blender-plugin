@@ -337,6 +337,9 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     # Join the meshes
     mesh_merge = tools.common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
 
+    # Clean up shape keys
+    tools.common.clean_shapekeys(mesh_merge)
+
     # Go into edit mode
     tools.common.unselect_all()
     tools.common.select(armature)
