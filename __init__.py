@@ -319,6 +319,18 @@ class ToolPanel:
         items=tools.common.get_top_meshes
     )
 
+    bpy.types.Scene.merge_same_bones = bpy.props.BoolProperty(
+        name='Merge Similar Named Bones',
+        description='Merges all bones together that have the same name. You have to make sure that all the important bone names match.'
+                    '\n'
+                    "\nIf this is checked, you won't need to fix the model with CATS beforehand but it is still advised to do so."
+                    "\nIf this is unchecked, CATS will only merge the base bones (Hips, Spine, etc)."
+                    "\n"
+                    "\nThis can have unintended side effects, so check your model afterwards!"
+                    "\n",
+        default=False
+    )
+
     # Decimation
     bpy.types.Scene.decimation_mode = bpy.props.EnumProperty(
         name="Decimation Mode",
@@ -1043,28 +1055,32 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.05
+            row.prop(context.scene, 'merge_same_bones', text='Merge Similar Bones')
+
+            row = col.row(align=True)
+            row.scale_y = 1.05
             row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
             row = col.row(align=True)
             row.scale_y = 1.05
             row.prop(context.scene, 'merge_armature', text='To Merge', icon_value=tools.supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id)
 
-            found = False
-            base_armature = tools.common.get_armature(armature_name=context.scene.merge_armature_into)
-            merge_armature = tools.common.get_armature(armature_name=context.scene.merge_armature)
-            if merge_armature:
-                for bone in tools.armature_bones.dont_delete_these_main_bones:
-                    if 'Eye' not in bone and bone in merge_armature.pose.bones and bone in base_armature.pose.bones:
-                        found = True
-                        break
-
-            if not found:
-                row = col.row(align=True)
-                row.scale_y = 1.05
-                row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
-            else:
-                row = col.row(align=True)
-                row.scale_y = 1.05
-                row.label('Armatures can be automatically merged!')
+            if not context.scene.merge_same_bones:
+                found = False
+                base_armature = tools.common.get_armature(armature_name=context.scene.merge_armature_into)
+                merge_armature = tools.common.get_armature(armature_name=context.scene.merge_armature)
+                if merge_armature:
+                    for bone in tools.armature_bones.dont_delete_these_main_bones:
+                        if 'Eye' not in bone and bone in merge_armature.pose.bones and bone in base_armature.pose.bones:
+                            found = True
+                            break
+                if not found:
+                    row = col.row(align=True)
+                    row.scale_y = 1.05
+                    row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
+                else:
+                    row = col.row(align=True)
+                    row.scale_y = 1.05
+                    row.label('Armatures can be merged automatically!')
 
             row = col.row(align=True)
             row.scale_y = 1.2

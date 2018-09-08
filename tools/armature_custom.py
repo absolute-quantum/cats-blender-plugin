@@ -61,11 +61,23 @@ class MergeArmature(bpy.types.Operator):
             return {'FINISHED'}
 
         if merge_armature.parent or base_armature.parent:
-            tools.common.show_error(6.2,
-                                    ['Please use the "Fix Model" feature on the selected armatures first!',
-                                     'Make sure to select the armature you want to fix above the "Fix Model" button!',
-                                     'After that please only move the mesh (not the armature!) to the desired position.'])
-            return {'FINISHED'}
+            if context.scene.merge_same_bones:
+                if merge_armature.parent:
+                    tools.common.select(merge_armature.parent)
+                    bpy.ops.object.delete()
+                    bpy.context.scene.objects.unlink(merge_armature.parent)
+                    bpy.data.objects.remove(merge_armature.parent)
+                if base_armature.parent:
+                    tools.common.select(base_armature.parent)
+                    bpy.ops.object.delete()
+                    bpy.context.scene.objects.unlink(base_armature.parent)
+                    bpy.data.objects.remove(base_armature.parent)
+            else:
+                tools.common.show_error(6.2,
+                                        ['Please use the "Fix Model" feature on the selected armatures first!',
+                                         'Make sure to select the armature you want to fix above the "Fix Model" button!',
+                                         'After that please only move the mesh (not the armature!) to the desired position.'])
+                return {'FINISHED'}
 
         if len(tools.common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
             tools.common.show_error(5.2, ['The armature "' + merge_armature_name + '" does not have any meshes.'])
@@ -75,7 +87,7 @@ class MergeArmature(bpy.types.Operator):
             return {'FINISHED'}
 
         # Merge armatures
-        merge_armatures(base_armature_name, merge_armature_name, False)
+        merge_armatures(base_armature_name, merge_armature_name, False, merge_same_bones=context.scene.merge_same_bones)
 
         self.report({'INFO'}, 'Armatures successfully joined.')
         return {'FINISHED'}
@@ -151,7 +163,7 @@ class CustomModelTutorialButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_name=None):
+def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_name=None, merge_same_bones=False):
     tolerance = 0.00008726647  # around 0.005 degrees
     base_armature = bpy.data.objects[base_armature_name]
     merge_armature = bpy.data.objects[merge_armature_name]
@@ -295,7 +307,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
             print('AUTO MERGE!')
             break
 
-    if not found:
+    if not found and not merge_same_bones:
         print('CUSTOM MERGE!')
         root_name = bpy.context.scene.attach_to_bone
         root = merge_armature.data.edit_bones.get(root_name)
@@ -363,22 +375,43 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     replace_bones = []
     tools.common.select(mesh_merge)
     if not mesh_only:
-        for bone_name in bones_to_merge:
-            bone_base = bone_name
-            bone_merge = bone_name + '.merge'
-
-            vg = mesh_merge.vertex_groups.get(bone_base)
-            vg2 = mesh_merge.vertex_groups.get(bone_merge)
-
-            if not vg:
-                if vg2:
-                    # vg2.name = bone_base
-                    replace_bones.append(bone_base)
+        if merge_same_bones:
+            for bone in armature.data.edit_bones:
+                if not bone.name.endswith('.merge'):
                     continue
-            if not vg2:
-                continue
 
-            tools.common.mix_weights(mesh_merge, bone_merge, bone_base)
+                bone_base = bone.name.replace('.merge', '')
+                bone_merge = bone.name
+
+                vg = mesh_merge.vertex_groups.get(bone_base)
+                vg2 = mesh_merge.vertex_groups.get(bone_merge)
+
+                if not vg:
+                    if vg2:
+                        # vg2.name = bone_base
+                        replace_bones.append(bone_base)
+                        continue
+                if not vg2:
+                    continue
+
+                tools.common.mix_weights(mesh_merge, bone_merge, bone_base)
+        else:
+            for bone_name in bones_to_merge:
+                bone_base = bone_name
+                bone_merge = bone_name + '.merge'
+
+                vg = mesh_merge.vertex_groups.get(bone_base)
+                vg2 = mesh_merge.vertex_groups.get(bone_merge)
+
+                if not vg:
+                    if vg2:
+                        # vg2.name = bone_base
+                        replace_bones.append(bone_base)
+                        continue
+                if not vg2:
+                    continue
+
+                tools.common.mix_weights(mesh_merge, bone_merge, bone_base)
 
         # Remove ".merge" from all non duplicate bones
         for bone in armature.pose.bones:

@@ -521,7 +521,7 @@ def get_meshes_objects(armature_name=None, mode=0):
     return meshes
 
 
-def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_shape_keys=True):
+def join_mesrhes(armature_name=None, mode=0, apply_transformations=True, repair_shape_keys=True):
     # Modes:
     # 0 - Join all meshes
     # 1 - Join selected only
