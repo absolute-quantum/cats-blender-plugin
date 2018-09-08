@@ -372,38 +372,51 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     tools.common.set_default_stage()
 
     # Merge bones into existing bones
-    replace_bones = []
     tools.common.select(mesh_merge)
+    replace_bones = []
     if not mesh_only:
         if merge_same_bones:
-            for bone in armature.data.edit_bones:
+            print('MERGE SAME BONES!')
+            to_delete = []
+            for bone in armature.pose.bones:
                 if not bone.name.endswith('.merge'):
                     continue
 
-                bone_base = bone.name.replace('.merge', '')
-                bone_merge = bone.name
+                bone_base = armature.pose.bones.get(bone.name.replace('.merge', ''))
+                bone_merge = armature.pose.bones.get(bone.name)
 
-                vg = mesh_merge.vertex_groups.get(bone_base)
-                vg2 = mesh_merge.vertex_groups.get(bone_merge)
-
-                if not vg:
-                    if vg2:
-                        # vg2.name = bone_base
-                        replace_bones.append(bone_base)
-                        continue
-                if not vg2:
+                if not bone_base or not bone_merge:
                     continue
 
-                tools.common.mix_weights(mesh_merge, bone_merge, bone_base)
+                print(bone_base.name, bone_merge.name)
+
+                vg_base = mesh_merge.vertex_groups.get(bone_base.name)
+                vg_merge = mesh_merge.vertex_groups.get(bone_merge.name)
+
+                if vg_base and vg_merge:
+                    tools.common.mix_weights(mesh_merge, vg_merge.name, vg_base.name)
+
+                to_delete.append(bone_merge.name)
+
+            tools.common.select(armature)
+            tools.common.switch('EDIT')
+
+            for bone_name in to_delete:
+                bone = armature.data.edit_bones.get(bone_name)
+                if bone:
+                    armature.data.edit_bones.remove(bone)
+
+            tools.common.switch('OBJECT')
+
         else:
             for bone_name in bones_to_merge:
                 bone_base = bone_name
                 bone_merge = bone_name + '.merge'
 
-                vg = mesh_merge.vertex_groups.get(bone_base)
+                vg_base = mesh_merge.vertex_groups.get(bone_base)
                 vg2 = mesh_merge.vertex_groups.get(bone_merge)
 
-                if not vg:
+                if not vg_base:
                     if vg2:
                         # vg2.name = bone_base
                         replace_bones.append(bone_base)

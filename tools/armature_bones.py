@@ -1074,6 +1074,7 @@ bone_reweight['\Left leg'] = [
     'Knee3_2_\L',
     'Knee4_\L',
     'Knee4_2_\L',
+    'Bip_\L_Thigh_Rig',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -1121,6 +1122,7 @@ bone_reweight['\Left knee'] = [
     'Knee7_\L',
     'Knee7_2_\L',
     'Leg_\Left_Knee_Ctrl',
+    'Bip_\L_Calf_Rig',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',
@@ -1139,6 +1141,7 @@ bone_reweight['\Left ankle'] = [
     'Bip_\L_Foot',
     'Foot_Controller_\L',
     'AnkleD_001_\L',
+    'Bip_\L_Foot_Rig',
 ]
 bone_reweight['\Left toe'] = [
     '\Left_Toes',
