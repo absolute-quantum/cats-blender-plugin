@@ -764,6 +764,7 @@ bone_reweight['\Left shoulder'] = [
     'B_\L_ArmorParts',
     'Bip_\L_Shoulder',
     'Kata_\L',
+    'Bip_\L_Clavicle_Rig',
 ]
 bone_reweight['\Left arm'] = [
     'Arm01_\L',
@@ -849,6 +850,8 @@ bone_reweight['\Left arm'] = [
     'Arm_\Left_Sh_Tw',
     'Arm_\Left_Shoulder_Ctrl_1',
     'Arm_\Left_Shoulder_Ctrl_2',
+    'Bip_\L_UpperArm_Rig',
+    'Bip_\L_UpperArm_Twist',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -945,6 +948,8 @@ bone_reweight['\Left elbow'] = [
     'Arm_\Left_Elbow_Ctrl',
     'Arm_\Left_Wrist_Ctrl_1',
     'Arm_\Left_Wrist_Ctrl_2',
+    'Bip_\L_Forearm_Rig',
+    'Bip_\L_Forearm_Twist',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -975,6 +980,10 @@ bone_reweight['\Left wrist'] = [
     '\Left_Hand_005',
     'Unusedopt_Hand_*_Metacarpal04_1_\L',
     '\L_Finger_Ctr',
+    'Bip_\L_Carpal1',
+    'Bip_\L_Carpal2',
+    'Bip_\L_Carpal3',
+    'Bip_\L_Carpal4',
 ]
 bone_reweight['Left wrist'] = [
     'Left_Hand_002',
