@@ -249,7 +249,7 @@ This works by checking all bones and trying to figure out if they can be grouped
 ##### Generate Material List
 - Lists all materials of the current model and lets you select which ones you want to combine.
 
-#### Useful Tips:
+### Useful Tips:
 - Split transparent and non-transparent textures into separate atlases to avoid transparency issues
 - Make sure that the created textures are not too big, because Unity will downscale them to 2048x2048. Split them across multiple atlases or reduce the texture size manually beforehand
 
