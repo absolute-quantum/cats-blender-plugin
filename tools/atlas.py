@@ -291,6 +291,18 @@ class GenerateMaterialListButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class AtlasHelpButton(bpy.types.Operator):
+    bl_idname = 'atlas.help'
+    bl_label = 'Generate Material List'
+    bl_description = 'Open Help and Useful Tips'
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/tree/development#texture-atlas')  # Todo Redirect to master
+        self.report({'INFO'}, 'Atlas Help opened.')
+        return {'FINISHED'}
+
+
 class MaterialsGroup(bpy.types.PropertyGroup):
     material = bpy.props.PointerProperty(
         name='Material',

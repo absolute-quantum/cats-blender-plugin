@@ -239,29 +239,19 @@ This works by checking all bones and trying to figure out if they can be grouped
 
 
 ## Texture atlas
-![](https://i.imgur.com/F8nlBlI.png)
+![](https://i.imgur.com/XcoF0Ek.png)
 
-**Texture atlas is the process of combining multiple textures into one to save processing power to render one's model**
-If you are unsure about what to do with the margin and angle setting, then leave it default. The most important setting here is texture size and target mesh.
+**Texture atlas is the process of combining multiple textures into one to drastically reduce draw calls and therefore make your model much more performant**
 
-##### Target mesh
-The mesh that you want to create an atlas from
+##### Create Atlas
+- Combines all selected materials into one texture. If no material list is generated it will combine all materials.
 
-##### Texture size
-Lower for faster bake time, higher for more detail.
+##### Generate Material List
+- Lists all materials of the current model and lets you select which ones you want to combine.
 
-##### Margin
-Margin to reduce bleed of adjacent islands
-
-##### Angle
-Lower for more projection groups, higher for less distortion
-
-##### Area Weight
-Weight projections vector by faces with larger areas
-
-##### One Texture Material
-Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
-**If any experienced Blender user can tell me how to fix this more elegantly please do let us know!**
+#### Useful Tips:
+- Split transparent and non-transparent textures into separate atlases to avoid transparency issues
+- Make sure that the created textures are not too big, because Unity will downscale them to 2048x2048. Split them across multiple atlases or reduce the texture size manually beforehand
 
 
 ## Bone merging
@@ -356,6 +346,7 @@ It checks for a new version automatically once every day.
     - This prevents cases where the mesh would not move with the bones
   - Join Meshes now merges UV Maps correctly
     - This fixes disappearing textures
+  - Fix Model now unlocks all transformations on armature, mesh and bones
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
   - Finally fixed CATS deleting bones and then claiming that they are missing
 - **Custom Model:**

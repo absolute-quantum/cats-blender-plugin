@@ -256,6 +256,27 @@ class FixArmature(bpy.types.Operator):
         # except RuntimeError:
         #     pass
 
+        # Unlock all transforms
+        for i in range(0, 3):
+            armature.lock_location[i] = False
+            armature.lock_rotation[i] = False
+            armature.lock_scale[i] = False
+            mesh.lock_location[i] = False
+            mesh.lock_rotation[i] = False
+            mesh.lock_scale[i] = False
+
+        # Unlock all bone transforms
+        for bone in armature.pose.bones:
+            bone.lock_location[0] = False
+            bone.lock_location[1] = False
+            bone.lock_location[2] = False
+            bone.lock_rotation[0] = False
+            bone.lock_rotation[1] = False
+            bone.lock_rotation[2] = False
+            bone.lock_scale[0] = False
+            bone.lock_scale[1] = False
+            bone.lock_scale[2] = False
+
         if source_engine and mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
             mesh.data.shape_keys.key_blocks[0].name = "Basis"
 

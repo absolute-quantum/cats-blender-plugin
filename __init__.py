@@ -1522,10 +1522,16 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             col = box.column(align=True)
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('This is a greatly improved Atlas Generator.')
-            row = col.row(align=True)
-            row.scale_y = 1
+            row.label('A greatly improved Atlas Generator.')
+
+            split = col.row(align=True)
+            row = split.row(align=True)
+            row.scale_y = 0.9
             row.label('Made by shotaryia', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
+            row = split.row(align=True)
+            row.alignment = 'RIGHT'
+            row.scale_y = 0.9
+            row.operator("atlas.help", text="", icon='QUESTION')
             col.separator()
 
             if len(context.scene.material_list) == 0:
@@ -1907,6 +1913,7 @@ classesToRegister = [
     tools.atlas.InstallShotariya,
     tools.atlas.ShotariyaButton,
     #tools.atlas.AutoAtlasButton,
+    tools.atlas.AtlasHelpButton,
     tools.atlas.MaterialsGroup,
     tools.atlas.GenerateMaterialListButton,
     tools.atlas.CheckMaterialListButton,
