@@ -149,6 +149,7 @@ bone_reweigth_to_parent = [
     'Arm_\Left_Shoulder_Adj_2',
     'Arm_\Left_Shoulder_Adj_3',
     'Arm_\Left_Shoulder_Adj_4',
+    'ArmTwist_\L',
 ]
 bone_list_conflicting_names = [
     (['\L_Clavicle'], '\L_Shoulder', 'Arm_\L'),
@@ -772,7 +773,6 @@ bone_reweight['\Left arm'] = [
     'Arm03_\L',
     'Arm04_\L',
     'Arm05_\L',
-    'ArmTwist_\L',
     'ArmTwist0_\L',
     'ArmTwist1_\L',
     'ArmTwist2_\L',
