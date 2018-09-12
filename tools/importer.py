@@ -447,13 +447,19 @@ class ExportModel(bpy.types.Operator):
                                          use_mesh_modifiers=False,
                                          add_leaf_bones=False,
                                          bake_anim=False,
+                                         apply_scale_options='FBX_SCALE_ALL',
+                                         path_mode='COPY',
+                                         embed_textures=True,
                                          mesh_smooth_type='FACE')
             else:
                 bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
                                          object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
                                          use_mesh_modifiers=False,
                                          add_leaf_bones=False,
-                                         bake_anim=False)
+                                         bake_anim=False,
+                                         apply_scale_options='FBX_SCALE_ALL',
+                                         path_mode='COPY',
+                                         embed_textures=True)
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 

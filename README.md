@@ -339,6 +339,13 @@ It checks for a new version automatically once every day.
     - If you don't have it installed, CATS will provide you with a download link
     - CATS packs the functions into a single-click button
     - If you want more options, use the plugin tab "shotariya"
+- **Export:**
+  - Improved CATS FBX Export settings (Thanks Rokk!)
+    - Textures will now be stored inside the FBX file
+    - When importing the FBX file into Unity, the textures will be imported automatically as well
+    - The scale of armatures and meshes in Unity will now always be 1 instead of being set to 100 sometimes
+    - This fixes possible bugs with mesh particles
+    - If you want to overwrite old FBX files with the new ones in Unity, you might have to enforce the T-Pose again. Newly imported FBX files are uneffected by this
 - **Model:**
   - A lot more models are now compatible
   - Added fix for bad uv coordinates (Thanks shotariya!)
