@@ -159,6 +159,11 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                                              automatic_bone_orientation=True)
                 except (TypeError, ValueError):
                     bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
+                except RuntimeError as e:
+                    if 'unsupported, must be 7100 or later' in str(e):
+                        tools.common.show_error(6.2, ['The FBX file version is unsupported!',
+                                                      'Please use a tool such as the "Autodesk FBX Converter" to make it compatible.'])
+                    print(str(e))
 
             # DAE - not working currently because of bug:
             # https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly

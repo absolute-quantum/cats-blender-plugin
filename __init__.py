@@ -32,7 +32,8 @@ import importlib
 import bpy.utils.previews
 
 file_dir = os.path.dirname(__file__)
-sys.path.append(file_dir)
+if file_dir not in sys.path:
+    sys.path.append(file_dir)
 
 # print("\n", mmd_tools_local.bl_info["version"])
 # if mmd_tools_local.bl_info["version"] == (0, 5, 0):
