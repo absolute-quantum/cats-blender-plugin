@@ -1057,7 +1057,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.prop(context.scene, 'merge_same_bones', text='Merge Similar Bones')
+            row.prop(context.scene, 'merge_same_bones', text='Merge Same Bones Only')
 
             row = col.row(align=True)
             row.scale_y = 1.05

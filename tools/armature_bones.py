@@ -535,6 +535,7 @@ bone_rename['\Left elbow'] = [
     '\Left_Forarm',
     '\Larm2',
     'Hand(\L)07',
+    'Lowarm_\L',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
