@@ -1216,6 +1216,7 @@ bone_reweight['Eye_\L'] = [
     'EyeLight+_\L',
     'EyeRotationErase_\L',
     'EyeFlip_\L',
+    '\LeftEyeHighlight',
 ]
 bone_reweight['Breast_\L'] = [
     'DEF_Bust_01_\L',

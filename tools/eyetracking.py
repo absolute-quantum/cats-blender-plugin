@@ -70,6 +70,7 @@ class CreateEyesButton(bpy.types.Operator):
         tools.common.switch('EDIT')
 
         mesh_name = context.scene.mesh_name_eye
+        mesh = bpy.data.objects.get(mesh_name)
 
         # Set up old bones
         head = armature.data.edit_bones.get(context.scene.head)
@@ -98,18 +99,17 @@ class CreateEyesButton(bpy.types.Operator):
             return {'CANCELLED'}
 
         if not context.scene.disable_eye_movement:
-            # Find the existing vertex group of the left eye bone
+            eye_name = ""
+            # Find the existing vertex group of the eye bones
             if not vertex_group_exists(mesh_name, old_eye_left.name):
-                self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" has no existing vertex group or no vertices assigned to it.'
-                                       '\nThis might be because you selected the wrong mesh or the wrong bone.'
-                                       '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
-                return {'CANCELLED'}
+                eye_name = context.scene.eye_left
+            elif not vertex_group_exists(mesh_name, old_eye_right.name):
+                eye_name = context.scene.eye_right
 
-            # Find the existing vertex group of the right eye bone
-            if not vertex_group_exists(mesh_name, old_eye_right.name):
-                self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" has no existing vertex group or no vertices assigned to it.'
+            if eye_name:
+                self.report({'ERROR'}, 'The bone "' + eye_name + '" has no existing vertex group or no vertices assigned to it.'
                                        '\nThis might be because you selected the wrong mesh or the wrong bone.'
-                                       '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
+                                       '\nAlso make sure that the selected eye bones actually move the eyes in pose mode.')
                 return {'CANCELLED'}
 
         # Find existing LeftEye/RightEye and rename or delete
@@ -128,6 +128,14 @@ class CreateEyesButton(bpy.types.Operator):
                 return {'CANCELLED'}
             else:
                 armature.data.edit_bones.remove(armature.data.edit_bones.get('RightEye'))
+
+        # Find existing LeftEye/RightEye and rename or delete
+        vg_left = mesh.vertex_groups.get('LeftEye')
+        vg_right = mesh.vertex_groups.get('RightEye')
+        if vg_left:
+            mesh.vertex_groups.remove(vg_left)
+        if vg_right:
+            mesh.vertex_groups.remove(vg_right)
 
         if not bpy.data.objects[mesh_name].data.shape_keys:
             bpy.data.objects[mesh_name].shape_key_add(name='Basis', from_mix=False)
