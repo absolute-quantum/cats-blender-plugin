@@ -212,7 +212,7 @@ class AutoDecimateButton(bpy.types.Operator):
                 tools.common.unselect_all()
                 continue
 
-            if mesh.data.shape_keys is not None:
+            if mesh.data.shape_keys:
                 if full_decimation:
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
@@ -248,8 +248,7 @@ class AutoDecimateButton(bpy.types.Operator):
 
         print((current_tris_count - tris_count), '>', max_tris)
 
-        # if (current_tris_count - tris_count) > max_tris:
-        if True:
+        if (current_tris_count - tris_count) > max_tris:
             message = ['This model can not be decimated to ' + str(max_tris) + ' tris with the specified settings.']
             if safe_decimation:
                 message.append('Try to use Custom, Half or Full Decimation.')

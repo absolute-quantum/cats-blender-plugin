@@ -429,7 +429,33 @@ class ExportModel(bpy.types.Operator):
                      'Automatically sets the optimal export settings'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    action = bpy.props.EnumProperty(
+        items=(('CHECK', '', ''),
+               ('NO_CHECK', '', '')))
+
     def execute(self, context):
+        # Check for warnings
+        print(self.action)
+        if not self.action == 'NO_CHECK':
+            mat_list = []
+            meshes = tools.common.get_meshes_objects()
+
+            if len(meshes) > 10:
+                bpy.ops.display.error('INVOKE_DEFAULT')
+                return {'FINISHED'}
+
+            for mesh in meshes:
+                if len(mesh.data.polygons) >= 65535:
+                    bpy.ops.display.error('INVOKE_DEFAULT')
+                    return {'FINISHED'}
+                for mat_slot in mesh.material_slots:
+                    if mat_slot and mat_slot.material and mat_slot.material.name not in mat_list:
+                        mat_list.append(mat_slot.material.name)
+            if len(mat_list) > 10:
+                bpy.ops.display.error('INVOKE_DEFAULT')
+                return {'FINISHED'}
+
+
         protected_export = False
         for mesh in tools.common.get_meshes_objects():
             if protected_export:
@@ -464,3 +490,108 @@ class ExportModel(bpy.types.Operator):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 
         return {'FINISHED'}
+
+
+class ErrorDisplay(bpy.types.Operator):
+    bl_idname = "display.error"
+    bl_label = "Warning:"
+
+    meshes_too_big = {}
+    mat_list = []
+    meshes_count = 0
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        self.meshes_too_big = {}
+        for mesh in tools.common.get_meshes_objects():
+            tris = len(mesh.data.polygons)
+            if tris >= 65535:
+                self.meshes_too_big[mesh.name] = tris
+            for mat_slot in mesh.material_slots:
+                if mat_slot and mat_slot.material and mat_slot.material.name not in self.mat_list:
+                    self.mat_list.append(mat_slot.material.name)
+            self.meshes_count += 1
+
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        if self.meshes_too_big:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Meshes are too big!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("The following meshes have more than 65534 tris:")
+            col.separator()
+
+            for mesh, tris in self.meshes_too_big.items():
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label("  - " + mesh + ' (' + str(tris) + ' tris)')
+
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Unity will split these meshes in half and you will loose your shape keys.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("You should decimate them before you export this model.")
+            col.separator()
+            col.separator()
+
+        if len(self.mat_list) > 10:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Model unoptimized!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("This model has " + str(len(self.mat_list)) + " materials!")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("It will be extremely unoptimized and cause lag for you and others.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Please be considerate and create a texture atlas.")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
+            col.separator()
+            col.separator()
+
+        if self.meshes_count > 10:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Model unoptimized!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("This model has " + str(self.meshes_count) + " meshes!")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("It will be extremely unoptimized and cause lag for you and others.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Please be considerate and join your meshes.")
+            col.separator()
+            col.separator()
+
+        row = col.row(align=True)
+        row.operator('importer.export_model', text='Continue to Export', icon='LOAD_FACTORY').action = 'NO_CHECK'

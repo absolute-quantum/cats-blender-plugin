@@ -96,7 +96,7 @@ This tries to completely fix your model with one click.
 - Saves your current pose as a new shape key.
 
 ##### Apply as Rest Pose
-- Applies the current pose position as the new rest position
+- Applies the current pose position as the new rest position. This saves the shape keys and repairs ones that were broken due to scaling
 
 
 ## Model Options
@@ -340,6 +340,7 @@ It checks for a new version automatically once every day.
     - CATS packs the functions into a single-click button
     - If you want more options, use the plugin tab "shotariya"
 - **Export:**
+  - Added warning when meshes have more than 65354 tris or more than 10 materials/meshes
   - Improved CATS FBX Export settings (Thanks Rokk!)
     - Textures will now be stored inside the FBX file
     - When importing the FBX file into Unity, the textures will be imported automatically as well
@@ -364,6 +365,7 @@ It checks for a new version automatically once every day.
   - Merge Armatures and Attach Mesh now remove all empty shapekeys afterwards
 - **Eye Tracking:**
   - Eye bones should no longer be created in weird places
+  - Fixed a bug where old vertex groups were not getting deleted
 - **General:**
   - Lots of bug fixes
 

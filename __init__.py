@@ -864,7 +864,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row = split.row(align=True)
             row.scale_y = 1.4
             row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            row.operator('importer.export_model', icon='ARMATURE_DATA')
+            row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
             row = split.row(align=True)
             row.scale_y = 1.4
             row.operator("model.popup", text="", icon='COLLAPSEMENU')
@@ -878,7 +878,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             # row.operator("model.popup", text="", icon='COLLAPSEMENU')
             # row = split.row(align=True)
             # row.scale_y = 1.4
-            # row.operator('importer.export_model', icon='ARMATURE_DATA')
+            # row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
             #
             # split = col.row(align=True)
             # row = split.row(align=True)
@@ -887,7 +887,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             # row = split.row(align=True)
             # row.scale_y = 1.4
             # row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            # row.operator('importer.export_model', icon='ARMATURE_DATA')
+            # row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
 
         if arm_count > 1:
             col.separator()
@@ -1626,7 +1626,7 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
             row = col.row(align=True)
-            row.operator('importer.export_model', icon='ARMATURE_DATA')
+            row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
         else:
             row.operator('copyprotection.enable', icon='KEY_HLT')
 
@@ -1853,6 +1853,7 @@ classesToRegister = [
     tools.importer.InstallSource,
     tools.importer.XpsToolsButton,
     tools.importer.SourceToolsButton,
+    tools.importer.ErrorDisplay,
 
     tools.armature.FixArmature,
     tools.armature.ModelSettings,
