@@ -451,11 +451,23 @@ class ExportModel(bpy.types.Operator):
                 for mat_slot in mesh.material_slots:
                     if mat_slot and mat_slot.material and mat_slot.material.name not in mat_list:
                         mat_list.append(mat_slot.material.name)
+
+                for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                    if i == 0:
+                        continue
+                    for i2, vert in enumerate(shapekey.data):
+                        for coord in vert.co:
+                            if coord > 10000:
+                                bpy.ops.display.error('INVOKE_DEFAULT')
+                                return {'FINISHED'}
+                        if i2 >= 4:
+                            break
+
             if len(mat_list) > 10:
                 bpy.ops.display.error('INVOKE_DEFAULT')
                 return {'FINISHED'}
 
-
+        # Open export window
         protected_export = False
         for mesh in tools.common.get_meshes_objects():
             if protected_export:
@@ -499,6 +511,7 @@ class ErrorDisplay(bpy.types.Operator):
     meshes_too_big = {}
     mat_list = []
     meshes_count = 0
+    broken_shapes = []
 
     def execute(self, context):
         return {'FINISHED'}
@@ -513,6 +526,19 @@ class ErrorDisplay(bpy.types.Operator):
                 if mat_slot and mat_slot.material and mat_slot.material.name not in self.mat_list:
                     self.mat_list.append(mat_slot.material.name)
             self.meshes_count += 1
+
+            for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                if i == 0:
+                    continue
+                for i2, vert in enumerate(shapekey.data):
+                    for coord in vert.co:
+                        if coord > 10000:
+                            print(shapekey.name, coord)
+                            self.broken_shapes.append(shapekey.name)
+                            i2 = 10
+                            break
+                    if i2 >= 4:
+                        break
 
         dpi_value = bpy.context.user_preferences.system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
@@ -590,6 +616,32 @@ class ErrorDisplay(bpy.types.Operator):
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label("Please be considerate and join your meshes.")
+            col.separator()
+            col.separator()
+
+        if self.broken_shapes:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Broken shapekeys!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("This model has " + str(len(self.broken_shapes)) + " broken shapekey(s):")
+            col.separator()
+
+            for shapekey in self.broken_shapes:
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label("  - " + shapekey)
+
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("You will not be able to upload this model until you fix these shapekeys.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Either delete or repair them before export.")
             col.separator()
             col.separator()
 
