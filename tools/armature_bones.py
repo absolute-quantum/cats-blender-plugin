@@ -273,6 +273,7 @@ bone_rename['Hips'] = [
     'Root_Hips_1',
     'Root_Hips_2',
     'Pelvis_Def',
+    'Kosi_Jnt',
 ]
 bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
     'Spine',  # First entry!
@@ -402,6 +403,8 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Stomach_Def',
     'Chest_Def',
 
+    'Mune_Jnt',
+
     'SpineTop',
 
     'Chest'  # Last entry!
@@ -419,6 +422,7 @@ bone_rename['Neck'] = [
     'Helmet_Lower',
     'Neck_Dev',
     'Neck00',
+    'kubi_jnt',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
@@ -462,6 +466,7 @@ bone_rename['\Left shoulder'] = [
     'Clavicle_\L',
     'Arm_\Left_Sh_1',
     'Shoulder(\L)_0',
+    '\L_Kata',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',
@@ -497,6 +502,7 @@ bone_rename['\Left arm'] = [
     'Arm_\Left_Sh_2',
     '\Larm1',
     'Shoulder(\L)_1',
+    '\L_Ude_Jnt',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -536,6 +542,7 @@ bone_rename['\Left elbow'] = [
     '\Larm2',
     'Hand(\L)07',
     'Lowarm_\L',
+    '\L_Hiji_Jnt',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -561,6 +568,7 @@ bone_rename['\Left wrist'] = [
     '\Lf_Wrist',
     'Palm_\L',
     'Hand(\L)00',
+    '\L_Te_Jnt',
 ]
 bone_rename['Left wrist'] = [
     'Left_Hand_003'
@@ -607,6 +615,7 @@ bone_rename['\Left leg'] = [
     'Thigh00_\L',
     '\Lfoot1',
     'Leg(\L)04',
+    '\L_Momo_Jnt',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -642,6 +651,7 @@ bone_rename['\Left knee'] = [
     'Leg01_\L',
     '\Lfoot2',
     'Leg(\L)00',
+    '\L_Sune_Jnt',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
@@ -669,6 +679,7 @@ bone_rename['\Left ankle'] = [
     '\Lf_Ankle',
     '\Left_Heel',
     'Leg(\L)02',
+    '\L_Asi_Jnt',
 ]
 bone_rename['\Left toe'] = [
     '\Left_Toe',
@@ -975,6 +986,7 @@ bone_reweight['\Left elbow'] = [
     'Arm_\Left_Wrist_Ctrl_2',
     'Bip_\L_Forearm_Rig',
     'Bip_\L_Forearm_Twist',
+    '\L_Tekubi',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
