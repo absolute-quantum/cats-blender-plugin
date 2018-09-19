@@ -1032,6 +1032,7 @@ bone_reweight['Right wrist'] = [
 ]
 bone_reweight['\Left leg'] = [
     'LegD_\L',
+    'LegD_001_\L',
     '+LegD_\L',
     '\Left_Foot_D',
     '\Left_Foot_Complement',
@@ -1125,6 +1126,7 @@ bone_reweight['\Left leg'] = [
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
+    'KneeD_001_\L',
     '\Left_Knee_D',
     'KneecntEven_\L',
     '\LTibiaTwist1',
