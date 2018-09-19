@@ -361,7 +361,7 @@ It checks for a new version automatically once every day.
   - Fix Model now unlocks all transformations on armature, mesh and bones
   - Added warning if the FBX version is too old
   - Using "Pose to Shape Key" or "Apply as Rest Pose" no longer requires you to join the meshes
-  - "Apply as Resat Pose" now correctly scales shape keys if the bones are equally scaled on each axis
+  - "Apply as Rest Pose" now correctly scales shape keys if the bones are equally scaled on each axis
   - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
   - Finally fixed CATS deleting bones and then claiming that they are missing
 - **Custom Model:**
