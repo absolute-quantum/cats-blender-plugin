@@ -63,6 +63,8 @@ class Translator(object):
         url = urls.TRANSLATE.format(host=self._pick_service_url())
         r = self.session.get(url, params=params)
 
+        print('JSON:', r.text)
+
         data = utils.format_json(r.text)
         return data
 
