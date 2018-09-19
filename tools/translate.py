@@ -269,16 +269,38 @@ class TranslateAllButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
+        error_shown = False
+
         try:
             if tools.common.get_armature():
                 bpy.ops.translate.bones('INVOKE_DEFAULT')
-            bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
-            bpy.ops.translate.objects('INVOKE_DEFAULT')
-            bpy.ops.translate.materials('INVOKE_DEFAULT')
         except RuntimeError as e:
             self.report({'ERROR'}, str(e).replace('Error: ', ''))
-            return {'CANCELLED'}
+            error_shown = True
 
+        try:
+            bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            if not error_shown:
+                self.report({'ERROR'}, str(e).replace('Error: ', ''))
+                error_shown = True
+
+        try:
+            bpy.ops.translate.objects('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            if not error_shown:
+                self.report({'ERROR'}, str(e).replace('Error: ', ''))
+                error_shown = True
+
+        try:
+            bpy.ops.translate.materials('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            if not error_shown:
+                self.report({'ERROR'}, str(e).replace('Error: ', ''))
+                error_shown = True
+
+        if error_shown:
+            return {'CANCELLED'}
         self.report({'INFO'}, 'Translated everything.')
         return {'FINISHED'}
 
