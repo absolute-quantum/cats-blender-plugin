@@ -251,7 +251,11 @@ This works by checking all bones and trying to figure out if they can be grouped
 
 ### Useful Tips:
 - Split transparent and non-transparent textures into separate atlases to avoid transparency issues
-- Make sure that the created textures are not too big, because Unity will downscale them to 2048x2048. Split them across multiple atlases or reduce the texture size manually beforehand
+- Make sure that the created textures are not too big, because Unity will downscale them to 2048x2048. 
+  Split them across multiple atlases or reduce the texture size manually beforehand
+- You can also tell Unity to use up to 8k textures.
+  Do so by selecting the texture and then choose a different Max Size and/or Compression in the inspector:
+  https://i.imgur.com/o01T4Gb.png
 
 
 ## Bone merging

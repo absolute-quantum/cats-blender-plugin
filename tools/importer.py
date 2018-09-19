@@ -519,6 +519,9 @@ class ErrorDisplay(bpy.types.Operator):
 
     def invoke(self, context, event):
         self.meshes_too_big = {}
+        self.mat_list = []
+        self.meshes_count = 0
+        self.broken_shapes = []
         for mesh in tools.common.get_meshes_objects():
             tris = len(mesh.data.polygons)
             if tris >= 65535:
