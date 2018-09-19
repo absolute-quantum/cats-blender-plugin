@@ -373,6 +373,7 @@ It checks for a new version automatically once every day.
 - **General:**
   - Lots of bug fixes
   - Updated mmd_tools
+  - Added future proof Google Translate maintenance fix (Thanks BlueLament!)
 
 #### 0.10.1
 - **Model:**
