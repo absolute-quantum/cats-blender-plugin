@@ -29,7 +29,6 @@ import json
 import re
 import os
 import bpy
-import csv
 import pathlib
 import tools.common
 import requests.exceptions
@@ -72,7 +71,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
                     if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
                         to_translate.append(shapekey.name)
 
-        if not update_dictionary(to_translate, translating_shapes=True):
+        if not update_dictionary(to_translate, translating_shapes=True, self=self):
             self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         tools.common.update_shapekey_orders()
@@ -110,7 +109,7 @@ class TranslateBonesButton(bpy.types.Operator):
             for bone in armature.data.bones:
                 to_translate.append(bone.name)
 
-        if not update_dictionary(to_translate):
+        if not update_dictionary(to_translate, self=self):
             self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         count = 0
@@ -148,7 +147,7 @@ class TranslateObjectsButton(bpy.types.Operator):
                 if obj.animation_data and obj.animation_data.action:
                     to_translate.append(obj.animation_data.action.name)
 
-        if not update_dictionary(to_translate):
+        if not update_dictionary(to_translate, self=self):
             self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         i = 0
@@ -191,7 +190,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 if matslot.name not in to_translate:
                     to_translate.append(matslot.name)
 
-        if not update_dictionary(to_translate):
+        if not update_dictionary(to_translate, self=self):
             self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
 
         i = 0
@@ -270,10 +269,15 @@ class TranslateAllButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
-        bpy.ops.translate.bones('INVOKE_DEFAULT')
-        bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
-        bpy.ops.translate.objects('INVOKE_DEFAULT')
-        bpy.ops.translate.materials('INVOKE_DEFAULT')
+        try:
+            if tools.common.get_armature():
+                bpy.ops.translate.bones('INVOKE_DEFAULT')
+            bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
+            bpy.ops.translate.objects('INVOKE_DEFAULT')
+            bpy.ops.translate.materials('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            self.report({'ERROR'}, str(e).replace('Error: ', ''))
+            return {'CANCELLED'}
 
         self.report({'INFO'}, 'Translated everything.')
         return {'FINISHED'}
@@ -341,7 +345,7 @@ def load_translations():
     return dict_found
 
 
-def update_dictionary(to_translate_list, translating_shapes=False):
+def update_dictionary(to_translate_list, translating_shapes=False, self=None):
     global dictionary, dictionary_google
     regex = u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+'  # Regex to look for japanese chars
 
@@ -408,7 +412,14 @@ def update_dictionary(to_translate_list, translating_shapes=False):
     try:
         translations = translator.translate(google_input)
     except requests.exceptions.ConnectionError:
-        print('DICTIONARY UPDATE FAILED!')
+        print('CONNECTION TO GOOGLE FAILED!')
+        return False
+    except json.JSONDecodeError:
+        if self:
+            self.report({'ERROR'}, 'It looks like you got banned from Google Translate temporarily!'
+                        '\nCats translated what it could with the local dictionary,'
+                        '\nbut you will have to try again later for the Google translations.')
+        print('YOU GOT BANNED BY GOOGLE!')
         return False
 
     # Update the dictionaries
@@ -524,7 +535,6 @@ def reset_google_dict():
 def save_google_dict():
     with open(dictionary_google_file, 'w', encoding="utf8") as outfile:
         json.dump(dictionary_google, outfile, ensure_ascii=False, indent=4)
-
 
 # def cvs_to_json():
 #     temp_dict = OrderedDict()

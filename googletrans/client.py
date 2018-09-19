@@ -63,7 +63,7 @@ class Translator(object):
         url = urls.TRANSLATE.format(host=self._pick_service_url())
         r = self.session.get(url, params=params)
 
-        print('JSON:', r.text)
+        # print('JSON:', r.text)
 
         data = utils.format_json(r.text)
         return data
@@ -126,11 +126,7 @@ class Translator(object):
             else:
                 raise ValueError('invalid destination language')
 
-        print('TRANS: "', text)
-        if not text:
-            print('NONE!')
         if isinstance(text, list):
-            print('IS_LIST')
             wm = bpy.context.window_manager
             current_step = 0
             wm.progress_begin(current_step, len(text))
@@ -143,7 +139,6 @@ class Translator(object):
                 wm.progress_update(current_step)
             wm.progress_end()
             return result
-        print('')
 
         origin = text
         data = self._translate(text, dest, src)
