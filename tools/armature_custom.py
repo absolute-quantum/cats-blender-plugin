@@ -358,11 +358,18 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     tools.common.switch('EDIT')
 
     # Reparent all bones
-    for bone_name in bones_to_merge:
-        old = bone_name + '.merge'
-        new = bone_name
-        if old in armature.data.edit_bones and new in armature.data.edit_bones:
-            armature.data.edit_bones.get(old).parent = armature.data.edit_bones.get(new)
+    if merge_same_bones:
+        for bone in armature.data.edit_bones:
+            if bone.name.endswith('.merge'):
+                new_bone = armature.data.edit_bones.get(bone.name.replace('.merge', ''))
+                if new_bone:
+                    bone.parent = new_bone
+    else:
+        for bone_name in bones_to_merge:
+            old = bone_name + '.merge'
+            new = bone_name
+            if old in armature.data.edit_bones and new in armature.data.edit_bones:
+                armature.data.edit_bones.get(old).parent = armature.data.edit_bones.get(new)
 
     # Remove all unused bones, constraints and vertex groups
     tools.common.set_default_stage()

@@ -102,6 +102,7 @@ else:
 # r = self.session.get(self.host, verify=False)
 # In client.py on line 42 remove the Hyper part, it's not faster at all!
 # Just comment it out.
+# Also see pull request for TKK change
 # Done
 
 bl_info = {
