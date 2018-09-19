@@ -298,7 +298,7 @@ class AtlasHelpButton(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/tree/development#texture-atlas')  # Todo Redirect to master
+        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/#texture-atlas')
         self.report({'INFO'}, 'Atlas Help opened.')
         return {'FINISHED'}
 

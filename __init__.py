@@ -103,6 +103,7 @@ else:
 # In client.py on line 42 remove the Hyper part, it's not faster at all!
 # Just comment it out.
 # Also see pull request for TKK change
+# Also wm progress in client.py
 # Done
 
 bl_info = {
@@ -118,7 +119,7 @@ bl_info = {
     'warning': '',
 }
 
-dev_branch = False
+dev_branch = True
 version = copy.deepcopy(bl_info.get('version'))
 
 # List all the supporters here
