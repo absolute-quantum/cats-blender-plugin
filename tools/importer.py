@@ -479,6 +479,21 @@ class ExportModel(bpy.types.Operator):
                         protected_export = True
                         break
 
+        textures_found = False
+        for mesh in tools.common.get_meshes_objects():
+            if textures_found:
+                break
+            for mat_slot in mesh.material_slots:
+                if textures_found:
+                    break
+                if mat_slot and mat_slot.material:
+                    for tex_slot in mat_slot.material.texture_slots:
+                        if tex_slot and tex_slot.texture:
+                            tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                            if os.path.isfile(tex_path):
+                                textures_found = True
+                                break
+
         try:
             if protected_export:
                 bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
@@ -488,7 +503,7 @@ class ExportModel(bpy.types.Operator):
                                          bake_anim=False,
                                          apply_scale_options='FBX_SCALE_ALL',
                                          path_mode='COPY',
-                                         embed_textures=True,
+                                         embed_textures=textures_found,
                                          mesh_smooth_type='FACE')
             else:
                 bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
@@ -498,7 +513,7 @@ class ExportModel(bpy.types.Operator):
                                          bake_anim=False,
                                          apply_scale_options='FBX_SCALE_ALL',
                                          path_mode='COPY',
-                                         embed_textures=True)
+                                         embed_textures=textures_found)
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 

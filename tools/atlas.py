@@ -294,7 +294,7 @@ class GenerateMaterialListButton(bpy.types.Operator):
 class AtlasHelpButton(bpy.types.Operator):
     bl_idname = 'atlas.help'
     bl_label = 'Generate Material List'
-    bl_description = 'Open Help and Useful Tips'
+    bl_description = 'Open Useful Atlas Tips'
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
