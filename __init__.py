@@ -1786,7 +1786,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.label('Special thanks to: Shotariya and Neitri')
         col.separator()
         row = col.row(align=True)
-        row.label('Want to give feedback or found a bug?')
+        row.label('Do you need help or found a bug?')
 
         row = col.row(align=True)
         row.operator('credits.discord', icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
