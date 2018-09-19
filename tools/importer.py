@@ -159,6 +159,11 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                                              automatic_bone_orientation=True)
                 except (TypeError, ValueError):
                     bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
+                except RuntimeError as e:
+                    if 'unsupported, must be 7100 or later' in str(e):
+                        tools.common.show_error(6.2, ['The FBX file version is unsupported!',
+                                                      'Please use a tool such as the "Autodesk FBX Converter" to make it compatible.'])
+                    print(str(e))
 
             # DAE - not working currently because of bug:
             # https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
@@ -424,16 +429,70 @@ class ExportModel(bpy.types.Operator):
                      'Automatically sets the optimal export settings'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    action = bpy.props.EnumProperty(
+        items=(('CHECK', '', ''),
+               ('NO_CHECK', '', '')))
+
     def execute(self, context):
+        # Check for warnings
+        print(self.action)
+        if not self.action == 'NO_CHECK':
+            mat_list = []
+            meshes = tools.common.get_meshes_objects()
+
+            if len(meshes) > 10:
+                bpy.ops.display.error('INVOKE_DEFAULT')
+                return {'FINISHED'}
+
+            for mesh in meshes:
+                if len(mesh.data.polygons) >= 65535:
+                    bpy.ops.display.error('INVOKE_DEFAULT')
+                    return {'FINISHED'}
+                for mat_slot in mesh.material_slots:
+                    if mat_slot and mat_slot.material and mat_slot.material.name not in mat_list:
+                        mat_list.append(mat_slot.material.name)
+
+                if tools.common.has_shapekeys(mesh):
+                    for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                        if i == 0:
+                            continue
+                        for i2, vert in enumerate(shapekey.data):
+                            for coord in vert.co:
+                                if coord > 10000:
+                                    bpy.ops.display.error('INVOKE_DEFAULT')
+                                    return {'FINISHED'}
+                            if i2 >= 4:
+                                break
+
+            if len(mat_list) > 10:
+                bpy.ops.display.error('INVOKE_DEFAULT')
+                return {'FINISHED'}
+
+        # Open export window
         protected_export = False
         for mesh in tools.common.get_meshes_objects():
             if protected_export:
                 break
-            if mesh.data.shape_keys:
+            if tools.common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if shapekey.name == 'Basis Original':
                         protected_export = True
                         break
+
+        textures_found = False
+        for mesh in tools.common.get_meshes_objects():
+            if textures_found:
+                break
+            for mat_slot in mesh.material_slots:
+                if textures_found:
+                    break
+                if mat_slot and mat_slot.material:
+                    for tex_slot in mat_slot.material.texture_slots:
+                        if tex_slot and tex_slot.texture:
+                            tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                            if os.path.isfile(tex_path):
+                                textures_found = True
+                                break
 
         try:
             if protected_export:
@@ -442,14 +501,169 @@ class ExportModel(bpy.types.Operator):
                                          use_mesh_modifiers=False,
                                          add_leaf_bones=False,
                                          bake_anim=False,
+                                         apply_scale_options='FBX_SCALE_ALL',
+                                         path_mode='COPY',
+                                         embed_textures=textures_found,
                                          mesh_smooth_type='FACE')
             else:
                 bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
                                          object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
                                          use_mesh_modifiers=False,
                                          add_leaf_bones=False,
-                                         bake_anim=False)
+                                         bake_anim=False,
+                                         apply_scale_options='FBX_SCALE_ALL',
+                                         path_mode='COPY',
+                                         embed_textures=textures_found)
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 
         return {'FINISHED'}
+
+
+class ErrorDisplay(bpy.types.Operator):
+    bl_idname = "display.error"
+    bl_label = "Warning:"
+
+    meshes_too_big = {}
+    mat_list = []
+    meshes_count = 0
+    broken_shapes = []
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        self.meshes_too_big = {}
+        self.mat_list = []
+        self.meshes_count = 0
+        self.broken_shapes = []
+        for mesh in tools.common.get_meshes_objects():
+            tris = len(mesh.data.polygons)
+            if tris >= 65535:
+                self.meshes_too_big[mesh.name] = tris
+            for mat_slot in mesh.material_slots:
+                if mat_slot and mat_slot.material and mat_slot.material.name not in self.mat_list:
+                    self.mat_list.append(mat_slot.material.name)
+            self.meshes_count += 1
+
+            if tools.common.has_shapekeys(mesh):
+                for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                    if i == 0:
+                        continue
+                    for i2, vert in enumerate(shapekey.data):
+                        for coord in vert.co:
+                            if coord > 10000:
+                                print(shapekey.name, coord)
+                                self.broken_shapes.append(shapekey.name)
+                                i2 = 10
+                                break
+                        if i2 >= 4:
+                            break
+
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        if self.meshes_too_big:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Meshes are too big!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("The following meshes have more than 65534 tris:")
+            col.separator()
+
+            for mesh, tris in self.meshes_too_big.items():
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label("  - " + mesh + ' (' + str(tris) + ' tris)')
+
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Unity will split these meshes in half and you will loose your shape keys.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("You should decimate them before you export this model.")
+            col.separator()
+            col.separator()
+
+        if len(self.mat_list) > 10:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Model unoptimized!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("This model has " + str(len(self.mat_list)) + " materials!")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("It will be extremely unoptimized and cause lag for you and others.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Please be considerate and create a texture atlas.")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
+            col.separator()
+            col.separator()
+
+        if self.meshes_count > 10:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Model unoptimized!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("This model has " + str(self.meshes_count) + " meshes!")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("It will be extremely unoptimized and cause lag for you and others.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Please be considerate and join your meshes.")
+            col.separator()
+            col.separator()
+
+        if self.broken_shapes:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Broken shapekeys!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("This model has " + str(len(self.broken_shapes)) + " broken shapekey(s):")
+            col.separator()
+
+            for shapekey in self.broken_shapes:
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label("  - " + shapekey)
+
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("You will not be able to upload this model until you fix these shapekeys.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Either delete or repair them before export.")
+            col.separator()
+            col.separator()
+
+        row = col.row(align=True)
+        row.operator('importer.export_model', text='Continue to Export', icon='LOAD_FACTORY').action = 'NO_CHECK'

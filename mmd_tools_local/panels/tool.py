@@ -349,6 +349,8 @@ class MMDMorphMenu(Menu):
         layout.separator()
         layout.operator_enum('mmd_tools.morph_slider_setup', 'type')
         layout.separator()
+        layout.operator('mmd_tools.morph_copy', icon='COPY_ID')
+        layout.separator()
         layout.operator('mmd_tools.morph_move', icon=TRIA_UP_BAR, text='Move To Top').type = 'TOP'
         layout.operator('mmd_tools.morph_move', icon=TRIA_DOWN_BAR, text='Move To Bottom').type = 'BOTTOM'
 
@@ -413,6 +415,9 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
         return ItemOp.get_by_index(morph.data, morph.active_data)
 
     def _draw_vertex_data(self, context, rig, col, morph):
+        row = col.row()
+        col = row.column()
+        row.operator('mmd_tools.morph_offset_remove', text='', icon='X').all = True
         for i in rig.meshes():
             shape_keys = i.data.shape_keys
             if shape_keys is None:
@@ -423,6 +428,8 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
                 row.active = not (i.show_only_shape_key or kb.mute)
                 row.label(i.name, icon='OBJECT_DATA')
                 row.prop(kb, 'value', text=kb.name)
+        if not ('kb' in locals() and kb):
+            col.label(text='Not found', icon='INFO')
 
     def _draw_material_data(self, context, rig, col, morph):
         c = col.column(align=True)
@@ -521,16 +528,11 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
 
         row = c.row(align=True)
         row.prop_search(data, 'bone', armature.pose, 'bones')
-        if data.bone in armature.pose.bones.keys():
-            c = col.column(align=True)
-            row = c.row(align=True)
+        if data.bone:
+            row = col.row(align=True)
             row.operator(operators.morph.SelectRelatedBone.bl_idname, text='Select')
             row.operator(operators.morph.EditBoneOffset.bl_idname, text='Edit')
-            row = row.row(align=True)
-            row.operator(operators.morph.ApplyBoneOffset.bl_idname, text='Apply')
-            b = context.active_pose_bone
-            if b is None or b.name != data.bone:
-                row.enabled = False
+            row.operator(operators.morph.ApplyBoneOffset.bl_idname, text='Update')
 
         c = col.column(align=True)
         row = c.row()

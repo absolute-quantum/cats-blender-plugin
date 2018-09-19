@@ -67,7 +67,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
         to_translate = []
 
         for mesh in tools.common.get_meshes_objects(mode=2):
-            if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+            if tools.common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
                         to_translate.append(shapekey.name)
@@ -79,7 +79,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
 
         i = 0
         for mesh in tools.common.get_meshes_objects(mode=2):
-            if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+            if tools.common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if 'vrc.' not in shapekey.name:
                         shapekey.name, translated = translate(shapekey.name, add_space=True, translating_shapes=True)

@@ -208,7 +208,7 @@ class ImportPmx(Operator, ImportHelper):
 class ImportVmd(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_vmd'
     bl_label = 'Import VMD File (.vmd)'
-    bl_description = 'Import a VMD file (.vmd)'
+    bl_description = 'Import a VMD file to selected objects (.vmd)'
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
     filename_ext = '.vmd'
@@ -584,7 +584,7 @@ class ExportVmd(Operator, ExportHelper):
 
         if obj.mmd_type == 'ROOT':
             return True
-        if obj.mmd_type == 'NONE' and obj.type in {'MESH', 'ARMATURE'}:
+        if obj.mmd_type == 'NONE' and (obj.type == 'ARMATURE' or getattr(obj.data, 'shape_keys', None)):
             return True
         if MMDCamera.isMMDCamera(obj) or MMDLamp.isMMDLamp(obj):
             return True
@@ -605,7 +605,7 @@ class ExportVmd(Operator, ExportHelper):
             params['mesh'] = rig.firstMesh()
             params['armature'] = rig.armature()
             params['model_name'] = obj.mmd_root.name or obj.name
-        elif obj.type == 'MESH':
+        elif getattr(obj.data, 'shape_keys', None):
             params['mesh'] = obj
             params['model_name'] = obj.name
         elif obj.type == 'ARMATURE':

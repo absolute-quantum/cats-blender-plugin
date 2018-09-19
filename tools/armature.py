@@ -70,23 +70,13 @@ class FixArmature(bpy.types.Operator):
             self.report({'ERROR'}, 'No mesh inside the armature found!')
             return {'CANCELLED'}
 
+        print('\nFixing Model:\n')
+
         wm = bpy.context.window_manager
         armature = tools.common.set_default_stage()
 
         # Check if bone matrix == world matrix, important for xps models
-        x_cord = 0
-        y_cord = 1
-        z_cord = 2
-        fbx = False
-        for index, bone in enumerate(armature.pose.bones):
-            if index == 5:
-                bone_pos = bone.matrix
-                world_pos = armature.matrix_world * bone.matrix
-                if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
-                    z_cord = 1
-                    y_cord = 2
-                    fbx = True
-                    break
+        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
 
         # Add rename bones to reweight bones
         temp_rename_bones = copy.deepcopy(Bones.bone_rename)
@@ -128,16 +118,16 @@ class FixArmature(bpy.types.Operator):
         list = []
         for key, value in temp_rename_bones.items():
             for name in value:
-                if name not in list:
-                    list.append(name)
+                if name.lower() not in list:
+                    list.append(name.lower())
                 else:
                     print(key + " | " + name)
         print('REWEIGHT:')
         list = []
         for key, value in temp_reweight_bones.items():
             for name in value:
-                if name not in list:
-                    list.append(name)
+                if name.lower() not in list:
+                    list.append(name.lower())
                 else:
                     print(key + " | " + name)
         print('DOUBLES END')
@@ -266,10 +256,32 @@ class FixArmature(bpy.types.Operator):
         # except RuntimeError:
         #     pass
 
-        if source_engine and mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+        # Unlock all transforms
+        for i in range(0, 3):
+            armature.lock_location[i] = False
+            armature.lock_rotation[i] = False
+            armature.lock_scale[i] = False
+            mesh.lock_location[i] = False
+            mesh.lock_rotation[i] = False
+            mesh.lock_scale[i] = False
+
+        # Unlock all bone transforms
+        for bone in armature.pose.bones:
+            bone.lock_location[0] = False
+            bone.lock_location[1] = False
+            bone.lock_location[2] = False
+            bone.lock_rotation[0] = False
+            bone.lock_rotation[1] = False
+            bone.lock_rotation[2] = False
+            bone.lock_scale[0] = False
+            bone.lock_scale[1] = False
+            bone.lock_scale[2] = False
+
+        if source_engine and tools.common.has_shapekeys(mesh):
             mesh.data.shape_keys.key_blocks[0].name = "Basis"
 
-        # Save shape key order
+        # Remove empty shape keys and then save the shape key order
+        tools.common.clean_shapekeys(mesh)
         tools.common.save_shapekey_order(mesh.name)
 
         # Combines same materials
@@ -293,12 +305,20 @@ class FixArmature(bpy.types.Operator):
         tools.common.sort_shape_keys(mesh.name)
 
         # Fix all shape key names of half jp chars
-        for mesh in tools.common.get_meshes_objects():
-            if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
-                for shapekey in mesh.data.shape_keys.key_blocks:
-                    shapekey.name = tools.translate.fix_jp_chars(shapekey.name)
+        if tools.common.has_shapekeys(mesh):
+            for shapekey in mesh.data.shape_keys.key_blocks:
+                shapekey.name = tools.translate.fix_jp_chars(shapekey.name)
 
-        # return {'FINISHED'}
+        # Fix faulty UV coordinates
+        fixed_uv_coords = 0
+        for uv in mesh.data.uv_layers:
+            for vert in range(len(uv.data) - 1):
+                if math.isnan(uv.data[vert].uv.x):
+                    uv.data[vert].uv.x = 0
+                    fixed_uv_coords += 1
+                if math.isnan(uv.data[vert].uv.y):
+                    uv.data[vert].uv.y = 0
+                    fixed_uv_coords += 1
 
         # Translate bones
         to_translate = []
@@ -354,6 +374,7 @@ class FixArmature(bpy.types.Operator):
             ('C_', ''),
             ('Cf_S_', ''),
             ('Cf_J_', ''),
+            ('G_', ''),
         ]
 
         # Standardize names
@@ -380,9 +401,7 @@ class FixArmature(bpy.types.Operator):
             # Replace if name starts with specified chars
             for replacement in starts_with:
                 if name.startswith(replacement[0]):
-                    print(name)
                     name = replacement[1] + name[len(replacement[0]):]
-                    print(name)
 
             # Remove digits from the start
             name_split = name.split('_')
@@ -436,14 +455,33 @@ class FixArmature(bpy.types.Operator):
 
         # Resolve conflicting bone names
         for names in conflicting_bones:
-            if names[1] in armature.data.edit_bones:
-                found_all = True
-                for name in names[0]:
-                    if name not in armature.data.edit_bones:
-                        found_all = False
+
+            # Search for bone in armature
+            bone = None
+            for bone_tmp in armature.data.edit_bones:
+                if bone_tmp.name.lower() == names[1].lower():
+                    bone = bone_tmp
+                    break
+
+            # Cancel if bone was not found
+            if not bone:
+                continue
+
+            # Search for all the required bones
+            found_all = True
+            for name in names[0]:
+                found = False
+                for bone_tmp in armature.data.edit_bones:
+                    if bone_tmp.name.lower() == name.lower():
+                        found = True
                         break
-                if found_all:
-                    armature.data.edit_bones.get(names[1]).name = names[2]
+                if not found:
+                    found_all = False
+                    break
+
+            # Rename only if all required bones are found
+            if found_all:
+                bone.name = names[2]
 
         # Standardize bone names again (new duplicate bones have ".001" in it)
         for bone in armature.data.edit_bones:
@@ -469,30 +507,30 @@ class FixArmature(bpy.types.Operator):
                     current_step += 1
                     wm.progress_update(current_step)
 
-                    name = ''
-                    if bone[1] in armature.data.edit_bones:
-                        name = bone[1]
-                    elif bone[1].lower() in armature.data.edit_bones:
-                        name = bone[1].lower()
+                    # Seach for bone in armature
+                    bone_final = None
+                    for bone_tmp in armature.data.edit_bones:
+                        if bone_tmp.name.lower() == bone[1].lower():
+                            bone_final = bone_tmp
+                            break
 
-                    if name == '':
+                    # Cancel if bone was not found
+                    if not bone_final:
                         continue
 
                     # If spine bone, then don't rename for now, and ignore spines with no children
-                    bone2 = armature.data.edit_bones.get(name)
                     if bone_new == 'Spine':
-                        if len(bone2.children) > 0:
-                            spines.append(name)
+                        if len(bone_final.children) > 0:
+                            spines.append(bone_final.name)
                         else:
-                            spine_parts.append(name)
+                            spine_parts.append(bone_final.name)
                         continue
 
                     # Rename the bone
                     if bone[0] not in armature.data.edit_bones:
-                        if bone2 is not None:
-                            bone2.name = bone[0]
+                        bone_final.name = bone[0]
 
-        # Add bones to parent reweigth list
+        # Add bones to parent reweight list
         for name in Bones.bone_reweigth_to_parent:
             if '\Left' in name or '\L' in name:
                 bones = [name.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'),
@@ -501,9 +539,16 @@ class FixArmature(bpy.types.Operator):
                 bones = [name]
 
             for bone_name in bones:
-                bone = armature.data.edit_bones.get(bone_name)
+                # Search for bone in armature
+                bone = None
+                for bone_tmp in armature.data.edit_bones:
+                    if bone_tmp.name.lower() == bone_name.lower():
+                        bone = bone_tmp
+                        break
+
+                # Add bone to reweight list
                 if bone and bone.parent:
-                    temp_list_reweight_bones[bone_name] = bone.parent.name
+                    temp_list_reweight_bones[bone.name] = bone.parent.name
 
         # Check if it is a mixamo model
         mixamo = False
@@ -623,6 +668,7 @@ class FixArmature(bpy.types.Operator):
 
         elif spine_count > 2:  # Merge spines
             print('MASS MERGING')
+            print(spines)
             spine = armature.data.edit_bones.get(spines[0])
             chest = armature.data.edit_bones.get(spines[spine_count - 1])
 
@@ -656,6 +702,8 @@ class FixArmature(bpy.types.Operator):
             head = armature.data.edit_bones.get('Head')
             head.tail[x_cord] = head.head[x_cord]
             head.tail[y_cord] = head.head[y_cord]
+            if head.tail[z_cord] < head.head[z_cord]:
+                head.tail[z_cord] = head.head[z_cord] + 0.1
 
         # Correct arm bone positions for better looks
         tools.common.correct_bone_positions()
@@ -691,8 +739,6 @@ class FixArmature(bpy.types.Operator):
 
                                 if hips.tail[z_cord] < hips.head[z_cord]:
                                     hips.tail[z_cord] = hips.tail[z_cord] + 0.1
-
-
 
                                 # if hips.tail[z_cord] < hips.head[z_cord]:
                                 #     hips_height = hips.head[z_cord]
@@ -808,12 +854,12 @@ class FixArmature(bpy.types.Operator):
 
             obj = hips.id_data
             matrix_final = obj.matrix_world * hips.matrix
-            print(matrix_final)
-            print(matrix_final[2][3])
-            print(fbx)
+            # print(matrix_final)
+            # print(matrix_final[2][3])
+            # print(fbx)
 
             if not fbx and matrix_final[2][3] < 0:
-                print(hips.head[0], hips.head[1], hips.head[2])
+                # print(hips.head[0], hips.head[1], hips.head[2])
                 # Rotation of -180 around the X-axis
                 rot_x_neg180 = Matrix.Rotation(-math.pi, 4, 'X')
                 armature.matrix_world = rot_x_neg180 * armature.matrix_world
@@ -822,7 +868,9 @@ class FixArmature(bpy.types.Operator):
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
         for bone in armature.data.edit_bones:
-            if bone.head[z_cord] == bone.tail[z_cord]:
+            if round(bone.head[x_cord], 5) == round(bone.tail[x_cord], 5)\
+                    and round(bone.head[y_cord], 5) == round(bone.tail[y_cord], 5)\
+                    and round(bone.head[z_cord], 5) == round(bone.tail[z_cord], 5):
                 if bone.name == 'Hips' and full_body_tracking:
                     bone.tail[z_cord] -= 0.1
                 else:
@@ -856,22 +904,21 @@ class FixArmature(bpy.types.Operator):
                     current_step += 1
                     wm.progress_update(current_step)
 
-                    name = ''
-                    if bone[1] in mesh.vertex_groups:
-                        name = bone[1]
-                    elif bone[1].lower() in mesh.vertex_groups:
-                        name = bone[1].lower()
+                    # Seach for vertex group
+                    vg = None
+                    for vg_tmp in mesh.vertex_groups:
+                        if vg_tmp.name.lower() == bone[1].lower():
+                            vg = vg_tmp
+                            break
 
-                    if name == '':
+                    # Cancel if vertex group was not found
+                    if not vg:
                         continue
 
-                    if bone[0] == bone[1]:
+                    if bone[0] == vg.name:
                         print('BUG: ' + bone[0] + ' tried to mix weights with itself!')
                         continue
 
-                    print(bone[0], bone[1])
-
-                    vg = mesh.vertex_groups.get(name)
                     # print(bone[1] + " to1 " + bone[0])
 
                     # If important vertex group is not there create it
@@ -884,52 +931,50 @@ class FixArmature(bpy.types.Operator):
                         else:
                             continue
 
-                    bone_tmp = armature.data.bones.get(name)
+                    bone_tmp = armature.data.bones.get(vg.name)
                     if bone_tmp:
                         for child in bone_tmp.children:
                             if not temp_list_reparent_bones.get(child.name):
                                 temp_list_reparent_bones[child.name] = bone[0]
 
-                    # print(bone[1] + " to2 " + bone[0])
-                    mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
-                    mod.vertex_group_a = bone[0]
-                    mod.vertex_group_b = name
-                    mod.mix_mode = 'ADD'
-                    mod.mix_set = 'B'
-                    bpy.ops.object.modifier_apply(modifier=mod.name)
-                    mesh.vertex_groups.remove(vg)
+                    # print(bone[1] + " to " + bone[0])
+                    tools.common.mix_weights(mesh, vg.name, bone[0])
 
         # Old mixing weights. Still important
         for key, value in temp_list_reweight_bones.items():
             current_step += 1
             wm.progress_update(current_step)
 
-            vg = mesh.vertex_groups.get(key)
-            if vg is None:
-                vg = mesh.vertex_groups.get(key.lower())
-                if vg is None:
-                    continue
-            vg2 = mesh.vertex_groups.get(value)
-            if vg2 is None:
+            # Search for vertex groups
+            vg_from = None
+            vg_to = None
+            for vg_tmp in mesh.vertex_groups:
+                if vg_tmp.name.lower() == key.lower():
+                    vg_from = vg_tmp
+                    if vg_to:
+                        break
+                elif vg_tmp.name.lower() == value.lower():
+                    vg_to = vg_tmp
+                    if vg_from:
+                        break
+
+            # Cancel if vertex groups was not found
+            if not vg_from or not vg_to:
                 continue
 
-            bone_tmp = armature.data.bones.get(bone[1])
+            bone_tmp = armature.data.bones.get(vg_from.name)
             if bone_tmp:
                 for child in bone_tmp.children:
                     if not temp_list_reparent_bones.get(child.name):
-                        temp_list_reparent_bones[child.name] = bone[0]
+                        temp_list_reparent_bones[child.name] = vg_to.name
 
-            if key == value:
-                print('BUG: ' + key + ' tried to mix weights with itself!')
+            if vg_from.name == vg_to.name:
+                print('BUG: ' + vg_to.name + ' tried to mix weights with itself!')
                 continue
 
-            mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
-            mod.vertex_group_a = value
-            mod.vertex_group_b = key
-            mod.mix_mode = 'ADD'
-            mod.mix_set = 'B'
-            bpy.ops.object.modifier_apply(modifier=mod.name)
-            mesh.vertex_groups.remove(vg)
+            # Mix the weights
+            # print(vg_from.name, 'into', vg_to.name)
+            tools.common.mix_weights(mesh, vg_from.name, vg_to.name)
 
         tools.common.unselect_all()
         tools.common.select(armature)
@@ -986,6 +1031,12 @@ class FixArmature(bpy.types.Operator):
 
         if not hierarchy_check_hips['result']:
             self.report({'ERROR'}, hierarchy_check_hips['message'])
+            return {'FINISHED'}
+
+        if fixed_uv_coords:
+            tools.common.show_error(6.2, ['The model was successfully fixed, but there were ' + str(fixed_uv_coords) + ' faulty UV coordinates.',
+                                          'This could result in broken textures and you might have to fix them manually.',
+                                          'This issue is often caused by edits in PMX editor.'])
             return {'FINISHED'}
 
         self.report({'INFO'}, 'Model successfully fixed.')

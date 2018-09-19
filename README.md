@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.10.1)
+# Cats Blender Plugin (0.11.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -53,6 +53,8 @@ https://catsblenderplugin.com
 
 [![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
+Skip the step where he installs "mmd_tools" in the video below, it's not needed anymore!
+
 [![VRChat - Importing an MMD to VRChat Megatutorial!](https://img.youtube.com/vi/7P0ljQ6hU0A/0.jpg)](https://www.youtube.com/watch?v=7P0ljQ6hU0A)
 
 ## Code contributors:
@@ -94,7 +96,7 @@ This tries to completely fix your model with one click.
 - Saves your current pose as a new shape key.
 
 ##### Apply as Rest Pose
-- Applies the current pose position as the new rest position
+- Applies the current pose position as the new rest position. This saves the shape keys and repairs ones that were broken due to scaling
 
 
 ## Model Options
@@ -237,29 +239,23 @@ This works by checking all bones and trying to figure out if they can be grouped
 
 
 ## Texture atlas
-![](https://i.imgur.com/F8nlBlI.png)
+![](https://i.imgur.com/XcoF0Ek.png)
 
-**Texture atlas is the process of combining multiple textures into one to save processing power to render one's model**
-If you are unsure about what to do with the margin and angle setting, then leave it default. The most important setting here is texture size and target mesh.
+**Texture atlas is the process of combining multiple textures into one to drastically reduce draw calls and therefore make your model much more performant**
 
-##### Target mesh
-The mesh that you want to create an atlas from
+##### Create Atlas
+- Combines all selected materials into one texture. If no material list is generated it will combine all materials.
 
-##### Texture size
-Lower for faster bake time, higher for more detail.
+##### Generate Material List
+- Lists all materials of the current model and lets you select which ones you want to combine.
 
-##### Margin
-Margin to reduce bleed of adjacent islands
-
-##### Angle
-Lower for more projection groups, higher for less distortion
-
-##### Area Weight
-Weight projections vector by faces with larger areas
-
-##### One Texture Material
-Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this.
-**If any experienced Blender user can tell me how to fix this more elegantly please do let us know!**
+### Useful Tips:
+- Split transparent and non-transparent textures into separate atlases to avoid transparency issues
+- Make sure that the created textures are not too big, because Unity will downscale them to 2048x2048. 
+  Split them across multiple atlases or reduce the texture size manually beforehand
+- You can also tell Unity to use up to 8k textures.
+  Do so by selecting the texture and then choose a different Max Size and/or Compression in the inspector:
+  https://i.imgur.com/o01T4Gb.png
 
 
 ## Bone merging
@@ -339,6 +335,46 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.11.0
+- **Optimization:**
+  - Added new greatly improved Auto Atlas method made by **shotariya**!
+    - This new method will create near perfect texture atlases automatically
+    - You will need to install the (extremely awesome) plugin "Material Combiner" made by shotariya
+    - If you don't have it installed, CATS will provide you with a download link
+    - CATS packs the functions into a single-click button
+    - If you want more options, use the plugin tab "shotariya"
+- **Export:**
+  - Added warning when meshes have more than 65354 tris or more than 10 materials/meshes
+  - Improved CATS FBX Export settings (Thanks Rokk!)
+    - Textures will now be stored inside the FBX file
+    - When importing the FBX file into Unity, the textures will be imported automatically as well
+    - The scale of armatures and meshes in Unity will now always be 1 instead of being set to 100 sometimes
+    - This fixes possible bugs with mesh particles
+    - If you want to overwrite old FBX files with the new ones in Unity, you might have to enforce the T-Pose again. Newly imported FBX files are uneffected by this
+- **Model:**
+  - A lot more models are now compatible
+  - Added fix for bad uv coordinates (Thanks shotariya!)
+  - Join Meshes now adds missing armature modifiers
+    - This prevents cases where the mesh would not move with the bones
+  - Join Meshes now merges UV Maps correctly
+    - This fixes disappearing textures which were previously there
+  - Fix Model now unlocks all transformations on armature, mesh and bones
+  - Added warning if the FBX version is too old
+  - Using "Pose to Shape Key" or "Apply as Rest Pose" no longer requires you to join the meshes
+  - "Apply as Rest Pose" now correctly scales shape keys if the bones are equally scaled on each axis
+  - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
+  - Finally fixed CATS deleting bones and then claiming that they are missing
+- **Custom Model:**
+  - Added option to merge all bones that have the same name
+  - Merge Armatures and Attach Mesh now remove all empty shapekeys afterwards
+- **Eye Tracking:**
+  - Eye bones should no longer be created in weird places
+  - Fixed a bug where old vertex groups were not getting deleted
+- **General:**
+  - Lots of bug fixes
+  - Updated mmd_tools
+  - Added future proof Google Translate maintenance fix (Thanks BlueLament!)
+
 #### 0.10.1
 - **Model:**
   - Fixed "Apply as Rest Pose" deleting important shape keys
@@ -379,37 +415,6 @@ It checks for a new version automatically once every day.
   - Updated mmd_tools
   - Fixed some typos
   - Fixed multiple bugs
-
-#### 0.9.0
-- **Model:**
-  - Added a new "Apply as Rest Pose" button
-    - This will apply the current pose position as the new rest position
-  - Added a new "Join Selected Meshes" button
-  - Fix Model now combines similar materials (toggleable)
-    - This automatically increases the performance for most models
-  - Moved the Fix Model options into a new settings dialog
-    - Open this by clicking the wrench icon next to the Fix Model button
-  - Import Model now can import all the models with one button
-  - Added option to Keep End Bones
-  - Improved support for Source Engine models
-  - Backface culling is now deactivated again
-  - Fixed random important bones disappearing for no reason
-- **Translation:**
-  - Fixed the SSL error
-    - This fixes a lot of instances where translations would not work
-- **Custom Model:**
-  - Greatly improved the combine process and drastically reduced the amount of errors
-    - Armature transform getting reset is now very rare
-    - Much more user friendly
-  - Improved tolerances to allow minimal armature rotations
-  - Getting an error while attaching a mesh doesn't create a new armature anymore
-  - Error messages are now much more persistent
-- **Shapekeys:**
-  - Fixed "Apply Shapekey as Basis" not setting the basis for newly created shape keys
-- **General**
-  - Various optimizations
-  - Improved error messages
-  - Fixed bugs all over the place
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

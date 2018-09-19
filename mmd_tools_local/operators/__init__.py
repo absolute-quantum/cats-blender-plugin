@@ -16,6 +16,7 @@ if "bpy" in locals():
     importlib.reload(morph)
     importlib.reload(rigid_body)
     importlib.reload(view)
+    importlib.reload(sdef)
 else:
     import bpy
     from . import (
@@ -30,4 +31,5 @@ else:
         morph,
         rigid_body,
         view,
+        sdef
         )

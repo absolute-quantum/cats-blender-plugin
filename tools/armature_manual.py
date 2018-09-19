@@ -57,13 +57,14 @@ class StartPoseMode(bpy.types.Operator):
             current = bpy.context.selected_editable_bones[0].name
 
         bpy.context.space_data.use_pivot_point_align = False
+        bpy.context.space_data.show_manipulator = True
 
         armature = tools.common.set_default_stage()
         tools.common.switch('POSE')
         armature.data.pose_position = 'POSE'
 
         for mesh in tools.common.get_meshes_objects():
-            if mesh.data.shape_keys is not None:
+            if tools.common.has_shapekeys(mesh):
                 for shape_key in mesh.data.shape_keys.key_blocks:
                     shape_key.value = 0
 
@@ -117,7 +118,7 @@ class StopPoseMode(bpy.types.Operator):
         armature.data.pose_position = 'REST'
 
         for mesh in tools.common.get_meshes_objects():
-            if mesh.data.shape_keys is not None:
+            if tools.common.has_shapekeys(mesh):
                 for shape_key in mesh.data.shape_keys.key_blocks:
                     shape_key.value = 0
 
@@ -130,19 +131,13 @@ class StopPoseMode(bpy.types.Operator):
 class PoseToShape(bpy.types.Operator):
     bl_idname = 'armature_manual.pose_to_shape'
     bl_label = 'Pose to Shape Key'
-    bl_description = 'INFO: Join your meshes first!' \
-                     '\n' \
-                     '\nThis saves your current pose as a new shape key.' \
+    bl_description = 'This saves your current pose as a new shape key.' \
                      '\nThe new shape key will be at the bottom of your shape key list of the mesh'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
-        if not bpy.context.active_object or bpy.context.active_object.mode != 'POSE':
-            return False
-
-        meshes = tools.common.get_meshes_objects()
-        return meshes and len(meshes) == 1
+        return bpy.context.active_object.mode == 'POSE'
 
     def execute(self, context):
         pose_to_shapekey('Pose')
@@ -152,14 +147,14 @@ class PoseToShape(bpy.types.Operator):
 
 
 def pose_to_shapekey(name):
-    mesh = tools.common.get_meshes_objects()[0]
-    tools.common.unselect_all()
-    tools.common.select(mesh)
+    for mesh in tools.common.get_meshes_objects():
+        tools.common.unselect_all()
+        tools.common.select(mesh)
 
-    # Apply armature mod
-    mod = mesh.modifiers.new(name, 'ARMATURE')
-    mod.object = tools.common.get_armature()
-    bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+        # Apply armature mod
+        mod = mesh.modifiers.new(name, 'ARMATURE')
+        mod.object = tools.common.get_armature()
+        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
 
     armature = tools.common.set_default_stage()
     tools.common.switch('POSE')
@@ -171,39 +166,113 @@ def pose_to_shapekey(name):
 class PoseToRest(bpy.types.Operator):
     bl_idname = 'armature_manual.pose_to_rest'
     bl_label = 'Apply as Rest Pose'
-    bl_description = 'INFO: Join your meshes first!' \
+    bl_description = 'This applies the current pose position as the new rest position.' \
                      '\n' \
-                     '\nThis applies the current pose position as the new rest position.' \
-                     '\n' \
+                     '\nIf you scale the bones equally on each axis the shape keys will be scaled correctly as well!' \
                      '\nWARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
-        if not bpy.context.active_object or bpy.context.active_object.mode != 'POSE':
-            return False
-
-        meshes = tools.common.get_meshes_objects()
-        return meshes and len(meshes) == 1
+        return bpy.context.active_object.mode == 'POSE'
 
     def execute(self, context):
+        armature = tools.common.get_armature()
+        scales = {}
+
+        # Find out how much each bone is scaled
+        for bone in armature.pose.bones:
+            scale_x = bone.scale[0]
+            scale_y = bone.scale[1]
+            scale_z = bone.scale[2]
+
+            if armature.data.bones.get(bone.name).use_inherit_scale:
+                def check_parent(child, scale_x_tmp, scale_y_tmp, scale_z_tmp):
+                    if child.parent:
+                        parent = child.parent
+                        scale_x_tmp *= parent.scale[0]
+                        scale_y_tmp *= parent.scale[1]
+                        scale_z_tmp *= parent.scale[2]
+
+                        if armature.data.bones.get(parent.name).use_inherit_scale:
+                            scale_x_tmp, scale_y_tmp, scale_z_tmp = check_parent(parent, scale_x_tmp, scale_y_tmp, scale_z_tmp)
+
+                    return scale_x_tmp, scale_y_tmp, scale_z_tmp
+
+                scale_x, scale_y, scale_z = check_parent(bone, scale_x, scale_y, scale_z)
+
+            if scale_x == scale_y == scale_z != 1:
+                scales[bone.name] = scale_x
+
         pose_to_shapekey('PoseToRest')
 
         bpy.ops.pose.armature_apply()
 
-        mesh = tools.common.get_meshes_objects()[0]
-        tools.common.unselect_all()
-        tools.common.select(mesh)
+        for mesh in tools.common.get_meshes_objects():
+            tools.common.unselect_all()
+            tools.common.select(mesh)
 
-        mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
-        bpy.ops.object.shape_key_to_basis()
+            mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
+            bpy.ops.object.shape_key_to_basis()
 
-        # Remove old basis shape key from shape_key_to_basis operation
-        for index in range(len(mesh.data.shape_keys.key_blocks) - 1, 0, -1):
-            mesh.active_shape_key_index = index
-            if 'PoseToRest - Reverted' in mesh.active_shape_key.name:
-                bpy.ops.object.shape_key_remove(all=False)
+            # Remove old basis shape key from shape_key_to_basis operation
+            for index in range(len(mesh.data.shape_keys.key_blocks) - 1, 0, -1):
+                mesh.active_shape_key_index = index
+                if 'PoseToRest - Reverted' in mesh.active_shape_key.name:
+                    bpy.ops.object.shape_key_remove(all=False)
 
+            mesh.active_shape_key_index = 0
+
+            # Find out which bones scale which shapekeys and set it to the highest scale
+            print('\nSCALED BONES:')
+            shapekey_scales = {}
+            for bone_name, scale in scales.items():
+                print(bone_name, scale)
+                vg = mesh.vertex_groups.get(bone_name)
+                if not vg:
+                    continue
+
+                for vertex in mesh.data.vertices:
+                    for g in vertex.groups:
+                        if g.group == vg.index and g.weight == 1:
+                            for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                                if i == 0:
+                                    continue
+
+                                if shapekey.data[vertex.index].co != mesh.data.shape_keys.key_blocks[0].data[vertex.index].co:
+                                    if shapekey.name in shapekey_scales:
+                                        shapekey_scales[shapekey.name] = max(shapekey_scales[shapekey.name], scale)
+                                    else:
+                                        shapekey_scales[shapekey.name] = scale
+                            break
+
+            # Mix every shape keys with itself with the slider set to the new scale
+            for index in range(0, len(mesh.data.shape_keys.key_blocks)):
+                mesh.active_shape_key_index = index
+                shapekey = mesh.active_shape_key
+                if shapekey.name in shapekey_scales:
+                    print('Fixed shapekey', shapekey.name)
+                    shapekey.slider_max = min(shapekey_scales[shapekey.name], 10)
+                    shapekey.value = shapekey.slider_max
+                    mesh.shape_key_add(name=shapekey.name + '-New', from_mix=True)
+                    shapekey.value = 0
+
+            # Remove all the old shapekeys
+            for index in reversed(range(0, len(mesh.data.shape_keys.key_blocks))):
+                mesh.active_shape_key_index = index
+                shapekey = mesh.active_shape_key
+                if shapekey.name in shapekey_scales:
+                    bpy.ops.object.shape_key_remove(all=False)
+
+            # Fix the names of the new shapekeys
+            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                if shapekey and shapekey.name.endswith('-New'):
+                    shapekey.name = shapekey.name[:-4]
+
+            # Repair important shape key order
+            tools.common.repair_shapekey_order(mesh.name)
+
+        # Stop pose mode after operation
         bpy.ops.armature_manual.stop_pose_mode()
 
         self.report({'INFO'}, 'Pose successfully applied as rest pose.')
@@ -217,8 +286,9 @@ class JoinMeshes(bpy.types.Operator):
                      '\nIt also:' \
                      '\n  - Reorders all shape keys correctly' \
                      '\n  - Applies all transformations' \
-                     '\n  - Applies all unapplied decimation modifiers' \
-                     '\n  - Repairs broken armature modifiers'
+                     '\n  - Applies all decimation modifiers' \
+                     '\n  - Repairs broken armature modifiers' \
+                     '\n  - Merges UV maps correctly'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -236,12 +306,13 @@ class JoinMeshes(bpy.types.Operator):
 class JoinMeshesSelected(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes_selected'
     bl_label = 'Join Selected Meshes'
-    bl_description = 'Joins all meshes of this model together.' \
+    bl_description = 'Joins all selected meshes of this model together.' \
                      '\nIt also:' \
                      '\n  - Reorders all shape keys correctly' \
                      '\n  - Applies all transformations' \
-                     '\n  - Applies all unapplied decimation modifiers' \
-                     '\n  - Repairs broken armature modifiers'
+                     '\n  - Applies all decimation modifiers' \
+                     '\n  - Repairs broken armature modifiers' \
+                     '\n  - Merges UV maps correctly'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod

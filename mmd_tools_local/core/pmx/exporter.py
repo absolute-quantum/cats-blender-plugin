@@ -14,6 +14,7 @@ from mmd_tools_local.core import pmx
 from mmd_tools_local.core.bone import FnBone
 from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.morph import FnMorph
+from mmd_tools_local.core.sdef import FnSDEF
 from mmd_tools_local.core.vmd.importer import BoneConverter, BoneConverterPoseMode
 from mmd_tools_local import bpyutils
 from mmd_tools_local.utils import saferelpath
@@ -184,9 +185,10 @@ class __PmxExporter:
                             weight.type = pmx.BoneWeight.SDEF
                             sdef_weights = pmx.BoneWeightSDEF()
                             sdef_weights.weight = weight.weights[0]
-                            sdef_weights.c = v.sdef_data[0]
-                            sdef_weights.r0 = v.sdef_data[1]
-                            sdef_weights.r1 = v.sdef_data[2]
+                            sdef_weights.c, sdef_weights.r0, sdef_weights.r1 = v.sdef_data
+                            if weight.bones[0] > weight.bones[1]:
+                                weight.bones.reverse()
+                                sdef_weights.weight = 1.0 - sdef_weights.weight
                             weight.weights = sdef_weights
                         pv.weight = weight
                     else:
@@ -1078,7 +1080,7 @@ class __PmxExporter:
             for i, kb in enumerate(meshObj.data.shape_keys.key_blocks):
                 if i == 0: # Basis
                     continue
-                if kb.name.startswith('mmd_bind'):
+                if kb.name.startswith('mmd_bind') or kb.name == FnSDEF.SHAPEKEY_NAME:
                     continue
                 if kb.name == 'mmd_sdef_c': # make sure 'mmd_sdef_c' is at first
                     shape_key_list = [(i, kb)] + shape_key_list

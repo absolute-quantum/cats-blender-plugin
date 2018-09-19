@@ -249,6 +249,7 @@ class VMDExporter:
                 key.interp = self.__getVMDBoneInterpolation(x[1], z[1], y[1], ir) # x, z, y, q
                 frame_keys.append(key)
             logging.info('(bone) frames:%5d  name: %s', len(frame_keys), key_name)
+        logging.info('---- bone animations:%5d  source: %s', len(vmd_bone_anim), armObj.name)
         return vmd_bone_anim
 
 
@@ -265,18 +266,28 @@ class VMDExporter:
 
         vmd_morph_anim = vmd.ShapeKeyAnimation()
 
-        rePath = re.compile(r'^key_blocks\["(.+)"\]\.value$')
+        key_blocks = meshObj.data.shape_keys.key_blocks
+        def __get_key_block(key):
+            if key.isdigit():
+                try:
+                    return key_blocks[int(key)]
+                except IndexError:
+                    return None
+            return key_blocks.get(eval(key), None)
+
+        rePath = re.compile(r'^key_blocks\[(.+)\]\.value$')
         for fcurve in animation_data.action.fcurves:
             m = rePath.match(fcurve.data_path)
             if m is None:
                 continue
 
             key_name = m.group(1)
-            kb = meshObj.data.shape_keys.key_blocks.get(key_name, None)
+            kb = __get_key_block(key_name)
             if kb is None:
                 logging.warning(' * Shape key not found: %s', key_name)
                 continue
 
+            key_name = kb.name
             assert(key_name not in vmd_morph_anim)
             anim = vmd_morph_anim[key_name]
 
@@ -289,6 +300,7 @@ class VMDExporter:
                 key.weight = weight[0]
                 anim.append(key)
             logging.info('(mesh) frames:%5d  name: %s', len(anim), key_name)
+        logging.info('---- morph animations:%5d  source: %s', len(vmd_morph_anim), meshObj.name)
         return vmd_morph_anim
 
 

@@ -58,7 +58,7 @@ class CopyProtectionEnable(bpy.types.Operator):
             mesh.show_only_shape_key = False
             bpy.ops.object.shape_key_clear()
 
-            if not mesh.data.shape_keys:
+            if not tools.common.has_shapekeys(mesh):
                 mesh.shape_key_add(name='Basis', from_mix=False)
 
             # 1. Rename original shapekey

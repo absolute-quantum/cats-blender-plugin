@@ -153,6 +153,10 @@ class PMXImporter:
             pv_bones = pv.weight.bones
             pv_weights = pv.weight.weights
             if isinstance(pv_weights, pmx.BoneWeightSDEF):
+                if pv_bones[0] > pv_bones[1]:
+                    pv_bones.reverse()
+                    pv_weights.weight = 1.0 - pv_weights.weight
+                    pv_weights.r0, pv_weights.r1 = pv_weights.r1, pv_weights.r0
                 vertex_group_table[pv_bones[0]].add(index=[i], weight=pv_weights.weight, type='ADD')
                 vertex_group_table[pv_bones[1]].add(index=[i], weight=1.0-pv_weights.weight, type='ADD')
                 self.__sdefVertices[i] = pv
@@ -787,10 +791,8 @@ class PMXImporter:
             self.__rig.renameBone(i.name, self.__translator.translate(i.name))
 
     def __fixRepeatedMorphName(self):
-        used_names_map = {}
+        used_names = set()
         for m in self.__model.morphs:
-            #used_names = used_names_map.setdefault('all', set())
-            used_names = used_names_map.setdefault(type(m), set())
             m.name = utils.uniqueName(m.name or 'Morph', used_names)
             used_names.add(m.name)
 

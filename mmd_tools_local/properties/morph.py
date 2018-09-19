@@ -44,8 +44,14 @@ def _set_name(prop, value):
                     kb.name = value
 
         elif morph_type == 'uv_morphs':
+            vg_list = {}
             for mesh in FnModel(prop.id_data).meshes():
-                for vg, n, x in FnMorph.get_uv_morph_vertex_groups(mesh, prop_name):
+                for vg, n, x in FnMorph.get_uv_morph_vertex_groups(mesh):
+                    vg_list.setdefault(n, []).append(vg)
+
+            if prop_name in vg_list:
+                value = utils.uniqueName(value, used_names|vg_list.keys())
+                for vg in vg_list[prop_name]:
                     vg.name = vg.name.replace(prop_name, value)
 
         if 1:#morph_type != 'group_morphs':

@@ -406,7 +406,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
         meshes = get_meshes_objects()
 
     for mesh in meshes:
-        if mesh is None or not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
+        if not mesh or not tools.common.has_shapekeys(mesh):
             bpy.types.Object.Enum = choices
             return bpy.types.Object.Enum
 
@@ -553,6 +553,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
             mesh.select = True
             bpy.context.scene.objects.active = mesh
 
+            # Apply decimation modifiers
             for mod in mesh.modifiers:
                 if mod.type == 'DECIMATE':
                     if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
@@ -562,9 +563,17 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                         mesh.modifiers.remove(mod)
                         continue
 
-                    if mesh.data.shape_keys:
+                    if tools.common.has_shapekeys(mesh):
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+
+            # Standardize UV maps name
+            mesh.data.uv_textures[0].name = 'UVMap'
+            for mat_slot in mesh.material_slots:
+                if mat_slot and mat_slot.material:
+                    for tex_slot in mat_slot.material.texture_slots:
+                        if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
+                            tex_slot.uv_layer = 'UVMap'
 
     # Join the meshes
     if bpy.ops.object.join.poll():
@@ -578,6 +587,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
         mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
 
+        # Remove duplicate armature modifiers
         mod_count = 0
         for mod in mesh.modifiers:
             mod.show_expanded = False
@@ -587,6 +597,11 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                     bpy.ops.object.modifier_remove(modifier=mod.name)
                     continue
                 mod.object = get_armature(armature_name=armature_name)
+
+        # Add armature mod if there is none
+        if mod_count == 0:
+            mod = mesh.modifiers.new("Armature", 'ARMATURE')
+            mod.object = get_armature(armature_name=armature_name)
 
         if repair_shape_keys:
             repair_shapekey_order(mesh.name)
@@ -638,10 +653,8 @@ def separate_by_materials(context, mesh):
     utils.separateByMaterials(mesh)
 
     for ob in context.selected_objects:
-        if ob.type == 'MESH' and ob.data.shape_keys:
-            for kb in ob.data.shape_keys.key_blocks:
-                if can_remove(kb):
-                    ob.shape_key_remove(kb)
+        if ob.type == 'MESH':
+            clean_shapekeys(ob)
 
     utils.clearUnusedMeshes()
 
@@ -700,10 +713,7 @@ def separate_by_loose_parts(context, mesh):
         #         unselect_all()
 
         for mesh2 in meshes2:
-            if mesh2 and mesh2.data.shape_keys:
-                for kb in mesh2.data.shape_keys.key_blocks:
-                    if can_remove(kb):
-                        mesh2.shape_key_remove(kb)
+            clean_shapekeys(mesh2)
 
         current_step += 1
         wm.progress_update(current_step)
@@ -741,7 +751,14 @@ def separate_by_loose_parts(context, mesh):
     utils.clearUnusedMeshes()
 
 
-def can_remove(key_block):
+def clean_shapekeys(mesh):
+    if tools.common.has_shapekeys(mesh):
+        for kb in mesh.data.shape_keys.key_blocks:
+            if can_remove_shapekey(kb):
+                mesh.shape_key_remove(kb)
+
+
+def can_remove_shapekey(key_block):
     if 'mmd_' in key_block.name:
         return True
     if key_block.relative_key == key_block:
@@ -778,7 +795,7 @@ def reset_context_scenes():
         mesh = meshes[0][0]
         bpy.context.scene.mesh_name_eye = mesh
         bpy.context.scene.mesh_name_viseme = mesh
-        bpy.context.scene.mesh_name_atlas = mesh
+        # bpy.context.scene.mesh_name_atlas = mesh # TODO remove this
         bpy.context.scene.merge_mesh = mesh
 
 
@@ -797,7 +814,7 @@ def save_shapekey_order(mesh_name):
 
     # Create shape key list for description
     shape_key_order = ''
-    if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+    if tools.common.has_shapekeys(mesh):
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if index > 0:
                 shape_key_order += ',,,'
@@ -869,7 +886,7 @@ def update_shapekey_orders():
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
     mesh = bpy.data.objects[mesh_name]
-    if not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
+    if not tools.common.has_shapekeys(mesh):
         return
     select(mesh)
 
@@ -1266,6 +1283,30 @@ def remove_doubles(mesh, threshold):
     return pre_tris - len(mesh.data.polygons)
 
 
+def get_bone_orientations():
+    x_cord = 0
+    y_cord = 1
+    z_cord = 2
+    fbx = False
+    # armature = get_armature()
+    #
+    # for index, bone in enumerate(armature.pose.bones):
+    #     if 'Head' in bone.name:
+    #     #if index == 5:
+    #         bone_pos = bone.matrix
+    #         print(bone_pos)
+    #         world_pos = armature.matrix_world * bone.matrix
+    #         print(world_pos)
+    #         print(bone_pos[0][0], world_pos[0][0])
+    #         if round(abs(bone_pos[0][0]), 4) != round(abs(world_pos[0][0]), 4):
+    #             z_cord = 1
+    #             y_cord = 2
+    #             fbx = True
+    #             break
+
+    return x_cord, y_cord, z_cord, fbx
+
+
 def clean_material_names(mesh):
         for j, mat in enumerate(mesh.material_slots):
             if mat.name.endswith('.001'):
@@ -1276,8 +1317,24 @@ def clean_material_names(mesh):
                 mesh.active_material.name = mat.name[:-5]
 
 
+def mix_weights(mesh, vg_from, vg_to):
+    mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
+    mod.vertex_group_a = vg_to
+    mod.vertex_group_b = vg_from
+    mod.mix_mode = 'ADD'
+    mod.mix_set = 'B'
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
+
+
 def version_2_79_or_older():
     return bpy.app.version < (2, 79, 9)
+
+
+def has_shapekeys(mesh):
+    if not hasattr(mesh.data, 'shape_keys'):
+        return False
+    return hasattr(mesh.data.shape_keys, 'key_blocks')
 
 
 # === THIS CODE COULD BE USEFUL ===

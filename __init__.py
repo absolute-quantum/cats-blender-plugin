@@ -32,7 +32,8 @@ import importlib
 import bpy.utils.previews
 
 file_dir = os.path.dirname(__file__)
-sys.path.append(file_dir)
+if file_dir not in sys.path:
+    sys.path.append(file_dir)
 
 # print("\n", mmd_tools_local.bl_info["version"])
 # if mmd_tools_local.bl_info["version"] == (0, 5, 0):
@@ -101,6 +102,7 @@ else:
 # r = self.session.get(self.host, verify=False)
 # In client.py on line 42 remove the Hyper part, it's not faster at all!
 # Just comment it out.
+# Also see pull request for TKK change
 # Done
 
 bl_info = {
@@ -109,7 +111,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 10, 1],  # Only change this version and the dev branch var right before publishing the new update!
+    'version': [0, 11, 0],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -239,7 +241,8 @@ class ToolPanel:
     bpy.types.Scene.armature = bpy.props.EnumProperty(
         name='Armature',
         description='Select the armature which will be used by Cats',
-        items=tools.common.get_armature_list
+        items=tools.common.get_armature_list,
+        update=tools.atlas.update_material_list
     )
 
     bpy.types.Scene.full_body = bpy.props.BoolProperty(
@@ -316,6 +319,19 @@ class ToolPanel:
         name='Attach Mesh',
         description='Select the mesh which will be attached to the selected bone in the selected armature\n',
         items=tools.common.get_top_meshes
+    )
+
+    bpy.types.Scene.merge_same_bones = bpy.props.BoolProperty(
+        name='Merge Similar Named Bones',
+        description='Merges all bones together that have the same name.'
+                    '\nYou will have to make sure that all the bones you want to merge have the same name.'
+                    '\n'
+                    "\nIf this is checked, you won't need to fix the model with CATS beforehand but it is still advised to do so."
+                    "\nIf this is unchecked, CATS will only merge the base bones (Hips, Spine, etc)."
+                    "\n"
+                    "\nThis can have unintended side effects, so check your model afterwards!"
+                    "\n",
+        default=False
     )
 
     # Decimation
@@ -607,62 +623,74 @@ class ToolPanel:
         ]
     )
 
-    bpy.types.Scene.island_margin = bpy.props.FloatProperty(
-        name='Margin',
-        description='Margin to reduce bleed of adjacent islands',
-        default=0.01,
-        min=0.0,
-        max=1.0,
-        step=0.1,
-        precision=2,
-        subtype='FACTOR'
-    )
-
-    bpy.types.Scene.area_weight = bpy.props.FloatProperty(
-        name='Area Weight',
-        description='Weight projections vector by faces with larger areas',
-        default=0.0,
-        min=0.0,
-        max=1.0,
-        step=0.1,
-        precision=2,
-        subtype='FACTOR'
-    )
-
-    bpy.types.Scene.angle_limit = bpy.props.FloatProperty(
-        name='Angle',
-        description='Lower for more projection groups, higher for less distortion',
-        default=82.0,
-        min=1.0,
-        max=89.0,
-        step=10.0,
-        precision=1,
-        subtype='FACTOR'
-    )
-
-    bpy.types.Scene.texture_size = bpy.props.EnumProperty(
-        name='Texture Size',
-        description='Lower for faster bake time, higher for more detail',
-        items=tools.common.get_texture_sizes
-    )
-
-    bpy.types.Scene.one_texture = bpy.props.BoolProperty(
-        name='One Texture Material',
-        description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this',
-        default=True
-    )
-
-    bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
-        name='Pack Islands',
-        description='Transform all islands so that they will fill up the UV space as much as possible',
+    # Atlas
+    bpy.types.Material.add_to_atlas = bpy.props.BoolProperty(
+        description='Add this material to the atlas',
         default=False
     )
 
-    bpy.types.Scene.mesh_name_atlas = bpy.props.EnumProperty(
-        name='Target Mesh',
-        description='The mesh that you want to create a atlas from',
-        items=tools.common.get_all_meshes
+    bpy.types.Scene.clear_materials = bpy.props.BoolProperty(
+        description='Clear materials checkbox',
+        default=True
     )
+
+    # Atlas Old
+    # bpy.types.Scene.island_margin = bpy.props.FloatProperty(
+    #     name='Margin',
+    #     description='Margin to reduce bleed of adjacent islands',
+    #     default=0.01,
+    #     min=0.0,
+    #     max=1.0,
+    #     step=0.1,
+    #     precision=2,
+    #     subtype='FACTOR'
+    # )
+    #
+    # bpy.types.Scene.area_weight = bpy.props.FloatProperty(
+    #     name='Area Weight',
+    #     description='Weight projections vector by faces with larger areas',
+    #     default=0.0,
+    #     min=0.0,
+    #     max=1.0,
+    #     step=0.1,
+    #     precision=2,
+    #     subtype='FACTOR'
+    # )
+    #
+    # bpy.types.Scene.angle_limit = bpy.props.FloatProperty(
+    #     name='Angle',
+    #     description='Lower for more projection groups, higher for less distortion',
+    #     default=82.0,
+    #     min=1.0,
+    #     max=89.0,
+    #     step=10.0,
+    #     precision=1,
+    #     subtype='FACTOR'
+    # )
+    #
+    # bpy.types.Scene.texture_size = bpy.props.EnumProperty(
+    #     name='Texture Size',
+    #     description='Lower for faster bake time, higher for more detail',
+    #     items=tools.common.get_texture_sizes
+    # )
+    #
+    # bpy.types.Scene.one_texture = bpy.props.BoolProperty(
+    #     name='One Texture Material',
+    #     description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this',
+    #     default=True
+    # )
+    #
+    # bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
+    #     name='Pack Islands',
+    #     description='Transform all islands so that they will fill up the UV space as much as possible',
+    #     default=False
+    # )
+    #
+    # bpy.types.Scene.mesh_name_atlas = bpy.props.EnumProperty(
+    #     name='Target Mesh',
+    #     description='The mesh that you want to create a atlas from',
+    #     items=tools.common.get_all_meshes
+    # )
 
     # Bone Merging
     bpy.types.Scene.merge_ratio = bpy.props.FloatProperty(
@@ -823,50 +851,44 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         arm_count = len(tools.common.get_armature_objects())
         if arm_count == 0:
-            row = col.row(align=True)
-            row.scale_y = 1
-            subcol = row.split(align=True)
-            subcol.scale_y = 1.7
-            subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            subcol = row.split(align=True)
-            subcol.scale_y = 1.7
-            subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            split = col.row(align=True)
+            row = split.row(align=True)
+            row.scale_y = 1.7
+            row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            row = split.row(align=True)
+            row.alignment = 'RIGHT'
+            row.scale_y = 1.7
+            row.operator("model.popup", text="", icon='COLLAPSEMENU')
             return
         else:
-            row = col.row(align=True)
-            row.scale_y = 1
-            subcol = row.split(align=True)
-            subcol.scale_y = 1.4
-            subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            subcol.operator('importer.export_model', icon='ARMATURE_DATA')
-            subcol = row.split(align=True)
-            subcol.scale_y = 1.4
-            subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
-            #
-            # col.separator()
-            # col.separator()
-            # row = col.row(align=True)
-            # row.scale_y = 1
-            # subcol = row.split(align=True)
-            # subcol.scale_y = 1.4
-            # subcol.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            # subcol = row.split(align=True)
-            # subcol.scale_y = 1.4
-            # subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
-            # row.scale_y = 1.4
-            # row.operator('importer.export_model', icon='ARMATURE_DATA')
+            split = col.row(align=True)
+            row = split.row(align=True)
+            row.scale_y = 1.4
+            row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
+            row = split.row(align=True)
+            row.scale_y = 1.4
+            row.operator("model.popup", text="", icon='COLLAPSEMENU')
 
-            # row = col.row(align=True)
-            # row.scale_y = 1
-            # subcol = row.row(align=True)
-            # subcol.alignment = 'LEFT'
-            # subcol.scale_y = 1.4
-            # subcol.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # split = col.row(align=True)
+            # row = split.row(align=True)
             # row.scale_y = 1.4
-            # row.operator('importer.import_any_model', text="Import Model", icon='ARMATURE_DATA')
-            # row = row.split(align=True)
+            # row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            # row = split.row(align=True)
             # row.scale_y = 1.4
-            # row.operator('importer.export_model', icon='ARMATURE_DATA')
+            # row.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # row = split.row(align=True)
+            # row.scale_y = 1.4
+            # row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
+            #
+            # split = col.row(align=True)
+            # row = split.row(align=True)
+            # row.scale_y = 1.4
+            # row.operator("model.popup", text="", icon='COLLAPSEMENU')
+            # row = split.row(align=True)
+            # row.scale_y = 1.4
+            # row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            # row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
 
         if arm_count > 1:
             col.separator()
@@ -878,13 +900,14 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         col.separator()
-        row = col.row(align=True)
+        split = col.row(align=True)
+        row = split.row(align=True)
         row.scale_y = 1.5
         row.operator('armature.fix', icon='BONE_DATA')
-        subcol = row.row(align=True)
-        subcol.alignment = 'RIGHT'
-        subcol.scale_y = 1.5
-        subcol.operator("armature.settings", text="", icon='MODIFIER')
+        row = split.row(align=True)
+        row.alignment = 'RIGHT'
+        row.scale_y = 1.5
+        row.operator("armature.settings", text="", icon='MODIFIER')
 
         if context.scene.full_body:
             row = col.row(align=True)
@@ -893,6 +916,9 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 0.5
             row.label('"Spine length zero" warning in Unity.', icon_value=get_emtpy_icon())
+            col.separator()
+        else:
+            col.separator()
             col.separator()
 
         ob = bpy.context.active_object
@@ -1032,28 +1058,32 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.05
+            row.prop(context.scene, 'merge_same_bones', text='Merge Same Bones Only')
+
+            row = col.row(align=True)
+            row.scale_y = 1.05
             row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
             row = col.row(align=True)
             row.scale_y = 1.05
             row.prop(context.scene, 'merge_armature', text='To Merge', icon_value=tools.supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id)
 
-            found = False
-            base_armature = tools.common.get_armature(armature_name=context.scene.merge_armature_into)
-            merge_armature = tools.common.get_armature(armature_name=context.scene.merge_armature)
-            if merge_armature:
-                for bone in tools.armature_bones.dont_delete_these_main_bones:
-                    if 'Eye' not in bone and bone in merge_armature.pose.bones and bone in base_armature.pose.bones:
-                        found = True
-                        break
-
-            if not found:
-                row = col.row(align=True)
-                row.scale_y = 1.05
-                row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
-            else:
-                row = col.row(align=True)
-                row.scale_y = 1.05
-                row.label('Armatures can be automatically merged!')
+            if not context.scene.merge_same_bones:
+                found = False
+                base_armature = tools.common.get_armature(armature_name=context.scene.merge_armature_into)
+                merge_armature = tools.common.get_armature(armature_name=context.scene.merge_armature)
+                if merge_armature:
+                    for bone in tools.armature_bones.dont_delete_these_main_bones:
+                        if 'Eye' not in bone and bone in merge_armature.pose.bones and bone in base_armature.pose.bones:
+                            found = True
+                            break
+                if not found:
+                    row = col.row(align=True)
+                    row.scale_y = 1.05
+                    row.prop(context.scene, 'attach_to_bone', text='Attach to', icon='BONE_DATA')
+                else:
+                    row = col.row(align=True)
+                    row.scale_y = 1.05
+                    row.label('Armatures can be merged automatically!')
 
             row = col.row(align=True)
             row.scale_y = 1.2
@@ -1465,6 +1495,16 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
         row.operator('root.function', icon='TRIA_RIGHT')
 
 
+class AtlasList(bpy.types.UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        mat = item.material
+        row = layout.row()
+        row.prop(mat, 'name', emboss=False, text='', icon_value=layout.icon(mat))
+        sub_row = row.row()
+        sub_row.scale_x = 0.2
+        row.prop(mat, 'add_to_atlas', text='')
+
+
 class OptimizePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_optimize_v1'
     bl_label = 'Optimization'
@@ -1480,38 +1520,50 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'optimize_mode', expand=True)
 
         if context.scene.optimize_mode == 'ATLAS':
+
+            col = box.column(align=True)
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label('A greatly improved Atlas Generator.')
+
+            split = col.row(align=True)
+            row = split.row(align=True)
+            row.scale_y = 0.9
+            row.label('Made by shotaryia', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
+            row = split.row(align=True)
+            row.alignment = 'RIGHT'
+            row.scale_y = 0.9
+            row.operator("atlas.help", text="", icon='QUESTION')
             col.separator()
 
-            mesh_count = len(tools.common.get_meshes_objects(mode=2))
-            if mesh_count == 0:
+            if len(context.scene.material_list) == 0:
                 row = col.row(align=True)
-                row.label('No meshes found!', icon='ERROR')
-            elif mesh_count > 1:
+                row.scale_y = 1.2
+                row.operator('atlas.gen_mat_list', icon='TRIA_RIGHT')
                 col.separator()
-                row = col.row(align=True)
-                row.prop(context.scene, 'mesh_name_atlas', icon='MESH_DATA')
             else:
+                # row = col.row(align=True)
+                # row.scale_y = 0.75
+                # row.label('Select Materials to Combine:')
+                row = col.row(align=True)
+                row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=8, type='DEFAULT')
+
+                row = col.split(percentage=0.8, align=True)
+                row.scale_y = 1.2
+                row.operator('atlas.gen_mat_list', text='Update Material List', icon='FILE_REFRESH')
+                if context.scene.clear_materials:
+                    row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_HLT')
+                else:
+                    row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_DEHLT')
+
+                row.operator('atlas.clear_mat_list', text='', icon='X')
                 col.separator()
 
             row = col.row(align=True)
-            row.prop(context.scene, 'texture_size', icon='TEXTURE')
+            row.scale_y = 1.7
+            row.operator('atlas.generate', icon='TRIA_RIGHT')
 
-            col.separator()
-            row = col.row(align=True)
-            row.prop(context.scene, 'island_margin')
-            row = col.row(align=True)
-            row.prop(context.scene, 'angle_limit')
-            row = col.row(align=True)
-            row.prop(context.scene, 'area_weight')
-
-            row = box.row(align=True)
-            row.scale_y = 1.1
-            row.prop(context.scene, 'one_texture')
-            row.prop(context.scene, 'pack_islands')
-            row = box.row(align=True)
-            row.operator('auto.atlas', icon='TRIA_RIGHT')
-
-        if context.scene.optimize_mode == 'MATERIAL':
+        elif context.scene.optimize_mode == 'MATERIAL':
             col = box.column(align=True)
             row = col.row(align=True)
             row.scale_y = 1.1
@@ -1529,7 +1581,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.1
             row.operator('textures.standardize', icon='TEXTURE_SHADED')
 
-        if context.scene.optimize_mode == 'BONEMERGING':
+        elif context.scene.optimize_mode == 'BONEMERGING':
             if len(tools.common.get_meshes_objects()) > 1:
                 row = box.row(align=True)
                 row.prop(context.scene, 'merge_mesh')
@@ -1572,10 +1624,10 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 1.3
         meshes = tools.common.get_meshes_objects()
-        if len(meshes) > 0 and meshes[0].data.shape_keys and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
+        if len(meshes) > 0 and tools.common.has_shapekeys(meshes[0]) and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
             row.operator('copyprotection.disable', icon='KEY_DEHLT')
             row = col.row(align=True)
-            row.operator('importer.export_model', icon='ARMATURE_DATA')
+            row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
         else:
             row.operator('copyprotection.enable', icon='KEY_HLT')
 
@@ -1734,7 +1786,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.label('Special thanks to: Shotariya and Neitri')
         col.separator()
         row = col.row(align=True)
-        row.label('Want to give feedback or found a bug?')
+        row.label('Do you need help or found a bug?')
 
         row = col.row(align=True)
         row.operator('credits.discord', icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
@@ -1802,6 +1854,7 @@ classesToRegister = [
     tools.importer.InstallSource,
     tools.importer.XpsToolsButton,
     tools.importer.SourceToolsButton,
+    tools.importer.ErrorDisplay,
 
     tools.armature.FixArmature,
     tools.armature.ModelSettings,
@@ -1859,7 +1912,16 @@ classesToRegister = [
     tools.rootbone.RootButton,
 
     OptimizePanel,
-    tools.atlas.AutoAtlasButton,
+    tools.atlas.AutoAtlasNewButton,
+    tools.atlas.InstallShotariya,
+    tools.atlas.ShotariyaButton,
+    #tools.atlas.AutoAtlasButton,
+    tools.atlas.AtlasHelpButton,
+    tools.atlas.MaterialsGroup,
+    tools.atlas.GenerateMaterialListButton,
+    tools.atlas.CheckMaterialListButton,
+    tools.atlas.ClearMaterialListButton,
+    AtlasList,
     tools.material.CombineMaterialsButton,
     tools.material.OneTexPerMatButton,
     tools.material.OneTexPerMatOnlyButton,
@@ -1911,6 +1973,9 @@ def register():
     for value in classesToRegister:
         bpy.utils.register_class(value)
 
+    bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
+    bpy.types.Scene.material_list_index = bpy.props.IntProperty(default=0)
+
     if dev_branch and len(version) > 2:
         version[2] += 1
 
@@ -1940,7 +2005,7 @@ def unregister():
     except AttributeError:
         pass
 
-    for value in classesToRegister:
+    for value in reversed(classesToRegister):
         bpy.utils.unregister_class(value)
     tools.supporter.unregister_dynamic_buttons()
     addon_updater_ops.unregister()

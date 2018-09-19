@@ -93,10 +93,39 @@ class FnMorph(object):
 
 
     @staticmethod
+    def remove_shape_key(obj, key_name):
+        key_blocks = getattr(obj.data.shape_keys, 'key_blocks', None)
+        if key_blocks and key_name in key_blocks:
+            ObjectOp(obj).shape_key_remove(key_blocks[key_name])
+
+    @staticmethod
+    def copy_shape_key(obj, src_name, dest_name):
+        key_blocks = getattr(obj.data.shape_keys, 'key_blocks', None)
+        if key_blocks and src_name in key_blocks:
+            if dest_name in key_blocks:
+                ObjectOp(obj).shape_key_remove(key_blocks[dest_name])
+            obj.active_shape_key_index = key_blocks.find(src_name)
+            obj.show_only_shape_key, last = True, obj.show_only_shape_key
+            obj.shape_key_add(dest_name, from_mix=True)
+            obj.show_only_shape_key = last
+            obj.active_shape_key_index = key_blocks.find(dest_name)
+
+    @staticmethod
     def get_uv_morph_vertex_groups(obj, morph_name=None, offset_axes='XYZW'):
         pattern = 'UV_%s[+-][%s]$'%(morph_name or '.{1,}', offset_axes or 'XYZW')
         # yield (vertex_group, morph_name, axis),...
         return ((g, g.name[3:-2], g.name[-2:]) for g in obj.vertex_groups if re.match(pattern, g.name))
+
+    @staticmethod
+    def copy_uv_morph_vertex_groups(obj, src_name, dest_name):
+        for vg, n, x in FnMorph.get_uv_morph_vertex_groups(obj, dest_name):
+            obj.vertex_groups.remove(vg)
+
+        for vg_name in tuple(i[0].name for i in FnMorph.get_uv_morph_vertex_groups(obj, src_name)):
+            obj.vertex_groups.active = obj.vertex_groups[vg_name]
+            override = {'object':obj, 'window':bpy.context.window, 'region':bpy.context.region}
+            bpy.ops.object.vertex_group_copy(override)
+            obj.vertex_groups.active.name = vg_name.replace(src_name, dest_name)
 
     @staticmethod
     def clean_uv_morph_vertex_groups(obj):

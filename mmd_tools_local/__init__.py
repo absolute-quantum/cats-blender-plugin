@@ -25,13 +25,14 @@ else:
     import logging
     from bpy.types import AddonPreferences
     from bpy.props import StringProperty
+    from bpy.app.handlers import persistent
 
     from . import properties
     from . import operators
     from . import panels
 
 
-logging.basicConfig(format='%(message)s')
+logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 
 class MMDToolsAddonPreferences(AddonPreferences):
@@ -77,6 +78,11 @@ def menu_func_export(self, context):
 def menu_func_armature(self, context):
     self.layout.operator(operators.model.CreateMMDModelRoot.bl_idname, text='Create MMD Model')
 
+@persistent
+def load_handler(dummy):
+    from mmd_tools_local.core.sdef import FnSDEF
+    FnSDEF.clear_cache()
+    FnSDEF.register_driver_function()
 
 def register():
     bpy.utils.register_module(__name__)
@@ -84,8 +90,10 @@ def register():
     bpy.types.INFO_MT_file_export.append(menu_func_export)
     bpy.types.INFO_MT_armature_add.append(menu_func_armature)
     properties.register()
+    bpy.app.handlers.load_post.append(load_handler)
 
 def unregister():
+    bpy.app.handlers.load_post.remove(load_handler)
     properties.unregister()
     bpy.types.INFO_MT_file_import.remove(menu_func_import)
     bpy.types.INFO_MT_file_export.remove(menu_func_export)
