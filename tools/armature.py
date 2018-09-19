@@ -277,7 +277,7 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[1] = False
             bone.lock_scale[2] = False
 
-        if source_engine and mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+        if source_engine and tools.common.has_shapekeys(mesh):
             mesh.data.shape_keys.key_blocks[0].name = "Basis"
 
         # Remove empty shape keys and then save the shape key order
@@ -305,7 +305,7 @@ class FixArmature(bpy.types.Operator):
         tools.common.sort_shape_keys(mesh.name)
 
         # Fix all shape key names of half jp chars
-        if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+        if tools.common.has_shapekeys(mesh):
             for shapekey in mesh.data.shape_keys.key_blocks:
                 shapekey.name = tools.translate.fix_jp_chars(shapekey.name)
 

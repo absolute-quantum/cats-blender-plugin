@@ -368,6 +368,7 @@ It checks for a new version automatically once every day.
   - Fixed a bug where old vertex groups were not getting deleted
 - **General:**
   - Lots of bug fixes
+  - Updated mmd_tools
 
 #### 0.10.1
 - **Model:**

@@ -212,7 +212,7 @@ class AutoDecimateButton(bpy.types.Operator):
                 tools.common.unselect_all()
                 continue
 
-            if mesh.data.shape_keys:
+            if tools.common.has_shapekeys(mesh):
                 if full_decimation:
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))

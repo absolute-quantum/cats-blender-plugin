@@ -296,8 +296,9 @@ class ObjectOp:
             key_blocks = obj.data.shape_keys.key_blocks # key.id_data.key_blocks
             relative_key_map = {k.name:getattr(k.relative_key, 'name', '') for k in key_blocks}
             obj.active_shape_key_index = key_blocks.find(key.name)
-            bpy.context.scene.objects.active = obj
+            bpy.context.scene.objects.active, last = obj, bpy.context.scene.objects.active
             bpy.ops.object.shape_key_remove()
+            bpy.context.scene.objects.active = last
             for k in key_blocks:
                 k.relative_key = key_blocks.get(relative_key_map[k.name], key_blocks[0])
     else:

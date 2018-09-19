@@ -137,8 +137,8 @@ class CreateEyesButton(bpy.types.Operator):
         if vg_right:
             mesh.vertex_groups.remove(vg_right)
 
-        if not bpy.data.objects[mesh_name].data.shape_keys:
-            bpy.data.objects[mesh_name].shape_key_add(name='Basis', from_mix=False)
+        if not tools.common.has_shapekeys(mesh):
+            mesh.shape_key_add(name='Basis', from_mix=False)
 
         # Set head roll to 0 degrees
         bpy.context.object.data.edit_bones[context.scene.head].roll = 0
@@ -156,7 +156,7 @@ class CreateEyesButton(bpy.types.Operator):
         fix_eye_position(context, old_eye_right, new_right_eye, head, True)
 
         # Switch to mesh
-        bpy.context.scene.objects.active = bpy.data.objects[mesh_name]
+        bpy.context.scene.objects.active = mesh
         tools.common.switch('OBJECT')
 
         # Fix a small bug
@@ -168,7 +168,6 @@ class CreateEyesButton(bpy.types.Operator):
             self.copy_vertex_group(mesh_name, old_eye_right.name, 'RightEye')
         else:
             # Remove the vertex groups if no blink is enabled
-            mesh = bpy.data.objects[mesh_name]
             bones = ['LeftEye', 'RightEye']
             for bone in bones:
                 group = mesh.vertex_groups.get(bone)
@@ -181,7 +180,7 @@ class CreateEyesButton(bpy.types.Operator):
 
         # Remove existing shapekeys
         for new_shape in new_shapes:
-            for index, shapekey in enumerate(bpy.data.objects[mesh_name].data.shape_keys.key_blocks):
+            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
                 if shapekey.name == new_shape and new_shape not in shapes:
                     bpy.context.active_object.active_shape_key_index = index
                     bpy.ops.object.shape_key_remove()
@@ -765,11 +764,10 @@ class TestBlinking(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         mesh = bpy.data.objects[context.scene.mesh_name_eye]
-        if hasattr(mesh.data, 'shape_keys'):
-            if hasattr(mesh.data.shape_keys, 'key_blocks'):
-                if 'vrc.blink_left' in mesh.data.shape_keys.key_blocks:
-                    if 'vrc.blink_right' in mesh.data.shape_keys.key_blocks:
-                        return True
+        if tools.common.has_shapekeys(mesh):
+            if 'vrc.blink_left' in mesh.data.shape_keys.key_blocks:
+                if 'vrc.blink_right' in mesh.data.shape_keys.key_blocks:
+                    return True
         return False
 
     def execute(self, context):
@@ -794,11 +792,10 @@ class TestLowerlid(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         mesh = bpy.data.objects[context.scene.mesh_name_eye]
-        if hasattr(mesh.data, 'shape_keys'):
-            if hasattr(mesh.data.shape_keys, 'key_blocks'):
-                if 'vrc.lowerlid_left' in mesh.data.shape_keys.key_blocks:
-                    if 'vrc.lowerlid_right' in mesh.data.shape_keys.key_blocks:
-                        return True
+        if tools.common.has_shapekeys(mesh):
+            if 'vrc.lowerlid_left' in mesh.data.shape_keys.key_blocks:
+                if 'vrc.lowerlid_right' in mesh.data.shape_keys.key_blocks:
+                    return True
         return False
 
     def execute(self, context):

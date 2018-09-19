@@ -113,6 +113,40 @@ class MoveMorph(Operator, ItemMoveOp):
             )
         return {'FINISHED'}
 
+class CopyMorph(Operator):
+    bl_idname = 'mmd_tools.morph_copy'
+    bl_label = 'Copy Morph'
+    bl_description = 'Make a copy of active morph in the list'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        obj = context.active_object
+        root = mmd_model.Model.findRoot(obj)
+        mmd_root = root.mmd_root
+
+        morph_type = mmd_root.active_morph_type
+        morphs = getattr(mmd_root, morph_type)
+        morph = ItemOp.get_by_index(morphs, mmd_root.active_morph)
+        if morph is None:
+            return {'CANCELLED'}
+
+        name_orig, name_tmp = morph.name, '_tmp%s'%str(morph.as_pointer())
+
+        if morph_type.startswith('vertex'):
+            for obj in mmd_model.Model(root).meshes():
+                FnMorph.copy_shape_key(obj, name_orig, name_tmp)
+
+        elif morph_type.startswith('uv'):
+            if morph.data_type == 'VERTEX_GROUP':
+                for obj in mmd_model.Model(root).meshes():
+                    FnMorph.copy_uv_morph_vertex_groups(obj, name_orig, name_tmp)
+
+        morph_new, mmd_root.active_morph = ItemOp.add_after(morphs, mmd_root.active_morph)
+        for k, v in morph.items():
+            morph_new[k] = v if k != 'name' else name_tmp
+        morph_new.name = name_orig + '_copy' # trigger name check
+        return {'FINISHED'}
+
 
 class AddMorphOffset(Operator):
     bl_idname = 'mmd_tools.morph_offset_add'
@@ -173,7 +207,11 @@ class RemoveMorphOffset(Operator):
             bpy.ops.mmd_tools.clear_temp_materials()
 
         if self.all:
-            if morph_type.startswith('uv'):
+            if morph_type.startswith('vertex'):
+                for obj in mmd_model.Model(root).meshes():
+                    FnMorph.remove_shape_key(obj, morph.name)
+                return {'FINISHED'}
+            elif morph_type.startswith('uv'):
                 if morph.data_type == 'VERTEX_GROUP':
                     for obj in mmd_model.Model(root).meshes():
                         FnMorph.store_uv_morph_data(obj, morph)

@@ -406,7 +406,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
         meshes = get_meshes_objects()
 
     for mesh in meshes:
-        if mesh is None or not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
+        if not mesh or not tools.common.has_shapekeys(mesh):
             bpy.types.Object.Enum = choices
             return bpy.types.Object.Enum
 
@@ -563,7 +563,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                         mesh.modifiers.remove(mod)
                         continue
 
-                    if mesh.data.shape_keys:
+                    if tools.common.has_shapekeys(mesh):
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
@@ -752,7 +752,7 @@ def separate_by_loose_parts(context, mesh):
 
 
 def clean_shapekeys(mesh):
-    if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+    if tools.common.has_shapekeys(mesh):
         for kb in mesh.data.shape_keys.key_blocks:
             if can_remove_shapekey(kb):
                 mesh.shape_key_remove(kb)
@@ -814,7 +814,7 @@ def save_shapekey_order(mesh_name):
 
     # Create shape key list for description
     shape_key_order = ''
-    if mesh.data.shape_keys and mesh.data.shape_keys.key_blocks:
+    if tools.common.has_shapekeys(mesh):
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if index > 0:
                 shape_key_order += ',,,'
@@ -886,7 +886,7 @@ def update_shapekey_orders():
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
     mesh = bpy.data.objects[mesh_name]
-    if not hasattr(mesh.data, 'shape_keys') or not hasattr(mesh.data.shape_keys, 'key_blocks'):
+    if not tools.common.has_shapekeys(mesh):
         return
     select(mesh)
 
@@ -1329,6 +1329,12 @@ def mix_weights(mesh, vg_from, vg_to):
 
 def version_2_79_or_older():
     return bpy.app.version < (2, 79, 9)
+
+
+def has_shapekeys(mesh):
+    if not hasattr(mesh.data, 'shape_keys'):
+        return False
+    return hasattr(mesh.data.shape_keys, 'key_blocks')
 
 
 # === THIS CODE COULD BE USEFUL ===

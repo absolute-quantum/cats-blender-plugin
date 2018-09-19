@@ -64,7 +64,7 @@ class StartPoseMode(bpy.types.Operator):
         armature.data.pose_position = 'POSE'
 
         for mesh in tools.common.get_meshes_objects():
-            if mesh.data.shape_keys is not None:
+            if tools.common.has_shapekeys(mesh):
                 for shape_key in mesh.data.shape_keys.key_blocks:
                     shape_key.value = 0
 
@@ -118,7 +118,7 @@ class StopPoseMode(bpy.types.Operator):
         armature.data.pose_position = 'REST'
 
         for mesh in tools.common.get_meshes_objects():
-            if mesh.data.shape_keys is not None:
+            if tools.common.has_shapekeys(mesh):
                 for shape_key in mesh.data.shape_keys.key_blocks:
                     shape_key.value = 0
 

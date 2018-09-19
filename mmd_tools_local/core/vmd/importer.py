@@ -216,10 +216,6 @@ class VMDImporter:
         if len(shapeKeyAnim) < 1:
             return
 
-        if meshObj.data.shape_keys is None:
-            logging.warning('WARNING: mesh object %s does not have any shape key', meshObj.name)
-            return
-
         action_name = action_name or meshObj.name
         action = bpy.data.actions.new(name=action_name)
         meshObj.data.shape_keys.animation_data_create().action = action
@@ -228,17 +224,23 @@ class VMDImporter:
         for i in meshObj.data.shape_keys.key_blocks:
             shapeKeyDict[i.name] = i
 
+        from math import floor, ceil
         for name, keyFrames in shapeKeyAnim.items():
             if name not in shapeKeyDict:
                 logging.warning('WARNING: not found shape key %s (%d frames)', name, len(keyFrames))
                 continue
             logging.info('(mesh) frames:%5d  name: %s', len(keyFrames), name)
             shapeKey = shapeKeyDict[name]
-            for i in keyFrames:
-                shapeKey.value = i.weight
-                shapeKey.keyframe_insert(data_path='value',
-                                         group=name,
-                                         frame=i.frame_number+self.__frame_margin)
+            fcurve = action.fcurves.new(data_path='key_blocks["%s"].value'%shapeKey.name)
+            fcurve.keyframe_points.add(len(keyFrames))
+            keyFrames.sort(key=lambda x:x.frame_number)
+            for k, v in zip(keyFrames, fcurve.keyframe_points):
+                v.co = (k.frame_number+self.__frame_margin, k.weight)
+                v.interpolation = 'LINEAR'
+            weights = tuple(i.weight for i in keyFrames)
+            shapeKey.slider_min = min(shapeKey.slider_min, floor(min(weights)))
+            shapeKey.slider_max = max(shapeKey.slider_max, ceil(max(weights)))
+
 
     @staticmethod
     def detectCameraChange(fcurve, threshold=10.0):
@@ -350,7 +352,7 @@ class VMDImporter:
             self.__assignToCamera(obj, action_name+'_camera')
         elif MMDLamp.isMMDLamp(obj):
             self.__assignToLamp(obj, action_name+'_lamp')
-        elif obj.type == 'MESH':
+        elif getattr(obj.data, 'shape_keys', None):
             self.__assignToMesh(obj, action_name+'_facial')
         elif obj.type == 'ARMATURE':
             self.__assignToArmature(obj, action_name+'_bone')

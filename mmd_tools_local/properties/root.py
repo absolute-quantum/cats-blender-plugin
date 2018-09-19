@@ -7,6 +7,7 @@ from bpy.props import BoolProperty, CollectionProperty, FloatProperty, IntProper
 
 import mmd_tools_local.core.model as mmd_model
 from mmd_tools_local.core.material import FnMaterial
+from mmd_tools_local.core.sdef import FnSDEF
 from mmd_tools_local.properties.morph import BoneMorph
 from mmd_tools_local.properties.morph import MaterialMorph
 from mmd_tools_local.properties.morph import VertexMorph
@@ -36,6 +37,14 @@ def _toggleUseSphereTexture(self, context):
             if m is None:
                 continue
             FnMaterial(m).use_sphere_texture(use_sphere, i)
+
+def _toggleUseSDEF(self, context):
+    root = self.id_data
+    rig = mmd_model.Model(root)
+    mute_sdef = not self.use_sdef
+    for i in rig.meshes():
+        if FnSDEF.SHAPEKEY_NAME in getattr(i.data.shape_keys, 'key_blocks', ()):
+            i.data.shape_keys.key_blocks[FnSDEF.SHAPEKEY_NAME].mute = mute_sdef
 
 def _toggleVisibilityOfMeshes(self, context):
     root = self.id_data
@@ -298,6 +307,13 @@ class MMDRoot(PropertyGroup):
         name='Use Sphere Texture',
         description='Use sphere texture',
         update=_toggleUseSphereTexture,
+        default=True,
+        )
+
+    use_sdef = BoolProperty(
+        name='Use SDEF',
+        description='Use SDEF',
+        update=_toggleUseSDEF,
         default=True,
         )
 

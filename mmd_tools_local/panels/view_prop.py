@@ -2,7 +2,8 @@
 
 from bpy.types import Panel
 
-import mmd_tools_local.core.model as mmd_model
+from mmd_tools_local.core.model import Model
+from mmd_tools_local.core.sdef import FnSDEF
 
 class _PanelBase(object):
     bl_space_type = 'VIEW_3D'
@@ -14,13 +15,13 @@ class MMDModelObjectDisplayPanel(_PanelBase, Panel):
 
     @classmethod
     def poll(cls, context):
-        return mmd_model.Model.findRoot(context.active_object)
+        return Model.findRoot(context.active_object)
 
     def draw(self, context):
         layout = self.layout
         obj = context.active_object
 
-        root = mmd_model.Model.findRoot(obj)
+        root = Model.findRoot(obj)
 
         row = layout.row(align=True)
         c = row.column(align=True)
@@ -39,6 +40,9 @@ class MMDModelObjectDisplayPanel(_PanelBase, Panel):
         row.prop(root.mmd_root, 'use_toon_texture', text='Toon Texture')
         row.prop(root.mmd_root, 'use_sphere_texture', text='Sphere Texture')
 
+        row = layout.row(align=True)
+        row.prop(root.mmd_root, 'use_sdef', text='SDEF')
+
 
 class MMDViewPanel(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_view'
@@ -54,3 +58,15 @@ class MMDViewPanel(_PanelBase, Panel):
         r.operator('mmd_tools.set_shadeless_glsl_shading', text='Shadeless')
         r = c.row(align=True)
         r.operator('mmd_tools.reset_shading', text='Reset')
+
+class MMDSDEFPanel(_PanelBase, Panel):
+    bl_idname = 'OBJECT_PT_mmd_tools_sdef'
+    bl_label = 'MMD SDEF Driver'
+
+    def draw(self, context):
+        c = self.layout.column(align=True)
+        c.operator('mmd_tools.sdef_bind', text='Bind')
+        c.operator('mmd_tools.sdef_unbind', text='Unbind')
+        row = c.row()
+        row.label('Cache Info: %d data'%(len(FnSDEF.g_verts)), icon='INFO')
+        row.operator('mmd_tools.sdef_cache_reset', text='', icon='X')

@@ -452,16 +452,17 @@ class ExportModel(bpy.types.Operator):
                     if mat_slot and mat_slot.material and mat_slot.material.name not in mat_list:
                         mat_list.append(mat_slot.material.name)
 
-                for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                    if i == 0:
-                        continue
-                    for i2, vert in enumerate(shapekey.data):
-                        for coord in vert.co:
-                            if coord > 10000:
-                                bpy.ops.display.error('INVOKE_DEFAULT')
-                                return {'FINISHED'}
-                        if i2 >= 4:
-                            break
+                if tools.common.has_shapekeys(mesh):
+                    for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                        if i == 0:
+                            continue
+                        for i2, vert in enumerate(shapekey.data):
+                            for coord in vert.co:
+                                if coord > 10000:
+                                    bpy.ops.display.error('INVOKE_DEFAULT')
+                                    return {'FINISHED'}
+                            if i2 >= 4:
+                                break
 
             if len(mat_list) > 10:
                 bpy.ops.display.error('INVOKE_DEFAULT')
@@ -472,7 +473,7 @@ class ExportModel(bpy.types.Operator):
         for mesh in tools.common.get_meshes_objects():
             if protected_export:
                 break
-            if mesh.data.shape_keys:
+            if tools.common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if shapekey.name == 'Basis Original':
                         protected_export = True
@@ -527,18 +528,19 @@ class ErrorDisplay(bpy.types.Operator):
                     self.mat_list.append(mat_slot.material.name)
             self.meshes_count += 1
 
-            for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                if i == 0:
-                    continue
-                for i2, vert in enumerate(shapekey.data):
-                    for coord in vert.co:
-                        if coord > 10000:
-                            print(shapekey.name, coord)
-                            self.broken_shapes.append(shapekey.name)
-                            i2 = 10
+            if tools.common.has_shapekeys(mesh):
+                for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+                    if i == 0:
+                        continue
+                    for i2, vert in enumerate(shapekey.data):
+                        for coord in vert.co:
+                            if coord > 10000:
+                                print(shapekey.name, coord)
+                                self.broken_shapes.append(shapekey.name)
+                                i2 = 10
+                                break
+                        if i2 >= 4:
                             break
-                    if i2 >= 4:
-                        break
 
         dpi_value = bpy.context.user_preferences.system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
