@@ -71,8 +71,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
                     if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
                         to_translate.append(shapekey.name)
 
-        if not update_dictionary(to_translate, translating_shapes=True, self=self):
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        update_dictionary(to_translate, translating_shapes=True, self=self)
 
         tools.common.update_shapekey_orders()
 
@@ -109,11 +108,9 @@ class TranslateBonesButton(bpy.types.Operator):
             for bone in armature.data.bones:
                 to_translate.append(bone.name)
 
-        if not update_dictionary(to_translate, self=self):
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        update_dictionary(to_translate, self=self)
 
         count = 0
-
         for armature in tools.common.get_armature_objects():
             for bone in armature.data.bones:
                 bone.name, translated = translate(bone.name)
@@ -147,8 +144,7 @@ class TranslateObjectsButton(bpy.types.Operator):
                 if obj.animation_data and obj.animation_data.action:
                     to_translate.append(obj.animation_data.action.name)
 
-        if not update_dictionary(to_translate, self=self):
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        update_dictionary(to_translate, self=self)
 
         i = 0
         for obj in bpy.data.objects:
@@ -190,8 +186,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
                 if matslot.name not in to_translate:
                     to_translate.append(matslot.name)
 
-        if not update_dictionary(to_translate, self=self):
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        update_dictionary(to_translate, self=self)
 
         i = 0
         for mesh in tools.common.get_meshes_objects(mode=2):
@@ -426,7 +421,7 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
 
     if not google_input:
         # print('NO GOOGLE TRANSLATIONS')
-        return True
+        return
 
     # Translate the list with google translate
     print('GOOGLE DICT UPDATE!')
@@ -435,14 +430,37 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
         translations = translator.translate(google_input)
     except requests.exceptions.ConnectionError:
         print('CONNECTION TO GOOGLE FAILED!')
-        return False
+        if self:
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        return
     except json.JSONDecodeError:
         if self:
             self.report({'ERROR'}, 'It looks like you got banned from Google Translate temporarily!'
                         '\nCats translated what it could with the local dictionary,'
                         '\nbut you will have to try again later for the Google translations.')
         print('YOU GOT BANNED BY GOOGLE!')
-        return False
+        return
+    except RuntimeError as e:
+        error = tools.common.html_to_text(str(e))
+        if self:
+            if 'Please try your request again later' in error:
+                self.report({'ERROR'}, 'It looks like you got banned from Google Translate temporarily!'
+                                       '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.')
+                print('YOU GOT BANNED BY GOOGLE!')
+                return
+
+            if 'Error 403' in error:
+                self.report({'ERROR'}, 'Cats was not able to access Google Translate!'
+                                       '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.')
+                print('NO PERMISSION TO USE GOOGLE TRANSLATE!')
+                return
+
+            self.report({'ERROR'}, 'You got an error message from Google Translate!'
+                                   '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.'
+                                   '\n'
+                                   '\nGoogle: ' + error)
+        print('', 'You got an error message from Google:', error, '')
+        return
 
     # Update the dictionaries
     for i, translation in enumerate(translations):
@@ -467,7 +485,7 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
     save_google_dict()
 
     print('DICTIONARY UPDATE SUCCEEDED!')
-    return True
+    return
 
 
 def translate(to_translate, add_space=False, translating_shapes=False):
