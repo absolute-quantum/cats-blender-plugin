@@ -719,22 +719,30 @@ class ToolPanel:
     )
 
     # Settings
+    bpy.types.Scene.embed_textures = bpy.props.BoolProperty(
+        name='Embed Textures on Export',
+        description='Enable this to embed the texture files into the FBX file upon export.'
+                    '\nUnity will automatically extract these textures and put them into a separate folder.'
+                    '\nThis might not work for everyone and it increases the file size of the exported FBX file',
+        default=False,
+        update=tools.settings.update_settings
+    )
     bpy.types.Scene.use_custom_mmd_tools = bpy.props.BoolProperty(
         name='Use Custom mmd_tools',
         description='Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools ',
         default=False,
-        update=tools.settings.set_use_custom_mmd_tools
+        update=tools.settings.update_settings
     )
 
-    bpy.types.Scene.disable_vrchat_features = bpy.props.BoolProperty(
-        name='Disable VRChat Only Features',
-        description='This will disable features which are solely used for VRChat.'
-                    '\nThe following will be disabled:'
-                    '\n- Eye Tracking'
-                    '\n- Visemes',
-        default=False,
-        update=tools.settings.set_use_custom_mmd_tools
-    )
+    # bpy.types.Scene.disable_vrchat_features = bpy.props.BoolProperty(
+    #     name='Disable VRChat Only Features',
+    #     description='This will disable features which are solely used for VRChat.'
+    #                 '\nThe following will be disabled:'
+    #                 '\n- Eye Tracking'
+    #                 '\n- Visemes',
+    #     default=False,
+    #     update=tools.settings.update_settings
+    # )
 
     # Copy Protection - obsolete
     # bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
@@ -1635,28 +1643,37 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v2'
-    # bl_label = 'Settings & Updates'
-    bl_label = 'Updater'
+    bl_label = 'Settings & Updates'
+    # bl_label = 'Updater'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        # layout = self.layout
-        # box = layout.box()
-        # col = box.column(align=True)
-        #
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.label('Settings:', icon='SCRIPTPLUGINS')
+        col.separator()
+
+        row = col.row(align=True)
+        row.prop(context.scene, 'embed_textures')
         # row = col.row(align=True)
         # row.prop(context.scene, 'use_custom_mmd_tools')
-        # # row = col.row(align=True)
-        # # row.prop(context.scene, 'disable_vrchat_features')
-        #
-        # if tools.settings.settings_changed():
-        #     col.separator()
-        #     row = col.row(align=True)
-        #     row.scale_y = 0.8
-        #     row.label('Settings have changed.', icon='ERROR')
-        #     row = col.row(align=True)
-        #     row.scale_y = 0.8
-        #     row.label('Restart Blender to apply them.', icon_value=get_emtpy_icon())
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'disable_vrchat_features')
+
+        if tools.settings.settings_changed():
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.8
+            row.label('Restart required.', icon='ERROR')
+            row = col.row(align=True)
+            row.scale_y = 0.8
+            row.label('Some changes require a Blender restart.', icon_value=get_emtpy_icon())
+            row = col.row(align=True)
+            row.operator('settings.revert', icon='RECOVER_LAST')
 
         # Updater
         # addon_updater_ops.check_for_update_background()
@@ -1936,6 +1953,7 @@ classesToRegister = [
 
     UpdaterPanel,
     UpdaterPreferences,
+    tools.settings.RevertChangesButton,
 
     SupporterPanel,
     tools.supporter.PatreonButton,
@@ -1994,7 +2012,7 @@ def register():
     # Disable request warning when using google translate
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-    # tools.settings.start_apply_settings_timer()
+    tools.settings.start_apply_settings_timer()
 
     print("### Loaded CATS successfully!")
 

@@ -338,6 +338,11 @@ It checks for a new version automatically once every day.
 #### 0.11.1
 - **Translations:**
   - Added a warning when you are temporarily IP banned by Google Translate
+- **Settings and Updates:**
+  - Renamed panel "Udpater" to "Settings & Updates"
+  - Added setting to embed textures on export
+    - Settings are saved into a local settings file
+    - Currently settings get reset with every Cats update
 
 #### 0.11.0
 - **Optimization:**

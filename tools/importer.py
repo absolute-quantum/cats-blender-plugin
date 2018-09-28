@@ -27,6 +27,7 @@ import os
 import bpy
 import webbrowser
 import tools.common
+import tools.settings
 import tools.eyetracking
 import bpy_extras.io_utils
 
@@ -439,6 +440,7 @@ class ExportModel(bpy.types.Operator):
         if not self.action == 'NO_CHECK':
             mat_list = []
             meshes = tools.common.get_meshes_objects()
+            textures_found = False
 
             if len(meshes) > 10:
                 bpy.ops.display.error('INVOKE_DEFAULT')
@@ -452,6 +454,14 @@ class ExportModel(bpy.types.Operator):
                     if mat_slot and mat_slot.material and mat_slot.material.name not in mat_list:
                         mat_list.append(mat_slot.material.name)
 
+                        if not textures_found:
+                            for tex_slot in mat_slot.material.texture_slots:
+                                if tex_slot and tex_slot.texture:
+                                    tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                                    if os.path.isfile(tex_path):
+                                        textures_found = True
+                                        break
+
                 if tools.common.has_shapekeys(mesh):
                     for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
                         if i == 0:
@@ -464,11 +474,15 @@ class ExportModel(bpy.types.Operator):
                             if i2 >= 4:
                                 break
 
+            if not textures_found and tools.settings.get_embed_textures():
+                bpy.ops.display.error('INVOKE_DEFAULT')
+
             if len(mat_list) > 10:
                 bpy.ops.display.error('INVOKE_DEFAULT')
                 return {'FINISHED'}
 
-        # Open export window
+        # Check if copy protection is enabled
+        mesh_smooth_type = 'OFF'
         protected_export = False
         for mesh in tools.common.get_meshes_objects():
             if protected_export:
@@ -478,6 +492,13 @@ class ExportModel(bpy.types.Operator):
                     if shapekey.name == 'Basis Original':
                         protected_export = True
                         break
+        if protected_export:
+            mesh_smooth_type = 'FACE'
+
+        # Check if textures are found and if they should be embedded
+        path_mode = 'AUTO'
+        if tools.settings.get_embed_textures():
+            path_mode = 'COPY'
 
         textures_found = False
         for mesh in tools.common.get_meshes_objects():
@@ -493,27 +514,20 @@ class ExportModel(bpy.types.Operator):
                             if os.path.isfile(tex_path):
                                 textures_found = True
                                 break
+        if not textures_found:
+            path_mode = 'AUTO'
 
+        # Open export window
         try:
-            if protected_export:
-                bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
-                                         object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
-                                         use_mesh_modifiers=False,
-                                         add_leaf_bones=False,
-                                         bake_anim=False,
-                                         apply_scale_options='FBX_SCALE_ALL',
-                                         path_mode='COPY',
-                                         embed_textures=textures_found,
-                                         mesh_smooth_type='FACE')
-            else:
-                bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
-                                         object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
-                                         use_mesh_modifiers=False,
-                                         add_leaf_bones=False,
-                                         bake_anim=False,
-                                         apply_scale_options='FBX_SCALE_ALL',
-                                         path_mode='COPY',
-                                         embed_textures=textures_found)
+            bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
+                                     object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
+                                     use_mesh_modifiers=False,
+                                     add_leaf_bones=False,
+                                     bake_anim=False,
+                                     apply_scale_options='FBX_SCALE_ALL',
+                                     path_mode=path_mode,
+                                     embed_textures=True,
+                                     mesh_smooth_type=mesh_smooth_type)
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 
@@ -528,6 +542,7 @@ class ErrorDisplay(bpy.types.Operator):
     mat_list = []
     meshes_count = 0
     broken_shapes = []
+    textures_found = False
 
     def execute(self, context):
         return {'FINISHED'}
@@ -537,6 +552,7 @@ class ErrorDisplay(bpy.types.Operator):
         self.mat_list = []
         self.meshes_count = 0
         self.broken_shapes = []
+        self.textures_found = False
         for mesh in tools.common.get_meshes_objects():
             tris = len(mesh.data.polygons)
             if tris >= 65535:
@@ -544,6 +560,14 @@ class ErrorDisplay(bpy.types.Operator):
             for mat_slot in mesh.material_slots:
                 if mat_slot and mat_slot.material and mat_slot.material.name not in self.mat_list:
                     self.mat_list.append(mat_slot.material.name)
+
+                    if not self.textures_found:
+                        for tex_slot in mat_slot.material.texture_slots:
+                            if tex_slot and tex_slot.texture:
+                                tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                                if os.path.isfile(tex_path):
+                                    self.textures_found = True
+                                    break
             self.meshes_count += 1
 
             if tools.common.has_shapekeys(mesh):
@@ -662,6 +686,24 @@ class ErrorDisplay(bpy.types.Operator):
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label("Either delete or repair them before export.")
+            col.separator()
+            col.separator()
+
+        if not self.textures_found and tools.settings.get_embed_textures():
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("No textures found!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("This model has no textures assigned but you have 'Embed Textures' enabled.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("Therefore, no textures will embedded into the FBX.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label("This is not an issue, but you will have to import the textures manually into Unity.")
             col.separator()
             col.separator()
 

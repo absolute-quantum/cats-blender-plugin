@@ -828,6 +828,11 @@ def update_settings_ui(self, context, element=None):
     if element == None: element = self.layout
     box = element.box()
 
+    col = box.column(align=True)
+    row = col.row(align=True)
+    row.scale_y = 0.8
+    row.label('Updates:', icon='LOAD_FACTORY')
+
     # in case of error importing updater
     if updater.invalidupdater == True:
         box.label("Error initializing updater code:")
@@ -838,7 +843,7 @@ def update_settings_ui(self, context, element=None):
 
     # auto-update settings
     # box.label("Cats Updater")
-    row = box.row()
+    # row = box.row()
 
     # special case to tell user to restart blender, if set that way
     if updater.auto_reload_post_update == False:
