@@ -71,10 +71,27 @@ def get_armature_objects():
     return armatures
 
 
-def unhide_all():
+def unhide_all(everything=False):
+    armature = get_armature()
     if version_2_79_or_older():
-        for obj in bpy.data.objects:
-            obj.hide = False
+        if everything or not armature:
+            for obj in bpy.data.objects:
+                obj.hide = False
+        else:
+            def unhide_children(parent):
+                for child in parent.children:
+                    child.hide = False
+                    unhide_children(child)
+
+            def unhide_parents(child):
+                parent = child.parent
+                if parent:
+                    parent.hide = False
+                    unhide_parents(parent)
+
+            armature.hide = False
+            unhide_children(armature)
+            unhide_parents(armature)
     else:
         for obj in bpy.data.collections:
             obj.hide_viewport = False
@@ -104,8 +121,8 @@ def set_default_stage_old():
     return armature
 
 
-def set_default_stage():
-    unhide_all()
+def set_default_stage(everything=False):
+    unhide_all(everything=everything)
     unselect_all()
 
     for obj in bpy.data.objects:

@@ -104,6 +104,7 @@ class StopPoseMode(bpy.types.Operator):
     def execute(self, context):
         armature = tools.common.get_armature()
         tools.common.select(armature)
+        armature.hide = False
 
         for pb in armature.data.bones:
             pb.hide = False

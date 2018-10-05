@@ -930,8 +930,8 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
-        ob = bpy.context.active_object
-        if not ob or ob.mode != 'POSE':
+        armature = tools.common.get_armature()
+        if not armature or armature.mode != 'POSE':
             row = col.row(align=True)
             row.scale_y = 1.1
             row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')

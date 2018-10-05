@@ -61,8 +61,6 @@ class TranslateShapekeyButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
-        tools.common.unhide_all()
-
         to_translate = []
 
         for mesh in tools.common.get_meshes_objects(mode=2):
@@ -101,8 +99,6 @@ class TranslateBonesButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        tools.common.unhide_all()
-
         to_translate = []
         for armature in tools.common.get_armature_objects():
             for bone in armature.data.bones:
@@ -131,9 +127,6 @@ class TranslateObjectsButton(bpy.types.Operator):
         if bpy.app.version < (2, 79, 0):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
-
-        tools.common.unhide_all()
-
         to_translate = []
         for obj in bpy.data.objects:
             if obj.name not in to_translate:
@@ -178,8 +171,6 @@ class TranslateMaterialsButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
-        tools.common.unhide_all()
-
         to_translate = []
         for mesh in tools.common.get_meshes_objects(mode=2):
             for matslot in mesh.material_slots:
@@ -214,8 +205,6 @@ class TranslateTexturesButton(bpy.types.Operator):
         # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
         self.report({'INFO'}, 'Translated all textures')
         return {'FINISHED'}
-
-        tools.common.unhide_all()
 
         translator = Translator()
 

@@ -429,6 +429,7 @@ def shotariya_installed():
     for mod2 in addon_utils.modules():
         if mod2.bl_info.get('name') == addon_name:
             installed = True
+
             if mod2.bl_info.get('version') >= min_version:
                 correct_version = True
 

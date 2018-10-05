@@ -336,6 +336,8 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.11.1
+- **Export**:
+  - Embed Textures is not longer enabled by default, but can now be enabled in the settings
 - **Translations:**
   - Added a warning when you are temporarily IP banned by Google Translate
 - **Settings and Updates:**
@@ -343,6 +345,8 @@ It checks for a new version automatically once every day.
   - Added setting to embed textures on export
     - Settings are saved into a local settings file
     - Currently settings get reset with every Cats update
+- **General**:
+  - Cats no longer unhides everything whenever it does something, it only unhides the current model
 
 #### 0.11.0
 - **Optimization:**
