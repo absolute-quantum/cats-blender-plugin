@@ -585,7 +585,8 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
             # Standardize UV maps name
-            mesh.data.uv_textures[0].name = 'UVMap'
+            if mesh.data.uv_textures:
+                mesh.data.uv_textures[0].name = 'UVMap'
             for mat_slot in mesh.material_slots:
                 if mat_slot and mat_slot.material:
                     for tex_slot in mat_slot.material.texture_slots:
