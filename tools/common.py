@@ -556,6 +556,9 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
         elif mode == 1 and mesh.select:
             meshes_to_join.append(mesh.name)
 
+    if not meshes_to_join:
+        return None
+
     set_default_stage()
     unselect_all()
 
