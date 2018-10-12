@@ -40,6 +40,10 @@ from collections import OrderedDict
 from googletrans import Translator
 from mmd_tools_local import utils
 
+from html.parser import HTMLParser
+from html.entities import name2codepoint
+import re
+
 # TODO
 # - Add check if hips bone really needs to be rotated
 # - Reset Pivot
@@ -1365,9 +1369,6 @@ def has_shapekeys(mesh):
 HTML <-> text conversions.
 http://stackoverflow.com/questions/328356/extracting-text-from-html-file-using-python
 """
-from html.parser import HTMLParser
-from html.entities import name2codepoint
-import re
 
 
 class _HTMLToText(HTMLParser):
@@ -1408,6 +1409,7 @@ class _HTMLToText(HTMLParser):
 
     def get_text(self):
         return re.sub(r' +', ' ', ''.join(self._buf))
+
 
 def html_to_text(html):
     """

@@ -34,51 +34,9 @@ import bpy_extras.io_utils
 mmd_tools_installed = False
 try:
     import mmd_tools_local
-
     mmd_tools_installed = True
 except:
     pass
-
-
-class ImportModel(bpy.types.Operator):
-    bl_idname = 'importer.import_model'
-    bl_label = 'Import Model'
-    bl_description = 'Import a model of the selected type'
-    bl_options = {'INTERNAL'}
-
-    def execute(self, context):
-        tools.common.remove_unused_objects()
-        if context.scene.import_mode == 'MMD':
-            if not mmd_tools_installed:
-                bpy.ops.enable.mmd('INVOKE_DEFAULT')
-                return {'FINISHED'}
-
-            try:
-                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'}, log_level='WARNING')
-            except AttributeError:
-                bpy.ops.enable.mmd('INVOKE_DEFAULT')
-            except (TypeError, ValueError):
-                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
-
-        elif context.scene.import_mode == 'XPS':
-            try:
-                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
-            except AttributeError:
-                bpy.ops.install.xps('INVOKE_DEFAULT')
-
-        elif context.scene.import_mode == 'SOURCE':
-            try:
-                bpy.ops.import_scene.smd('INVOKE_DEFAULT')
-            except AttributeError:
-                bpy.ops.install.source('INVOKE_DEFAULT')
-
-        elif context.scene.import_mode == 'FBX':
-            try:
-                bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=True)
-            except (TypeError, ValueError):
-                bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
-
-        return {'FINISHED'}
 
 
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):

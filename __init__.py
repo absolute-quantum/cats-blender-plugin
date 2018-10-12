@@ -226,19 +226,6 @@ class ToolPanel:
     bl_region_type = 'TOOLS'
     bl_category = 'CATS'
 
-    # Armature
-    bpy.types.Scene.import_mode = bpy.props.EnumProperty(
-        name="Import Mode",
-        description="Import Mode",
-        items=[
-            ("MMD", "MMD", 'Import .pmx/.pmd files'),
-            ("XPS", "XNALara", 'Import .xps/.mesh/.ascii files'),
-            ("SOURCE", "Source", 'Import .smd/.qc/.vta/.dmx files'),
-            ("FBX", "FBX", 'Import .fbx files'),
-        ],
-        default='MMD'
-    )
-
     bpy.types.Scene.armature = bpy.props.EnumProperty(
         name='Armature',
         description='Select the armature which will be used by Cats',
