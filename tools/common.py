@@ -76,10 +76,18 @@ def get_armature_objects():
     return armatures
 
 
-def unhide_all(everything=False):
-    armature = get_armature()
+def get_top_parent(child):
+    if child.parent:
+        return get_top_parent(child.parent)
+    return child
+
+
+def unhide_all(everything=False, obj_to_unhide=None):
+    if not obj_to_unhide:
+        obj_to_unhide = get_armature()
+
     if version_2_79_or_older():
-        if everything or not armature:
+        if everything or not obj_to_unhide:
             for obj in bpy.data.objects:
                 obj.hide = False
         else:
@@ -88,15 +96,9 @@ def unhide_all(everything=False):
                     child.hide = False
                     unhide_children(child)
 
-            def unhide_parents(child):
-                parent = child.parent
-                if parent:
-                    parent.hide = False
-                    unhide_parents(parent)
-
-            armature.hide = False
-            unhide_children(armature)
-            unhide_parents(armature)
+            top_parent = get_top_parent(obj_to_unhide)
+            top_parent.hide = False
+            unhide_children(top_parent)
     else:
         for obj in bpy.data.collections:
             obj.hide_viewport = False

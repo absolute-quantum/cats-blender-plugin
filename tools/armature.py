@@ -202,7 +202,7 @@ class FixArmature(bpy.types.Operator):
                     tools.common.delete_hierarchy(mesh)
 
         # Reset to default
-        tools.common.set_default_stage()
+        armature = tools.common.set_default_stage()
 
         # Set better bone view
         armature.data.draw_type = 'OCTAHEDRAL'
@@ -216,9 +216,17 @@ class FixArmature(bpy.types.Operator):
             context.area.spaces[0].show_backface_culling = False
 
         # Remove Rigidbodies and joints
-        for obj in bpy.data.objects:
-            if 'rigidbodies' in obj.name or 'joints' in obj.name:
-                tools.common.delete_hierarchy(obj)
+        to_delete = []
+        for child in tools.common.get_top_parent(armature).children:
+            if 'rigidbodies' in child.name or 'joints' in child.name:
+                to_delete.append(child.name)
+                continue
+            for child2 in child.children:
+                if 'rigidbodies' in child2.name or 'joints' in child2.name:
+                    to_delete.append(child2.name)
+                    continue
+        for obj_name in to_delete:
+            tools.common.delete_hierarchy(bpy.data.objects[obj_name])
 
         # Remove objects from  different layers and things that are not meshes
         for child in armature.children:
