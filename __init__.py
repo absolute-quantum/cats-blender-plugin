@@ -112,14 +112,14 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 11, 0],  # Only change this version and the dev branch var right before publishing the new update!
+    'version': [0, 11, 1],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
 
-dev_branch = True
+dev_branch = False
 version = copy.deepcopy(bl_info.get('version'))
 
 # List all the supporters here
@@ -1095,6 +1095,9 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.scale_y = 1.05
                 col.label('An armature and a mesh are required!', icon='INFO')
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label('Make sure that the mesh has no parent.', icon_value=get_emtpy_icon())
                 return
 
             row = col.row(align=True)

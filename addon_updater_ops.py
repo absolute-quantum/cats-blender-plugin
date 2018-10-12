@@ -977,7 +977,7 @@ def update_settings_ui(self, context, element=None):
     row = box.row()
 
     row.scale_y = 0.1
-    row.label('Current version: ' + tools.common.version_str)
+    row.label('Current Cats version: ' + tools.common.version_str)
     col.separator()
     row = box.row()
 
