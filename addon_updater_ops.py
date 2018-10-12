@@ -19,6 +19,7 @@
 import bpy
 from bpy.app.handlers import persistent
 import os
+import tools.common
 
 # updater import, import safely
 # Prevents popups for users with invalid python installs e.g. missing libraries
@@ -974,6 +975,12 @@ def update_settings_ui(self, context, element=None):
     # col.operator(addon_updater_restore_backup.bl_idname, backuptext)
 
     row = box.row()
+
+    row.scale_y = 0.1
+    row.label('Current version: ' + tools.common.version_str)
+    col.separator()
+    row = box.row()
+
     row.scale_y = 0.7
     lastcheck = updater.json["last_check"]
     if updater.error != None and updater.error_msg != None:

@@ -1781,18 +1781,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
         row = col.row(align=True)
 
-        version_str = 'Cats Blender Plugin ('
-        if len(version) > 0:
-            version_str += str(version[0])
-            for index, i in enumerate(version):
-                if index == 0:
-                    continue
-                version_str += '.' + str(version[index])
-        if dev_branch:
-            version_str += '-dev'
-        version_str += ')'
-
-        row.label(version_str, icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
+        row.label('Cats Blender Plugin (' + tools.common.version_str + ')', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
         row.label('Created by GiveMeAllYourCats and Hotox')
@@ -1855,6 +1844,22 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
 
 def get_emtpy_icon():
     return tools.supporter.preview_collections["custom_icons"]["empty"].icon_id
+
+
+def set_cats_verion_string():
+    version_str = ''
+    if dev_branch and len(version) > 2:
+        version[2] += 1
+    if len(version) > 0:
+        version_str += str(version[0])
+        for index, i in enumerate(version):
+            if index == 0:
+                continue
+            version_str += '.' + str(version[index])
+    if dev_branch:
+        version_str += '-dev'
+
+    tools.common.version_str = version_str
 
 
 classesToRegister = [
@@ -1933,7 +1938,7 @@ classesToRegister = [
     tools.atlas.AutoAtlasNewButton,
     tools.atlas.InstallShotariya,
     tools.atlas.ShotariyaButton,
-    #tools.atlas.AutoAtlasButton,
+    # tools.atlas.AutoAtlasButton,
     tools.atlas.AtlasHelpButton,
     tools.atlas.MaterialsGroup,
     tools.atlas.GenerateMaterialListButton,
@@ -1995,8 +2000,8 @@ def register():
     bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
     bpy.types.Scene.material_list_index = bpy.props.IntProperty(default=0)
 
-    if dev_branch and len(version) > 2:
-        version[2] += 1
+    # Set cats version string
+    set_cats_verion_string()
 
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()

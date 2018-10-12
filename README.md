@@ -340,6 +340,8 @@ It checks for a new version automatically once every day.
   - Embed Textures is not longer enabled by default, but can now be enabled in the settings
 - **Translations:**
   - Added a warning when you are temporarily IP banned by Google Translate
+- **Eye Tracking:**
+  - Wink Right shape keys are now detected more reliably
 - **Settings and Updates:**
   - Renamed panel "Udpater" to "Settings & Updates"
   - Added setting to embed textures on export
@@ -347,6 +349,7 @@ It checks for a new version automatically once every day.
     - Currently settings get reset with every Cats update
 - **General**:
   - Cats no longer unhides everything whenever it does something, it only unhides the current model
+  - Added current CATS version to Updater panel
 
 #### 0.11.0
 - **Optimization:**
