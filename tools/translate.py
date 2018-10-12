@@ -29,7 +29,6 @@ import json
 import re
 import os
 import bpy
-import csv
 import pathlib
 import tools.common
 import requests.exceptions
@@ -62,8 +61,6 @@ class TranslateShapekeyButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
-        tools.common.unhide_all()
-
         to_translate = []
 
         for mesh in tools.common.get_meshes_objects(mode=2):
@@ -72,8 +69,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
                     if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
                         to_translate.append(shapekey.name)
 
-        if not update_dictionary(to_translate, translating_shapes=True):
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        update_dictionary(to_translate, translating_shapes=True, self=self)
 
         tools.common.update_shapekey_orders()
 
@@ -103,18 +99,14 @@ class TranslateBonesButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        tools.common.unhide_all()
-
         to_translate = []
         for armature in tools.common.get_armature_objects():
             for bone in armature.data.bones:
                 to_translate.append(bone.name)
 
-        if not update_dictionary(to_translate):
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        update_dictionary(to_translate, self=self)
 
         count = 0
-
         for armature in tools.common.get_armature_objects():
             for bone in armature.data.bones:
                 bone.name, translated = translate(bone.name)
@@ -135,9 +127,6 @@ class TranslateObjectsButton(bpy.types.Operator):
         if bpy.app.version < (2, 79, 0):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
-
-        tools.common.unhide_all()
-
         to_translate = []
         for obj in bpy.data.objects:
             if obj.name not in to_translate:
@@ -148,8 +137,7 @@ class TranslateObjectsButton(bpy.types.Operator):
                 if obj.animation_data and obj.animation_data.action:
                     to_translate.append(obj.animation_data.action.name)
 
-        if not update_dictionary(to_translate):
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        update_dictionary(to_translate, self=self)
 
         i = 0
         for obj in bpy.data.objects:
@@ -183,16 +171,13 @@ class TranslateMaterialsButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
-        tools.common.unhide_all()
-
         to_translate = []
         for mesh in tools.common.get_meshes_objects(mode=2):
             for matslot in mesh.material_slots:
                 if matslot.name not in to_translate:
                     to_translate.append(matslot.name)
 
-        if not update_dictionary(to_translate):
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        update_dictionary(to_translate, self=self)
 
         i = 0
         for mesh in tools.common.get_meshes_objects(mode=2):
@@ -220,8 +205,6 @@ class TranslateTexturesButton(bpy.types.Operator):
         # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
         self.report({'INFO'}, 'Translated all textures')
         return {'FINISHED'}
-
-        tools.common.unhide_all()
 
         translator = Translator()
 
@@ -270,11 +253,38 @@ class TranslateAllButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
-        bpy.ops.translate.bones('INVOKE_DEFAULT')
-        bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
-        bpy.ops.translate.objects('INVOKE_DEFAULT')
-        bpy.ops.translate.materials('INVOKE_DEFAULT')
+        error_shown = False
 
+        try:
+            if tools.common.get_armature():
+                bpy.ops.translate.bones('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            self.report({'ERROR'}, str(e).replace('Error: ', ''))
+            error_shown = True
+
+        try:
+            bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            if not error_shown:
+                self.report({'ERROR'}, str(e).replace('Error: ', ''))
+                error_shown = True
+
+        try:
+            bpy.ops.translate.objects('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            if not error_shown:
+                self.report({'ERROR'}, str(e).replace('Error: ', ''))
+                error_shown = True
+
+        try:
+            bpy.ops.translate.materials('INVOKE_DEFAULT')
+        except RuntimeError as e:
+            if not error_shown:
+                self.report({'ERROR'}, str(e).replace('Error: ', ''))
+                error_shown = True
+
+        if error_shown:
+            return {'CANCELLED'}
         self.report({'INFO'}, 'Translated everything.')
         return {'FINISHED'}
 
@@ -341,7 +351,7 @@ def load_translations():
     return dict_found
 
 
-def update_dictionary(to_translate_list, translating_shapes=False):
+def update_dictionary(to_translate_list, translating_shapes=False, self=None):
     global dictionary, dictionary_google
     regex = u'[\u3000-\u303f\u3040-\u309f\u30a0-\u30ff\uff00-\uff9f\u4e00-\u9faf\u3400-\u4dbf]+'  # Regex to look for japanese chars
 
@@ -400,7 +410,7 @@ def update_dictionary(to_translate_list, translating_shapes=False):
 
     if not google_input:
         # print('NO GOOGLE TRANSLATIONS')
-        return True
+        return
 
     # Translate the list with google translate
     print('GOOGLE DICT UPDATE!')
@@ -408,8 +418,38 @@ def update_dictionary(to_translate_list, translating_shapes=False):
     try:
         translations = translator.translate(google_input)
     except requests.exceptions.ConnectionError:
-        print('DICTIONARY UPDATE FAILED!')
-        return False
+        print('CONNECTION TO GOOGLE FAILED!')
+        if self:
+            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+        return
+    except json.JSONDecodeError:
+        if self:
+            self.report({'ERROR'}, 'It looks like you got banned from Google Translate temporarily!'
+                        '\nCats translated what it could with the local dictionary,'
+                        '\nbut you will have to try again later for the Google translations.')
+        print('YOU GOT BANNED BY GOOGLE!')
+        return
+    except RuntimeError as e:
+        error = tools.common.html_to_text(str(e))
+        if self:
+            if 'Please try your request again later' in error:
+                self.report({'ERROR'}, 'It looks like you got banned from Google Translate temporarily!'
+                                       '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.')
+                print('YOU GOT BANNED BY GOOGLE!')
+                return
+
+            if 'Error 403' in error:
+                self.report({'ERROR'}, 'Cats was not able to access Google Translate!'
+                                       '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.')
+                print('NO PERMISSION TO USE GOOGLE TRANSLATE!')
+                return
+
+            self.report({'ERROR'}, 'You got an error message from Google Translate!'
+                                   '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.'
+                                   '\n'
+                                   '\nGoogle: ' + error)
+        print('', 'You got an error message from Google:', error, '')
+        return
 
     # Update the dictionaries
     for i, translation in enumerate(translations):
@@ -434,7 +474,7 @@ def update_dictionary(to_translate_list, translating_shapes=False):
     save_google_dict()
 
     print('DICTIONARY UPDATE SUCCEEDED!')
-    return True
+    return
 
 
 def translate(to_translate, add_space=False, translating_shapes=False):
@@ -524,7 +564,6 @@ def reset_google_dict():
 def save_google_dict():
     with open(dictionary_google_file, 'w', encoding="utf8") as outfile:
         json.dump(dictionary_google, outfile, ensure_ascii=False, indent=4)
-
 
 # def cvs_to_json():
 #     temp_dict = OrderedDict()

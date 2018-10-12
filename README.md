@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.11.0)
+# Cats Blender Plugin (0.11.1)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -150,7 +150,7 @@ This uses an internal dictionary and Google Translate.
     - Select the armature you want to fix in the list above the Fix Model button
     - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
     - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure (https://i.imgur.com/F5KEt0M.png)
-    - DO NOT delete any main bones by yourself! CATS will merge them and deletes all unused bones afterwards
+    - DO NOT delete any main bones by yourself! CATS will merge them and delete all unused bones afterwards
   - Move the mesh (and only the mesh!) of the merge armature to the desired position
     - You can use Move, Scale and Rotate
     - CATS will position the bones according to the mesh automatically
@@ -335,6 +335,23 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.11.1
+- **Export**:
+  - Embed Textures is not longer enabled by default, but can now be enabled in the settings
+- **Settings and Updates:**
+  - Renamed "Updater" panel to "Settings & Updates"
+  - Added setting to embed textures on export
+    - Settings are saved into a local settings file
+    - Issue: Settings get reset with every CATS update currently
+  - This panel now shows the current CATS version
+- **Translations:**
+  - Added a warning when you are temporarily IP banned by Google Translate
+- **Eye Tracking:**
+  - Wink Right shape keys are now detected more reliably
+- **General**:
+  - Cats no longer unhides everything whenever it does something, it only unhides the current model
+    - This helps a lot when working with multiple models
+
 #### 0.11.0
 - **Optimization:**
   - Added new greatly improved Auto Atlas method made by **shotariya**!
@@ -382,39 +399,6 @@ It checks for a new version automatically once every day.
   - Added option to use the old translations for shapekey translations
 - **Optimization:**
   - Fixed rare error when combining materials
-
-#### 0.10.0
-- **Translations:**
-  - Greatly improved translations by using a new internal dictionary
-    - Much better shape key translation
-    - Example: No more Ah, Your and There but Ah, Oh and Ch
-  - Greatly improved translation speed by storing the google translations locally
-    - This local google dictionary gets reset every 30 days to stay updated with new translations
-  - Added "Translate Everything" button
-  - No longer removes rigidbodies and joints
-    - Only Fix Model removes them now
-- **Model:**
-  - Join meshes now applies all transforms
-  - Added new Apply Transforms button
-  - Added new Remove Doubles button
-    - More precise than doing it manually but removes less vertices overall
-    - A little extra button at the end lets you remove doubles like you would do manually
-  - Fixed files with capital letters in the file extension not importing correctly
-  - Fixed "Separate by Loose Parts" creating multiple extremely small meshes
-    - This makes "Separate by Loose Parts" actually useful and not a laggy mess
-- **Visemes:**
-  - Shape Keys Mix Intensity slider is back
-  - Increased the range of the intensity slider
-- **Shapekeys:**
-  - Greatly improved "Apply Shapekey as Basis"
-  - Shape keys added to the Basis can be reverted now
-- **Credits:**
-  - Added a patchnotes button
-- **General:**
-  - Slightly reduced startup time
-  - Updated mmd_tools
-  - Fixed some typos
-  - Fixed multiple bugs
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

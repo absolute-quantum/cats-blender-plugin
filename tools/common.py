@@ -40,6 +40,10 @@ from collections import OrderedDict
 from googletrans import Translator
 from mmd_tools_local import utils
 
+from html.parser import HTMLParser
+from html.entities import name2codepoint
+import re
+
 # TODO
 # - Add check if hips bone really needs to be rotated
 # - Reset Pivot
@@ -52,6 +56,7 @@ from mmd_tools_local import utils
 
 
 shapekey_order = None
+version_str = ''
 
 
 def get_armature(armature_name=None):
@@ -71,10 +76,27 @@ def get_armature_objects():
     return armatures
 
 
-def unhide_all():
+def unhide_all(everything=False):
+    armature = get_armature()
     if version_2_79_or_older():
-        for obj in bpy.data.objects:
-            obj.hide = False
+        if everything or not armature:
+            for obj in bpy.data.objects:
+                obj.hide = False
+        else:
+            def unhide_children(parent):
+                for child in parent.children:
+                    child.hide = False
+                    unhide_children(child)
+
+            def unhide_parents(child):
+                parent = child.parent
+                if parent:
+                    parent.hide = False
+                    unhide_parents(parent)
+
+            armature.hide = False
+            unhide_children(armature)
+            unhide_parents(armature)
     else:
         for obj in bpy.data.collections:
             obj.hide_viewport = False
@@ -104,8 +126,8 @@ def set_default_stage_old():
     return armature
 
 
-def set_default_stage():
-    unhide_all()
+def set_default_stage(everything=False):
+    unhide_all(everything=everything)
     unselect_all()
 
     for obj in bpy.data.objects:
@@ -366,11 +388,11 @@ def get_shapekeys_mouth_ch(self, context):
 
 
 def get_shapekeys_eye_blink_l(self, context):
-    return get_shapekeys(context, ['Wink 2', 'Wink', 'Blink (Left)', 'Blink', 'Basis'], False, False, False, False)
+    return get_shapekeys(context, ['Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Blink', 'Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink right 2', 'Wink right', 'Blink (Right)', 'Basis'], False, False, False, False)
+    return get_shapekeys(context, ['Wink 2 right', 'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_low_l(self, context):
@@ -383,12 +405,14 @@ def get_shapekeys_eye_low_r(self, context):
 
 def get_shapekeys_decimation(self, context):
     return get_shapekeys(context,
-                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, False)
+                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Wink 2 right',
+                          'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Blink'], False, True, True, False)
 
 
 def get_shapekeys_decimation_list(self, context):
     return get_shapekeys(context,
-                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink 2 right', 'Wink right 2', 'Wink right'], False, True, True, True)
+                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Wink 2 right',
+                          'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Blink'], False, True, True, True)
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
@@ -539,6 +563,9 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
         elif mode == 1 and mesh.select:
             meshes_to_join.append(mesh.name)
 
+    if not meshes_to_join:
+        return None
+
     set_default_stage()
     unselect_all()
 
@@ -568,7 +595,8 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
             # Standardize UV maps name
-            mesh.data.uv_textures[0].name = 'UVMap'
+            if mesh.data.uv_textures:
+                mesh.data.uv_textures[0].name = 'UVMap'
             for mat_slot in mesh.material_slots:
                 if mat_slot and mat_slot.material:
                     for tex_slot in mat_slot.material.texture_slots:
@@ -1335,6 +1363,66 @@ def has_shapekeys(mesh):
     if not hasattr(mesh.data, 'shape_keys'):
         return False
     return hasattr(mesh.data.shape_keys, 'key_blocks')
+
+
+"""
+HTML <-> text conversions.
+http://stackoverflow.com/questions/328356/extracting-text-from-html-file-using-python
+"""
+
+
+class _HTMLToText(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self._buf = []
+        self.hide_output = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ('p', 'br') and not self.hide_output:
+            self._buf.append('\n')
+        elif tag in ('script', 'style'):
+            self.hide_output = True
+
+    def handle_startendtag(self, tag, attrs):
+        if tag == 'br':
+            self._buf.append('\n')
+
+    def handle_endtag(self, tag):
+        if tag == 'p':
+            self._buf.append('\n')
+        elif tag in ('script', 'style'):
+            self.hide_output = False
+
+    def handle_data(self, text):
+        if text and not self.hide_output:
+            self._buf.append(re.sub(r'\s+', ' ', text))
+
+    def handle_entityref(self, name):
+        if name in name2codepoint and not self.hide_output:
+            c = chr(name2codepoint[name])
+            self._buf.append(c)
+
+    def handle_charref(self, name):
+        if not self.hide_output:
+            n = int(name[1:], 16) if name.startswith('x') else int(name)
+            self._buf.append(chr(n))
+
+    def get_text(self):
+        return re.sub(r' +', ' ', ''.join(self._buf))
+
+
+def html_to_text(html):
+    """
+    Given a piece of HTML, return the plain text it contains.
+    This handles entities and char refs, but not javascript and stylesheets.
+    """
+    parser = _HTMLToText()
+    try:
+        parser.feed(html)
+        parser.close()
+    except:  #HTMLParseError: No good replacement?
+        pass
+    return parser.get_text()
 
 
 # === THIS CODE COULD BE USEFUL ===

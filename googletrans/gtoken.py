@@ -59,7 +59,7 @@ class TokenAcquirer(object):
         r = self.session.get(self.host, verify=False)
 
         rawtkk = self.RE_RAWTKK.search(r.text)
-        if rawtkk is not None:
+        if rawtkk:
             self.tkk = rawtkk.group(1)
             return
 

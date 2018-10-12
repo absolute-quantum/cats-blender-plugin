@@ -189,6 +189,7 @@ bone_list_conflicting_names = [
 
     (['Arm_\L'], 'Arm+_\L', '\Left arm'),
     (['Elbow_\L'], 'Elbow+_\L', '\Left elbow'),
+    (['Wrist_\L'], 'Wrist+_\L', '\Left wrist'),
     (['Wrist_\L'], 'Wrist+F_\L', '\Left wrist'),
 
     (['Strengthen_The_Spine'], 'Spine1', 'Backbone1'),

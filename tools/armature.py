@@ -362,6 +362,7 @@ class FixArmature(bpy.types.Operator):
         starts_with = [
             ('_', ''),
             ('ValveBiped_', ''),
+            ('Valvebiped_', ''),
             ('Bip1_', 'Bip_'),
             ('Bip01_', 'Bip_'),
             ('Bip001_', 'Bip_'),

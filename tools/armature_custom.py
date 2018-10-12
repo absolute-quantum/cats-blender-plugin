@@ -44,7 +44,7 @@ class MergeArmature(bpy.types.Operator):
 
     def execute(self, context):
         # Set default stage
-        tools.common.set_default_stage()
+        tools.common.set_default_stage(everything=True)
         tools.common.unselect_all()
 
         # Get both armatures
@@ -108,7 +108,7 @@ class AttachMesh(bpy.types.Operator):
 
     def execute(self, context):
         # Set default stage
-        tools.common.set_default_stage()
+        tools.common.set_default_stage(everything=True)
         tools.common.unselect_all()
 
         # Get armature and mesh
@@ -116,7 +116,6 @@ class AttachMesh(bpy.types.Operator):
         base_armature_name = bpy.context.scene.merge_armature_into
         attach_bone_name = bpy.context.scene.attach_to_bone
         mesh = bpy.data.objects[mesh_name]
-        base_armature = bpy.data.objects[base_armature_name]
 
         # Create new armature
         bpy.ops.object.armature_add(location=(0, 0, 0))
@@ -133,6 +132,9 @@ class AttachMesh(bpy.types.Operator):
         tools.common.unselect_all()
         tools.common.select(mesh)
         tools.common.switch('EDIT')
+
+        # Delete all previous vertex groups
+        bpy.ops.object.vertex_group_remove(all=True)
 
         # Select and assign all vertices to new vertex group
         bpy.ops.mesh.select_all(action='SELECT')

@@ -298,7 +298,7 @@ class AtlasHelpButton(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/tree/development#texture-atlas')  # Todo Redirect to master
+        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/#texture-atlas')
         self.report({'INFO'}, 'Atlas Help opened.')
         return {'FINISHED'}
 
@@ -429,6 +429,7 @@ def shotariya_installed():
     for mod2 in addon_utils.modules():
         if mod2.bl_info.get('name') == addon_name:
             installed = True
+
             if mod2.bl_info.get('version') >= min_version:
                 correct_version = True
 

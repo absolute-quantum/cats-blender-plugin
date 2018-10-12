@@ -42,6 +42,27 @@ settings_file = os.path.join(resources_dir, "settings.json")
 settings_data = None
 settings_data_unchanged = None
 
+# Settings name = [Default Value, Require Blender Restart]
+settings_default = OrderedDict()
+# settings_default['use_custom_mmd_tools'] = [False, True]
+settings_default['embed_textures'] = [False, False]
+
+lock_settings = False
+
+
+class RevertChangesButton(bpy.types.Operator):
+    bl_idname = 'settings.revert'
+    bl_label = 'Revert Settings'
+    bl_description = 'Revert the changes back to how they were on Blender start-up'
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        for setting in settings_default.keys():
+            setattr(bpy.context.scene, setting, settings_data_unchanged.get(setting))
+        save_settings()
+        self.report({'INFO'}, 'Settings reverted.')
+        return {'FINISHED'}
+
 
 def load_settings():
     print('READING SETTINGS FILE')
@@ -61,10 +82,16 @@ def load_settings():
         reset_settings()
         return
 
-    # Check for missing entries, reset if neccessary
-    if 'last_supporter_update' not in settings_data or 'use_custom_mmd_tools' not in settings_data:
+    # Check for missing entries, reset if necessary
+    if 'last_supporter_update' not in settings_data:
         reset_settings()
         return
+
+    # Check for other missing entries, reset if necessary
+    for setting in settings_default.keys():
+        if setting not in settings_data:
+            reset_settings()
+            return
 
     # Check if timestamps are correct
     if settings_data.get('last_supporter_update'):
@@ -88,7 +115,9 @@ def reset_settings():
     settings_data = OrderedDict()
 
     settings_data['last_supporter_update'] = None
-    settings_data['use_custom_mmd_tools'] = False
+
+    for setting, value in settings_default.items():
+        settings_data[setting] = value[0]
 
     save_settings()
 
@@ -97,19 +126,35 @@ def reset_settings():
 
 
 def start_apply_settings_timer():
+    global lock_settings
+    lock_settings = True
     thread = Thread(target=apply_settings, args=[])
     thread.start()
 
 
 def apply_settings():
     time.sleep(2)
-    bpy.context.scene.use_custom_mmd_tools = settings_data.get('use_custom_mmd_tools')
+    for setting in settings_default.keys():
+        setattr(bpy.context.scene, setting, settings_data.get(setting))
+
+    # Unlock settings
+    global lock_settings
+    lock_settings = False
 
 
 def settings_changed():
-    if settings_data.get('use_custom_mmd_tools') != settings_data_unchanged.get('use_custom_mmd_tools'):
-        return True
+    for setting, value in settings_default.items():
+        if value[1] and settings_data.get(setting) != settings_data_unchanged.get(setting):
+            return True
     return False
+
+
+def update_settings(self, context):
+    if lock_settings:
+        return
+    for setting in settings_default.keys():
+        settings_data[setting] = getattr(bpy.context.scene, setting)
+    save_settings()
 
 
 def set_last_supporter_update(last_supporter_update):
@@ -121,10 +166,9 @@ def get_last_supporter_update():
     return settings_data.get('last_supporter_update')
 
 
-def set_use_custom_mmd_tools(self, context):
-    settings_data['use_custom_mmd_tools'] = bpy.context.scene.use_custom_mmd_tools
-    save_settings()
-
-
-def use_custom_mmd_tools(self, context):
+def get_use_custom_mmd_tools():
     return settings_data.get('use_custom_mmd_tools')
+
+
+def get_embed_textures():
+    return settings_data.get('embed_textures')

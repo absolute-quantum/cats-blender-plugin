@@ -19,6 +19,7 @@
 import bpy
 from bpy.app.handlers import persistent
 import os
+import tools.common
 
 # updater import, import safely
 # Prevents popups for users with invalid python installs e.g. missing libraries
@@ -828,6 +829,11 @@ def update_settings_ui(self, context, element=None):
     if element == None: element = self.layout
     box = element.box()
 
+    col = box.column(align=True)
+    row = col.row(align=True)
+    row.scale_y = 0.8
+    row.label('Updates:', icon='LOAD_FACTORY')
+
     # in case of error importing updater
     if updater.invalidupdater == True:
         box.label("Error initializing updater code:")
@@ -838,7 +844,7 @@ def update_settings_ui(self, context, element=None):
 
     # auto-update settings
     # box.label("Cats Updater")
-    row = box.row()
+    # row = box.row()
 
     # special case to tell user to restart blender, if set that way
     if updater.auto_reload_post_update == False:
@@ -969,6 +975,12 @@ def update_settings_ui(self, context, element=None):
     # col.operator(addon_updater_restore_backup.bl_idname, backuptext)
 
     row = box.row()
+
+    row.scale_y = 0.1
+    row.label('Current Cats version: ' + tools.common.version_str)
+    col.separator()
+    row = box.row()
+
     row.scale_y = 0.7
     lastcheck = updater.json["last_check"]
     if updater.error != None and updater.error_msg != None:

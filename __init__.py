@@ -103,6 +103,7 @@ else:
 # In client.py on line 42 remove the Hyper part, it's not faster at all!
 # Just comment it out.
 # Also see pull request for TKK change
+# Also wm progress in client.py
 # Done
 
 bl_info = {
@@ -111,7 +112,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
-    'version': [0, 11, 0],  # Only change this version and the dev branch var right before publishing the new update!
+    'version': [0, 11, 1],  # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 79, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -224,19 +225,6 @@ class ToolPanel:
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_category = 'CATS'
-
-    # Armature
-    bpy.types.Scene.import_mode = bpy.props.EnumProperty(
-        name="Import Mode",
-        description="Import Mode",
-        items=[
-            ("MMD", "MMD", 'Import .pmx/.pmd files'),
-            ("XPS", "XNALara", 'Import .xps/.mesh/.ascii files'),
-            ("SOURCE", "Source", 'Import .smd/.qc/.vta/.dmx files'),
-            ("FBX", "FBX", 'Import .fbx files'),
-        ],
-        default='MMD'
-    )
 
     bpy.types.Scene.armature = bpy.props.EnumProperty(
         name='Armature',
@@ -718,22 +706,30 @@ class ToolPanel:
     )
 
     # Settings
+    bpy.types.Scene.embed_textures = bpy.props.BoolProperty(
+        name='Embed Textures on Export',
+        description='Enable this to embed the texture files into the FBX file upon export.'
+                    '\nUnity will automatically extract these textures and put them into a separate folder.'
+                    '\nThis might not work for everyone and it increases the file size of the exported FBX file',
+        default=False,
+        update=tools.settings.update_settings
+    )
     bpy.types.Scene.use_custom_mmd_tools = bpy.props.BoolProperty(
         name='Use Custom mmd_tools',
         description='Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools ',
         default=False,
-        update=tools.settings.set_use_custom_mmd_tools
+        update=tools.settings.update_settings
     )
 
-    bpy.types.Scene.disable_vrchat_features = bpy.props.BoolProperty(
-        name='Disable VRChat Only Features',
-        description='This will disable features which are solely used for VRChat.'
-                    '\nThe following will be disabled:'
-                    '\n- Eye Tracking'
-                    '\n- Visemes',
-        default=False,
-        update=tools.settings.set_use_custom_mmd_tools
-    )
+    # bpy.types.Scene.disable_vrchat_features = bpy.props.BoolProperty(
+    #     name='Disable VRChat Only Features',
+    #     description='This will disable features which are solely used for VRChat.'
+    #                 '\nThe following will be disabled:'
+    #                 '\n- Eye Tracking'
+    #                 '\n- Visemes',
+    #     default=False,
+    #     update=tools.settings.update_settings
+    # )
 
     # Copy Protection - obsolete
     # bpy.types.Scene.protection_mode = bpy.props.EnumProperty(
@@ -921,8 +917,8 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
-        ob = bpy.context.active_object
-        if not ob or ob.mode != 'POSE':
+        armature = tools.common.get_armature()
+        if not armature or armature.mode != 'POSE':
             row = col.row(align=True)
             row.scale_y = 1.1
             row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')
@@ -1099,6 +1095,9 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.scale_y = 1.05
                 col.label('An armature and a mesh are required!', icon='INFO')
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label('Make sure that the mesh has no parent.', icon_value=get_emtpy_icon())
                 return
 
             row = col.row(align=True)
@@ -1634,28 +1633,37 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v2'
-    # bl_label = 'Settings & Updates'
-    bl_label = 'Updater'
+    bl_label = 'Settings & Updates'
+    # bl_label = 'Updater'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
-        # layout = self.layout
-        # box = layout.box()
-        # col = box.column(align=True)
-        #
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.label('Settings:', icon='SCRIPTPLUGINS')
+        col.separator()
+
+        row = col.row(align=True)
+        row.prop(context.scene, 'embed_textures')
         # row = col.row(align=True)
         # row.prop(context.scene, 'use_custom_mmd_tools')
-        # # row = col.row(align=True)
-        # # row.prop(context.scene, 'disable_vrchat_features')
-        #
-        # if tools.settings.settings_changed():
-        #     col.separator()
-        #     row = col.row(align=True)
-        #     row.scale_y = 0.8
-        #     row.label('Settings have changed.', icon='ERROR')
-        #     row = col.row(align=True)
-        #     row.scale_y = 0.8
-        #     row.label('Restart Blender to apply them.', icon_value=get_emtpy_icon())
+        # row = col.row(align=True)
+        # row.prop(context.scene, 'disable_vrchat_features')
+
+        if tools.settings.settings_changed():
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.8
+            row.label('Restart required.', icon='ERROR')
+            row = col.row(align=True)
+            row.scale_y = 0.8
+            row.label('Some changes require a Blender restart.', icon_value=get_emtpy_icon())
+            row = col.row(align=True)
+            row.operator('settings.revert', icon='RECOVER_LAST')
 
         # Updater
         # addon_updater_ops.check_for_update_background()
@@ -1763,18 +1771,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
         row = col.row(align=True)
 
-        version_str = 'Cats Blender Plugin ('
-        if len(version) > 0:
-            version_str += str(version[0])
-            for index, i in enumerate(version):
-                if index == 0:
-                    continue
-                version_str += '.' + str(version[index])
-        if dev_branch:
-            version_str += '-dev'
-        version_str += ')'
-
-        row.label(version_str, icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
+        row.label('Cats Blender Plugin (' + tools.common.version_str + ')', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
         row.label('Created by GiveMeAllYourCats and Hotox')
@@ -1837,6 +1834,22 @@ class UpdaterPreferences(bpy.types.AddonPreferences):
 
 def get_emtpy_icon():
     return tools.supporter.preview_collections["custom_icons"]["empty"].icon_id
+
+
+def set_cats_verion_string():
+    version_str = ''
+    if dev_branch and len(version) > 2:
+        version[2] += 1
+    if len(version) > 0:
+        version_str += str(version[0])
+        for index, i in enumerate(version):
+            if index == 0:
+                continue
+            version_str += '.' + str(version[index])
+    if dev_branch:
+        version_str += '-dev'
+
+    tools.common.version_str = version_str
 
 
 classesToRegister = [
@@ -1915,7 +1928,7 @@ classesToRegister = [
     tools.atlas.AutoAtlasNewButton,
     tools.atlas.InstallShotariya,
     tools.atlas.ShotariyaButton,
-    #tools.atlas.AutoAtlasButton,
+    # tools.atlas.AutoAtlasButton,
     tools.atlas.AtlasHelpButton,
     tools.atlas.MaterialsGroup,
     tools.atlas.GenerateMaterialListButton,
@@ -1935,6 +1948,7 @@ classesToRegister = [
 
     UpdaterPanel,
     UpdaterPreferences,
+    tools.settings.RevertChangesButton,
 
     SupporterPanel,
     tools.supporter.PatreonButton,
@@ -1976,8 +1990,8 @@ def register():
     bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
     bpy.types.Scene.material_list_index = bpy.props.IntProperty(default=0)
 
-    if dev_branch and len(version) > 2:
-        version[2] += 1
+    # Set cats version string
+    set_cats_verion_string()
 
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
@@ -1993,7 +2007,7 @@ def register():
     # Disable request warning when using google translate
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
-    # tools.settings.start_apply_settings_timer()
+    tools.settings.start_apply_settings_timer()
 
     print("### Loaded CATS successfully!")
 
