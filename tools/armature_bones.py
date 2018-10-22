@@ -30,7 +30,7 @@ from collections import OrderedDict
 bone_list = ['ControlNode', 'ParentNode', 'Center', 'CenterTip', 'Groove', 'Waist', 'EyesTip',
              'LowerBodyTip', 'UpperBody2Tip', 'GrooveTip', 'NeckTip']
 bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent', 'LegIK',
-                  'ShoulderP_', 'EyeTip_', 'HandDummy_', 'SleeveShoulderIK_']
+                  'ShoulderP_', 'EyeTip_', 'HandDummy_', 'SleeveShoulderIK_', 'Cf_O_Root_']
 bone_list_parenting = {
     'Spine': 'Hips',
     'Chest': 'Spine',
@@ -210,6 +210,10 @@ bone_list_conflicting_names = [
     (['Leg(L)03'], 'Leg(R)02', 'Leg(R)03'),
     (['Leg(L)02'], 'Leg(R)00', 'Leg(R)02'),
     (['Leg(L)00'], 'Leg(R)00_tmp', 'Leg(R)00'),
+
+    # Fix Koikatsu models
+    (['Cf_D_Shoulder_\L'], 'Shoulder_\L', 'Cf_D_Shoulder2_\L'),
+    (['Cf_Hit_Waist02', 'Leg_\L'], 'Shoulder_\L', 'Cf_D_Shoulder2_\L'),
 
     # (['Elbowb_\L', 'Elbowc_\L'], 'Elbowa_\L', 'Arm05_\L'),
 ]
@@ -468,6 +472,8 @@ bone_rename['\Left shoulder'] = [
     'Arm_\Left_Sh_1',
     'Shoulder(\L)_0',
     '\L_Kata',
+    'Cf_D_Shoulder_\L',
+    'Cf_D_Shoulder2_\L',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',
@@ -581,8 +587,8 @@ bone_rename['\Left leg'] = [
     '\Left_Leg',
     '\Left_Foot',
     '\LeftLeg',
-    'Leg_\L_001',
     'Leg_\L',
+    'Leg_\L_001',
     'Leg\L1',
     'LegWAux_\L',
     'Leg00003333_\L',
@@ -617,6 +623,7 @@ bone_rename['\Left leg'] = [
     '\Lfoot1',
     'Leg(\L)04',
     '\L_Momo_Jnt',
+    'Leg_Thigh_\L',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -653,6 +660,7 @@ bone_rename['\Left knee'] = [
     '\Lfoot2',
     'Leg(\L)00',
     '\L_Sune_Jnt',
+    'Leg_Calf_\L',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
@@ -765,6 +773,7 @@ bone_reweight['Hips'] = [
     'Left_Hip',
     'Right_Hip',
     'Feet',
+    'Waist02_001',
 ]
 bone_reweight['Spine'] = [
     'UpperBodyx',
@@ -804,6 +813,7 @@ bone_reweight['\Left shoulder'] = [
     'Bip_\L_Shoulder',
     'Kata_\L',
     'Bip_\L_Clavicle_Rig',
+    'Shoulder02_\L',
 ]
 bone_reweight['\Left arm'] = [
     'Arm01_\L',
@@ -989,6 +999,12 @@ bone_reweight['\Left elbow'] = [
     'Bip_\L_Forearm_Rig',
     'Bip_\L_Forearm_Twist',
     '\L_Tekubi',
+    'Forearm02_\L',
+    'Wrist_\L_001',
+    'Cf_D_Hand_\L',
+    'Elbo_\L',
+    'Forearm01_\L',
+    'Elboback_\L',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1125,6 +1141,9 @@ bone_reweight['\Left leg'] = [
     'Knee4_2_\L',
     'Bip_\L_Thigh_Rig',
     'Leg(\L)_0',
+    'Thigh01_\L',
+    'Thigh02_\L',
+    'Thigh03_\L',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -1175,6 +1194,10 @@ bone_reweight['\Left knee'] = [
     'Leg_\Left_Knee_Ctrl',
     'Bip_\L_Calf_Rig',
     'Leg(\L)01',
+    'Cf_D_KneeF_\L',
+    'Leg02_\L',
+    'Leg03_\L',
+    'KneeB_\L',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',

@@ -106,6 +106,9 @@ else:
 # Also wm progress in client.py
 # Done
 
+# How to set up PyCharm with Blender:
+# https://b3d.interplanety.org/en/using-external-ide-pycharm-for-writing-blender-scripts/
+
 bl_info = {
     'name': 'Cats Blender Plugin',
     'category': '3D View',
