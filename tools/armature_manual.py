@@ -138,7 +138,8 @@ class PoseToShape(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return bpy.context.active_object.mode == 'POSE'
+        armature = tools.common.get_armature()
+        return armature and armature.mode == 'POSE'
 
     def execute(self, context):
         pose_to_shapekey('Pose')
@@ -175,7 +176,8 @@ class PoseToRest(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return bpy.context.active_object.mode == 'POSE'
+        armature = tools.common.get_armature()
+        return armature and armature.mode == 'POSE'
 
     def execute(self, context):
         armature = tools.common.get_armature()

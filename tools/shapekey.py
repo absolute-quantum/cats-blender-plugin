@@ -113,9 +113,9 @@ class ShapeKeyApplier(bpy.types.Operator):
         # If a reversed shapekey was applied as basis, fix the name
         if ' - Reverted - Reverted' in old_basis_shapekey.name:
             old_basis_shapekey.name = old_basis_shapekey.name.replace(' - Reverted - Reverted', '')
-            self.report({'INFO'}, 'Successfully removed shapekey ' + old_basis_shapekey.name + ' from the Basis.')
+            self.report({'INFO'}, 'Successfully removed shapekey "' + old_basis_shapekey.name + '" from the Basis.')
         else:
-            self.report({'INFO'}, 'Successfully set shapekey ' + new_basis_shapekey_name + ' as the new Basis.')
+            self.report({'INFO'}, 'Successfully set shapekey "' + new_basis_shapekey_name + '" as the new Basis.')
         return {'FINISHED'}
 
 

@@ -338,6 +338,11 @@ It checks for a new version automatically once every day.
 #### 0.11.3
 - **Model**:
   - Made Koikatsu models compatible
+  - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
+- **Visemes**:
+  - Selecting the "Basis" shapekey is no longer allowed
+- **Shapekeys**:
+  - Fixed a bug when Applying a Shapekey to Basis
 
 #### 0.11.2
 - **Model**:

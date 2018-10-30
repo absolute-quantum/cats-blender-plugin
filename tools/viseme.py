@@ -48,8 +48,16 @@ class AutoVisemeButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        wm = bpy.context.window_manager
+        if context.scene.mouth_a == "Basis" \
+                or context.scene.mouth_o == "Basis" \
+                or context.scene.mouth_ch == "Basis":
+            self.report({'ERROR'}, 'Please select the correct mouth shapekeys instead of "Basis"!')
+            return {'CANCELLED'}
+
         tools.common.set_default_stage()
+
+        wm = bpy.context.window_manager
+
         mesh = bpy.data.objects[context.scene.mesh_name_viseme]
         tools.common.select(mesh)
 
