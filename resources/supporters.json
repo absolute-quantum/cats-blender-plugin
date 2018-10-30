@@ -1,15 +1,17 @@
 {
   "news": [
     {
-      "info2": "It is wednesday my dudes"
+      "info": "It is wednesday my dudes",
+      "disabled": true
     },{
-      "info2": "Have a nice weekend!",
-      "custom_icon": "fire"
+      "info": "Have a nice weekend!",
+      "custom_icon": "fire",
+      "disabled": true
     },{
       "info2": "Happy",
       "icon": "INFO"
     },{
-      "info2": "Happy Halloween!",
+      "info": "Happy Halloween!",
       "custom_icon": "halloween",
       "disabled": false
     }
@@ -270,9 +272,12 @@
     },{
       "displayname": "Lazlo",
       "startdate": "2018-10-15",
-      "description": "WTB Intelligence",
+      "description": "WTB Intelligence ",
       "website": null,
       "tier": 1
+    },{
+      "displayname": "Rincewind",
+      "startdate": "2018-10-128"
     }
   ]
 }

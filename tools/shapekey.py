@@ -37,7 +37,7 @@ class ShapeKeyApplier(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return bpy.context.object.active_shape_key_index > 0
+        return bpy.context.object.active_shape_key and bpy.context.object.active_shape_key_index > 0
 
     def execute(self, context):
         mesh = bpy.context.scene.objects.active
