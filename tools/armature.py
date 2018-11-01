@@ -229,13 +229,14 @@ class FixArmature(bpy.types.Operator):
             tools.common.delete_hierarchy(bpy.data.objects[obj_name])
 
         # Remove objects from  different layers and things that are not meshes
-        for child in armature.children:
-            for child2 in child.children:
-                if not child2.layers[0] or child2.type != 'MESH':
-                    tools.common.delete(child2)
+        if len(armature.children) > 1:
+            for child in armature.children:
+                for child2 in child.children:
+                    if not child2.layers[0] or child2.type != 'MESH':
+                        tools.common.delete(child2)
 
-            if not child.layers[0] or child.type != 'MESH':
-                tools.common.delete(child)
+                if not child.layers[0] or child.type != 'MESH':
+                    tools.common.delete(child)
 
         # Remove empty mmd object and unused objects
         tools.common.remove_empty()
