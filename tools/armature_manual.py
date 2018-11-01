@@ -780,3 +780,112 @@ class RemoveDoublesNormal(bpy.types.Operator):
 
         self.report({'INFO'}, 'Removed ' + str(removed_tris) + ' vertices.')
         return {'FINISHED'}
+
+
+class FixVRMShapesButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.fix_vrm_shapes'
+    bl_label = 'Fix VRM Shapekeys'
+    bl_description = "Fixes the shapekeys of VRM models"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return tools.common.get_meshes_objects()
+
+    def execute(self, context):
+        mesh = tools.common.get_meshes_objects()[0]
+        slider_max_eyes = 0.33333
+        slider_max_mouth = 0.94
+
+        if not tools.common.has_shapekeys(mesh):
+            self.report({'INFO'}, 'No shapekeys detected!')
+            return {'CANCELLED'}
+
+        tools.common.select(mesh)
+        bpy.ops.object.shape_key_clear()
+
+        shapekeys = enumerate(mesh.data.shape_keys.key_blocks)
+
+        # Set max slider
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if index == 0:
+                continue
+            if shapekey.name.startswith('eye_'):
+                shapekey.slider_max = slider_max_eyes
+            else:
+                shapekey.slider_max = slider_max_mouth
+
+        # Find shapekeys to merge
+        shapekeys_to_merge_eyes = {}
+        shapekeys_to_merge_mouth = {}
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if index == 0:
+                continue
+
+            name_split = shapekey.name.split('00')
+            if len(name_split) < 2:
+                continue
+            pre_name = name_split[0]
+            post_name = name_split[1]
+
+            if pre_name == "eye_face.f":
+                shapekeys_to_merge_eyes[post_name] = []
+            elif pre_name == "kuti_face.f":
+                shapekeys_to_merge_mouth[post_name] = []
+
+        # Add all matching shapekeys to the merge list
+        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
+            if index == 0:
+                continue
+
+            name_split = shapekey.name.split('00')
+            if len(name_split) < 2:
+                continue
+            pre_name = name_split[0]
+            post_name = name_split[1]
+
+            if post_name in shapekeys_to_merge_eyes.keys():
+                if pre_name == 'eye_face.f' or pre_name == 'eye_siroL.sL' or pre_name == 'eye_line_u.elu':
+                    shapekeys_to_merge_eyes[post_name].append(shapekey.name)
+
+            elif post_name in shapekeys_to_merge_mouth.keys():
+                if pre_name == 'kuti_face.f' or pre_name == 'kuti_ha.ha' or pre_name == 'kuti_sita.t':
+                    shapekeys_to_merge_mouth[post_name].append(shapekey.name)
+
+        # Merge all the shape keys
+        shapekeys_used = []
+        for name, shapekeys_merge in shapekeys_to_merge_eyes.items():
+            if len(shapekeys_merge) <= 1:
+                continue
+
+            for shapekey_name in shapekeys_merge:
+                mesh.data.shape_keys.key_blocks[shapekey_name].value = slider_max_eyes
+                shapekeys_used.append(shapekey_name)
+
+            mesh.shape_key_add(name='eyes_' + name[1:], from_mix=True)
+            mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
+            bpy.ops.object.shape_key_move(type='TOP')
+            bpy.ops.object.shape_key_clear()
+
+        for name, shapekeys_merge in shapekeys_to_merge_mouth.items():
+            if len(shapekeys_merge) <= 1:
+                continue
+
+            for shapekey_name in shapekeys_merge:
+                mesh.data.shape_keys.key_blocks[shapekey_name].value = slider_max_mouth
+                shapekeys_used.append(shapekey_name)
+
+            mesh.shape_key_add(name='mouth_' + name[1:], from_mix=True)
+            mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
+            bpy.ops.object.shape_key_move(type='TOP')
+            bpy.ops.object.shape_key_clear()
+
+        # Remove all the used shapekeys
+        for index in reversed(range(0, len(mesh.data.shape_keys.key_blocks))):
+            mesh.active_shape_key_index = index
+            shapekey = mesh.active_shape_key
+            if shapekey.name in shapekeys_used:
+                bpy.ops.object.shape_key_remove(all=False)
+
+        self.report({'INFO'}, 'Fixed VRM shapekeys.')
+        return {'FINISHED'}

@@ -1001,6 +1001,10 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         subcol.scale_y = button_height
         subcol.operator('armature_manual.remove_doubles_normal', text="", icon='X')
 
+        row = col.row(align=True)
+        row.scale_y = button_height
+        row.operator('armature_manual.fix_vrm_shapes', icon='SHAPEKEY_DATA')
+
         # Translate
         col.separator()
         row = col.row(align=True)
@@ -1892,6 +1896,7 @@ classesToRegister = [
     tools.armature_manual.FlipNormals,
     tools.armature_manual.RemoveDoubles,
     tools.armature_manual.RemoveDoublesNormal,
+    tools.armature_manual.FixVRMShapesButton,
     tools.translate.TranslateShapekeyButton,
     tools.translate.TranslateBonesButton,
     tools.translate.TranslateObjectsButton,
