@@ -1205,7 +1205,7 @@ def register(bl_info):
     updater.private_token = None  # "tokenstring"
 
     # choose your own username, must match website (not needed for GitLab)
-    updater.user = "michaeldegroot"
+    updater.user = "givemeallyourcats"
 
     # choose your own repository, must match git name
     updater.repo = "cats-blender-plugin"
@@ -1213,7 +1213,7 @@ def register(bl_info):
     # updater.addon = # define at top of module, MUST be done first
 
     # Website for manual addon download, optional but recommended to set
-    updater.website = "https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip"
+    updater.website = "https://github.com/givemeallyourcats/cats-blender-plugin/archive/master.zip"
 
     # Addon subfolder path
     # "sample/path/to/addon"

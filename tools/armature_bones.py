@@ -211,6 +211,8 @@ bone_list_conflicting_names = [
     (['Leg(L)02'], 'Leg(R)00', 'Leg(R)02'),
     (['Leg(L)00'], 'Leg(R)00_tmp', 'Leg(R)00'),
 
+    # (['Shoulder_\L', 'Shoulder_IK_Root_\L'], 'Shoulder1_WayA_\L', '\Left shoulder'),
+
     # Fix Koikatsu models
     (['Cf_D_Shoulder_\L'], 'Shoulder_\L', 'Cf_D_Shoulder2_\L'),
     (['Cf_Hit_Waist02', 'Leg_\L'], 'Shoulder_\L', 'Cf_D_Shoulder2_\L'),
@@ -814,6 +816,7 @@ bone_reweight['\Left shoulder'] = [
     'Kata_\L',
     'Bip_\L_Clavicle_Rig',
     'Shoulder02_\L',
+    'Shoulder1_WayA_\L',
 ]
 bone_reweight['\Left arm'] = [
     'Arm01_\L',
@@ -900,6 +903,7 @@ bone_reweight['\Left arm'] = [
     'Arm_\Left_Shoulder_Ctrl_2',
     'Bip_\L_UpperArm_Rig',
     'Bip_\L_UpperArm_Twist',
+    'Arm_WayA_\L',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',

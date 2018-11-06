@@ -806,15 +806,6 @@ class FixVRMShapesButton(bpy.types.Operator):
 
         shapekeys = enumerate(mesh.data.shape_keys.key_blocks)
 
-        # Set max slider
-        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if index == 0:
-                continue
-            if shapekey.name.startswith('eye_'):
-                shapekey.slider_max = slider_max_eyes
-            else:
-                shapekey.slider_max = slider_max_mouth
-
         # Find shapekeys to merge
         shapekeys_to_merge_eyes = {}
         shapekeys_to_merge_mouth = {}
@@ -822,12 +813,20 @@ class FixVRMShapesButton(bpy.types.Operator):
             if index == 0:
                 continue
 
+            # Set max slider
+            if shapekey.name.startswith('eye_'):
+                shapekey.slider_max = slider_max_eyes
+            else:
+                shapekey.slider_max = slider_max_mouth
+
+            # Split name
             name_split = shapekey.name.split('00')
             if len(name_split) < 2:
                 continue
             pre_name = name_split[0]
             post_name = name_split[1]
 
+            # Put shapekey in corresponding list
             if pre_name == "eye_face.f":
                 shapekeys_to_merge_eyes[post_name] = []
             elif pre_name == "kuti_face.f":
