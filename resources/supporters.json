@@ -13,7 +13,7 @@
     },{
       "info": "Happy Halloween!",
       "custom_icon": "halloween",
-      "disabled": false
+      "disabled": true
     }
   ],
   "supporters": [

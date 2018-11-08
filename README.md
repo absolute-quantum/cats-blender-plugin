@@ -339,6 +339,8 @@ It checks for a new version automatically once every day.
 - **Model**:
   - Made Koikatsu models compatible
   - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
+  - Put some model options under a "Show More Options" button
+  - Added separate buttons to enable and disable the Full Body tracking fix
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed
 - **Shapekeys**:

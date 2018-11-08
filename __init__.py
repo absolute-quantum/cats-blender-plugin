@@ -279,6 +279,12 @@ class ToolPanel:
         default=False
     )
 
+    bpy.types.Scene.show_more_options = bpy.props.BoolProperty(
+        name='Show More Options',
+        description="Shows more model options",
+        default=False
+    )
+
     bpy.types.Scene.merge_mode = bpy.props.EnumProperty(
         name="Merge Mode",
         description="Mode",
@@ -958,52 +964,21 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         #     row = col.row(align=True)
         #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_DOWN')
 
-        row = col.row(align=True)
+        row = col.split(percentage=0.4, align=True)
         row.scale_y = button_height
         row.label("Separate by:", icon='MESH_DATA')
         row.operator('armature_manual.separate_by_materials', text='Materials')
         row.operator('armature_manual.separate_by_loose_parts', text='Loose Parts')
 
-        row = col.row(align=True)
+        row = col.split(percentage=0.4, align=True)
         row.scale_y = button_height
         row.label("Join Meshes:", icon='MESH_DATA')
         row.operator('armature_manual.join_meshes', text='All')
         row.operator('armature_manual.join_meshes_selected', text='Selected')
 
-        col.separator()
-        col.separator()
-        row = col.split(percentage=0.23, align=True)
-        row.scale_y = button_height
-        row.label("Delete:", icon='X')
-        row.operator('armature_manual.remove_zero_weight', text='Zero Weight Bones')
-        row.operator('armature_manual.remove_constraints', text='Constraints')
         row = col.row(align=True)
         row.scale_y = button_height
         row.operator('armature_manual.merge_weights', icon='BONE_DATA')
-
-        col.separator()
-        col.separator()
-        row = col.split(percentage=0.27, align=True)
-        row.scale_y = button_height
-        row.label("Normals:", icon='SNAP_NORMAL')
-        row.operator('armature_manual.recalculate_normals', text='Recalculate')
-        row.operator('armature_manual.flip_normals', text='Flip')
-        row = col.row(align=True)
-        row.scale_y = button_height
-        row.operator('armature_manual.apply_transformations', icon='OUTLINER_DATA_ARMATURE')
-
-        row = col.row(align=True)
-        row.scale_y = 1
-        subcol = row.split(align=True)
-        subcol.scale_y = button_height
-        subcol.operator('armature_manual.remove_doubles', icon='STICKY_UVS_VERT')
-        subcol = row.split(align=True)
-        subcol.scale_y = button_height
-        subcol.operator('armature_manual.remove_doubles_normal', text="", icon='X')
-
-        row = col.row(align=True)
-        row.scale_y = button_height
-        row.operator('armature_manual.fix_vrm_shapes', icon='SHAPEKEY_DATA')
 
         # Translate
         col.separator()
@@ -1027,6 +1002,61 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row = split.column(align=True)
         row.operator('translate.bones', text='Bones', icon='BONE_DATA')
         row.operator('translate.materials', text='Materials', icon='MATERIAL')
+
+        col.separator()
+        #col.separator()
+        row = col.row(align=True)
+        row.scale_y = 0.85
+
+        if not context.scene.show_more_options:
+            row.prop(context.scene, 'show_more_options', icon='TRIA_RIGHT', emboss=True, expand=False, toggle=False, event=False)
+        else:
+            row.prop(context.scene, 'show_more_options', icon='TRIA_DOWN', emboss=True, expand=False, toggle=False, event=False)
+
+            col.separator()
+            row = col.split(percentage=0.23, align=True)
+            row.scale_y = button_height
+            row.label("Delete:", icon='X')
+            row.operator('armature_manual.remove_zero_weight', text='Zero Weight Bones')
+            row.operator('armature_manual.remove_constraints', text='Constraints')
+
+            col.separator()
+            row = col.split(percentage=0.27, align=True)
+            row.scale_y = button_height
+            row.label("Normals:", icon='SNAP_NORMAL')
+            row.operator('armature_manual.recalculate_normals', text='Recalculate')
+            row.operator('armature_manual.flip_normals', text='Flip')
+
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.operator('armature_manual.apply_transformations', icon='OUTLINER_DATA_ARMATURE')
+
+            row = col.row(align=True)
+            row.scale_y = 1
+            subcol = row.split(align=True)
+            subcol.scale_y = button_height
+            subcol.operator('armature_manual.remove_doubles', icon='STICKY_UVS_VERT')
+            subcol = row.split(align=True)
+            subcol.scale_y = button_height
+            subcol.operator('armature_manual.remove_doubles_normal', text="", icon='X')
+
+            col.separator()
+            # row = col.row(align=True)
+            # row.scale_y = button_height
+            # row.label("Other:", icon='COLLAPSEMENU')
+
+            row = col.row(align=True)
+            row.scale_y = 1
+            subcol = row.split(align=True)
+            subcol.scale_y = button_height
+            subcol.operator('armature_manual.fix_fbt', icon='MODIFIER')
+            subcol = row.split(align=True)
+            subcol.scale_y = button_height
+            subcol.operator('armature_manual.remove_fbt', text="", icon='X')
+
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.operator('armature_manual.fix_vrm_shapes', icon='SHAPEKEY_DATA')
 
 
 class CustomPanel(ToolPanel, bpy.types.Panel):
@@ -1897,6 +1927,8 @@ classesToRegister = [
     tools.armature_manual.RemoveDoubles,
     tools.armature_manual.RemoveDoublesNormal,
     tools.armature_manual.FixVRMShapesButton,
+    tools.armature_manual.FixFBTButton,
+    tools.armature_manual.RemoveFBTButton,
     tools.translate.TranslateShapekeyButton,
     tools.translate.TranslateBonesButton,
     tools.translate.TranslateObjectsButton,

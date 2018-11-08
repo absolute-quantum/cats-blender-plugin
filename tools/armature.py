@@ -729,8 +729,6 @@ class FixArmature(bpy.types.Operator):
                             spine = armature.data.edit_bones.get('Spine')
                             left_leg = armature.data.edit_bones.get('Left leg')
                             right_leg = armature.data.edit_bones.get('Right leg')
-                            left_knee = armature.data.edit_bones.get('Left knee')
-                            right_knee = armature.data.edit_bones.get('Right knee')
 
                             # Fixing the hips
                             if not full_body_tracking:
@@ -789,44 +787,31 @@ class FixArmature(bpy.types.Operator):
                             #         bone.tail[z_cord] = bone.head[z_cord] + bone_length
 
                             else:
-                                if left_leg and left_knee and right_leg and right_knee:
-                                    hips.head[x_cord] = 0
-                                    hips.tail[x_cord] = 0
+                                # FBT Fix
+                                # Flip hips
+                                hips.head = spine.head
+                                hips.tail = spine.head
+                                hips.tail[z_cord] = left_leg.head[z_cord]
 
-                                    hips.tail[y_cord] = hips.head[y_cord]
+                                if hips.tail[z_cord] > hips.head[z_cord]:
+                                    hips.tail[z_cord] -= 0.1
 
-                                    hips.head[z_cord] = spine.head[z_cord]
-                                    hips.tail[z_cord] = right_leg.head[z_cord]
+                                # Create new leg bones and put them at the old location
+                                left_leg_new = armature.data.edit_bones.new('Left leg 2')
+                                right_leg_new = armature.data.edit_bones.new('Right leg 2')
 
-                                    left_leg_top = armature.data.edit_bones.new('Left leg top')
-                                    right_leg_top = armature.data.edit_bones.new('Right leg top')
+                                left_leg_new.head = left_leg.head
+                                left_leg_new.tail = left_leg.tail
 
-                                    left_leg_top.head = left_leg.head
-                                    left_leg_top.tail = left_leg.head
-                                    left_leg_top.tail[z_cord] = left_leg.head[z_cord] + 0.1
+                                right_leg_new.head = right_leg.head
+                                right_leg_new.tail = right_leg.tail
 
-                                    right_leg_top.head = right_leg.head
-                                    right_leg_top.tail = right_leg.head
-                                    right_leg_top.tail[z_cord] = right_leg.head[z_cord] + 0.1
+                                # Set new location for old leg bones
+                                left_leg.tail = left_leg.head
+                                left_leg.tail[z_cord] = left_leg.head[z_cord] + 0.1
 
-                                    spine.head = hips.head
-                                    # hips.head[z_cord] -= 0.0025
-                                    # spine.head[z_cord] += 0.0025
-
-                                    left_leg.name = "Left leg 2"
-                                    right_leg.name = "Right leg 2"
-
-                                    left_leg_top.name = "Left leg"
-                                    right_leg_top.name = "Right leg"
-
-                                    left_leg_top.parent = hips
-                                    right_leg_top.parent = hips
-
-                                    left_leg.parent = left_leg_top
-                                    right_leg.parent = right_leg_top
-
-                                    left_knee.parent = left_leg_top
-                                    right_knee.parent = right_leg_top
+                                right_leg.tail = right_leg.head
+                                right_leg.tail[z_cord] = right_leg.head[z_cord] + 0.1
 
                             # # Fixing legs
                             # right_knee = armature.data.edit_bones.get('Right knee')

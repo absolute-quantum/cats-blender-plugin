@@ -198,7 +198,8 @@ class PoseToRest(bpy.types.Operator):
                         scale_z_tmp *= parent.scale[2]
 
                         if armature.data.bones.get(parent.name).use_inherit_scale:
-                            scale_x_tmp, scale_y_tmp, scale_z_tmp = check_parent(parent, scale_x_tmp, scale_y_tmp, scale_z_tmp)
+                            scale_x_tmp, scale_y_tmp, scale_z_tmp = check_parent(parent, scale_x_tmp, scale_y_tmp,
+                                                                                 scale_z_tmp)
 
                     return scale_x_tmp, scale_y_tmp, scale_z_tmp
 
@@ -242,7 +243,8 @@ class PoseToRest(bpy.types.Operator):
                                 if i == 0:
                                     continue
 
-                                if shapekey.data[vertex.index].co != mesh.data.shape_keys.key_blocks[0].data[vertex.index].co:
+                                if shapekey.data[vertex.index].co != mesh.data.shape_keys.key_blocks[0].data[
+                                    vertex.index].co:
                                     if shapekey.name in shapekey_scales:
                                         shapekey_scales[shapekey.name] = max(shapekey_scales[shapekey.name], scale)
                                     else:
@@ -784,8 +786,8 @@ class RemoveDoublesNormal(bpy.types.Operator):
 
 class FixVRMShapesButton(bpy.types.Operator):
     bl_idname = 'armature_manual.fix_vrm_shapes'
-    bl_label = 'Fix VRM Shapekeys'
-    bl_description = "Fixes the shapekeys of VRM models"
+    bl_label = 'Fix Koikatsu Shapekeys'
+    bl_description = "Fixes the shapekeys of Koikatsu models"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -887,4 +889,167 @@ class FixVRMShapesButton(bpy.types.Operator):
                 bpy.ops.object.shape_key_remove(all=False)
 
         self.report({'INFO'}, 'Fixed VRM shapekeys.')
+        return {'FINISHED'}
+
+
+class FixFBTButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.fix_fbt'
+    bl_label = 'Fix Full Body Tracking'
+    bl_description = "Applies a general fix for Full Body Tracking." \
+                     "\n" \
+                     '\nCan potentially reduce the knee bending of this avatar in VRChat.' \
+                     '\nIgnore the "Spine length zero" warning in Unity.' \
+                     '\n' \
+                     '\nRequires bones:' \
+                     '\n - Hips, Spine, Left leg, Right leg'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return tools.common.get_armature()
+
+    def execute(self, context):
+        armature = tools.common.set_default_stage()
+        tools.common.switch('EDIT')
+
+        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
+
+        hips = armature.data.edit_bones.get('Hips')
+        spine = armature.data.edit_bones.get('Spine')
+        left_leg = armature.data.edit_bones.get('Left leg')
+        right_leg = armature.data.edit_bones.get('Right leg')
+        left_leg_new = armature.data.edit_bones.get('Left leg 2')
+        right_leg_new = armature.data.edit_bones.get('Right leg 2')
+
+        if not hips or not spine or not left_leg or not right_leg:
+            tools.common.switch('OBJECT')
+            self.report({'ERROR'}, 'Required bones could not be found!'
+                                   '\nPlease make sure that your armature contains the following bones:'
+                                   '\n - Hips, Spine, Left leg, Right leg'
+                                   '\nExact names are required!')
+            return {'CANCELLED'}
+
+        # FBT Fix
+        # Flip hips
+        hips.head = spine.head
+        hips.tail = spine.head
+        hips.tail[z_cord] = left_leg.head[z_cord]
+
+        if hips.tail[z_cord] > hips.head[z_cord]:
+            hips.tail[z_cord] -= 0.1
+
+        if not left_leg_new and not right_leg_new:
+            # Create new leg bones and put them at the old location
+            left_leg_new = armature.data.edit_bones.new('Left leg 2')
+            right_leg_new = armature.data.edit_bones.new('Right leg 2')
+
+            left_leg_new.head = left_leg.head
+            left_leg_new.tail = left_leg.tail
+
+            right_leg_new.head = right_leg.head
+            right_leg_new.tail = right_leg.tail
+
+            # Set new location for old leg bones
+            left_leg.tail = left_leg.head
+            left_leg.tail[z_cord] = left_leg.head[z_cord] + 0.1
+
+            right_leg.tail = right_leg.head
+            right_leg.tail[z_cord] = right_leg.head[z_cord] + 0.1
+
+        left_leg_new.parent = left_leg
+        right_leg_new.parent = right_leg
+
+        # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
+        for bone in armature.data.edit_bones:
+            if round(bone.head[x_cord], 5) == round(bone.tail[x_cord], 5) \
+                    and round(bone.head[y_cord], 5) == round(bone.tail[y_cord], 5) \
+                    and round(bone.head[z_cord], 5) == round(bone.tail[z_cord], 5):
+                if bone.name == 'Hips':
+                    bone.tail[z_cord] -= 0.1
+                else:
+                    bone.tail[z_cord] += 0.1
+
+        tools.common.switch('OBJECT')
+
+        context.scene.full_body = True
+
+        self.report({'INFO'}, 'Successfully applied the Full Body Tracking fix.')
+        return {'FINISHED'}
+
+
+class RemoveFBTButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.remove_fbt'
+    bl_label = 'Remove Full Body Tracking'
+    bl_description = "Removes the fix for for Full Body Tracking." \
+                     '\n' \
+                     '\nRequires bones:' \
+                     '\n - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return tools.common.get_armature()
+
+    def execute(self, context):
+        armature = tools.common.set_default_stage()
+        tools.common.switch('EDIT')
+
+        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
+
+        hips = armature.data.edit_bones.get('Hips')
+        spine = armature.data.edit_bones.get('Spine')
+        left_leg = armature.data.edit_bones.get('Left leg')
+        right_leg = armature.data.edit_bones.get('Right leg')
+        left_leg_new = armature.data.edit_bones.get('Left leg 2')
+        right_leg_new = armature.data.edit_bones.get('Right leg 2')
+
+        if not hips or not spine or not left_leg or not right_leg:
+            tools.common.switch('OBJECT')
+            self.report({'ERROR'}, 'Required bones could not be found!'
+                                   '\nPlease make sure that your armature contains the following bones:'
+                                   '\n - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2'
+                                   '\nExact names are required!')
+            return {'CANCELLED'}
+
+        if not left_leg_new or not right_leg_new:
+            tools.common.switch('OBJECT')
+            self.report({'ERROR'}, 'The Full Body Tracking Fix is not applied!')
+            return {'CANCELLED'}
+
+        # Remove FBT Fix
+        # Corrects hips
+        if hips.head[z_cord] > hips.tail[z_cord]:
+            middle_x = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
+            hips.head[x_cord] = middle_x
+            hips.tail[x_cord] = middle_x
+
+            hips.head[y_cord] = right_leg.head[y_cord]
+            hips.tail[y_cord] = right_leg.head[y_cord]
+
+            hips.head[z_cord] = right_leg.head[z_cord]
+            hips.tail[z_cord] = spine.head[z_cord]
+
+        # Put the original legs at their old location
+        left_leg.head = left_leg_new.head
+        left_leg.tail = left_leg_new.tail
+
+        right_leg.head = right_leg_new.head
+        right_leg.tail = right_leg_new.tail
+
+        # Remove second leg bones
+        armature.data.edit_bones.remove(left_leg_new)
+        armature.data.edit_bones.remove(right_leg_new)
+
+        # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
+        for bone in armature.data.edit_bones:
+            if round(bone.head[x_cord], 5) == round(bone.tail[x_cord], 5) \
+                    and round(bone.head[y_cord], 5) == round(bone.tail[y_cord], 5) \
+                    and round(bone.head[z_cord], 5) == round(bone.tail[z_cord], 5):
+                bone.tail[z_cord] += 0.1
+
+        tools.common.switch('OBJECT')
+
+        context.scene.full_body = False
+
+        self.report({'INFO'}, 'Successfully removed the Full Body Tracking fix.')
         return {'FINISHED'}
