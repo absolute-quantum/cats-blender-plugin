@@ -1823,6 +1823,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.label('Do you need help or found a bug?')
 
         row = col.row(align=True)
+        row.scale_y = 1.4
         row.operator('credits.discord', icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
         row = col.row(align=True)
         row.operator('credits.forum', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)

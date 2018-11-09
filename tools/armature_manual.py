@@ -930,6 +930,14 @@ class FixFBTButton(bpy.types.Operator):
             return {'CANCELLED'}
 
         # FBT Fix
+        # Disconnect bones
+        for child in hips.children:
+            child.use_connect = False
+        for child in left_leg.children:
+            child.use_connect = False
+        for child in right_leg.children:
+            child.use_connect = False
+
         # Flip hips
         hips.head = spine.head
         hips.tail = spine.head
