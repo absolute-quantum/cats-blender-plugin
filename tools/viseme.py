@@ -39,10 +39,12 @@ class AutoVisemeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.mesh_name_viseme == "" \
-                or context.scene.mouth_a == "" \
-                or context.scene.mouth_o == "" \
-                or context.scene.mouth_ch == "":
+        if not tools.common.get_meshes_objects():
+            return False
+
+        if not context.scene.mouth_a \
+                or not context.scene.mouth_o \
+                or not context.scene.mouth_ch:
             return False
 
         return True
@@ -59,7 +61,7 @@ class AutoVisemeButton(bpy.types.Operator):
         wm = bpy.context.window_manager
 
         mesh = bpy.data.objects[context.scene.mesh_name_viseme]
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
 
         # Fix a small bug
         bpy.context.object.show_only_shape_key = False

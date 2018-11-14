@@ -47,10 +47,12 @@ class CreateEyesButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.mesh_name_eye == "" \
-                or context.scene.head == "" \
-                or context.scene.eye_left == "" \
-                or context.scene.eye_right == "":
+        if not tools.common.get_meshes_objects():
+            return False
+
+        if not context.scene.head \
+                or not context.scene.eye_left \
+                or not context.scene.eye_right:
             return False
 
         # if not context.scene.disable_eye_blinking:
@@ -313,7 +315,7 @@ def repair_shapekeys(mesh_name, vertex_group):
     tools.common.set_default_stage()
     mesh = bpy.data.objects[mesh_name]
     tools.common.unselect_all()
-    tools.common.select(mesh)
+    tools.common.set_active(mesh)
     tools.common.switch('EDIT')
     tools.common.switch('OBJECT')
 
@@ -383,7 +385,7 @@ def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
     tools.common.set_default_stage()
     mesh = bpy.data.objects[mesh_name]
     tools.common.unselect_all()
-    tools.common.select(mesh)
+    tools.common.set_active(mesh)
     tools.common.switch('EDIT')
     tools.common.switch('OBJECT')
 
@@ -726,14 +728,14 @@ class StartIrisHeightButton(bpy.types.Operator):
             return {'FINISHED'}
 
         armature = tools.common.set_default_stage()
-        armature.hide = True
+        tools.common.hide(armature)
 
         mesh = bpy.data.objects[context.scene.mesh_name_eye]
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
         tools.common.switch('EDIT')
 
         if len(mesh.vertex_groups) > 0:
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('EDIT')
             bpy.ops.mesh.select_mode(type='VERT')
 

@@ -30,10 +30,16 @@ import random
 import webbrowser
 import tools.common
 import addon_utils
+from tools.common import version_2_79_or_older
 
 
 addon_name = "Shotariya-don"
 min_version = [1, 1, 6]
+
+
+ICON_FACTORY_LOAD = 'URL'
+if version_2_79_or_older():
+    ICON_FACTORY_LOAD = 'FACTORY_LOAD'
 
 
 class AutoAtlasNewButton(bpy.types.Operator):
@@ -353,47 +359,47 @@ class InstallShotariya(bpy.types.Operator):
 
         if self.action == 'INSTALL':
             row = col.row(align=True)
-            row.label("Material Combiner is not installed!")
+            row.label(text="Material Combiner is not installed!")
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The plugin 'Material Combiner' by shotariya is required for this function.")
+            row.label(text="The plugin 'Material Combiner' by shotariya is required for this function.")
             col.separator()
             row = col.row(align=True)
-            row.label("Please download and install it manually:")
+            row.label(text="Please download and install it manually:")
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon='LOAD_FACTORY')
+            row.operator('download.shotariya', icon=ICON_FACTORY_LOAD)
             col.separator()
 
         elif self.action == 'ENABLE':
             row = col.row(align=True)
-            row.label("Material Combiner is not enabled!")
+            row.label(text="Material Combiner is not enabled!")
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The plugin 'Material Combiner' by shotariya is required for this function.")
+            row.label(text="The plugin 'Material Combiner' by shotariya is required for this function.")
             col.separator()
             row = col.row(align=True)
-            row.label("Please enable it in your User Preferences.")
+            row.label(text="Please enable it in your User Preferences.")
             row.scale_y = 0.75
             col.separator()
 
         elif self.action == 'VERSION':
             row = col.row(align=True)
-            row.label("Material Combiner is outdated!")
+            row.label(text="Material Combiner is outdated!")
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The latest version is required for this function.")
+            row.label(text="The latest version is required for this function.")
             col.separator()
             row = col.row(align=True)
-            row.label("Please download and install it manually:")
+            row.label(text="Please download and install it manually:")
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon='LOAD_FACTORY')
+            row.operator('download.shotariya', icon=ICON_FACTORY_LOAD)
             col.separator()
 
 

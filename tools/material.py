@@ -227,7 +227,7 @@ class CombineMaterialsButton(bpy.types.Operator):
         for index, mesh in enumerate(tools.common.get_meshes_objects()):
 
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             for file in self.combined_tex:  # for each combined mat slot of scene object
                 combined_textures = self.combined_tex[file]
 
@@ -253,7 +253,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                 bpy.ops.mesh.select_all(action='DESELECT')
 
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('OBJECT')
             self.cleanmatslots()
 

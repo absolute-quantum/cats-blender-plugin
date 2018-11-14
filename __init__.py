@@ -53,6 +53,7 @@ if "tools" not in locals():
     import tools.atlas
     import tools.bonemerge
     import tools.common
+    from tools.common import version_2_79_or_older
     import tools.copy_protection
     import tools.credits
     import tools.decimation
@@ -116,7 +117,7 @@ bl_info = {
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize MMD models into VRChat',
     'version': [0, 11, 2],  # Only change this version and the dev branch var right before publishing the new update!
-    'blender': (2, 79, 0),
+    'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
@@ -226,7 +227,7 @@ class ToolPanel:
     bl_label = 'Cats Blender Plugin'
     bl_idname = '3D_VIEW_TS_vrc'
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'TOOLS' if version_2_79_or_older() else 'UI'
     bl_category = 'CATS'
 
     bpy.types.Scene.armature = bpy.props.EnumProperty(
@@ -758,6 +759,25 @@ class ToolPanel:
     # )
 
 
+ICON_ADD, ICON_REMOVE = 'ADD', 'REMOVE'
+ICON_FACTORY_LOAD = 'URL'
+ICON_SETTINGS = 'SETTINGS'
+ICON_ALL = 'PROP_ON'
+ICON_MOD_ARMATURE = 'MOD_ARMATURE'
+if version_2_79_or_older():
+    ICON_ADD, ICON_REMOVE = 'ZOOMIN', 'ZOOMOUT'
+    ICON_FACTORY_LOAD = 'FACTORY_LOAD'
+    ICON_SETTINGS = 'SCRIPTPLUGINS'
+    ICON_ALL = 'META_BALL'
+    ICON_MOD_ARMATURE = 'OUTLINER_OB_ARMATURE'
+
+
+def _layout_split(layout, factor, align):
+    if version_2_79_or_older():
+        return layout.split(percentage=factor, align=align)
+    return layout.split(factor=factor, align=align)
+
+
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature_v1'
     bl_label = 'Model'
@@ -773,13 +793,13 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Old Blender version detected!', icon='ERROR')
+            row.label(text='Old Blender version detected!', icon='ERROR')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Some features might not work!', icon_value=get_emtpy_icon())
+            row.label(text='Some features might not work!', icon_value=get_emtpy_icon())
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Please update to Blender 2.79!', icon_value=get_emtpy_icon())
+            row.label(text='Please update to Blender 2.79!', icon_value=get_emtpy_icon())
             col.separator()
             col.separator()
 
@@ -787,9 +807,9 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         #     col.separator()
         #     col.separator()
         #     col.separator()
-        #     col.label('Not supported Blender version detected!', icon='ERROR')
-        #     col.label('Some features might not work!', icon='ERROR')
-        #     col.label('Please use to Blender 2.79!', icon='ERROR')
+        #     col.label(text='Not supported Blender version detected!', icon='ERROR')
+        #     col.label(text='Some features might not work!', icon='ERROR')
+        #     col.label(text='Please use to Blender 2.79!', icon='ERROR')
         #     col.separator()
         #     col.separator()
         #     col.separator()
@@ -799,10 +819,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('New Cats version available!', icon='INFO')
+            row.label(text='New Cats version available!', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Check the Updater panel!', icon_value=get_emtpy_icon())
+            row.label(text='Check the Updater panel!', icon_value=get_emtpy_icon())
             col.separator()
             col.separator()
 
@@ -810,13 +830,13 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Dictionary not found!', icon='INFO')
+            row.label(text='Dictionary not found!', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Translations will work, but are not optimized.', icon_value=get_emtpy_icon())
+            row.label(text='Translations will work, but are not optimized.', icon_value=get_emtpy_icon())
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('Reinstall Cats to fix this.', icon_value=get_emtpy_icon())
+            row.label(text='Reinstall Cats to fix this.', icon_value=get_emtpy_icon())
             col.separator()
             col.separator()
 
@@ -834,16 +854,16 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                     row.scale_y = 0.75
                     if custom_icon:
                         try:
-                            row.label(info, icon_value=tools.supporter.preview_collections["supporter_icons"][custom_icon].icon_id)
+                            row.label(text=info, icon_value=tools.supporter.preview_collections["supporter_icons"][custom_icon].icon_id)
                         except KeyError:
-                            row.label(info)
+                            row.label(text=info)
                     elif icon:
                         try:
-                            row.label(info, icon=icon)
+                            row.label(text=info, icon=icon)
                         except TypeError:
-                            row.label(info)
+                            row.label(text=info)
                     else:
-                        row.label(info)
+                        row.label(text=info)
             if showed_info:
                 col.separator()
                 col.separator()
@@ -917,10 +937,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         if context.scene.full_body:
             row = col.row(align=True)
             row.scale_y = 0.9
-            row.label('You can safely ignore the', icon='INFO')
+            row.label(text='You can safely ignore the', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.5
-            row.label('"Spine length zero" warning in Unity.', icon_value=get_emtpy_icon())
+            row.label(text='"Spine length zero" warning in Unity.', icon_value=get_emtpy_icon())
             col.separator()
         else:
             col.separator()
@@ -964,15 +984,15 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         #     row = col.row(align=True)
         #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_DOWN')
 
-        row = col.split(percentage=0.4, align=True)
+        row = _layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
-        row.label("Separate by:", icon='MESH_DATA')
+        row.label(text="Separate by:", icon='MESH_DATA')
         row.operator('armature_manual.separate_by_materials', text='Materials')
         row.operator('armature_manual.separate_by_loose_parts', text='Loose Parts')
 
-        row = col.split(percentage=0.4, align=True)
+        row = _layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
-        row.label("Join Meshes:", icon='MESH_DATA')
+        row.label(text="Join Meshes:", icon='MESH_DATA')
         row.operator('armature_manual.join_meshes', text='All')
         row.operator('armature_manual.join_meshes_selected', text='Selected')
 
@@ -983,17 +1003,17 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         # Translate
         col.separator()
         row = col.row(align=True)
-        row.label("Translate:", icon='FILE_REFRESH')
+        row.label(text="Translate:", icon='FILE_REFRESH')
 
         row = col.row(align=True)
         row.scale_y = button_height
         row.prop(context.scene, 'use_google_only')
 
-        split = col.split(percentage=0.27, align=True)
+        split = _layout_split(col, factor=0.27, align=True)
 
         row = split.row(align=True)
         row.scale_y = 2
-        row.operator('translate.all', text='All', icon='META_BALL')
+        row.operator('translate.all', text='All', icon=ICON_ALL)
 
         row = split.column(align=True)
         row.operator('translate.shapekeys', text='Shape Keys', icon='SHAPEKEY_DATA')
@@ -1004,26 +1024,26 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.operator('translate.materials', text='Materials', icon='MATERIAL')
 
         col.separator()
-        #col.separator()
+        # col.separator()
         row = col.row(align=True)
         row.scale_y = 0.85
 
         if not context.scene.show_more_options:
-            row.prop(context.scene, 'show_more_options', icon='TRIA_RIGHT', emboss=True, expand=False, toggle=False, event=False)
+            row.prop(context.scene, 'show_more_options', icon=ICON_ADD, emboss=True, expand=False, toggle=False, event=False)
         else:
-            row.prop(context.scene, 'show_more_options', icon='TRIA_DOWN', emboss=True, expand=False, toggle=False, event=False)
+            row.prop(context.scene, 'show_more_options', icon=ICON_REMOVE, emboss=True, expand=False, toggle=False, event=False)
 
             col.separator()
-            row = col.split(percentage=0.23, align=True)
+            row = _layout_split(col, factor=0.23, align=True)
             row.scale_y = button_height
-            row.label("Delete:", icon='X')
+            row.label(text="Delete:", icon='X')
             row.operator('armature_manual.remove_zero_weight', text='Zero Weight Bones')
             row.operator('armature_manual.remove_constraints', text='Constraints')
 
             col.separator()
-            row = col.split(percentage=0.27, align=True)
+            row = _layout_split(col, factor=0.27, align=True)
             row.scale_y = button_height
-            row.label("Normals:", icon='SNAP_NORMAL')
+            row.label(text="Normals:", icon='SNAP_NORMAL')
             row.operator('armature_manual.recalculate_normals', text='Recalculate')
             row.operator('armature_manual.flip_normals', text='Flip')
 
@@ -1033,24 +1053,24 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1
-            subcol = row.split(align=True)
+            subcol = _layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
             subcol.operator('armature_manual.remove_doubles', icon='STICKY_UVS_VERT')
-            subcol = row.split(align=True)
+            subcol = _layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
             subcol.operator('armature_manual.remove_doubles_normal', text="", icon='X')
 
             col.separator()
             # row = col.row(align=True)
             # row.scale_y = button_height
-            # row.label("Other:", icon='COLLAPSEMENU')
+            # row.label(text="Other:", icon='COLLAPSEMENU')
 
             row = col.row(align=True)
             row.scale_y = 1
-            subcol = row.split(align=True)
+            subcol = _layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
             subcol.operator('armature_manual.fix_fbt', icon='MODIFIER')
-            subcol = row.split(align=True)
+            subcol = _layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
             subcol.operator('armature_manual.remove_fbt', text="", icon='X')
 
@@ -1081,12 +1101,12 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
         if context.scene.merge_mode == 'ARMATURE':
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.label('Merge Armatures:')
+            row.label(text='Merge Armatures:')
 
             if len(tools.common.get_armature_objects()) <= 1:
                 row = col.row(align=True)
                 row.scale_y = 1.05
-                col.label('Two armatures are required!', icon='INFO')
+                col.label(text='Two armatures are required!', icon='INFO')
                 return
 
             row = col.row(align=True)
@@ -1095,7 +1115,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
+            row.prop(context.scene, 'merge_armature_into', text='Base', icon=ICON_MOD_ARMATURE)
             row = col.row(align=True)
             row.scale_y = 1.05
             row.prop(context.scene, 'merge_armature', text='To Merge', icon_value=tools.supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id)
@@ -1116,7 +1136,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                 else:
                     row = col.row(align=True)
                     row.scale_y = 1.05
-                    row.label('Armatures can be merged automatically!')
+                    row.label(text='Armatures can be merged automatically!')
 
             row = col.row(align=True)
             row.scale_y = 1.2
@@ -1126,20 +1146,20 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
         else:
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.label('Attach Mesh to Armature:')
+            row.label(text='Attach Mesh to Armature:')
 
             if len(tools.common.get_armature_objects()) == 0 or len(tools.common.get_meshes_objects(mode=1)) == 0:
                 row = col.row(align=True)
                 row.scale_y = 1.05
-                col.label('An armature and a mesh are required!', icon='INFO')
+                col.label(text='An armature and a mesh are required!', icon='INFO')
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label('Make sure that the mesh has no parent.', icon_value=get_emtpy_icon())
+                row.label(text='Make sure that the mesh has no parent.', icon_value=get_emtpy_icon())
                 return
 
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.prop(context.scene, 'merge_armature_into', text='Base', icon='OUTLINER_OB_ARMATURE')
+            row.prop(context.scene, 'merge_armature_into', text='Base', icon=ICON_MOD_ARMATURE)
             row = col.row(align=True)
             row.scale_y = 1.05
             row.prop(context.scene, 'attach_mesh', text='Mesh', icon_value=tools.supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id)
@@ -1164,37 +1184,37 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
-        row.label('Auto Decimation is currently experimental.')
+        row.label(text='Auto Decimation is currently experimental.')
         row = col.row(align=True)
         row.scale_y = 0.5
-        row.label('It works but it might not look good. Test for yourself.')
+        row.label(text='It works but it might not look good. Test for yourself.')
         col.separator()
         row = col.row(align=True)
-        row.label('Decimation Mode:')
+        row.label(text='Decimation Mode:')
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_mode', expand=True)
         row = col.row(align=True)
         row.scale_y = 0.7
         if context.scene.decimation_mode == 'SAFE':
-            row.label(' Decent results - No shape key loss')
+            row.label(text=' Decent results - No shape key loss')
         elif context.scene.decimation_mode == 'HALF':
-            row.label(' Good results - Minimal shape key loss')
+            row.label(text=' Good results - Minimal shape key loss')
         elif context.scene.decimation_mode == 'FULL':
-            row.label(' Best results - Full shape key loss')
+            row.label(text=' Best results - Full shape key loss')
 
         elif context.scene.decimation_mode == 'CUSTOM':
             col.separator()
 
             if len(tools.common.get_meshes_objects()) <= 1:
                 row = col.row(align=True)
-                row.label('Start by Separating by Materials:')
+                row.label(text='Start by Separating by Materials:')
                 row = col.row(align=True)
                 row.scale_y = 1.2
                 row.operator('armature_manual.separate_by_materials', text='Separate by Materials', icon='PLAY')
                 return
             else:
                 row = col.row(align=True)
-                row.label('Stop by Joining Meshes:')
+                row.label(text='Stop by Joining Meshes:')
                 row = col.row(align=True)
                 row.scale_y = 1.2
                 row.operator('armature_manual.join_meshes', icon='PAUSE')
@@ -1202,14 +1222,14 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
             row = col.row(align=True)
-            row.label('Whitelisted:')
+            row.label(text='Whitelisted:')
             row = col.row(align=True)
             row.prop(context.scene, 'selection_mode', expand=True)
             col.separator()
             col.separator()
 
             if context.scene.selection_mode == 'SHAPES':
-                row = col.split(0.7)
+                row = _layout_split(col, factor=0.7, align=False)
                 row.prop(context.scene, 'add_shape_key', icon='SHAPEKEY_DATA')
                 row.operator('add.shape', icon='ZOOMIN')
                 col.separator()
@@ -1218,42 +1238,42 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 col = box2.column(align=True)
 
                 if len(tools.decimation.ignore_shapes) == 0:
-                    col.label('No shape key selected')
+                    col.label(text='No shape key selected')
 
                 for shape in tools.decimation.ignore_shapes:
-                    row = col.split(0.8)
-                    row.label(shape, icon='SHAPEKEY_DATA')
+                    row = _layout_split(col, factor=0.8, align=False)
+                    row.label(text=shape, icon='SHAPEKEY_DATA')
                     op = row.operator('remove.shape', icon='ZOOMOUT')
                     op.shape_name = shape
             elif context.scene.selection_mode == 'MESHES':
-                row = col.split(0.7)
+                row = _layout_split(col, factor=0.7, align=False)
                 row.prop(context.scene, 'add_mesh', icon='MESH_DATA')
                 row.operator('add.mesh', icon='ZOOMIN')
                 col.separator()
 
                 if context.scene.add_mesh == '':
                     row = col.row(align=True)
-                    col.label('Every mesh is selected. This equals no Decimation.', icon='ERROR')
+                    col.label(text='Every mesh is selected. This equals no Decimation.', icon='ERROR')
 
                 box2 = col.box()
                 col = box2.column(align=True)
 
                 if len(tools.decimation.ignore_meshes) == 0:
-                    col.label('No mesh selected')
+                    col.label(text='No mesh selected')
 
                 for mesh in tools.decimation.ignore_meshes:
-                    row = col.split(0.8)
-                    row.label(mesh, icon='MESH_DATA')
+                    row = _layout_split(col, factor=0.8, align=False)
+                    row.label(text=mesh, icon='MESH_DATA')
                     op = row.operator('remove.mesh', icon='ZOOMOUT')
                     op.mesh_name = mesh
 
             col = box.column(align=True)
 
             if len(tools.decimation.ignore_shapes) == 0 and len(tools.decimation.ignore_meshes) == 0:
-                col.label('Both lists are empty, this equals Full Decimation!', icon='ERROR')
+                col.label(text='Both lists are empty, this equals Full Decimation!', icon='ERROR')
                 row = col.row(align=True)
             else:
-                col.label('Both whitelists are considered during decimation', icon='INFO')
+                col.label(text='Both whitelists are considered during decimation', icon='INFO')
                 row = col.row(align=True)
 
             # # row = col.row(align=True)
@@ -1323,7 +1343,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 1.1
-                row.label('No meshes found!', icon='ERROR')
+                row.label(text='No meshes found!', icon='ERROR')
             elif mesh_count > 1:
                 col.separator()
                 row = col.row(align=True)
@@ -1386,7 +1406,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
             # armature = common.get_armature()
             # if "RightEye" in armature.pose.bones:
             #     row = col.row(align=True)
-            #     row.label('Eye Bone Tweaking:')
+            #     row.label(text='Eye Bone Tweaking:')
         else:
             armature = tools.common.get_armature()
             if not armature:
@@ -1441,12 +1461,12 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                     col.separator()
                     row = col.row(align=True)
                     row.scale_y = 0.3
-                    row.label("Your armature has to be named 'Armature'", icon='ERROR')
+                    row.label(text="Your armature has to be named 'Armature'", icon='ERROR')
                     row = col.row(align=True)
-                    row.label("      for Eye Tracking to work!")
+                    row.label(text="      for Eye Tracking to work!")
                     row = col.row(align=True)
                     row.scale_y = 0.3
-                    row.label("      (currently '" + armature.name + "')")
+                    row.label(text="      (currently '" + armature.name + "')")
 
                 if context.scene.mesh_name_eye != 'Body':
                     col.separator()
@@ -1454,21 +1474,21 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                     col.separator()
                     row = col.row(align=True)
                     row.scale_y = 0.3
-                    row.label("The mesh containing the eyes has to be", icon='ERROR')
+                    row.label(text="The mesh containing the eyes has to be", icon='ERROR')
                     row = col.row(align=True)
-                    row.label("      named 'Body' for Eye Tracking to work!")
+                    row.label(text="      named 'Body' for Eye Tracking to work!")
                     row = col.row(align=True)
                     row.scale_y = 0.3
-                    row.label("      (currently '" + context.scene.mesh_name_eye + "')")
+                    row.label(text="      (currently '" + context.scene.mesh_name_eye + "')")
 
                 col.separator()
                 col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 0.3
-                row.label("Don't forget to assign 'LeftEye' and 'RightEye'", icon='INFO')
+                row.label(text="Don't forget to assign 'LeftEye' and 'RightEye'", icon='INFO')
                 row = col.row(align=True)
-                row.label("      to the eyes in Unity!")
+                row.label(text="      to the eyes in Unity!")
 
                 row = col.row(align=True)
                 row.scale_y = 1.5
@@ -1489,7 +1509,7 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         if mesh_count == 0:
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.label('No meshes found!', icon='ERROR')
+            row.label(text='No meshes found!', icon='ERROR')
             col.separator()
         elif mesh_count > 1:
             row = col.row(align=True)
@@ -1560,12 +1580,12 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             col = box.column(align=True)
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label('A greatly improved Atlas Generator.')
+            row.label(text='A greatly improved Atlas Generator.')
 
             split = col.row(align=True)
             row = split.row(align=True)
             row.scale_y = 0.9
-            row.label('Made by shotaryia', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
+            row.label(text='Made by shotaryia', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
             row = split.row(align=True)
             row.alignment = 'RIGHT'
             row.scale_y = 0.9
@@ -1580,11 +1600,11 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             else:
                 # row = col.row(align=True)
                 # row.scale_y = 0.75
-                # row.label('Select Materials to Combine:')
+                # row.label(text='Select Materials to Combine:')
                 row = col.row(align=True)
                 row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=8, type='DEFAULT')
 
-                row = col.split(percentage=0.8, align=True)
+                row = _layout_split(col, factor=0.8, align=True)
                 row.scale_y = 1.2
                 row.operator('atlas.gen_mat_list', text='Update Material List', icon='FILE_REFRESH')
                 if context.scene.clear_materials:
@@ -1644,16 +1664,16 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label('Protects your avatar from Unity cache ripping.')
+        row.label(text='Protects your avatar from Unity cache ripping.')
         col.separator()
         row = col.row(align=True)
-        row.label('Before use: Read the documentation!')
+        row.label(text='Before use: Read the documentation!')
         row = col.row(align=True)
         row.operator('copyprotection.button', icon='FORWARD')
         col.separator()
         col.separator()
         # row = col.row(align=True)
-        # row.label('Randomization Level:')
+        # row.label(text='Randomization Level:')
         # row = col.row(align=True)
         # row.prop(context.scene, 'protection_mode', expand=True)
 
@@ -1671,7 +1691,6 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v2'
     bl_label = 'Settings & Updates'
-    # bl_label = 'Updater'
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -1681,7 +1700,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label('Settings:', icon='SCRIPTPLUGINS')
+        row.label(text='Settings:', icon=ICON_SETTINGS)
         col.separator()
 
         row = col.row(align=True)
@@ -1695,16 +1714,17 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.8
-            row.label('Restart required.', icon='ERROR')
+            row.label(text='Restart required.', icon='ERROR')
             row = col.row(align=True)
             row.scale_y = 0.8
-            row.label('Some changes require a Blender restart.', icon_value=get_emtpy_icon())
+            row.label(text='Some changes require a Blender restart.', icon_value=get_emtpy_icon())
             row = col.row(align=True)
             row.operator('settings.revert', icon='RECOVER_LAST')
 
         # Updater
         # addon_updater_ops.check_for_update_background()
-        addon_updater_ops.update_settings_ui(self, context)
+        if version_2_79_or_older():
+            addon_updater_ops.update_settings_ui(self, context)
 
 
 class SupporterPanel(ToolPanel, bpy.types.Panel):
@@ -1721,7 +1741,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         # supporter_data = tools.supporter.supporter_data
 
         row = col.row(align=True)
-        row.label('Do you like this plugin and want to support us?')
+        row.label(text='Do you like this plugin and want to support us?')
         row = col.row(align=True)
         row.scale_y = 1.2
         row.operator('supporter.patreon', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
@@ -1731,7 +1751,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         row = col.row(align=True)
-        row.label('Thanks to our awesome supporters! <3')
+        row.label(text='Thanks to our awesome supporters! <3')
         col.separator()
 
         supporter_count = self.draw_supporter_list(col, show_tier=1)
@@ -1744,10 +1764,10 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.scale_y = 1.2
-        row.label('Is your name missing?', icon="INFO")
+        row.label(text='Is your name missing?', icon="INFO")
         row = col.row(align=True)
         row.scale_y = 0.3
-        row.label('     Please contact us in our discord!')
+        row.label(text='     Please contact us in our discord!')
         col.separator()
         row = col.row(align=True)
         row.scale_y = 0.8
@@ -1793,7 +1813,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
                 if i % 3 == 0:
                     cont = False
                     continue
-                row.label('')
+                row.label(text='')
                 i += 1
         return i
 
@@ -1808,19 +1828,19 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
         row = col.row(align=True)
 
-        row.label('Cats Blender Plugin (' + tools.common.version_str + ')', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
+        row.label(text='Cats Blender Plugin (' + tools.common.version_str + ')', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
-        row.label('Created by GiveMeAllYourCats and Hotox')
+        row.label(text='Created by GiveMeAllYourCats and Hotox')
         row = col.row(align=True)
-        row.label('For the awesome VRChat community <3')
+        row.label(text='For the awesome VRChat community <3')
         row.scale_y = 0.5
         col.separator()
         row = col.row(align=True)
-        row.label('Special thanks to: Shotariya and Neitri')
+        row.label(text='Special thanks to: Shotariya and Neitri')
         col.separator()
         row = col.row(align=True)
-        row.label('Do you need help or found a bug?')
+        row.label(text='Do you need help or found a bug?')
 
         row = col.row(align=True)
         row.scale_y = 1.4

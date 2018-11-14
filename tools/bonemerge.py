@@ -125,7 +125,7 @@ class BoneMergeButton(bpy.types.Operator):
 
                 # Mix the weights
                 tools.common.set_default_stage()
-                tools.common.select(mesh)
+                tools.common.set_active(mesh)
 
                 vg = mesh.vertex_groups.get(bone_name)
                 vg2 = mesh.vertex_groups.get(parent_name)

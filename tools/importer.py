@@ -30,6 +30,7 @@ import tools.common
 import tools.settings
 import tools.eyetracking
 import bpy_extras.io_utils
+from tools.common import version_2_79_or_older
 
 mmd_tools_installed = False
 try:
@@ -37,6 +38,11 @@ try:
     mmd_tools_installed = True
 except:
     pass
+
+
+ICON_FACTORY_LOAD = 'URL'
+if version_2_79_or_older():
+    ICON_FACTORY_LOAD = 'FACTORY_LOAD'
 
 
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
@@ -259,15 +265,15 @@ class InstallXPS(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.label("The plugin 'XPS Tools' is required for this function.")
+        row.label(text="The plugin 'XPS Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
-        row.label("If it is not enabled please enable it in your User Preferences.")
+        row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
-        row.label("If it is not installed please download and install it manually.")
+        row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.xps_tools', icon='LOAD_FACTORY')
+        row.operator('importer.xps_tools', icon=ICON_FACTORY_LOAD)
 
 
 class InstallSource(bpy.types.Operator):
@@ -290,15 +296,15 @@ class InstallSource(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.label("The plugin 'Source Tools' is required for this function.")
+        row.label(text="The plugin 'Source Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
-        row.label("If it is not enabled please enable it in your User Preferences.")
+        row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
-        row.label("If it is not installed please download and install it manually.")
+        row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.source_tools', icon='LOAD_FACTORY')
+        row.operator('importer.source_tools', icon=ICON_FACTORY_LOAD)
 
 
 class EnableMMD(bpy.types.Operator):
@@ -321,9 +327,9 @@ class EnableMMD(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.label("The plugin 'mmd_tools' is required for this function.")
+        row.label(text="The plugin 'mmd_tools' is required for this function.")
         row = col.row(align=True)
-        row.label("Please restart Blender.")
+        row.label(text="Please restart Blender.")
 
 
 def popup_install_xps(self, context):
@@ -331,15 +337,15 @@ def popup_install_xps(self, context):
     col = layout.column(align=True)
 
     row = col.row(align=True)
-    row.label("The plugin 'XPS Tools' is required for this function.")
+    row.label(text="The plugin 'XPS Tools' is required for this function.")
     col.separator()
     row = col.row(align=True)
-    row.label("If it is not enabled please enable it in your User Preferences.")
+    row.label(text="If it is not enabled please enable it in your User Preferences.")
     row = col.row(align=True)
-    row.label("If it is not installed please click here to download it and then install it manually.")
+    row.label(text="If it is not installed please click here to download it and then install it manually.")
     col.separator()
     row = col.row(align=True)
-    row.operator('importer.xps_tools', icon='LOAD_FACTORY')
+    row.operator('importer.xps_tools', icon=ICON_FACTORY_LOAD)
 
 
 def popup_install_source(self, context):
@@ -347,15 +353,15 @@ def popup_install_source(self, context):
     col = layout.column(align=True)
 
     row = col.row(align=True)
-    row.label("The plugin 'Blender Source Tools' is required for this function.")
+    row.label(text="The plugin 'Blender Source Tools' is required for this function.")
     col.separator()
     row = col.row(align=True)
-    row.label("If it is not enabled please enable it in your User Preferences.")
+    row.label(text="If it is not enabled please enable it in your User Preferences.")
     row = col.row(align=True)
-    row.label("If it is not installed please click here to download it and then install it manually.")
+    row.label(text="If it is not installed please click here to download it and then install it manually.")
     col.separator()
     row = col.row(align=True)
-    row.operator('importer.source_tools', icon='LOAD_FACTORY')
+    row.operator('importer.source_tools', icon=ICON_FACTORY_LOAD)
 
 
 class XpsToolsButton(bpy.types.Operator):
@@ -556,114 +562,114 @@ class ErrorDisplay(bpy.types.Operator):
         if self.meshes_too_big:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Meshes are too big!", icon='ERROR')
+            row.label(text="Meshes are too big!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The following meshes have more than 65534 tris:")
+            row.label(text="The following meshes have more than 65534 tris:")
             col.separator()
 
             for mesh, tris in self.meshes_too_big.items():
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label("  - " + mesh + ' (' + str(tris) + ' tris)')
+                row.label(text="  - " + mesh + ' (' + str(tris) + ' tris)')
 
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Unity will split these meshes in half and you will loose your shape keys.")
+            row.label(text="Unity will split these meshes in half and you will loose your shape keys.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("You should decimate them before you export this model.")
+            row.label(text="You should decimate them before you export this model.")
             col.separator()
             col.separator()
 
         if len(self.mat_list) > 10:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Model unoptimized!", icon='ERROR')
+            row.label(text="Model unoptimized!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This model has " + str(len(self.mat_list)) + " materials!")
+            row.label(text="This model has " + str(len(self.mat_list)) + " materials!")
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("It will be extremely unoptimized and cause lag for you and others.")
+            row.label(text="It will be extremely unoptimized and cause lag for you and others.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Please be considerate and create a texture atlas.")
+            row.label(text="Please be considerate and create a texture atlas.")
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
+            row.label(text="The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
             col.separator()
             col.separator()
 
         if self.meshes_count > 10:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Model unoptimized!", icon='ERROR')
+            row.label(text="Model unoptimized!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This model has " + str(self.meshes_count) + " meshes!")
+            row.label(text="This model has " + str(self.meshes_count) + " meshes!")
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("It will be extremely unoptimized and cause lag for you and others.")
+            row.label(text="It will be extremely unoptimized and cause lag for you and others.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Please be considerate and join your meshes.")
+            row.label(text="Please be considerate and join your meshes.")
             col.separator()
             col.separator()
 
         if self.broken_shapes:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Broken shapekeys!", icon='ERROR')
+            row.label(text="Broken shapekeys!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This model has " + str(len(self.broken_shapes)) + " broken shapekey(s):")
+            row.label(text="This model has " + str(len(self.broken_shapes)) + " broken shapekey(s):")
             col.separator()
 
             for shapekey in self.broken_shapes:
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label("  - " + shapekey)
+                row.label(text="  - " + shapekey)
 
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("You will not be able to upload this model until you fix these shapekeys.")
+            row.label(text="You will not be able to upload this model until you fix these shapekeys.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Either delete or repair them before export.")
+            row.label(text="Either delete or repair them before export.")
             col.separator()
             col.separator()
 
         if not self.textures_found and tools.settings.get_embed_textures():
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("No textures found!", icon='ERROR')
+            row.label(text="No textures found!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This model has no textures assigned but you have 'Embed Textures' enabled.")
+            row.label(text="This model has no textures assigned but you have 'Embed Textures' enabled.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Therefore, no textures will embedded into the FBX.")
+            row.label(text="Therefore, no textures will embedded into the FBX.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This is not an issue, but you will have to import the textures manually into Unity.")
+            row.label(text="This is not an issue, but you will have to import the textures manually into Unity.")
             col.separator()
             col.separator()
 
         row = col.row(align=True)
-        row.operator('importer.export_model', text='Continue to Export', icon='LOAD_FACTORY').action = 'NO_CHECK'
+        row.operator('importer.export_model', text='Continue to Export', icon=ICON_FACTORY_LOAD).action = 'NO_CHECK'

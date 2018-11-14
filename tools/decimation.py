@@ -173,7 +173,7 @@ class AutoDecimateButton(bpy.types.Operator):
         meshes_obj = tools.common.get_meshes_objects()
 
         for mesh in meshes_obj:
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('EDIT')
             bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
             tools.common.switch('OBJECT')
@@ -183,7 +183,7 @@ class AutoDecimateButton(bpy.types.Operator):
         if save_fingers:
             for mesh in meshes_obj:
                 if len(mesh.vertex_groups) > 0:
-                    tools.common.select(mesh)
+                    tools.common.set_active(mesh)
                     tools.common.switch('EDIT')
 
                     bpy.ops.mesh.select_mode(type='VERT')
@@ -205,7 +205,7 @@ class AutoDecimateButton(bpy.types.Operator):
                     tools.common.unselect_all()
 
         for mesh in meshes_obj:
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tris = len(mesh.data.polygons)
 
             if custom_decimation and mesh.name in ignore_meshes:
@@ -282,7 +282,7 @@ class AutoDecimateButton(bpy.types.Operator):
             mesh_obj = mesh[0]
             tris = mesh[1]
 
-            tools.common.select(mesh_obj)
+            tools.common.set_active(mesh_obj)
             print(mesh_obj.name)
 
             # Calculate new decimation ratio

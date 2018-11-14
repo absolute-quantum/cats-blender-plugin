@@ -161,7 +161,7 @@ class FixArmature(bpy.types.Operator):
                     mmd_tools_local.operators.morph.ViewBoneMorph.execute(None, context)
 
                     mesh = tools.common.get_meshes_objects()[0]
-                    tools.common.select(mesh)
+                    tools.common.set_active(mesh)
 
                     mod = mesh.modifiers.new(morph.name, 'ARMATURE')
                     mod.object = armature
@@ -255,7 +255,7 @@ class FixArmature(bpy.types.Operator):
         #     pass
 
         tools.common.unselect_all()
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
 
         # # Correct pivot position
         # try:
@@ -339,7 +339,7 @@ class FixArmature(bpy.types.Operator):
 
         # Armature should be selected and in edit mode
         tools.common.unselect_all()
-        tools.common.select(armature)
+        tools.common.set_active(armature)
         tools.common.switch('EDIT')
 
         # Show all hidden verts and faces
@@ -874,7 +874,7 @@ class FixArmature(bpy.types.Operator):
         # Mixing the weights
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
 
         # for bone_name in temp_rename_bones.keys():
         #     bone = armature.data.bones.get(bone_name)
@@ -972,7 +972,7 @@ class FixArmature(bpy.types.Operator):
             tools.common.mix_weights(mesh, vg_from.name, vg_to.name)
 
         tools.common.unselect_all()
-        tools.common.select(armature)
+        tools.common.set_active(armature)
         tools.common.switch('EDIT')
 
         # Reparent all bones to be correct for unity mapping and vrc itself
@@ -1121,11 +1121,11 @@ class ModelSettings(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.7
-            row.label('INFO:', icon='INFO')
+            row.label(text='INFO:', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.7
-            row.label('You can safely ignore the', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label(text='You can safely ignore the', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             row = col.row(align=True)
             row.scale_y = 0.7
-            row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label(text='"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()

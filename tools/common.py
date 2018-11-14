@@ -106,12 +106,41 @@ def unhide_all(everything=False, obj_to_unhide=None):
 
 def unselect_all():
     for obj in bpy.data.objects:
-        obj.select = False
+        select(obj, False)
 
 
-def select(obj):
-    bpy.context.scene.objects.active = obj
-    obj.select = True
+def set_active(obj):
+    if version_2_79_or_older():
+        bpy.context.scene.objects.active = obj
+    else:
+        bpy.context.view_layer.active_layer_collection = obj
+    select(obj)
+
+
+def select(obj, sel=True):
+    if version_2_79_or_older():
+        obj.select = sel
+    else:
+        obj.select_set(sel)
+
+
+def is_selected(obj):
+    if version_2_79_or_older():
+        return obj.select
+    return obj.select_get()
+
+
+def hide(obj, val=True):
+    if version_2_79_or_older():
+        obj.hide = val
+    else:
+        obj.hide_viewport = val
+
+
+def is_hidden(obj):
+    if version_2_79_or_older():
+        return obj.hide
+    return obj.hide_viewport
 
 
 def switch(new_mode):
@@ -124,7 +153,7 @@ def set_default_stage_old():
     unhide_all()
     unselect_all()
     armature = get_armature()
-    select(armature)
+    set_active(armature)
     return armature
 
 
@@ -133,16 +162,16 @@ def set_default_stage(everything=False):
     unselect_all()
 
     for obj in bpy.data.objects:
-        select(obj)
+        set_active(obj)
         switch('OBJECT')
         if obj.type == 'ARMATURE':
             obj.data.pose_position = 'REST'
 
-        obj.select = False
+        select(obj, False)
 
     armature = get_armature()
     if armature:
-        select(armature)
+        set_active(armature)
     return armature
 
 
@@ -157,10 +186,10 @@ def remove_bone(find_bone):
 def remove_empty():
     armature = set_default_stage()
     if armature.parent and armature.parent.type == 'EMPTY':
-        tools.common.unselect_all()
-        tools.common.select(armature.parent)
+        unselect_all()
+        set_active(armature.parent)
         bpy.ops.object.delete(use_global=False)
-        tools.common.unselect_all()
+        unselect_all()
 
 
 def get_bone_angle(p1, p2):
@@ -422,17 +451,21 @@ def get_shapekeys_decimation_list(self, context):
 def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
     choices = []
     choices_simple = []
-
-    if is_mouth:
-        meshes = [bpy.data.objects.get(context.scene.mesh_name_viseme)]
-    else:
-        meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
+    meshes_list = get_meshes_objects()
 
     if decimation:
-        meshes = get_meshes_objects()
+        meshes = meshes_list
+    elif meshes_list:
+        if is_mouth:
+            meshes = [bpy.data.objects.get(context.scene.mesh_name_viseme)]
+        else:
+            meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
+    else:
+        bpy.types.Object.Enum = choices
+        return bpy.types.Object.Enum
 
     for mesh in meshes:
-        if not mesh or not tools.common.has_shapekeys(mesh):
+        if not mesh or not has_shapekeys(mesh):
             bpy.types.Object.Enum = choices
             return bpy.types.Object.Enum
 
@@ -542,7 +575,7 @@ def get_meshes_objects(armature_name=None, mode=0):
                 meshes.append(ob)
 
             elif mode == 3:
-                if ob.select:
+                if is_selected(ob):
                     meshes.append(ob)
     return meshes
 
@@ -562,7 +595,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     for mesh in meshes:
         if mode == 0:
             meshes_to_join.append(mesh.name)
-        elif mode == 1 and mesh.select:
+        elif mode == 1 and is_selected(mesh):
             meshes_to_join.append(mesh.name)
 
     if not meshes_to_join:
@@ -579,7 +612,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:
         if mesh.name in meshes_to_join:
-            mesh.select = True
+            select(mesh)
             bpy.context.scene.objects.active = mesh
 
             # Apply decimation modifiers
@@ -592,7 +625,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                         mesh.modifiers.remove(mod)
                         continue
 
-                    if tools.common.has_shapekeys(mesh):
+                    if has_shapekeys(mesh):
                         bpy.ops.object.shape_key_remove(all=True)
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
@@ -645,12 +678,12 @@ def apply_transforms(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
-    tools.common.unselect_all()
-    tools.common.select(get_armature(armature_name=armature_name))
+    unselect_all()
+    set_active(get_armature(armature_name=armature_name))
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     for mesh in get_meshes_objects(armature_name=armature_name):
-        tools.common.unselect_all()
-        tools.common.select(mesh)
+        unselect_all()
+        set_active(mesh)
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
 
@@ -660,10 +693,10 @@ def separate_by_materials(context, mesh):
     # Remove Rigidbodies and joints
     for obj in bpy.data.objects:
         if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            tools.common.delete_hierarchy(obj)
+            delete_hierarchy(obj)
 
     save_shapekey_order(mesh.name)
-    select(mesh)
+    set_active(mesh)
 
     for mod in mesh.modifiers:
         if mod.type == 'DECIMATE':
@@ -695,10 +728,10 @@ def separate_by_loose_parts(context, mesh):
     # Remove Rigidbodies and joints
     for obj in bpy.data.objects:
         if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            tools.common.delete_hierarchy(obj)
+            delete_hierarchy(obj)
 
     save_shapekey_order(mesh.name)
-    select(mesh)
+    set_active(mesh)
 
     for mod in mesh.modifiers:
         if mod.type == 'DECIMATE':
@@ -725,7 +758,7 @@ def separate_by_loose_parts(context, mesh):
 
     for mesh in meshes:
         unselect_all()
-        select(mesh)
+        set_active(mesh)
         bpy.ops.mesh.separate(type='LOOSE')
 
         meshes2 = []
@@ -782,7 +815,7 @@ def separate_by_loose_parts(context, mesh):
 
 
 def clean_shapekeys(mesh):
-    if tools.common.has_shapekeys(mesh):
+    if has_shapekeys(mesh):
         for kb in mesh.data.shape_keys.key_blocks:
             if can_remove_shapekey(kb):
                 mesh.shape_key_remove(kb)
@@ -844,7 +877,7 @@ def save_shapekey_order(mesh_name):
 
     # Create shape key list for description
     shape_key_order = ''
-    if tools.common.has_shapekeys(mesh):
+    if has_shapekeys(mesh):
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if index > 0:
                 shape_key_order += ',,,'
@@ -916,9 +949,9 @@ def update_shapekey_orders():
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
     mesh = bpy.data.objects[mesh_name]
-    if not tools.common.has_shapekeys(mesh):
+    if not has_shapekeys(mesh):
         return
-    select(mesh)
+    set_active(mesh)
 
     if not shape_key_order:
         shape_key_order = []
@@ -1060,7 +1093,7 @@ def delete_hierarchy(obj):
     for n in names:
         obj_temp = objects.get(n)
         if obj_temp:
-            obj_temp.select = True
+            select(obj_temp)
             obj_temp.animation_data_clear()
 
     result = bpy.ops.object.delete()
@@ -1076,7 +1109,7 @@ def delete_hierarchy(obj):
 
 def delete(obj):
     unselect_all()
-    select(obj)
+    set_active(obj)
 
     if obj.parent:
         for child in obj.children:
@@ -1178,7 +1211,7 @@ def is_end_bone(name, armature_name):
 def correct_bone_positions(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
-    armature = tools.common.get_armature(armature_name=armature_name)
+    armature = get_armature(armature_name=armature_name)
 
     chest = armature.data.edit_bones.get('Chest')
     neck = armature.data.edit_bones.get('Neck')
@@ -1287,10 +1320,10 @@ class ShowError(bpy.types.Operator):
                 row = col.row(align=True)
                 row.scale_y = 0.85
                 if not first_line:
-                    row.label(line, icon='ERROR')
+                    row.label(text=line, icon='ERROR')
                     first_line = True
                 else:
-                    row.label(line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+                    row.label(text=line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
 
         print('')
         print('Report: Error')
@@ -1304,11 +1337,11 @@ def remove_doubles(mesh, threshold):
 
     pre_tris = len(mesh.data.polygons)
 
-    tools.common.select(mesh)
-    tools.common.switch('EDIT')
+    set_active(mesh)
+    switch('EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.remove_doubles(threshold=threshold)
-    tools.common.switch('OBJECT')
+    switch('OBJECT')
 
     return pre_tris - len(mesh.data.polygons)
 

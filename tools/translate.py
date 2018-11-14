@@ -181,7 +181,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
         i = 0
         for mesh in tools.common.get_meshes_objects(mode=2):
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             for index, matslot in enumerate(mesh.material_slots):
                 mesh.active_material_index = index
                 if bpy.context.object.active_material:

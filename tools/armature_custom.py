@@ -63,12 +63,12 @@ class MergeArmature(bpy.types.Operator):
         if merge_armature.parent or base_armature.parent:
             if context.scene.merge_same_bones:
                 if merge_armature.parent:
-                    tools.common.select(merge_armature.parent)
+                    tools.common.set_active(merge_armature.parent)
                     bpy.ops.object.delete()
                     bpy.context.scene.objects.unlink(merge_armature.parent)
                     bpy.data.objects.remove(merge_armature.parent)
                 if base_armature.parent:
-                    tools.common.select(base_armature.parent)
+                    tools.common.set_active(base_armature.parent)
                     bpy.ops.object.delete()
                     bpy.context.scene.objects.unlink(base_armature.parent)
                     bpy.data.objects.remove(base_armature.parent)
@@ -130,7 +130,7 @@ class AttachMesh(bpy.types.Operator):
 
         # Switch mesh to edit mode
         tools.common.unselect_all()
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
         tools.common.switch('EDIT')
 
         # Delete all previous vertex groups
@@ -176,10 +176,10 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Applies transforms an the base armature and mesh
     tools.common.unselect_all()
-    tools.common.select(base_armature)
+    tools.common.set_active(base_armature)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     tools.common.unselect_all()
-    tools.common.select(mesh_base)
+    tools.common.set_active(mesh_base)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     # # Check for transform on base armature, reset if not default
@@ -252,7 +252,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
                     merge_armature.scale[i2] = 1
 
                 tools.common.unselect_all()
-                tools.common.select(mesh_merge)
+                tools.common.set_active(mesh_merge)
 
                 tools.common.show_error(7.5,
                                         ['If you want to rotate the new part, only modify the mesh instead of the armature!',
@@ -275,12 +275,12 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     tools.common.set_default_stage()
     # Apply all transformations on mesh
     tools.common.unselect_all()
-    tools.common.select(mesh_merge)
+    tools.common.set_active(mesh_merge)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     # Apply all transformations on armature
     tools.common.unselect_all()
-    tools.common.select(merge_armature)
+    tools.common.set_active(merge_armature)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     # Reset all transformations on mesh
@@ -291,12 +291,12 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Apply all transformations on mesh again
     tools.common.unselect_all()
-    tools.common.select(mesh_merge)
+    tools.common.set_active(mesh_merge)
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
     # Go into edit mode
     tools.common.unselect_all()
-    tools.common.select(merge_armature)
+    tools.common.set_active(merge_armature)
     tools.common.switch('EDIT')
 
     # Create new bone
@@ -337,8 +337,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     tools.common.unselect_all()
 
     # Select armature in correct way
-    tools.common.select(base_armature)
-    merge_armature.select = True
+    tools.common.set_active(base_armature)
+    tools.common.select(merge_armature)
 
     # Join the armatures
     if bpy.ops.object.join.poll():
@@ -356,7 +356,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Go into edit mode
     tools.common.unselect_all()
-    tools.common.select(armature)
+    tools.common.set_active(armature)
     tools.common.switch('EDIT')
 
     # Reparent all bones
@@ -381,7 +381,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     tools.common.set_default_stage()
 
     # Merge bones into existing bones
-    tools.common.select(mesh_merge)
+    tools.common.set_active(mesh_merge)
     replace_bones = []
     if not mesh_only:
         if merge_same_bones:
@@ -407,7 +407,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
                 to_delete.append(bone_merge.name)
 
-            tools.common.select(armature)
+            tools.common.set_active(armature)
             tools.common.switch('EDIT')
 
             for bone_name in to_delete:
@@ -451,7 +451,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Go into edit mode
     tools.common.unselect_all()
-    tools.common.select(armature)
+    tools.common.set_active(armature)
     tools.common.switch('EDIT')
 
     # Set new bone positions

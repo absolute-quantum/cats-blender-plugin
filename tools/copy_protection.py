@@ -47,7 +47,7 @@ class CopyProtectionEnable(bpy.types.Operator):
         for mesh in tools.common.get_meshes_objects():
             armature = tools.common.set_default_stage()
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('EDIT')
 
             # Convert quad faces to tris first
@@ -133,7 +133,7 @@ class CopyProtectionDisable(bpy.types.Operator):
         for mesh in tools.common.get_meshes_objects():
             tools.common.set_default_stage()
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('OBJECT')
 
             for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):

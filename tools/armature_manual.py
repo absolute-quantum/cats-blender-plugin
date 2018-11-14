@@ -103,8 +103,8 @@ class StopPoseMode(bpy.types.Operator):
 
     def execute(self, context):
         armature = tools.common.get_armature()
-        tools.common.select(armature)
-        armature.hide = False
+        tools.common.set_active(armature)
+        tools.common.hide(armature, False)
 
         for pb in armature.data.bones:
             pb.hide = False
@@ -151,7 +151,7 @@ class PoseToShape(bpy.types.Operator):
 def pose_to_shapekey(name):
     for mesh in tools.common.get_meshes_objects():
         tools.common.unselect_all()
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
 
         # Apply armature mod
         mod = mesh.modifiers.new(name, 'ARMATURE')
@@ -214,7 +214,7 @@ class PoseToRest(bpy.types.Operator):
 
         for mesh in tools.common.get_meshes_objects():
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
 
             mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
             bpy.ops.object.shape_key_to_basis()
@@ -328,7 +328,7 @@ class JoinMeshesSelected(bpy.types.Operator):
     def execute(self, context):
         selected_meshes = 0
         for mesh in tools.common.get_meshes_objects():
-            if mesh.select:
+            if tools.common.is_selected(mesh):
                 selected_meshes += 1
 
         if selected_meshes == 0:
@@ -564,15 +564,15 @@ class ArmatureEditMode:
         self._armature = armature
         self._active_object = bpy.context.scene.objects.active
         bpy.context.scene.objects.active = self._armature
-        self._armature_hide = self._armature.hide
-        self._armature.hide = False
+        self._armature_hide = tools.common.is_hidden(self._armature)
+        tools.common.hide(self._armature, False)
         self._armature_mode = self._armature.mode
         tools.common.switch('EDIT')
 
     def restore(self):
         # restore user state
         tools.common.switch(self._armature_mode)
-        self._armature.hide = self._armature_hide
+        tools.common.hide(self._armature, self._armature_hide)
         bpy.context.scene.objects.active = self._active_object
 
 
@@ -665,7 +665,7 @@ class RecalculateNormals(bpy.types.Operator):
             obj = meshes[0]
         mesh = obj
 
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
         tools.common.switch('EDIT')
 
         bpy.ops.mesh.select_all(action='SELECT')
@@ -703,7 +703,7 @@ class FlipNormals(bpy.types.Operator):
             obj = meshes[0]
         mesh = obj
 
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
         tools.common.switch('EDIT')
 
         bpy.ops.mesh.select_all(action='SELECT')
@@ -803,7 +803,7 @@ class FixVRMShapesButton(bpy.types.Operator):
             self.report({'INFO'}, 'No shapekeys detected!')
             return {'CANCELLED'}
 
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
         bpy.ops.object.shape_key_clear()
 
         shapekeys = enumerate(mesh.data.shape_keys.key_blocks)
