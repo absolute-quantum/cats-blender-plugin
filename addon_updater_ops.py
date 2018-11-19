@@ -832,7 +832,7 @@ def update_settings_ui(self, context, element=None):
     col = box.column(align=True)
     row = col.row(align=True)
     row.scale_y = 0.8
-    row.label('Updates:', icon='LOAD_FACTORY')
+    row.label('Updates:', icon='LOAD_FACTORY' if tools.common.version_2_79_or_older() else 'URL')
 
     # in case of error importing updater
     if updater.invalidupdater == True:

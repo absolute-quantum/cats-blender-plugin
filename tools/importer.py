@@ -40,9 +40,9 @@ except:
     pass
 
 
-ICON_FACTORY_LOAD = 'URL'
+ICON_URL = 'URL'
 if version_2_79_or_older():
-    ICON_FACTORY_LOAD = 'FACTORY_LOAD'
+    ICON_URL = 'LOAD_FACTORY'
 
 
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
@@ -273,7 +273,7 @@ class InstallXPS(bpy.types.Operator):
         row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.xps_tools', icon=ICON_FACTORY_LOAD)
+        row.operator('importer.xps_tools', icon=ICON_URL)
 
 
 class InstallSource(bpy.types.Operator):
@@ -304,7 +304,7 @@ class InstallSource(bpy.types.Operator):
         row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.source_tools', icon=ICON_FACTORY_LOAD)
+        row.operator('importer.source_tools', icon=ICON_URL)
 
 
 class EnableMMD(bpy.types.Operator):
@@ -345,7 +345,7 @@ def popup_install_xps(self, context):
     row.label(text="If it is not installed please click here to download it and then install it manually.")
     col.separator()
     row = col.row(align=True)
-    row.operator('importer.xps_tools', icon=ICON_FACTORY_LOAD)
+    row.operator('importer.xps_tools', icon=ICON_URL)
 
 
 def popup_install_source(self, context):
@@ -361,7 +361,7 @@ def popup_install_source(self, context):
     row.label(text="If it is not installed please click here to download it and then install it manually.")
     col.separator()
     row = col.row(align=True)
-    row.operator('importer.source_tools', icon=ICON_FACTORY_LOAD)
+    row.operator('importer.source_tools', icon=ICON_URL)
 
 
 class XpsToolsButton(bpy.types.Operator):
@@ -672,4 +672,4 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
 
         row = col.row(align=True)
-        row.operator('importer.export_model', text='Continue to Export', icon=ICON_FACTORY_LOAD).action = 'NO_CHECK'
+        row.operator('importer.export_model', text='Continue to Export', icon=ICON_URL).action = 'NO_CHECK'

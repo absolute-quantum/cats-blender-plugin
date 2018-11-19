@@ -37,9 +37,9 @@ addon_name = "Shotariya-don"
 min_version = [1, 1, 6]
 
 
-ICON_FACTORY_LOAD = 'URL'
+ICON_URL = 'URL'
 if version_2_79_or_older():
-    ICON_FACTORY_LOAD = 'FACTORY_LOAD'
+    ICON_URL = 'LOAD_FACTORY'
 
 
 class AutoAtlasNewButton(bpy.types.Operator):
@@ -370,7 +370,7 @@ class InstallShotariya(bpy.types.Operator):
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon=ICON_FACTORY_LOAD)
+            row.operator('download.shotariya', icon=ICON_URL)
             col.separator()
 
         elif self.action == 'ENABLE':
@@ -399,7 +399,7 @@ class InstallShotariya(bpy.types.Operator):
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon=ICON_FACTORY_LOAD)
+            row.operator('download.shotariya', icon=ICON_URL)
             col.separator()
 
 
