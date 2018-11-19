@@ -872,79 +872,65 @@ def save_shapekey_order(mesh_name):
     # Get current custom data
     custom_data = armature.get('CUSTOM')
     if not custom_data:
-        print('NEW DATA!')
+        # print('NEW DATA!')
         custom_data = {}
 
-    # Create shape key list for description
-    shape_key_order = ''
+    # Create shapekey order
+    shape_key_order = []
     if has_shapekeys(mesh):
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if index > 0:
-                shape_key_order += ',,,'
-            shape_key_order += shapekey.name
+            shape_key_order.append(shapekey.name)
 
     # Check if there is already a shapekey order
     if custom_data.get('shape_key_order'):
-        print('CUSTOM PROP ALREADY EXISTS!')
-        print(custom_data['shape_key_order'])
+        # print('SHAPEKEY ORDER ALREADY EXISTS!')
+        # print(custom_data['shape_key_order'])
 
-        if len(custom_data.get('shape_key_order')) > len(shape_key_order):
-            print('ABORT')
+        if len(shape_key_order) <= len(custom_data.get('shape_key_order')):
+            # print('ABORT')
             return
 
     # Save order to custom data
-    print('CREATE NEW CUSTOM PROP!')
+    # print('SAVE NEW ORDER')
     custom_data['shape_key_order'] = shape_key_order
 
     # Save custom data in armature
     armature['CUSTOM'] = custom_data
 
-    print(armature.get('CUSTOM')['shape_key_order'])
+    # print(armature.get('CUSTOM').get('shape_key_order'))
 
 
 def repair_shapekey_order(mesh_name):
-    armature = get_armature()
-    shape_key_order = []
-
     # Get current custom data
-    custom_data = armature.get('CUSTOM')
+    custom_data = get_armature().get('CUSTOM')
     if not custom_data:
         custom_data = {}
 
     # Extract shape keys from string
-    order_string = custom_data.get('shape_key_order')
-    if order_string:
-        for shape_name in order_string.split(',,,'):
-            shape_key_order.append(shape_name)
+    shape_key_order = custom_data.get('shape_key_order')
+    if not shape_key_order:
+        shape_key_order = []
 
     sort_shape_keys(mesh_name, shape_key_order)
 
 
 def update_shapekey_orders():
     for armature in get_armature_objects():
-        shape_key_order = []
+        shape_key_order_translated = []
 
         # Get current custom data
         custom_data = armature.get('CUSTOM')
-        if not custom_data or not custom_data.get('shape_key_order'):
+        order = custom_data.get('shape_key_order')
+        if not custom_data or not order:
             continue
 
-        # Get shape keys from string and translate them
-        order_string = custom_data.get('shape_key_order')
-        for shape_name in order_string.split(',,,'):
-            shape_key_order.append(tools.translate.translate(shape_name)[0])
-        print(order_string)
+        # Get shape keys and translate them
+        for shape_name in order:
+            shape_key_order_translated.append(tools.translate.translate(shape_name, add_space=True, translating_shapes=True)[0])
 
-        # Create translated shape key list string for properties
-        order_string = ''
-        for i, shapekey in enumerate(shape_key_order):
-            if i > 0:
-                order_string += ',,,'
-            order_string += shapekey
-
-        print(order_string)
-
-        custom_data['shape_key_order'] = order_string
+        # print(armature.name, shape_key_order_translated)
+        custom_data['shape_key_order'] = shape_key_order_translated
+        armature['CUSTOM'] = custom_data
 
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
