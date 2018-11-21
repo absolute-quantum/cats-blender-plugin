@@ -340,6 +340,7 @@ It checks for a new version automatically once every day.
   - Made Koikatsu models compatible
   - Added Merge Weights To Active button
   - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
+  - Pose to Shapekey now asks for a shapekey name first
   - Put some model options under a "Show More Options" button
   - Added separate buttons to enable and disable the Full Body tracking fix
 - **Visemes**:

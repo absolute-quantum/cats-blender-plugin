@@ -1939,6 +1939,7 @@ classesToRegister = [
     tools.armature_manual.StopPoseMode,
     tools.armature_manual.PoseToShape,
     tools.armature_manual.PoseToRest,
+    tools.armature_manual.PoseNamePopup,
 
     ManualPanel,
     tools.armature_manual.SeparateByMaterials,

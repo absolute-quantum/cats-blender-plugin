@@ -142,9 +142,9 @@ class PoseToShape(bpy.types.Operator):
         return armature and armature.mode == 'POSE'
 
     def execute(self, context):
-        pose_to_shapekey('Pose')
+        # pose_to_shapekey('Pose')
+        bpy.ops.pose.name_popup('INVOKE_DEFAULT')
 
-        self.report({'INFO'}, 'Pose successfully saved as shape key.')
         return {'FINISHED'}
 
 
@@ -152,6 +152,11 @@ def pose_to_shapekey(name):
     for mesh in tools.common.get_meshes_objects():
         tools.common.unselect_all()
         tools.common.set_active(mesh)
+
+        tools.common.switch('EDIT')
+        bpy.ops.mesh.select_all(action='DESELECT')
+        bpy.ops.mesh.remove_doubles(threshold=0)
+        tools.common.switch('OBJECT')
 
         # Apply armature mod
         mod = mesh.modifiers.new(name, 'ARMATURE')
@@ -163,6 +168,39 @@ def pose_to_shapekey(name):
     armature.data.pose_position = 'POSE'
 
     return armature
+
+
+class PoseNamePopup(bpy.types.Operator):
+    bl_idname = "pose.name_popup"
+    bl_label = "Set the shapekey name:"
+    bl_description = 'Sets the shapekey name. Press anywhere outside to skip'
+
+    bpy.types.Scene.pose_to_shapekey_name = bpy.props.StringProperty(name="Pose Name")
+
+    def execute(self, context):
+        name = context.scene.pose_to_shapekey_name
+        if not name:
+            name = 'Pose'
+        pose_to_shapekey(name)
+        self.report({'INFO'}, 'Pose successfully saved as shape key.')
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        context.scene.pose_to_shapekey_name = 'Pose'
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.scale_y = 1.3
+        row.prop(context.scene, 'pose_to_shapekey_name')
 
 
 class PoseToRest(bpy.types.Operator):
