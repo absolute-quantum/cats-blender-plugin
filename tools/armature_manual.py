@@ -531,12 +531,13 @@ class MergeWeightsToActive(bpy.types.Operator):
 
         tools.common.switch('EDIT')
 
-        # Find which bones to work on and put their name and their parent in a list
+        # Find which bones to work on and put their name and their parent in a list and parent the bones to the active one
         parenting_list = {}
         for bone in bpy.context.selected_editable_bones:
             if bone.name == bpy.context.active_bone.name:
                 continue
             parenting_list[bone.name] = bpy.context.active_bone.name
+            bone.parent = bpy.context.active_bone
 
         # Merge all the bones in the parenting list
         merge_weights(armature, parenting_list)
