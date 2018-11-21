@@ -338,6 +338,7 @@ It checks for a new version automatically once every day.
 #### 0.11.3
 - **Model**:
   - Made Koikatsu models compatible
+  - Added Merge Weights To Active button
   - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
   - Put some model options under a "Show More Options" button
   - Added separate buttons to enable and disable the Full Body tracking fix

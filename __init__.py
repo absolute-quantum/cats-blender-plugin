@@ -992,13 +992,19 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
 
         row = _layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
-        row.label(text="Join Meshes:", icon='MESH_DATA')
+        row.label(text="Join Meshes:", icon='AUTOMERGE_ON')
         row.operator('armature_manual.join_meshes', text='All')
         row.operator('armature_manual.join_meshes_selected', text='Selected')
 
-        row = col.row(align=True)
+        row = _layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
-        row.operator('armature_manual.merge_weights', icon='BONE_DATA')
+        row.label(text="Merge Weights:", icon='BONE_DATA')
+        row.operator('armature_manual.merge_weights', text='To Parents')
+        row.operator('armature_manual.merge_weights_to_active', text='To Active')
+
+        # row = col.row(align=True)
+        # row.scale_y = button_height
+        # row.operator('armature_manual.merge_weights', icon='BONE_DATA')
 
         # Translate
         col.separator()
@@ -1940,6 +1946,7 @@ classesToRegister = [
     tools.armature_manual.JoinMeshes,
     tools.armature_manual.JoinMeshesSelected,
     tools.armature_manual.MergeWeights,
+    tools.armature_manual.MergeWeightsToActive,
     tools.armature_manual.ApplyTransformations,
     tools.armature_manual.RemoveZeroWeight,
     tools.armature_manual.RemoveConstraints,

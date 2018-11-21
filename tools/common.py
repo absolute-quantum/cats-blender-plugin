@@ -920,8 +920,10 @@ def update_shapekey_orders():
 
         # Get current custom data
         custom_data = armature.get('CUSTOM')
+        if not custom_data:
+            continue
         order = custom_data.get('shape_key_order')
-        if not custom_data or not order:
+        if not order:
             continue
 
         # Get shape keys and translate them

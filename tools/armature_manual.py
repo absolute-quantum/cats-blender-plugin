@@ -421,159 +421,118 @@ class SeparateByLooseParts(bpy.types.Operator):
 class MergeWeights(bpy.types.Operator):
     bl_idname = 'armature_manual.merge_weights'
     bl_label = 'Merge Weights'
-    bl_description = 'Deletes the selected bones and adds their weight to their respective parents.\n' \
+    bl_description = 'Deletes the selected bones and adds their weight to their respective parents.' \
                      '\n' \
-                     'Only available in Edit or Pose Mode with bones selected'
+                     '\nOnly available in Edit or Pose Mode with bones selected'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    _armature = None
-    _bone_names_to_work_on = None
-    _objects_to_work_on = None
 
     @classmethod
     def poll(cls, context):
-        if bpy.context.active_object is None:
+        active_obj = bpy.context.active_object
+        if not active_obj or not bpy.context.active_object.type == 'ARMATURE':
             return False
-
-        # if bpy.context.selected_editable_bones is None:
-        #     return False
-
-        # if bpy.context.active_object.mode == 'OBJECT' and len(bpy.context.selected_bones) > 0:
-        #     return True
-
-        if bpy.context.active_object.mode == 'EDIT' and bpy.context.selected_editable_bones and len(
-                bpy.context.selected_editable_bones) > 0:
+        if active_obj.mode == 'EDIT' and bpy.context.selected_editable_bones:
             return True
-
-        if bpy.context.active_object.mode == 'POSE' and bpy.context.selected_pose_bones and len(
-                bpy.context.selected_pose_bones) > 0:
+        if active_obj.mode == 'POSE' and bpy.context.selected_pose_bones:
             return True
 
         return False
 
     def execute(self, context):
-
-        error = self.mustSelectBones()
-        if error:
-            return error
-
-        armature_edit_mode = ArmatureEditMode(self._armature)
-
-        # create lookup table
-        bone_name_to_edit_bone = dict()
-        for edit_bone in self._armature.data.edit_bones:
-            bone_name_to_edit_bone[edit_bone.name] = edit_bone
-
-        for bone_name_to_remove in self._bone_names_to_work_on:
-            if bone_name_to_edit_bone[bone_name_to_remove].parent is None:
-                continue
-            bone_name_to_add_weights_to = bone_name_to_edit_bone[bone_name_to_remove].parent.name
-            self._armature.data.edit_bones.remove(bone_name_to_edit_bone[bone_name_to_remove])  # delete bone
-
-            for object in self._objects_to_work_on:
-
-                vertex_group_to_remove = object.vertex_groups.get(bone_name_to_remove)
-                vertex_group_to_add_weights_to = object.vertex_groups.get(bone_name_to_add_weights_to)
-
-                if vertex_group_to_remove is not None:
-
-                    if vertex_group_to_add_weights_to is None:
-                        vertex_group_to_add_weights_to = object.vertex_groups.new(bone_name_to_add_weights_to)
-
-                    for vertex in object.data.vertices:  # transfer weight for each vertex
-                        weight_to_transfer = 0
-                        for group in vertex.groups:
-                            if group.group == vertex_group_to_remove.index:
-                                weight_to_transfer = group.weight
-                                break
-                        if weight_to_transfer > 0:
-                            vertex_group_to_add_weights_to.add([vertex.index], weight_to_transfer, 'ADD')
-
-                    object.vertex_groups.remove(vertex_group_to_remove)  # delete vertex group
-
-        armature_edit_mode.restore()
-
-        self.report({'INFO'}, 'Deleted ' + str(
-            len(self._bone_names_to_work_on)) + ' bones and added their weights to their parents')
-
-        return {'FINISHED'}
-
-    def optionallySelectBones(self):
-
         armature = bpy.context.object
-        if armature is None:
-            self.report({'ERROR'}, 'Select something')
-            return {'CANCELLED'}
+        armature_mode = armature.mode
 
-        # find armature, try to select parent
-        if armature is not None and armature.type != 'ARMATURE' and armature.parent is not None:
-            armature = armature.parent
-            if armature is not None and armature.type != 'ARMATURE' and armature.parent is not None:
-                armature = armature.parent
-
-        # find armature, try to select first and only child
-        if armature is not None and armature.type != 'ARMATURE' and len(armature.children) == 1:
-            armature = armature.children[0]
-            if armature is not None and armature.type != 'ARMATURE' and len(armature.children) == 1:
-                armature = armature.children[0]
-
-        if armature is None or armature.type != 'ARMATURE':
-            self.report({'ERROR'}, 'Select armature, it\'s child or it\'s parent')
-            return {'CANCELLED'}
-
-        # find which bones to work on
-        if bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
-            bones_to_work_on = bpy.context.selected_editable_bones
-        elif bpy.context.selected_pose_bones and len(bpy.context.selected_pose_bones) > 0:
-            bones_to_work_on = bpy.context.selected_pose_bones
-        else:
-            bones_to_work_on = armature.data.bones
-        bone_names_to_work_on = set([bone.name for bone in bones_to_work_on])  # grab names only
-
-        self._armature = armature
-        self._bone_names_to_work_on = bone_names_to_work_on
-        self._objects_to_work_on = armature.children
-
-    def mustSelectBones(self):
-
-        armature = bpy.context.object
-
-        if armature is None or armature.type != 'ARMATURE':
-            self.report({'ERROR'}, 'Select bones in armature edit or pose mode')
-            return {'CANCELLED'}
-
-        # find which bones to work on
-        if bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 0:
-            bones_to_work_on = bpy.context.selected_editable_bones
-        else:
-            bones_to_work_on = bpy.context.selected_pose_bones
-        bone_names_to_work_on = set([bone.name for bone in bones_to_work_on])  # grab names only
-
-        if len(bone_names_to_work_on) == 0:
-            self.report({'ERROR'}, 'Select at least one bone')
-            return {'CANCELLED'}
-
-        self._armature = armature
-        self._bone_names_to_work_on = bone_names_to_work_on
-        self._objects_to_work_on = armature.children
-
-
-class ArmatureEditMode:
-    def __init__(self, armature):
-        # save user state, select armature, go to armature edit mode
-        self._armature = armature
-        self._active_object = bpy.context.scene.objects.active
-        bpy.context.scene.objects.active = self._armature
-        self._armature_hide = tools.common.is_hidden(self._armature)
-        tools.common.hide(self._armature, False)
-        self._armature_mode = self._armature.mode
         tools.common.switch('EDIT')
 
-    def restore(self):
-        # restore user state
-        tools.common.switch(self._armature_mode)
-        tools.common.hide(self._armature, self._armature_hide)
-        bpy.context.scene.objects.active = self._active_object
+        # Find which bones to work on and put their name and their parent in a list
+        parenting_list = {}
+        for bone in bpy.context.selected_editable_bones:
+            parent = bone.parent
+            while parent and parent.parent and parent in bpy.context.selected_editable_bones:
+                parent = parent.parent
+            if not parent:
+                continue
+            parenting_list[bone.name] = parent.name
+
+        # Merge all the bones in the parenting list
+        merge_weights(armature, parenting_list)
+
+        # Switch back to original mode
+        tools.common.switch(armature_mode)
+
+        self.report({'INFO'}, 'Deleted ' + str(len(parenting_list)) + ' bones and added their weights to their parents.')
+        return {'FINISHED'}
+
+
+class MergeWeightsToActive(bpy.types.Operator):
+    bl_idname = 'armature_manual.merge_weights_to_active'
+    bl_label = 'Merge Weights'
+    bl_description = 'Deletes the selected bones except the active one and adds their weights to the active bone.' \
+                     '\nThe active bone is the one you selected last.' \
+                     '\n' \
+                     '\nOnly available in Edit or Pose Mode with bones selected'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        active_obj = bpy.context.active_object
+        if not active_obj or not bpy.context.active_object.type == 'ARMATURE':
+            return False
+        if active_obj.mode == 'EDIT' and bpy.context.selected_editable_bones and len(bpy.context.selected_editable_bones) > 1:
+            if bpy.context.active_bone in bpy.context.selected_editable_bones:
+                return True
+        elif active_obj.mode == 'POSE' and bpy.context.selected_pose_bones and len(bpy.context.selected_pose_bones) > 1:
+            if bpy.context.active_pose_bone in bpy.context.selected_pose_bones:
+                return True
+
+        return False
+
+    def execute(self, context):
+        armature = bpy.context.object
+        armature_mode = armature.mode
+
+        tools.common.switch('EDIT')
+
+        # Find which bones to work on and put their name and their parent in a list
+        parenting_list = {}
+        for bone in bpy.context.selected_editable_bones:
+            if bone.name == bpy.context.active_bone.name:
+                continue
+            parenting_list[bone.name] = bpy.context.active_bone.name
+
+        # Merge all the bones in the parenting list
+        merge_weights(armature, parenting_list)
+
+        # Switch back to original mode
+        tools.common.switch(armature_mode)
+
+        self.report({'INFO'}, 'Deleted ' + str(len(parenting_list)) + ' bones and added their weights to the active bone.')
+        return {'FINISHED'}
+
+
+def merge_weights(armature, parenting_list):
+    tools.common.switch('OBJECT')
+    # Merge the weights on the meshes
+    for mesh in armature.children:
+        if mesh.type != 'MESH':
+            continue
+        tools.common.set_active(mesh)
+
+        for bone, parent in parenting_list.items():
+            if not mesh.vertex_groups.get(bone):
+                continue
+            if not mesh.vertex_groups.get(parent):
+                mesh.vertex_groups.new(parent)
+            tools.common.mix_weights(mesh, bone, parent)
+
+    # Select armature
+    tools.common.unselect_all()
+    tools.common.set_active(armature)
+    tools.common.switch('EDIT')
+
+    # Delete merged bones
+    for bone in parenting_list.keys():
+        armature.data.edit_bones.remove(armature.data.edit_bones.get(bone))
 
 
 class ApplyTransformations(bpy.types.Operator):
