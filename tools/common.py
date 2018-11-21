@@ -1369,6 +1369,7 @@ def clean_material_names(mesh):
 
 
 def mix_weights(mesh, vg_from, vg_to):
+    mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
     mod.vertex_group_b = vg_from
