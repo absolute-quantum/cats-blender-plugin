@@ -343,6 +343,7 @@ It checks for a new version automatically once every day.
   - Pose to Shapekey now asks for a shapekey name first
   - Put some model options under a "Show More Options" button
   - Added separate buttons to enable and disable the Full Body tracking fix
+  - Added Duplicate Bones button
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed
 - **Shapekeys**:

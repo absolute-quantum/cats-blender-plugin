@@ -1059,3 +1059,68 @@ class RemoveFBTButton(bpy.types.Operator):
 
         self.report({'INFO'}, 'Successfully removed the Full Body Tracking fix.')
         return {'FINISHED'}
+
+
+class DuplicateBonesButton(bpy.types.Operator):
+    bl_idname = 'armature_manual.duplicate_bones'
+    bl_label = 'Duplicate Bones'
+    bl_description = "Duplicates the selected bones including their weight and renames them to _L and _R"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        active_obj = bpy.context.active_object
+        if not active_obj or not bpy.context.active_object.type == 'ARMATURE':
+            return False
+        if active_obj.mode == 'EDIT' and bpy.context.selected_editable_bones:
+            return True
+        elif active_obj.mode == 'POSE' and bpy.context.selected_pose_bones:
+            return True
+
+        return False
+
+    def execute(self, context):
+        armature = bpy.context.object
+        armature_mode = armature.mode
+
+        tools.common.switch('EDIT')
+
+        bone_count = len(bpy.context.selected_editable_bones)
+
+        # Create the duplicate bones
+        duplicate_vertex_groups = {}
+        for bone in bpy.context.selected_editable_bones:
+            bone_new = armature.data.edit_bones.new(bone.name + '_L')
+            bone.name += '_R'
+            bone_new.parent = bone.parent
+
+            bone_new.head = bone.head
+            bone_new.tail = bone.tail
+            duplicate_vertex_groups[bone.name] = bone_new.name
+
+        # Fix bone parenting
+        for bone_name in duplicate_vertex_groups.values():
+            bone = armature.data.edit_bones.get(bone_name)
+            if bone.parent.name in duplicate_vertex_groups.keys():
+                bone.parent = armature.data.edit_bones.get(duplicate_vertex_groups[bone.parent.name])
+
+        # Create the missing vertex groups and duplicate the weight
+        tools.common.switch('OBJECT')
+        for mesh in armature.children:
+            if mesh.type != 'MESH':
+                continue
+            tools.common.set_active(mesh)
+
+            for bone_from, bone_to in duplicate_vertex_groups.items():
+                mesh.vertex_groups.new(bone_to)
+                tools.common.mix_weights(mesh, bone_from, bone_to, delete_old_vg=False)
+
+        # Select armature
+        tools.common.unselect_all()
+        tools.common.set_active(armature)
+        tools.common.switch('EDIT')
+
+        tools.common.switch(armature_mode)
+
+        self.report({'INFO'}, 'Successfully duplicated ' + str(bone_count) + ' bones.')
+        return {'FINISHED'}

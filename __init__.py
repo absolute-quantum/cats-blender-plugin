@@ -1046,6 +1046,10 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.operator('armature_manual.remove_zero_weight', text='Zero Weight Bones')
             row.operator('armature_manual.remove_constraints', text='Constraints')
 
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.operator('armature_manual.duplicate_bones', icon='GROUP_BONE')
+
             col.separator()
             row = _layout_split(col, factor=0.27, align=True)
             row.scale_y = button_height
@@ -1958,6 +1962,7 @@ classesToRegister = [
     tools.armature_manual.FixVRMShapesButton,
     tools.armature_manual.FixFBTButton,
     tools.armature_manual.RemoveFBTButton,
+    tools.armature_manual.DuplicateBonesButton,
     tools.translate.TranslateShapekeyButton,
     tools.translate.TranslateBonesButton,
     tools.translate.TranslateObjectsButton,

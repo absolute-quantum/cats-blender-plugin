@@ -1368,7 +1368,7 @@ def clean_material_names(mesh):
                 mesh.active_material.name = mat.name[:-5]
 
 
-def mix_weights(mesh, vg_from, vg_to):
+def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
     mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
@@ -1376,7 +1376,8 @@ def mix_weights(mesh, vg_from, vg_to):
     mod.mix_mode = 'ADD'
     mod.mix_set = 'B'
     bpy.ops.object.modifier_apply(modifier=mod.name)
-    mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
+    if delete_old_vg:
+        mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
 
 
 def version_2_79_or_older():
