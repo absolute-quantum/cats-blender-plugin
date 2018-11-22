@@ -320,8 +320,25 @@ class FixArmature(bpy.types.Operator):
                 for mat_slot in mesh.material_slots:
                     mat_slot.material.alpha = 1
         else:
-            pass
             # TODO
+
+            # TODO
+            # Makes all materials visible
+            for i, mat_slot in enumerate(mesh.material_slots):
+                context.object.active_material_index = i
+                bpy.context.object.active_material.blend_method = 'OPAQUE'
+
+                # bpy.data.node_groups["Shader Nodetree"].nodes["Principled BSDF"].inputs[5].default_value = 0
+                from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
+                shader = PrincipledBSDFWrapper(mat_slot.material, is_readonly=False)
+                shader.specular = 0
+
+            for area in context.screen.areas:  # iterate through areas in current screen
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces:  # iterate through spaces in current VIEW_3D area
+                        if space.type == 'VIEW_3D':  # check if space is a 3D view
+                            space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
+                            space.shading.studio_light = 'forest.exr'
 
         # Reorders vrc shape keys to the correct order
         tools.common.sort_shape_keys(mesh.name)
@@ -351,6 +368,7 @@ class FixArmature(bpy.types.Operator):
             bone.name, translated = tools.translate.translate(bone.name)
 
         # Armature should be selected and in edit mode
+        tools.common.set_default_stage()
         tools.common.unselect_all()
         tools.common.set_active(armature)
         tools.common.switch('EDIT')
