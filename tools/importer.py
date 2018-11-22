@@ -418,13 +418,17 @@ class ExportModel(bpy.types.Operator):
                     if mat_slot and mat_slot.material and mat_slot.material.name not in mat_list:
                         mat_list.append(mat_slot.material.name)
 
-                        if not textures_found:
-                            for tex_slot in mat_slot.material.texture_slots:
-                                if tex_slot and tex_slot.texture:
-                                    tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                                    if os.path.isfile(tex_path):
-                                        textures_found = True
-                                        break
+                        if version_2_79_or_older():
+                            if not textures_found:
+                                for tex_slot in mat_slot.material.texture_slots:
+                                    if tex_slot and tex_slot.texture:
+                                        tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                                        if os.path.isfile(tex_path):
+                                            textures_found = True
+                                            break
+                        else:
+                            pass
+                            # TODO
 
                 if tools.common.has_shapekeys(mesh):
                     for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
@@ -465,19 +469,23 @@ class ExportModel(bpy.types.Operator):
             path_mode = 'COPY'
 
         textures_found = False
-        for mesh in tools.common.get_meshes_objects():
-            if textures_found:
-                break
-            for mat_slot in mesh.material_slots:
+        if version_2_79_or_older():
+            for mesh in tools.common.get_meshes_objects():
                 if textures_found:
                     break
-                if mat_slot and mat_slot.material:
-                    for tex_slot in mat_slot.material.texture_slots:
-                        if tex_slot and tex_slot.texture:
-                            tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                            if os.path.isfile(tex_path):
-                                textures_found = True
-                                break
+                for mat_slot in mesh.material_slots:
+                    if textures_found:
+                        break
+                    if mat_slot and mat_slot.material:
+                        for tex_slot in mat_slot.material.texture_slots:
+                            if tex_slot and tex_slot.texture:
+                                tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                                if os.path.isfile(tex_path):
+                                    textures_found = True
+                                    break
+        else:
+            pass
+            # TODO
         if not textures_found:
             path_mode = 'AUTO'
 
@@ -525,13 +533,17 @@ class ErrorDisplay(bpy.types.Operator):
                 if mat_slot and mat_slot.material and mat_slot.material.name not in self.mat_list:
                     self.mat_list.append(mat_slot.material.name)
 
-                    if not self.textures_found:
-                        for tex_slot in mat_slot.material.texture_slots:
-                            if tex_slot and tex_slot.texture:
-                                tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                                if os.path.isfile(tex_path):
-                                    self.textures_found = True
-                                    break
+                    if version_2_79_or_older():
+                        if not self.textures_found:
+                            for tex_slot in mat_slot.material.texture_slots:
+                                if tex_slot and tex_slot.texture:
+                                    tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                                    if os.path.isfile(tex_path):
+                                        self.textures_found = True
+                                        break
+                    else:
+                        pass
+                        # TODO
             self.meshes_count += 1
 
             if tools.common.has_shapekeys(mesh):
