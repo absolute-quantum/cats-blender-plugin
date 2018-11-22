@@ -265,10 +265,10 @@ bone_rename['Hips'] = [
     'Pelvis',
     'B_C_Pelvis',
     'Bip_Pelvis',
+    'Hip',
     'Root',
     'Root_Hips',
     'Root_Rot',
-    'Hip',
     'Sk',
     'C_Waist_1',
     'Pelwas_001',
@@ -626,6 +626,7 @@ bone_rename['\Left leg'] = [
     'Leg(\L)04',
     '\L_Momo_Jnt',
     'Leg_Thigh_\L',
+    '\L_Leg',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -904,6 +905,8 @@ bone_reweight['\Left arm'] = [
     'Bip_\L_UpperArm_Rig',
     'Bip_\L_UpperArm_Twist',
     'Arm_WayA_\L',
+    '\L_Arm_EX',
+    '\L_Elbow_EX',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -1009,6 +1012,7 @@ bone_reweight['\Left elbow'] = [
     'Elbo_\L',
     'Forearm01_\L',
     'Elboback_\L',
+    '\L_Wrist_EX',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1148,6 +1152,8 @@ bone_reweight['\Left leg'] = [
     'Thigh01_\L',
     'Thigh02_\L',
     'Thigh03_\L',
+    '\L_Leg_EX',
+    '\L_Knee_EX',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -1202,6 +1208,7 @@ bone_reweight['\Left knee'] = [
     'Leg02_\L',
     'Leg03_\L',
     'KneeB_\L',
+    '\L_Ankle_EX',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',
