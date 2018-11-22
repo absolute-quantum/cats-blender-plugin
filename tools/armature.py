@@ -217,8 +217,11 @@ class FixArmature(bpy.types.Operator):
             if context.area:
                 context.area.spaces[0].show_backface_culling = False
         else:
-            pass
-            # TODO
+            armature.show_in_front = True
+            armature.data.display_type = 'OCTAHEDRAL'
+            armature.data.show_bone_custom_shapes = False
+            bpy.context.space_data.overlay.show_transparent_bones = True
+            bpy.context.space_data.overlay.show_backface_culling = False
 
         # Remove Rigidbodies and joints
         to_delete = []
