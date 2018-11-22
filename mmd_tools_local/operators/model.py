@@ -3,12 +3,14 @@
 import bpy
 from bpy.types import Operator
 
-from mmd_tools_local import bpyutils
+from mmd_tools_local import register_wrap
+from mmd_tools_local.bpyutils import SceneOp
 from mmd_tools_local.core.bone import FnBone
 from mmd_tools_local.translations import DictionaryEnum
 import mmd_tools_local.core.model as mmd_model
 
 
+@register_wrap
 class MorphSliderSetup(Operator):
     bl_idname = 'mmd_tools.morph_slider_setup'
     bl_label = 'Morph Slider Setup'
@@ -36,9 +38,10 @@ class MorphSliderSetup(Operator):
             rig.morph_slider.unbind()
         else:
             rig.morph_slider.create()
-        context.scene.objects.active = obj
+        SceneOp(context).active_object = obj
         return {'FINISHED'}
 
+@register_wrap
 class CleanRiggingObjects(Operator):
     bl_idname = 'mmd_tools.clean_rig'
     bl_label = 'Clean Rig'
@@ -49,9 +52,10 @@ class CleanRiggingObjects(Operator):
         root = mmd_model.Model.findRoot(context.active_object)
         rig = mmd_model.Model(root)
         rig.clean()
-        context.scene.objects.active = root
+        SceneOp(context).active_object = root
         return {'FINISHED'}
 
+@register_wrap
 class BuildRig(Operator):
     bl_idname = 'mmd_tools.build_rig'
     bl_label = 'Build Rig'
@@ -62,9 +66,10 @@ class BuildRig(Operator):
         root = mmd_model.Model.findRoot(context.active_object)
         rig = mmd_model.Model(root)
         rig.build()
-        context.scene.objects.active = root
+        SceneOp(context).active_object = root
         return {'FINISHED'}
 
+@register_wrap
 class CleanAdditionalTransformConstraints(Operator):
     bl_idname = 'mmd_tools.clean_additional_transform'
     bl_label = 'Clean Additional Transform'
@@ -76,9 +81,10 @@ class CleanAdditionalTransformConstraints(Operator):
         root = mmd_model.Model.findRoot(obj)
         rig = mmd_model.Model(root)
         rig.cleanAdditionalTransformConstraints()
-        context.scene.objects.active = obj
+        SceneOp(context).active_object = obj
         return {'FINISHED'}
 
+@register_wrap
 class ApplyAdditionalTransformConstraints(Operator):
     bl_idname = 'mmd_tools.apply_additional_transform'
     bl_label = 'Apply Additional Transform'
@@ -90,9 +96,10 @@ class ApplyAdditionalTransformConstraints(Operator):
         root = mmd_model.Model.findRoot(obj)
         rig = mmd_model.Model(root)
         rig.applyAdditionalTransformConstraints()
-        context.scene.objects.active = obj
+        SceneOp(context).active_object = obj
         return {'FINISHED'}
 
+@register_wrap
 class SetupBoneFixedAxes(Operator):
     bl_idname = 'mmd_tools.bone_fixed_axis_setup'
     bl_label = 'Setup Bone Fixed Axis'
@@ -123,6 +130,7 @@ class SetupBoneFixedAxes(Operator):
             FnBone.load_bone_fixed_axis(arm, enable=(self.type=='LOAD'))
         return {'FINISHED'}
 
+@register_wrap
 class SetupBoneLocalAxes(Operator):
     bl_idname = 'mmd_tools.bone_local_axes_setup'
     bl_label = 'Setup Bone Local Axes'
@@ -153,6 +161,7 @@ class SetupBoneLocalAxes(Operator):
             FnBone.load_bone_local_axes(arm, enable=(self.type=='LOAD'))
         return {'FINISHED'}
 
+@register_wrap
 class CreateMMDModelRoot(Operator):
     bl_idname = 'mmd_tools.create_mmd_model_root_object'
     bl_label = 'Create a MMD Model Root Object'
@@ -184,6 +193,7 @@ class CreateMMDModelRoot(Operator):
         vm = context.window_manager
         return vm.invoke_props_dialog(self)
 
+@register_wrap
 class ConvertToMMDModel(Operator):
     bl_idname = 'mmd_tools.convert_to_mmd_model'
     bl_label = 'Convert to a MMD Model'
@@ -237,7 +247,7 @@ class ConvertToMMDModel(Operator):
         if root is None or root != armature.parent:
             rig = mmd_model.Model.create(model_name, model_name, scale, armature=armature)
 
-        self.__attach_meshes_to(armature, context.scene.objects)
+        self.__attach_meshes_to(armature, SceneOp(context).id_objects)
         self.__configure_rig(mmd_model.Model(armature.parent))
         return {'FINISHED'}
 
@@ -283,6 +293,7 @@ class ConvertToMMDModel(Operator):
             pose_bone.lock_location = (True, True, True)
 
         for m in {x for mesh in meshes for x in mesh.data.materials if x}:
+            if not hasattr(m, 'use_transparency'): continue
             mmd_material = m.mmd_material
 
             map_diffuse = next((s.blend_type for s in m.texture_slots if s and s.use_map_color_diffuse), None)
@@ -313,6 +324,7 @@ class ConvertToMMDModel(Operator):
         rig.initialDisplayFrames(reset=False) # ensure default frames
         DisplayItemQuickSetup.load_facial_items(root.mmd_root)
 
+@register_wrap
 class TranslateMMDModel(Operator):
     bl_idname = 'mmd_tools.translate_mmd_model'
     bl_label = 'Translate a MMD Model'

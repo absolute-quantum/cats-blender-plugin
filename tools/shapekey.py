@@ -40,7 +40,7 @@ class ShapeKeyApplier(bpy.types.Operator):
         return bpy.context.object.active_shape_key and bpy.context.object.active_shape_key_index > 0
 
     def execute(self, context):
-        mesh = bpy.context.scene.objects.active
+        mesh = tools.common.get_active()
 
         # Get shapekey which will be the new basis
         new_basis_shapekey = mesh.active_shape_key

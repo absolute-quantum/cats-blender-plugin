@@ -764,15 +764,27 @@ ICON_URL = 'URL'
 ICON_SETTINGS = 'SETTINGS'
 ICON_ALL = 'PROP_ON'
 ICON_MOD_ARMATURE = 'MOD_ARMATURE'
+ICON_FIX_MODEL = 'SHADERFX'
+ICON_EYE_ROTATION = 'DRIVER_ROTATIONAL_DIFFERENCE'
+ICON_POSE_MODE = 'POSE_HLT'
+ICON_SHADING_TEXTURE = 'SHADING_TEXTURE'
+ICON_PROTECT = 'LOCKED'
+ICON_UNPROTECT = 'UNLOCKED'
 if version_2_79_or_older():
     ICON_ADD, ICON_REMOVE = 'ZOOMIN', 'ZOOMOUT'
     ICON_URL = 'LOAD_FACTORY'
     ICON_SETTINGS = 'SCRIPTPLUGINS'
     ICON_ALL = 'META_BALL'
     ICON_MOD_ARMATURE = 'OUTLINER_OB_ARMATURE'
+    ICON_FIX_MODEL = 'BONE_DATA'
+    ICON_EYE_ROTATION = 'MAN_ROT'
+    ICON_POSE_MODE = 'POSE_DATA'
+    ICON_SHADING_TEXTURE = 'TEXTURE_SHADED'
+    ICON_PROTECT = 'KEY_HLT'
+    ICON_UNPROTECT = 'KEY_DEHLT'
 
 
-def _layout_split(layout, factor, align):
+def _layout_split(layout, factor=0.0, align=False):
     if version_2_79_or_older():
         return layout.split(percentage=factor, align=align)
     return layout.split(factor=factor, align=align)
@@ -928,7 +940,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         split = col.row(align=True)
         row = split.row(align=True)
         row.scale_y = 1.5
-        row.operator('armature.fix', icon='BONE_DATA')
+        row.operator('armature.fix', icon=ICON_FIX_MODEL)
         row = split.row(align=True)
         row.alignment = 'RIGHT'
         row.scale_y = 1.5
@@ -954,7 +966,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         else:
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.operator('armature_manual.stop_pose_mode', icon='POSE_DATA')
+            row.operator('armature_manual.stop_pose_mode', icon=ICON_POSE_MODE)
             if not tools.eyetracking.eye_left:
                 row = col.row(align=True)
                 row.scale_y = 0.9
@@ -1241,7 +1253,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
             if context.scene.selection_mode == 'SHAPES':
                 row = _layout_split(col, factor=0.7, align=False)
                 row.prop(context.scene, 'add_shape_key', icon='SHAPEKEY_DATA')
-                row.operator('add.shape', icon='ZOOMIN')
+                row.operator('add.shape', icon=ICON_ADD)
                 col.separator()
 
                 box2 = col.box()
@@ -1253,12 +1265,12 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 for shape in tools.decimation.ignore_shapes:
                     row = _layout_split(col, factor=0.8, align=False)
                     row.label(text=shape, icon='SHAPEKEY_DATA')
-                    op = row.operator('remove.shape', icon='ZOOMOUT')
+                    op = row.operator('remove.shape', icon=ICON_REMOVE)
                     op.shape_name = shape
             elif context.scene.selection_mode == 'MESHES':
                 row = _layout_split(col, factor=0.7, align=False)
                 row.prop(context.scene, 'add_mesh', icon='MESH_DATA')
-                row.operator('add.mesh', icon='ZOOMIN')
+                row.operator('add.mesh', icon=ICON_ADD)
                 col.separator()
 
                 if context.scene.add_mesh == '':
@@ -1274,7 +1286,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 for mesh in tools.decimation.ignore_meshes:
                     row = _layout_split(col, factor=0.8, align=False)
                     row.label(text=mesh, icon='MESH_DATA')
-                    op = row.operator('remove.mesh', icon='ZOOMOUT')
+                    op = row.operator('remove.mesh', icon=ICON_REMOVE)
                     op.mesh_name = mesh
 
             col = box.column(align=True)
@@ -1440,7 +1452,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_rotation_y', icon='ARROW_LEFTRIGHT')
                 row = col.row(align=True)
-                row.operator('eyes.reset_rotation', icon='MAN_ROT')
+                row.operator('eyes.reset_rotation', icon=ICON_EYE_ROTATION)
 
                 # global slider_z
                 # if context.scene.eye_blink_shape != slider_z:
@@ -1645,7 +1657,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.operator('textures.standardize', icon='TEXTURE_SHADED')
+            row.operator('textures.standardize', icon=ICON_SHADING_TEXTURE)
 
         elif context.scene.optimize_mode == 'BONEMERGING':
             if len(tools.common.get_meshes_objects()) > 1:
@@ -1691,11 +1703,11 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 1.3
         meshes = tools.common.get_meshes_objects()
         if len(meshes) > 0 and tools.common.has_shapekeys(meshes[0]) and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
-            row.operator('copyprotection.disable', icon='KEY_DEHLT')
+            row.operator('copyprotection.disable', icon=ICON_UNPROTECT)
             row = col.row(align=True)
             row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
         else:
-            row.operator('copyprotection.enable', icon='KEY_HLT')
+            row.operator('copyprotection.enable', icon=ICON_PROTECT)
 
 
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
@@ -1733,8 +1745,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 
         # Updater
         # addon_updater_ops.check_for_update_background()
-        if version_2_79_or_older():
-            addon_updater_ops.update_settings_ui(self, context)
+        addon_updater_ops.update_settings_ui(self, context)
 
 
 class SupporterPanel(ToolPanel, bpy.types.Panel):

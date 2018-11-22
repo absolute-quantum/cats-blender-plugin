@@ -75,7 +75,7 @@ class CopyProtectionEnable(bpy.types.Operator):
             for index, bone in enumerate(armature.pose.bones):
                 if index == 5:
                     bone_pos = bone.matrix
-                    world_pos = armature.matrix_world * bone.matrix
+                    world_pos = tools.common.matmul(armature.matrix_world, bone.matrix)
                     if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
                         xps = True
                         break

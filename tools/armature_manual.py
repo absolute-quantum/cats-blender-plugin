@@ -27,6 +27,7 @@
 import bpy
 import tools.common
 import tools.eyetracking
+from tools.common import version_2_79_or_older
 
 mmd_tools_installed = False
 try:
@@ -56,8 +57,12 @@ class StartPoseMode(bpy.types.Operator):
                 bpy.context.selected_editable_bones) > 0:
             current = bpy.context.selected_editable_bones[0].name
 
-        bpy.context.space_data.use_pivot_point_align = False
-        bpy.context.space_data.show_manipulator = True
+        if version_2_79_or_older():
+            bpy.context.space_data.use_pivot_point_align = False
+            bpy.context.space_data.show_manipulator = True
+        else:
+            pass
+            # TODO
 
         armature = tools.common.set_default_stage()
         tools.common.switch('POSE')
@@ -84,7 +89,10 @@ class StartPoseMode(bpy.types.Operator):
                 if index != 0:
                     pb.select = False
 
-        bpy.context.space_data.transform_manipulators = {'ROTATE'}
+        if version_2_79_or_older():
+            bpy.context.space_data.transform_manipulators = {'ROTATE'}
+        else:
+            bpy.ops.wm.tool_set_by_name(name="Transform")
 
         return {'FINISHED'}
 
@@ -123,7 +131,11 @@ class StopPoseMode(bpy.types.Operator):
                 for shape_key in mesh.data.shape_keys.key_blocks:
                     shape_key.value = 0
 
-        bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
+        if version_2_79_or_older():
+            bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
+        else:
+            bpy.ops.wm.tool_set_by_name(name="Cursor")
+
         tools.eyetracking.eye_left = None
 
         return {'FINISHED'}

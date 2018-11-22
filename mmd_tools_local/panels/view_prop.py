@@ -2,6 +2,7 @@
 
 from bpy.types import Panel
 
+from mmd_tools_local import register_wrap
 from mmd_tools_local.core.model import Model
 from mmd_tools_local.core.sdef import FnSDEF
 
@@ -9,6 +10,7 @@ class _PanelBase(object):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
 
+@register_wrap
 class MMDModelObjectDisplayPanel(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_root_object_display'
     bl_label = 'MMD Display'
@@ -43,7 +45,7 @@ class MMDModelObjectDisplayPanel(_PanelBase, Panel):
         row = layout.row(align=True)
         row.prop(root.mmd_root, 'use_sdef', text='SDEF')
 
-
+@register_wrap
 class MMDViewPanel(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_view'
     bl_label = 'MMD Shading'
@@ -51,14 +53,14 @@ class MMDViewPanel(_PanelBase, Panel):
     def draw(self, context):
         layout = self.layout
 
-        col = layout.column()
-        c = col.column(align=True)
+        c = layout.column(align=True)
         r = c.row(align=True)
         r.operator('mmd_tools.set_glsl_shading', text='GLSL')
         r.operator('mmd_tools.set_shadeless_glsl_shading', text='Shadeless')
         r = c.row(align=True)
         r.operator('mmd_tools.reset_shading', text='Reset')
 
+@register_wrap
 class MMDSDEFPanel(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_sdef'
     bl_label = 'MMD SDEF Driver'
@@ -68,5 +70,5 @@ class MMDSDEFPanel(_PanelBase, Panel):
         c.operator('mmd_tools.sdef_bind', text='Bind')
         c.operator('mmd_tools.sdef_unbind', text='Unbind')
         row = c.row()
-        row.label('Cache Info: %d data'%(len(FnSDEF.g_verts)), icon='INFO')
+        row.label(text='Cache Info: %d data'%(len(FnSDEF.g_verts)), icon='INFO')
         row.operator('mmd_tools.sdef_cache_reset', text='', icon='X')

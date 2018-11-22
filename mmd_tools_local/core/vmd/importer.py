@@ -5,9 +5,10 @@ import os
 
 import bpy
 import math
-import mathutils
+from mathutils import Vector, Quaternion
 
 from mmd_tools_local import utils
+from mmd_tools_local.bpyutils import matmul
 from mmd_tools_local.core import vmd
 from mmd_tools_local.core.camera import MMDCamera
 from mmd_tools_local.core.lamp import MMDLamp
@@ -35,29 +36,29 @@ class RenamedBoneMapper:
 
 class BoneConverter:
     def __init__(self, pose_bone, scale, invert=False):
-        mat = pose_bone.bone.matrix_local.to_3x3().transposed()
-        mat2 = mathutils.Matrix([[1,0,0], [0,0,1], [0,1,0]])
-        self.__mat = mat * mat2
+        mat = pose_bone.bone.matrix_local.to_3x3()
+        mat[1], mat[2] = mat[2].copy(), mat[1].copy()
+        self.__mat = mat.transposed()
         self.__scale = scale
         if invert:
             self.__mat.invert()
 
     def convert_location(self, location):
-        return self.__mat * mathutils.Vector(location) * self.__scale
+        return matmul(self.__mat, Vector(location)) * self.__scale
 
     def convert_rotation(self, rotation_xyzw):
-        rot = mathutils.Quaternion()
+        rot = Quaternion()
         rot.x, rot.y, rot.z, rot.w = rotation_xyzw
-        return mathutils.Quaternion(self.__mat * rot.axis * -1, rot.angle).normalized()
+        return Quaternion(matmul(self.__mat, rot.axis) * -1, rot.angle).normalized()
 
 class BoneConverterPoseMode:
     def __init__(self, pose_bone, scale, invert=False):
-        mat = pose_bone.matrix.to_3x3().transposed()
-        mat2 = mathutils.Matrix([[1,0,0], [0,0,1], [0,1,0]])
-        self.__mat = mat * mat2
+        mat = pose_bone.matrix.to_3x3()
+        mat[1], mat[2] = mat[2].copy(), mat[1].copy()
+        self.__mat = mat.transposed()
         self.__scale = scale
         self.__mat_rot = pose_bone.matrix_basis.to_3x3()
-        self.__mat_loc = self.__mat_rot * self.__mat
+        self.__mat_loc = matmul(self.__mat_rot, self.__mat)
         self.__offset = pose_bone.location.copy()
         self.convert_location = self._convert_location
         self.convert_rotation = self._convert_rotation
@@ -69,22 +70,22 @@ class BoneConverterPoseMode:
             self.convert_rotation = self._convert_rotation_inverted
 
     def _convert_location(self, location):
-        return self.__offset + self.__mat_loc * mathutils.Vector(location) * self.__scale
+        return self.__offset + matmul(self.__mat_loc, Vector(location)) * self.__scale
 
     def _convert_rotation(self, rotation_xyzw):
-        rot = mathutils.Quaternion()
+        rot = Quaternion()
         rot.x, rot.y, rot.z, rot.w = rotation_xyzw
-        rot = mathutils.Quaternion(self.__mat * rot.axis * -1, rot.angle)
-        return (self.__mat_rot * rot.to_matrix()).to_quaternion()
+        rot = Quaternion(matmul(self.__mat, rot.axis) * -1, rot.angle)
+        return matmul(self.__mat_rot, rot.to_matrix()).to_quaternion()
 
     def _convert_location_inverted(self, location):
-        return self.__mat_loc * (mathutils.Vector(location) - self.__offset) * self.__scale
+        return matmul(self.__mat_loc, Vector(location) - self.__offset) * self.__scale
 
     def _convert_rotation_inverted(self, rotation_xyzw):
-        rot = mathutils.Quaternion()
+        rot = Quaternion()
         rot.x, rot.y, rot.z, rot.w = rotation_xyzw
-        rot = (self.__mat_rot * rot.to_matrix()).to_quaternion()
-        return mathutils.Quaternion(self.__mat * rot.axis * -1, rot.angle).normalized()
+        rot = matmul(self.__mat_rot, rot.to_matrix()).to_quaternion()
+        return Quaternion(matmul(self.__mat, rot.axis) * -1, rot.angle).normalized()
 
 
 class VMDImporter:
@@ -122,15 +123,15 @@ class VMDImporter:
             kp0.handle_right_type = 'FREE'
             kp1.handle_left_type = 'FREE'
             d = (kp1.co - kp0.co) / 127.0
-            kp0.handle_right = kp0.co + mathutils.Vector((d.x * bezier[0], d.y * bezier[1]))
-            kp1.handle_left = kp0.co + mathutils.Vector((d.x * bezier[2], d.y * bezier[3]))
+            kp0.handle_right = kp0.co + Vector((d.x * bezier[0], d.y * bezier[1]))
+            kp1.handle_left = kp0.co + Vector((d.x * bezier[2], d.y * bezier[3]))
 
     @staticmethod
     def __fixFcurveHandles(fcurve):
         kp0 = fcurve.keyframe_points[0]
-        kp0.handle_left = kp0.co + mathutils.Vector((-1, 0))
+        kp0.handle_left = kp0.co + Vector((-1, 0))
         kp = fcurve.keyframe_points[-1]
-        kp.handle_right = kp.co + mathutils.Vector((1, 0))
+        kp.handle_right = kp.co + Vector((1, 0))
 
 
     def __assignToArmature(self, armObj, action_name=None):
@@ -333,8 +334,8 @@ class VMDImporter:
 
         for keyFrame in lampAnim:
             frame = keyFrame.frame_number + self.__frame_margin
-            lampObj.data.color = mathutils.Vector(keyFrame.color)
-            lampObj.location = mathutils.Vector(keyFrame.direction).xzy * -1
+            lampObj.data.color = Vector(keyFrame.color)
+            lampObj.location = Vector(keyFrame.direction).xzy * -1
             lampObj.data.keyframe_insert(data_path='color', frame=frame)
             lampObj.keyframe_insert(data_path='location', frame=frame)
 

@@ -5,6 +5,7 @@ import math
 from bpy.types import PropertyGroup
 from bpy.props import FloatProperty, BoolProperty
 
+from mmd_tools_local import register_wrap
 import mmd_tools_local.core.camera as mmd_camera
 
 
@@ -29,6 +30,7 @@ def _setIsPerspective(prop, value):
     cam.data.type = 'PERSP' if value else 'ORTHO'
 
 
+@register_wrap
 class MMDCamera(PropertyGroup):
     angle = FloatProperty(
         name='Angle',

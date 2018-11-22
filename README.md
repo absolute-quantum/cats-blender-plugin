@@ -348,6 +348,11 @@ It checks for a new version automatically once every day.
   - Selecting the "Basis" shapekey is no longer allowed
 - **Shapekeys**:
   - Fixed a bug when Applying a Shapekey to Basis
+- **General**:
+  - Updated to Blender 2.8
+    - It is still compatible to Blender 2.79
+    - Materials will not work currently
+  - Updated mmd_tools (for 2.8 compatibility)
 
 #### 0.11.2
 - **Model**:

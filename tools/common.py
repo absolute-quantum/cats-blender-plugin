@@ -113,8 +113,14 @@ def set_active(obj):
     if version_2_79_or_older():
         bpy.context.scene.objects.active = obj
     else:
-        bpy.context.view_layer.active_layer_collection = obj
+        bpy.context.view_layer.objects.active = obj
     select(obj)
+
+
+def get_active():
+    if version_2_79_or_older():
+        return bpy.context.scene.objects.active
+    return bpy.context.view_layer.objects.active
 
 
 def select(obj, sel=True):
@@ -612,8 +618,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:
         if mesh.name in meshes_to_join:
-            select(mesh)
-            bpy.context.scene.objects.active = mesh
+            tools.common.set_active(mesh)
 
             # Apply decimation modifiers
             for mod in mesh.modifiers:
@@ -630,13 +635,17 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
             # Standardize UV maps name
-            if mesh.data.uv_textures:
-                mesh.data.uv_textures[0].name = 'UVMap'
-            for mat_slot in mesh.material_slots:
-                if mat_slot and mat_slot.material:
-                    for tex_slot in mat_slot.material.texture_slots:
-                        if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
-                            tex_slot.uv_layer = 'UVMap'
+            if version_2_79_or_older():
+                if mesh.data.uv_textures:
+                    mesh.data.uv_textures[0].name = 'UVMap'
+                for mat_slot in mesh.material_slots:
+                    if mat_slot and mat_slot.material:
+                        for tex_slot in mat_slot.material.texture_slots:
+                            if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
+                                tex_slot.uv_layer = 'UVMap'
+            else:
+                if mesh.data.uv_layers:
+                    mesh.data.uv_layers[0].name = 'UVMap'
 
     # Join the meshes
     if bpy.ops.object.join.poll():
@@ -645,7 +654,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
         return None
 
     # Rename result to Body and correct modifiers
-    mesh = bpy.context.scene.objects.active
+    mesh = tools.common.get_active()
     if mesh:
         mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
@@ -835,7 +844,7 @@ def can_remove_shapekey(key_block):
 def separate_by_verts():
     for obj in bpy.context.selected_objects:
         if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
-            bpy.context.scene.objects.active = obj
+            tools.common.set_active(obj)
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type='VERT')
         for vgroup in obj.vertex_groups:
@@ -1086,7 +1095,13 @@ def delete_hierarchy(obj):
 
     result = bpy.ops.object.delete()
 
-    bpy.context.scene.objects.unlink(obj)
+    if version_2_79_or_older():
+        bpy.context.scene.objects.unlink(obj)
+    else:
+        pass
+        # TODO
+        # bpy.context.view_layer.objects.unlink(obj)
+
     bpy.data.objects.remove(obj)
 
     if result == {'FINISHED'}:
@@ -1183,7 +1198,7 @@ def delete_zero_weight(armature_name=None, ignore=''):
 def remove_unused_objects():
     for obj in bpy.data.objects:
         if (obj.type == 'CAMERA' and obj.name == 'Camera') \
-                or (obj.type == 'LAMP' and obj.name == 'Lamp') \
+                or (obj.type in ['LAMP', 'LIGHT'] and obj.name == 'Lamp') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
             delete_hierarchy(obj)
 
@@ -1388,6 +1403,12 @@ def has_shapekeys(mesh):
     if not hasattr(mesh.data, 'shape_keys'):
         return False
     return hasattr(mesh.data.shape_keys, 'key_blocks')
+
+
+def matmul(a, b):
+    if version_2_79_or_older():
+        return a*b
+    return a.__matmul__(b)
 
 
 """

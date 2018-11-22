@@ -33,6 +33,7 @@ import tools.common
 import tools.translate
 import tools.armature_bones as Bones
 import mmd_tools_local.operators.morph
+from tools.common import version_2_79_or_older
 
 import math
 from mathutils import Matrix
@@ -204,16 +205,20 @@ class FixArmature(bpy.types.Operator):
         # Reset to default
         armature = tools.common.set_default_stage()
 
-        # Set better bone view
-        armature.data.draw_type = 'OCTAHEDRAL'
-        armature.draw_type = 'WIRE'
-        armature.show_x_ray = True
-        armature.data.show_bone_custom_shapes = False
-        armature.layers[0] = True
+        if version_2_79_or_older():
+            # Set better bone view
+            armature.data.draw_type = 'OCTAHEDRAL'
+            armature.draw_type = 'WIRE'
+            armature.show_x_ray = True
+            armature.data.show_bone_custom_shapes = False
+            armature.layers[0] = True
 
-        # Disable backface culling
-        if context.area:
-            context.area.spaces[0].show_backface_culling = False
+            # Disable backface culling
+            if context.area:
+                context.area.spaces[0].show_backface_culling = False
+        else:
+            pass
+            # TODO
 
         # Remove Rigidbodies and joints
         to_delete = []
@@ -295,20 +300,28 @@ class FixArmature(bpy.types.Operator):
 
         # Combines same materials
         if context.scene.combine_mats:
-            bpy.ops.combine.mats()
+            if version_2_79_or_older():
+                bpy.ops.combine.mats()
+            else:
+                pass
+                # TODO
         else:
             # At least clean material names. Combining mats would do this otherwise
             tools.common.clean_material_names(mesh)
 
         # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
-        all_transparent = True
-        for mat_slot in mesh.material_slots:
-            mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
-            if mat_slot.material.alpha > 0:
-                all_transparent = False
-        if all_transparent:
+        if version_2_79_or_older():
+            all_transparent = True
             for mat_slot in mesh.material_slots:
-                mat_slot.material.alpha = 1
+                mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
+                if mat_slot.material.alpha > 0:
+                    all_transparent = False
+            if all_transparent:
+                for mat_slot in mesh.material_slots:
+                    mat_slot.material.alpha = 1
+        else:
+            pass
+            # TODO
 
         # Reorders vrc shape keys to the correct order
         tools.common.sort_shape_keys(mesh.name)
@@ -848,7 +861,7 @@ class FixArmature(bpy.types.Operator):
             hips = armature.pose.bones.get('Hips')
 
             obj = hips.id_data
-            matrix_final = obj.matrix_world * hips.matrix
+            matrix_final = tools.common.matmul(obj.matrix_world, hips.matrix)
             # print(matrix_final)
             # print(matrix_final[2][3])
             # print(fbx)
@@ -857,7 +870,7 @@ class FixArmature(bpy.types.Operator):
                 # print(hips.head[0], hips.head[1], hips.head[2])
                 # Rotation of -180 around the X-axis
                 rot_x_neg180 = Matrix.Rotation(-math.pi, 4, 'X')
-                armature.matrix_world = rot_x_neg180 * armature.matrix_world
+                armature.matrix_world = tools.common.matmul(rot_x_neg180, armature.matrix_world)
 
                 mesh.rotation_euler = (math.radians(180), 0, 0)
 
@@ -932,7 +945,7 @@ class FixArmature(bpy.types.Operator):
                             if not temp_list_reparent_bones.get(child.name):
                                 temp_list_reparent_bones[child.name] = bone[0]
 
-                    # print(bone[1] + " to " + bone[0])
+                    print(vg.name + " to " + bone[0])
                     tools.common.mix_weights(mesh, vg.name, bone[0])
 
         # Old mixing weights. Still important

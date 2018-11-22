@@ -154,8 +154,11 @@ class SelfShadowFrameKey:
     def load(self, fin):
         self.frame_number, = struct.unpack('<L', fin.read(4))
         self.mode, = struct.unpack('<b', fin.read(1))
+        if self.mode not in range(3):
+            print(' * Invalid self shadow mode %d at frame %d'%(self.mode, self.frame_number))
+            raise struct.error
         distance, = struct.unpack('<f', fin.read(4))
-        self.distance = int(10000 - distance*100000)
+        self.distance = 10000 - distance*100000
         print('    ', self)
 
     def save(self, fin):

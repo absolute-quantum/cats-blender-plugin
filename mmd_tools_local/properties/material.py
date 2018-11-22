@@ -4,6 +4,7 @@ import bpy
 from bpy.types import PropertyGroup
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
 
+from mmd_tools_local import register_wrap
 from mmd_tools_local.core import material
 from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.model import Model
@@ -71,6 +72,7 @@ def _setNameJ(prop, value):
 #===========================================
 # Property classes
 #===========================================
+@register_wrap
 class MMDMaterial(PropertyGroup):
     """ マテリアル
     """

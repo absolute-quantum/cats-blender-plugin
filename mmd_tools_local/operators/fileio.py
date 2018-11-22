@@ -11,6 +11,7 @@ from bpy.types import Operator
 from bpy.types import OperatorFileListElement
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 
+from mmd_tools_local import register_wrap
 from mmd_tools_local import auto_scene_setup
 from mmd_tools_local.utils import makePmxBoneMap
 from mmd_tools_local.core.camera import MMDCamera
@@ -59,7 +60,7 @@ def _update_types(cls, prop):
     if types != cls.types:
         cls.types = types # trigger update
 
-
+@register_wrap
 class ImportPmx(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_model'
     bl_label = 'Import Model File (.pmd, .pmx)'
@@ -204,7 +205,7 @@ class ImportPmx(Operator, ImportHelper):
 
         return {'FINISHED'}
 
-
+@register_wrap
 class ImportVmd(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_vmd'
     bl_label = 'Import VMD File (.vmd)'
@@ -319,7 +320,7 @@ class ImportVmd(Operator, ImportHelper):
         context.scene.frame_set(context.scene.frame_current)
         return {'FINISHED'}
 
-
+@register_wrap
 class ImportVpd(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_vpd'
     bl_label = 'Import VPD File (.vpd)'
@@ -415,7 +416,7 @@ class ImportVpd(Operator, ImportHelper):
                 importer.assign(i)
         return {'FINISHED'}
 
-
+@register_wrap
 class ExportPmx(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_pmx'
     bl_label = 'Export PMX File (.pmx)'
@@ -549,7 +550,7 @@ class ExportPmx(Operator, ExportHelper):
 
         return {'FINISHED'}
 
-
+@register_wrap
 class ExportVmd(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_vmd'
     bl_label = 'Export VMD File (.vmd)'
@@ -629,7 +630,7 @@ class ExportVmd(Operator, ExportHelper):
 
         return {'FINISHED'}
 
-
+@register_wrap
 class ExportVpd(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_vpd'
     bl_label = 'Export VPD File (.vpd)'

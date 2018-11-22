@@ -4,15 +4,16 @@ import bpy
 import math
 import mathutils
 
-
 from bpy.types import Operator
 
-import mmd_tools_local.core.model as mmd_model
-from mmd_tools_local.core import rigid_body
+from mmd_tools_local import register_wrap
 from mmd_tools_local import utils
+from mmd_tools_local.core import rigid_body
+import mmd_tools_local.core.model as mmd_model
 
+@register_wrap
 class SelectRigidBody(Operator):
-    bl_idname = 'mmd_tools.select_rigid_body'
+    bl_idname = 'mmd_tools.rigid_body_select'
     bl_label = 'Select Rigid Body'
     bl_description = 'Select similar rigidbody objects which have the same property values with active rigidbody object'
     bl_options = {'REGISTER', 'UNDO'}
@@ -78,8 +79,9 @@ class SelectRigidBody(Operator):
 
         return { 'FINISHED' }
 
+@register_wrap
 class AddRigidBody(Operator):
-    bl_idname = 'mmd_tools.add_rigid_body'
+    bl_idname = 'mmd_tools.rigid_body_add'
     bl_label = 'Add Rigid Body'
     bl_description = 'Add Rigid Bodies to selected bones'
     bl_options = {'REGISTER', 'UNDO', 'PRESET', 'INTERNAL'}
@@ -263,8 +265,9 @@ class AddRigidBody(Operator):
         vm = context.window_manager
         return vm.invoke_props_dialog(self)
 
+@register_wrap
 class RemoveRigidBody(Operator):
-    bl_idname = 'mmd_tools.remove_rigid_body'
+    bl_idname = 'mmd_tools.rigid_body_remove'
     bl_label = 'Remove Rigid Body'
     bl_description = 'Deletes the currently selected Rigid Body'
     bl_options = {'REGISTER', 'UNDO'}
@@ -282,8 +285,9 @@ class RemoveRigidBody(Operator):
             utils.selectAObject(root)
         return { 'FINISHED' } 
 
+@register_wrap
 class AddJoint(Operator): 
-    bl_idname = 'mmd_tools.add_joint'
+    bl_idname = 'mmd_tools.joint_add'
     bl_label = 'Add Joint'
     bl_description = 'Add Joint(s) to selected rigidbody objects'
     bl_options = {'REGISTER', 'UNDO', 'PRESET', 'INTERNAL'}
@@ -415,8 +419,9 @@ class AddJoint(Operator):
         vm = context.window_manager
         return vm.invoke_props_dialog(self)
 
+@register_wrap
 class RemoveJoint(Operator):
-    bl_idname = 'mmd_tools.remove_joint'
+    bl_idname = 'mmd_tools.joint_remove'
     bl_label = 'Remove Joint'
     bl_description = 'Deletes the currently selected Joint'
     bl_options = {'REGISTER', 'UNDO'}

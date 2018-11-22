@@ -42,6 +42,7 @@ class VPDImporter:
         if self.__bone_mapper:
             pose_bones = self.__bone_mapper(armObj)
 
+        matmul = bpyutils.matmul
         pose_data = {}
         for b in self.__vpd_file.bones:
             bone = pose_bones.get(b.bone_name, None)
@@ -52,7 +53,7 @@ class VPDImporter:
             loc = converter.convert_location(b.location)
             rot = converter.convert_rotation(b.rotation)
             assert(bone not in pose_data)
-            pose_data[bone] = Matrix.Translation(loc) * rot.to_matrix().to_4x4()
+            pose_data[bone] = matmul(Matrix.Translation(loc), rot.to_matrix().to_4x4())
 
         for bone in armObj.pose.bones:
             vpd_pose = pose_data.get(bone, None)

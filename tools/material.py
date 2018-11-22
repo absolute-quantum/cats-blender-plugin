@@ -44,6 +44,11 @@ class OneTexPerMatButton(bpy.types.Operator):
         return len(tools.common.get_meshes_objects()) > 0
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         tools.common.set_default_stage()
 
         for mesh in tools.common.get_meshes_objects():
@@ -71,6 +76,11 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
         return len(tools.common.get_meshes_objects()) > 0
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         tools.common.set_default_stage()
 
         for mesh in tools.common.get_meshes_objects():
@@ -97,6 +107,11 @@ class StandardizeTextures(bpy.types.Operator):
         return len(tools.common.get_meshes_objects()) > 0
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         tools.common.set_default_stage()
 
         for mesh in tools.common.get_meshes_objects():
@@ -219,6 +234,11 @@ class CombineMaterialsButton(bpy.types.Operator):
         # print('CREATED COMBINED TEX', self.combined_tex)
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         tools.common.set_default_stage()
         self.generate_combined_tex()
         tools.common.switch('OBJECT')

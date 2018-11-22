@@ -55,6 +55,11 @@ class AutoAtlasNewButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         # Check if shotariyas plugin is correctly set up
         if not shotariya_installed():
             return {'CANCELLED'}
@@ -264,6 +269,11 @@ class GenerateMaterialListButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         if not shotariya_installed():
             return {'CANCELLED'}
 

@@ -591,70 +591,60 @@ comment(english):
 %s
 ''', self.name, self.name_e, self.comment, self.comment_e)
 
-        logging.info('exporting vertices...')
+        logging.info('exporting vertices... %d', len(self.vertices))
         fs.writeInt(len(self.vertices))
         for i in self.vertices:
             i.save(fs)
-        logging.info('the number of vetices: %d', len(self.vertices))
         logging.info('finished exporting vertices.')
 
-        logging.info('exporting faces...')
+        logging.info('exporting faces... %d', len(self.faces))
         fs.writeInt(len(self.faces)*3)
         for f3, f2, f1 in self.faces:
             fs.writeVertexIndex(f1)
             fs.writeVertexIndex(f2)
             fs.writeVertexIndex(f3)
-        logging.info('the number of faces: %d', len(self.faces))
         logging.info('finished exporting faces.')
 
-        logging.info('exporting textures...')
+        logging.info('exporting textures... %d', len(self.textures))
         fs.writeInt(len(self.textures))
         for i in self.textures:
             i.save(fs)
-        logging.info('the number of textures: %d', len(self.textures))
         logging.info('finished exporting textures.')
 
-        logging.info('exporting materials...')
+        logging.info('exporting materials... %d', len(self.materials))
         fs.writeInt(len(self.materials))
         for i in self.materials:
             i.save(fs)
-        logging.info('the number of materials: %d', len(self.materials))
         logging.info('finished exporting materials.')
 
-        logging.info('exporting bones...')
+        logging.info('exporting bones... %d', len(self.bones))
         fs.writeInt(len(self.bones))
         for i in self.bones:
             i.save(fs)
-        logging.info('the number of bones: %d', len(self.bones))
         logging.info('finished exporting bones.')
 
-        logging.info('exporting morphs...')
+        logging.info('exporting morphs... %d', len(self.morphs))
         fs.writeInt(len(self.morphs))
         for i in self.morphs:
             i.save(fs)
-        logging.info('the number of morphs: %d', len(self.morphs))
         logging.info('finished exporting morphs.')
 
-        logging.info('exporting display items...')
+        logging.info('exporting display items... %d', len(self.display))
         fs.writeInt(len(self.display))
         for i in self.display:
             i.save(fs)
-        logging.info('the number of display items: %d', len(self.display))
         logging.info('finished exporting display items.')
 
-        logging.info('exporting rigid bodies...')
+        logging.info('exporting rigid bodies... %d', len(self.rigids))
         fs.writeInt(len(self.rigids))
         for i in self.rigids:
-            logging.debug('  Rigid: %s', i.name)
             i.save(fs)
-        logging.info('the number of rigid bodies: %d', len(self.rigids))
         logging.info('finished exporting rigid bodies.')
 
-        logging.info('exporting joints...')
+        logging.info('exporting joints... %d', len(self.joints))
         fs.writeInt(len(self.joints))
         for i in self.joints:
             i.save(fs)
-        logging.info('the number of joints: %d', len(self.joints))
         logging.info('finished exporting joints.')
         logging.info('finished exporting the model.')
 
