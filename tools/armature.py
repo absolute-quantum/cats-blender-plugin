@@ -468,6 +468,9 @@ class FixArmature(bpy.types.Operator):
             if name[-2:] == 'S0':
                 name = name[:-2]
 
+            if name[-4:] == '_Jnt':
+                name = name[:-4]
+
             bone.name = name
 
         # Add conflicting bone names to new list

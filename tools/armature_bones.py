@@ -280,7 +280,7 @@ bone_rename['Hips'] = [
     'Root_Hips_1',
     'Root_Hips_2',
     'Pelvis_Def',
-    'Kosi_Jnt',
+    'Kosi',
 ]
 bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
     'Spine',  # First entry!
@@ -410,7 +410,7 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Stomach_Def',
     'Chest_Def',
 
-    'Mune_Jnt',
+    'Mune',
 
     'SpineTop',
 
@@ -429,7 +429,7 @@ bone_rename['Neck'] = [
     'Helmet_Lower',
     'Neck_Dev',
     'Neck00',
-    'kubi_jnt',
+    'kubi',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
@@ -511,7 +511,7 @@ bone_rename['\Left arm'] = [
     'Arm_\Left_Sh_2',
     '\Larm1',
     'Shoulder(\L)_1',
-    '\L_Ude_Jnt',
+    '\L_Ude',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -551,7 +551,7 @@ bone_rename['\Left elbow'] = [
     '\Larm2',
     'Hand(\L)07',
     'Lowarm_\L',
-    '\L_Hiji_Jnt',
+    '\L_Hiji',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -577,7 +577,7 @@ bone_rename['\Left wrist'] = [
     '\Lf_Wrist',
     'Palm_\L',
     'Hand(\L)00',
-    '\L_Te_Jnt',
+    '\L_Te',
 ]
 bone_rename['Left wrist'] = [
     'Left_Hand_003'
@@ -624,7 +624,7 @@ bone_rename['\Left leg'] = [
     'Thigh00_\L',
     '\Lfoot1',
     'Leg(\L)04',
-    '\L_Momo_Jnt',
+    '\L_Momo',
     'Leg_Thigh_\L',
     '\L_Leg',
 ]
@@ -662,7 +662,7 @@ bone_rename['\Left knee'] = [
     'Leg01_\L',
     '\Lfoot2',
     'Leg(\L)00',
-    '\L_Sune_Jnt',
+    '\L_Sune',
     'Leg_Calf_\L',
 ]
 bone_rename['\Left ankle'] = [
@@ -692,7 +692,7 @@ bone_rename['\Left ankle'] = [
     '\Lf_Ankle',
     '\Left_Heel',
     'Leg(\L)02',
-    '\L_Asi_Jnt',
+    '\L_Asi',
 ]
 bone_rename['\Left toe'] = [
     '\Left_Toe',
@@ -1013,6 +1013,7 @@ bone_reweight['\Left elbow'] = [
     'Forearm01_\L',
     'Elboback_\L',
     '\L_Wrist_EX',
+    'HandHelperBone_\L',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1047,6 +1048,7 @@ bone_reweight['\Left wrist'] = [
     'Bip_\L_Carpal2',
     'Bip_\L_Carpal3',
     'Bip_\L_Carpal4',
+    'Offset_Hand_\L',
 ]
 bone_reweight['Left wrist'] = [
     'Left_Hand_002',
