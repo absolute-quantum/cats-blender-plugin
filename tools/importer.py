@@ -41,8 +41,10 @@ except:
 
 
 ICON_URL = 'URL'
+ICON_EXPORT = 'EXPORT'
 if version_2_79_or_older():
     ICON_URL = 'LOAD_FACTORY'
+    ICON_EXPORT = 'LOAD_FACTORY'
 
 
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
@@ -386,6 +388,14 @@ class SourceToolsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+# Export checks
+_meshes_count = 0
+_meshes_too_big = {}
+_mat_list = []
+_broken_shapes = []
+_textures_found = False
+
+
 class ExportModel(bpy.types.Operator):
     bl_idname = 'importer.export_model'
     bl_label = 'Export Model'
@@ -395,59 +405,76 @@ class ExportModel(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     action = bpy.props.EnumProperty(
-        items=(('CHECK', '', ''),
-               ('NO_CHECK', '', '')))
+        items=(('CHECK', '', 'Please Ignore'),
+               ('NO_CHECK', '', 'Please Ignore')))
 
     def execute(self, context):
         # Check for warnings
-        print(self.action)
         if not self.action == 'NO_CHECK':
-            mat_list = []
-            meshes = tools.common.get_meshes_objects()
-            textures_found = False
+            global _meshes_count, _meshes_too_big, _mat_list, _broken_shapes, _textures_found
 
-            if len(meshes) > 10:
-                bpy.ops.display.error('INVOKE_DEFAULT')
-                return {'FINISHED'}
+            # Reset export checks
+            _meshes_count = 0
+            _meshes_too_big = {}
+            _mat_list = []
+            _broken_shapes = []
+            _textures_found = False
 
-            for mesh in meshes:
-                if len(mesh.data.polygons) >= 65535:
-                    bpy.ops.display.error('INVOKE_DEFAULT')
-                    return {'FINISHED'}
+            # Check for export warnings
+            for mesh in tools.common.get_meshes_objects():
+                # Check mesh count
+                _meshes_count += 1
+
+                # Check tris count
+                tris = len(mesh.data.polygons)
+                if tris >= 65535:
+                    _meshes_too_big[mesh.name] = tris
+
+                # Check material count
                 for mat_slot in mesh.material_slots:
-                    if mat_slot and mat_slot.material and mat_slot.material.name not in mat_list:
-                        mat_list.append(mat_slot.material.name)
+                    if mat_slot and mat_slot.material and mat_slot.material.name not in _mat_list:
+                        _mat_list.append(mat_slot.material.name)
 
+                # Check if any textures are found
                         if version_2_79_or_older():
-                            if not textures_found:
+                            if not _textures_found:
                                 for tex_slot in mat_slot.material.texture_slots:
                                     if tex_slot and tex_slot.texture:
                                         tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
                                         if os.path.isfile(tex_path):
-                                            textures_found = True
+                                            _textures_found = True
                                             break
                         else:
-                            pass
+                            _textures_found = True
                             # TODO
 
+                # Check if there are broken shapekeys
                 if tools.common.has_shapekeys(mesh):
                     for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
                         if i == 0:
                             continue
-                        for i2, vert in enumerate(shapekey.data):
+                        vert_count = 0
+                        for vert in shapekey.data:
+                            vert_count += 1
                             for coord in vert.co:
-                                if coord > 10000:
-                                    bpy.ops.display.error('INVOKE_DEFAULT')
-                                    return {'FINISHED'}
-                            if i2 >= 4:
+                                if coord >= 10000:
+                                    _broken_shapes.append(shapekey.name)
+                                    vert_count = 1000
+                                    break
+                            # Only check the first 10 vertices of this shapekey
+                            if vert_count == 1000:
                                 break
 
-            if not textures_found and tools.settings.get_embed_textures():
-                bpy.ops.display.error('INVOKE_DEFAULT')
-
-            if len(mat_list) > 10:
+            # Check if a warning should be shown
+            if _meshes_count > 1 \
+                    or len(_meshes_too_big) > 0 \
+                    or len(_mat_list) > 4 \
+                    or len(_broken_shapes) > 0\
+                    or not _textures_found and tools.settings.get_embed_textures():
                 bpy.ops.display.error('INVOKE_DEFAULT')
                 return {'FINISHED'}
+
+        # Continue if there are no errors or the check was skipped
 
         # Check if copy protection is enabled
         mesh_smooth_type = 'OFF'
@@ -465,29 +492,8 @@ class ExportModel(bpy.types.Operator):
 
         # Check if textures are found and if they should be embedded
         path_mode = 'AUTO'
-        if tools.settings.get_embed_textures():
+        if _textures_found and tools.settings.get_embed_textures():
             path_mode = 'COPY'
-
-        textures_found = False
-        if version_2_79_or_older():
-            for mesh in tools.common.get_meshes_objects():
-                if textures_found:
-                    break
-                for mat_slot in mesh.material_slots:
-                    if textures_found:
-                        break
-                    if mat_slot and mat_slot.material:
-                        for tex_slot in mat_slot.material.texture_slots:
-                            if tex_slot and tex_slot.texture:
-                                tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                                if os.path.isfile(tex_path):
-                                    textures_found = True
-                                    break
-        else:
-            pass
-            # TODO
-        if not textures_found:
-            path_mode = 'AUTO'
 
         # Open export window
         try:
@@ -520,45 +526,12 @@ class ErrorDisplay(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        self.meshes_too_big = {}
-        self.mat_list = []
-        self.meshes_count = 0
-        self.broken_shapes = []
-        self.textures_found = False
-        for mesh in tools.common.get_meshes_objects():
-            tris = len(mesh.data.polygons)
-            if tris >= 65535:
-                self.meshes_too_big[mesh.name] = tris
-            for mat_slot in mesh.material_slots:
-                if mat_slot and mat_slot.material and mat_slot.material.name not in self.mat_list:
-                    self.mat_list.append(mat_slot.material.name)
-
-                    if version_2_79_or_older():
-                        if not self.textures_found:
-                            for tex_slot in mat_slot.material.texture_slots:
-                                if tex_slot and tex_slot.texture:
-                                    tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                                    if os.path.isfile(tex_path):
-                                        self.textures_found = True
-                                        break
-                    else:
-                        pass
-                        # TODO
-            self.meshes_count += 1
-
-            if tools.common.has_shapekeys(mesh):
-                for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                    if i == 0:
-                        continue
-                    for i2, vert in enumerate(shapekey.data):
-                        for coord in vert.co:
-                            if coord > 10000:
-                                print(shapekey.name, coord)
-                                self.broken_shapes.append(shapekey.name)
-                                i2 = 10
-                                break
-                        if i2 >= 4:
-                            break
+        global _meshes_count, _meshes_too_big, _mat_list, _broken_shapes, _textures_found
+        self.meshes_count = _meshes_count
+        self.meshes_too_big = _meshes_too_big
+        self.mat_list = _mat_list
+        self.broken_shapes = _broken_shapes
+        self.textures_found = _textures_found
 
         dpi_value = bpy.context.user_preferences.system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
@@ -597,7 +570,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if len(self.mat_list) > 10:
+        if len(self.mat_list) > 4:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Model unoptimized!", icon='ERROR')
@@ -619,8 +592,9 @@ class ErrorDisplay(bpy.types.Operator):
             row.label(text="The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
             col.separator()
             col.separator()
+            col.separator()
 
-        if self.meshes_count > 10:
+        if self.meshes_count > 1:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Model unoptimized!", icon='ERROR')
@@ -635,7 +609,12 @@ class ErrorDisplay(bpy.types.Operator):
             row.label(text="It will be extremely unoptimized and cause lag for you and others.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Please be considerate and join your meshes.")
+            row.label(text="Please be considerate and join your meshes, it's easy:")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1
+            row.operator('armature_manual.join_meshes', text='Join Meshes', icon='AUTOMERGE_ON')
+            col.separator()
             col.separator()
             col.separator()
 
@@ -664,6 +643,7 @@ class ErrorDisplay(bpy.types.Operator):
             row.label(text="Either delete or repair them before export.")
             col.separator()
             col.separator()
+            col.separator()
 
         if not self.textures_found and tools.settings.get_embed_textures():
             row = col.row(align=True)
@@ -682,6 +662,7 @@ class ErrorDisplay(bpy.types.Operator):
             row.label(text="This is not an issue, but you will have to import the textures manually into Unity.")
             col.separator()
             col.separator()
+            col.separator()
 
         row = col.row(align=True)
-        row.operator('importer.export_model', text='Continue to Export', icon=ICON_URL).action = 'NO_CHECK'
+        row.operator('importer.export_model', text='Continue to Export', icon=ICON_EXPORT).action = 'NO_CHECK'

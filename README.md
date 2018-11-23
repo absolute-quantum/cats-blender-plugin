@@ -344,6 +344,7 @@ It checks for a new version automatically once every day.
   - Put some model options under a "Show More Options" button
   - Added separate buttons to enable and disable the Full Body tracking fix
   - Added Duplicate Bones button
+  - Improved Export button warnings
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed
 - **Shapekeys**:

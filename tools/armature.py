@@ -169,7 +169,6 @@ class FixArmature(bpy.types.Operator):
                     bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
                 wm.progress_end()
 
-
         # Perform source engine specific operations
         # Check if model is source engine model
         source_engine = False
@@ -220,8 +219,8 @@ class FixArmature(bpy.types.Operator):
             armature.show_in_front = True
             armature.data.display_type = 'OCTAHEDRAL'
             armature.data.show_bone_custom_shapes = False
-            bpy.context.space_data.overlay.show_transparent_bones = True
-            bpy.context.space_data.overlay.show_backface_culling = False
+            context.space_data.overlay.show_transparent_bones = True
+            context.space_data.overlay.show_backface_culling = False
 
         # Remove Rigidbodies and joints
         to_delete = []
