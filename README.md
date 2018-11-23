@@ -345,6 +345,9 @@ It checks for a new version automatically once every day.
   - Added separate buttons to enable and disable the Full Body tracking fix
   - Added Duplicate Bones button
   - Improved Export button warnings
+- **Translations**:
+  - Locally stored Google Translations no longer get deleted after 30 day
+  - Added a button to the settings menu to manually delete all local Google translations
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed
 - **Shapekeys**:
@@ -352,7 +355,7 @@ It checks for a new version automatically once every day.
 - **General**:
   - Updated to Blender 2.8
     - It is still compatible to Blender 2.79
-    - Materials will not work currently
+    - Combining materials and creating a texture atlas is not yet possible
   - Updated mmd_tools (for 2.8 compatibility)
 
 #### 0.11.2

@@ -1731,6 +1731,9 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         # row.prop(context.scene, 'use_custom_mmd_tools')
         # row = col.row(align=True)
         # row.prop(context.scene, 'disable_vrchat_features')
+        row = col.row(align=True)
+        row.scale_y = 0.8
+        row.operator('settings.reset_google_dict', icon='X')
 
         if tools.settings.settings_changed():
             col.separator()
@@ -2034,6 +2037,7 @@ classesToRegister = [
     UpdaterPanel,
     UpdaterPreferences,
     tools.settings.RevertChangesButton,
+    tools.settings.ResetGoogleDictButton,
 
     SupporterPanel,
     tools.supporter.PatreonButton,

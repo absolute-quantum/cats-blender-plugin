@@ -533,18 +533,21 @@ def fix_jp_chars(name):
 
 
 def google_dict_too_old():
-    created = datetime.strptime(dictionary_google.get('created'), time_format)
-    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
+    # Let the user decide when to refresh the google dict
+    return False
 
-    time_delta = abs((utc_now - created).days)
-
-    print('DAYS SINCE GOOGLE DICT CREATION:', time_delta)
-
-    if time_delta <= 30:
-        return False
-
-    print('DICT TOO OLD')
-    return True
+    # created = datetime.strptime(dictionary_google.get('created'), time_format)
+    # utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
+    #
+    # time_delta = abs((utc_now - created).days)
+    #
+    # print('DAYS SINCE GOOGLE DICT CREATION:', time_delta)
+    #
+    # if time_delta <= 30:
+    #     return False
+    #
+    # print('DICT TOO OLD')
+    # return True
 
 
 def reset_google_dict():

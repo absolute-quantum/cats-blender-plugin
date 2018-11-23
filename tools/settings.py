@@ -31,6 +31,7 @@ import time
 import pathlib
 import collections
 import tools.supporter
+import tools.translate
 from threading import Thread
 from datetime import datetime
 from collections import OrderedDict
@@ -61,6 +62,19 @@ class RevertChangesButton(bpy.types.Operator):
             setattr(bpy.context.scene, setting, settings_data_unchanged.get(setting))
         save_settings()
         self.report({'INFO'}, 'Settings reverted.')
+        return {'FINISHED'}
+
+
+class ResetGoogleDictButton(bpy.types.Operator):
+    bl_idname = 'settings.reset_google_dict'
+    bl_label = 'Clear Local Google Translations'
+    bl_description = "Deletes all currently saved Google Translations. You can't undo this"
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        tools.translate.reset_google_dict()
+        tools.translate.load_translations()
+        self.report({'INFO'}, 'Local Google Dictionary cleared!')
         return {'FINISHED'}
 
 
