@@ -33,6 +33,7 @@ import pathlib
 import tools.common
 import requests.exceptions
 import mmd_tools_local.translations
+from tools.register import register_wrap
 
 from datetime import datetime, timezone
 from googletrans import Translator
@@ -50,6 +51,7 @@ dictionary_file = os.path.join(resources_dir, "dictionary.json")
 dictionary_google_file = os.path.join(resources_dir, "dictionary_google.json")
 
 
+@register_wrap
 class TranslateShapekeyButton(bpy.types.Operator):
     bl_idname = 'translate.shapekeys'
     bl_label = 'Translate Shape Keys'
@@ -86,6 +88,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
     bl_label = 'Translate Bones'
@@ -117,6 +120,7 @@ class TranslateBonesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateObjectsButton(bpy.types.Operator):
     bl_idname = 'translate.objects'
     bl_label = 'Translate Meshes & Objects'
@@ -160,6 +164,7 @@ class TranslateObjectsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'translate.materials'
     bl_label = 'Translate Materials'
@@ -195,6 +200,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
     bl_label = 'Translate Textures'
@@ -242,6 +248,7 @@ class TranslateTexturesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateAllButton(bpy.types.Operator):
     bl_idname = 'translate.all'
     bl_label = 'Translate Everything'

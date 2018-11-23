@@ -24,41 +24,21 @@
 # Edits by: Hotox
 
 import bpy
-import webbrowser
-from tools.register import register_wrap
+
+__bl_classes = []
+__make_annotations = (not bpy.app.version < (2, 79, 9))
 
 
-@register_wrap
-class ForumButton(bpy.types.Operator):
-    bl_idname = 'credits.forum'
-    bl_label = 'Go to the Forums'
-
-    def execute(self, context):
-        webbrowser.open('https://vrcat.club/threads/cats-blender-plugin.6/')
-
-        self.report({'INFO'}, 'Forum opened')
-        return {'FINISHED'}
-
-
-@register_wrap
-class DiscordButton(bpy.types.Operator):
-    bl_idname = 'credits.discord'
-    bl_label = 'Join our Discord'
-
-    def execute(self, context):
-        webbrowser.open('https://discord.gg/f8yZGnv')
-
-        self.report({'INFO'}, 'Discord opened')
-        return {'FINISHED'}
-
-
-@register_wrap
-class PatchnotesButton(bpy.types.Operator):
-    bl_idname = 'credits.patchnotes'
-    bl_label = 'Latest Patchnotes'
-
-    def execute(self, context):
-        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/releases')
-
-        self.report({'INFO'}, 'patchnotes opened')
-        return {'FINISHED'}
+def register_wrap(cls):
+    if __make_annotations:
+        bl_props = {k:v for k, v in cls.__dict__.items() if isinstance(v, tuple)}
+        if bl_props:
+            if '__annotations__' not in cls.__dict__:
+                setattr(cls, '__annotations__', {})
+            annotations = cls.__dict__['__annotations__']
+            for k, v in bl_props.items():
+                annotations[k] = v
+                delattr(cls, k)
+    if hasattr(cls, 'bl_rna'):
+        __bl_classes.append(cls)
+    return cls

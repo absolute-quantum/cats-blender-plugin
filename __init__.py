@@ -54,6 +54,7 @@ if "tools" not in locals():
     import tools.bonemerge
     import tools.common
     from tools.common import version_2_79_or_older
+    from tools.register import register_wrap
     import tools.copy_protection
     import tools.credits
     import tools.decimation
@@ -790,6 +791,7 @@ def _layout_split(layout, factor=0.0, align=False):
     return layout.split(factor=factor, align=align)
 
 
+@register_wrap
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature_v1'
     bl_label = 'Model'
@@ -978,6 +980,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         # addon_updater_ops.update_notice_box_ui(self, context)
 
 
+@register_wrap
 class ManualPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_manual_v1'
     bl_label = 'Model Options'
@@ -1101,6 +1104,7 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.operator('armature_manual.fix_vrm_shapes', icon='SHAPEKEY_DATA')
 
 
+@register_wrap
 class CustomPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_custom_v1'
     bl_label = 'Custom Model Creation'
@@ -1195,6 +1199,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.operator('armature_custom.attach_mesh', icon='ARMATURE_DATA')
 
 
+@register_wrap
 class DecimationPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_decimation_v1'
     bl_label = 'Decimation'
@@ -1321,7 +1326,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 1.2
         row.operator('auto.decimate', icon='MOD_DECIM')
 
-
+# @register_wrap
 # class ShapekeyList(bpy.types.UIList):
 #     # The draw_item function is called for each item of the collection that is visible in the list.
 #     #   data is the RNA object containing the collection,
@@ -1345,6 +1350,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
 #     bl_label = "List Action"
 
 
+@register_wrap
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_eye_v1'
     bl_label = 'Eye Tracking'
@@ -1432,7 +1438,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
         else:
             armature = tools.common.get_armature()
             if not armature:
-                box.label('No model found!', icon='ERROR')
+                box.label(text='No model found!', icon='ERROR')
                 return
 
             if bpy.context.active_object is not None and bpy.context.active_object.mode != 'POSE':
@@ -1517,6 +1523,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row.operator('eyes.test_stop', icon='PAUSE')
 
 
+@register_wrap
 class VisemePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_viseme_v1'
     bl_label = 'Visemes'
@@ -1558,6 +1565,7 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         row.operator('auto.viseme', icon='TRIA_RIGHT')
 
 
+@register_wrap
 class BoneRootPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_boneroot_v1'
     bl_label = 'Bone Parenting'
@@ -1573,6 +1581,7 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
         row.operator('root.function', icon='TRIA_RIGHT')
 
 
+@register_wrap
 class AtlasList(bpy.types.UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         mat = item.material
@@ -1583,6 +1592,7 @@ class AtlasList(bpy.types.UIList):
         row.prop(mat, 'add_to_atlas', text='')
 
 
+@register_wrap
 class OptimizePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_optimize_v1'
     bl_label = 'Optimization'
@@ -1613,6 +1623,13 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 0.9
             row.operator("atlas.help", text="", icon='QUESTION')
             col.separator()
+
+            if not version_2_79_or_older():
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text='Not compatible with Blender 2.8 yet!')
+                return # TODO
+
 
             if len(context.scene.material_list) == 0:
                 row = col.row(align=True)
@@ -1673,6 +1690,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.operator('bone.merge', icon='AUTOMERGE_ON')
 
 
+@register_wrap
 class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_copyprotection_v1'
     bl_label = 'Copy Protection'
@@ -1710,6 +1728,7 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
             row.operator('copyprotection.enable', icon=ICON_PROTECT)
 
 
+@register_wrap
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v2'
     bl_label = 'Settings & Updates'
@@ -1751,6 +1770,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         addon_updater_ops.update_settings_ui(self, context)
 
 
+@register_wrap
 class SupporterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_supporter_v2'
     bl_label = 'Supporters'
@@ -1842,6 +1862,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         return i
 
 
+@register_wrap
 class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_credits_v1'
     bl_label = 'Credits'
@@ -1875,6 +1896,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.operator('credits.patchnotes', icon='WORDWRAP_ON')
 
 
+@register_wrap
 class UpdaterPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
@@ -2067,17 +2089,25 @@ def register():
     except AttributeError:
         pass
 
+    for cls in tools.register.__bl_classes:
+        bpy.utils.register_class(cls)
+
     try:
         addon_updater_ops.register(bl_info)
     except ValueError:
         print('Error while registering updater.')
         pass
 
-    for value in classesToRegister:
-        bpy.utils.register_class(value)
+    # for value in classesToRegister:
+    #     bpy.utils.register_class(value)
 
-    bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
-    bpy.types.Scene.material_list_index = bpy.props.IntProperty(default=0)
+    if version_2_79_or_older():
+        bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
+        bpy.types.Scene.material_list_index = bpy.props.IntProperty(default=0)
+    # else:
+    #     bpy.types.Scene.material_list: bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
+    #     bpy.types.Scene.material_list_index: bpy.props.IntProperty(default=0)
+    # TODO
 
     # Set cats version string
     set_cats_verion_string()
@@ -2108,10 +2138,15 @@ def unregister():
     except AttributeError:
         pass
 
-    for value in reversed(classesToRegister):
-        bpy.utils.unregister_class(value)
-    tools.supporter.unregister_dynamic_buttons()
     addon_updater_ops.unregister()
+
+    for cls in reversed(tools.register.__bl_classes):
+        bpy.utils.unregister_class(cls)
+
+    # for value in reversed(classesToRegister):
+    #     bpy.utils.unregister_class(value)
+
+    tools.supporter.unregister_dynamic_buttons()
 
     tools.supporter.unload_icons()
 

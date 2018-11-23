@@ -29,6 +29,7 @@ import bmesh
 import math
 from collections import OrderedDict
 from random import random
+from tools.register import register_wrap
 
 import tools.common
 import tools.armature
@@ -37,6 +38,7 @@ import tools.armature
 iris_heights = None
 
 
+@register_wrap
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'create.eyes'
     bl_label = 'Create Eye Tracking'
@@ -474,6 +476,7 @@ eye_left_data = None
 eye_right_data = None
 
 
+@register_wrap
 class StartTestingButton(bpy.types.Operator):
     bl_idname = 'eyes.test'
     bl_label = 'Start Eye Testing'
@@ -528,6 +531,7 @@ class StartTestingButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class StopTestingButton(bpy.types.Operator):
     bl_idname = 'eyes.test_stop'
     bl_label = 'Stop Eye Testing'
@@ -628,6 +632,7 @@ def stop_testing(self, context):
         return None
 
 
+@register_wrap
 class ResetRotationButton(bpy.types.Operator):
     bl_idname = 'eyes.reset_rotation'
     bl_label = 'Reset Rotation'
@@ -649,6 +654,7 @@ class ResetRotationButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AdjustEyesButton(bpy.types.Operator):
     bl_idname = 'eyes.adjust_eyes'
     bl_label = 'Set Range'
@@ -707,6 +713,7 @@ class AdjustEyesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class StartIrisHeightButton(bpy.types.Operator):
     bl_idname = 'eyes.adjust_iris_height_start'
     bl_label = 'Start Iris Height Adjustment'
@@ -757,6 +764,7 @@ class StartIrisHeightButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TestBlinking(bpy.types.Operator):
     bl_idname = 'eyes.test_blink'
     bl_label = 'Test'
@@ -785,6 +793,7 @@ class TestBlinking(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TestLowerlid(bpy.types.Operator):
     bl_idname = 'eyes.test_lowerlid'
     bl_label = 'Test'
@@ -815,6 +824,7 @@ class TestLowerlid(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ResetBlinkTest(bpy.types.Operator):
     bl_idname = 'eyes.reset_blink_test'
     bl_label = 'Reset Shapes'

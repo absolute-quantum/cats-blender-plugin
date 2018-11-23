@@ -31,6 +31,7 @@ import webbrowser
 import tools.common
 import addon_utils
 from tools.common import version_2_79_or_older
+from tools.register import register_wrap
 
 
 addon_name = "Shotariya-don"
@@ -42,6 +43,7 @@ if version_2_79_or_older():
     ICON_URL = 'LOAD_FACTORY'
 
 
+@register_wrap
 class AutoAtlasNewButton(bpy.types.Operator):
     bl_idname = 'atlas.generate'
     bl_label = 'Create Atlas'
@@ -260,6 +262,15 @@ class AutoAtlasNewButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
+class MaterialsGroup(bpy.types.PropertyGroup):
+    material = bpy.props.PointerProperty(
+        name='Material',
+        type=bpy.types.Material
+    )
+
+
+@register_wrap
 class GenerateMaterialListButton(bpy.types.Operator):
     bl_idname = 'atlas.gen_mat_list'
     bl_label = 'Generate Material List'
@@ -307,6 +318,7 @@ class GenerateMaterialListButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AtlasHelpButton(bpy.types.Operator):
     bl_idname = 'atlas.help'
     bl_label = 'Generate Material List'
@@ -319,13 +331,7 @@ class AtlasHelpButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MaterialsGroup(bpy.types.PropertyGroup):
-    material = bpy.props.PointerProperty(
-        name='Material',
-        type=bpy.types.Material
-    )
-
-
+@register_wrap
 class ClearMaterialListButton(bpy.types.Operator):
     bl_idname = 'atlas.clear_mat_list'
     bl_label = 'Clear Material List'
@@ -338,11 +344,13 @@ class ClearMaterialListButton(bpy.types.Operator):
 
 
 def update_material_list(self, context):
-    if len(context.scene.material_list) > 0:
-        bpy.ops.atlas.gen_mat_list()
-    print('UPDATED MAT LIST')
+    if version_2_79_or_older(): # TODO
+        if len(context.scene.material_list) > 0:
+            bpy.ops.atlas.gen_mat_list()
+        print('UPDATED MAT LIST')
 
 
+@register_wrap
 class InstallShotariya(bpy.types.Operator):
     bl_idname = "install.shotariya"
     bl_label = 'Error while loading Material Combiner:'
@@ -413,6 +421,7 @@ class InstallShotariya(bpy.types.Operator):
             col.separator()
 
 
+@register_wrap
 class ShotariyaButton(bpy.types.Operator):
     bl_idname = 'download.shotariya'
     bl_label = 'Download Material Combiner'
@@ -424,6 +433,7 @@ class ShotariyaButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class CheckMaterialListButton(bpy.types.Operator):
     bl_idname = 'atlas.check_mat_list'
     bl_label = 'Check/Uncheck Materials'
@@ -470,6 +480,7 @@ def shotariya_installed():
     print(addon_name + " was successfully found!!!")
     return True
 
+# @register_wrap
 # class AutoAtlasButton(bpy.types.Operator):
 #     bl_idname = 'auto.atlas'
 #     bl_label = 'Create Atlas'

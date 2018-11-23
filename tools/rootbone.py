@@ -27,10 +27,12 @@
 import bpy
 import tools.common
 import globs
+from tools.register import register_wrap
 
 from difflib import SequenceMatcher
 
 
+@register_wrap
 class RootButton(bpy.types.Operator):
     bl_idname = 'root.function'
     bl_label = 'Parent Bones'
@@ -160,6 +162,7 @@ def get_parent_root_bones(self, context):
     return bpy.types.Object.Enum
 
 
+@register_wrap
 class RefreshRootButton(bpy.types.Operator):
     bl_idname = 'refresh.root'
     bl_label = 'Refresh List'

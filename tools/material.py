@@ -29,8 +29,10 @@
 
 import bpy
 import tools.common
+from tools.register import register_wrap
 
 
+@register_wrap
 class OneTexPerMatButton(bpy.types.Operator):
     bl_idname = 'one.tex'
     bl_label = 'One Material Texture'
@@ -61,6 +63,7 @@ class OneTexPerMatButton(bpy.types.Operator):
         return{'FINISHED'}
 
 
+@register_wrap
 class OneTexPerMatOnlyButton(bpy.types.Operator):
     bl_idname = 'one.tex_only'
     bl_label = 'One Material Texture'
@@ -93,6 +96,7 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
         return{'FINISHED'}
 
 
+@register_wrap
 class StandardizeTextures(bpy.types.Operator):
     bl_idname = 'textures.standardize'
     bl_label = 'Standardize Textures'
@@ -130,6 +134,7 @@ class StandardizeTextures(bpy.types.Operator):
         return{'FINISHED'}
 
 
+@register_wrap
 class CombineMaterialsButton(bpy.types.Operator):
     bl_idname = 'combine.mats'
     bl_label = 'Combine Same Materials'

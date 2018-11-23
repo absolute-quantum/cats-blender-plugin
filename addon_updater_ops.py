@@ -19,6 +19,7 @@
 import bpy
 from bpy.app.handlers import persistent
 import os
+from tools.register import register_wrap
 
 # from pip._vendor.msgpack import fallback
 
@@ -77,6 +78,7 @@ def _layout_split(layout, factor=0.0, align=False):
 
 
 # simple popup for prompting checking for update & allow to install if available
+@register_wrap
 class addon_updater_install_popup(bpy.types.Operator):
     """Check and install update if available"""
     bl_label = "Update Cats Blender Plugin".format(x=updater.addon)
@@ -180,6 +182,7 @@ class addon_updater_install_popup(bpy.types.Operator):
 
 
 # User preference check-now operator
+@register_wrap
 class addon_updater_check_now(bpy.types.Operator):
     bl_label = "Check now for update"
     bl_idname = updater.addon + ".updater_check_now"
@@ -215,6 +218,7 @@ class addon_updater_check_now(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class addon_updater_update_now(bpy.types.Operator):
     bl_label = "Update " + updater.addon + " addon now"
     bl_idname = updater.addon + ".updater_update_now"
@@ -272,6 +276,7 @@ class addon_updater_update_now(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class addon_updater_update_target(bpy.types.Operator):
     bl_label = "Cats version selector"
     bl_idname = updater.addon + ".updater_update_target"
@@ -357,6 +362,7 @@ class addon_updater_update_target(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class addon_updater_install_manually(bpy.types.Operator):
     """As a fallback, direct the user to download the addon manually"""
     bl_label = "Install update manually"
@@ -419,6 +425,7 @@ class addon_updater_install_manually(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class addon_updater_updated_successful(bpy.types.Operator):
     """Addon in place, popup telling user it completed or what went wrong"""
     bl_label = "Installation Report"
@@ -487,6 +494,7 @@ class addon_updater_updated_successful(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class addon_updater_restore_backup(bpy.types.Operator):
     """Restore addon from backup"""
     bl_label = "Restore backup"
@@ -509,6 +517,7 @@ class addon_updater_restore_backup(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class addon_updater_ignore(bpy.types.Operator):
     """Prevent future update notice popups"""
     bl_label = "Ignore update"
@@ -534,6 +543,7 @@ class addon_updater_ignore(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class addon_updater_end_background(bpy.types.Operator):
     """Stop checking for update in the background"""
     bl_label = "End background check"
@@ -1356,15 +1366,15 @@ def register(bl_info):
     # The register line items for all operators/panels
     # If using bpy.utils.register_module(__name__) to register elsewhere
     # in the addon, delete these lines (also from unregister)
-    bpy.utils.register_class(addon_updater_install_popup)
-    bpy.utils.register_class(addon_updater_check_now)
-    bpy.utils.register_class(addon_updater_update_now)
-    bpy.utils.register_class(addon_updater_update_target)
-    bpy.utils.register_class(addon_updater_install_manually)
-    bpy.utils.register_class(addon_updater_updated_successful)
-    bpy.utils.register_class(addon_updater_restore_backup)
-    bpy.utils.register_class(addon_updater_ignore)
-    bpy.utils.register_class(addon_updater_end_background)
+    # bpy.utils.register_class(addon_updater_install_popup)
+    # bpy.utils.register_class(addon_updater_check_now)
+    # bpy.utils.register_class(addon_updater_update_now)
+    # bpy.utils.register_class(addon_updater_update_target)
+    # bpy.utils.register_class(addon_updater_install_manually)
+    # bpy.utils.register_class(addon_updater_updated_successful)
+    # bpy.utils.register_class(addon_updater_restore_backup)
+    # bpy.utils.register_class(addon_updater_ignore)
+    # bpy.utils.register_class(addon_updater_end_background)
 
     # special situation: we just updated the addon, show a popup
     # to tell the user it worked
@@ -1373,15 +1383,15 @@ def register(bl_info):
 
 
 def unregister():
-    bpy.utils.unregister_class(addon_updater_install_popup)
-    bpy.utils.unregister_class(addon_updater_check_now)
-    bpy.utils.unregister_class(addon_updater_update_now)
-    bpy.utils.unregister_class(addon_updater_update_target)
-    bpy.utils.unregister_class(addon_updater_install_manually)
-    bpy.utils.unregister_class(addon_updater_updated_successful)
-    bpy.utils.unregister_class(addon_updater_restore_backup)
-    bpy.utils.unregister_class(addon_updater_ignore)
-    bpy.utils.unregister_class(addon_updater_end_background)
+    # bpy.utils.unregister_class(addon_updater_install_popup)
+    # bpy.utils.unregister_class(addon_updater_check_now)
+    # bpy.utils.unregister_class(addon_updater_update_now)
+    # bpy.utils.unregister_class(addon_updater_update_target)
+    # bpy.utils.unregister_class(addon_updater_install_manually)
+    # bpy.utils.unregister_class(addon_updater_updated_successful)
+    # bpy.utils.unregister_class(addon_updater_restore_backup)
+    # bpy.utils.unregister_class(addon_updater_ignore)
+    # bpy.utils.unregister_class(addon_updater_end_background)
 
     # clear global vars since they may persist if not restarting blender
     updater.clear_state()  # clear internal vars, avoids reloading oddities

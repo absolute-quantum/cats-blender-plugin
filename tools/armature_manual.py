@@ -28,6 +28,7 @@ import bpy
 import tools.common
 import tools.eyetracking
 from tools.common import version_2_79_or_older
+from tools.register import register_wrap
 
 mmd_tools_installed = False
 try:
@@ -38,6 +39,7 @@ except:
     pass
 
 
+@register_wrap
 class StartPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.start_pose_mode'
     bl_label = 'Start Pose Mode'
@@ -97,6 +99,7 @@ class StartPoseMode(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class StopPoseMode(bpy.types.Operator):
     bl_idname = 'armature_manual.stop_pose_mode'
     bl_label = 'Stop Pose Mode'
@@ -141,6 +144,7 @@ class StopPoseMode(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class PoseToShape(bpy.types.Operator):
     bl_idname = 'armature_manual.pose_to_shape'
     bl_label = 'Pose to Shape Key'
@@ -182,6 +186,7 @@ def pose_to_shapekey(name):
     return armature
 
 
+@register_wrap
 class PoseNamePopup(bpy.types.Operator):
     bl_idname = "pose.name_popup"
     bl_label = "Set the shapekey name:"
@@ -215,6 +220,7 @@ class PoseNamePopup(bpy.types.Operator):
         row.prop(context.scene, 'pose_to_shapekey_name')
 
 
+@register_wrap
 class PoseToRest(bpy.types.Operator):
     bl_idname = 'armature_manual.pose_to_rest'
     bl_label = 'Apply as Rest Pose'
@@ -334,6 +340,7 @@ class PoseToRest(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class JoinMeshes(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes'
     bl_label = 'Join Meshes'
@@ -358,6 +365,7 @@ class JoinMeshes(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class JoinMeshesSelected(bpy.types.Operator):
     bl_idname = 'armature_manual.join_meshes_selected'
     bl_label = 'Join Selected Meshes'
@@ -391,6 +399,7 @@ class JoinMeshesSelected(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class SeparateByMaterials(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_materials'
     bl_label = 'Separate by Materials'
@@ -430,6 +439,7 @@ class SeparateByMaterials(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class SeparateByLooseParts(bpy.types.Operator):
     bl_idname = 'armature_manual.separate_by_loose_parts'
     bl_label = 'Separate by Loose Parts'
@@ -468,6 +478,7 @@ class SeparateByLooseParts(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class MergeWeights(bpy.types.Operator):
     bl_idname = 'armature_manual.merge_weights'
     bl_label = 'Merge Weights'
@@ -514,6 +525,7 @@ class MergeWeights(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class MergeWeightsToActive(bpy.types.Operator):
     bl_idname = 'armature_manual.merge_weights_to_active'
     bl_label = 'Merge Weights'
@@ -586,6 +598,7 @@ def merge_weights(armature, parenting_list):
         armature.data.edit_bones.remove(armature.data.edit_bones.get(bone))
 
 
+@register_wrap
 class ApplyTransformations(bpy.types.Operator):
     bl_idname = 'armature_manual.apply_transformations'
     bl_label = 'Apply Transformations'
@@ -605,6 +618,7 @@ class ApplyTransformations(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveZeroWeight(bpy.types.Operator):
     bl_idname = 'armature_manual.remove_zero_weight'
     bl_label = 'Remove Zero Weight Bones'
@@ -627,6 +641,7 @@ class RemoveZeroWeight(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveConstraints(bpy.types.Operator):
     bl_idname = 'armature_manual.remove_constraints'
     bl_label = 'Remove Bone Constraints'
@@ -648,6 +663,7 @@ class RemoveConstraints(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RecalculateNormals(bpy.types.Operator):
     bl_idname = 'armature_manual.recalculate_normals'
     bl_label = 'Recalculate Normals'
@@ -687,6 +703,7 @@ class RecalculateNormals(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class FlipNormals(bpy.types.Operator):
     bl_idname = 'armature_manual.flip_normals'
     bl_label = 'Flip Normals'
@@ -726,6 +743,7 @@ class FlipNormals(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveDoubles(bpy.types.Operator):
     bl_idname = 'armature_manual.remove_doubles'
     bl_label = 'Remove Doubles'
@@ -761,6 +779,7 @@ class RemoveDoubles(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveDoublesNormal(bpy.types.Operator):
     bl_idname = 'armature_manual.remove_doubles_normal'
     bl_label = 'Remove Doubles Normally'
@@ -794,6 +813,7 @@ class RemoveDoublesNormal(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class FixVRMShapesButton(bpy.types.Operator):
     bl_idname = 'armature_manual.fix_vrm_shapes'
     bl_label = 'Fix Koikatsu Shapekeys'
@@ -902,6 +922,7 @@ class FixVRMShapesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class FixFBTButton(bpy.types.Operator):
     bl_idname = 'armature_manual.fix_fbt'
     bl_label = 'Fix Full Body Tracking'
@@ -995,6 +1016,7 @@ class FixFBTButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveFBTButton(bpy.types.Operator):
     bl_idname = 'armature_manual.remove_fbt'
     bl_label = 'Remove Full Body Tracking'
@@ -1073,6 +1095,7 @@ class RemoveFBTButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class DuplicateBonesButton(bpy.types.Operator):
     bl_idname = 'armature_manual.duplicate_bones'
     bl_label = 'Duplicate Bones'

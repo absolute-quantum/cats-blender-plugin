@@ -31,6 +31,7 @@ import tools.settings
 import tools.eyetracking
 import bpy_extras.io_utils
 from tools.common import version_2_79_or_older
+from tools.register import register_wrap
 
 mmd_tools_installed = False
 try:
@@ -47,6 +48,7 @@ if version_2_79_or_older():
     ICON_EXPORT = 'LOAD_FACTORY'
 
 
+@register_wrap
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = 'importer.import_any_model'
     bl_label = 'Import Any Model'
@@ -146,6 +148,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         return {'FINISHED'}
 
 
+@register_wrap
 class ModelsPopup(bpy.types.Operator):
     bl_idname = "model.popup"
     bl_label = "Select which you want to import:"
@@ -176,6 +179,7 @@ class ModelsPopup(bpy.types.Operator):
         row.operator('importer.import_fbx')
 
 
+@register_wrap
 class ImportMMD(bpy.types.Operator):
     bl_idname = 'importer.import_mmd'
     bl_label = 'MMD'
@@ -199,6 +203,7 @@ class ImportMMD(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ImportXPS(bpy.types.Operator):
     bl_idname = 'importer.import_xps'
     bl_label = 'XNALara'
@@ -215,6 +220,7 @@ class ImportXPS(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ImportSource(bpy.types.Operator):
     bl_idname = 'importer.import_source'
     bl_label = 'Source'
@@ -231,6 +237,7 @@ class ImportSource(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ImportFBX(bpy.types.Operator):
     bl_idname = 'importer.import_fbx'
     bl_label = 'FBX'
@@ -247,6 +254,7 @@ class ImportFBX(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class InstallXPS(bpy.types.Operator):
     bl_idname = "install.xps"
     bl_label = "XPS Tools is not installed or enabled!"
@@ -278,6 +286,7 @@ class InstallXPS(bpy.types.Operator):
         row.operator('importer.xps_tools', icon=ICON_URL)
 
 
+@register_wrap
 class InstallSource(bpy.types.Operator):
     bl_idname = "install.source"
     bl_label = "Source Tools is not installed or enabled!"
@@ -309,6 +318,7 @@ class InstallSource(bpy.types.Operator):
         row.operator('importer.source_tools', icon=ICON_URL)
 
 
+@register_wrap
 class EnableMMD(bpy.types.Operator):
     bl_idname = "enable.mmd"
     bl_label = "Mmd_tools is not enabled!"
@@ -366,6 +376,7 @@ def popup_install_source(self, context):
     row.operator('importer.source_tools', icon=ICON_URL)
 
 
+@register_wrap
 class XpsToolsButton(bpy.types.Operator):
     bl_idname = 'importer.xps_tools'
     bl_label = 'Download XPS Tools'
@@ -377,6 +388,7 @@ class XpsToolsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class SourceToolsButton(bpy.types.Operator):
     bl_idname = 'importer.source_tools'
     bl_label = 'Download Source Tools'
@@ -396,6 +408,7 @@ _broken_shapes = []
 _textures_found = False
 
 
+@register_wrap
 class ExportModel(bpy.types.Operator):
     bl_idname = 'importer.export_model'
     bl_label = 'Export Model'
@@ -512,6 +525,7 @@ class ExportModel(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ErrorDisplay(bpy.types.Operator):
     bl_idname = "display.error"
     bl_label = "Warning:"

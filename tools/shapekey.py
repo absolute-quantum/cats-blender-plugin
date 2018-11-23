@@ -26,8 +26,10 @@
 
 import bpy
 import tools.common
+from tools.register import register_wrap
 
 
+@register_wrap
 class ShapeKeyApplier(bpy.types.Operator):
     # Replace the 'Basis' shape key with the currently selected shape key
     bl_idname = "object.shape_key_to_basis"

@@ -28,8 +28,10 @@ import bpy
 import webbrowser
 import tools.common
 import tools.armature_bones as Bones
+from tools.register import register_wrap
 
 
+@register_wrap
 class MergeArmature(bpy.types.Operator):
     bl_idname = 'armature_custom.merge_armatures'
     bl_label = 'Merge Armatures'
@@ -93,6 +95,7 @@ class MergeArmature(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AttachMesh(bpy.types.Operator):
     bl_idname = 'armature_custom.attach_mesh'
     bl_label = 'Attach Mesh'
@@ -154,6 +157,7 @@ class AttachMesh(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class CustomModelTutorialButton(bpy.types.Operator):
     bl_idname = 'armature_custom.button'
     bl_label = 'Go to Documentation'

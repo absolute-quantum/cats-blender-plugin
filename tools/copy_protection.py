@@ -29,8 +29,10 @@ import webbrowser
 import bpy
 import random
 import tools.common
+from tools.register import register_wrap
 
 
+@register_wrap
 class CopyProtectionEnable(bpy.types.Operator):
     bl_idname = 'copyprotection.enable'
     bl_label = 'Enable Protection'
@@ -123,6 +125,7 @@ class CopyProtectionEnable(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class CopyProtectionDisable(bpy.types.Operator):
     bl_idname = 'copyprotection.disable'
     bl_label = 'Disable Protection'
@@ -152,6 +155,7 @@ class CopyProtectionDisable(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ProtectionTutorialButton(bpy.types.Operator):
     bl_idname = 'copyprotection.button'
     bl_label = 'Go to Documentation'

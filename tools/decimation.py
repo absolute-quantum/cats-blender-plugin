@@ -27,12 +27,14 @@
 import bpy
 import tools.common
 import tools.armature_bones as Bones
+from tools.register import register_wrap
 
 
 ignore_shapes = []
 ignore_meshes = []
 
 
+@register_wrap
 class ScanButton(bpy.types.Operator):
     bl_idname = 'auto.scan'
     bl_label = 'Scan for decimation models'
@@ -59,6 +61,7 @@ class ScanButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AddShapeButton(bpy.types.Operator):
     bl_idname = 'add.shape'
     bl_label = 'Add'
@@ -86,6 +89,7 @@ class AddShapeButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AddMeshButton(bpy.types.Operator):
     bl_idname = 'add.mesh'
     bl_label = 'Add'
@@ -105,6 +109,7 @@ class AddMeshButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveShapeButton(bpy.types.Operator):
     bl_idname = 'remove.shape'
     bl_label = ''
@@ -119,6 +124,7 @@ class RemoveShapeButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveMeshButton(bpy.types.Operator):
     bl_idname = 'remove.mesh'
     bl_label = ''
@@ -133,6 +139,7 @@ class RemoveMeshButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AutoDecimateButton(bpy.types.Operator):
     bl_idname = 'auto.decimate'
     bl_label = 'Quick Decimation'

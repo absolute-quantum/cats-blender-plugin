@@ -34,6 +34,7 @@ import tools.translate
 import tools.armature_bones as Bones
 import mmd_tools_local.operators.morph
 from tools.common import version_2_79_or_older
+from tools.register import register_wrap
 
 import math
 from mathutils import Matrix
@@ -41,6 +42,7 @@ from mathutils import Matrix
 mmd_tools_installed = True
 
 
+@register_wrap
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
     bl_label = 'Fix Model'
@@ -382,6 +384,10 @@ class FixArmature(bpy.types.Operator):
         # Remove Bone Groups
         for group in armature.pose.bone_groups:
             armature.pose.bone_groups.remove(group)
+
+        # Bone constraints should be deleted
+        # if context.scene.remove_constraints:
+        tools.common.delete_bone_constraints()
 
         # Model should be in rest position
         armature.data.pose_position = 'REST'
@@ -918,6 +924,12 @@ class FixArmature(bpy.types.Operator):
         #         print(bone_name)
         #         bone.hide = False
 
+        # Temporarily remove armature modifier to avoid errors in console
+        for mod in mesh.modifiers:
+            if mod.type == 'ARMATURE':
+                bpy.ops.object.modifier_remove(modifier=mod.name)
+
+        # Mix weights
         for bone_new, bones_old in temp_reweight_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:
                 bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
@@ -968,7 +980,7 @@ class FixArmature(bpy.types.Operator):
                             if not temp_list_reparent_bones.get(child.name):
                                 temp_list_reparent_bones[child.name] = bone[0]
 
-                    print(vg.name + " to " + bone[0])
+                    # print(vg.name + " to " + bone[0])
                     tools.common.mix_weights(mesh, vg.name, bone[0])
 
         # Old mixing weights. Still important
@@ -1007,6 +1019,10 @@ class FixArmature(bpy.types.Operator):
             # print(vg_from.name, 'into', vg_to.name)
             tools.common.mix_weights(mesh, vg_from.name, vg_to.name)
 
+        # Put back armature modifier
+        mod = mesh.modifiers.new("Armature", 'ARMATURE')
+        mod.object = armature
+
         tools.common.unselect_all()
         tools.common.set_active(armature)
         tools.common.switch('EDIT')
@@ -1017,10 +1033,6 @@ class FixArmature(bpy.types.Operator):
             # wm.progress_update(current_step)
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
-
-        # Bone constraints should be deleted
-        # if context.scene.remove_constraints:
-        tools.common.delete_bone_constraints()
 
         # Removes unused vertex groups
         tools.common.remove_unused_vertex_groups()
@@ -1054,7 +1066,11 @@ class FixArmature(bpy.types.Operator):
         # Fix shading (check for runtime error because of ci tests)
         if not source_engine:
             try:
-                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                if version_2_79_or_older():
+                    bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                else:
+                    pass
+                    # TODO
             except RuntimeError:
                 pass
 
@@ -1124,6 +1140,7 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
     return {'result': True}
 
 
+@register_wrap
 class ModelSettings(bpy.types.Operator):
     bl_idname = "armature.settings"
     bl_label = "Fix Model Settings"

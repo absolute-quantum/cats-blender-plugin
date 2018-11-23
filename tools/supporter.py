@@ -37,6 +37,7 @@ import urllib.request
 import tools.settings
 from threading import Thread
 from datetime import datetime, timezone
+from tools.register import register_wrap
 
 # global variables
 preview_collections = {}
@@ -52,6 +53,7 @@ main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
 
 
+@register_wrap
 class PatreonButton(bpy.types.Operator):
     bl_idname = 'supporter.patreon'
     bl_label = 'Become a Patron'
@@ -63,6 +65,7 @@ class PatreonButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ReloadButton(bpy.types.Operator):
     bl_idname = 'supporter.reload'
     bl_label = 'Reload List'
@@ -82,6 +85,7 @@ class ReloadButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class DynamicPatronButton(bpy.types.Operator):
     bl_idname = 'support.dynamic_patron_button'
     bl_label = 'Supporter Name'

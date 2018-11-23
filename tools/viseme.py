@@ -26,10 +26,12 @@
 
 import bpy
 import tools.common
+from tools.register import register_wrap
 
 from collections import OrderedDict
 
 
+@register_wrap
 class AutoVisemeButton(bpy.types.Operator):
     bl_idname = 'auto.viseme'
     bl_label = 'Create Visemes'

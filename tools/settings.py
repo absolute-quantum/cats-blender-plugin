@@ -35,6 +35,7 @@ import tools.translate
 from threading import Thread
 from datetime import datetime
 from collections import OrderedDict
+from tools.register import register_wrap
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -51,6 +52,7 @@ settings_default['embed_textures'] = [False, False]
 lock_settings = False
 
 
+@register_wrap
 class RevertChangesButton(bpy.types.Operator):
     bl_idname = 'settings.revert'
     bl_label = 'Revert Settings'
@@ -65,6 +67,7 @@ class RevertChangesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ResetGoogleDictButton(bpy.types.Operator):
     bl_idname = 'settings.reset_google_dict'
     bl_label = 'Clear Local Google Translations'

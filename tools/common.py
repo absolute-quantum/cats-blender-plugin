@@ -36,6 +36,7 @@ import tools.armature_bones as Bones
 from mathutils import Vector
 from math import degrees
 from collections import OrderedDict
+from tools.register import register_wrap
 
 from googletrans import Translator
 from mmd_tools_local import utils
@@ -1292,6 +1293,7 @@ def show_error(scale, error_list, override_header=False):
     bpy.ops.error.show('INVOKE_DEFAULT')
 
 
+@register_wrap
 class ShowError(bpy.types.Operator):
     bl_idname = 'error.show'
     bl_label = 'Report: Error'
