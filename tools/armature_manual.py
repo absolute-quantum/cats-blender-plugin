@@ -1125,8 +1125,8 @@ class DuplicateBonesButton(bpy.types.Operator):
         # Create the duplicate bones
         duplicate_vertex_groups = {}
         for bone in bpy.context.selected_editable_bones:
-            bone_new = armature.data.edit_bones.new(bone.name + '_L')
-            bone.name += '_R'
+            bone_new = armature.data.edit_bones.new(bone.name + '_copy')
+            # bone.name += '_R'
             bone_new.parent = bone.parent
 
             bone_new.head = bone.head
