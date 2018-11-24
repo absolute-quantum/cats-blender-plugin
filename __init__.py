@@ -628,68 +628,14 @@ class ToolPanel:
         default=False
     )
 
+    bpy.types.Scene.material_list_index = bpy.props.IntProperty(
+        default=0
+    )
+
     bpy.types.Scene.clear_materials = bpy.props.BoolProperty(
         description='Clear materials checkbox',
         default=True
     )
-
-    # Atlas Old
-    # bpy.types.Scene.island_margin = bpy.props.FloatProperty(
-    #     name='Margin',
-    #     description='Margin to reduce bleed of adjacent islands',
-    #     default=0.01,
-    #     min=0.0,
-    #     max=1.0,
-    #     step=0.1,
-    #     precision=2,
-    #     subtype='FACTOR'
-    # )
-    #
-    # bpy.types.Scene.area_weight = bpy.props.FloatProperty(
-    #     name='Area Weight',
-    #     description='Weight projections vector by faces with larger areas',
-    #     default=0.0,
-    #     min=0.0,
-    #     max=1.0,
-    #     step=0.1,
-    #     precision=2,
-    #     subtype='FACTOR'
-    # )
-    #
-    # bpy.types.Scene.angle_limit = bpy.props.FloatProperty(
-    #     name='Angle',
-    #     description='Lower for more projection groups, higher for less distortion',
-    #     default=82.0,
-    #     min=1.0,
-    #     max=89.0,
-    #     step=10.0,
-    #     precision=1,
-    #     subtype='FACTOR'
-    # )
-    #
-    # bpy.types.Scene.texture_size = bpy.props.EnumProperty(
-    #     name='Texture Size',
-    #     description='Lower for faster bake time, higher for more detail',
-    #     items=tools.common.get_texture_sizes
-    # )
-    #
-    # bpy.types.Scene.one_texture = bpy.props.BoolProperty(
-    #     name='One Texture Material',
-    #     description='Texture baking and multiple textures per material can look weird in the end result. Check this box if you are experiencing this',
-    #     default=True
-    # )
-    #
-    # bpy.types.Scene.pack_islands = bpy.props.BoolProperty(
-    #     name='Pack Islands',
-    #     description='Transform all islands so that they will fill up the UV space as much as possible',
-    #     default=False
-    # )
-    #
-    # bpy.types.Scene.mesh_name_atlas = bpy.props.EnumProperty(
-    #     name='Target Mesh',
-    #     description='The mesh that you want to create a atlas from',
-    #     items=tools.common.get_all_meshes
-    # )
 
     # Bone Merging
     bpy.types.Scene.merge_ratio = bpy.props.FloatProperty(
@@ -1624,13 +1570,6 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.operator("atlas.help", text="", icon='QUESTION')
             col.separator()
 
-            if not version_2_79_or_older():
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text='Not compatible with Blender 2.8 yet!')
-                return # TODO
-
-
             if len(context.scene.material_list) == 0:
                 row = col.row(align=True)
                 row.scale_y = 1.2
@@ -2084,48 +2023,50 @@ def register():
 
     # if not tools.settings.use_custom_mmd_tools():
     #     bpy.utils.unregister_module("mmd_tools")
+
+    # Load mmd_tools
     try:
         mmd_tools_local.register()
     except AttributeError:
         pass
 
+    # Register all classes
+    count_reg = 0
     for cls in tools.register.__bl_classes:
         bpy.utils.register_class(cls)
 
+    # Register updater
     try:
         addon_updater_ops.register(bl_info)
     except ValueError:
         print('Error while registering updater.')
         pass
 
-    # for value in classesToRegister:
-    #     bpy.utils.register_class(value)
-
-    if version_2_79_or_older():
-        bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
-        bpy.types.Scene.material_list_index = bpy.props.IntProperty(default=0)
-    # else:
-    #     bpy.types.Scene.material_list: bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
-    #     bpy.types.Scene.material_list_index: bpy.props.IntProperty(default=0)
-    # TODO
+    # Register material list
+    bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
 
     # Set cats version string
     set_cats_verion_string()
 
+    # Load supporter and settings icons and buttons
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
     tools.supporter.register_dynamic_buttons()
 
+    # Load the dictionaries and check if they are found
     dict_found = tools.translate.load_translations()
 
+    # Set preferred Blender options
     bpy.context.user_preferences.system.use_international_fonts = True
     bpy.context.user_preferences.filepaths.use_file_compression = True
 
+    # Add shapekey button to shapekey menu
     bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
 
     # Disable request warning when using google translate
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
+    # Apply the settings after a short time, because you can't change checkboxes during registering
     tools.settings.start_apply_settings_timer()
 
     print("### Loaded CATS successfully!")
@@ -2133,23 +2074,26 @@ def register():
 
 def unregister():
     print("### Unloading CATS...")
+    # Unload mmd_tools
     try:
         mmd_tools_local.unregister()
     except AttributeError:
         pass
 
+    # Unload the updater
     addon_updater_ops.unregister()
 
+    # Unload all classes in reverse order
+    count_unreg = 0
     for cls in reversed(tools.register.__bl_classes):
         bpy.utils.unregister_class(cls)
+    tools.register.__bl_classes = []
 
-    # for value in reversed(classesToRegister):
-    #     bpy.utils.unregister_class(value)
-
+    # Unregister all dynamic buttons and icons
     tools.supporter.unregister_dynamic_buttons()
-
     tools.supporter.unload_icons()
 
+    # Remove shapekey button from shapekey menu
     bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
 
     print("### Unloaded CATS successfully!")

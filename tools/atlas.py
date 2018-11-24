@@ -344,10 +344,9 @@ class ClearMaterialListButton(bpy.types.Operator):
 
 
 def update_material_list(self, context):
-    if version_2_79_or_older(): # TODO
-        if len(context.scene.material_list) > 0:
-            bpy.ops.atlas.gen_mat_list()
-        print('UPDATED MAT LIST')
+    if len(context.scene.material_list) > 0:
+        bpy.ops.atlas.gen_mat_list()
+    print('UPDATED MAT LIST')
 
 
 @register_wrap
