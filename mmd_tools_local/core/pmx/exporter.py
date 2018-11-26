@@ -930,7 +930,8 @@ class __PmxExporter:
         if is_triangulated:
             loop_normals = custom_normals
         else:
-            face_map = bmesh.ops.triangulate(bm, faces=bm.faces, quad_method=1, ngon_method=1)['face_map']
+            quad_method, ngon_method = (1, 1) if bpy.app.version < (2, 80, 0) else ('FIXED', 'EAR_CLIP')
+            face_map = bmesh.ops.triangulate(bm, faces=bm.faces, quad_method=quad_method, ngon_method=ngon_method)['face_map']
             logging.debug(' - Remapping custom normals...')
             loop_normals = []
             for f in bm.faces:
@@ -988,10 +989,14 @@ class __PmxExporter:
             normal_matrix = matmul(normal_matrix, invert_scale_matrix) # reset the scale of meshObj.matrix_world
             normal_matrix = matmul(normal_matrix, invert_scale_matrix) # the scale transform of normals
 
-        base_mesh = meshObj.to_mesh(bpy.context.scene, True, 'PREVIEW', False)
+        if bpy.app.version < (2, 80, 0):
+            _to_mesh = lambda obj: obj.to_mesh(bpy.context.scene, apply_modifiers=True, settings='PREVIEW', calc_tessface=False, calc_undeformed=False)
+        else:
+            _to_mesh = lambda obj: obj.to_mesh(bpy.context.depsgraph, apply_modifiers=True, calc_undeformed=False)
+
+        base_mesh = _to_mesh(meshObj)
         loop_normals = self.__triangulate(base_mesh, self.__get_normals(base_mesh, normal_matrix))
         base_mesh.transform(pmx_matrix)
-        base_mesh.update(calc_tessface=True)
 
         def _get_weight(vertex_group, vertex, default_weight):
             for i in vertex.groups:
@@ -1057,7 +1062,7 @@ class __PmxExporter:
             logging.info(' - processing shape key: %s', shape_key_name)
             kb_mute, kb.mute = kb.mute, False
             meshObj.active_shape_key_index = i
-            mesh = meshObj.to_mesh(bpy.context.scene, True, 'PREVIEW', False)
+            mesh = _to_mesh(meshObj)
             mesh.transform(pmx_matrix)
             kb.mute = kb_mute
             if len(mesh.vertices) != len(base_mesh.vertices):
@@ -1096,16 +1101,20 @@ class __PmxExporter:
         # load face data
         class _DummyUV:
             uv1 = uv2 = uv3 = mathutils.Vector((0, 1))
+            def __init__(self, uvs):
+                self.uv1,  self.uv2, self.uv3 = (v.uv for v in uvs)
+
+        _UVWrapper = lambda x: (_DummyUV(x[i:i+3]) for i in range(0, len(x), 3))
 
         materials = {}
-        uv_data = base_mesh.tessface_uv_textures.active
+        uv_data = base_mesh.uv_layers.active
         if uv_data:
-            uv_data = uv_data.data
+            uv_data = _UVWrapper(uv_data.data)
         else:
             uv_data = iter(lambda: _DummyUV, None)
         face_seq = []
         reversing = not pmx_matrix.is_negative # pmx.load/pmx.save reverse face vertices by default
-        for face, uv in zip(base_mesh.tessfaces, uv_data):
+        for face, uv in zip(base_mesh.polygons, uv_data):
             if len(face.vertices) != 3:
                 raise Exception
             idx = face.index * 3
@@ -1129,21 +1138,21 @@ class __PmxExporter:
                     base_mesh.materials[i] = self.__getDefaultMaterial()
 
         # export add UV
-        bl_add_uvs = [i for i in base_mesh.tessface_uv_textures[1:] if not i.name.startswith('_')]
+        bl_add_uvs = [i for i in base_mesh.uv_layers[1:] if not i.name.startswith('_')]
         self.__add_uv_count = max(self.__add_uv_count, len(bl_add_uvs))
         for uv_n, uv_tex in enumerate(bl_add_uvs):
             if uv_n > 3:
                 logging.warning(' * extra addUV%d+ are not supported', uv_n+1)
                 break
-            uv_data = uv_tex.data
-            zw_data = base_mesh.tessface_uv_textures.get('_'+uv_tex.name, None)
+            uv_data = _UVWrapper(uv_tex.data)
+            zw_data = base_mesh.uv_layers.get('_'+uv_tex.name, None)
             logging.info(' # exporting addUV%d: %s [zw: %s]', uv_n+1, uv_tex.name, zw_data)
             if zw_data:
-                zw_data = zw_data.data
+                zw_data = _UVWrapper(zw_data.data)
             else:
                 zw_data = iter(lambda: _DummyUV, None)
             rip_vertices_map = {}
-            for f, face, uv, zw in zip(face_seq, base_mesh.tessfaces, uv_data, zw_data):
+            for f, face, uv, zw in zip(face_seq, base_mesh.polygons, uv_data, zw_data):
                 vertices = [base_vertices[x] for x in face.vertices]
                 rip_vertices = [rip_vertices_map.setdefault(x, [x]) for x in f.vertices]
                 f.vertices[0] = self.__convertAddUV(f.vertices[0], uv.uv1, zw.uv1, uv_n, vertices[0], rip_vertices[0])

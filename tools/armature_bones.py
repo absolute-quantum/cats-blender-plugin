@@ -1060,6 +1060,7 @@ bone_reweight['\Left wrist'] = [
     'BK_\L_Hand_02',
     'BK_\L_Hand_03',
     'BK_\L_Hand_04',
+    'Arm_\Left_Finger_5_Base',
 ]
 bone_reweight['Left wrist'] = [
     'Left_Hand_002',

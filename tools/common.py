@@ -111,11 +111,11 @@ def unselect_all():
 
 
 def set_active(obj):
+    select(obj)
     if version_2_79_or_older():
         bpy.context.scene.objects.active = obj
     else:
         bpy.context.view_layer.objects.active = obj
-    select(obj)
 
 
 def get_active():
@@ -125,6 +125,8 @@ def get_active():
 
 
 def select(obj, sel=True):
+    if sel:
+        hide(obj, False)
     if version_2_79_or_older():
         obj.select = sel
     else:
@@ -1073,62 +1075,31 @@ def removeZeroVerts(obj, thres=0):
             obj.vertex_groups[g.group].remove([v.index])
 
 
-def delete_hierarchy(obj):
+def delete_hierarchy(parent):
     unselect_all()
-    obj.animation_data_clear()
-    names = set()
+    to_delete = []
 
     def get_child_names(obj):
         for child in obj.children:
-            if child.type != 'ARMATURE':
-                names.add(child.name)
-                if child.children:
-                    get_child_names(child)
+            to_delete.append(child)
+            if child.children:
+                get_child_names(child)
 
-    get_child_names(obj)
+    get_child_names(parent)
+    to_delete.append(parent)
 
-    objects = bpy.data.objects
-    for n in names:
-        obj_temp = objects.get(n)
-        if obj_temp:
-            select(obj_temp)
-            obj_temp.animation_data_clear()
-
-    result = bpy.ops.object.delete()
-
-    if version_2_79_or_older():
-        bpy.context.scene.objects.unlink(obj)
-    else:
-        pass
-        # TODO
-        # bpy.context.view_layer.objects.unlink(obj)
-
-    bpy.data.objects.remove(obj)
-
-    if result == {'FINISHED'}:
-        print("Successfully deleted object")
-    else:
-        print("Could not delete object")
+    for obj in to_delete:
+        obj.animation_data_clear()
+        bpy.data.objects.remove(obj)
 
 
 def delete(obj):
-    unselect_all()
-    set_active(obj)
-
     if obj.parent:
         for child in obj.children:
             child.parent = obj.parent
 
     obj.animation_data_clear()
-    result = bpy.ops.object.delete()
-
-    #bpy.context.scene.objects.unlink(obj)
     bpy.data.objects.remove(obj)
-
-    if result == {'FINISHED'}:
-        print("Successfully deleted object")
-    else:
-        print("Could not delete object")
 
 
 def days_between(d1, d2, time_format):

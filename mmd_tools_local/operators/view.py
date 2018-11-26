@@ -17,6 +17,12 @@ class SetGLSLShading(Operator):
 
     def execute(self, context):
         bpy.ops.mmd_tools.reset_shading()
+        if bpy.app.version >= (2, 80, 0):
+            shading = context.area.spaces[0].shading
+            shading.light = 'STUDIO'
+            shading.color_type = 'TEXTURE'
+            return {'FINISHED'}
+
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
                 if s.material is None:
@@ -29,7 +35,7 @@ class SetGLSLShading(Operator):
             context.scene.objects.link(light)
 
         context.area.spaces[0].viewport_shade='TEXTURED'
-        bpy.context.scene.game_settings.material_mode = 'GLSL'
+        context.scene.game_settings.material_mode = 'GLSL'
         return {'FINISHED'}
 
 @register_wrap
@@ -41,18 +47,24 @@ class SetShadelessGLSLShading(Operator):
 
     def execute(self, context):
         bpy.ops.mmd_tools.reset_shading()
+        if bpy.app.version >= (2, 80, 0):
+            shading = context.area.spaces[0].shading
+            shading.light = 'FLAT'
+            shading.color_type = 'TEXTURE'
+            return {'FINISHED'}
+
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
                 if s.material is None:
                     continue
                 s.material.use_shadeless = True
         try:
-            bpy.context.scene.display_settings.display_device = 'None'
+            context.scene.display_settings.display_device = 'None'
         except TypeError:
             pass # Blender was built without OpenColorIO:
 
         context.area.spaces[0].viewport_shade='TEXTURED'
-        bpy.context.scene.game_settings.material_mode = 'GLSL'
+        context.scene.game_settings.material_mode = 'GLSL'
         return {'FINISHED'}
 
 @register_wrap
@@ -63,7 +75,17 @@ class ResetShading(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        bpy.context.scene.render.engine = 'BLENDER_RENDER'
+        if bpy.app.version >= (2, 80, 0):
+            context.scene.render.engine = 'BLENDER_EEVEE'
+            shading = context.area.spaces[0].shading
+            shading.type = 'SOLID'
+            shading.light = 'STUDIO'
+            shading.color_type = 'MATERIAL'
+            shading.show_object_outline = False
+            context.space_data.overlay.show_backface_culling = True
+            return {'FINISHED'}
+
+        context.scene.render.engine = 'BLENDER_RENDER'
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
                 if s.material is None:
@@ -75,12 +97,12 @@ class ResetShading(Operator):
             context.scene.objects.unlink(i)
 
         try:
-            bpy.context.scene.display_settings.display_device = 'sRGB'
+            context.scene.display_settings.display_device = 'sRGB'
         except TypeError:
             pass
         context.area.spaces[0].viewport_shade='SOLID'
         context.area.spaces[0].show_backface_culling = True
-        bpy.context.scene.game_settings.material_mode = 'MULTITEXTURE'
+        context.scene.game_settings.material_mode = 'MULTITEXTURE'
         return {'FINISHED'}
 
 @register_wrap

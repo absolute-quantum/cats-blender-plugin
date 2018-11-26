@@ -227,11 +227,11 @@ class FixArmature(bpy.types.Operator):
         # Remove Rigidbodies and joints
         to_delete = []
         for child in tools.common.get_top_parent(armature).children:
-            if 'rigidbodies' in child.name or 'joints' in child.name:
+            if 'rigidbodies' in child.name or 'joints' in child.name and child.name not in to_delete:
                 to_delete.append(child.name)
                 continue
             for child2 in child.children:
-                if 'rigidbodies' in child2.name or 'joints' in child2.name:
+                if 'rigidbodies' in child2.name or 'joints' in child2.name and child2.name not in to_delete:
                     to_delete.append(child2.name)
                     continue
         for obj_name in to_delete:
