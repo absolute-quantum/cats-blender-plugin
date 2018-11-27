@@ -87,22 +87,28 @@ def unhide_all(everything=False, obj_to_unhide=None):
     if not obj_to_unhide:
         obj_to_unhide = get_armature()
 
-    if version_2_79_or_older():
-        if everything or not obj_to_unhide:
-            for obj in bpy.data.objects:
-                obj.hide = False
-        else:
-            def unhide_children(parent):
-                for child in parent.children:
-                    child.hide = False
-                    unhide_children(child)
-
-            top_parent = get_top_parent(obj_to_unhide)
-            top_parent.hide = False
-            unhide_children(top_parent)
+    if everything or not obj_to_unhide:
+        for obj in bpy.data.objects:
+            hide(obj, False)
+            set_unselectable(obj, False)
     else:
-        for obj in bpy.data.collections:
-            obj.hide_viewport = False
+        def unhide_children(parent):
+            for child in parent.children:
+                hide(child, False)
+                set_unselectable(child, False)
+                unhide_children(child)
+
+        top_parent = get_top_parent(obj_to_unhide)
+        hide(top_parent, False)
+        set_unselectable(top_parent, False)
+        unhide_children(top_parent)
+
+    # Unhide all the things that are stupidly hidden and make them selectable
+    if not version_2_79_or_older():
+        bpy.ops.object.hide_view_clear()
+        for collection in bpy.data.collections:
+            collection.hide_select = False
+            collection.hide_viewport = False
 
 
 def unselect_all():
@@ -150,6 +156,10 @@ def is_hidden(obj):
     if version_2_79_or_older():
         return obj.hide
     return obj.hide_viewport
+
+
+def set_unselectable(obj, val=True):
+    obj.hide_select = val
 
 
 def switch(new_mode):

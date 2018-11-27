@@ -46,6 +46,8 @@ if "tools" not in locals():
     print('STARTUP!!')
     from . import addon_updater_ops
     import mmd_tools_local
+    import tools.register
+    from tools.register import register_wrap
     import tools.armature
     import tools.armature_bones
     import tools.armature_manual
@@ -54,7 +56,6 @@ if "tools" not in locals():
     import tools.bonemerge
     import tools.common
     from tools.common import version_2_79_or_older
-    from tools.register import register_wrap
     import tools.copy_protection
     import tools.credits
     import tools.decimation
@@ -71,6 +72,7 @@ else:
     print('RELOAD!!')
     importlib.reload(mmd_tools_local)
     importlib.reload(addon_updater_ops)
+    importlib.reload(tools.register)  # Has to be first
     importlib.reload(tools.armature)
     importlib.reload(tools.armature_bones)
     importlib.reload(tools.armature_manual)
