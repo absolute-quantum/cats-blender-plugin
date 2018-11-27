@@ -345,8 +345,12 @@ It checks for a new version automatically once every day.
   - Added separate buttons to enable and disable the Full Body tracking fix
   - Added Duplicate Bones button
   - Improved Export button warnings
+  - Pose Mode now always makes the armature selectable
+- **Custom Model Creation**:
+  - Attach Mesh and Merge Armatures no longer remove the full body tracking fix
+  - Fixed Attach Mesh throwing an error when the mesh has no vertex groups
 - **Translations**:
-  - Locally stored Google Translations no longer get deleted after 30 day
+  - Locally stored Google translations no longer get deleted after 30 day
   - Added a button to the settings menu to manually delete all local Google translations
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed

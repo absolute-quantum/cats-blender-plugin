@@ -1236,6 +1236,10 @@ def correct_bone_positions(armature_name=None):
                 leg = armature.data.edit_bones.get('Left leg')
                 knee = armature.data.edit_bones.get('Left knee')
                 ankle = armature.data.edit_bones.get('Left ankle')
+
+                if 'Left leg 2' in armature.data.edit_bones:
+                    leg = armature.data.edit_bones.get('Left leg 2')
+
                 leg.tail = knee.head
                 knee.tail = ankle.head
 
@@ -1245,6 +1249,10 @@ def correct_bone_positions(armature_name=None):
                 leg = armature.data.edit_bones.get('Right leg')
                 knee = armature.data.edit_bones.get('Right knee')
                 ankle = armature.data.edit_bones.get('Right ankle')
+
+                if 'Right leg 2' in armature.data.edit_bones:
+                    leg = armature.data.edit_bones.get('Right leg 2')
+
                 leg.tail = knee.head
                 knee.tail = ankle.head
 

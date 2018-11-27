@@ -137,7 +137,8 @@ class AttachMesh(bpy.types.Operator):
         tools.common.switch('EDIT')
 
         # Delete all previous vertex groups
-        bpy.ops.object.vertex_group_remove(all=True)
+        if mesh.vertex_groups:
+            bpy.ops.object.vertex_group_remove(all=True)
 
         # Select and assign all vertices to new vertex group
         bpy.ops.mesh.select_all(action='SELECT')
