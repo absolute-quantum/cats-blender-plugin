@@ -107,7 +107,8 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             elif file_ending == 'xps' or file_ending == 'mesh' or file_ending == 'ascii':
                 try:
                     bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
-                                                   filepath=filepath)
+                                                   filepath=filepath,
+                                                   colorizeMesh=False)
                 except AttributeError:
                     bpy.ops.install.xps('INVOKE_DEFAULT')
 
@@ -213,7 +214,7 @@ class ImportXPS(bpy.types.Operator):
     def execute(self, context):
         tools.common.remove_unused_objects()
         try:
-            bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
+            bpy.ops.xps_tools.import_model('INVOKE_DEFAULT', colorizeMesh=False)
         except AttributeError:
             bpy.ops.install.xps('INVOKE_DEFAULT')
 

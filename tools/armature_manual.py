@@ -189,7 +189,7 @@ def pose_to_shapekey(name):
 @register_wrap
 class PoseNamePopup(bpy.types.Operator):
     bl_idname = "pose.name_popup"
-    bl_label = "Set the shapekey name:"
+    bl_label = "Give this shapekey a name:"
     bl_description = 'Sets the shapekey name. Press anywhere outside to skip'
 
     bpy.types.Scene.pose_to_shapekey_name = bpy.props.StringProperty(name="Pose Name")

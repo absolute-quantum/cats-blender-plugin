@@ -349,6 +349,9 @@ It checks for a new version automatically once every day.
 - **Custom Model Creation**:
   - Attach Mesh and Merge Armatures no longer remove the full body tracking fix
   - Fixed Attach Mesh throwing an error when the mesh has no vertex groups
+- **Importer**:
+  - XNALara no longer colorizes meshes
+    - This makes combining materials much easier
 - **Translations**:
   - Locally stored Google translations no longer get deleted after 30 day
   - Added a button to the settings menu to manually delete all local Google translations
