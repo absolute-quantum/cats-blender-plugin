@@ -217,6 +217,13 @@ bone_list_conflicting_names = [
     (['Cf_D_Shoulder_\L'], 'Shoulder_\L', 'Cf_D_Shoulder2_\L'),
     (['Cf_Hit_Waist02', 'Leg_\L'], 'Shoulder_\L', 'Cf_D_Shoulder2_\L'),
 
+    # Just rename those
+    ([], 'Root_Ground', 'Ground_Root'),
+    ([], 'Root_Hips', 'Hips_Root'),
+    ([], 'Root_Hips_1', 'Hips_Root_1'),
+    ([], 'Root_Hips_2', 'Hips_Root_2'),
+    ([], 'Root_Rot', 'Rot_Root'),
+
     # (['Elbowb_\L', 'Elbowc_\L'], 'Elbowa_\L', 'Arm05_\L'),
 ]
 bone_finger_list = [
@@ -267,8 +274,8 @@ bone_rename['Hips'] = [
     'Bip_Pelvis',
     'Hip',
     'Root',
-    'Root_Hips',
-    'Root_Rot',
+    'Hips_Root',
+    'Rot_Root',
     'Sk',
     'C_Waist_1',
     'Pelwas_001',
@@ -277,8 +284,8 @@ bone_rename['Hips'] = [
     'Unused_Root_Hips',
     'Waist01',
     'Waist02',
-    'Root_Hips_1',
-    'Root_Hips_2',
+    'Hips_Root_1',
+    'Hips_Root_2',
     'Pelvis_Def',
     'Kosi',
 ]
@@ -340,7 +347,11 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
 
     # .Mesh
     'Spine_Lower',
+    'Spine_Lower_1',
+    'Spine_Lower_2',
     'Spine_Upper',
+    'Spine_Upper_1',
+    'Spine_Upper_2',
 
     'Abdomen',
 
@@ -419,6 +430,9 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
 bone_rename['Neck'] = [
     'Mixamorig:Neck',
     'Head_Neck_Lower',
+    'Head_Neck_Lower_1',
+    'Head_Neck_Lower_2',
+    'Head_Neck_Middle',
     'Bip_Neck',
     'Bip_Neck1',
     'B_C_Neck1',
@@ -434,6 +448,8 @@ bone_rename['Neck'] = [
 bone_rename['Head'] = [
     'Mixamorig:Head',
     'Head_Neck_Upper',
+    'Head_Neck_Upper_1',
+    'Head_Neck_Upper_2',
     'Bip_Head',
     'Bip_Head1',
     'B_C_Head',

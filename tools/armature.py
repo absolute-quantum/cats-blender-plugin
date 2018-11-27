@@ -194,6 +194,8 @@ class FixArmature(bpy.types.Operator):
         if source_engine:
             # Delete unused physics meshes (like rigidbodies)
             for mesh in tools.common.get_meshes_objects():
+                if len(tools.common.get_meshes_objects()) == 1:
+                    break
                 if mesh.name.endswith('_physics')\
                         or mesh.name.endswith('_lod1')\
                         or mesh.name.endswith('_lod2')\

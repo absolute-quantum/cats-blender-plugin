@@ -142,7 +142,7 @@ class AttachMesh(bpy.types.Operator):
 
         # Select and assign all vertices to new vertex group
         bpy.ops.mesh.select_all(action='SELECT')
-        mesh.vertex_groups.new(attach_bone_name)
+        mesh.vertex_groups.new(name=attach_bone_name)
         bpy.ops.object.vertex_group_assign()
 
         tools.common.switch('OBJECT')
