@@ -2095,6 +2095,9 @@ def unregister():
     tools.supporter.unregister_dynamic_buttons()
     tools.supporter.unload_icons()
 
+    # Unregister material list
+    del bpy.types.Scene.material_list
+
     # Remove shapekey button from shapekey menu
     bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
 

@@ -57,6 +57,15 @@ class TokenAcquirer(object):
 
         r = self.session.get(self.host, verify=False)
 
+        ### Prints the response from google into a textfile inside cats/resources/google-response.txt
+        # import os
+        # import pathlib
+        # main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
+        # resources_dir = os.path.join(str(main_dir), "resources")
+        # output_file = os.path.join(resources_dir, "google-response.txt")
+        # with open(output_file, 'w', encoding="utf8") as outfile:
+        #     outfile.write(r.text)
+
         rawtkk = self.RE_RAWTKK.search(r.text)
         if rawtkk:
             self.tkk = rawtkk.group(1)
