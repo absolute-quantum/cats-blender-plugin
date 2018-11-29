@@ -39,6 +39,7 @@ class TokenAcquirer(object):
     """
 
     RE_TKK = re.compile(r'TKK=eval\(\'\(\(function\(\)\{(.+?)\}\)\(\)\)\'\);', re.DOTALL)
+    RE_TKK2 = re.compile(r'tkk:eval\(\'\(\(function\(\)\{(.+?)\}\)\(\)\)\'\);', re.DOTALL)
     RE_RAWTKK = re.compile(r'TKK=\'([^\']*)\';', re.DOTALL)
     RE_NEWTKK = re.compile(r'tkk:\'([^\']*)\',', re.DOTALL)
 
@@ -77,7 +78,11 @@ class TokenAcquirer(object):
             return
 
         # this will be the same as python code after stripping out a reserved word 'var'
-        code = unicode(self.RE_TKK.search(r.text).group(1)).replace('var ', '')
+        if self.RE_TKK.search(r.text):
+            code = unicode(self.RE_TKK.search(r.text).group(1)).replace('var ', '')
+        else:
+            code = unicode(self.RE_TKK2.search(r.text).group(1)).replace('var ', '')
+
         # unescape special ascii characters such like a \x3d(=)
         if PY3:  # pragma: no cover
             code = code.encode().decode('unicode-escape')
