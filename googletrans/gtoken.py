@@ -38,10 +38,9 @@ class TokenAcquirer(object):
         950629.577246
     """
 
-    RE_TKK = re.compile(r'TKK=eval\(\'\(\(function\(\)\{(.+?)\}\)\(\)\)\'\);',
-                        re.DOTALL)
-    RE_RAWTKK = re.compile(r'TKK=\'([^\']*)\';',
-                        re.DOTALL)
+    RE_TKK = re.compile(r'TKK=eval\(\'\(\(function\(\)\{(.+?)\}\)\(\)\)\'\);', re.DOTALL)
+    RE_RAWTKK = re.compile(r'TKK=\'([^\']*)\';', re.DOTALL)
+    RE_NEWTKK = re.compile(r'tkk:\'([^\']*)\',', re.DOTALL)
 
     def __init__(self, tkk='0', session=None, host='translate.google.com'):
         self.session = session or requests.Session()
@@ -61,6 +60,11 @@ class TokenAcquirer(object):
         rawtkk = self.RE_RAWTKK.search(r.text)
         if rawtkk:
             self.tkk = rawtkk.group(1)
+            return
+
+        newtkk = self.RE_NEWTKK.search(r.text)
+        if newtkk:
+            self.tkk = newtkk.group(1)
             return
 
         # this will be the same as python code after stripping out a reserved word 'var'

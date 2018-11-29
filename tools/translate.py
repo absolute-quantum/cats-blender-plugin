@@ -450,6 +450,14 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
                                    '\nGoogle: ' + error)
         print('', 'You got an error message from Google:', error, '')
         return
+    except AttributeError:
+        if self:
+            self.report({'ERROR'}, 'Could not get translations from Google Translate!'
+                        '\nThis means that Google changed their API and translations will no longer work until this is fixed.'
+                        '\nPlease translate manually or wait for an CATS update.'
+                        '\nFor updates and dicussions please join our Discord. The link can be found in the Credits panel down below.')
+        print('GOOGLE API CHANGED')
+        return
 
     # Update the dictionaries
     for i, translation in enumerate(translations):
