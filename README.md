@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.11.3)
+# Cats Blender Plugin (0.11.4)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -335,7 +335,7 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
-#### 0.11.3
+#### 0.11.4
 - **Model**:
   - Made Koikatsu models compatible
   - Added Merge Weights To Active button
@@ -348,7 +348,6 @@ It checks for a new version automatically once every day.
   - Pose Mode now always makes the armature selectable
 - **Custom Model Creation**:
   - Attach Mesh and Merge Armatures no longer remove the full body tracking fix
-  - Fixed Attach Mesh throwing an error when the mesh has no vertex groups
 - **Importer**:
   - XNALara no longer colorizes meshes
     - This makes combining materials much easier
@@ -364,6 +363,10 @@ It checks for a new version automatically once every day.
     - It is still compatible to Blender 2.79
     - Combining materials and creating a texture atlas is not yet possible
   - Updated mmd_tools (for 2.8 compatibility)
+
+#### 0.11.3
+- **Translations**:
+  - Fixed translations breaking due to a Google Translate API change (Thanks **BlueLament** for the fix!)
 
 #### 0.11.2
 - **Model**:
