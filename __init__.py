@@ -229,9 +229,9 @@ dict_found = False
 class ToolPanel:
     bl_label = 'Cats Blender Plugin'
     bl_idname = '3D_VIEW_TS_vrc'
+    bl_category = 'CATS'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS' if version_2_79_or_older() else 'UI'
-    bl_category = 'CATS'
 
     bpy.types.Scene.armature = bpy.props.EnumProperty(
         name='Armature',
@@ -2033,7 +2033,6 @@ def register():
         pass
 
     # Register all classes
-    count_reg = 0
     for cls in tools.register.__bl_classes:
         bpy.utils.register_class(cls)
 
@@ -2045,7 +2044,17 @@ def register():
         pass
 
     # Register material list
-    bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
+    raise_error = False
+    try:
+        bpy.types.Scene.material_list = bpy.props.CollectionProperty(type=tools.atlas.MaterialsGroup)
+    except ValueError:
+        print('Error while registering material list.')
+        raise_error = True
+        pass
+
+    if raise_error:
+        raise ValueError('Something went wrong, please restart Blender!')
+        return
 
     # Set cats version string
     set_cats_verion_string()
@@ -2076,17 +2085,19 @@ def register():
 
 def unregister():
     print("### Unloading CATS...")
-    # Unload mmd_tools
+    # # Unload mmd_tools
     try:
         mmd_tools_local.unregister()
     except AttributeError:
         pass
 
+    # Unregister material list
+    del bpy.types.Scene.material_list
+
     # Unload the updater
     addon_updater_ops.unregister()
 
     # Unload all classes in reverse order
-    count_unreg = 0
     for cls in reversed(tools.register.__bl_classes):
         bpy.utils.unregister_class(cls)
     tools.register.__bl_classes = []
@@ -2094,9 +2105,6 @@ def unregister():
     # Unregister all dynamic buttons and icons
     tools.supporter.unregister_dynamic_buttons()
     tools.supporter.unload_icons()
-
-    # Unregister material list
-    del bpy.types.Scene.material_list
 
     # Remove shapekey button from shapekey menu
     bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)

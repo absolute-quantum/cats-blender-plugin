@@ -250,8 +250,8 @@ def find_center_vector_of_vertex_group(mesh_name, vertex_group):
     for vert in verts:
         i = vert.index
         try:
-            mesh.vertex_groups[vertex_group].weight(i)
-            verts_in_group.append(vert)
+            if mesh.vertex_groups[vertex_group].weight(i) > 0:
+                verts_in_group.append(vert)
         except RuntimeError:
             # vertex is not in the group
             pass
