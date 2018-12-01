@@ -81,6 +81,28 @@ class ResetGoogleDictButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
+class DebugTranslations(bpy.types.Operator):
+    bl_idname = 'settings.debug_translations'
+    bl_label = 'Debug Google Translations'
+    bl_description = "Tests Google transaltions and prints the response into a file called 'google-response.txt' located in the cats addon folder > resources" \
+                     "\nThis button is only visible in the cats development version"
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        bpy.context.scene.debug_translations = True
+        from googletrans import Translator
+        translator = Translator()
+        try:
+            translator.translate('猫')
+        except:
+            self.report({'INFO'}, 'Errors found, response printed!!')
+
+        bpy.context.scene.debug_translations = False
+        self.report({'INFO'}, 'No issues with Google Translations found, response printed!')
+        return {'FINISHED'}
+
+
 def load_settings():
     print('READING SETTINGS FILE')
     global settings_data, settings_data_unchanged

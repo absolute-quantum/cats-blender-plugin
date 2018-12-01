@@ -675,9 +675,15 @@ class ToolPanel:
     )
     bpy.types.Scene.use_custom_mmd_tools = bpy.props.BoolProperty(
         name='Use Custom mmd_tools',
-        description='Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools ',
+        description='Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools',
         default=False,
         update=tools.settings.update_settings
+    )
+
+    bpy.types.Scene.debug_translations = bpy.props.BoolProperty(
+        name='Debug Google Translations',
+        description='Tests the Google Translations and prints the Google response in case of error',
+        default=False
     )
 
     # bpy.types.Scene.disable_vrchat_features = bpy.props.BoolProperty(
@@ -1694,6 +1700,10 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 0.8
         row.operator('settings.reset_google_dict', icon='X')
+        if dev_branch:
+            row = col.row(align=True)
+            row.scale_y = 0.8
+            row.operator('settings.debug_translations', icon='X')
 
         if tools.settings.settings_changed():
             col.separator()

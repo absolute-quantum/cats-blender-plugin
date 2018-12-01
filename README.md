@@ -369,6 +369,7 @@ It checks for a new version automatically once every day.
     - It is still compatible to Blender 2.79
     - Combining materials and creating a texture atlas is not yet possible
   - Updated mmd_tools (for 2.8 compatibility)
+  - Fixed multiple bugs
 
 #### 0.11.5
 - **General**:

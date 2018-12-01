@@ -6,6 +6,10 @@ import time
 
 import requests
 
+import bpy
+import os
+import pathlib
+
 
 from .compat import PY3
 from .compat import unicode
@@ -58,14 +62,8 @@ class TokenAcquirer(object):
 
         r = self.session.get(self.host, verify=False)
 
-        ### Prints the response from google into a textfile inside cats/resources/google-response.txt
-        # import os
-        # import pathlib
-        # main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
-        # resources_dir = os.path.join(str(main_dir), "resources")
-        # output_file = os.path.join(resources_dir, "google-response.txt")
-        # with open(output_file, 'w', encoding="utf8") as outfile:
-        #     outfile.write(r.text)
+        # This prints the google response if the button in the cats settings is pressed
+        print_response(r.text)
 
         rawtkk = self.RE_RAWTKK.search(r.text)
         if rawtkk:
@@ -206,3 +204,14 @@ class TokenAcquirer(object):
         self._update()
         tk = self.acquire(text)
         return tk
+
+
+def print_response(text):
+    if not bpy.context.scene.debug_translations:
+        return
+    # Prints the response from google into a textfile inside cats/resources/google-response.txt
+    main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
+    resources_dir = os.path.join(str(main_dir), "resources")
+    output_file = os.path.join(resources_dir, "google-response.txt")
+    with open(output_file, 'w', encoding="utf8") as outfile:
+        outfile.write(text)
