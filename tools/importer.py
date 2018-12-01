@@ -72,7 +72,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         )
     else:
         filter_glob = bpy.props.StringProperty(
-            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx;*.dae",
+            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx;*.dae;*.vrm",
             options={'HIDDEN'}
         )
     text1 = bpy.props.BoolProperty(
@@ -146,6 +146,13 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                 except (TypeError, ValueError):
                     bpy.ops.wm.collada_import('INVOKE_DEFAULT')
 
+            elif file_ending == 'vrm':
+                try:
+                    bpy.ops.import_scene.vrm('EXEC_DEFAULT',
+                                             filepath=filepath)
+                except (TypeError, ValueError):
+                    bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
+
         return {'FINISHED'}
 
 
@@ -178,6 +185,9 @@ class ModelsPopup(bpy.types.Operator):
         row.scale_y = 1.3
         row.operator('importer.import_source')
         row.operator('importer.import_fbx')
+        row = col.row(align=True)
+        row.scale_y = 1.3
+        row.operator('importer.import_vrm')
 
 
 @register_wrap
@@ -256,6 +266,23 @@ class ImportFBX(bpy.types.Operator):
 
 
 @register_wrap
+class ImportVRM(bpy.types.Operator):
+    bl_idname = 'importer.import_vrm'
+    bl_label = 'VRM'
+    bl_description = 'Import a VRM model (.vrm)'
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        tools.common.remove_unused_objects()
+        try:
+            bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
+        except AttributeError:
+            bpy.ops.install.vrm('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
+
+
+@register_wrap
 class InstallXPS(bpy.types.Operator):
     bl_idname = "install.xps"
     bl_label = "XPS Tools is not installed or enabled!"
@@ -284,7 +311,7 @@ class InstallXPS(bpy.types.Operator):
         row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.xps_tools', icon=ICON_URL)
+        row.operator('importer.download_xps_tools', icon=ICON_URL)
 
 
 @register_wrap
@@ -316,7 +343,42 @@ class InstallSource(bpy.types.Operator):
         row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.source_tools', icon=ICON_URL)
+        row.operator('importer.download_source_tools', icon=ICON_URL)
+
+
+@register_wrap
+class InstallVRM(bpy.types.Operator):
+    bl_idname = "install.vrm"
+    bl_label = "VRM Importer is not installed or enabled!"
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.label(text="The plugin 'VRM Importer' is required for this function.")
+        col.separator()
+        row = col.row(align=True)
+        row.label(text="If it is not enabled please enable it in your User Preferences.")
+        row = col.row(align=True)
+        row.label(text="Currently you have to select 'Testing' in the addons settings")
+        col.separator()
+        row = col.row(align=True)
+        row.label(text="If it is not installed please download and install it manually.")
+        col.separator()
+        row = col.row(align=True)
+        row.operator('importer.download_vrm', icon=ICON_URL)
 
 
 @register_wrap
@@ -345,41 +407,59 @@ class EnableMMD(bpy.types.Operator):
         row.label(text="Please restart Blender.")
 
 
-def popup_install_xps(self, context):
-    layout = self.layout
-    col = layout.column(align=True)
-
-    row = col.row(align=True)
-    row.label(text="The plugin 'XPS Tools' is required for this function.")
-    col.separator()
-    row = col.row(align=True)
-    row.label(text="If it is not enabled please enable it in your User Preferences.")
-    row = col.row(align=True)
-    row.label(text="If it is not installed please click here to download it and then install it manually.")
-    col.separator()
-    row = col.row(align=True)
-    row.operator('importer.xps_tools', icon=ICON_URL)
-
-
-def popup_install_source(self, context):
-    layout = self.layout
-    col = layout.column(align=True)
-
-    row = col.row(align=True)
-    row.label(text="The plugin 'Blender Source Tools' is required for this function.")
-    col.separator()
-    row = col.row(align=True)
-    row.label(text="If it is not enabled please enable it in your User Preferences.")
-    row = col.row(align=True)
-    row.label(text="If it is not installed please click here to download it and then install it manually.")
-    col.separator()
-    row = col.row(align=True)
-    row.operator('importer.source_tools', icon=ICON_URL)
+# def popup_install_xps(self, context):
+#     layout = self.layout
+#     col = layout.column(align=True)
+#
+#     row = col.row(align=True)
+#     row.label(text="The plugin 'XPS Tools' is required for this function.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.label(text="If it is not enabled please enable it in your User Preferences.")
+#     row = col.row(align=True)
+#     row.label(text="If it is not installed please click here to download it and then install it manually.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.operator('importer.download_xps_tools', icon=ICON_URL)
+#
+#
+# def popup_install_source(self, context):
+#     layout = self.layout
+#     col = layout.column(align=True)
+#
+#     row = col.row(align=True)
+#     row.label(text="The plugin 'Blender Source Tools' is required for this function.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.label(text="If it is not enabled please enable it in your User Preferences.")
+#     row = col.row(align=True)
+#     row.label(text="If it is not installed please click here to download it and then install it manually.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.operator('importer.download_source_tools', icon=ICON_URL)
+#
+#
+# def popup_install_vrm(self, context):
+#     layout = self.layout
+#     col = layout.column(align=True)
+#
+#     row = col.row(align=True)
+#     row.label(text="The plugin 'VRM Importer' is required for this function.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.label(text="If it is not enabled please enable it in your User Preferences.")
+#     row = col.row(align=True)
+#     row.label(text="Currently you have to select 'Testing' in the addons settings")
+#     row = col.row(align=True)
+#     row.label(text="If it is not installed please click here to download it and then install it manually.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.operator('importer.download_vrm', icon=ICON_URL)
 
 
 @register_wrap
 class XpsToolsButton(bpy.types.Operator):
-    bl_idname = 'importer.xps_tools'
+    bl_idname = 'importer.download_xps_tools'
     bl_label = 'Download XPS Tools'
 
     def execute(self, context):
@@ -391,13 +471,25 @@ class XpsToolsButton(bpy.types.Operator):
 
 @register_wrap
 class SourceToolsButton(bpy.types.Operator):
-    bl_idname = 'importer.source_tools'
+    bl_idname = 'importer.download_source_tools'
     bl_label = 'Download Source Tools'
 
     def execute(self, context):
         webbrowser.open('http://steamreview.org/BlenderSourceTools/')
 
         self.report({'INFO'}, 'Source Tools link opened')
+        return {'FINISHED'}
+
+
+@register_wrap
+class SourceToolsButton(bpy.types.Operator):
+    bl_idname = 'importer.download_vrm'
+    bl_label = 'Download VRM Importer'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/iCyP/VRM_IMPORTER')
+
+        self.report({'INFO'}, 'VRM Importer link opened')
         return {'FINISHED'}
 
 

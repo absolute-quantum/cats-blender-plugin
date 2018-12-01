@@ -69,9 +69,14 @@ class FixArmature(bpy.types.Operator):
         return True
 
     def execute(self, context):
+        is_vrm = False
         if len(tools.common.get_meshes_objects()) == 0:
-            self.report({'ERROR'}, 'No mesh inside the armature found!')
-            return {'CANCELLED'}
+            for mesh in tools.common.get_meshes_objects(mode=2):
+                if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                self.report({'ERROR'}, 'No mesh inside the armature found!')
+                return {'CANCELLED'}
 
         print('\nFixing Model:\n')
 
@@ -253,6 +258,12 @@ class FixArmature(bpy.types.Operator):
         tools.common.remove_empty()
         tools.common.remove_unused_objects()
 
+        # Fix VRM meshes being outside of the armature
+        if is_vrm:
+            for mesh in tools.common.get_meshes_objects(mode=2):
+                if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
+                    mesh.parent = armature  # TODO
+
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
         # tools.common.select(armature)
@@ -297,8 +308,24 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[1] = False
             bone.lock_scale[2] = False
 
+        # Fix Source Shapekeys
         if source_engine and tools.common.has_shapekeys(mesh):
             mesh.data.shape_keys.key_blocks[0].name = "Basis"
+
+        # Fix VRM shapekeys
+        if is_vrm and tools.common.has_shapekeys(mesh):
+            shapekeys = mesh.data.shape_keys.key_blocks
+            for shapekey in shapekeys:
+                shapekey.name = shapekey.name.replace('Face.M_F00_000_Fcl_', '').replace('_', ' ')
+
+            # Sort shapekeys in categories
+            shapekey_order = []
+            for categorie in ['MTH', 'EYE', 'BRW', 'ALL', 'HA']:
+                for shapekey in shapekeys:
+                    if shapekey.name.startswith(categorie):
+                        shapekey_order.append(shapekey.name)
+
+            tools.common.sort_shape_keys(mesh.name, shapekey_order)
 
         # Remove empty shape keys and then save the shape key order
         tools.common.clean_shapekeys(mesh)

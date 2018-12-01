@@ -337,6 +337,7 @@ It checks for a new version automatically once every day.
 
 #### 0.12.0
 - **Model**:
+  - Made VRM models compatible
   - Made Koikatsu models compatible
   - Added Merge Weights To Active button
   - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
@@ -349,11 +350,16 @@ It checks for a new version automatically once every day.
 - **Custom Model Creation**:
   - Attach Mesh and Merge Armatures no longer remove the full body tracking fix
 - **Importer**:
+  - Added VRM Importer
+    - Open the import menu to see the VRM button
+    - If its not installed it will provide you with a download link
   - XNALara no longer colorizes meshes
     - This makes combining materials much easier
 - **Translations**:
   - Locally stored Google translations no longer get deleted after 30 day
   - Added a button to the settings menu to manually delete all local Google translations
+- **Eye Tracking**:
+  - Eyes will no longer be created in weird spots when the weight paint is off (thanks to **zaCade** for finding this!)
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed
 - **Shapekeys**:
