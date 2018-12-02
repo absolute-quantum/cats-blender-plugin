@@ -2030,6 +2030,8 @@ def register():
     print("\n### Loading CATS...")
     global dict_found
 
+    tools.register.order_classes()
+
     # Load settings
     tools.settings.load_settings()
 
@@ -2043,7 +2045,7 @@ def register():
         pass
 
     # Register all classes
-    for cls in tools.register.__bl_classes:
+    for cls in tools.register.__bl_ordered_classes:
         bpy.utils.register_class(cls)
 
     # Register updater
@@ -2108,8 +2110,9 @@ def unregister():
     addon_updater_ops.unregister()
 
     # Unload all classes in reverse order
-    for cls in reversed(tools.register.__bl_classes):
+    for cls in reversed(tools.register.__bl_ordered_classes):
         bpy.utils.unregister_class(cls)
+    tools.register.__bl_ordered_classes = []
     tools.register.__bl_classes = []
 
     # Unregister all dynamic buttons and icons

@@ -36,7 +36,7 @@ https://catsblenderplugin.com
 
 ## Requirement
 
- - Blender 2.79 **(run as administrator)**
+ - Blender 2.79 or 2.80 **(run as administrator)**
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
 
 ## Installation
@@ -347,6 +347,7 @@ It checks for a new version automatically once every day.
   - Added Duplicate Bones button
   - Improved Export button warnings
   - Pose Mode now always makes the armature selectable
+  - Fixed meshes being deleted when a different layer than 0 was visible
 - **Custom Model Creation**:
   - Attach Mesh and Merge Armatures no longer remove the full body tracking fix
 - **Importer**:

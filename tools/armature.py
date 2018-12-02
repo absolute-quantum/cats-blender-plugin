@@ -244,14 +244,33 @@ class FixArmature(bpy.types.Operator):
         for obj_name in to_delete:
             tools.common.delete_hierarchy(bpy.data.objects[obj_name])
 
-        # Remove objects from  different layers and things that are not meshes
+        # Remove objects from different layers and things that are not meshes
+        get_current_layers = []
+        for i, layer in enumerate(bpy.context.scene.layers):
+            if layer:
+                get_current_layers.append(i)
+
         if len(armature.children) > 1:
             for child in armature.children:
                 for child2 in child.children:
-                    if not child2.layers[0] or child2.type != 'MESH':
+                    if child2.type != 'MESH':
+                        tools.common.delete(child2)
+                        continue
+                    in_layer = False
+                    for i in get_current_layers:
+                        if child2.layers[i]:
+                            in_layer = True
+                    if not in_layer:
                         tools.common.delete(child2)
 
-                if not child.layers[0] or child.type != 'MESH':
+                if child.type != 'MESH':
+                    tools.common.delete(child)
+                    continue
+                in_layer = False
+                for i in get_current_layers:
+                    if child.layers[i]:
+                        in_layer = True
+                if not in_layer:
                     tools.common.delete(child)
 
         # Remove empty mmd object and unused objects
@@ -263,6 +282,8 @@ class FixArmature(bpy.types.Operator):
             for mesh in tools.common.get_meshes_objects(mode=2):
                 if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
                     mesh.parent = armature  # TODO
+
+        return {'FINISHED'}
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
@@ -307,6 +328,9 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[0] = False
             bone.lock_scale[1] = False
             bone.lock_scale[2] = False
+
+        # Set layer of mesh to 0
+        mesh.layers[0] = True
 
         # Fix Source Shapekeys
         if source_engine and tools.common.has_shapekeys(mesh):

@@ -24,8 +24,10 @@
 # Edits by: Hotox
 
 import bpy
+import typing
 
 __bl_classes = []
+__bl_ordered_classes = []
 __make_annotations = (not bpy.app.version < (2, 79, 9))
 
 
@@ -42,3 +44,54 @@ def register_wrap(cls):
     if hasattr(cls, 'bl_rna'):
         __bl_classes.append(cls)
     return cls
+
+
+def order_classes():
+    print('ORDER CLASSES')
+    global __bl_ordered_classes
+    deps_dict = {}
+    classes_to_register = set(iter_classes_to_register())
+    for cls in classes_to_register:
+        deps_dict[cls] = set(iter_own_register_deps(cls, classes_to_register))
+
+    __bl_ordered_classes = toposort(deps_dict)
+
+
+def iter_classes_to_register():
+    for cls in __bl_classes:
+        yield cls
+
+
+def iter_own_register_deps(cls, own_classes):
+    yield from (dep for dep in iter_register_deps(cls) if dep in own_classes)
+
+
+def iter_register_deps(cls):
+    for value in typing.get_type_hints(cls, {}, {}).values():
+        dependency = get_dependency_from_annotation(value)
+        if dependency is not None:
+            yield dependency
+
+def get_dependency_from_annotation(value):
+    if isinstance(value, tuple) and len(value) == 2:
+        if value[0] in (bpy.props.PointerProperty, bpy.props.CollectionProperty):
+            return value[1]["type"]
+    return None
+
+
+# Find order to register to solve dependencies
+#################################################
+
+def toposort(deps_dict):
+    sorted_list = []
+    sorted_values = set()
+    while len(deps_dict) > 0:
+        unsorted = []
+        for value, deps in deps_dict.items():
+            if len(deps) == 0:
+                sorted_list.append(value)
+                sorted_values.add(value)
+            else:
+                unsorted.append(value)
+        deps_dict = {value : deps_dict[value] - sorted_values for value in unsorted}
+    return sorted_list
