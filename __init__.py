@@ -24,6 +24,19 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 
+bl_info = {
+    'name': 'Cats Blender Plugin',
+    'category': '3D View',
+    'author': 'GiveMeAllYourCats',
+    'location': 'View 3D > Tool Shelf > CATS',
+    'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
+    'version': [0, 11, 5],  # Only change this version and the dev branch var right before publishing the new update!
+    'blender': (2, 80, 0),
+    'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
+    'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
+    'warning': '',
+}
+
 import os
 import sys
 
@@ -36,6 +49,9 @@ import copy
 import globs
 import requests
 import extend_types
+
+# Load package name, important for updater
+globs.package = __package__
 
 # Check if cats is reloading or started fresh
 if "bpy" not in locals():
@@ -77,19 +93,6 @@ else:
 
 # How to set up PyCharm with Blender:
 # https://b3d.interplanety.org/en/using-external-ide-pycharm-for-writing-blender-scripts/
-
-bl_info = {
-    'name': 'Cats Blender Plugin',
-    'category': '3D View',
-    'author': 'GiveMeAllYourCats',
-    'location': 'View 3D > Tool Shelf > CATS',
-    'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': [0, 11, 5],  # Only change this version and the dev branch var right before publishing the new update!
-    'blender': (2, 80, 0),
-    'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
-    'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
-    'warning': '',
-}
 
 globs.dev_branch = True
 globs.version = copy.deepcopy(bl_info.get('version'))

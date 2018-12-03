@@ -14,7 +14,7 @@ version = None
 version_str = ''
 is_reloading = False
 
-package = 'cats'
+package = ''
 
 # Icons for UI
 ICON_ADD, ICON_REMOVE = 'ADD', 'REMOVE'
