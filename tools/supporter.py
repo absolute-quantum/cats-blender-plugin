@@ -38,6 +38,7 @@ import tools.settings
 from threading import Thread
 from datetime import datetime, timezone
 from tools.register import register_wrap
+from bpy.utils import previews
 
 # global variables
 preview_collections = {}

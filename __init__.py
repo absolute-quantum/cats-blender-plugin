@@ -134,10 +134,9 @@ def register():
     tools.common.set_cats_verion_string()
 
     # Load supporter and settings icons and buttons
-    if tools.common.version_2_79_or_older():
-        tools.supporter.load_other_icons()
-        tools.supporter.load_supporters()
-        tools.supporter.register_dynamic_buttons()
+    tools.supporter.load_other_icons()
+    tools.supporter.load_supporters()
+    tools.supporter.register_dynamic_buttons()
 
     # Load the dictionaries and check if they are found
     globs.dict_found = tools.translate.load_translations()
