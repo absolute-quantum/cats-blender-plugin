@@ -84,6 +84,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
                         if translated:
                             i += 1
 
+        tools.common.ui_refresh()
+
         self.report({'INFO'}, 'Translated ' + str(i) + ' shape keys.')
         return {'FINISHED'}
 

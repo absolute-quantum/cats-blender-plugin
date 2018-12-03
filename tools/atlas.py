@@ -609,3 +609,27 @@ def shotariya_installed():
 #         self.report({'INFO'}, 'Auto Atlas finished!')
 #
 #         return {'FINISHED'}
+
+
+# @register_wrap
+# class ShapekeyList(bpy.types.UIList):
+#     # The draw_item function is called for each item of the collection that is visible in the list.
+#     #   data is the RNA object containing the collection,
+#     #   item is the current drawn item of the collection,
+#     #   icon is the "computed" icon for the item (as an integer, because some objects like materials or textures
+#     #   have custom icons ID, which are not available as enum items).
+#     #   active_data is the RNA object containing the active property for the collection (i.e. integer pointing to the
+#     #   active item of the collection).
+#     #   active_propname is the name of the active property (use 'getattr(active_data, active_propname)').
+#     #   index is index of the current item in the collection.
+#     #   flt_flag is the result of the filtering process for this item.
+#     #   Note: as index and flt_flag are optional arguments, you do not have to use/declare them here if you don't
+#     #         need them.
+#     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+#         layout.label(text=item.name, translate=False, icon='SHAPEKEY_DATA')
+#         # split.prop(item, "name", text="", emboss=False, translate=False, icon='BORDER_RECT')
+#
+#
+# class Uilist_actions(bpy.types.Operator):
+#     bl_idname = "custom.list_action"
+#     bl_label = "List Action"

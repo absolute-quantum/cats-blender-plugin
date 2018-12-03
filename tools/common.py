@@ -27,7 +27,9 @@
 from datetime import datetime
 
 import bpy
+import copy
 import bmesh
+import globs
 import numpy as np
 import tools.supporter
 import tools.decimation
@@ -54,10 +56,6 @@ import re
 # - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
 # - Eye tracking test add reset blink
 # - Eye tracking test set subcol like in updater
-
-
-shapekey_order = None
-version_str = ''
 
 
 def get_armature(armature_name=None):
@@ -645,6 +643,10 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
                     if has_shapekeys(mesh):
                         bpy.ops.object.shape_key_remove(all=True)
+                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+                elif mod.type == 'SUBSURF':
+                    mesh.modifiers.remove(mod)
+                elif mod.type == 'MIRROR':
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
             # Standardize UV maps name
@@ -1400,6 +1402,38 @@ def matmul(a, b):
     if version_2_79_or_older():
         return a*b
     return a.__matmul__(b)
+
+
+def set_cats_verion_string():
+    version_str = ''
+    # if in dev version, increase version
+    if globs.dev_branch and len(globs.version) > 2:
+        globs.version[2] += 1
+
+    # Convert version to string
+    if len(globs.version) > 0:
+        version_str += str(globs.version[0])
+        for index, i in enumerate(globs.version):
+            if index == 0:
+                continue
+            version_str += '.' + str(globs.version[index])
+    if globs.dev_branch:
+        version_str += '-dev'
+
+    # Change the version back
+    if globs.dev_branch and len(globs.version) > 2:
+        globs.version[2] -= 1
+
+    globs.version_str = version_str
+
+
+def ui_refresh():
+    # A way to refresh the ui
+    if bpy.data.window_managers:
+        for windowManager in bpy.data.window_managers:
+            for window in windowManager.windows:
+                for area in window.screen.areas:
+                    area.tag_redraw()
 
 
 """

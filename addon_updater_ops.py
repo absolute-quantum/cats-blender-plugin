@@ -17,9 +17,10 @@
 # ##### END GPL LICENSE BLOCK #####
 
 import bpy
+import globs
 from bpy.app.handlers import persistent
 import os
-from tools.register import register_wrap
+from tools.register import make_annotations
 
 # from pip._vendor.msgpack import fallback
 
@@ -28,7 +29,7 @@ import tools.common
 # updater import, import safely
 # Prevents popups for users with invalid python installs e.g. missing libraries
 try:
-    from .addon_updater import Updater as updater
+    from addon_updater import Updater as updater
 except Exception as e:
     print("ERROR INITIALIZING UPDATER")
     print(str(e))
@@ -78,7 +79,7 @@ def _layout_split(layout, factor=0.0, align=False):
 
 
 # simple popup for prompting checking for update & allow to install if available
-@register_wrap
+@make_annotations
 class addon_updater_install_popup(bpy.types.Operator):
     """Check and install update if available"""
     bl_label = "Update Cats Blender Plugin".format(x=updater.addon)
@@ -182,7 +183,7 @@ class addon_updater_install_popup(bpy.types.Operator):
 
 
 # User preference check-now operator
-@register_wrap
+@make_annotations
 class addon_updater_check_now(bpy.types.Operator):
     bl_label = "Check now for update"
     bl_idname = updater.addon + ".updater_check_now"
@@ -202,7 +203,7 @@ class addon_updater_check_now(bpy.types.Operator):
             return {'CANCELLED'}
 
         # apply the UI settings
-        settings = context.user_preferences.addons[__package__].preferences
+        settings = context.user_preferences.addons[globs.package].preferences
         updater.set_check_interval(enable=settings.auto_check_update,
                                    months=settings.updater_intrval_months,
                                    days=settings.updater_intrval_days,
@@ -218,7 +219,7 @@ class addon_updater_check_now(bpy.types.Operator):
         return {'FINISHED'}
 
 
-@register_wrap
+@make_annotations
 class addon_updater_update_now(bpy.types.Operator):
     bl_label = "Update " + updater.addon + " addon now"
     bl_idname = updater.addon + ".updater_update_now"
@@ -276,7 +277,7 @@ class addon_updater_update_now(bpy.types.Operator):
         return {'FINISHED'}
 
 
-@register_wrap
+@make_annotations
 class addon_updater_update_target(bpy.types.Operator):
     bl_label = "Cats version selector"
     bl_idname = updater.addon + ".updater_update_target"
@@ -362,7 +363,7 @@ class addon_updater_update_target(bpy.types.Operator):
         return {'FINISHED'}
 
 
-@register_wrap
+@make_annotations
 class addon_updater_install_manually(bpy.types.Operator):
     """As a fallback, direct the user to download the addon manually"""
     bl_label = "Install update manually"
@@ -425,7 +426,7 @@ class addon_updater_install_manually(bpy.types.Operator):
         return {'FINISHED'}
 
 
-@register_wrap
+@make_annotations
 class addon_updater_updated_successful(bpy.types.Operator):
     """Addon in place, popup telling user it completed or what went wrong"""
     bl_label = "Installation Report"
@@ -494,7 +495,7 @@ class addon_updater_updated_successful(bpy.types.Operator):
         return {'FINISHED'}
 
 
-@register_wrap
+@make_annotations
 class addon_updater_restore_backup(bpy.types.Operator):
     """Restore addon from backup"""
     bl_label = "Restore backup"
@@ -517,7 +518,7 @@ class addon_updater_restore_backup(bpy.types.Operator):
         return {'FINISHED'}
 
 
-@register_wrap
+@make_annotations
 class addon_updater_ignore(bpy.types.Operator):
     """Prevent future update notice popups"""
     bl_label = "Ignore update"
@@ -543,7 +544,7 @@ class addon_updater_ignore(bpy.types.Operator):
         return {'FINISHED'}
 
 
-@register_wrap
+@make_annotations
 class addon_updater_end_background(bpy.types.Operator):
     """Stop checking for update in the background"""
     bl_label = "End background check"
@@ -709,7 +710,7 @@ def check_for_update_background():
         return
 
     # apply the UI settings
-    addon_prefs = bpy.context.user_preferences.addons.get(__package__, None)
+    addon_prefs = bpy.context.user_preferences.addons.get(globs.package, None)
     if not addon_prefs:
         return
     settings = addon_prefs.preferences
@@ -739,7 +740,7 @@ def check_for_update_nonthreaded(self, context):
     # only check if it's ready, ie after the time interval specified
     # should be the async wrapper call here
 
-    settings = context.user_preferences.addons[__package__].preferences
+    settings = context.user_preferences.addons[globs.package].preferences
     updater.set_check_interval(enable=settings.auto_check_update,
                                months=settings.updater_intrval_months,
                                days=settings.updater_intrval_days,
@@ -815,7 +816,7 @@ def update_notice_box_ui(self, context):
 
     if updater.update_ready != True: return
 
-    settings = context.user_preferences.addons[__package__].preferences
+    settings = context.user_preferences.addons[globs.package].preferences
     layout = self.layout
     box = layout.box()
     col = box.column(align=True)
@@ -860,7 +861,7 @@ def update_settings_ui(self, context, element=None):
         box.label(text=updater.error_msg)
         return
 
-    settings = context.user_preferences.addons[__package__].preferences
+    settings = context.user_preferences.addons[globs.package].preferences
 
     # auto-update settings
     # box.label(text="Cats Updater")
@@ -997,7 +998,7 @@ def update_settings_ui(self, context, element=None):
     row = box.row()
 
     row.scale_y = 0.1
-    row.label(text='Current Cats version: ' + tools.common.version_str)
+    row.label(text='Current Cats version: ' + globs.version_str)
     col.separator()
     row = box.row()
 
@@ -1025,7 +1026,7 @@ def update_settings_ui_condensed(self, context, element=None):
         row.label(text=updater.error_msg)
         return
 
-    settings = context.user_preferences.addons[__package__].preferences
+    settings = context.user_preferences.addons[globs.package].preferences
 
     # special case to tell user to restart blender, if set that way
     if updater.auto_reload_post_update == False:
@@ -1197,6 +1198,48 @@ def select_link_function(self, tag):
     return link
 
 
+# Custom class put here
+@make_annotations
+class UpdaterPreferences(bpy.types.AddonPreferences):
+    bl_idname = globs.package
+    bl_label = 'blabliblub'
+
+    auto_check_update = bpy.props.BoolProperty(
+        name='Auto-check for Update',
+        description='If enabled, auto-check for updates using an interval',
+        default=True
+    )
+    updater_intrval_months = bpy.props.IntProperty(
+        name='Months',
+        description='Number of months between checking for updates',
+        default=0,
+        min=0
+    )
+    updater_intrval_days = bpy.props.IntProperty(
+        name='Days',
+        description='Number of days between checking for updates',
+        default=1,
+        min=1
+    )
+    updater_intrval_hours = bpy.props.IntProperty(
+        name='Hours',
+        description='Number of hours between checking for updates',
+        default=0,
+        min=0,
+        max=0
+    )
+    updater_intrval_minutes = bpy.props.IntProperty(
+        name='Minutes',
+        description='Number of minutes between checking for updates',
+        default=0,
+        min=0,
+        max=0
+    )
+
+    def draw(self, context):
+        update_settings_ui(self, context)
+
+
 # -----------------------------------------------------------------------------
 # Register, should be run in the register module itself
 # -----------------------------------------------------------------------------
@@ -1366,15 +1409,16 @@ def register(bl_info):
     # The register line items for all operators/panels
     # If using bpy.utils.register_module(__name__) to register elsewhere
     # in the addon, delete these lines (also from unregister)
-    # bpy.utils.register_class(addon_updater_install_popup)
-    # bpy.utils.register_class(addon_updater_check_now)
-    # bpy.utils.register_class(addon_updater_update_now)
-    # bpy.utils.register_class(addon_updater_update_target)
-    # bpy.utils.register_class(addon_updater_install_manually)
-    # bpy.utils.register_class(addon_updater_updated_successful)
-    # bpy.utils.register_class(addon_updater_restore_backup)
-    # bpy.utils.register_class(addon_updater_ignore)
-    # bpy.utils.register_class(addon_updater_end_background)
+    bpy.utils.register_class(addon_updater_install_popup)
+    bpy.utils.register_class(addon_updater_check_now)
+    bpy.utils.register_class(addon_updater_update_now)
+    bpy.utils.register_class(addon_updater_update_target)
+    bpy.utils.register_class(addon_updater_install_manually)
+    bpy.utils.register_class(addon_updater_updated_successful)
+    bpy.utils.register_class(addon_updater_restore_backup)
+    bpy.utils.register_class(addon_updater_ignore)
+    bpy.utils.register_class(addon_updater_end_background)
+    bpy.utils.register_class(UpdaterPreferences)
 
     # special situation: we just updated the addon, show a popup
     # to tell the user it worked
@@ -1383,15 +1427,16 @@ def register(bl_info):
 
 
 def unregister():
-    # bpy.utils.unregister_class(addon_updater_install_popup)
-    # bpy.utils.unregister_class(addon_updater_check_now)
-    # bpy.utils.unregister_class(addon_updater_update_now)
-    # bpy.utils.unregister_class(addon_updater_update_target)
-    # bpy.utils.unregister_class(addon_updater_install_manually)
-    # bpy.utils.unregister_class(addon_updater_updated_successful)
-    # bpy.utils.unregister_class(addon_updater_restore_backup)
-    # bpy.utils.unregister_class(addon_updater_ignore)
-    # bpy.utils.unregister_class(addon_updater_end_background)
+    bpy.utils.unregister_class(addon_updater_install_popup)
+    bpy.utils.unregister_class(addon_updater_check_now)
+    bpy.utils.unregister_class(addon_updater_update_now)
+    bpy.utils.unregister_class(addon_updater_update_target)
+    bpy.utils.unregister_class(addon_updater_install_manually)
+    bpy.utils.unregister_class(addon_updater_updated_successful)
+    bpy.utils.unregister_class(addon_updater_restore_backup)
+    bpy.utils.unregister_class(addon_updater_ignore)
+    bpy.utils.unregister_class(addon_updater_end_background)
+    bpy.utils.unregister_class(UpdaterPreferences)
 
     # clear global vars since they may persist if not restarting blender
     updater.clear_state()  # clear internal vars, avoids reloading oddities

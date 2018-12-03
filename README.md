@@ -339,15 +339,17 @@ It checks for a new version automatically once every day.
 - **Model**:
   - Made VRM models compatible
   - Made Koikatsu models compatible
-  - Added Merge Weights To Active button
   - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
   - Pose to Shapekey now asks for a shapekey name first
-  - Put some model options under a "Show More Options" button
   - Added separate buttons to enable and disable the Full Body tracking fix
-  - Added Duplicate Bones button
   - Improved Export button warnings
   - Pose Mode now always makes the armature selectable
   - Fixed meshes being deleted when a different layer than 0 was visible
+- **Model Options**:
+  - Put some model options under a new "Show More Options" button
+  - Added "Merge Weights To Active" button
+  - Added "Duplicate Bones" button
+  - Join Meshes now removes subsurface modifiers and applies mirror modifiers
 - **Custom Model Creation**:
   - Attach Mesh and Merge Armatures no longer remove the full body tracking fix
 - **Importer**:
@@ -370,7 +372,8 @@ It checks for a new version automatically once every day.
     - It is still compatible to Blender 2.79
     - Combining materials and creating a texture atlas is not yet possible
   - Updated mmd_tools (for 2.8 compatibility)
-  - Fixed multiple bugs
+  - Huge UI codebase cleanup
+  - Loads of bug fixes
 
 #### 0.11.5
 - **General**:

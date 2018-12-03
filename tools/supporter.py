@@ -323,7 +323,7 @@ def finish_reloading():
     reloading = False
 
     # Refresh ui because of async running
-    ui_refresh()
+    tools.common.ui_refresh()
 
 
 def load_other_icons():
@@ -353,15 +353,6 @@ def unload_icons():
         bpy.utils.previews.remove(pcoll)
     preview_collections.clear()
     print('DONE!')
-
-
-def ui_refresh():
-    # A way to refresh the ui
-    if bpy.data.window_managers:
-        for windowManager in bpy.data.window_managers:
-            for window in windowManager.windows:
-                for area in window.screen.areas:
-                    area.tag_redraw()
 
 
 def check_for_update():

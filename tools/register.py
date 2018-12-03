@@ -32,6 +32,14 @@ __make_annotations = (not bpy.app.version < (2, 79, 9))
 
 
 def register_wrap(cls):
+    if hasattr(cls, 'bl_rna'):
+        __bl_classes.append(cls)
+    if __make_annotations:
+        cls = make_annotations(cls)
+    return cls
+
+
+def make_annotations(cls):
     if __make_annotations:
         bl_props = {k:v for k, v in cls.__dict__.items() if isinstance(v, tuple)}
         if bl_props:
@@ -41,8 +49,6 @@ def register_wrap(cls):
             for k, v in bl_props.items():
                 annotations[k] = v
                 delattr(cls, k)
-    if hasattr(cls, 'bl_rna'):
-        __bl_classes.append(cls)
     return cls
 
 
@@ -54,7 +60,16 @@ def order_classes():
     for cls in classes_to_register:
         deps_dict[cls] = set(iter_own_register_deps(cls, classes_to_register))
 
-    __bl_ordered_classes = toposort(deps_dict)
+    # Put all the UI into the list first
+    __bl_ordered_classes = []
+    for cls in __bl_classes:
+        if cls.__module__.startswith('ui.'):
+            __bl_ordered_classes.append(cls)
+
+    # Then put everything else sorted into the list
+    for cls in toposort(deps_dict):
+        if not cls.__module__.startswith('ui.'):
+            __bl_ordered_classes.append(cls)
 
 
 def iter_classes_to_register():
@@ -71,6 +86,7 @@ def iter_register_deps(cls):
         dependency = get_dependency_from_annotation(value)
         if dependency is not None:
             yield dependency
+
 
 def get_dependency_from_annotation(value):
     if isinstance(value, tuple) and len(value) == 2:

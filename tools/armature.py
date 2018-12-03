@@ -283,8 +283,6 @@ class FixArmature(bpy.types.Operator):
                 if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
                     mesh.parent = armature  # TODO
 
-        return {'FINISHED'}
-
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
         # tools.common.select(armature)

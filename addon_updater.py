@@ -34,6 +34,7 @@ import asyncio
 import threading
 import time
 import fnmatch
+import globs
 from datetime import datetime, timedelta
 
 # blender imports, used in limited cases
@@ -111,8 +112,8 @@ class Singleton_updater(object):
         self.select_link = None
 
         # get from module data
-        self._addon = __package__.lower()
-        self._addon_package = __package__  # must not change
+        self._addon = globs.package.lower()
+        self._addon_package = globs.package  # must not change
         self._updater_path = os.path.join(os.path.dirname(__file__),
                                           self._addon + "_updater")
         self._addon_root = os.path.dirname(__file__)
