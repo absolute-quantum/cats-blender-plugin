@@ -1182,7 +1182,8 @@ def delete_zero_weight(armature_name=None, ignore=''):
 def remove_unused_objects():
     for obj in bpy.data.objects:
         if (obj.type == 'CAMERA' and obj.name == 'Camera') \
-                or (obj.type in ['LAMP', 'LIGHT'] and obj.name == 'Lamp') \
+                or (obj.type == 'LAMP' and obj.name == 'Lamp') \
+                or (obj.type == 'LIGHT' and obj.name == 'Light') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
             delete_hierarchy(obj)
 

@@ -329,7 +329,8 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[2] = False
 
         # Set layer of mesh to 0
-        mesh.layers[0] = True
+        if version_2_79_or_older():
+            mesh.layers[0] = True
 
         # Fix Source Shapekeys
         if source_engine and tools.common.has_shapekeys(mesh):
@@ -387,7 +388,14 @@ class FixArmature(bpy.types.Operator):
                 # bpy.data.node_groups["Shader Nodetree"].nodes["Principled BSDF"].inputs[5].default_value = 0
                 from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
                 shader = PrincipledBSDFWrapper(mat_slot.material, is_readonly=False)
+                if i == 0:
+                    for atr in dir(shader):
+                        print(atr, getattr(shader, atr))
                 shader.specular = 0
+                shader.metallic = 0
+                shader.roughness = 1
+                #shader.transmission = 0
+                #shader.transmission_roughness = 0
 
             for area in context.screen.areas:  # iterate through areas in current screen
                 if area.type == 'VIEW_3D':

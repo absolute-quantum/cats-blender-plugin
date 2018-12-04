@@ -838,6 +838,7 @@ bone_reweight['Spine'] = [
     'UpperBodyx',
     'Spine_Lower_Adj',
     'Spine_Middle_Adj',
+    'Spine_Middle',
     'Bip_Spine0a',
 ]
 bone_reweight['Chest'] = [
@@ -1082,6 +1083,7 @@ bone_reweight['\Left elbow'] = [
     'BK_\L_Elbow_04',
     'Wrist\LT_Roll_01',
     'ForArm\LT_Roll_01',
+    'Arm_\Left_Forearm_Adj_1',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1233,6 +1235,9 @@ bone_reweight['\Left leg'] = [
     '\L_Knee_EX',
     'Knee\LT_Roll_01',
     'Hip\LT_Roll_01',
+    'Leg_\Left_Hip_Adj',
+    'Leg_\Left_Knee_Adj',
+    'Leg_\Left_Thigh_Adj',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
