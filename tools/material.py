@@ -214,7 +214,7 @@ class CombineMaterialsButton(bpy.types.Operator):
     # Then uses this hash as the dict keys and material data as values
     def generate_combined_tex(self):
         self.combined_tex = {}
-        for ob in bpy.data.objects:
+        for ob in tools.common.get_meshes_objects():
             for index, mat_slot in enumerate(ob.material_slots):
                 hash_this = ''
 
@@ -225,8 +225,8 @@ class CombineMaterialsButton(bpy.types.Operator):
                                 if hasattr(mtex_slot.texture, 'image') and bpy.data.materials[mat_slot.name].use_textures[tex_index] and mtex_slot.texture.image:
                                     hash_this += mtex_slot.texture.image.filepath   # Filepaths makes the hash unique
                     hash_this += str(mat_slot.material.alpha)           # Alpha setting on material makes the hash unique
-                    # hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique
                     hash_this += str(mat_slot.material.diffuse_color)   # Diffuse color makes the hash unique
+                    # hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique  # Specular Color is no used by Unity
 
                 # print('---------------------------------------------------')
                 # print(mat_slot.name, hash_this)

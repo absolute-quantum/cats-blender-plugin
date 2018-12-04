@@ -246,9 +246,10 @@ class FixArmature(bpy.types.Operator):
 
         # Remove objects from different layers and things that are not meshes
         get_current_layers = []
-        for i, layer in enumerate(bpy.context.scene.layers):
-            if layer:
-                get_current_layers.append(i)
+        if version_2_79_or_older():  # TODO
+            for i, layer in enumerate(bpy.context.scene.layers):
+                if layer:
+                    get_current_layers.append(i)
 
         if len(armature.children) > 1:
             for child in armature.children:
@@ -270,7 +271,7 @@ class FixArmature(bpy.types.Operator):
                 for i in get_current_layers:
                     if child.layers[i]:
                         in_layer = True
-                if not in_layer:
+                if not in_layer and version_2_79_or_older():  # TODO
                     tools.common.delete(child)
 
         # Remove empty mmd object and unused objects

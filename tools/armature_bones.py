@@ -211,6 +211,8 @@ bone_list_conflicting_names = [
     (['Leg(L)02'], 'Leg(R)00', 'Leg(R)02'),
     (['Leg(L)00'], 'Leg(R)00_tmp', 'Leg(R)00'),
 
+    (['Torso_1'], '\Left_Foot', '\Left ankle'),
+
     # (['Shoulder_\L', 'Shoulder_IK_Root_\L'], 'Shoulder1_WayA_\L', '\Left shoulder'),
 
     # Fix Koikatsu models
@@ -429,6 +431,9 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'TorsoA_01',
     'TorsoB_01',
     'TorsoC_01',
+
+    'Torso_1',
+    'Torso_2',
 
     'Mune',
 
@@ -739,6 +744,7 @@ bone_rename['\Left ankle'] = [
 ]
 bone_rename['\Left toe'] = [
     '\Left_Toe',
+    '\Left_Toes',
     '\LeftToe',
     '\LeftToe1',
     'LegTip_\L',

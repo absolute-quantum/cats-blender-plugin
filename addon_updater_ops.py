@@ -871,6 +871,8 @@ def update_settings_ui(self, context, element=None):
     if updater.auto_reload_post_update == False:
         saved_state = updater.json
         if "just_updated" in saved_state and saved_state["just_updated"] == True:
+            col.separator()
+            row = col.row(align=True)
             row.label(text="Restart Blender to complete update.", icon="ERROR")
             return
 
