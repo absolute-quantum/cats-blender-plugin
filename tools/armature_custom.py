@@ -188,6 +188,12 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     base_armature = bpy.data.objects[base_armature_name]
     merge_armature = bpy.data.objects[merge_armature_name]
 
+    # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
+    x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(base_armature)
+    tools.common.fix_zero_length_bones(base_armature, False, x_cord, y_cord, z_cord)
+    x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(merge_armature)
+    tools.common.fix_zero_length_bones(merge_armature, False, x_cord, y_cord, z_cord)
+
     # Join meshes in both armatures
     mesh_base = tools.common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
     mesh_merge = tools.common.join_meshes(armature_name=merge_armature_name, apply_transformations=False)

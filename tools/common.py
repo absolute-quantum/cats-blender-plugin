@@ -161,7 +161,7 @@ def set_unselectable(obj, val=True):
 
 
 def switch(new_mode):
-    if bpy.ops.object.mode_set.poll():
+    if get_active().mode != new_mode and bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode=new_mode, toggle=False)
 
 
@@ -618,6 +618,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     if not meshes_to_join:
         return None
 
+    print(get_armature(armature_name).mode)
     set_default_stage()
     unselect_all()
 
@@ -1343,7 +1344,7 @@ def remove_doubles(mesh, threshold):
     return pre_tris - len(mesh.data.polygons)
 
 
-def get_bone_orientations():
+def get_bone_orientations(armature):
     x_cord = 0
     y_cord = 1
     z_cord = 2
@@ -1435,6 +1436,24 @@ def ui_refresh():
             for window in windowManager.windows:
                 for area in window.screen.areas:
                     area.tag_redraw()
+
+
+def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
+    pre_mode = armature.mode
+    set_active(armature)
+    switch('EDIT')
+
+    for bone in armature.data.edit_bones:
+        if round(bone.head[x_cord], 4) == round(bone.tail[x_cord], 4) \
+                and round(bone.head[y_cord], 4) == round(bone.tail[y_cord], 4) \
+                and round(bone.head[z_cord], 4) == round(bone.tail[z_cord], 4):
+            if bone.name == 'Hips' and full_body_tracking:
+                bone.tail[z_cord] -= 0.1
+            else:
+                bone.tail[z_cord] += 0.1
+                print('YES')
+
+    switch(pre_mode)
 
 
 """

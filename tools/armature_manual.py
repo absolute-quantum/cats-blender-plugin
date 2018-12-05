@@ -943,7 +943,7 @@ class FixFBTButton(bpy.types.Operator):
         armature = tools.common.set_default_stage()
         tools.common.switch('EDIT')
 
-        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
+        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(armature)
 
         hips = armature.data.edit_bones.get('Hips')
         spine = armature.data.edit_bones.get('Spine')
@@ -1034,7 +1034,7 @@ class RemoveFBTButton(bpy.types.Operator):
         armature = tools.common.set_default_stage()
         tools.common.switch('EDIT')
 
-        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
+        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(armature)
 
         hips = armature.data.edit_bones.get('Hips')
         spine = armature.data.edit_bones.get('Spine')

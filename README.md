@@ -345,6 +345,7 @@ It checks for a new version automatically once every day.
   - Improved Export button warnings
   - Pose Mode now always makes the armature selectable
   - Fixed meshes being deleted when a different layer than 0 was visible
+  - Fixed all bones being deleted on .dae models
 - **Model Options**:
   - Put some model options under a new "Show More Options" button
   - Added "Merge Weights To Active" button

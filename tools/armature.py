@@ -82,9 +82,10 @@ class FixArmature(bpy.types.Operator):
 
         wm = bpy.context.window_manager
         armature = tools.common.set_default_stage()
+        full_body_tracking = context.scene.full_body
 
         # Check if bone matrix == world matrix, important for xps models
-        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
+        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(armature)
 
         # Add rename bones to reweight bones
         temp_rename_bones = copy.deepcopy(Bones.bone_rename)
@@ -283,6 +284,9 @@ class FixArmature(bpy.types.Operator):
             for mesh in tools.common.get_meshes_objects(mode=2):
                 if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
                     mesh.parent = armature  # TODO
+
+        # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
+        tools.common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
@@ -822,7 +826,6 @@ class FixArmature(bpy.types.Operator):
         tools.common.correct_bone_positions()
 
         # Hips bone should be fixed as per specification from the SDK code
-        full_body_tracking = context.scene.full_body
         if not mixamo:
             if 'Hips' in armature.data.edit_bones:
                 if 'Spine' in armature.data.edit_bones:
@@ -965,14 +968,7 @@ class FixArmature(bpy.types.Operator):
                 mesh.rotation_euler = (math.radians(180), 0, 0)
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        for bone in armature.data.edit_bones:
-            if round(bone.head[x_cord], 5) == round(bone.tail[x_cord], 5)\
-                    and round(bone.head[y_cord], 5) == round(bone.tail[y_cord], 5)\
-                    and round(bone.head[z_cord], 5) == round(bone.tail[z_cord], 5):
-                if bone.name == 'Hips' and full_body_tracking:
-                    bone.tail[z_cord] -= 0.1
-                else:
-                    bone.tail[z_cord] += 0.1
+        tools.common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
 
         # Mixing the weights
         tools.common.unselect_all()
