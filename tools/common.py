@@ -910,8 +910,12 @@ def save_shapekey_order(mesh_name):
     if custom_data.get('shape_key_order'):
         # print('SHAPEKEY ORDER ALREADY EXISTS!')
         # print(custom_data['shape_key_order'])
+        old_len = len(custom_data.get('shape_key_order'))
 
-        if len(shape_key_order) <= len(custom_data.get('shape_key_order')):
+        if type(shape_key_order) is str:
+            old_len = len(shape_key_order.split(',,,'))
+
+        if len(shape_key_order) <= old_len:
             # print('ABORT')
             return
 
@@ -927,16 +931,25 @@ def save_shapekey_order(mesh_name):
 
 def repair_shapekey_order(mesh_name):
     # Get current custom data
-    custom_data = get_armature().get('CUSTOM')
+    armature = get_armature()
+    custom_data = armature.get('CUSTOM')
     if not custom_data:
-        custom_data = {}
+        armature['CUSTOM'] = {}
 
     # Extract shape keys from string
     shape_key_order = custom_data.get('shape_key_order')
     if not shape_key_order:
-        shape_key_order = []
+        custom_data['shape_key_order'] = []
+        armature['CUSTOM'] = custom_data
 
-    sort_shape_keys(mesh_name, shape_key_order)
+    if type(shape_key_order) is str:
+        shape_key_order_temp = []
+        for shape_name in shape_key_order.split(',,,'):
+            shape_key_order_temp.append(shape_name)
+        custom_data['shape_key_order'] = shape_key_order_temp
+        armature['CUSTOM'] = custom_data
+
+    sort_shape_keys(mesh_name, custom_data['shape_key_order'])
 
 
 def update_shapekey_orders():
@@ -950,6 +963,12 @@ def update_shapekey_orders():
         order = custom_data.get('shape_key_order')
         if not order:
             continue
+
+        if type(order) is str:
+            shape_key_order_temp = order.split(',,,')
+            order = []
+            for shape_name in shape_key_order_temp:
+                order.append(shape_name)
 
         # Get shape keys and translate them
         for shape_name in order:
