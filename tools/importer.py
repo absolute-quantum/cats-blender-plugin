@@ -65,7 +65,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
     directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
 
-    if bpy.app.version < (2, 79, 9):
+    if version_2_79_or_older():
         filter_glob = bpy.props.StringProperty(
             default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx",
             options={'HIDDEN'}
@@ -84,9 +84,15 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     def execute(self, context):
         print(self.directory)
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
+        # Import the file using their corresponding importer
         for f in self.files:
             file_name = f['name']
-            filepath = os.path.join(self.directory, file_name)
+            file_path = os.path.join(self.directory, file_name)
             file_ending = file_name.split('.')[-1].lower()
 
             # MMD
@@ -107,7 +113,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             elif file_ending == 'xps' or file_ending == 'mesh' or file_ending == 'ascii':
                 try:
                     bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
-                                                   filepath=filepath,
+                                                   filepath=file_path,
                                                    colorizeMesh=False)
                 except AttributeError:
                     bpy.ops.install.xps('INVOKE_DEFAULT')
@@ -125,7 +131,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             elif file_ending == 'fbx':
                 try:
                     bpy.ops.import_scene.fbx('EXEC_DEFAULT',
-                                             filepath=filepath,
+                                             filepath=file_path,
                                              automatic_bone_orientation=True)
                 except (TypeError, ValueError):
                     bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
@@ -140,7 +146,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             elif file_ending == 'dae':
                 try:
                     bpy.ops.wm.collada_import('EXEC_DEFAULT',
-                                              filepath=filepath,
+                                              filepath=file_path,
                                               fix_orientation=True,
                                               auto_connect=True)
                 except (TypeError, ValueError):
@@ -149,7 +155,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             elif file_ending == 'vrm':
                 try:
                     bpy.ops.import_scene.vrm('EXEC_DEFAULT',
-                                             filepath=filepath)
+                                             filepath=file_path)
                 except (TypeError, ValueError):
                     bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
 
@@ -200,6 +206,10 @@ class ImportMMD(bpy.types.Operator):
     def execute(self, context):
         tools.common.remove_unused_objects()
 
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
         if not mmd_tools_installed:
             bpy.ops.enable.mmd('INVOKE_DEFAULT')
             return {'FINISHED'}
@@ -223,6 +233,11 @@ class ImportXPS(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
         try:
             bpy.ops.xps_tools.import_model('INVOKE_DEFAULT', colorizeMesh=False)
         except AttributeError:
@@ -240,6 +255,11 @@ class ImportSource(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
         try:
             bpy.ops.import_scene.smd('INVOKE_DEFAULT')
         except AttributeError:
@@ -257,6 +277,11 @@ class ImportFBX(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
         try:
             bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=True)
         except (TypeError, ValueError):
@@ -274,6 +299,11 @@ class ImportVRM(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
         try:
             bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
         except AttributeError:

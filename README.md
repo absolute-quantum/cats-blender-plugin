@@ -357,7 +357,7 @@ It checks for a new version automatically once every day.
   - Added VRM Importer
     - Open the import menu to see the VRM button
     - If its not installed it will provide you with a download link
-  - XNALara no longer colorizes meshes
+  - XNALara no longer randomly colorizes meshes
     - This makes combining materials much easier
 - **Translations**:
   - Locally stored Google translations no longer get deleted after 30 day
