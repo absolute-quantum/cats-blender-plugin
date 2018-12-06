@@ -172,9 +172,15 @@ def start_apply_settings_timer():
 
 
 def apply_settings():
-    time.sleep(2)
-    for setting in settings_default.keys():
-        setattr(bpy.context.scene, setting, settings_data.get(setting))
+    applied = False
+    while not applied:
+        if hasattr(bpy.context, 'scene'):
+            for setting in settings_default.keys():
+                setattr(bpy.context.scene, setting, settings_data.get(setting))
+            applied = True
+            print('Refreshed Settings!')
+        else:
+            time.sleep(0.3)
 
     # Unlock settings
     global lock_settings

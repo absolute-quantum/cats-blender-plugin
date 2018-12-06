@@ -28,6 +28,7 @@ from datetime import datetime
 
 import bpy
 import copy
+import time
 import bmesh
 import globs
 import numpy as np
@@ -1450,11 +1451,17 @@ def set_cats_verion_string():
 
 def ui_refresh():
     # A way to refresh the ui
-    if bpy.data.window_managers:
-        for windowManager in bpy.data.window_managers:
-            for window in windowManager.windows:
-                for area in window.screen.areas:
-                    area.tag_redraw()
+    refreshed = False
+    while not refreshed:
+        if hasattr(bpy.data, 'window_managers'):
+            for windowManager in bpy.data.window_managers:
+                for window in windowManager.windows:
+                    for area in window.screen.areas:
+                        area.tag_redraw()
+            refreshed = True
+            print('Refreshed UI')
+        else:
+            time.sleep(.5)
 
 
 def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
