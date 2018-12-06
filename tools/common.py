@@ -1459,9 +1459,9 @@ def ui_refresh():
                     for area in window.screen.areas:
                         area.tag_redraw()
             refreshed = True
-            print('Refreshed UI')
+            print('Refreshed UI!')
         else:
-            time.sleep(.5)
+            time.sleep(0.5)
 
 
 def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):

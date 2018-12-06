@@ -175,8 +175,13 @@ def apply_settings():
     applied = False
     while not applied:
         if hasattr(bpy.context, 'scene'):
-            for setting in settings_default.keys():
-                setattr(bpy.context.scene, setting, settings_data.get(setting))
+            try:
+                for setting in settings_default.keys():
+                    setattr(bpy.context.scene, setting, settings_data.get(setting))
+            except AttributeError:
+                time.sleep(0.3)
+                continue
+
             applied = True
             print('Refreshed Settings!')
         else:
