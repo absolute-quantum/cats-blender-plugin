@@ -252,8 +252,8 @@ This works by checking all bones and trying to figure out if they can be grouped
 ### Useful Tips:
 - Split transparent and non-transparent textures into separate atlases to avoid transparency issues
 - Make sure that the created textures are not too big, because Unity will downscale them to 2048x2048. 
-  Split them across multiple atlases or reduce the texture size manually beforehand
-- You can also tell Unity to use up to 8k textures.
+  Split them across multiple atlases or reduce the individual texture sizes. This can be easily done in the MatCombiner tab.
+- You can tell Unity to use up to 8k textures.
   Do so by selecting the texture and then choose a different Max Size and/or Compression in the inspector:
   https://i.imgur.com/o01T4Gb.png
 
@@ -366,6 +366,9 @@ It checks for a new version automatically once every day.
   - Eyes will no longer be created in weird spots when the weight paint is off (thanks to **zaCade** for finding this!)
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed
+- **Optimization**:
+  - Added support for Material Combiner 2.0
+  - Removed support for Material Combiner 1.0
 - **Shapekeys**:
   - Fixed a bug when Applying a Shapekey to Basis
 - **General**:

@@ -935,7 +935,7 @@ def repair_shapekey_order(mesh_name):
     armature = get_armature()
     custom_data = armature.get('CUSTOM')
     if not custom_data:
-        armature['CUSTOM'] = {}
+        custom_data = {}
 
     # Extract shape keys from string
     shape_key_order = custom_data.get('shape_key_order')

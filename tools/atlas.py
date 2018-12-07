@@ -44,6 +44,22 @@ if version_2_79_or_older():
 
 
 @register_wrap
+class EnableSMC(bpy.types.Operator):
+    bl_idname = 'cats.enable_smc'
+    bl_label = 'Enable Material Combiner'
+    bl_description = 'Enables Material Combiner'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        for mod in addon_utils.modules():
+            if mod.bl_info['name'] == "Shotariya's Material Combiner":
+                bpy.ops.wm.addon_enable(module=mod.__name__)
+                break
+        self.report({'INFO'}, 'Enabled Material Combiner!')
+        return {'FINISHED'}
+
+
+@register_wrap
 class AutoAtlasNewButton(bpy.types.Operator):
     bl_idname = 'atlas.generate'
     bl_label = 'Create Atlas'
