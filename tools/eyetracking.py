@@ -648,8 +648,26 @@ class ResetRotationButton(bpy.types.Operator):
         return False
 
     def execute(self, context):
+        armature = tools.common.get_armature()
+
         context.scene.eye_rotation_x = 0
         context.scene.eye_rotation_y = 0
+
+        global eye_left, eye_right, eye_left_data, eye_right_data
+        eye_left = armature.pose.bones.get('LeftEye')
+        eye_right = armature.pose.bones.get('RightEye')
+        eye_left_data = armature.data.bones.get('LeftEye')
+        eye_right_data = armature.data.bones.get('RightEye')
+
+        eye_left.rotation_mode = 'XYZ'
+        eye_left.rotation_euler[0] = 0
+        eye_left.rotation_euler[1] = 0
+        eye_left.rotation_euler[2] = 0
+
+        eye_right.rotation_mode = 'XYZ'
+        eye_right.rotation_euler[0] = 0
+        eye_right.rotation_euler[1] = 0
+        eye_right.rotation_euler[2] = 0
 
         return {'FINISHED'}
 

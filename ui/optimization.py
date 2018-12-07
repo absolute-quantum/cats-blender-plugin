@@ -8,6 +8,7 @@ from ui.main import ToolPanel
 from ui.main import layout_split
 from importlib import import_module
 
+from tools.common import version_2_79_or_older
 from tools.register import register_wrap
 
 draw_smc_ui = None
@@ -70,6 +71,14 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'optimize_mode', expand=True)
 
         if context.scene.optimize_mode == 'ATLAS':
+
+            if not version_2_79_or_older():  # TODO
+                col = box.column(align=True)
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text='Not yet compatible with 2.8!', icon='INFO')
+                col.separator()
+                return
 
             col = box.column(align=True)
             row = col.row(align=True)
@@ -190,6 +199,15 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             draw_smc_ui(context, col)
 
         elif context.scene.optimize_mode == 'MATERIAL':
+
+            if not version_2_79_or_older():  # TODO
+                col = box.column(align=True)
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text='Not yet compatible with 2.8!', icon='INFO')
+                col.separator()
+                return
+
             col = box.column(align=True)
             row = col.row(align=True)
             row.scale_y = 1.1

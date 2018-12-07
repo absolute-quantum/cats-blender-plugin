@@ -364,6 +364,7 @@ It checks for a new version automatically once every day.
   - Added a button to the settings menu to manually delete all local Google translations
 - **Eye Tracking**:
   - Eyes will no longer be created in weird spots when the weight paint is off (thanks to **zaCade** for finding this!)
+  - Fixed "Reset Rotation" sometimes not resetting the rotation
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed
 - **Optimization**:
