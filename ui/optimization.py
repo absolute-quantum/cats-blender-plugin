@@ -13,35 +13,35 @@ from tools.register import register_wrap
 draw_smc_ui = None
 old_smc_version = False
 smc_is_disabled = False
+found_very_old_smc = False
 
 
 def check_for_smc():
-    global draw_smc_ui, old_smc_version, smc_is_disabled
+    global draw_smc_ui, old_smc_version, smc_is_disabled, found_very_old_smc
 
-    found_very_old_smc = False
     for mod in addon_utils.modules():
         if mod.bl_info['name'] == "Shotariya-don":
             found_very_old_smc = True
+            continue
         if mod.bl_info['name'] == "Shotariya's Material Combiner":
             if mod.bl_info['version'] < (2, 0, 3):
                 old_smc_version = True
                 print('TOO OLD!')
-                return
+                continue
             if not hasattr(bpy.context.scene, 'smc_ob_data'):
                 smc_is_disabled = True
                 print('DISABLED!')
-                return
+                continue
 
             print('FOUND!')
             old_smc_version = False
             smc_is_disabled = False
             draw_smc_ui = getattr(import_module(mod.__name__ + '.operators.ui.include'), 'draw_ui')
-            return
 
-    if found_very_old_smc:
-        old_smc_version = True
-        print('WAY TOO OLD!')
-        return
+    # if found_very_old_smc:
+    #     old_smc_version = True
+    #     print('WAY TOO OLD!')
+    #     return
 
 
 @register_wrap
@@ -87,103 +87,97 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.operator("atlas.help", text="", icon='QUESTION')
             col.separator()
 
-            if old_smc_version:
+            if not found_very_old_smc:
+
+                if old_smc_version:
+                    col.separator()
+                    box = col.box()
+                    col = box.column(align=True)
+
+                    row = col.row(align=True)
+                    row.scale_y = 0.75
+                    row.label(text="Your Material Combiner is outdated!")
+                    row = col.row(align=True)
+                    row.scale_y = 0.75
+                    row.label(text="Please update to the latest version:")
+                    col.separator()
+                    row = col.row(align=True)
+                    row.operator('download.shotariya', icon=globs.ICON_URL)
+
+                    check_for_smc()
+                    return
+
+                if smc_is_disabled:
+                    col.separator()
+                    box = col.box()
+                    col = box.column(align=True)
+
+                    row = col.row(align=True)
+                    row.scale_y = 0.75
+                    row.label(text="Material Combiner is not enabled!")
+                    row = col.row(align=True)
+                    row.scale_y = 0.75
+                    row.label(text="Enable it in your user preferences!")
+                    col.separator()
+                    row = col.row(align=True)
+                    row.operator('cats.enable_smc', icon='CHECKBOX_HLT')
+
+                    check_for_smc()
+                    return
+
+                if not draw_smc_ui:
+                    col.separator()
+                    box = col.box()
+                    col = box.column(align=True)
+
+                    row = col.row(align=True)
+                    row.scale_y = 0.75
+                    row.label(text="Material Combiner is not installed!")
+                    row = col.row(align=True)
+                    row.scale_y = 0.75
+                    row.label(text="Download and install it manually:")
+                    col.separator()
+                    row = col.row(align=True)
+                    row.operator('download.shotariya', icon=globs.ICON_URL)
+
+                    check_for_smc()
+                    return
+
+                if not hasattr(bpy.context.scene, 'smc_ob_data'):
+                    check_for_smc()
+                    return
+
+                if draw_smc_ui:
+                    draw_smc_ui(context, col)
+                    return
+
+            # Draw v1.0 mat comb ui
+            if len(context.scene.material_list) == 0:
+                row = col.row(align=True)
+                row.scale_y = 1.2
+                row.operator('atlas.gen_mat_list', icon='TRIA_RIGHT')
                 col.separator()
-                box = col.box()
-                col = box.column(align=True)
+            else:
+                # row = col.row(align=True)
+                # row.scale_y = 0.75
+                # row.label(text='Select Materials to Combine:')
+                row = col.row(align=True)
+                row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=8, type='DEFAULT')
 
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Your Material Combiner is outdated!")
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Please update to the latest version:")
+                row = layout_split(col, factor=0.8, align=True)
+                row.scale_y = 1.2
+                row.operator('atlas.gen_mat_list', text='Update Material List', icon='FILE_REFRESH')
+                if context.scene.clear_materials:
+                    row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_HLT')
+                else:
+                    row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_DEHLT')
+
+                row.operator('atlas.clear_mat_list', text='', icon='X')
                 col.separator()
-                row = col.row(align=True)
-                row.operator('download.shotariya', icon=globs.ICON_URL)
 
-                check_for_smc()
-                return
-
-            if smc_is_disabled:
-                col.separator()
-                box = col.box()
-                col = box.column(align=True)
-
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Material Combiner is not enabled!")
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Enable it in your user preferences!")
-                col.separator()
-                row = col.row(align=True)
-                row.operator('cats.enable_smc', icon='CHECKBOX_HLT')
-
-                check_for_smc()
-                return
-
-            if not draw_smc_ui:
-                col.separator()
-                box = col.box()
-                col = box.column(align=True)
-
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Material Combiner is not installed!")
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Download and install it manually:")
-                col.separator()
-                row = col.row(align=True)
-                row.operator('download.shotariya', icon=globs.ICON_URL)
-
-                check_for_smc()
-                return
-
-            if not hasattr(bpy.context.scene, 'smc_ob_data'):
-                check_for_smc()
-                return
-
-            if draw_smc_ui:
-                draw_smc_ui(context, col)
-
-            # smc.operators.ui.include.draw_ui(context, col)
-            # draw_ui = getattr(import_module('SMC.operators.ui.include'), 'draw_ui')
-            # draw_ui(context, col)
-
-            # try:
-            #     draw_ui = getattr(import_module('material-combiner-addon-2_beta.operators.ui.include'), 'draw_ui')
-            #     draw_ui(context, col)
-            # except ImportError:
-            #     col.label('draw_ui not found')
-
-            # if len(context.scene.material_list) == 0:
-            #     row = col.row(align=True)
-            #     row.scale_y = 1.2
-            #     row.operator('atlas.gen_mat_list', icon='TRIA_RIGHT')
-            #     col.separator()
-            # else:
-            #     # row = col.row(align=True)
-            #     # row.scale_y = 0.75
-            #     # row.label(text='Select Materials to Combine:')
-            #     row = col.row(align=True)
-            #     row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=8, type='DEFAULT')
-            #
-            #     row = layout_split(col, factor=0.8, align=True)
-            #     row.scale_y = 1.2
-            #     row.operator('atlas.gen_mat_list', text='Update Material List', icon='FILE_REFRESH')
-            #     if context.scene.clear_materials:
-            #         row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_HLT')
-            #     else:
-            #         row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_DEHLT')
-            #
-            #     row.operator('atlas.clear_mat_list', text='', icon='X')
-            #     col.separator()
-            #
-            # row = col.row(align=True)
-            # row.scale_y = 1.7
-            # row.operator('atlas.generate', icon='TRIA_RIGHT')
+            row = col.row(align=True)
+            row.scale_y = 1.7
+            row.operator('atlas.generate', icon='TRIA_RIGHT')
 
         elif context.scene.optimize_mode == 'MATERIAL':
             col = box.column(align=True)
