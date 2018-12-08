@@ -29,7 +29,7 @@ def check_for_smc():
                 found_very_old_smc = True
             continue
         if mod.bl_info['name'] == "Shotariya's Material Combiner":
-            if mod.bl_info['version'] < (2, 0, 3):
+            if mod.bl_info['version'] < (2, 0, 3, 2):
                 old_smc_version = True
                 print('TOO OLD!')
                 continue
@@ -151,10 +151,14 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 row.label(text="Your Material Combiner is outdated!")
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Please update to the latest version:")
+                row.label(text="Please update to the latest version.")
                 col.separator()
                 row = col.row(align=True)
-                row.operator('download.shotariya', icon=globs.ICON_URL)
+                row.scale_y = 0.75
+                row.label(text="Update via the 'Updates'' panel")
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text="in the 'MatCombiner' tab to the " + ("left." if version_2_79_or_older() else "right."))
 
                 check_for_smc()
                 return
@@ -169,7 +173,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 row.label(text="Material Combiner is not enabled!")
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Enable it in your user preferences!")
+                row.label(text="Enable it in your user preferences:")
                 col.separator()
                 row = col.row(align=True)
                 row.operator('cats.enable_smc', icon='CHECKBOX_HLT')
