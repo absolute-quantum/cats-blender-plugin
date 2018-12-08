@@ -34,6 +34,7 @@ import asyncio
 import threading
 import time
 import fnmatch
+import globs
 from datetime import datetime, timedelta
 
 # blender imports, used in limited cases
@@ -111,8 +112,8 @@ class Singleton_updater(object):
         self.select_link = None
 
         # get from module data
-        self._addon = __package__.lower()
-        self._addon_package = __package__  # must not change
+        self._addon = globs.package.lower()
+        self._addon_package = globs.package  # must not change
         self._updater_path = os.path.join(os.path.dirname(__file__),
                                           self._addon + "_updater")
         self._addon_root = os.path.dirname(__file__)
@@ -860,49 +861,105 @@ class Singleton_updater(object):
         backup_path = os.path.join(self._updater_path, "backup")
         json_path = os.path.join(self._updater_path, "updater_status.json")
 
-        # If clean install is enabled, clear existing files ahead of time
-        # note: will not delete the update.json, update folder, staging, or staging
-        # but will delete all other folders/files in addon directory
-        error = None
-        if clean == True:
-            try:
-                # implement clearing of all folders/files, except the
-                # updater folder and updater json
-                # Careful, this deletes entire subdirectories recursively...
-                # make sure that base is not a high level shared folder, but
-                # is dedicated just to the addon itself
-                if self._verbose: print("clean=True, clearing addon folder to fresh install state")
+        custom_cleaning = True
+        if custom_cleaning:
+            # implement clearing of all folders/files, except the
+            # updater folder and updater json
+            # Careful, this deletes entire subdirectories recursively...
+            # make sure that base is not a high level shared folder, but
+            # is dedicated just to the addon itself
+            print("Custom clearing addon folder to fresh install state")
 
-                # remove root files and folders (except update folder)
-                files = [f for f in os.listdir(base) if os.path.isfile(os.path.join(base, f))]
-                folders = [f for f in os.listdir(base) if os.path.isdir(os.path.join(base, f))]
+            # first remove root files and folders (except update folder, important folders and resource folder)
+            files = [f for f in os.listdir(base) if os.path.isfile(os.path.join(base, f))]
+            folders = [f for f in os.listdir(base) if os.path.isdir(os.path.join(base, f))]
 
-                for f in files:
-                    os.remove(os.path.join(base, f))
-                    print("Clean removing file {}".format(os.path.join(base, f)))
-                for f in folders:
-                    if os.path.join(base, f) == self._updater_path: continue
-                    shutil.rmtree(os.path.join(base, f))
-                    print("Clean removing folder and contents {}".format(os.path.join(base, f)))
+            for f in files:
+                file = os.path.join(base, f)
+                try:
+                    os.remove(file)
+                    print("Clean removing file {}".format(file))
+                except OSError:
+                    print("Failed to pre-remove file " + file)
+            for f in folders:
+                folder = os.path.join(base, f)
+                if f.startswith('.') or f == 'resources':
+                    continue
+                if folder == self._updater_path:
+                    continue
 
-            except error:
-                error = "failed to create clean existing addon folder"
-                print(error, str(e))
+                try:
+                    shutil.rmtree(folder)
+                    print("Clean removing folder and contents {}".format(folder))
+                except OSError:
+                    print("Failed to pre-remove folder " + folder)
 
-        # Walk through the base addon folder for rules on pre-removing
-        # but avoid removing/altering backup and updater file
-        for path, dirs, files in os.walk(base):
-            # prune ie skip updater folder
-            dirs[:] = [d for d in dirs if os.path.join(path, d) not in [self._updater_path]]
-            for file in files:
-                for ptrn in self.remove_pre_update_patterns:
-                    if fnmatch.filter([file], ptrn):
-                        try:
-                            fl = os.path.join(path, file)
-                            os.remove(fl)
-                            if self._verbose: print("Pre-removed file " + file)
-                        except OSError:
-                            print("Failed to pre-remove " + file)
+            # then remove resource files and folders (except settings and google dict)
+            resources_folder = os.path.join(base, 'resources')
+            files = [f for f in os.listdir(resources_folder) if os.path.isfile(os.path.join(resources_folder, f))]
+            folders = [f for f in os.listdir(resources_folder) if os.path.isdir(os.path.join(resources_folder, f))]
+
+            for f in files:
+                if f == 'settings.json' or f == 'dictionary_google.json':
+                    continue
+                file = os.path.join(resources_folder, f)
+                try:
+                    os.remove(file)
+                    print("Clean removing file {}".format(file))
+                except OSError:
+                    print("Failed to pre-remove " + file)
+            for f in folders:
+                folder = os.path.join(resources_folder, f)
+                try:
+                    shutil.rmtree(folder)
+                    print("Clean removing folder and contents {}".format(folder))
+                except OSError:
+                    print("Failed to pre-remove folder " + folder)
+
+        else:
+            # If clean install is enabled, clear existing files ahead of time
+            # note: will not delete the update.json, update folder, staging, or staging
+            # but will delete all other folders/files in addon directory
+            error = None
+            if clean == True:
+                try:
+                    # implement clearing of all folders/files, except the
+                    # updater folder and updater json
+                    # Careful, this deletes entire subdirectories recursively...
+                    # make sure that base is not a high level shared folder, but
+                    # is dedicated just to the addon itself
+                    if self._verbose: print("clean=True, clearing addon folder to fresh install state")
+
+                    # remove root files and folders (except update folder)
+                    files = [f for f in os.listdir(base) if os.path.isfile(os.path.join(base, f))]
+                    folders = [f for f in os.listdir(base) if os.path.isdir(os.path.join(base, f))]
+
+                    for f in files:
+                        os.remove(os.path.join(base, f))
+                        print("Clean removing file {}".format(os.path.join(base, f)))
+                    for f in folders:
+                        if os.path.join(base, f) == self._updater_path: continue
+                        shutil.rmtree(os.path.join(base, f))
+                        print("Clean removing folder and contents {}".format(os.path.join(base, f)))
+
+                except error:
+                    error = "failed to create clean existing addon folder"
+                    print(error, str(e))
+
+            # Walk through the base addon folder for rules on pre-removing
+            # but avoid removing/altering backup and updater file
+            for path, dirs, files in os.walk(base):
+                # prune ie skip updater folder
+                dirs[:] = [d for d in dirs if os.path.join(path, d) not in [self._updater_path]]
+                for file in files:
+                    for ptrn in self.remove_pre_update_patterns:
+                        if fnmatch.filter([file], ptrn):
+                            try:
+                                fl = os.path.join(path, file)
+                                os.remove(fl)
+                                if self._verbose: print("Pre-removed file " + file)
+                            except OSError:
+                                print("Failed to pre-remove " + file)
 
         # Walk through the temp addon sub folder for replacements
         # this implements the overwrite rules, which apply after

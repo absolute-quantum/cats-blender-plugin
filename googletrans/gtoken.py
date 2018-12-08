@@ -6,6 +6,10 @@ import time
 
 import requests
 
+import bpy
+import os
+import pathlib
+
 
 from .compat import PY3
 from .compat import unicode
@@ -39,6 +43,7 @@ class TokenAcquirer(object):
     """
 
     RE_TKK = re.compile(r'TKK=eval\(\'\(\(function\(\)\{(.+?)\}\)\(\)\)\'\);', re.DOTALL)
+    RE_TKK2 = re.compile(r'tkk:eval\(\'\(\(function\(\)\{(.+?)\}\)\(\)\)\'\);', re.DOTALL)
     RE_RAWTKK = re.compile(r'TKK=\'([^\']*)\';', re.DOTALL)
     RE_NEWTKK = re.compile(r'tkk:\'([^\']*)\',', re.DOTALL)
 
@@ -57,6 +62,9 @@ class TokenAcquirer(object):
 
         r = self.session.get(self.host, verify=False)
 
+        # This prints the google response if the button in the cats settings is pressed
+        print_response(r.text)
+
         rawtkk = self.RE_RAWTKK.search(r.text)
         if rawtkk:
             self.tkk = rawtkk.group(1)
@@ -68,7 +76,11 @@ class TokenAcquirer(object):
             return
 
         # this will be the same as python code after stripping out a reserved word 'var'
-        code = unicode(self.RE_TKK.search(r.text).group(1)).replace('var ', '')
+        if self.RE_TKK.search(r.text):
+            code = unicode(self.RE_TKK.search(r.text).group(1)).replace('var ', '')
+        else:
+            code = unicode(self.RE_TKK2.search(r.text).group(1)).replace('var ', '')
+
         # unescape special ascii characters such like a \x3d(=)
         if PY3:  # pragma: no cover
             code = code.encode().decode('unicode-escape')
@@ -192,3 +204,14 @@ class TokenAcquirer(object):
         self._update()
         tk = self.acquire(text)
         return tk
+
+
+def print_response(text):
+    if not bpy.context.scene.debug_translations:
+        return
+    # Prints the response from google into a textfile inside cats/resources/google-response.txt
+    main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
+    resources_dir = os.path.join(str(main_dir), "resources")
+    output_file = os.path.join(resources_dir, "google-response.txt")
+    with open(output_file, 'w', encoding="utf8") as outfile:
+        outfile.write(text)

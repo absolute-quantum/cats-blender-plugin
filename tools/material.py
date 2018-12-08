@@ -29,8 +29,10 @@
 
 import bpy
 import tools.common
+from tools.register import register_wrap
 
 
+@register_wrap
 class OneTexPerMatButton(bpy.types.Operator):
     bl_idname = 'one.tex'
     bl_label = 'One Material Texture'
@@ -44,6 +46,11 @@ class OneTexPerMatButton(bpy.types.Operator):
         return len(tools.common.get_meshes_objects()) > 0
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         tools.common.set_default_stage()
 
         for mesh in tools.common.get_meshes_objects():
@@ -56,6 +63,7 @@ class OneTexPerMatButton(bpy.types.Operator):
         return{'FINISHED'}
 
 
+@register_wrap
 class OneTexPerMatOnlyButton(bpy.types.Operator):
     bl_idname = 'one.tex_only'
     bl_label = 'One Material Texture'
@@ -71,6 +79,11 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
         return len(tools.common.get_meshes_objects()) > 0
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         tools.common.set_default_stage()
 
         for mesh in tools.common.get_meshes_objects():
@@ -83,6 +96,7 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
         return{'FINISHED'}
 
 
+@register_wrap
 class StandardizeTextures(bpy.types.Operator):
     bl_idname = 'textures.standardize'
     bl_label = 'Standardize Textures'
@@ -97,6 +111,11 @@ class StandardizeTextures(bpy.types.Operator):
         return len(tools.common.get_meshes_objects()) > 0
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         tools.common.set_default_stage()
 
         for mesh in tools.common.get_meshes_objects():
@@ -115,6 +134,7 @@ class StandardizeTextures(bpy.types.Operator):
         return{'FINISHED'}
 
 
+@register_wrap
 class CombineMaterialsButton(bpy.types.Operator):
     bl_idname = 'combine.mats'
     bl_label = 'Combine Same Materials'
@@ -194,7 +214,7 @@ class CombineMaterialsButton(bpy.types.Operator):
     # Then uses this hash as the dict keys and material data as values
     def generate_combined_tex(self):
         self.combined_tex = {}
-        for ob in bpy.data.objects:
+        for ob in tools.common.get_meshes_objects():
             for index, mat_slot in enumerate(ob.material_slots):
                 hash_this = ''
 
@@ -205,8 +225,8 @@ class CombineMaterialsButton(bpy.types.Operator):
                                 if hasattr(mtex_slot.texture, 'image') and bpy.data.materials[mat_slot.name].use_textures[tex_index] and mtex_slot.texture.image:
                                     hash_this += mtex_slot.texture.image.filepath   # Filepaths makes the hash unique
                     hash_this += str(mat_slot.material.alpha)           # Alpha setting on material makes the hash unique
-                    hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique
                     hash_this += str(mat_slot.material.diffuse_color)   # Diffuse color makes the hash unique
+                    # hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique  # Specular Color is no used by Unity
 
                 # print('---------------------------------------------------')
                 # print(mat_slot.name, hash_this)
@@ -219,6 +239,11 @@ class CombineMaterialsButton(bpy.types.Operator):
         # print('CREATED COMBINED TEX', self.combined_tex)
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         tools.common.set_default_stage()
         self.generate_combined_tex()
         tools.common.switch('OBJECT')
@@ -227,7 +252,7 @@ class CombineMaterialsButton(bpy.types.Operator):
         for index, mesh in enumerate(tools.common.get_meshes_objects()):
 
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             for file in self.combined_tex:  # for each combined mat slot of scene object
                 combined_textures = self.combined_tex[file]
 
@@ -253,7 +278,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                 bpy.ops.mesh.select_all(action='DESELECT')
 
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('OBJECT')
             self.cleanmatslots()
 
@@ -265,6 +290,9 @@ class CombineMaterialsButton(bpy.types.Operator):
                 bpy.ops.atlas.gen_mat_list()
 
             # print('CLEANED MAT SLOTS')
+
+        # Update the material list of the Material Combiner
+        tools.common.update_material_list()
 
         if i == 0:
             self.report({'INFO'}, 'No materials combined.')

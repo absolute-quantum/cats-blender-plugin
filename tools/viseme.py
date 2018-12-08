@@ -26,10 +26,12 @@
 
 import bpy
 import tools.common
+from tools.register import register_wrap
 
 from collections import OrderedDict
 
 
+@register_wrap
 class AutoVisemeButton(bpy.types.Operator):
     bl_idname = 'auto.viseme'
     bl_label = 'Create Visemes'
@@ -39,19 +41,29 @@ class AutoVisemeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.mesh_name_viseme == "" \
-                or context.scene.mouth_a == "" \
-                or context.scene.mouth_o == "" \
-                or context.scene.mouth_ch == "":
+        if not tools.common.get_meshes_objects():
+            return False
+
+        if not context.scene.mouth_a \
+                or not context.scene.mouth_o \
+                or not context.scene.mouth_ch:
             return False
 
         return True
 
     def execute(self, context):
-        wm = bpy.context.window_manager
+        if context.scene.mouth_a == "Basis" \
+                or context.scene.mouth_o == "Basis" \
+                or context.scene.mouth_ch == "Basis":
+            self.report({'ERROR'}, 'Please select the correct mouth shapekeys instead of "Basis"!')
+            return {'CANCELLED'}
+
         tools.common.set_default_stage()
+
+        wm = bpy.context.window_manager
+
         mesh = bpy.data.objects[context.scene.mesh_name_viseme]
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
 
         # Fix a small bug
         bpy.context.object.show_only_shape_key = False

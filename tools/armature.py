@@ -33,6 +33,8 @@ import tools.common
 import tools.translate
 import tools.armature_bones as Bones
 import mmd_tools_local.operators.morph
+from tools.common import version_2_79_or_older
+from tools.register import register_wrap
 
 import math
 from mathutils import Matrix
@@ -40,6 +42,7 @@ from mathutils import Matrix
 mmd_tools_installed = True
 
 
+@register_wrap
 class FixArmature(bpy.types.Operator):
     bl_idname = 'armature.fix'
     bl_label = 'Fix Model'
@@ -66,17 +69,23 @@ class FixArmature(bpy.types.Operator):
         return True
 
     def execute(self, context):
+        is_vrm = False
         if len(tools.common.get_meshes_objects()) == 0:
-            self.report({'ERROR'}, 'No mesh inside the armature found!')
-            return {'CANCELLED'}
+            for mesh in tools.common.get_meshes_objects(mode=2):
+                if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                self.report({'ERROR'}, 'No mesh inside the armature found!')
+                return {'CANCELLED'}
 
         print('\nFixing Model:\n')
 
         wm = bpy.context.window_manager
         armature = tools.common.set_default_stage()
+        full_body_tracking = context.scene.full_body
 
         # Check if bone matrix == world matrix, important for xps models
-        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations()
+        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(armature)
 
         # Add rename bones to reweight bones
         temp_rename_bones = copy.deepcopy(Bones.bone_rename)
@@ -161,13 +170,12 @@ class FixArmature(bpy.types.Operator):
                     mmd_tools_local.operators.morph.ViewBoneMorph.execute(None, context)
 
                     mesh = tools.common.get_meshes_objects()[0]
-                    tools.common.select(mesh)
+                    tools.common.set_active(mesh)
 
                     mod = mesh.modifiers.new(morph.name, 'ARMATURE')
                     mod.object = armature
                     bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
                 wm.progress_end()
-
 
         # Perform source engine specific operations
         # Check if model is source engine model
@@ -192,6 +200,8 @@ class FixArmature(bpy.types.Operator):
         if source_engine:
             # Delete unused physics meshes (like rigidbodies)
             for mesh in tools.common.get_meshes_objects():
+                if len(tools.common.get_meshes_objects()) == 1:
+                    break
                 if mesh.name.endswith('_physics')\
                         or mesh.name.endswith('_lod1')\
                         or mesh.name.endswith('_lod2')\
@@ -204,42 +214,79 @@ class FixArmature(bpy.types.Operator):
         # Reset to default
         armature = tools.common.set_default_stage()
 
-        # Set better bone view
-        armature.data.draw_type = 'OCTAHEDRAL'
-        armature.draw_type = 'WIRE'
-        armature.show_x_ray = True
-        armature.data.show_bone_custom_shapes = False
-        armature.layers[0] = True
+        if version_2_79_or_older():
+            # Set better bone view
+            armature.data.draw_type = 'OCTAHEDRAL'
+            armature.draw_type = 'WIRE'
+            armature.show_x_ray = True
+            armature.data.show_bone_custom_shapes = False
+            armature.layers[0] = True
 
-        # Disable backface culling
-        if context.area:
-            context.area.spaces[0].show_backface_culling = False
+            # Disable backface culling
+            if context.area:
+                context.area.spaces[0].show_backface_culling = False
+        else:
+            armature.show_in_front = True
+            armature.data.display_type = 'OCTAHEDRAL'
+            armature.data.show_bone_custom_shapes = False
+            context.space_data.overlay.show_transparent_bones = True
+            context.space_data.overlay.show_backface_culling = False
 
         # Remove Rigidbodies and joints
         to_delete = []
         for child in tools.common.get_top_parent(armature).children:
-            if 'rigidbodies' in child.name or 'joints' in child.name:
+            if 'rigidbodies' in child.name or 'joints' in child.name and child.name not in to_delete:
                 to_delete.append(child.name)
                 continue
             for child2 in child.children:
-                if 'rigidbodies' in child2.name or 'joints' in child2.name:
+                if 'rigidbodies' in child2.name or 'joints' in child2.name and child2.name not in to_delete:
                     to_delete.append(child2.name)
                     continue
         for obj_name in to_delete:
             tools.common.delete_hierarchy(bpy.data.objects[obj_name])
 
-        # Remove objects from  different layers and things that are not meshes
-        for child in armature.children:
-            for child2 in child.children:
-                if not child2.layers[0] or child2.type != 'MESH':
-                    tools.common.delete(child2)
+        # Remove objects from different layers and things that are not meshes
+        get_current_layers = []
+        if version_2_79_or_older():  # TODO
+            for i, layer in enumerate(bpy.context.scene.layers):
+                if layer:
+                    get_current_layers.append(i)
 
-            if not child.layers[0] or child.type != 'MESH':
-                tools.common.delete(child)
+        if len(armature.children) > 1:
+            for child in armature.children:
+                for child2 in child.children:
+                    if child2.type != 'MESH':
+                        tools.common.delete(child2)
+                        continue
+                    in_layer = False
+                    for i in get_current_layers:
+                        if child2.layers[i]:
+                            in_layer = True
+                    if not in_layer:
+                        tools.common.delete(child2)
+
+                if child.type != 'MESH':
+                    tools.common.delete(child)
+                    continue
+                in_layer = False
+                for i in get_current_layers:
+                    if child.layers[i]:
+                        in_layer = True
+                if not in_layer and version_2_79_or_older():  # TODO
+                    tools.common.delete(child)
 
         # Remove empty mmd object and unused objects
         tools.common.remove_empty()
         tools.common.remove_unused_objects()
+
+        # Fix VRM meshes being outside of the armature
+        if is_vrm:
+            for mesh in tools.common.get_meshes_objects(mode=2):
+                if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
+                    mesh.parent = armature  # TODO
+
+        # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
+        tools.common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
@@ -254,7 +301,7 @@ class FixArmature(bpy.types.Operator):
         #     pass
 
         tools.common.unselect_all()
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
 
         # # Correct pivot position
         # try:
@@ -285,8 +332,28 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[1] = False
             bone.lock_scale[2] = False
 
+        # Set layer of mesh to 0
+        if version_2_79_or_older():
+            mesh.layers[0] = True
+
+        # Fix Source Shapekeys
         if source_engine and tools.common.has_shapekeys(mesh):
             mesh.data.shape_keys.key_blocks[0].name = "Basis"
+
+        # Fix VRM shapekeys
+        if is_vrm and tools.common.has_shapekeys(mesh):
+            shapekeys = mesh.data.shape_keys.key_blocks
+            for shapekey in shapekeys:
+                shapekey.name = shapekey.name.replace('Face.M_F00_000_Fcl_', '').replace('_', ' ')
+
+            # Sort shapekeys in categories
+            shapekey_order = []
+            for categorie in ['MTH', 'EYE', 'BRW', 'ALL', 'HA']:
+                for shapekey in shapekeys:
+                    if shapekey.name.startswith(categorie):
+                        shapekey_order.append(shapekey.name)
+
+            tools.common.sort_shape_keys(mesh.name, shapekey_order)
 
         # Remove empty shape keys and then save the shape key order
         tools.common.clean_shapekeys(mesh)
@@ -294,20 +361,52 @@ class FixArmature(bpy.types.Operator):
 
         # Combines same materials
         if context.scene.combine_mats:
-            bpy.ops.combine.mats()
+            if version_2_79_or_older():
+                bpy.ops.combine.mats()
+            else:
+                pass
+                # TODO
         else:
             # At least clean material names. Combining mats would do this otherwise
             tools.common.clean_material_names(mesh)
 
         # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
-        all_transparent = True
-        for mat_slot in mesh.material_slots:
-            mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
-            if mat_slot.material.alpha > 0:
-                all_transparent = False
-        if all_transparent:
+        if version_2_79_or_older():
+            all_transparent = True
             for mat_slot in mesh.material_slots:
-                mat_slot.material.alpha = 1
+                mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
+                if mat_slot.material.alpha > 0:
+                    all_transparent = False
+            if all_transparent:
+                for mat_slot in mesh.material_slots:
+                    mat_slot.material.alpha = 1
+        else:
+            # TODO
+
+            # TODO
+            # Makes all materials visible
+            for i, mat_slot in enumerate(mesh.material_slots):
+                context.object.active_material_index = i
+                bpy.context.object.active_material.blend_method = 'OPAQUE'
+
+                # bpy.data.node_groups["Shader Nodetree"].nodes["Principled BSDF"].inputs[5].default_value = 0
+                from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
+                shader = PrincipledBSDFWrapper(mat_slot.material, is_readonly=False)
+                if i == 0:
+                    for atr in dir(shader):
+                        print(atr, getattr(shader, atr))
+                shader.specular = 0
+                shader.metallic = 0
+                shader.roughness = 1
+                #shader.transmission = 0
+                #shader.transmission_roughness = 0
+
+            for area in context.screen.areas:  # iterate through areas in current screen
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces:  # iterate through spaces in current VIEW_3D area
+                        if space.type == 'VIEW_3D':  # check if space is a 3D view
+                            space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
+                            space.shading.studio_light = 'forest.exr'
 
         # Reorders vrc shape keys to the correct order
         tools.common.sort_shape_keys(mesh.name)
@@ -337,8 +436,9 @@ class FixArmature(bpy.types.Operator):
             bone.name, translated = tools.translate.translate(bone.name)
 
         # Armature should be selected and in edit mode
+        tools.common.set_default_stage()
         tools.common.unselect_all()
-        tools.common.select(armature)
+        tools.common.set_active(armature)
         tools.common.switch('EDIT')
 
         # Show all hidden verts and faces
@@ -348,6 +448,10 @@ class FixArmature(bpy.types.Operator):
         # Remove Bone Groups
         for group in armature.pose.bone_groups:
             armature.pose.bone_groups.remove(group)
+
+        # Bone constraints should be deleted
+        # if context.scene.remove_constraints:
+        tools.common.delete_bone_constraints()
 
         # Model should be in rest position
         armature.data.pose_position = 'REST'
@@ -384,6 +488,7 @@ class FixArmature(bpy.types.Operator):
             ('Cf_S_', ''),
             ('Cf_J_', ''),
             ('G_', ''),
+            ('Joint_', ''),
         ]
 
         # Standardize names
@@ -433,6 +538,9 @@ class FixArmature(bpy.types.Operator):
             # Remove S0 from the end
             if name[-2:] == 'S0':
                 name = name[:-2]
+
+            if name[-4:] == '_Jnt':
+                name = name[:-4]
 
             bone.name = name
 
@@ -718,7 +826,6 @@ class FixArmature(bpy.types.Operator):
         tools.common.correct_bone_positions()
 
         # Hips bone should be fixed as per specification from the SDK code
-        full_body_tracking = context.scene.full_body
         if not mixamo:
             if 'Hips' in armature.data.edit_bones:
                 if 'Spine' in armature.data.edit_bones:
@@ -728,8 +835,6 @@ class FixArmature(bpy.types.Operator):
                             spine = armature.data.edit_bones.get('Spine')
                             left_leg = armature.data.edit_bones.get('Left leg')
                             right_leg = armature.data.edit_bones.get('Right leg')
-                            left_knee = armature.data.edit_bones.get('Left knee')
-                            right_knee = armature.data.edit_bones.get('Right knee')
 
                             # Fixing the hips
                             if not full_body_tracking:
@@ -788,44 +893,31 @@ class FixArmature(bpy.types.Operator):
                             #         bone.tail[z_cord] = bone.head[z_cord] + bone_length
 
                             else:
-                                if left_leg and left_knee and right_leg and right_knee:
-                                    hips.head[x_cord] = 0
-                                    hips.tail[x_cord] = 0
+                                # FBT Fix
+                                # Flip hips
+                                hips.head = spine.head
+                                hips.tail = spine.head
+                                hips.tail[z_cord] = left_leg.head[z_cord]
 
-                                    hips.tail[y_cord] = hips.head[y_cord]
+                                if hips.tail[z_cord] > hips.head[z_cord]:
+                                    hips.tail[z_cord] -= 0.1
 
-                                    hips.head[z_cord] = spine.head[z_cord]
-                                    hips.tail[z_cord] = right_leg.head[z_cord]
+                                # Create new leg bones and put them at the old location
+                                left_leg_new = armature.data.edit_bones.new('Left leg 2')
+                                right_leg_new = armature.data.edit_bones.new('Right leg 2')
 
-                                    left_leg_top = armature.data.edit_bones.new('Left leg top')
-                                    right_leg_top = armature.data.edit_bones.new('Right leg top')
+                                left_leg_new.head = left_leg.head
+                                left_leg_new.tail = left_leg.tail
 
-                                    left_leg_top.head = left_leg.head
-                                    left_leg_top.tail = left_leg.head
-                                    left_leg_top.tail[z_cord] = left_leg.head[z_cord] + 0.1
+                                right_leg_new.head = right_leg.head
+                                right_leg_new.tail = right_leg.tail
 
-                                    right_leg_top.head = right_leg.head
-                                    right_leg_top.tail = right_leg.head
-                                    right_leg_top.tail[z_cord] = right_leg.head[z_cord] + 0.1
+                                # Set new location for old leg bones
+                                left_leg.tail = left_leg.head
+                                left_leg.tail[z_cord] = left_leg.head[z_cord] + 0.1
 
-                                    spine.head = hips.head
-                                    # hips.head[z_cord] -= 0.0025
-                                    # spine.head[z_cord] += 0.0025
-
-                                    left_leg.name = "Left leg 2"
-                                    right_leg.name = "Right leg 2"
-
-                                    left_leg_top.name = "Left leg"
-                                    right_leg_top.name = "Right leg"
-
-                                    left_leg_top.parent = hips
-                                    right_leg_top.parent = hips
-
-                                    left_leg.parent = left_leg_top
-                                    right_leg.parent = right_leg_top
-
-                                    left_knee.parent = left_leg_top
-                                    right_knee.parent = right_leg_top
+                                right_leg.tail = right_leg.head
+                                right_leg.tail[z_cord] = right_leg.head[z_cord] + 0.1
 
                             # # Fixing legs
                             # right_knee = armature.data.edit_bones.get('Right knee')
@@ -862,7 +954,7 @@ class FixArmature(bpy.types.Operator):
             hips = armature.pose.bones.get('Hips')
 
             obj = hips.id_data
-            matrix_final = obj.matrix_world * hips.matrix
+            matrix_final = tools.common.matmul(obj.matrix_world, hips.matrix)
             # print(matrix_final)
             # print(matrix_final[2][3])
             # print(fbx)
@@ -871,24 +963,17 @@ class FixArmature(bpy.types.Operator):
                 # print(hips.head[0], hips.head[1], hips.head[2])
                 # Rotation of -180 around the X-axis
                 rot_x_neg180 = Matrix.Rotation(-math.pi, 4, 'X')
-                armature.matrix_world = rot_x_neg180 * armature.matrix_world
+                armature.matrix_world = tools.common.matmul(rot_x_neg180, armature.matrix_world)
 
                 mesh.rotation_euler = (math.radians(180), 0, 0)
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        for bone in armature.data.edit_bones:
-            if round(bone.head[x_cord], 5) == round(bone.tail[x_cord], 5)\
-                    and round(bone.head[y_cord], 5) == round(bone.tail[y_cord], 5)\
-                    and round(bone.head[z_cord], 5) == round(bone.tail[z_cord], 5):
-                if bone.name == 'Hips' and full_body_tracking:
-                    bone.tail[z_cord] -= 0.1
-                else:
-                    bone.tail[z_cord] += 0.1
+        tools.common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
 
         # Mixing the weights
         tools.common.unselect_all()
         tools.common.switch('OBJECT')
-        tools.common.select(mesh)
+        tools.common.set_active(mesh)
 
         # for bone_name in temp_rename_bones.keys():
         #     bone = armature.data.bones.get(bone_name)
@@ -896,6 +981,12 @@ class FixArmature(bpy.types.Operator):
         #         print(bone_name)
         #         bone.hide = False
 
+        # Temporarily remove armature modifier to avoid errors in console
+        for mod in mesh.modifiers:
+            if mod.type == 'ARMATURE':
+                bpy.ops.object.modifier_remove(modifier=mod.name)
+
+        # Mix weights
         for bone_new, bones_old in temp_reweight_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:
                 bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
@@ -946,7 +1037,7 @@ class FixArmature(bpy.types.Operator):
                             if not temp_list_reparent_bones.get(child.name):
                                 temp_list_reparent_bones[child.name] = bone[0]
 
-                    # print(bone[1] + " to " + bone[0])
+                    # print(vg.name + " to " + bone[0])
                     tools.common.mix_weights(mesh, vg.name, bone[0])
 
         # Old mixing weights. Still important
@@ -985,8 +1076,12 @@ class FixArmature(bpy.types.Operator):
             # print(vg_from.name, 'into', vg_to.name)
             tools.common.mix_weights(mesh, vg_from.name, vg_to.name)
 
+        # Put back armature modifier
+        mod = mesh.modifiers.new("Armature", 'ARMATURE')
+        mod.object = armature
+
         tools.common.unselect_all()
-        tools.common.select(armature)
+        tools.common.set_active(armature)
         tools.common.switch('EDIT')
 
         # Reparent all bones to be correct for unity mapping and vrc itself
@@ -995,10 +1090,6 @@ class FixArmature(bpy.types.Operator):
             # wm.progress_update(current_step)
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
-
-        # Bone constraints should be deleted
-        # if context.scene.remove_constraints:
-        tools.common.delete_bone_constraints()
 
         # Removes unused vertex groups
         tools.common.remove_unused_vertex_groups()
@@ -1032,7 +1123,11 @@ class FixArmature(bpy.types.Operator):
         # Fix shading (check for runtime error because of ci tests)
         if not source_engine:
             try:
-                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                if version_2_79_or_older():
+                    bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                else:
+                    pass
+                    # TODO
             except RuntimeError:
                 pass
 
@@ -1102,6 +1197,7 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
     return {'result': True}
 
 
+@register_wrap
 class ModelSettings(bpy.types.Operator):
     bl_idname = "armature.settings"
     bl_label = "Fix Model Settings"
@@ -1135,11 +1231,11 @@ class ModelSettings(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.7
-            row.label('INFO:', icon='INFO')
+            row.label(text='INFO:', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.7
-            row.label('You can safely ignore the', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label(text='You can safely ignore the', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             row = col.row(align=True)
             row.scale_y = 0.7
-            row.label('"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row.label(text='"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
             col.separator()

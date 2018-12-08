@@ -2,6 +2,9 @@
 
 from bpy.types import Panel
 
+from mmd_tools_local import register_wrap
+
+@register_wrap
 class MMDBonePanel(Panel):
     bl_idname = 'BONE_PT_mmd_tools_bone'
     bl_label = 'MMD Bone Tools'
@@ -22,7 +25,7 @@ class MMDBonePanel(Panel):
 
         layout = self.layout
         if pose_bone.is_mmd_shadow_bone:
-            layout.label('MMD Shadow Bone!', icon='INFO')
+            layout.label(text='MMD Shadow Bone!', icon='INFO')
             return
 
         mmd_bone = pose_bone.mmd_bone

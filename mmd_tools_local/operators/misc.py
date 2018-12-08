@@ -5,6 +5,7 @@ import re
 import bpy
 from bpy.types import Operator
 
+from mmd_tools_local import register_wrap
 from mmd_tools_local import utils
 from mmd_tools_local.bpyutils import ObjectOp
 from mmd_tools_local.core import model as mmd_model
@@ -13,6 +14,7 @@ from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.bone import FnBone
 
 
+@register_wrap
 class MoveObject(Operator, utils.ItemMoveOp):
     bl_idname = 'mmd_tools.object_move'
     bl_label = 'Move Object'
@@ -73,6 +75,7 @@ class MoveObject(Operator, utils.ItemMoveOp):
                 objects = rig.joints()
         return __MovableList(objects)
 
+@register_wrap
 class CleanShapeKeys(Operator):
     bl_idname = 'mmd_tools.clean_shape_keys'
     bl_label = 'Clean Shape Keys'
@@ -108,6 +111,7 @@ class CleanShapeKeys(Operator):
             self.__shape_key_clean(ObjectOp(ob), ob.data.shape_keys.key_blocks)
         return {'FINISHED'}
 
+@register_wrap
 class SeparateByMaterials(Operator):
     bl_idname = 'mmd_tools.separate_by_materials'
     bl_label = 'Separate by Materials'
@@ -156,6 +160,7 @@ class SeparateByMaterials(Operator):
         utils.clearUnusedMeshes()
         return {'FINISHED'}
 
+@register_wrap
 class JoinMeshes(Operator):
     bl_idname = 'mmd_tools.join_meshes'
     bl_label = 'Join Meshes'
@@ -211,6 +216,7 @@ class JoinMeshes(Operator):
         utils.clearUnusedMeshes()
         return { 'FINISHED' }
 
+@register_wrap
 class AttachMeshesToMMD(Operator):
     bl_idname = 'mmd_tools.attach_meshes'
     bl_label = 'Attach Meshes to Model'
@@ -246,6 +252,7 @@ class AttachMeshesToMMD(Operator):
             mesh.matrix_world = m
         return { 'FINISHED' }
 
+@register_wrap
 class ChangeMMDIKLoopFactor(Operator):
     bl_idname = 'mmd_tools.change_mmd_ik_loop_factor'
     bl_label = 'Change MMD IK Loop Factor'
@@ -298,6 +305,7 @@ class ChangeMMDIKLoopFactor(Operator):
                 c.iterations = iterations
         return { 'FINISHED' }
 
+@register_wrap
 class RecalculateBoneRoll(Operator):
     bl_idname = 'mmd_tools.recalculate_bone_roll'
     bl_label = 'Recalculate bone roll'

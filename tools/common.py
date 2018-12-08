@@ -27,7 +27,10 @@
 from datetime import datetime
 
 import bpy
+import copy
+import time
 import bmesh
+import globs
 import numpy as np
 import tools.supporter
 import tools.decimation
@@ -36,6 +39,7 @@ import tools.armature_bones as Bones
 from mathutils import Vector
 from math import degrees
 from collections import OrderedDict
+from tools.register import register_wrap
 
 from googletrans import Translator
 from mmd_tools_local import utils
@@ -53,10 +57,6 @@ import re
 # - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
 # - Eye tracking test add reset blink
 # - Eye tracking test set subcol like in updater
-
-
-shapekey_order = None
-version_str = ''
 
 
 def get_armature(armature_name=None):
@@ -86,36 +86,83 @@ def unhide_all(everything=False, obj_to_unhide=None):
     if not obj_to_unhide:
         obj_to_unhide = get_armature()
 
-    if version_2_79_or_older():
-        if everything or not obj_to_unhide:
-            for obj in bpy.data.objects:
-                obj.hide = False
-        else:
-            def unhide_children(parent):
-                for child in parent.children:
-                    child.hide = False
-                    unhide_children(child)
-
-            top_parent = get_top_parent(obj_to_unhide)
-            top_parent.hide = False
-            unhide_children(top_parent)
+    if everything or not obj_to_unhide:
+        for obj in bpy.data.objects:
+            hide(obj, False)
+            set_unselectable(obj, False)
     else:
-        for obj in bpy.data.collections:
-            obj.hide_viewport = False
+        def unhide_children(parent):
+            for child in parent.children:
+                hide(child, False)
+                set_unselectable(child, False)
+                unhide_children(child)
+
+        top_parent = get_top_parent(obj_to_unhide)
+        hide(top_parent, False)
+        set_unselectable(top_parent, False)
+        unhide_children(top_parent)
+
+    # Unhide all the things that are stupidly hidden and make them selectable
+    if not version_2_79_or_older():
+        bpy.ops.object.hide_view_clear()
+        for collection in bpy.data.collections:
+            collection.hide_select = False
+            collection.hide_viewport = False
 
 
 def unselect_all():
     for obj in bpy.data.objects:
-        obj.select = False
+        select(obj, False)
 
 
-def select(obj):
-    bpy.context.scene.objects.active = obj
-    obj.select = True
+def set_active(obj):
+    select(obj)
+    if version_2_79_or_older():
+        bpy.context.scene.objects.active = obj
+    else:
+        bpy.context.view_layer.objects.active = obj
+
+
+def get_active():
+    if version_2_79_or_older():
+        return bpy.context.scene.objects.active
+    return bpy.context.view_layer.objects.active
+
+
+def select(obj, sel=True):
+    if sel:
+        hide(obj, False)
+    if version_2_79_or_older():
+        obj.select = sel
+    else:
+        obj.select_set(sel)
+
+
+def is_selected(obj):
+    if version_2_79_or_older():
+        return obj.select
+    return obj.select_get()
+
+
+def hide(obj, val=True):
+    if version_2_79_or_older():
+        obj.hide = val
+    else:
+        obj.hide_viewport = val
+
+
+def is_hidden(obj):
+    if version_2_79_or_older():
+        return obj.hide
+    return obj.hide_viewport
+
+
+def set_unselectable(obj, val=True):
+    obj.hide_select = val
 
 
 def switch(new_mode):
-    if bpy.ops.object.mode_set.poll():
+    if get_active().mode != new_mode and bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode=new_mode, toggle=False)
 
 
@@ -124,7 +171,7 @@ def set_default_stage_old():
     unhide_all()
     unselect_all()
     armature = get_armature()
-    select(armature)
+    set_active(armature)
     return armature
 
 
@@ -133,16 +180,16 @@ def set_default_stage(everything=False):
     unselect_all()
 
     for obj in bpy.data.objects:
-        select(obj)
+        set_active(obj)
         switch('OBJECT')
         if obj.type == 'ARMATURE':
             obj.data.pose_position = 'REST'
 
-        obj.select = False
+        select(obj, False)
 
     armature = get_armature()
     if armature:
-        select(armature)
+        set_active(armature)
     return armature
 
 
@@ -157,10 +204,10 @@ def remove_bone(find_bone):
 def remove_empty():
     armature = set_default_stage()
     if armature.parent and armature.parent.type == 'EMPTY':
-        tools.common.unselect_all()
-        tools.common.select(armature.parent)
+        unselect_all()
+        set_active(armature.parent)
         bpy.ops.object.delete(use_global=False)
-        tools.common.unselect_all()
+        unselect_all()
 
 
 def get_bone_angle(p1, p2):
@@ -202,8 +249,8 @@ def find_center_vector_of_vertex_group(mesh_name, vertex_group):
     for vert in verts:
         i = vert.index
         try:
-            mesh.vertex_groups[vertex_group].weight(i)
-            verts_in_group.append(vert)
+            if mesh.vertex_groups[vertex_group].weight(i) > 0:
+                verts_in_group.append(vert)
         except RuntimeError:
             # vertex is not in the group
             pass
@@ -378,23 +425,23 @@ def get_bones(names=None, armature_name=None):
 
 
 def get_shapekeys_mouth_ah(self, context):
-    return get_shapekeys(context, ['Ah', 'A'], True, False, False, False)
+    return get_shapekeys(context, ['MTH A', 'Ah', 'A'], True, False, False, False)
 
 
 def get_shapekeys_mouth_oh(self, context):
-    return get_shapekeys(context, ['Oh', 'O', 'Your'], True, False, False, False)
+    return get_shapekeys(context, ['MTH U', 'Oh', 'O', 'Your'], True, False, False, False)
 
 
 def get_shapekeys_mouth_ch(self, context):
-    return get_shapekeys(context, ['Glue', 'Ch', 'I', 'There'], True, False, False, False)
+    return get_shapekeys(context, ['MTH I', 'Glue', 'Ch', 'I', 'There'], True, False, False, False)
 
 
 def get_shapekeys_eye_blink_l(self, context):
-    return get_shapekeys(context, ['Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Blink', 'Basis'], False, False, False, False)
+    return get_shapekeys(context, ['EYE Close L', 'Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Blink', 'Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_blink_r(self, context):
-    return get_shapekeys(context, ['Wink 2 right', 'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Basis'], False, False, False, False)
+    return get_shapekeys(context, ['EYE Close R', 'Wink 2 right', 'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Basis'], False, False, False, False)
 
 
 def get_shapekeys_eye_low_l(self, context):
@@ -407,14 +454,14 @@ def get_shapekeys_eye_low_r(self, context):
 
 def get_shapekeys_decimation(self, context):
     return get_shapekeys(context,
-                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Wink 2 right',
-                          'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Blink'], False, True, True, False)
+                         ['MTH A', 'Ah', 'A', 'MTH U', 'Oh', 'O', 'Your', 'MTH I', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Wink 2 right',
+                          'EYE Close R', 'EYE Close L', 'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Blink'], False, True, True, False)
 
 
 def get_shapekeys_decimation_list(self, context):
     return get_shapekeys(context,
-                         ['Ah', 'A', 'Oh', 'O', 'Your', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Wink 2 right',
-                          'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Blink'], False, True, True, True)
+                         ['MTH A', 'Ah', 'A', 'MTH U', 'Oh', 'O', 'Your', 'MTH I', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Wink 2 right',
+                          'EYE Close R', 'EYE Close L', 'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Blink'], False, True, True, True)
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
@@ -422,17 +469,21 @@ def get_shapekeys_decimation_list(self, context):
 def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
     choices = []
     choices_simple = []
-
-    if is_mouth:
-        meshes = [bpy.data.objects.get(context.scene.mesh_name_viseme)]
-    else:
-        meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
+    meshes_list = get_meshes_objects()
 
     if decimation:
-        meshes = get_meshes_objects()
+        meshes = meshes_list
+    elif meshes_list:
+        if is_mouth:
+            meshes = [bpy.data.objects.get(context.scene.mesh_name_viseme)]
+        else:
+            meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
+    else:
+        bpy.types.Object.Enum = choices
+        return bpy.types.Object.Enum
 
     for mesh in meshes:
-        if not mesh or not tools.common.has_shapekeys(mesh):
+        if not mesh or not has_shapekeys(mesh):
             bpy.types.Object.Enum = choices
             return bpy.types.Object.Enum
 
@@ -542,7 +593,7 @@ def get_meshes_objects(armature_name=None, mode=0):
                 meshes.append(ob)
 
             elif mode == 3:
-                if ob.select:
+                if is_selected(ob):
                     meshes.append(ob)
     return meshes
 
@@ -562,12 +613,13 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     for mesh in meshes:
         if mode == 0:
             meshes_to_join.append(mesh.name)
-        elif mode == 1 and mesh.select:
+        elif mode == 1 and is_selected(mesh):
             meshes_to_join.append(mesh.name)
 
     if not meshes_to_join:
         return None
 
+    print(get_armature(armature_name).mode)
     set_default_stage()
     unselect_all()
 
@@ -579,8 +631,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:
         if mesh.name in meshes_to_join:
-            mesh.select = True
-            bpy.context.scene.objects.active = mesh
+            tools.common.set_active(mesh)
 
             # Apply decimation modifiers
             for mod in mesh.modifiers:
@@ -592,18 +643,26 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                         mesh.modifiers.remove(mod)
                         continue
 
-                    if tools.common.has_shapekeys(mesh):
+                    if has_shapekeys(mesh):
                         bpy.ops.object.shape_key_remove(all=True)
+                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+                elif mod.type == 'SUBSURF':
+                    mesh.modifiers.remove(mod)
+                elif mod.type == 'MIRROR':
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
             # Standardize UV maps name
-            if mesh.data.uv_textures:
-                mesh.data.uv_textures[0].name = 'UVMap'
-            for mat_slot in mesh.material_slots:
-                if mat_slot and mat_slot.material:
-                    for tex_slot in mat_slot.material.texture_slots:
-                        if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
-                            tex_slot.uv_layer = 'UVMap'
+            if version_2_79_or_older():
+                if mesh.data.uv_textures:
+                    mesh.data.uv_textures[0].name = 'UVMap'
+                for mat_slot in mesh.material_slots:
+                    if mat_slot and mat_slot.material:
+                        for tex_slot in mat_slot.material.texture_slots:
+                            if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
+                                tex_slot.uv_layer = 'UVMap'
+            else:
+                if mesh.data.uv_layers:
+                    mesh.data.uv_layers[0].name = 'UVMap'
 
     # Join the meshes
     if bpy.ops.object.join.poll():
@@ -612,7 +671,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
         return None
 
     # Rename result to Body and correct modifiers
-    mesh = bpy.context.scene.objects.active
+    mesh = tools.common.get_active()
     if mesh:
         mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
@@ -638,6 +697,9 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
     reset_context_scenes()
 
+    # Update the material list of the Material Combiner
+    update_material_list()
+
     return mesh
 
 
@@ -645,12 +707,12 @@ def apply_transforms(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
-    tools.common.unselect_all()
-    tools.common.select(get_armature(armature_name=armature_name))
+    unselect_all()
+    set_active(get_armature(armature_name=armature_name))
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     for mesh in get_meshes_objects(armature_name=armature_name):
-        tools.common.unselect_all()
-        tools.common.select(mesh)
+        unselect_all()
+        set_active(mesh)
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
 
@@ -660,10 +722,10 @@ def separate_by_materials(context, mesh):
     # Remove Rigidbodies and joints
     for obj in bpy.data.objects:
         if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            tools.common.delete_hierarchy(obj)
+            delete_hierarchy(obj)
 
     save_shapekey_order(mesh.name)
-    select(mesh)
+    set_active(mesh)
 
     for mod in mesh.modifiers:
         if mod.type == 'DECIMATE':
@@ -688,6 +750,9 @@ def separate_by_materials(context, mesh):
 
     utils.clearUnusedMeshes()
 
+    # Update the material list of the Material Combiner
+    update_material_list()
+
 
 def separate_by_loose_parts(context, mesh):
     set_default_stage()
@@ -695,10 +760,10 @@ def separate_by_loose_parts(context, mesh):
     # Remove Rigidbodies and joints
     for obj in bpy.data.objects:
         if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            tools.common.delete_hierarchy(obj)
+            delete_hierarchy(obj)
 
     save_shapekey_order(mesh.name)
-    select(mesh)
+    set_active(mesh)
 
     for mod in mesh.modifiers:
         if mod.type == 'DECIMATE':
@@ -725,7 +790,7 @@ def separate_by_loose_parts(context, mesh):
 
     for mesh in meshes:
         unselect_all()
-        select(mesh)
+        set_active(mesh)
         bpy.ops.mesh.separate(type='LOOSE')
 
         meshes2 = []
@@ -780,9 +845,12 @@ def separate_by_loose_parts(context, mesh):
 
     utils.clearUnusedMeshes()
 
+    # Update the material list of the Material Combiner
+    update_material_list()
+
 
 def clean_shapekeys(mesh):
-    if tools.common.has_shapekeys(mesh):
+    if has_shapekeys(mesh):
         for kb in mesh.data.shape_keys.key_blocks:
             if can_remove_shapekey(kb):
                 mesh.shape_key_remove(kb)
@@ -802,7 +870,7 @@ def can_remove_shapekey(key_block):
 def separate_by_verts():
     for obj in bpy.context.selected_objects:
         if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
-            bpy.context.scene.objects.active = obj
+            tools.common.set_active(obj)
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type='VERT')
         for vgroup in obj.vertex_groups:
@@ -839,86 +907,93 @@ def save_shapekey_order(mesh_name):
     # Get current custom data
     custom_data = armature.get('CUSTOM')
     if not custom_data:
-        print('NEW DATA!')
+        # print('NEW DATA!')
         custom_data = {}
 
-    # Create shape key list for description
-    shape_key_order = ''
-    if tools.common.has_shapekeys(mesh):
+    # Create shapekey order
+    shape_key_order = []
+    if has_shapekeys(mesh):
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if index > 0:
-                shape_key_order += ',,,'
-            shape_key_order += shapekey.name
+            shape_key_order.append(shapekey.name)
 
     # Check if there is already a shapekey order
     if custom_data.get('shape_key_order'):
-        print('CUSTOM PROP ALREADY EXISTS!')
-        print(custom_data['shape_key_order'])
+        # print('SHAPEKEY ORDER ALREADY EXISTS!')
+        # print(custom_data['shape_key_order'])
+        old_len = len(custom_data.get('shape_key_order'))
 
-        if len(custom_data.get('shape_key_order')) > len(shape_key_order):
-            print('ABORT')
+        if type(shape_key_order) is str:
+            old_len = len(shape_key_order.split(',,,'))
+
+        if len(shape_key_order) <= old_len:
+            # print('ABORT')
             return
 
     # Save order to custom data
-    print('CREATE NEW CUSTOM PROP!')
+    # print('SAVE NEW ORDER')
     custom_data['shape_key_order'] = shape_key_order
 
     # Save custom data in armature
     armature['CUSTOM'] = custom_data
 
-    print(armature.get('CUSTOM')['shape_key_order'])
+    # print(armature.get('CUSTOM').get('shape_key_order'))
 
 
 def repair_shapekey_order(mesh_name):
-    armature = get_armature()
-    shape_key_order = []
-
     # Get current custom data
+    armature = get_armature()
     custom_data = armature.get('CUSTOM')
     if not custom_data:
         custom_data = {}
 
     # Extract shape keys from string
-    order_string = custom_data.get('shape_key_order')
-    if order_string:
-        for shape_name in order_string.split(',,,'):
-            shape_key_order.append(shape_name)
+    shape_key_order = custom_data.get('shape_key_order')
+    if not shape_key_order:
+        custom_data['shape_key_order'] = []
+        armature['CUSTOM'] = custom_data
 
-    sort_shape_keys(mesh_name, shape_key_order)
+    if type(shape_key_order) is str:
+        shape_key_order_temp = []
+        for shape_name in shape_key_order.split(',,,'):
+            shape_key_order_temp.append(shape_name)
+        custom_data['shape_key_order'] = shape_key_order_temp
+        armature['CUSTOM'] = custom_data
+
+    sort_shape_keys(mesh_name, custom_data['shape_key_order'])
 
 
 def update_shapekey_orders():
     for armature in get_armature_objects():
-        shape_key_order = []
+        shape_key_order_translated = []
 
         # Get current custom data
         custom_data = armature.get('CUSTOM')
-        if not custom_data or not custom_data.get('shape_key_order'):
+        if not custom_data:
+            continue
+        order = custom_data.get('shape_key_order')
+        if not order:
             continue
 
-        # Get shape keys from string and translate them
-        order_string = custom_data.get('shape_key_order')
-        for shape_name in order_string.split(',,,'):
-            shape_key_order.append(tools.translate.translate(shape_name)[0])
-        print(order_string)
+        if type(order) is str:
+            shape_key_order_temp = order.split(',,,')
+            order = []
+            for shape_name in shape_key_order_temp:
+                order.append(shape_name)
 
-        # Create translated shape key list string for properties
-        order_string = ''
-        for i, shapekey in enumerate(shape_key_order):
-            if i > 0:
-                order_string += ',,,'
-            order_string += shapekey
+        # Get shape keys and translate them
+        for shape_name in order:
+            shape_key_order_translated.append(tools.translate.translate(shape_name, add_space=True, translating_shapes=True)[0])
 
-        print(order_string)
-
-        custom_data['shape_key_order'] = order_string
+        # print(armature.name, shape_key_order_translated)
+        custom_data['shape_key_order'] = shape_key_order_translated
+        armature['CUSTOM'] = custom_data
 
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
     mesh = bpy.data.objects[mesh_name]
-    if not tools.common.has_shapekeys(mesh):
+    if not has_shapekeys(mesh):
         return
-    select(mesh)
+    set_active(mesh)
 
     if not shape_key_order:
         shape_key_order = []
@@ -1042,56 +1117,31 @@ def removeZeroVerts(obj, thres=0):
             obj.vertex_groups[g.group].remove([v.index])
 
 
-def delete_hierarchy(obj):
+def delete_hierarchy(parent):
     unselect_all()
-    obj.animation_data_clear()
-    names = set()
+    to_delete = []
 
     def get_child_names(obj):
         for child in obj.children:
-            if child.type != 'ARMATURE':
-                names.add(child.name)
-                if child.children:
-                    get_child_names(child)
+            to_delete.append(child)
+            if child.children:
+                get_child_names(child)
 
-    get_child_names(obj)
+    get_child_names(parent)
+    to_delete.append(parent)
 
-    objects = bpy.data.objects
-    for n in names:
-        obj_temp = objects.get(n)
-        if obj_temp:
-            obj_temp.select = True
-            obj_temp.animation_data_clear()
-
-    result = bpy.ops.object.delete()
-
-    bpy.context.scene.objects.unlink(obj)
-    bpy.data.objects.remove(obj)
-
-    if result == {'FINISHED'}:
-        print("Successfully deleted object")
-    else:
-        print("Could not delete object")
+    for obj in to_delete:
+        obj.animation_data_clear()
+        bpy.data.objects.remove(obj)
 
 
 def delete(obj):
-    unselect_all()
-    select(obj)
-
     if obj.parent:
         for child in obj.children:
             child.parent = obj.parent
 
     obj.animation_data_clear()
-    result = bpy.ops.object.delete()
-
-    #bpy.context.scene.objects.unlink(obj)
     bpy.data.objects.remove(obj)
-
-    if result == {'FINISHED'}:
-        print("Successfully deleted object")
-    else:
-        print("Could not delete object")
 
 
 def days_between(d1, d2, time_format):
@@ -1163,6 +1213,7 @@ def remove_unused_objects():
     for obj in bpy.data.objects:
         if (obj.type == 'CAMERA' and obj.name == 'Camera') \
                 or (obj.type == 'LAMP' and obj.name == 'Lamp') \
+                or (obj.type == 'LIGHT' and obj.name == 'Light') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
             delete_hierarchy(obj)
 
@@ -1178,7 +1229,7 @@ def is_end_bone(name, armature_name):
 def correct_bone_positions(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
-    armature = tools.common.get_armature(armature_name=armature_name)
+    armature = get_armature(armature_name=armature_name)
 
     chest = armature.data.edit_bones.get('Chest')
     neck = armature.data.edit_bones.get('Neck')
@@ -1218,6 +1269,10 @@ def correct_bone_positions(armature_name=None):
                 leg = armature.data.edit_bones.get('Left leg')
                 knee = armature.data.edit_bones.get('Left knee')
                 ankle = armature.data.edit_bones.get('Left ankle')
+
+                if 'Left leg 2' in armature.data.edit_bones:
+                    leg = armature.data.edit_bones.get('Left leg 2')
+
                 leg.tail = knee.head
                 knee.tail = ankle.head
 
@@ -1227,6 +1282,10 @@ def correct_bone_positions(armature_name=None):
                 leg = armature.data.edit_bones.get('Right leg')
                 knee = armature.data.edit_bones.get('Right knee')
                 ankle = armature.data.edit_bones.get('Right ankle')
+
+                if 'Right leg 2' in armature.data.edit_bones:
+                    leg = armature.data.edit_bones.get('Right leg 2')
+
                 leg.tail = knee.head
                 knee.tail = ankle.head
 
@@ -1256,6 +1315,7 @@ def show_error(scale, error_list, override_header=False):
     bpy.ops.error.show('INVOKE_DEFAULT')
 
 
+@register_wrap
 class ShowError(bpy.types.Operator):
     bl_idname = 'error.show'
     bl_label = 'Report: Error'
@@ -1287,10 +1347,10 @@ class ShowError(bpy.types.Operator):
                 row = col.row(align=True)
                 row.scale_y = 0.85
                 if not first_line:
-                    row.label(line, icon='ERROR')
+                    row.label(text=line, icon='ERROR')
                     first_line = True
                 else:
-                    row.label(line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+                    row.label(text=line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
 
         print('')
         print('Report: Error')
@@ -1304,16 +1364,16 @@ def remove_doubles(mesh, threshold):
 
     pre_tris = len(mesh.data.polygons)
 
-    tools.common.select(mesh)
-    tools.common.switch('EDIT')
+    set_active(mesh)
+    switch('EDIT')
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.remove_doubles(threshold=threshold)
-    tools.common.switch('OBJECT')
+    switch('OBJECT')
 
     return pre_tris - len(mesh.data.polygons)
 
 
-def get_bone_orientations():
+def get_bone_orientations(armature):
     x_cord = 0
     y_cord = 1
     z_cord = 2
@@ -1347,14 +1407,16 @@ def clean_material_names(mesh):
                 mesh.active_material.name = mat.name[:-5]
 
 
-def mix_weights(mesh, vg_from, vg_to):
+def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
+    mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
     mod.vertex_group_b = vg_from
     mod.mix_mode = 'ADD'
     mod.mix_set = 'B'
     bpy.ops.object.modifier_apply(modifier=mod.name)
-    mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
+    if delete_old_vg:
+        mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
 
 
 def version_2_79_or_older():
@@ -1365,6 +1427,76 @@ def has_shapekeys(mesh):
     if not hasattr(mesh.data, 'shape_keys'):
         return False
     return hasattr(mesh.data.shape_keys, 'key_blocks')
+
+
+def matmul(a, b):
+    if version_2_79_or_older():
+        return a*b
+    return a.__matmul__(b)
+
+
+def set_cats_verion_string():
+    version_str = ''
+    # if in dev version, increase version
+    if globs.dev_branch and len(globs.version) > 2:
+        globs.version[2] += 1
+
+    # Convert version to string
+    if len(globs.version) > 0:
+        version_str += str(globs.version[0])
+        for index, i in enumerate(globs.version):
+            if index == 0:
+                continue
+            version_str += '.' + str(globs.version[index])
+    if globs.dev_branch:
+        version_str += '-dev'
+
+    # Change the version back
+    if globs.dev_branch and len(globs.version) > 2:
+        globs.version[2] -= 1
+
+    globs.version_str = version_str
+
+
+def ui_refresh():
+    # A way to refresh the ui
+    refreshed = False
+    while not refreshed:
+        if hasattr(bpy.data, 'window_managers'):
+            for windowManager in bpy.data.window_managers:
+                for window in windowManager.windows:
+                    for area in window.screen.areas:
+                        area.tag_redraw()
+            refreshed = True
+            print('Refreshed UI!')
+        else:
+            time.sleep(0.5)
+
+
+def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
+    pre_mode = armature.mode
+    set_active(armature)
+    switch('EDIT')
+
+    for bone in armature.data.edit_bones:
+        if round(bone.head[x_cord], 4) == round(bone.tail[x_cord], 4) \
+                and round(bone.head[y_cord], 4) == round(bone.tail[y_cord], 4) \
+                and round(bone.head[z_cord], 4) == round(bone.tail[z_cord], 4):
+            if bone.name == 'Hips' and full_body_tracking:
+                bone.tail[z_cord] -= 0.1
+            else:
+                bone.tail[z_cord] += 0.1
+                print('YES')
+
+    switch(pre_mode)
+
+
+def update_material_list():
+    try:
+        if hasattr(bpy.context.scene, 'smc_ob_data') and bpy.context.scene.smc_ob_data:
+            bpy.ops.smc.refresh_ob_data()
+    except AttributeError:
+        print('Material Combiner not found')
 
 
 """

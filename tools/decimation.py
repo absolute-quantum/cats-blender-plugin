@@ -27,12 +27,14 @@
 import bpy
 import tools.common
 import tools.armature_bones as Bones
+from tools.register import register_wrap
 
 
 ignore_shapes = []
 ignore_meshes = []
 
 
+@register_wrap
 class ScanButton(bpy.types.Operator):
     bl_idname = 'auto.scan'
     bl_label = 'Scan for decimation models'
@@ -59,6 +61,7 @@ class ScanButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AddShapeButton(bpy.types.Operator):
     bl_idname = 'add.shape'
     bl_label = 'Add'
@@ -86,6 +89,7 @@ class AddShapeButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AddMeshButton(bpy.types.Operator):
     bl_idname = 'add.mesh'
     bl_label = 'Add'
@@ -105,6 +109,7 @@ class AddMeshButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveShapeButton(bpy.types.Operator):
     bl_idname = 'remove.shape'
     bl_label = ''
@@ -119,6 +124,7 @@ class RemoveShapeButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class RemoveMeshButton(bpy.types.Operator):
     bl_idname = 'remove.mesh'
     bl_label = ''
@@ -133,6 +139,7 @@ class RemoveMeshButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AutoDecimateButton(bpy.types.Operator):
     bl_idname = 'auto.decimate'
     bl_label = 'Quick Decimation'
@@ -173,7 +180,7 @@ class AutoDecimateButton(bpy.types.Operator):
         meshes_obj = tools.common.get_meshes_objects()
 
         for mesh in meshes_obj:
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('EDIT')
             bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
             tools.common.switch('OBJECT')
@@ -183,7 +190,7 @@ class AutoDecimateButton(bpy.types.Operator):
         if save_fingers:
             for mesh in meshes_obj:
                 if len(mesh.vertex_groups) > 0:
-                    tools.common.select(mesh)
+                    tools.common.set_active(mesh)
                     tools.common.switch('EDIT')
 
                     bpy.ops.mesh.select_mode(type='VERT')
@@ -205,7 +212,7 @@ class AutoDecimateButton(bpy.types.Operator):
                     tools.common.unselect_all()
 
         for mesh in meshes_obj:
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tris = len(mesh.data.polygons)
 
             if custom_decimation and mesh.name in ignore_meshes:
@@ -282,7 +289,7 @@ class AutoDecimateButton(bpy.types.Operator):
             mesh_obj = mesh[0]
             tris = mesh[1]
 
-            tools.common.select(mesh_obj)
+            tools.common.set_active(mesh_obj)
             print(mesh_obj.name)
 
             # Calculate new decimation ratio

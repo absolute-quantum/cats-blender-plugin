@@ -99,7 +99,7 @@ class FnMaterial(object):
                 pass
         return False
 
-    def __load_image(self, filepath):
+    def _load_image(self, filepath):
         for i in bpy.data.images:
             if self.__same_image_file(i, filepath):
                 return i
@@ -119,7 +119,7 @@ class FnMaterial(object):
             if t.type == 'IMAGE' and self.__same_image_file(t.image, filepath) and t.use_alpha:
                 return t
         tex = bpy.data.textures.new(name=bpy.path.display_name_from_filepath(filepath), type='IMAGE')
-        tex.image = self.__load_image(filepath)
+        tex.image = self._load_image(filepath)
         return tex
 
     def __has_alpha_channel(self, texture):
@@ -262,7 +262,7 @@ class FnMaterial(object):
         texture_slot.texture_coords = 'NORMAL'
         texture_slot.blend_type = 'MULTIPLY'
         texture_slot.texture = self.__load_texture(filepath)
-        texture_slot.texture.extension = 'EXTEND'
+        texture_slot.use_map_alpha = self.__has_alpha_channel(texture_slot.texture)
         return texture_slot
 
     def update_toon_texture(self):
@@ -301,6 +301,7 @@ class FnMaterial(object):
         mat.specular_alpha = mmd_mat.alpha
         mat.use_transparency = True
         mat.transparency_method = 'Z_TRANSPARENCY'
+        mat.game_settings.alpha_blend = 'ALPHA'
         self.update_self_shadow_map()
 
     def update_specular_color(self):
@@ -357,4 +358,137 @@ class FnMaterial(object):
 
     def update_edge_weight(self):
         pass
+
+
+if bpy.app.version >= (2, 80, 0):
+    from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
+
+    class _DummyTexture:
+        def __init__(self, image):
+            self.type = 'IMAGE'
+            self.image = image
+            self.use_mipmap = True
+
+    class _DummyTextureSlot:
+        def __init__(self, image):
+            self.diffuse_color_factor = 1
+            self.uv_layer = ''
+            self.texture = _DummyTexture(image)
+
+    __FnMaterialBase = FnMaterial
+    class FnMaterial(__FnMaterialBase):
+        @property
+        def __shader_wrap(self):
+            if not hasattr(self, '_shader_wrapper'):
+                self._shader_wrapper = PrincipledBSDFWrapper(self.material, is_readonly=True)
+            return self._shader_wrapper
+
+        @property
+        def __shader_read(self):
+            shader = self.__shader_wrap
+            shader.is_readonly = True
+            return shader
+
+        @property
+        def __shader(self):
+            shader = self.__shader_wrap
+            shader.is_readonly = False
+            shader.use_nodes = True
+            return shader
+
+        def get_texture(self):
+            texture = self.__shader_read.base_color_texture
+            if texture and texture.image:
+                return _DummyTexture(texture.image)
+            return None
+
+        def create_texture(self, filepath):
+            image = self._load_image(filepath)
+            shader = self.__shader
+            shader.base_color_texture.image = image
+            return _DummyTextureSlot(image)
+
+        def remove_texture(self):
+            shader = self.__shader
+            shader.base_color_texture.image = None
+
+
+        def get_sphere_texture(self):
+            texture = self.__shader_read.metallic_texture
+            if texture and texture.image:
+                return _DummyTexture(texture.image)
+            return None
+
+        def use_sphere_texture(self, use_sphere, obj=None):
+            pass
+
+        def create_sphere_texture(self, filepath, obj=None):
+            image = self._load_image(filepath)
+            shader = self.__shader
+            shader.metallic_texture.image = image
+            shader.metallic_texture.texcoords = 'Normal'
+            shader.metallic_texture.node_mapping.vector_type = 'POINT'
+            shader.metallic_texture.node_mapping.translation = (0.5, 0.5, 0.0)
+            shader.metallic_texture.node_mapping.scale = (0.5, 0.5, 1.0)
+            return _DummyTextureSlot(image)
+
+        def update_sphere_texture_type(self, obj=None):
+            pass
+
+        def remove_sphere_texture(self):
+            shader = self.__shader
+            shader.metallic_texture.image = None
+
+
+        def get_toon_texture(self):
+            return None
+
+        def use_toon_texture(self, use_toon):
+            pass
+
+        def create_toon_texture(self, filepath):
+            image = self._load_image(filepath)
+            return _DummyTextureSlot(image)
+
+        def remove_toon_texture(self):
+            pass
+
+
+        def update_diffuse_color(self):
+            mat = self.__material
+            mmd_mat = mat.mmd_material
+            shader = self.__shader
+            shader.base_color = self._mixDiffuseAndAmbient(mmd_mat)
+
+        def update_alpha(self):
+            mat = self.__material
+            mmd_mat = mat.mmd_material
+            shader = self.__shader
+            shader.transmission = 1 - mmd_mat.alpha
+            shader.ior = 1
+            mat.blend_method = 'BLEND'
+
+        def update_specular_color(self):
+            mat = self.__material
+            mmd_mat = mat.mmd_material
+            mat.specular_color = mmd_mat.specular_color
+            shader = self.__shader
+            shader.specular = mmd_mat.specular_color.v
+
+        def update_shininess(self):
+            mat = self.__material
+            mmd_mat = mat.mmd_material
+            shader = self.__shader
+            shader.roughness = 1/max(mmd_mat.shininess, 1)
+
+        def update_is_double_sided(self):
+            mat = self.__material
+            mmd_mat = mat.mmd_material
+
+        def update_self_shadow_map(self):
+            pass
+
+        def update_self_shadow(self):
+            mat = self.__material
+            mmd_mat = mat.mmd_material
 

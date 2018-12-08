@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import re
 import bpy
 from bpy.types import Operator
 from mathutils import Matrix
-import re
 
+from mmd_tools_local import register_wrap
+from mmd_tools_local.bpyutils import matmul
+
+@register_wrap
 class SetGLSLShading(Operator):
     bl_idname = 'mmd_tools.set_glsl_shading'
     bl_label = 'GLSL View'
@@ -13,7 +17,12 @@ class SetGLSLShading(Operator):
 
     def execute(self, context):
         bpy.ops.mmd_tools.reset_shading()
-        bpy.context.scene.render.engine = 'BLENDER_RENDER'
+        if bpy.app.version >= (2, 80, 0):
+            shading = context.area.spaces[0].shading
+            shading.light = 'STUDIO'
+            shading.color_type = 'TEXTURE'
+            return {'FINISHED'}
+
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
                 if s.material is None:
@@ -26,9 +35,10 @@ class SetGLSLShading(Operator):
             context.scene.objects.link(light)
 
         context.area.spaces[0].viewport_shade='TEXTURED'
-        bpy.context.scene.game_settings.material_mode = 'GLSL'
+        context.scene.game_settings.material_mode = 'GLSL'
         return {'FINISHED'}
 
+@register_wrap
 class SetShadelessGLSLShading(Operator):
     bl_idname = 'mmd_tools.set_shadeless_glsl_shading'
     bl_label = 'Shadeless GLSL View'
@@ -37,24 +47,27 @@ class SetShadelessGLSLShading(Operator):
 
     def execute(self, context):
         bpy.ops.mmd_tools.reset_shading()
-        bpy.context.scene.render.engine = 'BLENDER_RENDER'
+        if bpy.app.version >= (2, 80, 0):
+            shading = context.area.spaces[0].shading
+            shading.light = 'FLAT'
+            shading.color_type = 'TEXTURE'
+            return {'FINISHED'}
+
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
                 if s.material is None:
                     continue
                 s.material.use_shadeless = True
-        for i in filter(lambda x: x.is_mmd_glsl_light, context.scene.objects):
-            context.scene.objects.unlink(i)
-
         try:
-            bpy.context.scene.display_settings.display_device = 'None'
+            context.scene.display_settings.display_device = 'None'
         except TypeError:
             pass # Blender was built without OpenColorIO:
 
         context.area.spaces[0].viewport_shade='TEXTURED'
-        bpy.context.scene.game_settings.material_mode = 'GLSL'
+        context.scene.game_settings.material_mode = 'GLSL'
         return {'FINISHED'}
 
+@register_wrap
 class ResetShading(Operator):
     bl_idname = 'mmd_tools.reset_shading'
     bl_label = 'Reset View'
@@ -62,7 +75,17 @@ class ResetShading(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
-        bpy.context.scene.render.engine = 'BLENDER_RENDER'
+        if bpy.app.version >= (2, 80, 0):
+            context.scene.render.engine = 'BLENDER_EEVEE'
+            shading = context.area.spaces[0].shading
+            shading.type = 'SOLID'
+            shading.light = 'STUDIO'
+            shading.color_type = 'MATERIAL'
+            shading.show_object_outline = False
+            context.space_data.overlay.show_backface_culling = False
+            return {'FINISHED'}
+
+        context.scene.render.engine = 'BLENDER_RENDER'
         for i in filter(lambda x: x.type == 'MESH', context.scene.objects):
             for s in i.material_slots:
                 if s.material is None:
@@ -74,14 +97,15 @@ class ResetShading(Operator):
             context.scene.objects.unlink(i)
 
         try:
-            bpy.context.scene.display_settings.display_device = 'sRGB'
+            context.scene.display_settings.display_device = 'sRGB'
         except TypeError:
             pass
         context.area.spaces[0].viewport_shade='SOLID'
         context.area.spaces[0].show_backface_culling = False
-        bpy.context.scene.game_settings.material_mode = 'MULTITEXTURE'
+        context.scene.game_settings.material_mode = 'MULTITEXTURE'
         return {'FINISHED'}
 
+@register_wrap
 class FlipPose(Operator):
     bl_idname = 'mmd_tools.flip_pose'
     bl_label = 'Flip Pose'
@@ -131,11 +155,8 @@ class FlipPose(Operator):
 
     @staticmethod
     def __matrix_compose(loc, rot, scale):
-        return (Matrix.Translation(loc) *
-                rot.to_matrix().to_4x4() *
-                Matrix.Scale(scale[0], 4, (1, 0, 0)) *
-                Matrix.Scale(scale[1], 4, (0, 1, 0)) *
-                Matrix.Scale(scale[2], 4, (0, 0, 1)))
+        return matmul(matmul(Matrix.Translation(loc), rot.to_matrix().to_4x4()),
+                    Matrix([(scale[0],0,0,0), (0,scale[1],0,0), (0,0,scale[2],0), (0,0,0,1)]))
 
     @classmethod
     def __flip_direction(cls, bone1, bone2):

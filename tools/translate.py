@@ -23,17 +23,19 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
-import collections
-import copy
-import json
 import re
 import os
 import bpy
+import copy
+import json
+import globs
 import pathlib
+import collections
 import tools.common
 import requests.exceptions
 import mmd_tools_local.translations
 
+from tools.register import register_wrap
 from datetime import datetime, timezone
 from googletrans import Translator
 from collections import OrderedDict
@@ -41,15 +43,13 @@ from collections import OrderedDict
 dictionary = None
 dictionary_google = None
 
-translation_splitter = "---"
-time_format = "%Y-%m-%d %H:%M:%S"
-
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
 dictionary_file = os.path.join(resources_dir, "dictionary.json")
 dictionary_google_file = os.path.join(resources_dir, "dictionary_google.json")
 
 
+@register_wrap
 class TranslateShapekeyButton(bpy.types.Operator):
     bl_idname = 'translate.shapekeys'
     bl_label = 'Translate Shape Keys'
@@ -82,10 +82,13 @@ class TranslateShapekeyButton(bpy.types.Operator):
                         if translated:
                             i += 1
 
+        tools.common.ui_refresh()
+
         self.report({'INFO'}, 'Translated ' + str(i) + ' shape keys.')
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'translate.bones'
     bl_label = 'Translate Bones'
@@ -117,6 +120,7 @@ class TranslateBonesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateObjectsButton(bpy.types.Operator):
     bl_idname = 'translate.objects'
     bl_label = 'Translate Meshes & Objects'
@@ -160,6 +164,7 @@ class TranslateObjectsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'translate.materials'
     bl_label = 'Translate Materials'
@@ -181,7 +186,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
         i = 0
         for mesh in tools.common.get_meshes_objects(mode=2):
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             for index, matslot in enumerate(mesh.material_slots):
                 mesh.active_material_index = index
                 if bpy.context.object.active_material:
@@ -195,6 +200,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'translate.textures'
     bl_label = 'Translate Textures'
@@ -242,6 +248,7 @@ class TranslateTexturesButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class TranslateAllButton(bpy.types.Operator):
     bl_idname = 'translate.all'
     bl_label = 'Translate Everything'
@@ -541,25 +548,28 @@ def fix_jp_chars(name):
 
 
 def google_dict_too_old():
-    created = datetime.strptime(dictionary_google.get('created'), time_format)
-    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
+    # Let the user decide when to refresh the google dict
+    return False
 
-    time_delta = abs((utc_now - created).days)
-
-    print('DAYS SINCE GOOGLE DICT CREATION:', time_delta)
-
-    if time_delta <= 30:
-        return False
-
-    print('DICT TOO OLD')
-    return True
+    # created = datetime.strptime(dictionary_google.get('created'), globs.time_format)
+    # utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.time_format), globs.time_format)
+    #
+    # time_delta = abs((utc_now - created).days)
+    #
+    # print('DAYS SINCE GOOGLE DICT CREATION:', time_delta)
+    #
+    # if time_delta <= 30:
+    #     return False
+    #
+    # print('DICT TOO OLD')
+    # return True
 
 
 def reset_google_dict():
     global dictionary_google
     dictionary_google = OrderedDict()
 
-    now_utc = datetime.now(timezone.utc).strftime(time_format)
+    now_utc = datetime.now(timezone.utc).strftime(globs.time_format)
 
     dictionary_google['created'] = now_utc
     dictionary_google['translations'] = {}

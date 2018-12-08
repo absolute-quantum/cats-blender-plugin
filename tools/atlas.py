@@ -26,16 +26,36 @@
 
 import os
 import bpy
+import globs
 import random
 import webbrowser
 import tools.common
 import addon_utils
+from tools.common import version_2_79_or_older
+from tools.register import register_wrap
 
 
 addon_name = "Shotariya-don"
 min_version = [1, 1, 6]
 
 
+@register_wrap
+class EnableSMC(bpy.types.Operator):
+    bl_idname = 'cats.enable_smc'
+    bl_label = 'Enable Material Combiner'
+    bl_description = 'Enables Material Combiner'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        for mod in addon_utils.modules():
+            if mod.bl_info['name'] == "Shotariya's Material Combiner":
+                bpy.ops.wm.addon_enable(module=mod.__name__)
+                break
+        self.report({'INFO'}, 'Enabled Material Combiner!')
+        return {'FINISHED'}
+
+
+@register_wrap
 class AutoAtlasNewButton(bpy.types.Operator):
     bl_idname = 'atlas.generate'
     bl_label = 'Create Atlas'
@@ -49,6 +69,11 @@ class AutoAtlasNewButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         # Check if shotariyas plugin is correctly set up
         if not shotariya_installed():
             return {'CANCELLED'}
@@ -249,6 +274,15 @@ class AutoAtlasNewButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
+class MaterialsGroup(bpy.types.PropertyGroup):
+    material = bpy.props.PointerProperty(
+        name='Material',
+        type=bpy.types.Material
+    )
+
+
+@register_wrap
 class GenerateMaterialListButton(bpy.types.Operator):
     bl_idname = 'atlas.gen_mat_list'
     bl_label = 'Generate Material List'
@@ -258,6 +292,11 @@ class GenerateMaterialListButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        if not tools.common.version_2_79_or_older():
+            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            return {'CANCELLED'}
+            # TODO
+
         if not shotariya_installed():
             return {'CANCELLED'}
 
@@ -291,6 +330,7 @@ class GenerateMaterialListButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class AtlasHelpButton(bpy.types.Operator):
     bl_idname = 'atlas.help'
     bl_label = 'Generate Material List'
@@ -303,13 +343,7 @@ class AtlasHelpButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class MaterialsGroup(bpy.types.PropertyGroup):
-    material = bpy.props.PointerProperty(
-        name='Material',
-        type=bpy.types.Material
-    )
-
-
+@register_wrap
 class ClearMaterialListButton(bpy.types.Operator):
     bl_idname = 'atlas.clear_mat_list'
     bl_label = 'Clear Material List'
@@ -327,6 +361,7 @@ def update_material_list(self, context):
     print('UPDATED MAT LIST')
 
 
+@register_wrap
 class InstallShotariya(bpy.types.Operator):
     bl_idname = "install.shotariya"
     bl_label = 'Error while loading Material Combiner:'
@@ -353,50 +388,51 @@ class InstallShotariya(bpy.types.Operator):
 
         if self.action == 'INSTALL':
             row = col.row(align=True)
-            row.label("Material Combiner is not installed!")
+            row.label(text="Material Combiner is not installed!")
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The plugin 'Material Combiner' by shotariya is required for this function.")
+            row.label(text="The plugin 'Material Combiner' by shotariya is required for this function.")
             col.separator()
             row = col.row(align=True)
-            row.label("Please download and install it manually:")
+            row.label(text="Please download and install it manually:")
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon='LOAD_FACTORY')
+            row.operator('download.shotariya', icon=globs.ICON_URL)
             col.separator()
 
         elif self.action == 'ENABLE':
             row = col.row(align=True)
-            row.label("Material Combiner is not enabled!")
+            row.label(text="Material Combiner is not enabled!")
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The plugin 'Material Combiner' by shotariya is required for this function.")
+            row.label(text="The plugin 'Material Combiner' by shotariya is required for this function.")
             col.separator()
             row = col.row(align=True)
-            row.label("Please enable it in your User Preferences.")
+            row.label(text="Please enable it in your User Preferences.")
             row.scale_y = 0.75
             col.separator()
 
         elif self.action == 'VERSION':
             row = col.row(align=True)
-            row.label("Material Combiner is outdated!")
+            row.label(text="Material Combiner is outdated!")
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The latest version is required for this function.")
+            row.label(text="The latest version is required for this function.")
             col.separator()
             row = col.row(align=True)
-            row.label("Please download and install it manually:")
+            row.label(text="Please download and install it manually:")
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon='LOAD_FACTORY')
+            row.operator('download.shotariya', icon=globs.ICON_URL)
             col.separator()
 
 
+@register_wrap
 class ShotariyaButton(bpy.types.Operator):
     bl_idname = 'download.shotariya'
     bl_label = 'Download Material Combiner'
@@ -408,6 +444,7 @@ class ShotariyaButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class CheckMaterialListButton(bpy.types.Operator):
     bl_idname = 'atlas.check_mat_list'
     bl_label = 'Check/Uncheck Materials'
@@ -454,6 +491,7 @@ def shotariya_installed():
     print(addon_name + " was successfully found!!!")
     return True
 
+# @register_wrap
 # class AutoAtlasButton(bpy.types.Operator):
 #     bl_idname = 'auto.atlas'
 #     bl_label = 'Create Atlas'
@@ -583,3 +621,27 @@ def shotariya_installed():
 #         self.report({'INFO'}, 'Auto Atlas finished!')
 #
 #         return {'FINISHED'}
+
+
+# @register_wrap
+# class ShapekeyList(bpy.types.UIList):
+#     # The draw_item function is called for each item of the collection that is visible in the list.
+#     #   data is the RNA object containing the collection,
+#     #   item is the current drawn item of the collection,
+#     #   icon is the "computed" icon for the item (as an integer, because some objects like materials or textures
+#     #   have custom icons ID, which are not available as enum items).
+#     #   active_data is the RNA object containing the active property for the collection (i.e. integer pointing to the
+#     #   active item of the collection).
+#     #   active_propname is the name of the active property (use 'getattr(active_data, active_propname)').
+#     #   index is index of the current item in the collection.
+#     #   flt_flag is the result of the filtering process for this item.
+#     #   Note: as index and flt_flag are optional arguments, you do not have to use/declare them here if you don't
+#     #         need them.
+#     def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+#         layout.label(text=item.name, translate=False, icon='SHAPEKEY_DATA')
+#         # split.prop(item, "name", text="", emboss=False, translate=False, icon='BORDER_RECT')
+#
+#
+# class Uilist_actions(bpy.types.Operator):
+#     bl_idname = "custom.list_action"
+#     bl_label = "List Action"

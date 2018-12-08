@@ -29,8 +29,10 @@ import webbrowser
 import bpy
 import random
 import tools.common
+from tools.register import register_wrap
 
 
+@register_wrap
 class CopyProtectionEnable(bpy.types.Operator):
     bl_idname = 'copyprotection.enable'
     bl_label = 'Enable Protection'
@@ -47,7 +49,7 @@ class CopyProtectionEnable(bpy.types.Operator):
         for mesh in tools.common.get_meshes_objects():
             armature = tools.common.set_default_stage()
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('EDIT')
 
             # Convert quad faces to tris first
@@ -75,7 +77,7 @@ class CopyProtectionEnable(bpy.types.Operator):
             for index, bone in enumerate(armature.pose.bones):
                 if index == 5:
                     bone_pos = bone.matrix
-                    world_pos = armature.matrix_world * bone.matrix
+                    world_pos = tools.common.matmul(armature.matrix_world, bone.matrix)
                     if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
                         xps = True
                         break
@@ -123,6 +125,7 @@ class CopyProtectionEnable(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class CopyProtectionDisable(bpy.types.Operator):
     bl_idname = 'copyprotection.disable'
     bl_label = 'Disable Protection'
@@ -133,7 +136,7 @@ class CopyProtectionDisable(bpy.types.Operator):
         for mesh in tools.common.get_meshes_objects():
             tools.common.set_default_stage()
             tools.common.unselect_all()
-            tools.common.select(mesh)
+            tools.common.set_active(mesh)
             tools.common.switch('OBJECT')
 
             for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
@@ -152,6 +155,7 @@ class CopyProtectionDisable(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ProtectionTutorialButton(bpy.types.Operator):
     bl_idname = 'copyprotection.button'
     bl_label = 'Go to Documentation'

@@ -26,8 +26,10 @@
 
 import bpy
 import tools.common
+from tools.register import register_wrap
 
 
+@register_wrap
 class ShapeKeyApplier(bpy.types.Operator):
     # Replace the 'Basis' shape key with the currently selected shape key
     bl_idname = "object.shape_key_to_basis"
@@ -37,10 +39,10 @@ class ShapeKeyApplier(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return bpy.context.object.active_shape_key_index > 0
+        return bpy.context.object.active_shape_key and bpy.context.object.active_shape_key_index > 0
 
     def execute(self, context):
-        mesh = bpy.context.scene.objects.active
+        mesh = tools.common.get_active()
 
         # Get shapekey which will be the new basis
         new_basis_shapekey = mesh.active_shape_key
@@ -113,9 +115,9 @@ class ShapeKeyApplier(bpy.types.Operator):
         # If a reversed shapekey was applied as basis, fix the name
         if ' - Reverted - Reverted' in old_basis_shapekey.name:
             old_basis_shapekey.name = old_basis_shapekey.name.replace(' - Reverted - Reverted', '')
-            self.report({'INFO'}, 'Successfully removed shapekey ' + old_basis_shapekey.name + ' from the Basis.')
+            self.report({'INFO'}, 'Successfully removed shapekey "' + old_basis_shapekey.name + '" from the Basis.')
         else:
-            self.report({'INFO'}, 'Successfully set shapekey ' + new_basis_shapekey_name + ' as the new Basis.')
+            self.report({'INFO'}, 'Successfully set shapekey "' + new_basis_shapekey_name + '" as the new Basis.')
         return {'FINISHED'}
 
 

@@ -3,6 +3,8 @@
 import bpy
 import math
 
+from mmd_tools_local.bpyutils import SceneOp
+
 class MMDCamera:
     def __init__(self, obj):
         if obj.type == 'CAMERA':
@@ -60,7 +62,7 @@ class MMDCamera:
             return MMDCamera(cameraObj)
 
         empty = bpy.data.objects.new(name='MMD_Camera', object_data=None)
-        bpy.context.scene.objects.link(empty)
+        SceneOp(bpy.context).link_object(empty)
 
         cameraObj.parent = empty
         cameraObj.data.dof_object = empty
@@ -90,7 +92,7 @@ class MMDCamera:
     def newMMDCameraAnimation(cameraObj, cameraTarget=None, scale=1.0, min_distance=0.1):
         scene = bpy.context.scene
         mmd_cam = bpy.data.objects.new(name='Camera', object_data=bpy.data.cameras.new('Camera'))
-        scene.objects.link(mmd_cam)
+        SceneOp(bpy.context).link_object(mmd_cam)
         MMDCamera.convertToMMDCamera(mmd_cam, scale=scale)
         mmd_cam_root = mmd_cam.parent
 
@@ -112,6 +114,7 @@ class MMDCamera:
 
         from math import atan
         from mathutils import Matrix, Vector
+        from mmd_tools_local.bpyutils import matmul
 
         render = scene.render
         factor = (render.resolution_y*render.pixel_aspect_y)/(render.resolution_x*render.pixel_aspect_x)
@@ -140,8 +143,8 @@ class MMDCamera:
                 cameraTarget = _target_override_func(cameraObj)
             cam_matrix_world = cameraObj.matrix_world
             cam_target_loc = cameraTarget.matrix_world.translation
-            cam_rotation = (cam_matrix_world * matrix_rotation).to_euler(mmd_cam_root.rotation_mode)
-            cam_vec = cam_matrix_world.to_3x3() * neg_z_vector
+            cam_rotation = matmul(cam_matrix_world, matrix_rotation).to_euler(mmd_cam_root.rotation_mode)
+            cam_vec = matmul(cam_matrix_world.to_3x3(), neg_z_vector)
             if cameraObj.data.type == 'ORTHO':
                 cam_dis = -(9/5) * cameraObj.data.ortho_scale
                 if cameraObj.data.sensor_fit != 'VERTICAL':

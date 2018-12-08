@@ -4,13 +4,14 @@ import bpy
 from bpy.types import Operator
 from mathutils import Vector, Quaternion
 
-import mmd_tools_local.core.model as mmd_model
+from mmd_tools_local import register_wrap
 from mmd_tools_local import bpyutils
 from mmd_tools_local import utils
 from mmd_tools_local.utils import ItemOp, ItemMoveOp
 from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.morph import FnMorph
 from mmd_tools_local.core.exceptions import MaterialNotFoundError, DivisionError
+import mmd_tools_local.core.model as mmd_model
 
 #Util functions
 def divide_vector_components(vec1, vec2):
@@ -45,6 +46,7 @@ def special_division(n1, n2):
     return n1/n2
 
 
+@register_wrap
 class AddMorph(Operator):
     bl_idname = 'mmd_tools.morph_add'
     bl_label = 'Add Morph'
@@ -63,6 +65,7 @@ class AddMorph(Operator):
             morph.data_type = 'VERTEX_GROUP'
         return {'FINISHED'}
 
+@register_wrap
 class RemoveMorph(Operator):
     bl_idname = 'mmd_tools.morph_remove'
     bl_label = 'Remove Morph'
@@ -96,6 +99,7 @@ class RemoveMorph(Operator):
             mmd_root.active_morph = max(0, mmd_root.active_morph-1)
         return {'FINISHED'}
 
+@register_wrap
 class MoveMorph(Operator, ItemMoveOp):
     bl_idname = 'mmd_tools.morph_move'
     bl_label = 'Move Morph'
@@ -113,6 +117,7 @@ class MoveMorph(Operator, ItemMoveOp):
             )
         return {'FINISHED'}
 
+@register_wrap
 class CopyMorph(Operator):
     bl_idname = 'mmd_tools.morph_copy'
     bl_label = 'Copy Morph'
@@ -147,7 +152,7 @@ class CopyMorph(Operator):
         morph_new.name = name_orig + '_copy' # trigger name check
         return {'FINISHED'}
 
-
+@register_wrap
 class AddMorphOffset(Operator):
     bl_idname = 'mmd_tools.morph_offset_add'
     bl_label = 'Add Morph Offset'
@@ -181,6 +186,7 @@ class AddMorphOffset(Operator):
 
         return { 'FINISHED' }
 
+@register_wrap
 class RemoveMorphOffset(Operator):
     bl_idname = 'mmd_tools.morph_offset_remove'
     bl_label = 'Remove Morph Offset'
@@ -223,7 +229,7 @@ class RemoveMorphOffset(Operator):
             morph.active_data = max(0, morph.active_data-1)
         return { 'FINISHED' }
 
-
+@register_wrap
 class ApplyMaterialOffset(Operator):
     bl_idname = 'mmd_tools.apply_material_morph_offset'
     bl_label = 'Apply Material Offset'
@@ -289,6 +295,7 @@ class ApplyMaterialOffset(Operator):
             bpy.data.materials.remove(mat)
         return { 'FINISHED' }
 
+@register_wrap
 class CreateWorkMaterial(Operator):
     bl_idname = 'mmd_tools.create_work_material'
     bl_label = 'Create Work Material'
@@ -354,6 +361,7 @@ class CreateWorkMaterial(Operator):
 
         return { 'FINISHED' }
 
+@register_wrap
 class ClearTempMaterials(Operator):
     bl_idname = 'mmd_tools.clear_temp_materials'
     bl_label = 'Clear Temp Materials'
@@ -382,7 +390,7 @@ class ClearTempMaterials(Operator):
                         bpy.data.materials.remove(mat)
         return { 'FINISHED' }
 
-
+@register_wrap
 class ViewBoneMorph(Operator):
     bl_idname = 'mmd_tools.view_bone_morph'
     bl_label = 'View Bone Morph'
@@ -390,6 +398,7 @@ class ViewBoneMorph(Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        from mmd_tools_local.bpyutils import matmul
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
         mmd_root=root.mmd_root
@@ -402,9 +411,10 @@ class ViewBoneMorph(Operator):
             if p_bone:
                 p_bone.bone.select = True
                 p_bone.location += morph_data.location
-                p_bone.rotation_quaternion *= morph_data.rotation
+                p_bone.rotation_quaternion = matmul(p_bone.rotation_quaternion, morph_data.rotation)
         return { 'FINISHED' }
 
+@register_wrap
 class ApplyBoneMorph(Operator):
     bl_idname = 'mmd_tools.apply_bone_morph'
     bl_label = 'Apply Bone Morph'
@@ -433,6 +443,7 @@ class ApplyBoneMorph(Operator):
                 p_bone.bone.select = False
         return { 'FINISHED' }
 
+@register_wrap
 class SelectRelatedBone(Operator):
     bl_idname = 'mmd_tools.select_bone_morph_offset_bone'
     bl_label = 'Select Related Bone'
@@ -450,6 +461,7 @@ class SelectRelatedBone(Operator):
         utils.selectSingleBone(context, armature, morph_data.bone)
         return { 'FINISHED' }
 
+@register_wrap
 class EditBoneOffset(Operator): 
     bl_idname = 'mmd_tools.edit_bone_morph_offset'
     bl_label = 'Edit Related Bone'
@@ -470,6 +482,7 @@ class EditBoneOffset(Operator):
         utils.selectSingleBone(context, armature, p_bone.name)
         return { 'FINISHED' }   
 
+@register_wrap
 class ApplyBoneOffset(Operator):
     bl_idname = 'mmd_tools.apply_bone_morph_offset'
     bl_label = 'Apply Bone Morph Offset'
@@ -489,7 +502,7 @@ class ApplyBoneOffset(Operator):
         morph_data.rotation = p_bone.rotation_quaternion
         return { 'FINISHED' }  
 
-
+@register_wrap
 class ViewUVMorph(Operator):
     bl_idname = 'mmd_tools.view_uv_morph'
     bl_label = 'View UV Morph'
@@ -516,7 +529,7 @@ class ViewUVMorph(Operator):
         with bpyutils.select_object(meshObj) as data:
             morph = mmd_root.uv_morphs[mmd_root.active_morph]
             mesh = meshObj.data
-            uv_textures = mesh.uv_textures
+            uv_textures = getattr(mesh, 'uv_textures', mesh.uv_layers)
 
             base_uv_layers = [l for l in mesh.uv_layers if not l.name.startswith('_')]
             if morph.uv_index >= len(base_uv_layers):
@@ -549,6 +562,7 @@ class ViewUVMorph(Operator):
         meshObj.select = selected
         return { 'FINISHED' }
 
+@register_wrap
 class ClearUVMorphView(Operator):
     bl_idname = 'mmd_tools.clear_uv_morph_view'
     bl_label = 'Clear UV Morph View'
@@ -561,7 +575,7 @@ class ClearUVMorphView(Operator):
         rig = mmd_model.Model(root)
         for m in rig.meshes():
             mesh = m.data
-            uv_textures = mesh.uv_textures
+            uv_textures = getattr(mesh, 'uv_textures', mesh.uv_layers)
             for t in uv_textures:
                 if t.name.startswith('__uv.'):
                     uv_textures.remove(t)
@@ -585,6 +599,7 @@ class ClearUVMorphView(Operator):
                 bpy.data.actions.remove(act)
         return { 'FINISHED' }
 
+@register_wrap
 class EditUVMorph(Operator):
     bl_idname = 'mmd_tools.edit_uv_morph'
     bl_label = 'Edit UV Morph'
@@ -596,8 +611,8 @@ class EditUVMorph(Operator):
         obj = context.active_object
         if obj.type != 'MESH':
             return False
-        uv_textures = obj.data.uv_textures
-        return uv_textures.active and uv_textures.active.name.startswith('__uv.')
+        active_uv_layer = obj.data.uv_layers.active
+        return active_uv_layer and active_uv_layer.name.startswith('__uv.')
 
     def execute(self, context):
         obj = context.active_object
@@ -623,6 +638,7 @@ class EditUVMorph(Operator):
         meshObj.select = selected
         return { 'FINISHED' }
 
+@register_wrap
 class ApplyUVMorph(Operator):
     bl_idname = 'mmd_tools.apply_uv_morph'
     bl_label = 'Apply UV Morph'
@@ -634,8 +650,8 @@ class ApplyUVMorph(Operator):
         obj = context.active_object
         if obj.type != 'MESH':
             return False
-        uv_textures = obj.data.uv_textures
-        return uv_textures.active and uv_textures.active.name.startswith('__uv.')
+        active_uv_layer = obj.data.uv_layers.active
+        return active_uv_layer and active_uv_layer.name.startswith('__uv.')
 
     def execute(self, context):
         obj = context.active_object
@@ -649,7 +665,7 @@ class ApplyUVMorph(Operator):
             morph = mmd_root.uv_morphs[mmd_root.active_morph]
             mesh = meshObj.data
 
-            base_uv_name = mesh.uv_textures.active.name[5:]
+            base_uv_name = mesh.uv_layers.active.name[5:]
             if base_uv_name not in mesh.uv_layers:
                 self.report({'ERROR'}, ' * UV map "%s" not found'%base_uv_name)
                 return {'CANCELLED'}

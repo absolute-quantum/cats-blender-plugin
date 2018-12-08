@@ -27,6 +27,7 @@
 import bpy
 import globs
 import tools.common
+from tools.register import register_wrap
 
 # wm = bpy.context.window_manager
 # wm.progress_begin(0, len(bone_merge))
@@ -34,6 +35,7 @@ import tools.common
 # wm.progress_end()
 
 
+@register_wrap
 class BoneMergeButton(bpy.types.Operator):
     bl_idname = 'bone.merge'
     bl_label = 'Merge Bones'
@@ -125,7 +127,7 @@ class BoneMergeButton(bpy.types.Operator):
 
                 # Mix the weights
                 tools.common.set_default_stage()
-                tools.common.select(mesh)
+                tools.common.set_active(mesh)
 
                 vg = mesh.vertex_groups.get(bone_name)
                 vg2 = mesh.vertex_groups.get(parent_name)

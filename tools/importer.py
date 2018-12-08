@@ -25,11 +25,14 @@
 
 import os
 import bpy
+import globs
 import webbrowser
 import tools.common
 import tools.settings
 import tools.eyetracking
 import bpy_extras.io_utils
+from tools.common import version_2_79_or_older
+from tools.register import register_wrap
 
 mmd_tools_installed = False
 try:
@@ -39,6 +42,7 @@ except:
     pass
 
 
+@register_wrap
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = 'importer.import_any_model'
     bl_label = 'Import Any Model'
@@ -55,14 +59,14 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
     directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
 
-    if bpy.app.version < (2, 79, 9):
+    if version_2_79_or_older():
         filter_glob = bpy.props.StringProperty(
             default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx",
             options={'HIDDEN'}
         )
     else:
         filter_glob = bpy.props.StringProperty(
-            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx;*.dae",
+            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx;*.dae;*.vrm",
             options={'HIDDEN'}
         )
     text1 = bpy.props.BoolProperty(
@@ -74,9 +78,15 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     def execute(self, context):
         print(self.directory)
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
+        # Import the file using their corresponding importer
         for f in self.files:
             file_name = f['name']
-            filepath = os.path.join(self.directory, file_name)
+            file_path = os.path.join(self.directory, file_name)
             file_ending = file_name.split('.')[-1].lower()
 
             # MMD
@@ -97,7 +107,8 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             elif file_ending == 'xps' or file_ending == 'mesh' or file_ending == 'ascii':
                 try:
                     bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
-                                                   filepath=filepath)
+                                                   filepath=file_path,
+                                                   colorizeMesh=False)
                 except AttributeError:
                     bpy.ops.install.xps('INVOKE_DEFAULT')
 
@@ -114,7 +125,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             elif file_ending == 'fbx':
                 try:
                     bpy.ops.import_scene.fbx('EXEC_DEFAULT',
-                                             filepath=filepath,
+                                             filepath=file_path,
                                              automatic_bone_orientation=True)
                 except (TypeError, ValueError):
                     bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
@@ -129,15 +140,23 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             elif file_ending == 'dae':
                 try:
                     bpy.ops.wm.collada_import('EXEC_DEFAULT',
-                                              filepath=filepath,
+                                              filepath=file_path,
                                               fix_orientation=True,
                                               auto_connect=True)
                 except (TypeError, ValueError):
                     bpy.ops.wm.collada_import('INVOKE_DEFAULT')
 
+            elif file_ending == 'vrm':
+                try:
+                    bpy.ops.import_scene.vrm('EXEC_DEFAULT',
+                                             filepath=file_path)
+                except (TypeError, ValueError):
+                    bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
+
         return {'FINISHED'}
 
 
+@register_wrap
 class ModelsPopup(bpy.types.Operator):
     bl_idname = "model.popup"
     bl_label = "Select which you want to import:"
@@ -166,8 +185,12 @@ class ModelsPopup(bpy.types.Operator):
         row.scale_y = 1.3
         row.operator('importer.import_source')
         row.operator('importer.import_fbx')
+        row = col.row(align=True)
+        row.scale_y = 1.3
+        row.operator('importer.import_vrm')
 
 
+@register_wrap
 class ImportMMD(bpy.types.Operator):
     bl_idname = 'importer.import_mmd'
     bl_label = 'MMD'
@@ -176,6 +199,10 @@ class ImportMMD(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
 
         if not mmd_tools_installed:
             bpy.ops.enable.mmd('INVOKE_DEFAULT')
@@ -191,6 +218,7 @@ class ImportMMD(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ImportXPS(bpy.types.Operator):
     bl_idname = 'importer.import_xps'
     bl_label = 'XNALara'
@@ -199,14 +227,20 @@ class ImportXPS(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
         try:
-            bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
+            bpy.ops.xps_tools.import_model('INVOKE_DEFAULT', colorizeMesh=False)
         except AttributeError:
             bpy.ops.install.xps('INVOKE_DEFAULT')
 
         return {'FINISHED'}
 
 
+@register_wrap
 class ImportSource(bpy.types.Operator):
     bl_idname = 'importer.import_source'
     bl_label = 'Source'
@@ -215,6 +249,11 @@ class ImportSource(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
         try:
             bpy.ops.import_scene.smd('INVOKE_DEFAULT')
         except AttributeError:
@@ -223,6 +262,7 @@ class ImportSource(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ImportFBX(bpy.types.Operator):
     bl_idname = 'importer.import_fbx'
     bl_label = 'FBX'
@@ -231,6 +271,11 @@ class ImportFBX(bpy.types.Operator):
 
     def execute(self, context):
         tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
         try:
             bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=True)
         except (TypeError, ValueError):
@@ -239,6 +284,29 @@ class ImportFBX(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
+class ImportVRM(bpy.types.Operator):
+    bl_idname = 'importer.import_vrm'
+    bl_label = 'VRM'
+    bl_description = 'Import a VRM model (.vrm)'
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        tools.common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if version_2_79_or_older():
+            context.scene.layers[0] = True
+
+        try:
+            bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
+        except AttributeError:
+            bpy.ops.install.vrm('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
+
+
+@register_wrap
 class InstallXPS(bpy.types.Operator):
     bl_idname = "install.xps"
     bl_label = "XPS Tools is not installed or enabled!"
@@ -259,17 +327,18 @@ class InstallXPS(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.label("The plugin 'XPS Tools' is required for this function.")
+        row.label(text="The plugin 'XPS Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
-        row.label("If it is not enabled please enable it in your User Preferences.")
+        row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
-        row.label("If it is not installed please download and install it manually.")
+        row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.xps_tools', icon='LOAD_FACTORY')
+        row.operator('importer.download_xps_tools', icon=globs.ICON_URL)
 
 
+@register_wrap
 class InstallSource(bpy.types.Operator):
     bl_idname = "install.source"
     bl_label = "Source Tools is not installed or enabled!"
@@ -290,17 +359,53 @@ class InstallSource(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.label("The plugin 'Source Tools' is required for this function.")
+        row.label(text="The plugin 'Source Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
-        row.label("If it is not enabled please enable it in your User Preferences.")
+        row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
-        row.label("If it is not installed please download and install it manually.")
+        row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.source_tools', icon='LOAD_FACTORY')
+        row.operator('importer.download_source_tools', icon=globs.ICON_URL)
 
 
+@register_wrap
+class InstallVRM(bpy.types.Operator):
+    bl_idname = "install.vrm"
+    bl_label = "VRM Importer is not installed or enabled!"
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.label(text="The plugin 'VRM Importer' is required for this function.")
+        col.separator()
+        row = col.row(align=True)
+        row.label(text="If it is not enabled please enable it in your User Preferences.")
+        row = col.row(align=True)
+        row.label(text="Currently you have to select 'Testing' in the addons settings")
+        col.separator()
+        row = col.row(align=True)
+        row.label(text="If it is not installed please download and install it manually.")
+        col.separator()
+        row = col.row(align=True)
+        row.operator('importer.download_vrm', icon=globs.ICON_URL)
+
+
+@register_wrap
 class EnableMMD(bpy.types.Operator):
     bl_idname = "enable.mmd"
     bl_label = "Mmd_tools is not enabled!"
@@ -321,45 +426,64 @@ class EnableMMD(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.label("The plugin 'mmd_tools' is required for this function.")
+        row.label(text="The plugin 'mmd_tools' is required for this function.")
         row = col.row(align=True)
-        row.label("Please restart Blender.")
+        row.label(text="Please restart Blender.")
 
 
-def popup_install_xps(self, context):
-    layout = self.layout
-    col = layout.column(align=True)
+# def popup_install_xps(self, context):
+#     layout = self.layout
+#     col = layout.column(align=True)
+#
+#     row = col.row(align=True)
+#     row.label(text="The plugin 'XPS Tools' is required for this function.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.label(text="If it is not enabled please enable it in your User Preferences.")
+#     row = col.row(align=True)
+#     row.label(text="If it is not installed please click here to download it and then install it manually.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.operator('importer.download_xps_tools', icon=globs.ICON_URL)
+#
+#
+# def popup_install_source(self, context):
+#     layout = self.layout
+#     col = layout.column(align=True)
+#
+#     row = col.row(align=True)
+#     row.label(text="The plugin 'Blender Source Tools' is required for this function.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.label(text="If it is not enabled please enable it in your User Preferences.")
+#     row = col.row(align=True)
+#     row.label(text="If it is not installed please click here to download it and then install it manually.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.operator('importer.download_source_tools', icon=globs.ICON_URL)
+#
+#
+# def popup_install_vrm(self, context):
+#     layout = self.layout
+#     col = layout.column(align=True)
+#
+#     row = col.row(align=True)
+#     row.label(text="The plugin 'VRM Importer' is required for this function.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.label(text="If it is not enabled please enable it in your User Preferences.")
+#     row = col.row(align=True)
+#     row.label(text="Currently you have to select 'Testing' in the addons settings")
+#     row = col.row(align=True)
+#     row.label(text="If it is not installed please click here to download it and then install it manually.")
+#     col.separator()
+#     row = col.row(align=True)
+#     row.operator('importer.download_vrm', icon=globs.ICON_URL)
 
-    row = col.row(align=True)
-    row.label("The plugin 'XPS Tools' is required for this function.")
-    col.separator()
-    row = col.row(align=True)
-    row.label("If it is not enabled please enable it in your User Preferences.")
-    row = col.row(align=True)
-    row.label("If it is not installed please click here to download it and then install it manually.")
-    col.separator()
-    row = col.row(align=True)
-    row.operator('importer.xps_tools', icon='LOAD_FACTORY')
 
-
-def popup_install_source(self, context):
-    layout = self.layout
-    col = layout.column(align=True)
-
-    row = col.row(align=True)
-    row.label("The plugin 'Blender Source Tools' is required for this function.")
-    col.separator()
-    row = col.row(align=True)
-    row.label("If it is not enabled please enable it in your User Preferences.")
-    row = col.row(align=True)
-    row.label("If it is not installed please click here to download it and then install it manually.")
-    col.separator()
-    row = col.row(align=True)
-    row.operator('importer.source_tools', icon='LOAD_FACTORY')
-
-
+@register_wrap
 class XpsToolsButton(bpy.types.Operator):
-    bl_idname = 'importer.xps_tools'
+    bl_idname = 'importer.download_xps_tools'
     bl_label = 'Download XPS Tools'
 
     def execute(self, context):
@@ -369,8 +493,9 @@ class XpsToolsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class SourceToolsButton(bpy.types.Operator):
-    bl_idname = 'importer.source_tools'
+    bl_idname = 'importer.download_source_tools'
     bl_label = 'Download Source Tools'
 
     def execute(self, context):
@@ -380,6 +505,27 @@ class SourceToolsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
+class SourceToolsButton(bpy.types.Operator):
+    bl_idname = 'importer.download_vrm'
+    bl_label = 'Download VRM Importer'
+
+    def execute(self, context):
+        webbrowser.open('https://github.com/iCyP/VRM_IMPORTER')
+
+        self.report({'INFO'}, 'VRM Importer link opened')
+        return {'FINISHED'}
+
+
+# Export checks
+_meshes_count = 0
+_meshes_too_big = {}
+_mat_list = []
+_broken_shapes = []
+_textures_found = False
+
+
+@register_wrap
 class ExportModel(bpy.types.Operator):
     bl_idname = 'importer.export_model'
     bl_label = 'Export Model'
@@ -389,55 +535,76 @@ class ExportModel(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     action = bpy.props.EnumProperty(
-        items=(('CHECK', '', ''),
-               ('NO_CHECK', '', '')))
+        items=(('CHECK', '', 'Please Ignore'),
+               ('NO_CHECK', '', 'Please Ignore')))
 
     def execute(self, context):
         # Check for warnings
-        print(self.action)
         if not self.action == 'NO_CHECK':
-            mat_list = []
-            meshes = tools.common.get_meshes_objects()
-            textures_found = False
+            global _meshes_count, _meshes_too_big, _mat_list, _broken_shapes, _textures_found
 
-            if len(meshes) > 10:
-                bpy.ops.display.error('INVOKE_DEFAULT')
-                return {'FINISHED'}
+            # Reset export checks
+            _meshes_count = 0
+            _meshes_too_big = {}
+            _mat_list = []
+            _broken_shapes = []
+            _textures_found = False
 
-            for mesh in meshes:
-                if len(mesh.data.polygons) >= 65535:
-                    bpy.ops.display.error('INVOKE_DEFAULT')
-                    return {'FINISHED'}
+            # Check for export warnings
+            for mesh in tools.common.get_meshes_objects():
+                # Check mesh count
+                _meshes_count += 1
+
+                # Check tris count
+                tris = len(mesh.data.polygons)
+                if tris >= 65535:
+                    _meshes_too_big[mesh.name] = tris
+
+                # Check material count
                 for mat_slot in mesh.material_slots:
-                    if mat_slot and mat_slot.material and mat_slot.material.name not in mat_list:
-                        mat_list.append(mat_slot.material.name)
+                    if mat_slot and mat_slot.material and mat_slot.material.name not in _mat_list:
+                        _mat_list.append(mat_slot.material.name)
 
-                        if not textures_found:
-                            for tex_slot in mat_slot.material.texture_slots:
-                                if tex_slot and tex_slot.texture:
-                                    tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                                    if os.path.isfile(tex_path):
-                                        textures_found = True
-                                        break
+                # Check if any textures are found
+                        if version_2_79_or_older():
+                            if not _textures_found:
+                                for tex_slot in mat_slot.material.texture_slots:
+                                    if tex_slot and tex_slot.texture:
+                                        tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                                        if os.path.isfile(tex_path):
+                                            _textures_found = True
+                                            break
+                        else:
+                            _textures_found = True
+                            # TODO
 
+                # Check if there are broken shapekeys
                 if tools.common.has_shapekeys(mesh):
                     for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
                         if i == 0:
                             continue
-                        for i2, vert in enumerate(shapekey.data):
+                        vert_count = 0
+                        for vert in shapekey.data:
+                            vert_count += 1
                             for coord in vert.co:
-                                if coord > 10000:
-                                    bpy.ops.display.error('INVOKE_DEFAULT')
-                                    return {'FINISHED'}
-                            if i2 >= 4:
+                                if coord >= 10000:
+                                    _broken_shapes.append(shapekey.name)
+                                    vert_count = 1000
+                                    break
+                            # Only check the first 10 vertices of this shapekey
+                            if vert_count == 1000:
                                 break
 
-            if not textures_found and tools.settings.get_embed_textures():
-                bpy.ops.display.error('INVOKE_DEFAULT')
-
-            if len(mat_list) > 10:
+            # Check if a warning should be shown
+            if _meshes_count > 1 \
+                    or len(_meshes_too_big) > 0 \
+                    or len(_mat_list) > 4 \
+                    or len(_broken_shapes) > 0\
+                    or not _textures_found and tools.settings.get_embed_textures():
                 bpy.ops.display.error('INVOKE_DEFAULT')
                 return {'FINISHED'}
+
+        # Continue if there are no errors or the check was skipped
 
         # Check if copy protection is enabled
         mesh_smooth_type = 'OFF'
@@ -455,25 +622,8 @@ class ExportModel(bpy.types.Operator):
 
         # Check if textures are found and if they should be embedded
         path_mode = 'AUTO'
-        if tools.settings.get_embed_textures():
+        if _textures_found and tools.settings.get_embed_textures():
             path_mode = 'COPY'
-
-        textures_found = False
-        for mesh in tools.common.get_meshes_objects():
-            if textures_found:
-                break
-            for mat_slot in mesh.material_slots:
-                if textures_found:
-                    break
-                if mat_slot and mat_slot.material:
-                    for tex_slot in mat_slot.material.texture_slots:
-                        if tex_slot and tex_slot.texture:
-                            tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                            if os.path.isfile(tex_path):
-                                textures_found = True
-                                break
-        if not textures_found:
-            path_mode = 'AUTO'
 
         # Open export window
         try:
@@ -492,6 +642,7 @@ class ExportModel(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class ErrorDisplay(bpy.types.Operator):
     bl_idname = "display.error"
     bl_label = "Warning:"
@@ -506,41 +657,12 @@ class ErrorDisplay(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        self.meshes_too_big = {}
-        self.mat_list = []
-        self.meshes_count = 0
-        self.broken_shapes = []
-        self.textures_found = False
-        for mesh in tools.common.get_meshes_objects():
-            tris = len(mesh.data.polygons)
-            if tris >= 65535:
-                self.meshes_too_big[mesh.name] = tris
-            for mat_slot in mesh.material_slots:
-                if mat_slot and mat_slot.material and mat_slot.material.name not in self.mat_list:
-                    self.mat_list.append(mat_slot.material.name)
-
-                    if not self.textures_found:
-                        for tex_slot in mat_slot.material.texture_slots:
-                            if tex_slot and tex_slot.texture:
-                                tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                                if os.path.isfile(tex_path):
-                                    self.textures_found = True
-                                    break
-            self.meshes_count += 1
-
-            if tools.common.has_shapekeys(mesh):
-                for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                    if i == 0:
-                        continue
-                    for i2, vert in enumerate(shapekey.data):
-                        for coord in vert.co:
-                            if coord > 10000:
-                                print(shapekey.name, coord)
-                                self.broken_shapes.append(shapekey.name)
-                                i2 = 10
-                                break
-                        if i2 >= 4:
-                            break
+        global _meshes_count, _meshes_too_big, _mat_list, _broken_shapes, _textures_found
+        self.meshes_count = _meshes_count
+        self.meshes_too_big = _meshes_too_big
+        self.mat_list = _mat_list
+        self.broken_shapes = _broken_shapes
+        self.textures_found = _textures_found
 
         dpi_value = bpy.context.user_preferences.system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
@@ -556,114 +678,123 @@ class ErrorDisplay(bpy.types.Operator):
         if self.meshes_too_big:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Meshes are too big!", icon='ERROR')
+            row.label(text="Meshes are too big!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("The following meshes have more than 65534 tris:")
+            row.label(text="The following meshes have more than 65534 tris:")
             col.separator()
 
             for mesh, tris in self.meshes_too_big.items():
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label("  - " + mesh + ' (' + str(tris) + ' tris)')
+                row.label(text="  - " + mesh + ' (' + str(tris) + ' tris)')
 
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Unity will split these meshes in half and you will loose your shape keys.")
+            row.label(text="Unity will split these meshes in half and you will loose your shape keys.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("You should decimate them before you export this model.")
+            row.label(text="You should decimate them before you export this model.")
             col.separator()
-            col.separator()
-
-        if len(self.mat_list) > 10:
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label("Model unoptimized!", icon='ERROR')
-            col.separator()
-
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label("This model has " + str(len(self.mat_list)) + " materials!")
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label("It will be extremely unoptimized and cause lag for you and others.")
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label("Please be considerate and create a texture atlas.")
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label("The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
             col.separator()
             col.separator()
 
-        if self.meshes_count > 10:
+        if len(self.mat_list) > 4:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Model unoptimized!", icon='ERROR')
+            row.label(text="Model unoptimized!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This model has " + str(self.meshes_count) + " meshes!")
+            row.label(text="This model has " + str(len(self.mat_list)) + " materials!")
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("It will be extremely unoptimized and cause lag for you and others.")
+            row.label(text="It will be extremely unoptimized and cause lag for you and others.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Please be considerate and join your meshes.")
+            row.label(text="Please be considerate and create a texture atlas.")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
+            col.separator()
+            col.separator()
+            col.separator()
+
+        if self.meshes_count > 1:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Model unoptimized!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="This model has " + str(self.meshes_count) + " meshes!")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="It will be extremely unoptimized and cause lag for you and others.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Please be considerate and join your meshes, it's easy:")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1
+            row.operator('armature_manual.join_meshes', text='Join Meshes', icon='AUTOMERGE_ON')
+            col.separator()
             col.separator()
             col.separator()
 
         if self.broken_shapes:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Broken shapekeys!", icon='ERROR')
+            row.label(text="Broken shapekeys!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This model has " + str(len(self.broken_shapes)) + " broken shapekey(s):")
+            row.label(text="This model has " + str(len(self.broken_shapes)) + " broken shapekey(s):")
             col.separator()
 
             for shapekey in self.broken_shapes:
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label("  - " + shapekey)
+                row.label(text="  - " + shapekey)
 
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("You will not be able to upload this model until you fix these shapekeys.")
+            row.label(text="You will not be able to upload this model until you fix these shapekeys.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Either delete or repair them before export.")
+            row.label(text="Either delete or repair them before export.")
+            col.separator()
             col.separator()
             col.separator()
 
         if not self.textures_found and tools.settings.get_embed_textures():
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("No textures found!", icon='ERROR')
+            row.label(text="No textures found!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This model has no textures assigned but you have 'Embed Textures' enabled.")
+            row.label(text="This model has no textures assigned but you have 'Embed Textures' enabled.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("Therefore, no textures will embedded into the FBX.")
+            row.label(text="Therefore, no textures will embedded into the FBX.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label("This is not an issue, but you will have to import the textures manually into Unity.")
+            row.label(text="This is not an issue, but you will have to import the textures manually into Unity.")
+            col.separator()
             col.separator()
             col.separator()
 
         row = col.row(align=True)
-        row.operator('importer.export_model', text='Continue to Export', icon='LOAD_FACTORY').action = 'NO_CHECK'
+        row.operator('importer.export_model', text='Continue to Export', icon=globs.ICON_EXPORT).action = 'NO_CHECK'

@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.11.5)
+# Cats Blender Plugin (0.12.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -36,7 +36,7 @@ https://catsblenderplugin.com
 
 ## Requirement
 
- - Blender 2.79 **(run as administrator)**
+ - Blender 2.79 or 2.80 **(run as administrator)**
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
 
 ## Installation
@@ -86,8 +86,6 @@ This tries to completely fix your model with one click.
   - Deleting unused vertex groups
   - Using the correct shading
   - Making it compatible with Full Body Tracking
- 
- **special thanks to @ProfessorSnep#0001, @Mimi#4114, @persia#0123 and @Gallium#7020 <3 <3**
 
 ##### Start Pose Mode
 - Lets you test how bones will move.
@@ -101,7 +99,7 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/jlxQCvH.png)
+![](https://i.imgur.com/bGDy5wn.png)
 
 ##### Translation
 - Translate certain entities from any japanese to english.
@@ -111,16 +109,16 @@ This uses an internal dictionary and Google Translate.
 - Separates a mesh by materials or loose parts
 
 ##### Join meshes
-- Joins all meshes together
+- Joins all/selected meshes together
+
+##### Merge Weights
+- Deletes the selected bones and adds their weight to their respective parents
 
 ##### Delete Zero Weight Bones
 - Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices
 
 ##### Delete Constraints
 - Removes constrains between bones causing specific bone movement as these are not used by VRChat
-
-##### Merge Weights
-- Deletes the selected bones and adds their weight to their respective parents
 
 ##### Recalculate Normals
 - Makes normals point inside of the selected mesh
@@ -252,8 +250,8 @@ This works by checking all bones and trying to figure out if they can be grouped
 ### Useful Tips:
 - Split transparent and non-transparent textures into separate atlases to avoid transparency issues
 - Make sure that the created textures are not too big, because Unity will downscale them to 2048x2048. 
-  Split them across multiple atlases or reduce the texture size manually beforehand
-- You can also tell Unity to use up to 8k textures.
+  Split them across multiple atlases or reduce the individual texture sizes. This can be easily done in the MatCombiner tab.
+- You can tell Unity to use up to 8k textures.
   Do so by selecting the texture and then choose a different Max Size and/or Compression in the inspector:
   https://i.imgur.com/o01T4Gb.png
 
@@ -325,9 +323,9 @@ People that try to steal your avatar will then only see a box of mangled waifu t
 - Applies the selected shape key as the new Basis and creates a reverted shape key from the selected one.
 
 
-## Update Plugin
+## Settings and Updates
 
-![](https://i.imgur.com/ltcTRlR.png)
+![](https://i.imgur.com/hYy7gD8.png)
 
 **This plugin has an auto updater.**
 It checks for a new version automatically once every day.
@@ -335,10 +333,56 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.12.0
+- **Model**:
+  - Made VRoid (.vrm) models compatible
+  - Made Koikatsu (.pmx) models compatible
+  - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
+  - Pose to Shapekey now asks for a shapekey name first
+  - Added separate buttons to enable and disable the Full Body tracking fix
+  - Improved Export button warnings
+  - Pose Mode now always makes the armature selectable
+  - Fixed meshes being deleted when a different layer than 0 was visible
+  - Fixed all bones being deleted on .dae models
+- **Model Options**:
+  - Put some model options under a new "Show More Options" button
+  - Added "Merge Weights To Active" button
+  - Added "Duplicate Bones" button
+  - Join Meshes now removes subsurface modifiers and applies mirror modifiers
+- **Custom Model Creation**:
+  - Attach Mesh and Merge Armatures no longer remove the full body tracking fix
+- **Importer**:
+  - Added VRM Importer
+    - Open the import menu to see the VRM button
+    - If its not installed it will provide you with a download link
+  - XNALara no longer randomly colorizes meshes
+    - This makes combining materials much easier
+- **Translations**:
+  - Locally stored Google translations no longer get deleted after 30 days
+  - Added a button to the settings menu to manually delete all local Google translations
+- **Eye Tracking**:
+  - Eyes will no longer be created in weird spots when the weight paint is off (thanks to **zaCade** for finding the cause of this!)
+  - Fixed "Reset Rotation" sometimes not resetting the rotation
+- **Visemes**:
+  - Selecting the "Basis" shapekey is no longer allowed
+- **Optimization**:
+  - Added support for Material Combiner 2.0
+- **Shapekeys**:
+  - Fixed a bug in "Apply Selected Shapekey as Basis"
+- **Updater**:
+  - The settings and locally stored Google translations no longer get reset during a CATS update
+- **General**:
+  - Updated CATS to Blender 2.8
+    - It is still compatible to Blender 2.79 and will stay compatible
+    - "Combine Materials", "Create Atlas" and "Custom Model Creation" is not yet working in 2.8
+  - Updated mmd_tools (for 2.8 compatibility)
+  - Huge UI codebase cleanup
+  - Loads of bug fixes
+
 #### 0.11.5
 - **General**:
   - Fixed showing the wrong version number in CATS
-
+ 
 #### 0.11.4
 - **Translations**:
   - Fixed translations breaking due to a Google Translate API change (Thanks **BlueLament** for the fix!)

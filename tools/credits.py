@@ -25,8 +25,10 @@
 
 import bpy
 import webbrowser
+from tools.register import register_wrap
 
 
+@register_wrap
 class ForumButton(bpy.types.Operator):
     bl_idname = 'credits.forum'
     bl_label = 'Go to the Forums'
@@ -38,6 +40,7 @@ class ForumButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class DiscordButton(bpy.types.Operator):
     bl_idname = 'credits.discord'
     bl_label = 'Join our Discord'
@@ -49,6 +52,7 @@ class DiscordButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+@register_wrap
 class PatchnotesButton(bpy.types.Operator):
     bl_idname = 'credits.patchnotes'
     bl_label = 'Latest Patchnotes'

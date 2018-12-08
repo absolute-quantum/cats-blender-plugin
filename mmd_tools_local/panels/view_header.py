@@ -2,6 +2,9 @@
 
 from bpy.types import Header
 
+from mmd_tools_local import register_wrap
+
+@register_wrap
 class MMDViewHeader(Header):
     bl_space_type = 'VIEW_3D'
 

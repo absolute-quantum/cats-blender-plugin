@@ -3,6 +3,7 @@ import re
 
 import bpy
 from mmd_tools_local import bpyutils
+from mmd_tools_local.bpyutils import SceneOp
 from mmd_tools_local.bpyutils import ObjectOp
 from mmd_tools_local.bpyutils import TransformConstraintOp
 
@@ -16,7 +17,7 @@ class FnMorph(object):
     def storeShapeKeyOrder(cls, obj, shape_key_names):
         if len(shape_key_names) < 1:
             return
-        assert(bpy.context.scene.objects.active == obj)
+        assert(SceneOp(bpy.context).active_object == obj)
         if obj.data.shape_keys is None:
             bpy.ops.object.shape_key_add()
 
@@ -33,7 +34,7 @@ class FnMorph(object):
         key_blocks = obj.data.shape_keys.key_blocks
         for name in shape_key_names:
             if name not in key_blocks:
-                obj.shape_key_add(name)
+                obj.shape_key_add(name=name)
             elif len(key_blocks) > 1:
                 __move_to_bottom(key_blocks, name)
 
@@ -41,17 +42,14 @@ class FnMorph(object):
     def fixShapeKeyOrder(cls, obj, shape_key_names):
         if len(shape_key_names) < 1:
             return
-        assert(bpy.context.scene.objects.active == obj)
+        assert(SceneOp(bpy.context).active_object == obj)
         key_blocks = getattr(obj.data.shape_keys, 'key_blocks', None)
         if key_blocks is None:
             return
         if bpy.app.version < (2, 73, 0):
             len_key_blocks = len(key_blocks)
-            for ii, name in enumerate(reversed(shape_key_names)):
-                idx = key_blocks.find(name)
-                if idx < 0:
-                    continue
-                obj.active_shape_key_index = idx
+            for ii, name in enumerate(x for x in reversed(shape_key_names) if x in key_blocks):
+                obj.active_shape_key_index = idx = key_blocks.find(name)
                 offset = (len_key_blocks - 1 - idx) - ii
                 move_type = 'UP' if offset < 0 else 'DOWN'
                 for move in range(abs(offset)):
@@ -106,7 +104,7 @@ class FnMorph(object):
                 ObjectOp(obj).shape_key_remove(key_blocks[dest_name])
             obj.active_shape_key_index = key_blocks.find(src_name)
             obj.show_only_shape_key, last = True, obj.show_only_shape_key
-            obj.shape_key_add(dest_name, from_mix=True)
+            obj.shape_key_add(name=dest_name, from_mix=True)
             obj.show_only_shape_key = last
             obj.active_shape_key_index = key_blocks.find(dest_name)
 
@@ -224,9 +222,9 @@ class _MorphSlider:
             obj = bpy.data.objects.new(name='.placeholder', object_data=bpy.data.meshes.new('.placeholder'))
             obj.mmd_type = 'PLACEHOLDER'
             obj.parent = root
-            bpy.context.scene.objects.link(obj)
+            SceneOp(bpy.context).link_object(obj)
         if obj and obj.data.shape_keys is None:
-            key = obj.shape_key_add('--- morph sliders ---')
+            key = obj.shape_key_add(name='--- morph sliders ---')
             key.mute = True
         return obj
 
@@ -236,7 +234,7 @@ class _MorphSlider:
             arm = bpy.data.objects.new(name='.dummy_armature', object_data=bpy.data.armatures.new(name='.dummy_armature'))
             arm.mmd_type = 'PLACEHOLDER'
             arm.parent = obj
-            bpy.context.scene.objects.link(arm)
+            SceneOp(bpy.context).link_object(arm)
             arm.data.draw_type = 'STICK'
         return arm
 
@@ -264,7 +262,7 @@ class _MorphSlider:
             #if name[-1] == '\\': # fix driver's bug???
             #    m.name = name = name + ' '
             if name and name not in morph_key_blocks:
-                obj.shape_key_add(name)
+                obj.shape_key_add(name=name)
 
 
     @staticmethod
@@ -346,7 +344,7 @@ class _MorphSlider:
 
                 name_bind = 'mmd_bind%s'%hash(morph_key_blocks[kb_name])
                 if name_bind not in key_blocks:
-                    mesh.shape_key_add(name_bind)
+                    mesh.shape_key_add(name=name_bind)
                 kb_bind = key_blocks[name_bind]
                 kb_bind.relative_key = kb
                 kb_bind.slider_min = -10

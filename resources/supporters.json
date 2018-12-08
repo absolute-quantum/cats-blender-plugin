@@ -1,17 +1,24 @@
 {
   "news": [
     {
-      "info2": "It is wednesday my dudes"
-    },{
-      "info2": "Have a nice weekend!",
-      "custom_icon": "fire"
+      "info": "Have a nice weekend!",
+      "custom_icon": "fire",
+      "disabled": true
     },{
       "info2": "Happy",
       "icon": "INFO"
     },{
-      "info2": "Happy Halloween!",
+      "info": "Happy Halloween!",
       "custom_icon": "halloween",
-      "disabled": false
+      "disabled": true
+    },{
+      "info": "Translations are fixed in CATS v0.11.5! Please update.",
+      "icon": "INFO",
+      "disabled": true
+    },{
+      "info": "It is Wednesday, my dudes",
+      "custom_icon": "wednesday",
+      "disabled": true
     }
   ],
   "supporters": [
@@ -36,10 +43,12 @@
       "disabled": true
     },{
       "displayname": "idea",
-      "startdate": "2018-03-05"
+      "startdate": "2018-03-05",
+      "disabled": true
     },{
       "displayname": "RadaruS",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Str4fe",
       "startdate": "2018-01-05"
@@ -48,7 +57,8 @@
       "startdate": "2018-02-05"
     },{
       "displayname": "Raikin",
-      "startdate": "2018-03-05"
+      "startdate": "2018-03-05",
+      "disabled": true
     },{
       "displayname": "BerserkerBoreas",
       "startdate": "2018-04-05"
@@ -60,13 +70,16 @@
       "startdate": "2018-02-05"
     },{
       "displayname": "Chikan Celeryman",
-      "startdate": "2018-03-05"
+      "startdate": "2018-03-05",
+      "disabled": true
     },{
       "displayname": "Ashe",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Quadriple",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "abrownbag",
       "startdate": "2018-04-05",
@@ -100,7 +113,8 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "Sifu",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Lil Clone",
       "startdate": "2018-04-05",
@@ -119,25 +133,33 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "qy_li",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "ReOL",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Rezinion",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Karma",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": false,
+      "info": "Cancelled November"
     },{
       "displayname": "SolarSnowball",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Bones",
-      "startdate": "2018-04-05"
+      "startdate": "2018-01-22",
+      "info": "PP 50"
     },{
       "displayname": "Axo_",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Dogniss",
       "startdate": "2018-04-05"
@@ -146,7 +168,8 @@
       "startdate": "2018-05-013"
     },{
       "displayname": "Sheet_no_mana",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Awrini",
       "startdate": "2018-04-05"
@@ -158,19 +181,22 @@
       "tier": 1
     },{
       "displayname": "AlphaSatanOmega",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "info": "He can stay <3"
     },{
       "displayname": "Curio",
       "startdate": "2018-04-05"
     },{
       "displayname": "Deathofirish",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Runda",
       "startdate": "2018-04-05"
     },{
       "displayname": "Rurikaze",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Brindin_wF",
       "startdate": "2018-04-05"
@@ -179,36 +205,41 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "GV-97",
-      "startdate": "2018-04-05"
-    },{
-      "displayname": "COMMEN",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Antivirus-Chan",
       "startdate": "2018-04-05"
     },{
       "displayname": "Rayduxz",
       "startdate": "2018-04-05",
-      "description": "All Your Cats Are Belong to Us"
+      "description": "All Your Cats Are Belong to Us",
+      "disabled": true
     },{
       "displayname": "BemVR",
       "startdate": "2018-05-14"
     },{
       "displayname": "Hizling",
-      "startdate": "2018-05-14"
+      "startdate": "2018-05-14",
+      "description": "Lover of Vaizehail"
     },{
       "displayname": "Naatiivee1337",
-      "startdate": "2018-05-20"
+      "startdate": "2018-05-20",
+      "disabled": true
     },{
       "displayname": "Highom<3",
       "iconname": "Highom3",
-      "startdate": "2018-05-20"
+      "startdate": "2018-05-20",
+      "disabled": false,
+      "info": "Cancelled November"
     },{
       "displayname": "Skashe",
-      "startdate": "2018-05-24"
+      "startdate": "2018-05-24",
+      "disabled": true
     },{
       "displayname": "Steinshy",
-      "startdate": "2018-05-31"
+      "startdate": "2018-05-31",
+      "disabled": true
     },{
       "displayname": "Nubbins",
       "startdate": "2018-05-31"
@@ -217,10 +248,13 @@
       "startdate": "2018-06-17",
       "description": "DON'T CLICK ME!\n",
       "website": "https://www.twitch.tv/hectikgamez",
-      "tier": 1
+      "tier": 1,
+      "disabled": false,
+      "info": "declined november, check back later"
     },{
       "displayname": "Oclac",
-      "startdate": "2018-06-17"
+      "startdate": "2018-06-17",
+      "disabled": true
     },{
       "displayname": "Netrosis",
       "startdate": "2018-06-20"
@@ -228,7 +262,7 @@
       "displayname": "Krisu.Miushy",
       "startdate": "2018-06-21",
       "description": "I'll support your creations, let's keep the hard work everyone!\n",
-      "website": "https://www.artstation.com/krisu",
+      "website": "https://www.youtube.com/watch?v=VHAxxGV1hNI",
       "tier": 1
     },{
       "displayname": "Atirion",
@@ -267,6 +301,22 @@
       "description": "Just a man that likes to play vrchat when he's not doing army stuff!\n",
       "website": "http://www.thematrixservers.com/forums/index.php",
       "tier": 1
+    },{
+      "displayname": "Lazlo",
+      "startdate": "2018-10-15",
+      "description": "WTB Intelligence ",
+      "website": null,
+      "tier": 1
+    },{
+      "displayname": "Rincewind",
+      "startdate": "2018-10-28"
+    },{
+      "displayname": "Vanilla Neko",
+      "startdate": "2018-11-08",
+      "description": "Please give me headpats! ^_^\n"
+    },{
+      "displayname": "Q",
+      "startdate": "2018-11-29"
     }
   ]
 }
