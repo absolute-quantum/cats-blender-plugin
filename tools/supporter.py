@@ -27,6 +27,7 @@
 import os
 import bpy
 import json
+import globs
 import shutil
 import pathlib
 import zipfile
@@ -46,9 +47,6 @@ supporter_data = None
 reloading = False
 button_list = []
 last_update = None
-
-time_format = "%Y-%m-%d %H:%M:%S"
-time_format_github = "%Y-%m-%dT%H:%M:%SZ"
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -373,15 +371,15 @@ def update_needed():
         return False
 
     try:
-        last_commit_date = datetime.strptime(data['commit']['author']['date'], time_format_github)
+        last_commit_date = datetime.strptime(data['commit']['author']['date'], globs.time_format_github)
     except KeyError:
         print('DATA NOT READABLE')
         return False
 
     global last_update
-    commit_date_str = last_commit_date.strftime(time_format)
+    commit_date_str = last_commit_date.strftime(globs.time_format)
     last_update = commit_date_str
-    print(last_update)
+    # print(last_update)
 
     if not tools.settings.get_last_supporter_update():
         print('SETTINGS NOT FOUND')
@@ -393,12 +391,13 @@ def update_needed():
         print('COMMIT IDENTICAL')
         return False
 
-    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
-    time_delta = abs((utc_now - last_commit_date).seconds)
+    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.time_format), globs.time_format)
+    time_delta = abs((utc_now - last_commit_date).total_seconds())
 
-    print(utc_now)
-    print(time_delta)
+    # print(utc_now)
+    # print(time_delta)
 
+    print('SECONDS SINCE LAST UPDATE:', time_delta)
     if time_delta <= 120:
         print('COMMIT TOO CLOSE')
         return False

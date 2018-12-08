@@ -28,12 +28,13 @@ import bpy
 import json
 import copy
 import time
+import globs
 import pathlib
 import collections
 import tools.supporter
 import tools.translate
 from threading import Thread
-from datetime import datetime
+from datetime import datetime, timezone
 from collections import OrderedDict
 from tools.register import register_wrap
 
@@ -114,31 +115,50 @@ def load_settings():
             print('SETTINGS LOADED!')
     except FileNotFoundError:
         print("SETTINGS FILE NOT FOUND!")
-        reset_settings()
+        reset_settings(full_reset=True)
         return
     except json.decoder.JSONDecodeError:
         print("ERROR FOUND IN SETTINGS FILE")
-        reset_settings()
+        reset_settings(full_reset=True)
         return
 
+    to_reset_settings = []
+
     # Check for missing entries, reset if necessary
-    if 'last_supporter_update' not in settings_data:
-        reset_settings()
-        return
+    for setting in ['last_supporter_update', 'last_cats_update_check', 'ignore_cats_version']:
+        if setting not in settings_data and setting not in to_reset_settings:
+            to_reset_settings.append(setting)
+            print('RESET SETTING', setting)
 
     # Check for other missing entries, reset if necessary
     for setting in settings_default.keys():
-        if setting not in settings_data:
-            reset_settings()
-            return
+        if setting not in settings_data and setting not in to_reset_settings:
+            to_reset_settings.append(setting)
+            print('RESET SETTING', setting)
 
     # Check if timestamps are correct
-    if settings_data.get('last_supporter_update'):
-        try:
-            datetime.strptime(settings_data.get('last_supporter_update'), tools.supporter.time_format)
-        except ValueError:
-            settings_data['last_supporter_update'] = None
-            print('RESET TIME')
+    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.time_format), globs.time_format)
+    for setting in ['last_supporter_update', 'last_cats_update_check']:
+        if setting not in to_reset_settings and settings_data.get(setting):
+            try:
+                timestamp = datetime.strptime(settings_data.get(setting), globs.time_format)
+            except ValueError:
+                to_reset_settings.append(setting)
+                print('RESET TIME', setting)
+                continue
+
+            # If timestamp is in future
+            time_delta = (utc_now - timestamp).total_seconds()
+            if time_delta < 0:
+                to_reset_settings.append(setting)
+                print('TIME', setting, 'IN FUTURE!', time_delta)
+            else:
+                print('TIME', setting, 'IN PAST!', time_delta)
+
+    # If there are settings to reset, reset them
+    if to_reset_settings:
+        reset_settings(to_reset_settings=to_reset_settings)
+        return
 
     # Save the settings into the unchanged settings in order to know if the settings changed later
     settings_data_unchanged = copy.deepcopy(settings_data)
@@ -149,14 +169,27 @@ def save_settings():
         json.dump(settings_data, outfile, ensure_ascii=False, indent=4)
 
 
-def reset_settings():
+def reset_settings(full_reset=False, to_reset_settings=None):
+    if not to_reset_settings:
+        full_reset = True
+
     global settings_data, settings_data_unchanged
-    settings_data = OrderedDict()
 
-    settings_data['last_supporter_update'] = None
+    if full_reset:
+        settings_data = OrderedDict()
+        settings_data['last_supporter_update'] = None
+        settings_data['last_cats_update_check'] = None
+        settings_data['ignore_cats_version'] = None
 
-    for setting, value in settings_default.items():
-        settings_data[setting] = value[0]
+        for setting, value in settings_default.items():
+            settings_data[setting] = value[0]
+
+    else:
+        for setting in to_reset_settings:
+            if setting in settings_default.keys():
+                settings_data[setting] = settings_default[setting][0]
+            else:
+                settings_data[setting] = None
 
     save_settings()
 

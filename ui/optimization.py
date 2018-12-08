@@ -97,15 +97,18 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
             # Draw v1.0 mat comb ui
             if found_very_old_smc and not draw_smc_ui:
+                col.separator()
+
                 box2 = col.box()
                 col2 = box2.column(align=True)
 
                 row = col2.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Old Combiner version, you should upgrade:")
+                row.label(text="Old Combiner version, consider upgrading:", icon='INFO')
                 col2.separator()
                 row = col2.row(align=True)
                 row.operator('download.shotariya', text='Download Material Combiner v2.0', icon=globs.ICON_URL)
+                col.separator()
 
                 if len(context.scene.material_list) == 0:
                     col.separator()

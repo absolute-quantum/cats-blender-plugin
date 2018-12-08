@@ -369,9 +369,10 @@ It checks for a new version automatically once every day.
   - Selecting the "Basis" shapekey is no longer allowed
 - **Optimization**:
   - Added support for Material Combiner 2.0
-  - Removed support for Material Combiner 1.0
 - **Shapekeys**:
   - Fixed a bug when Applying a Shapekey to Basis
+- **updater**:
+  - Settings and locally stored Google translations no longer get reset during a CATS update
 - **General**:
   - Updated to Blender 2.8
     - It is still compatible to Blender 2.79

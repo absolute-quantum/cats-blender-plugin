@@ -16,6 +16,10 @@ is_reloading = False
 
 package = ''
 
+# other
+time_format = "%Y-%m-%d %H:%M:%S"
+time_format_github = "%Y-%m-%dT%H:%M:%SZ"
+
 # Icons for UI
 ICON_ADD, ICON_REMOVE = 'ADD', 'REMOVE'
 ICON_URL = 'URL'

@@ -23,27 +23,25 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
-import collections
-import copy
-import json
 import re
 import os
 import bpy
+import copy
+import json
+import globs
 import pathlib
+import collections
 import tools.common
 import requests.exceptions
 import mmd_tools_local.translations
-from tools.register import register_wrap
 
+from tools.register import register_wrap
 from datetime import datetime, timezone
 from googletrans import Translator
 from collections import OrderedDict
 
 dictionary = None
 dictionary_google = None
-
-translation_splitter = "---"
-time_format = "%Y-%m-%d %H:%M:%S"
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -553,8 +551,8 @@ def google_dict_too_old():
     # Let the user decide when to refresh the google dict
     return False
 
-    # created = datetime.strptime(dictionary_google.get('created'), time_format)
-    # utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
+    # created = datetime.strptime(dictionary_google.get('created'), globs.time_format)
+    # utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.time_format), globs.time_format)
     #
     # time_delta = abs((utc_now - created).days)
     #
@@ -571,7 +569,7 @@ def reset_google_dict():
     global dictionary_google
     dictionary_google = OrderedDict()
 
-    now_utc = datetime.now(timezone.utc).strftime(time_format)
+    now_utc = datetime.now(timezone.utc).strftime(globs.time_format)
 
     dictionary_google['created'] = now_utc
     dictionary_google['translations'] = {}
