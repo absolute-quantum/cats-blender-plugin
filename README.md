@@ -375,6 +375,7 @@ It checks for a new version automatically once every day.
   - Updated CATS to Blender 2.8
     - It is still compatible to Blender 2.79 and will stay compatible
     - "Combine Materials", "Create Atlas" and "Custom Model Creation" is not yet working in 2.8
+    - If you have any issues with Cats in 2.8, please let us know!
   - Updated mmd_tools (for 2.8 compatibility)
   - Huge UI codebase cleanup
   - Loads of bug fixes
@@ -411,46 +412,6 @@ It checks for a new version automatically once every day.
 - **General**:
   - Cats no longer unhides everything whenever it does something, it only unhides the current model
     - This helps a lot when working with multiple models
-
-#### 0.11.0
-- **Optimization:**
-  - Added new greatly improved Auto Atlas method made by **shotariya**!
-    - This new method will create near perfect texture atlases automatically
-    - You will need to install the (extremely awesome) plugin "Material Combiner" made by shotariya
-    - If you don't have it installed, CATS will provide you with a download link
-    - CATS packs the functions into a single-click button
-    - If you want more options, use the plugin tab "shotariya"
-- **Export:**
-  - Added warning when meshes have more than 65354 tris or more than 10 materials/meshes
-  - Improved CATS FBX Export settings (Thanks Rokk!)
-    - Textures will now be stored inside the FBX file
-    - When importing the FBX file into Unity, the textures will be imported automatically as well
-    - The scale of armatures and meshes in Unity will now always be 1 instead of being set to 100 sometimes
-    - This fixes possible bugs with mesh particles
-    - If you want to overwrite old FBX files with the new ones in Unity, you might have to enforce the T-Pose again. Newly imported FBX files are uneffected by this
-- **Model:**
-  - A lot more models are now compatible
-  - Added fix for bad uv coordinates (Thanks shotariya!)
-  - Join Meshes now adds missing armature modifiers
-    - This prevents cases where the mesh would not move with the bones
-  - Join Meshes now merges UV Maps correctly
-    - This fixes disappearing textures which were previously there
-  - Fix Model now unlocks all transformations on armature, mesh and bones
-  - Added warning if the FBX version is too old
-  - Using "Pose to Shape Key" or "Apply as Rest Pose" no longer requires you to join the meshes
-  - "Apply as Rest Pose" now correctly scales shape keys if the bones are equally scaled on each axis
-  - Fixed "Apply as Rest Pose" sometimes selecting the wrong shape key after the operation
-  - Finally fixed CATS deleting bones and then claiming that they are missing
-- **Custom Model:**
-  - Added option to merge all bones that have the same name
-  - Merge Armatures and Attach Mesh now remove all empty shapekeys afterwards
-- **Eye Tracking:**
-  - Eye bones should no longer be created in weird places
-  - Fixed a bug where old vertex groups were not getting deleted
-- **General:**
-  - Lots of bug fixes
-  - Updated mmd_tools
-  - Added future proof Google Translate maintenance fix (Thanks BlueLament!)
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
