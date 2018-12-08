@@ -291,6 +291,9 @@ class CombineMaterialsButton(bpy.types.Operator):
 
             # print('CLEANED MAT SLOTS')
 
+        # Update the material list of the Material Combiner
+        tools.common.update_material_list()
+
         if i == 0:
             self.report({'INFO'}, 'No materials combined.')
         else:

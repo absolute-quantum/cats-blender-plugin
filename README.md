@@ -86,8 +86,6 @@ This tries to completely fix your model with one click.
   - Deleting unused vertex groups
   - Using the correct shading
   - Making it compatible with Full Body Tracking
- 
- **special thanks to @ProfessorSnep#0001, @Mimi#4114, @persia#0123 and @Gallium#7020 <3 <3**
 
 ##### Start Pose Mode
 - Lets you test how bones will move.
@@ -101,7 +99,7 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/jlxQCvH.png)
+![](https://i.imgur.com/bGDy5wn.png)
 
 ##### Translation
 - Translate certain entities from any japanese to english.
@@ -111,16 +109,16 @@ This uses an internal dictionary and Google Translate.
 - Separates a mesh by materials or loose parts
 
 ##### Join meshes
-- Joins all meshes together
+- Joins all/selected meshes together
+
+##### Merge Weights
+- Deletes the selected bones and adds their weight to their respective parents
 
 ##### Delete Zero Weight Bones
 - Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices
 
 ##### Delete Constraints
 - Removes constrains between bones causing specific bone movement as these are not used by VRChat
-
-##### Merge Weights
-- Deletes the selected bones and adds their weight to their respective parents
 
 ##### Recalculate Normals
 - Makes normals point inside of the selected mesh
@@ -325,9 +323,9 @@ People that try to steal your avatar will then only see a box of mangled waifu t
 - Applies the selected shape key as the new Basis and creates a reverted shape key from the selected one.
 
 
-## Update Plugin
+## Settings and Updates
 
-![](https://i.imgur.com/ltcTRlR.png)
+![](https://i.imgur.com/hYy7gD8.png)
 
 **This plugin has an auto updater.**
 It checks for a new version automatically once every day.
@@ -337,8 +335,8 @@ It checks for a new version automatically once every day.
 
 #### 0.12.0
 - **Model**:
-  - Made VRM models compatible
-  - Made Koikatsu models compatible
+  - Made VRoid (.vrm) models compatible
+  - Made Koikatsu (.pmx) models compatible
   - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
   - Pose to Shapekey now asks for a shapekey name first
   - Added separate buttons to enable and disable the Full Body tracking fix
@@ -360,23 +358,23 @@ It checks for a new version automatically once every day.
   - XNALara no longer randomly colorizes meshes
     - This makes combining materials much easier
 - **Translations**:
-  - Locally stored Google translations no longer get deleted after 30 day
+  - Locally stored Google translations no longer get deleted after 30 days
   - Added a button to the settings menu to manually delete all local Google translations
 - **Eye Tracking**:
-  - Eyes will no longer be created in weird spots when the weight paint is off (thanks to **zaCade** for finding this!)
+  - Eyes will no longer be created in weird spots when the weight paint is off (thanks to **zaCade** for finding the cause of this!)
   - Fixed "Reset Rotation" sometimes not resetting the rotation
 - **Visemes**:
   - Selecting the "Basis" shapekey is no longer allowed
 - **Optimization**:
   - Added support for Material Combiner 2.0
 - **Shapekeys**:
-  - Fixed a bug when Applying a Shapekey to Basis
-- **updater**:
-  - Settings and locally stored Google translations no longer get reset during a CATS update
+  - Fixed a bug in "Apply Selected Shapekey as Basis"
+- **Updater**:
+  - The settings and locally stored Google translations no longer get reset during a CATS update
 - **General**:
-  - Updated to Blender 2.8
-    - It is still compatible to Blender 2.79
-    - Combining materials and creating a texture atlas is not yet possible
+  - Updated CATS to Blender 2.8
+    - It is still compatible to Blender 2.79 and will stay compatible
+    - "Combine Materials", "Create Atlas" and "Custom Model Creation" is not yet working in 2.8
   - Updated mmd_tools (for 2.8 compatibility)
   - Huge UI codebase cleanup
   - Loads of bug fixes

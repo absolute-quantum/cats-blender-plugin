@@ -25,6 +25,7 @@
 
 import os
 import bpy
+import globs
 import webbrowser
 import tools.common
 import tools.settings
@@ -39,13 +40,6 @@ try:
     mmd_tools_installed = True
 except:
     pass
-
-
-ICON_URL = 'URL'
-ICON_EXPORT = 'EXPORT'
-if version_2_79_or_older():
-    ICON_URL = 'LOAD_FACTORY'
-    ICON_EXPORT = 'LOAD_FACTORY'
 
 
 @register_wrap
@@ -341,7 +335,7 @@ class InstallXPS(bpy.types.Operator):
         row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.download_xps_tools', icon=ICON_URL)
+        row.operator('importer.download_xps_tools', icon=globs.ICON_URL)
 
 
 @register_wrap
@@ -373,7 +367,7 @@ class InstallSource(bpy.types.Operator):
         row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.download_source_tools', icon=ICON_URL)
+        row.operator('importer.download_source_tools', icon=globs.ICON_URL)
 
 
 @register_wrap
@@ -408,7 +402,7 @@ class InstallVRM(bpy.types.Operator):
         row.label(text="If it is not installed please download and install it manually.")
         col.separator()
         row = col.row(align=True)
-        row.operator('importer.download_vrm', icon=ICON_URL)
+        row.operator('importer.download_vrm', icon=globs.ICON_URL)
 
 
 @register_wrap
@@ -450,7 +444,7 @@ class EnableMMD(bpy.types.Operator):
 #     row.label(text="If it is not installed please click here to download it and then install it manually.")
 #     col.separator()
 #     row = col.row(align=True)
-#     row.operator('importer.download_xps_tools', icon=ICON_URL)
+#     row.operator('importer.download_xps_tools', icon=globs.ICON_URL)
 #
 #
 # def popup_install_source(self, context):
@@ -466,7 +460,7 @@ class EnableMMD(bpy.types.Operator):
 #     row.label(text="If it is not installed please click here to download it and then install it manually.")
 #     col.separator()
 #     row = col.row(align=True)
-#     row.operator('importer.download_source_tools', icon=ICON_URL)
+#     row.operator('importer.download_source_tools', icon=globs.ICON_URL)
 #
 #
 # def popup_install_vrm(self, context):
@@ -484,7 +478,7 @@ class EnableMMD(bpy.types.Operator):
 #     row.label(text="If it is not installed please click here to download it and then install it manually.")
 #     col.separator()
 #     row = col.row(align=True)
-#     row.operator('importer.download_vrm', icon=ICON_URL)
+#     row.operator('importer.download_vrm', icon=globs.ICON_URL)
 
 
 @register_wrap
@@ -706,6 +700,7 @@ class ErrorDisplay(bpy.types.Operator):
             row.label(text="You should decimate them before you export this model.")
             col.separator()
             col.separator()
+            col.separator()
 
         if len(self.mat_list) > 4:
             row = col.row(align=True)
@@ -802,4 +797,4 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
 
         row = col.row(align=True)
-        row.operator('importer.export_model', text='Continue to Export', icon=ICON_EXPORT).action = 'NO_CHECK'
+        row.operator('importer.export_model', text='Continue to Export', icon=globs.ICON_EXPORT).action = 'NO_CHECK'

@@ -99,7 +99,7 @@ class FnMaterial(object):
                 pass
         return False
 
-    def __load_image(self, filepath):
+    def _load_image(self, filepath):
         for i in bpy.data.images:
             if self.__same_image_file(i, filepath):
                 return i
@@ -119,7 +119,7 @@ class FnMaterial(object):
             if t.type == 'IMAGE' and self.__same_image_file(t.image, filepath) and t.use_alpha:
                 return t
         tex = bpy.data.textures.new(name=bpy.path.display_name_from_filepath(filepath), type='IMAGE')
-        tex.image = self.__load_image(filepath)
+        tex.image = self._load_image(filepath)
         return tex
 
     def __has_alpha_channel(self, texture):
@@ -361,7 +361,6 @@ class FnMaterial(object):
 
 
 if bpy.app.version >= (2, 80, 0):
-    from bpy_extras import image_utils
     from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
 
     class _DummyTexture:
@@ -404,7 +403,7 @@ if bpy.app.version >= (2, 80, 0):
             return None
 
         def create_texture(self, filepath):
-            image = image_utils.load_image(filepath, place_holder=True,)
+            image = self._load_image(filepath)
             shader = self.__shader
             shader.base_color_texture.image = image
             return _DummyTextureSlot(image)
@@ -424,7 +423,7 @@ if bpy.app.version >= (2, 80, 0):
             pass
 
         def create_sphere_texture(self, filepath, obj=None):
-            image = image_utils.load_image(filepath, place_holder=True,)
+            image = self._load_image(filepath)
             shader = self.__shader
             shader.metallic_texture.image = image
             shader.metallic_texture.texcoords = 'Normal'
@@ -448,7 +447,7 @@ if bpy.app.version >= (2, 80, 0):
             pass
 
         def create_toon_texture(self, filepath):
-            image = image_utils.load_image(filepath, place_holder=True,)
+            image = self._load_image(filepath)
             return _DummyTextureSlot(image)
 
         def remove_toon_texture(self):

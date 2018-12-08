@@ -37,7 +37,6 @@ if "bpy" in locals():
         import imp as importlib
     else:
         import importlib
-    __make_annotations = (bpy.app.version >= (2, 80, 0))
     importlib.reload(properties)
     importlib.reload(operators)
     importlib.reload(panels)
@@ -135,11 +134,8 @@ def unregister():
         bpy.types.VIEW3D_MT_armature_add.remove(menu_func_armature)
     bpy.app.handlers.load_post.remove(load_handler)
     properties.unregister()
-    #global __bl_classes
     for cls in reversed(__bl_classes):
         bpy.utils.unregister_class(cls)
-    #__bl_classes = []
-
 
 if __name__ == "__main__":
     register()

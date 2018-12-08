@@ -697,6 +697,9 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
     reset_context_scenes()
 
+    # Update the material list of the Material Combiner
+    update_material_list()
+
     return mesh
 
 
@@ -746,6 +749,9 @@ def separate_by_materials(context, mesh):
             clean_shapekeys(ob)
 
     utils.clearUnusedMeshes()
+
+    # Update the material list of the Material Combiner
+    update_material_list()
 
 
 def separate_by_loose_parts(context, mesh):
@@ -838,6 +844,9 @@ def separate_by_loose_parts(context, mesh):
     #             ob.name = ob.name.replace('.000', '')
 
     utils.clearUnusedMeshes()
+
+    # Update the material list of the Material Combiner
+    update_material_list()
 
 
 def clean_shapekeys(mesh):
@@ -1480,6 +1489,14 @@ def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
                 print('YES')
 
     switch(pre_mode)
+
+
+def update_material_list():
+    try:
+        if hasattr(bpy.context.scene, 'smc_ob_data') and bpy.context.scene.smc_ob_data:
+            bpy.ops.smc.refresh_ob_data()
+    except AttributeError:
+        print('Material Combiner not found')
 
 
 """

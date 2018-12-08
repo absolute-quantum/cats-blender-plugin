@@ -65,6 +65,7 @@ __properties = {
 
 def __patch(properties): # temporary patching, should be removed in the future
     prop_obj = properties.setdefault(bpy.types.Object, {})
+    prop_arm = properties.setdefault(bpy.types.Armature, {})
     prop_cam = properties.setdefault(bpy.types.Camera, {})
 
     prop_obj['select'] = bpy.props.BoolProperty(
@@ -88,6 +89,10 @@ def __patch(properties): # temporary patching, should be removed in the future
         set=lambda prop, value: setattr(prop, 'empty_display_type', value),
         )
     prop_obj['draw_type'] = bpy.props.StringProperty(
+        get=lambda prop: prop.display_type,
+        set=lambda prop, value: setattr(prop, 'display_type', value),
+        )
+    prop_arm['draw_type'] = bpy.props.StringProperty(
         get=lambda prop: prop.display_type,
         set=lambda prop, value: setattr(prop, 'display_type', value),
         )

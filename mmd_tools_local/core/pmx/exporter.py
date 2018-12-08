@@ -1113,7 +1113,6 @@ class __PmxExporter:
         else:
             uv_data = iter(lambda: _DummyUV, None)
         face_seq = []
-        reversing = not pmx_matrix.is_negative # pmx.load/pmx.save reverse face vertices by default
         for face, uv in zip(base_mesh.polygons, uv_data):
             if len(face.vertices) != 3:
                 raise Exception
@@ -1123,7 +1122,7 @@ class __PmxExporter:
             v2 = self.__convertFaceUVToVertexUV(face.vertices[1], uv.uv2, n2, base_vertices)
             v3 = self.__convertFaceUVToVertexUV(face.vertices[2], uv.uv3, n3, base_vertices)
 
-            t = _Face([v3, v2, v1]) if reversing else _Face([v1, v2, v3])
+            t = _Face([v1, v2, v3])
             face_seq.append(t)
             if face.material_index not in materials:
                 materials[face.material_index] = []
@@ -1158,6 +1157,10 @@ class __PmxExporter:
                 f.vertices[0] = self.__convertAddUV(f.vertices[0], uv.uv1, zw.uv1, uv_n, vertices[0], rip_vertices[0])
                 f.vertices[1] = self.__convertAddUV(f.vertices[1], uv.uv2, zw.uv2, uv_n, vertices[1], rip_vertices[1])
                 f.vertices[2] = self.__convertAddUV(f.vertices[2], uv.uv3, zw.uv3, uv_n, vertices[2], rip_vertices[2])
+
+        if not pmx_matrix.is_negative: # pmx.load/pmx.save reverse face vertices by default
+            for f in face_seq:
+                f.vertices.reverse()
 
         return _Mesh(
             base_mesh,

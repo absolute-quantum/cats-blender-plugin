@@ -26,6 +26,7 @@
 
 import os
 import bpy
+import globs
 import random
 import webbrowser
 import tools.common
@@ -36,11 +37,6 @@ from tools.register import register_wrap
 
 addon_name = "Shotariya-don"
 min_version = [1, 1, 6]
-
-
-ICON_URL = 'URL'
-if version_2_79_or_older():
-    ICON_URL = 'LOAD_FACTORY'
 
 
 @register_wrap
@@ -403,7 +399,7 @@ class InstallShotariya(bpy.types.Operator):
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon=ICON_URL)
+            row.operator('download.shotariya', icon=globs.ICON_URL)
             col.separator()
 
         elif self.action == 'ENABLE':
@@ -432,7 +428,7 @@ class InstallShotariya(bpy.types.Operator):
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon=ICON_URL)
+            row.operator('download.shotariya', icon=globs.ICON_URL)
             col.separator()
 
 
