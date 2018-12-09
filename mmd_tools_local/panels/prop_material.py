@@ -114,7 +114,7 @@ class MMDTexturePanel(Panel):
                 r.label(icon='ERROR')
         else:
             r.operator('mmd_tools.material_open_sphere_texture', text='Add', icon=ICON_FILE_FOLDER)
-        col.prop(mmd_material, 'sphere_texture_type')
+        col.row(align=True).prop(mmd_material, 'sphere_texture_type', expand=True)
 
         col = layout.column()
         row = col.row()

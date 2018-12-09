@@ -385,21 +385,21 @@ class FixArmature(bpy.types.Operator):
 
             # TODO
             # Makes all materials visible
-            for i, mat_slot in enumerate(mesh.material_slots):
-                context.object.active_material_index = i
-                bpy.context.object.active_material.blend_method = 'OPAQUE'
-
-                # bpy.data.node_groups["Shader Nodetree"].nodes["Principled BSDF"].inputs[5].default_value = 0
-                from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
-                shader = PrincipledBSDFWrapper(mat_slot.material, is_readonly=False)
-                if i == 0:
-                    for atr in dir(shader):
-                        print(atr, getattr(shader, atr))
-                shader.specular = 0
-                shader.metallic = 0
-                shader.roughness = 1
-                #shader.transmission = 0
-                #shader.transmission_roughness = 0
+            # for i, mat_slot in enumerate(mesh.material_slots):
+            #     context.object.active_material_index = i
+            #     bpy.context.object.active_material.blend_method = 'OPAQUE'
+            #
+            #     # bpy.data.node_groups["Shader Nodetree"].nodes["Principled BSDF"].inputs[5].default_value = 0
+            #     from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
+            #     shader = PrincipledBSDFWrapper(mat_slot.material, is_readonly=False)
+            #     if i == 0:
+            #         for atr in dir(shader):
+            #             print(atr, getattr(shader, atr))
+            #     shader.specular = 0
+            #     shader.metallic = 0
+            #     shader.roughness = 1
+            #     #shader.transmission = 0
+            #     #shader.transmission_roughness = 0
 
             for area in context.screen.areas:  # iterate through areas in current screen
                 if area.type == 'VIEW_3D':

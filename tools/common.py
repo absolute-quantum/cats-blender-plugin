@@ -162,7 +162,9 @@ def set_unselectable(obj, val=True):
 
 
 def switch(new_mode):
-    if get_active().mode != new_mode and bpy.ops.object.mode_set.poll():
+    if get_active() and get_active().mode == new_mode:
+        return
+    if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode=new_mode, toggle=False)
 
 

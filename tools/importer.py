@@ -76,7 +76,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     )
 
     def execute(self, context):
-        print(self.directory)
+        # print(self.directory)
         tools.common.remove_unused_objects()
 
         # Make sure that the first layer is visible
@@ -626,28 +626,18 @@ class ExportModel(bpy.types.Operator):
             path_mode = 'COPY'
 
         # Open export window
-        # try:
-        #     bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
-        #                              object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
-        #                              use_mesh_modifiers=False,
-        #                              add_leaf_bones=False,
-        #                              bake_anim=False,
-        #                              apply_scale_options='FBX_SCALE_ALL',
-        #                              path_mode=path_mode,
-        #                              embed_textures=True,
-        #                              mesh_smooth_type=mesh_smooth_type)
-        # except (TypeError, ValueError):
-        #     bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
-
-        bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
-                                 object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
-                                 use_mesh_modifiers=False,
-                                 add_leaf_bones=False,
-                                 bake_anim=False,
-                                 apply_scale_options='FBX_SCALE_ALL',
-                                 path_mode=path_mode,
-                                 embed_textures=True,
-                                 mesh_smooth_type=mesh_smooth_type)
+        try:
+            bpy.ops.export_scene.fbx('INVOKE_DEFAULT',
+                                     object_types={'EMPTY', 'ARMATURE', 'MESH', 'OTHER'},
+                                     use_mesh_modifiers=False,
+                                     add_leaf_bones=False,
+                                     bake_anim=False,
+                                     apply_scale_options='FBX_SCALE_ALL',
+                                     path_mode=path_mode,
+                                     embed_textures=True,
+                                     mesh_smooth_type=mesh_smooth_type)
+        except (TypeError, ValueError):
+            bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
 
         return {'FINISHED'}
 
