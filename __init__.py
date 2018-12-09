@@ -94,7 +94,7 @@ else:
 # How to set up PyCharm with Blender:
 # https://b3d.interplanety.org/en/using-external-ide-pycharm-for-writing-blender-scripts/
 
-globs.dev_branch = False
+globs.dev_branch = True
 globs.version = copy.deepcopy(bl_info.get('version'))
 
 
