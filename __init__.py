@@ -48,7 +48,6 @@ if file_dir not in sys.path:
 import copy
 import globs
 import requests
-import extend_types
 
 # Load package name, important for updater
 globs.package = __package__
@@ -74,6 +73,8 @@ else:
     importlib.reload(tools)
     importlib.reload(ui)
 
+import extend_types
+
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
@@ -94,7 +95,7 @@ else:
 # How to set up PyCharm with Blender:
 # https://b3d.interplanety.org/en/using-external-ide-pycharm-for-writing-blender-scripts/
 
-globs.dev_branch = False
+globs.dev_branch = True
 globs.version = copy.deepcopy(bl_info.get('version'))
 
 
