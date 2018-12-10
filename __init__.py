@@ -30,7 +30,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': (0, 12, 0),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
+    'version': (0, 12, 1),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -94,7 +94,7 @@ else:
 # How to set up PyCharm with Blender:
 # https://b3d.interplanety.org/en/using-external-ide-pycharm-for-writing-blender-scripts/
 
-globs.dev_branch = True
+globs.dev_branch = False
 globs.version = copy.deepcopy(bl_info.get('version'))
 
 

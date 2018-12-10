@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.12.0)
+# Cats Blender Plugin (0.12.1)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -335,7 +335,8 @@ It checks for a new version automatically once every day.
 
 #### 0.12.1
 - **General**:
-  - Fixed an error appearing on various buttons or even removing the whole Cats UI
+  - Fixed an error removing the whole Cats UI
+  - Fixed an error on Fix Model and other various buttons
   - Stopping Pose Mode in Blender 2.8 now selects the Box Selection tool instead of the 3D Cursor
   - Updated mmd_tools (improved 2.8 materials)
 
