@@ -1439,23 +1439,28 @@ def matmul(a, b):
 
 def set_cats_verion_string():
     version_str = ''
+    version_temp = []
+
+    for n in globs.version:
+        version_temp.append(n)
+
     # if in dev version, increase version
-    if globs.dev_branch and len(globs.version) > 2:
-        globs.version[2] += 1
+    if globs.dev_branch and len(version_temp) > 2:
+        version_temp[2] += 1
 
     # Convert version to string
-    if len(globs.version) > 0:
-        version_str += str(globs.version[0])
-        for index, i in enumerate(globs.version):
+    if len(version_temp) > 0:
+        version_str += str(version_temp[0])
+        for index, i in enumerate(version_temp):
             if index == 0:
                 continue
-            version_str += '.' + str(globs.version[index])
+            version_str += '.' + str(version_temp[index])
     if globs.dev_branch:
         version_str += '-dev'
 
     # Change the version back
-    if globs.dev_branch and len(globs.version) > 2:
-        globs.version[2] -= 1
+    if globs.dev_branch and len(version_temp) > 2:
+        version_temp[2] -= 1
 
     globs.version_str = version_str
 
