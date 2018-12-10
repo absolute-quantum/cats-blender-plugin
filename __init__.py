@@ -30,7 +30,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': [0, 12, 0],  # Only change this version and the dev branch var right before publishing the new update!
+    'version': (0, 12, 1),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -117,8 +117,8 @@ def register():
     # Register updater
     try:
         addon_updater_ops.register(bl_info)
-    except ValueError:
-        print('Error while registering updater.')
+    except ValueError as e:
+        print('\n!!! Error while registering Updater:\n' + str(e) + '\n')
         pass
 
     # Register all classes

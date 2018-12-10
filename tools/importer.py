@@ -76,7 +76,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     )
 
     def execute(self, context):
-        print(self.directory)
+        # print(self.directory)
         tools.common.remove_unused_objects()
 
         # Make sure that the first layer is visible

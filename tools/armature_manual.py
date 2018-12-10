@@ -137,7 +137,7 @@ class StopPoseMode(bpy.types.Operator):
         if version_2_79_or_older():
             bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
         else:
-            bpy.ops.wm.tool_set_by_name(name="Cursor")
+            bpy.ops.wm.tool_set_by_name(name="Select Box")
 
         tools.eyetracking.eye_left = None
 

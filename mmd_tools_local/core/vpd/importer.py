@@ -83,7 +83,7 @@ class VPDImporter:
         for m in self.__vpd_file.morphs:
             shape_key = key_blocks.get(m.morph_name, None)
             if shape_key is None:
-                logging.warning(' * Shape key not found: %s', key_name)
+                logging.warning(' * Shape key not found: %s', m.morph_name)
                 continue
             shape_key.value = m.weight
 

@@ -293,27 +293,33 @@ class ConvertToMMDModel(Operator):
             pose_bone.lock_location = (True, True, True)
 
         for m in {x for mesh in meshes for x in mesh.data.materials if x}:
-            if not hasattr(m, 'use_transparency'): continue
             mmd_material = m.mmd_material
 
-            map_diffuse = next((s.blend_type for s in m.texture_slots if s and s.use_map_color_diffuse), None)
-            use_diffuse = map_diffuse in {None, 'MULTIPLY'}
-            diffuse = m.diffuse_color*min(1.0, m.diffuse_intensity/0.8) if use_diffuse else (1.0, 1.0, 1.0)
-            mmd_material.diffuse_color = diffuse
-            if self.ambient_color_source == 'MIRROR':
-                mmd_material.ambient_color = m.mirror_color
+            if hasattr(m, 'texture_slots'):
+                map_diffuse = next((s.blend_type for s in m.texture_slots if s and s.use_map_color_diffuse), None)
+                use_diffuse = map_diffuse in {None, 'MULTIPLY'}
+                diffuse = m.diffuse_color*min(1.0, m.diffuse_intensity/0.8) if use_diffuse else (1.0, 1.0, 1.0)
+                mmd_material.diffuse_color = diffuse
+                if self.ambient_color_source == 'MIRROR':
+                    mmd_material.ambient_color = m.mirror_color
+                else:
+                    mmd_material.ambient_color = [0.5*c for c in diffuse]
+
+                map_alpha = next((s.blend_type for s in m.texture_slots if s and s.use_map_alpha), None)
+                if m.use_transparency and map_alpha in {None, 'MULTIPLY'}:
+                    mmd_material.alpha = m.alpha
+
+                mmd_material.specular_color = m.specular_color*min(1.0, m.specular_intensity/0.8)
+                mmd_material.shininess = m.specular_hardness
+                mmd_material.is_double_sided = m.game_settings.use_backface_culling
+                mmd_material.enabled_self_shadow_map = m.use_cast_buffer_shadows and m.alpha > 1e-3
+                mmd_material.enabled_self_shadow = m.use_shadows
             else:
+                diffuse = m.diffuse_color
+                mmd_material.diffuse_color = diffuse
                 mmd_material.ambient_color = [0.5*c for c in diffuse]
+                mmd_material.specular_color = m.specular_color
 
-            map_alpha = next((s.blend_type for s in m.texture_slots if s and s.use_map_alpha), None)
-            if m.use_transparency and map_alpha in {None, 'MULTIPLY'}:
-                mmd_material.alpha = m.alpha
-
-            mmd_material.specular_color = m.specular_color*min(1.0, m.specular_intensity/0.8)
-            mmd_material.shininess = m.specular_hardness
-            mmd_material.is_double_sided = m.game_settings.use_backface_culling
-            mmd_material.enabled_self_shadow_map = m.use_cast_buffer_shadows and m.alpha > 1e-3
-            mmd_material.enabled_self_shadow = m.use_shadows
             if hasattr(m, 'line_color'): # freestyle line color
                 line_color = list(m.line_color)
                 mmd_material.enabled_toon_edge = line_color[3] >= self.edge_threshold
