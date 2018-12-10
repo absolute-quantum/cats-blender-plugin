@@ -117,8 +117,8 @@ def register():
     # Register updater
     try:
         addon_updater_ops.register(bl_info)
-    except ValueError:
-        print('Error while registering updater.')
+    except ValueError as e:
+        print('\n!!! Error while registering Updater:\n' + str(e) + '\n')
         pass
 
     # Register all classes

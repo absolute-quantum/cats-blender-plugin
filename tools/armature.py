@@ -60,7 +60,7 @@ class FixArmature(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if not tools.common.get_armature():
             return False
 
         if len(tools.common.get_armature_objects()) == 0:

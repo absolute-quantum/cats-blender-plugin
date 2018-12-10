@@ -333,6 +333,12 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.12.1
+- **General**:
+  - Fixed an error appearing on various buttons or even removing the whole Cats UI
+  - Stopping Pose Mode in Blender 2.8 now selects the Box Selection tool instead of the 3D Cursor
+  - Updated mmd_tools (improved 2.8 materials)
+
 #### 0.12.0
 - **Model**:
   - Made VRoid (.vrm) models compatible
@@ -389,29 +395,6 @@ It checks for a new version automatically once every day.
   - Fixed translations breaking due to a Google Translate API change (Thanks **BlueLament** for the fix!)
 - **Custom Model Creation**:
   - Fixed Attach Mesh throwing an error when the mesh has no vertex groups
-
-#### 0.11.3 [YANKED]
-
-#### 0.11.2
-- **Model**:
-  - Fix: Joints and Rigidbodies now get deleted correctly
-
-#### 0.11.1
-- **Export**:
-  - Embed Textures is not longer enabled by default, but can now be enabled in the settings
-- **Settings and Updates:**
-  - Renamed "Updater" panel to "Settings & Updates"
-  - Added setting to embed textures on export
-    - Settings are saved into a local settings file
-    - Issue: Settings get reset with every CATS update currently
-  - This panel now shows the current CATS version
-- **Translations:**
-  - Added a warning when you are temporarily IP banned by Google Translate
-- **Eye Tracking:**
-  - Wink Right shape keys are now detected more reliably
-- **General**:
-  - Cats no longer unhides everything whenever it does something, it only unhides the current model
-    - This helps a lot when working with multiple models
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
