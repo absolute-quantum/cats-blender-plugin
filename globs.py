@@ -1,5 +1,4 @@
 import bpy
-import copy
 
 # for bone root parenting
 root_bones = {}

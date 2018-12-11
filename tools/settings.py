@@ -45,6 +45,9 @@ settings_file = os.path.join(resources_dir, "settings.json")
 settings_data = None
 settings_data_unchanged = None
 
+time_format = "%Y-%m-%d %H:%M:%S"
+time_format_github = "%Y-%m-%dT%H:%M:%SZ"
+
 # Settings name = [Default Value, Require Blender Restart]
 settings_default = OrderedDict()
 # settings_default['use_custom_mmd_tools'] = [False, True]
@@ -137,11 +140,11 @@ def load_settings():
             print('RESET SETTING', setting)
 
     # Check if timestamps are correct
-    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.time_format), globs.time_format)
+    utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
     for setting in ['last_supporter_update', 'last_cats_update_check']:
         if setting not in to_reset_settings and settings_data.get(setting):
             try:
-                timestamp = datetime.strptime(settings_data.get(setting), globs.time_format)
+                timestamp = datetime.strptime(settings_data.get(setting), time_format)
             except ValueError:
                 to_reset_settings.append(setting)
                 print('RESET TIME', setting)

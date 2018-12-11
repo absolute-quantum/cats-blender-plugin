@@ -43,6 +43,9 @@ from collections import OrderedDict
 dictionary = None
 dictionary_google = None
 
+time_format = "%Y-%m-%d %H:%M:%S"
+time_format_github = "%Y-%m-%dT%H:%M:%SZ"
+
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
 dictionary_file = os.path.join(resources_dir, "dictionary.json")
@@ -569,7 +572,7 @@ def reset_google_dict():
     global dictionary_google
     dictionary_google = OrderedDict()
 
-    now_utc = datetime.now(timezone.utc).strftime(globs.time_format)
+    now_utc = datetime.now(timezone.utc).strftime(time_format)
 
     dictionary_google['created'] = now_utc
     dictionary_google['translations'] = {}
