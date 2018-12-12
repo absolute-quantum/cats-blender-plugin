@@ -108,14 +108,14 @@ class DebugTranslations(bpy.types.Operator):
 
 
 def load_settings():
-    print('READING SETTINGS FILE')
+    # print('READING SETTINGS FILE')
     global settings_data, settings_data_unchanged
 
     # Load settings file and reset it if errors are found
     try:
         with open(settings_file, encoding="utf8") as file:
             settings_data = json.load(file, object_pairs_hook=collections.OrderedDict)
-            print('SETTINGS LOADED!')
+            # print('SETTINGS LOADED!')
     except FileNotFoundError:
         print("SETTINGS FILE NOT FOUND!")
         reset_settings(full_reset=True)
@@ -156,7 +156,8 @@ def load_settings():
                 to_reset_settings.append(setting)
                 print('TIME', setting, 'IN FUTURE!', time_delta)
             else:
-                print('TIME', setting, 'IN PAST!', time_delta)
+                pass
+                # print('TIME', setting, 'IN PAST!', time_delta)
 
     # If there are settings to reset, reset them
     if to_reset_settings:
@@ -219,7 +220,7 @@ def apply_settings():
                 continue
 
             applied = True
-            print('Refreshed Settings!')
+            # print('Refreshed Settings!')
         else:
             time.sleep(0.3)
 

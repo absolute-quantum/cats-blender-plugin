@@ -165,7 +165,7 @@ def download_file():
     pathlib.Path(downloads_dir).mkdir(exist_ok=True)
 
     # Download zip
-    print('DOWNLOAD FILE')
+    # print('DOWNLOAD FILE')
     try:
         urllib.request.urlretrieve("https://github.com/Darkblader24/cats_supporter_list/archive/master.zip", supporter_zip_file)
     except urllib.error.URLError:
@@ -173,7 +173,7 @@ def download_file():
         shutil.rmtree(downloads_dir)
         finish_reloading()
         return
-    print('DOWNLOAD FINISHED')
+    # print('DOWNLOAD FINISHED')
 
     # If zip is not downloaded, abort
     if not os.path.isfile(supporter_zip_file):
@@ -183,10 +183,10 @@ def download_file():
         return
 
     # Extract the downloaded zip
-    print('EXTRACTING ZIP')
+    # print('EXTRACTING ZIP')
     with zipfile.ZipFile(supporter_zip_file, "r") as zip_ref:
         zip_ref.extractall(downloads_dir)
-    print('EXTRACTED')
+    # print('EXTRACTED')
 
     # If zip is not extracted, abort
     if not os.path.isdir(extracted_zip_dir):
@@ -197,10 +197,10 @@ def download_file():
 
     # delete existing supporter list and icon folder
     if os.path.isfile(supporter_list_file):
-        print("REMOVED SUPPORT LIST")
+        # print("REMOVED SUPPORT LIST")
         os.remove(supporter_list_file)
     if os.path.isdir(icons_supporter_dir):
-        print("REMOVED ICON DIR")
+        # print("REMOVED ICON DIR")
         shutil.rmtree(icons_supporter_dir)
 
     # Move the extracted files to their correct places
@@ -220,13 +220,13 @@ def download_file():
 def readJson():
     supporters_file = os.path.join(resources_dir, "supporters.json")
 
-    print('READING FILE')
+    # print('READING FILE')
 
     if not os.path.isfile(supporters_file):
         print("SUPPORTER LIST FILE NOT FOUND!")
         return
 
-    print("SUPPORTER LIST FILE FOUND!")
+    # print("SUPPORTER LIST FILE FOUND!")
     try:
         with open(supporters_file, encoding="utf8") as f:
             data = json.load(f)
@@ -280,6 +280,7 @@ def reload_supporters():
 
     # Finish reloading
     finish_reloading()
+    print('Updated supporter list.')
 
 
 def load_icons(pcoll):
@@ -359,13 +360,14 @@ def unload_icons():
 
 def check_for_update():
     if update_needed():
+        print('Updating supporter list..')
         download_file()
     else:
         finish_reloading()
 
 
 def update_needed():
-    print('CHECK UPDATE')
+    # print('CHECK UPDATE')
     try:
         with urllib.request.urlopen("https://api.github.com/repos/Darkblader24/cats_supporter_list/commits/master") as url:
             data = json.loads(url.read().decode())
@@ -391,7 +393,7 @@ def update_needed():
     last_update_str = tools.settings.get_last_supporter_update()
 
     if commit_date_str == last_update_str:
-        print('COMMIT IDENTICAL')
+        # print('COMMIT IDENTICAL')
         return False
 
     utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(time_format), time_format)
@@ -400,7 +402,7 @@ def update_needed():
     # print(utc_now)
     # print(time_delta)
 
-    print('SECONDS SINCE LAST UPDATE:', time_delta)
+    # print('SECONDS SINCE LAST UPDATE:', time_delta)
     if time_delta <= 120:
         print('COMMIT TOO CLOSE')
         return False

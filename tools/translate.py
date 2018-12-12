@@ -311,7 +311,7 @@ def load_translations():
         with open(dictionary_file, encoding="utf8") as file:
             temp_dict = json.load(file, object_pairs_hook=collections.OrderedDict)
             dict_found = True
-            print('DICTIONARY LOADED!')
+            # print('DICTIONARY LOADED!')
     except FileNotFoundError:
         print('DICTIONARY NOT FOUND!')
         pass
@@ -341,7 +341,7 @@ def load_translations():
 
                     temp_dict[name] = trans
 
-            print('GOOGLE DICTIONARY LOADED!')
+            # print('GOOGLE DICTIONARY LOADED!')
     except FileNotFoundError:
         print('GOOGLE DICTIONARY NOT FOUND!')
         reset_google_dict()

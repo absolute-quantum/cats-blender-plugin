@@ -1433,11 +1433,11 @@ def has_shapekeys(mesh):
 
 def matmul(a, b):
     if version_2_79_or_older():
-        return a*b
-    return a.__matmul__(b)
+        return a * b
+    return a @ b
 
 
-def set_cats_verion_string():
+def set_cats_version_string():
     version_str = ''
     version_temp = []
 
@@ -1475,7 +1475,7 @@ def ui_refresh():
                     for area in window.screen.areas:
                         area.tag_redraw()
             refreshed = True
-            print('Refreshed UI!')
+            # print('Refreshed UI')
         else:
             time.sleep(0.5)
 

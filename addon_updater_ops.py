@@ -1253,9 +1253,9 @@ def register(bl_info):
     # print("Running updater reg")
 
     # safer failure in case of issue loading module
-    if updater.error != None:
-        print("Exiting updater registration, error return")
-        return
+    # if updater.error != None:  TODO uncomment
+    #     print("Exiting updater registration, error return")
+    #     return
 
     # confirm your updater "engine" (Github is default if not specified)
     updater.engine = "Github"

@@ -102,42 +102,48 @@ globs.version = copy.deepcopy(bl_info.get('version'))
 def register():
     print("\n### Loading CATS...")
 
+    # Register updater
+    print("Loading Updater..")
+    try:
+        addon_updater_ops.register(bl_info)
+    except ValueError as e:
+        print('Error while loading Updater:\n' + str(e) + '\n')
+        pass
+
     # Load settings
+    print("Loading settings..")
     tools.settings.load_settings()
 
     # if not tools.settings.use_custom_mmd_tools():
     #     bpy.utils.unregister_module("mmd_tools")
 
     # Load mmd_tools
+    print("Loading mmd_tools..")
     try:
         mmd_tools_local.register()
     except AttributeError:
         print('Could not register local mmd_tools')
         pass
 
-    # Register updater
-    try:
-        addon_updater_ops.register(bl_info)
-    except ValueError as e:
-        print('\n!!! Error while registering Updater:\n' + str(e) + '\n')
-        pass
-
     # Register all classes
+    print('Registering CATS classes..')
     count = 0
     tools.register.order_classes()
-    for cls in tools.register.__bl_ordered_classes:
+    for cls in tools.register.__bl_classes:  # TODO ordered
         # print(cls)
         bpy.utils.register_class(cls)
         count += 1
     print('Registered', count, 'CATS classes.')
 
     # Register Scene types
+    print("Registering scene types..")
     extend_types.register()
 
     # Set cats version string
-    tools.common.set_cats_verion_string()
+    tools.common.set_cats_version_string()
 
     # Load supporter and settings icons and buttons
+    print("Loading other stuff..")
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
     tools.supporter.register_dynamic_buttons()
@@ -158,7 +164,7 @@ def register():
     # Apply the settings after a short time, because you can't change checkboxes during register process
     tools.settings.start_apply_settings_timer()
 
-    print("### Loaded CATS successfully!")
+    print("### Loaded CATS successfully!\n")
 
 
 def unregister():
@@ -187,7 +193,7 @@ def unregister():
     # Remove shapekey button from shapekey menu
     bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
 
-    print("### Unloaded CATS successfully!")
+    print("### Unloaded CATS successfully!\n")
 
 
 if __name__ == '__main__':

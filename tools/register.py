@@ -53,7 +53,6 @@ def make_annotations(cls):
 
 
 def order_classes():
-    print('ORDER CLASSES')
     global __bl_ordered_classes
     deps_dict = {}
     classes_to_register = set(iter_classes_to_register())
