@@ -48,9 +48,15 @@ if file_dir not in sys.path:
 import copy
 import globs
 import requests
+import addon_utils
 
 # Load package name, important for updater
 globs.package = __package__
+for mod in addon_utils.modules():
+    if mod.bl_info['name'] == "Cats Blender Plugin":
+        print(mod.__name__)
+
+print(globs.package)
 
 # Check if cats is reloading or started fresh
 if "bpy" not in locals():
@@ -101,6 +107,8 @@ globs.version = copy.deepcopy(bl_info.get('version'))
 
 def register():
     print("\n### Loading CATS...")
+
+    tools.register.remove_corrupted_files()
 
     # Register updater
     print("Loading Updater..")
