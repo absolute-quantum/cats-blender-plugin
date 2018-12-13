@@ -23,10 +23,8 @@
 # Code author: Hotox
 # Edits by: Hotox
 
-import os
 import bpy
 import typing
-import pathlib
 
 __bl_classes = []
 __bl_ordered_classes = []
@@ -112,8 +110,3 @@ def toposort(deps_dict):
                 unsorted.append(value)
         deps_dict = {value : deps_dict[value] - sorted_values for value in unsorted}
     return sorted_list
-
-
-def remove_corrupted_files():
-    main_dir = pathlib.Path(os.path.dirname(__file__)).parent.parent.resolve()
-    print(main_dir)

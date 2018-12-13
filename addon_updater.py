@@ -29,6 +29,7 @@ import urllib
 import os
 import json
 import zipfile
+import pathlib
 import shutil
 import asyncio
 import threading
@@ -792,19 +793,23 @@ class Singleton_updater(object):
             if self._verbose: print("Error, update zip not found")
             return -1
 
+        source_path = os.path.join(self._updater_path, "source")
+
         # clear the existing source folder in case previous files remain
         try:
-            shutil.rmtree(os.path.join(self._updater_path, "source"))
-            os.makedirs(os.path.join(self._updater_path, "source"))
+            shutil.rmtree(source_path)
             if self._verbose: print("Source folder cleared and recreated")
         except:
             pass
 
         if self._verbose: print("Begin extracting source")
+
+        pathlib.Path(source_path).mkdir(exist_ok=True)
+
         if zipfile.is_zipfile(self._source_zip):
-            with zipfile.ZipFile(self._source_zip) as zf:
+            with zipfile.ZipFile(self._source_zip, "r") as zf:
                 # extractall is no longer a security hazard, below is safe
-                zf.extractall(os.path.join(self._updater_path, "source"))
+                zf.extractall(source_path)
         else:
             if self._verbose:
                 print("Not a zip file, future add support for just .py files")
@@ -812,7 +817,7 @@ class Singleton_updater(object):
         if self._verbose: print("Extracted source")
 
         # either directly in root of zip, or one folder level deep
-        unpath = os.path.join(self._updater_path, "source")
+        unpath = os.path.join(source_path)
         if os.path.isfile(os.path.join(unpath, "__init__.py")) == False:
             dirlist = os.listdir(unpath)
             if len(dirlist) > 0:

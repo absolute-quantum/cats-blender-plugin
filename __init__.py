@@ -46,9 +46,12 @@ if file_dir not in sys.path:
     sys.path.append(file_dir)
 
 import copy
-import globs
+import shutil
+import pathlib
 import requests
 import addon_utils
+
+import globs
 
 # Load package name, important for updater
 globs.package = __package__
@@ -81,7 +84,6 @@ else:
 
 import extend_types
 
-
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
 # Delete mmd_tools_local folder
@@ -105,10 +107,105 @@ globs.dev_branch = True
 globs.version = copy.deepcopy(bl_info.get('version'))
 
 
+def remove_corrupted_files():
+    to_remove = [
+        'googletrans',
+        'mmd_tools_local',
+        'resources',
+        'tests',
+        'tools',
+        'ui',
+        '.gitignore',
+        '.travis.yml',
+        'LICENSE',
+        'README.md',
+        '__init__.py',
+        'addon_updater.py',
+        'addon_updater_ops.py',
+        'extend_types.py',
+        'globs.py',
+    ]
+
+    no_perm = False
+    os_error = False
+    wrong_path = False
+    faulty_installation = False
+    main_dir = str(pathlib.Path(os.path.dirname(__file__)).resolve())
+
+    if main_dir.endswith('addons'):
+        print(os.path.dirname(__file__))
+        print(main_dir)
+        print('Wrong installation path')
+        wrong_path = True
+    else:
+        main_dir = str(pathlib.Path(os.path.dirname(__file__)).parent.resolve())
+
+    print('Checking for CATS files in the addon directory:\n' + main_dir)
+    files = [f for f in os.listdir(main_dir) if os.path.isfile(os.path.join(main_dir, f))]
+    folders = [f for f in os.listdir(main_dir) if os.path.isdir(os.path.join(main_dir, f))]
+
+    for file in files:
+        if file in to_remove:
+            file_path = os.path.join(main_dir, file)
+            try:
+                os.remove(file_path)
+                faulty_installation = True
+                print('REMOVED', file)
+            except PermissionError:
+                no_perm = True
+                print("Permissions: Failed to remove file " + file)
+            except OSError:
+                os_error = True
+                print("OS: Failed to remove file " + file)
+
+    for folder in folders:
+        if folder in to_remove:
+            folder_path = os.path.join(main_dir, folder)
+            try:
+                shutil.rmtree(folder_path)
+                faulty_installation = True
+                print('REMOVED', folder)
+            except PermissionError:
+                no_perm = True
+                print("Permissions: Failed to remove folder " + folder)
+            except OSError:
+                os_error = True
+                print("Failed to remove folder " + folder)
+
+    if no_perm:
+        sys.tracebacklimit = 0
+        raise ImportError('Faulty CATS installation found!'
+                          '\nTo fix this restart Blender as admin!')
+
+    if os_error:
+        sys.tracebacklimit = 0
+        message = 'Faulty CATS installation found!' \
+                  '\nTo fix this delete the following files and folders inside your addons folder:'
+
+        for folder in folders:
+            if folder in to_remove:
+                message += "- " + os.path.join(main_dir, folder)
+
+        for file in files:
+            if file in to_remove:
+                message += "- " + os.path.join(main_dir, file)
+
+        raise ImportError(message)
+
+    if wrong_path:
+        sys.tracebacklimit = 0
+        raise ImportError('Faulty installation found! Please install CATS via User Preferences and restart Blender!')
+
+    if faulty_installation:
+        sys.tracebacklimit = 0
+        raise ImportError('\n\nFaulty CATS installation was found and fixed!'
+                          '\nPlease restart Blender and enable CATS again!')
+
+
 def register():
     print("\n### Loading CATS...")
 
-    tools.register.remove_corrupted_files()
+    remove_corrupted_files()
 
     # Register updater
     print("Loading Updater..")
@@ -120,7 +217,12 @@ def register():
 
     # Load settings
     print("Loading settings..")
-    tools.settings.load_settings()
+
+    try:
+        tools.settings.load_settings()
+    except FileNotFoundError:
+        sys.tracebacklimit = 0
+        raise ImportError('\n\nPlease restart Blender and enable CATS again!  ###  Please restart Blender and enable CATS again!')
 
     # if not tools.settings.use_custom_mmd_tools():
     #     bpy.utils.unregister_module("mmd_tools")
