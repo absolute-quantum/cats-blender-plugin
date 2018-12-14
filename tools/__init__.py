@@ -1,7 +1,6 @@
-import globs
-
-if not globs.is_reloading:
-    # print('STARTUP TOOLS!!')
+if "bpy" not in locals():
+    print('STARTUP TOOLS!!')
+    import bpy
     import tools.register
     import tools.armature
     import tools.armature_bones
@@ -23,7 +22,7 @@ if not globs.is_reloading:
     import tools.translate
     import tools.viseme
 else:
-    # print('RELOAD TOOLS!!')
+    print('RELOAD TOOLS!!')
     import importlib
     importlib.reload(tools.register)  # Has to be first
     importlib.reload(tools.armature)

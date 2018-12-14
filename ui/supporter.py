@@ -2,7 +2,6 @@ import bpy
 import globs
 import tools.common
 import tools.supporter
-import addon_updater_ops
 
 from ui.main import ToolPanel
 from ui.main import layout_split

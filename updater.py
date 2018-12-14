@@ -1,13 +1,11 @@
 import os
-import shutil
-import zipfile
-
 import bpy
 import time
 import json
-import globs
 import urllib
+import shutil
 import pathlib
+import zipfile
 from collections import OrderedDict
 from threading import Thread
 
@@ -23,6 +21,11 @@ update_finished = False
 
 main_dir = os.path.dirname(__file__)
 downloads_dir = os.path.join(main_dir, "downloads")
+
+# Icons for UI
+ICON_URL = 'URL'
+if bpy.app.version < (2, 79, 9):
+    ICON_URL = 'LOAD_FACTORY'
 
 
 class CheckForUpdateButton(bpy.types.Operator):
@@ -72,9 +75,9 @@ class UpdateToSelectedButton(bpy.types.Operator):
 
 
 class UpdateToDevButton(bpy.types.Operator):
-    bl_idname = 'cats_updater.show_patchnotes'
-    bl_label = 'Show Patchnotes'
-    bl_description = 'Shows the patchnotes of the selected version'
+    bl_idname = 'cats_updater.update_dev'
+    bl_label = 'Update to Development version'
+    bl_description = 'Updates CATS to the Development version'
 
     def execute(self, context):
         update_now(dev=True)
@@ -82,7 +85,7 @@ class UpdateToDevButton(bpy.types.Operator):
 
 
 class ShowPatchnotesPanel(bpy.types.Operator):
-    bl_idname = 'cats_updater.update_dev'
+    bl_idname = 'cats_updater.show_patchnotes'
     bl_label = 'Patchnotes'
     bl_description = 'Shows the patchnotes of the selected version'
 
@@ -392,7 +395,7 @@ def draw_updater_panel(context, layout):
 
     row = col.row(align=True)
     row.scale_y = 0.8
-    row.label(text='Updates:', icon=globs.ICON_URL)
+    row.label(text='Updates:', icon=ICON_URL)
     col.separator()
 
     if update_finished:

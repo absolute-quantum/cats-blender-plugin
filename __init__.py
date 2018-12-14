@@ -53,25 +53,16 @@ import addon_utils
 
 import globs
 
-# Load package name, important for updater
-globs.package = __package__
-for mod in addon_utils.modules():
-    if mod.bl_info['name'] == "Cats Blender Plugin":
-        print(mod.__name__)
-
-print(globs.package)
-
 # Check if cats is reloading or started fresh
 if "bpy" not in locals():
     import bpy
-    globs.is_reloading = False
+    is_reloading = False
 else:
-    globs.is_reloading = True
+    is_reloading = True
 
-if not globs.is_reloading:
+if not is_reloading:
     import updater
     import mmd_tools_local
-    import addon_updater_ops
 
     # This order is important
     import tools
@@ -80,7 +71,6 @@ else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
-    importlib.reload(addon_updater_ops)
     importlib.reload(tools)
     importlib.reload(ui)
 
@@ -104,9 +94,6 @@ import extend_types
 
 # How to set up PyCharm with Blender:
 # https://b3d.interplanety.org/en/using-external-ide-pycharm-for-writing-blender-scripts/
-
-globs.dev_branch = True
-globs.version = copy.deepcopy(bl_info.get('version'))
 
 
 def remove_corrupted_files():
@@ -237,16 +224,13 @@ def register():
     remove_corrupted_files()
 
     # Register Updater and check for CATS update
+    print("Loading Updater..")
     updater.register(bl_info)
     # updater.check_for_update_background()
 
-    # Register updater
-    print("Loading Updater..")
-    try:
-        addon_updater_ops.register(bl_info)
-    except ValueError as e:
-        print('Error while loading Updater:\n' + str(e) + '\n')
-        pass
+    # Set some global settings
+    globs.dev_branch = True
+    globs.version = copy.deepcopy(bl_info.get('version'))
 
     # Load settings and show error if a faulty installation was deleted recently
     print("Loading settings..")
@@ -337,9 +321,6 @@ def unregister():
         bpy.utils.unregister_class(cls)
         count += 1
     print('Unregistered', count, 'CATS classes.')
-
-    # Unload the updater
-    addon_updater_ops.unregister()
 
     # Unregister all dynamic buttons and icons
     tools.supporter.unregister_dynamic_buttons()

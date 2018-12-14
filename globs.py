@@ -11,9 +11,6 @@ dev_branch = False
 dict_found = False
 version = None
 version_str = ''
-is_reloading = False
-
-package = ''
 
 # other
 time_format = "%Y-%m-%d %H:%M:%S"

@@ -2,7 +2,6 @@ import bpy
 import globs
 import tools.common
 import tools.supporter
-import addon_updater_ops
 
 from ui.main import ToolPanel
 from ui.main import get_emtpy_icon
@@ -16,7 +15,6 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_label = 'Model'
 
     def draw(self, context):
-        addon_updater_ops.check_for_update_background()
 
         layout = self.layout
         box = layout.box()
@@ -36,16 +34,16 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
-        if addon_updater_ops.updater.update_ready:
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text='New Cats version available!', icon='INFO')
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text='Check the Updater panel!', icon_value=get_emtpy_icon())
-            col.separator()
-            col.separator()
+        # if addon_updater_ops.updater.update_ready:  # TODO
+        #     col.separator()
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text='New Cats version available!', icon='INFO')
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text='Check the Updater panel!', icon_value=get_emtpy_icon())
+        #     col.separator()
+        #     col.separator()
 
         if not globs.dict_found:
             col.separator()
@@ -183,5 +181,3 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.scale_y = 0.9
                 row.operator('armature_manual.pose_to_rest', icon='POSE_HLT')
-
-        # addon_updater_ops.update_notice_box_ui(self, context)
