@@ -36,7 +36,7 @@ ignore_meshes = []
 
 @register_wrap
 class ScanButton(bpy.types.Operator):
-    bl_idname = 'auto.scan'
+    bl_idname = 'cats_decimation.auto_scan'
     bl_label = 'Scan for decimation models'
     bl_description = 'Separates the mesh.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -63,7 +63,7 @@ class ScanButton(bpy.types.Operator):
 
 @register_wrap
 class AddShapeButton(bpy.types.Operator):
-    bl_idname = 'add.shape'
+    bl_idname = 'cats_decimation.add_shape'
     bl_label = 'Add'
     bl_description = 'Adds the selected shape key to the whitelist.\n' \
                      'This means that every mesh containing that shape key will be not decimated.'
@@ -91,7 +91,7 @@ class AddShapeButton(bpy.types.Operator):
 
 @register_wrap
 class AddMeshButton(bpy.types.Operator):
-    bl_idname = 'add.mesh'
+    bl_idname = 'cats_decimation.add_mesh'
     bl_label = 'Add'
     bl_description = 'Adds the selected mesh to the whitelist.\n' \
                      'This means that this mesh will be not decimated.'
@@ -111,7 +111,7 @@ class AddMeshButton(bpy.types.Operator):
 
 @register_wrap
 class RemoveShapeButton(bpy.types.Operator):
-    bl_idname = 'remove.shape'
+    bl_idname = 'cats_decimation.remove_shape'
     bl_label = ''
     bl_description = 'Removes the selected shape key from the whitelist.\n' \
                      'This means that this shape key is no longer decimation safe!'
@@ -126,7 +126,7 @@ class RemoveShapeButton(bpy.types.Operator):
 
 @register_wrap
 class RemoveMeshButton(bpy.types.Operator):
-    bl_idname = 'remove.mesh'
+    bl_idname = 'cats_decimation.remove_mesh'
     bl_label = ''
     bl_description = 'Removes the selected mesh from the whitelist.\n' \
                      'This means that this mesh will be decimated.'
@@ -141,7 +141,7 @@ class RemoveMeshButton(bpy.types.Operator):
 
 @register_wrap
 class AutoDecimateButton(bpy.types.Operator):
-    bl_idname = 'auto.decimate'
+    bl_idname = 'cats_decimation.auto_decimate'
     bl_label = 'Quick Decimation'
     bl_description = 'This will automatically decimate your model while preserving the shape keys.\n' \
                      'You should manually remove unimportant meshes first.'

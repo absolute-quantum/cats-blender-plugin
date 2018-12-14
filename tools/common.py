@@ -1314,12 +1314,12 @@ def show_error(scale, error_list, override_header=False):
         bpy.utils.unregister_class(ShowError)
         bpy.utils.register_class(ShowError)
 
-    bpy.ops.error.show('INVOKE_DEFAULT')
+    bpy.ops.cats_common.show_error('INVOKE_DEFAULT')
 
 
 @register_wrap
 class ShowError(bpy.types.Operator):
-    bl_idname = 'error.show'
+    bl_idname = 'cats_common.show_error'
     bl_label = 'Report: Error'
 
     def execute(self, context):

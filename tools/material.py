@@ -34,7 +34,7 @@ from tools.register import register_wrap
 
 @register_wrap
 class OneTexPerMatButton(bpy.types.Operator):
-    bl_idname = 'one.tex'
+    bl_idname = 'cats_material.one_tex'
     bl_label = 'One Material Texture'
     bl_description = 'Have all material slots ignore extra texture slots as these are not used by VRChat'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -65,7 +65,7 @@ class OneTexPerMatButton(bpy.types.Operator):
 
 @register_wrap
 class OneTexPerMatOnlyButton(bpy.types.Operator):
-    bl_idname = 'one.tex_only'
+    bl_idname = 'cats_material.one_tex_only'
     bl_label = 'One Material Texture'
     bl_description = 'Have all material slots ignore extra texture slots as these are not used by VRChat.' \
                      '\nAlso removes the textures from the material instead of disabling it.' \
@@ -98,7 +98,7 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
 
 @register_wrap
 class StandardizeTextures(bpy.types.Operator):
-    bl_idname = 'textures.standardize'
+    bl_idname = 'cats_material.standardize_textures'
     bl_label = 'Standardize Textures'
     bl_description = 'Enables Color and Alpha on every texture, sets the blend method to Multiply' \
                      '\nand changes the materials transparency to Z-Transparency'
@@ -136,7 +136,7 @@ class StandardizeTextures(bpy.types.Operator):
 
 @register_wrap
 class CombineMaterialsButton(bpy.types.Operator):
-    bl_idname = 'combine.mats'
+    bl_idname = 'cats_material.combine_mats'
     bl_label = 'Combine Same Materials'
     bl_description = 'Combines similar materials into one, reducing draw calls.\n' \
                      'Your avatar should visibly look the same after this operation.\n' \
@@ -287,7 +287,7 @@ class CombineMaterialsButton(bpy.types.Operator):
 
             # Update atlas list
             if len(context.scene.material_list) > 0:
-                bpy.ops.atlas.gen_mat_list()
+                bpy.ops.cats_atlas.gen_mat_list()
 
             # print('CLEANED MAT SLOTS')
 

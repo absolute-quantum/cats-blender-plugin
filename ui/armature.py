@@ -3,6 +3,8 @@ import globs
 import tools.common
 import tools.supporter
 
+from tools import armature, importer, armature_manual
+
 from ui.main import ToolPanel
 from ui.main import get_emtpy_icon
 from tools.common import version_2_79_or_older
@@ -98,21 +100,21 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             split = col.row(align=True)
             row = split.row(align=True)
             row.scale_y = 1.7
-            row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
+            row.operator(importer.ImportAnyModel.bl_idname, text='Import Model', icon='ARMATURE_DATA')
             row = split.row(align=True)
             row.alignment = 'RIGHT'
             row.scale_y = 1.7
-            row.operator("model.popup", text="", icon='COLLAPSEMENU')
+            row.operator(importer.ModelsPopup.bl_idname, text="", icon='COLLAPSEMENU')
             return
         else:
             split = col.row(align=True)
             row = split.row(align=True)
             row.scale_y = 1.4
-            row.operator('importer.import_any_model', text='Import Model', icon='ARMATURE_DATA')
-            row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
+            row.operator(importer.ImportAnyModel.bl_idname, text='Import Model', icon='ARMATURE_DATA')
+            row.operator(importer.ExportModel.bl_idname, icon='ARMATURE_DATA').action = 'CHECK'
             row = split.row(align=True)
             row.scale_y = 1.4
-            row.operator("model.popup", text="", icon='COLLAPSEMENU')
+            row.operator(importer.ModelsPopup.bl_idname, text="", icon='COLLAPSEMENU')
 
             # split = col.row(align=True)
             # row = split.row(align=True)
@@ -147,11 +149,11 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         split = col.row(align=True)
         row = split.row(align=True)
         row.scale_y = 1.5
-        row.operator('armature.fix', icon=globs.ICON_FIX_MODEL)
+        row.operator(armature.FixArmature.bl_idname, icon=globs.ICON_FIX_MODEL)
         row = split.row(align=True)
         row.alignment = 'RIGHT'
         row.scale_y = 1.5
-        row.operator("armature.settings", text="", icon='MODIFIER')
+        row.operator(armature.ModelSettings.bl_idname, text="", icon='MODIFIER')
 
         if context.scene.full_body:
             row = col.row(align=True)
@@ -165,19 +167,19 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
-        armature = tools.common.get_armature()
-        if not armature or armature.mode != 'POSE':
+        armature_obj = tools.common.get_armature()
+        if not armature_obj or armature_obj.mode != 'POSE':
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.operator('armature_manual.start_pose_mode', icon='POSE_HLT')
+            row.operator(armature_manual.StartPoseMode.bl_idname, icon='POSE_HLT')
         else:
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.operator('armature_manual.stop_pose_mode', icon=globs.ICON_POSE_MODE)
+            row.operator(armature_manual.StopPoseMode.bl_idname, icon=globs.ICON_POSE_MODE)
             if not tools.eyetracking.eye_left:
                 row = col.row(align=True)
                 row.scale_y = 0.9
-                row.operator('armature_manual.pose_to_shape', icon='SHAPEKEY_DATA')
+                row.operator(armature_manual.PoseToShape.bl_idname, icon='SHAPEKEY_DATA')
                 row = col.row(align=True)
                 row.scale_y = 0.9
-                row.operator('armature_manual.pose_to_rest', icon='POSE_HLT')
+                row.operator(armature_manual.PoseToRest.bl_idname, icon='POSE_HLT')

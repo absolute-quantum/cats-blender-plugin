@@ -30,7 +30,7 @@ from tools.register import register_wrap
 
 @register_wrap
 class ForumButton(bpy.types.Operator):
-    bl_idname = 'credits.forum'
+    bl_idname = 'cats_credits.forum'
     bl_label = 'Go to the Forums'
 
     def execute(self, context):
@@ -42,7 +42,7 @@ class ForumButton(bpy.types.Operator):
 
 @register_wrap
 class DiscordButton(bpy.types.Operator):
-    bl_idname = 'credits.discord'
+    bl_idname = 'cats_credits.discord'
     bl_label = 'Join our Discord'
 
     def execute(self, context):
@@ -54,7 +54,7 @@ class DiscordButton(bpy.types.Operator):
 
 @register_wrap
 class PatchnotesButton(bpy.types.Operator):
-    bl_idname = 'credits.patchnotes'
+    bl_idname = 'cats_credits.patchnotes'
     bl_label = 'Latest Patchnotes'
 
     def execute(self, context):

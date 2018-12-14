@@ -108,11 +108,19 @@ class ShowPatchnotesPanel(bpy.types.Operator):
         row.prop(context.scene, 'cats_updater_version_list')
 
         if context.scene.cats_updater_version_list:
+            version = version_list.get(context.scene.cats_updater_version_list)
+
             col.separator()
-            for line in version_list.get(context.scene.cats_updater_version_list)[1].replace('**', '').split('\r\n'):
+            row = col.row(align=True)
+            row.label(text='Released: ' + version[2])
+
+            col.separator()
+            for line in version[1].replace('**', '').split('\r\n'):
                 row = col.row(align=True)
                 row.scale_y = 0.75
                 row.label(text=line)
+
+        col.separator()
 
 
 def check_for_update_background():
@@ -157,10 +165,10 @@ def get_github_tags():
     for version in data:
         if 'yanked' in version.get('name').lower():
             continue
-        version_list[version.get('tag_name')] = [version.get('zipball_url'), version.get('body')]
+        version_list[version.get('tag_name')] = [version.get('zipball_url'), version.get('body'), version.get('published_at').split('T')[0]]
 
     for version, info in version_list.items():
-        print(version, info[0])
+        print(version, info[0], info[2])
 
 
 def check_for_update_available():

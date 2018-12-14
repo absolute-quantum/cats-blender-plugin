@@ -32,7 +32,7 @@ from tools.register import register_wrap
 @register_wrap
 class ShapeKeyApplier(bpy.types.Operator):
     # Replace the 'Basis' shape key with the currently selected shape key
-    bl_idname = "object.shape_key_to_basis"
+    bl_idname = "cats_shapekey.shape_key_to_basis"
     bl_label = "Apply Selected Shapekey as Basis"
     bl_description = 'Applies the selected shape key as the new Basis and creates a reverted shape key from the selected one'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}

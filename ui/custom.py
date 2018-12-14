@@ -7,6 +7,8 @@ import tools.armature_bones
 from ui.main import ToolPanel
 from ui.main import get_emtpy_icon
 
+from tools import armature_custom
+
 from tools.register import register_wrap
 from tools.common import version_2_79_or_older
 
@@ -31,7 +33,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             return
 
         row = col.row(align=True)
-        row.operator('armature_custom.button', text='How to Use', icon='FORWARD')
+        row.operator(armature_custom.CustomModelTutorialButton.bl_idname, text='How to Use', icon='FORWARD')
         col.separator()
 
         row = col.row(align=True)
@@ -81,7 +83,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.2
-            row.operator('armature_custom.merge_armatures', icon='ARMATURE_DATA')
+            row.operator(armature_custom.MergeArmature.bl_idname, icon='ARMATURE_DATA')
 
         # Attach Mesh
         else:
@@ -111,4 +113,4 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.2
-            row.operator('armature_custom.attach_mesh', icon='ARMATURE_DATA')
+            row.operator(armature_custom.AttachMesh.bl_idname, icon='ARMATURE_DATA')

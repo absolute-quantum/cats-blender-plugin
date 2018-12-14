@@ -34,7 +34,7 @@ from tools.register import register_wrap
 
 @register_wrap
 class CopyProtectionEnable(bpy.types.Operator):
-    bl_idname = 'copyprotection.enable'
+    bl_idname = 'cats_copyprotection.enable'
     bl_label = 'Enable Protection'
     bl_description = 'Protects your model from piracy. Read the documentation before use'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -127,7 +127,7 @@ class CopyProtectionEnable(bpy.types.Operator):
 
 @register_wrap
 class CopyProtectionDisable(bpy.types.Operator):
-    bl_idname = 'copyprotection.disable'
+    bl_idname = 'cats_copyprotection.disable'
     bl_label = 'Disable Protection'
     bl_description = 'Removes the copy protections from this model'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -157,7 +157,7 @@ class CopyProtectionDisable(bpy.types.Operator):
 
 @register_wrap
 class ProtectionTutorialButton(bpy.types.Operator):
-    bl_idname = 'copyprotection.button'
+    bl_idname = 'cats_copyprotection.tutorial'
     bl_label = 'Go to Documentation'
 
     def execute(self, context):

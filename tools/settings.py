@@ -55,7 +55,7 @@ lock_settings = False
 
 @register_wrap
 class RevertChangesButton(bpy.types.Operator):
-    bl_idname = 'settings.revert'
+    bl_idname = 'cats_settings.revert'
     bl_label = 'Revert Settings'
     bl_description = 'Revert the changes back to how they were on Blender start-up'
     bl_options = {'INTERNAL'}
@@ -70,7 +70,7 @@ class RevertChangesButton(bpy.types.Operator):
 
 @register_wrap
 class ResetGoogleDictButton(bpy.types.Operator):
-    bl_idname = 'settings.reset_google_dict'
+    bl_idname = 'cats_settings.reset_google_dict'
     bl_label = 'Clear Local Google Translations'
     bl_description = "Deletes all currently saved Google Translations. You can't undo this"
     bl_options = {'INTERNAL'}
@@ -84,7 +84,7 @@ class ResetGoogleDictButton(bpy.types.Operator):
 
 @register_wrap
 class DebugTranslations(bpy.types.Operator):
-    bl_idname = 'settings.debug_translations'
+    bl_idname = 'cats_settings.debug_translations'
     bl_label = 'Debug Google Translations'
     bl_description = "Tests Google transaltions and prints the response into a file called 'google-response.txt' located in the cats addon folder > resources" \
                      "\nThis button is only visible in the cats development version"

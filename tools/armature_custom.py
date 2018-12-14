@@ -33,7 +33,7 @@ from tools.register import register_wrap
 
 @register_wrap
 class MergeArmature(bpy.types.Operator):
-    bl_idname = 'armature_custom.merge_armatures'
+    bl_idname = 'cats_custom.merge_armatures'
     bl_label = 'Merge Armatures'
     bl_description = "Merges the selected merge armature into the base armature." \
                      "\nYou should fix both armatures with Cats first." \
@@ -115,7 +115,7 @@ class MergeArmature(bpy.types.Operator):
 
 @register_wrap
 class AttachMesh(bpy.types.Operator):
-    bl_idname = 'armature_custom.attach_mesh'
+    bl_idname = 'cats_custom.attach_mesh'
     bl_label = 'Attach Mesh'
     bl_description = "Attaches the selected mesh to the selected bone of the selected armature." \
                      "\n" \
@@ -183,7 +183,7 @@ class AttachMesh(bpy.types.Operator):
 
 @register_wrap
 class CustomModelTutorialButton(bpy.types.Operator):
-    bl_idname = 'armature_custom.button'
+    bl_idname = 'cats_custom.tutorial'
     bl_label = 'Go to Documentation'
 
     def execute(self, context):

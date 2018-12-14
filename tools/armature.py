@@ -44,7 +44,7 @@ mmd_tools_installed = True
 
 @register_wrap
 class FixArmature(bpy.types.Operator):
-    bl_idname = 'armature.fix'
+    bl_idname = 'cats_armature.fix'
     bl_label = 'Fix Model'
     bl_description = 'Automatically:\n' \
                      '- Reparents bones\n' \
@@ -362,7 +362,7 @@ class FixArmature(bpy.types.Operator):
         # Combines same materials
         if context.scene.combine_mats:
             if version_2_79_or_older():
-                bpy.ops.combine.mats()
+                bpy.ops.cats_material.combine_mats()
             else:
                 pass
                 # TODO
@@ -1199,7 +1199,7 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
 
 @register_wrap
 class ModelSettings(bpy.types.Operator):
-    bl_idname = "armature.settings"
+    bl_idname = "cats_armature.settings"
     bl_label = "Fix Model Settings"
 
     def execute(self, context):

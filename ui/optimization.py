@@ -11,6 +11,8 @@ from importlib import import_module
 from tools.common import version_2_79_or_older
 from tools.register import register_wrap
 
+from tools import atlas, material, bonemerge, rootbone
+
 draw_smc_ui = None
 old_smc_version = False
 smc_is_disabled = False
@@ -92,7 +94,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row = split.row(align=True)
             row.alignment = 'RIGHT'
             row.scale_y = 0.9
-            row.operator("atlas.help", text="", icon='QUESTION')
+            row.operator(atlas.AtlasHelpButton.bl_idname, text="", icon='QUESTION')
             col.separator()
 
             # Draw v1.0 mat comb ui
@@ -107,14 +109,14 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 row.label(text="Old Combiner version, consider upgrading:", icon='INFO')
                 col2.separator()
                 row = col2.row(align=True)
-                row.operator('download.shotariya', text='Download Material Combiner v2.0', icon=globs.ICON_URL)
+                row.operator(atlas.ShotariyaButton.bl_idname, text='Download Material Combiner v2.0', icon=globs.ICON_URL)
                 col.separator()
 
                 if len(context.scene.material_list) == 0:
                     col.separator()
                     row = col.row(align=True)
                     row.scale_y = 1.2
-                    row.operator('atlas.gen_mat_list', icon='TRIA_RIGHT')
+                    row.operator(atlas.GenerateMaterialListButton.bl_idname, icon='TRIA_RIGHT')
                     col.separator()
                 else:
                     # row = col.row(align=True)
@@ -125,18 +127,18 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
                     row = layout_split(col, factor=0.8, align=True)
                     row.scale_y = 1.2
-                    row.operator('atlas.gen_mat_list', text='Update Material List', icon='FILE_REFRESH')
+                    row.operator(atlas.GenerateMaterialListButton.bl_idname, text='Update Material List', icon='FILE_REFRESH')
                     if context.scene.clear_materials:
-                        row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_HLT')
+                        row.operator(atlas.CheckMaterialListButton.bl_idname, text='', icon='CHECKBOX_HLT')
                     else:
-                        row.operator('atlas.check_mat_list', text='', icon='CHECKBOX_DEHLT')
+                        row.operator(atlas.CheckMaterialListButton.bl_idname, text='', icon='CHECKBOX_DEHLT')
 
-                    row.operator('atlas.clear_mat_list', text='', icon='X')
+                    row.operator(atlas.ClearMaterialListButton.bl_idname, text='', icon='X')
                     col.separator()
 
                 row = col.row(align=True)
                 row.scale_y = 1.7
-                row.operator('atlas.generate', icon='TRIA_RIGHT')
+                row.operator(atlas.AutoAtlasNewButton.bl_idname, icon='TRIA_RIGHT')
                 check_for_smc()
                 return
 
@@ -176,7 +178,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 row.label(text="Enable it in your user preferences:")
                 col.separator()
                 row = col.row(align=True)
-                row.operator('cats.enable_smc', icon='CHECKBOX_HLT')
+                row.operator(atlas.EnableSMC.bl_idname, icon='CHECKBOX_HLT')
 
                 check_for_smc()
                 return
@@ -194,7 +196,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 row.label(text="Download and install it manually:")
                 col.separator()
                 row = col.row(align=True)
-                row.operator('download.shotariya', icon=globs.ICON_URL)
+                row.operator(atlas.ShotariyaButton.bl_idname, icon=globs.ICON_URL)
 
                 check_for_smc()
                 return
@@ -218,19 +220,19 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             col = box.column(align=True)
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.operator('combine.mats', icon='MATERIAL')
+            row.operator(material.CombineMaterialsButton.bl_idname, icon='MATERIAL')
 
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.operator('one.tex', icon='TEXTURE')
+            row.operator(material.OneTexPerMatButton.bl_idname, icon='TEXTURE')
             subcol = row.row(align=True)
             subcol.alignment = 'RIGHT'
             subcol.scale_y = 1.1
-            subcol.operator("one.tex_only", text="", icon='X')
+            subcol.operator(material.OneTexPerMatOnlyButton.bl_idname, text="", icon='X')
 
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.operator('textures.standardize', icon=globs.ICON_SHADING_TEXTURE)
+            row.operator(material.StandardizeTextures.bl_idname, icon=globs.ICON_SHADING_TEXTURE)
 
         elif context.scene.optimize_mode == 'BONEMERGING':
             if len(tools.common.get_meshes_objects()) > 1:
@@ -242,5 +244,5 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'merge_ratio')
             row = box.row(align=True)
             col.separator()
-            row.operator('refresh.root', icon='FILE_REFRESH')
-            row.operator('bone.merge', icon='AUTOMERGE_ON')
+            row.operator(rootbone.RefreshRootButton.bl_idname, icon='FILE_REFRESH')
+            row.operator(bonemerge.BoneMergeButton.bl_idname, icon='AUTOMERGE_ON')

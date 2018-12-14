@@ -54,7 +54,7 @@ resources_dir = os.path.join(str(main_dir), "resources")
 
 @register_wrap
 class PatreonButton(bpy.types.Operator):
-    bl_idname = 'supporter.patreon'
+    bl_idname = 'cats_supporter.patreon'
     bl_label = 'Become a Patron'
 
     def execute(self, context):
@@ -66,7 +66,7 @@ class PatreonButton(bpy.types.Operator):
 
 @register_wrap
 class ReloadButton(bpy.types.Operator):
-    bl_idname = 'supporter.reload'
+    bl_idname = 'cats_supporter.reload'
     bl_label = 'Reload List'
     bl_description = 'Reloads the supporter list'
 
@@ -86,7 +86,7 @@ class ReloadButton(bpy.types.Operator):
 
 @register_wrap
 class DynamicPatronButton(bpy.types.Operator):
-    bl_idname = 'support.dynamic_patron_button'
+    bl_idname = 'cats_supporter.dynamic_patron_button'
     bl_label = 'Supporter Name'
     bl_description = 'This is an awesome supporter'
 

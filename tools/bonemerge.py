@@ -37,7 +37,7 @@ from tools.register import register_wrap
 
 @register_wrap
 class BoneMergeButton(bpy.types.Operator):
-    bl_idname = 'bone.merge'
+    bl_idname = 'cats_bonemerge.merge_bones'
     bl_label = 'Merge Bones'
     bl_description = 'Merges the given percentage of bones together.\n' \
                      'This is useful to reduce the amount of bones used by Dynamic Bones.'

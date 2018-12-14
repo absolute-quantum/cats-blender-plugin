@@ -34,7 +34,7 @@ from difflib import SequenceMatcher
 
 @register_wrap
 class RootButton(bpy.types.Operator):
-    bl_idname = 'root.function'
+    bl_idname = 'cats_root.create_root'
     bl_label = 'Parent Bones'
     bl_description = 'This will duplicate the parent of the bones and reparent them to the duplicate.\n' \
                      'Very useful for Dynamic Bones.'
@@ -164,7 +164,7 @@ def get_parent_root_bones(self, context):
 
 @register_wrap
 class RefreshRootButton(bpy.types.Operator):
-    bl_idname = 'refresh.root'
+    bl_idname = 'cats_root.refresh_root_list'
     bl_label = 'Refresh List'
     bl_description = 'This will clear the group bones list cache and rebuild it, useful if bones have changed or your model.'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
