@@ -1,5 +1,6 @@
 import bpy
 import globs
+import updater
 import tools.common
 import tools.supporter
 import addon_updater_ops
@@ -53,4 +54,6 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 
         # Updater
         # addon_updater_ops.check_for_update_background()
-        addon_updater_ops.update_settings_ui(self, context)
+        # addon_updater_ops.update_settings_ui(self, context)
+
+        updater.draw_updater_panel(context, layout)
