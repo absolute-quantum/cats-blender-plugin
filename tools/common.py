@@ -608,6 +608,9 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
+    # Remove objects that have no user
+    tools.common.remove_no_user_objects()
+
     meshes = get_meshes_objects(armature_name=armature_name)
 
     # Find out which meshes to join
@@ -621,7 +624,6 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     if not meshes_to_join:
         return None
 
-    print(get_armature(armature_name).mode)
     set_default_stage()
     unselect_all()
 
@@ -666,10 +668,15 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                 if mesh.data.uv_layers:
                     mesh.data.uv_layers[0].name = 'UVMap'
 
+    print('CHECK')
+    for mesh in meshes:
+        print(mesh.name, mesh.users)
+
     # Join the meshes
     if bpy.ops.object.join.poll():
         bpy.ops.object.join()
     else:
+        print('NO MESH COMBINED!')
         return None
 
     # Rename result to Body and correct modifiers
@@ -1132,9 +1139,9 @@ def delete_hierarchy(parent):
     get_child_names(parent)
     to_delete.append(parent)
 
+    objs = bpy.data.objects
     for obj in to_delete:
-        obj.animation_data_clear()
-        bpy.data.objects.remove(obj)
+        objs.remove(objs[obj.name], True)
 
 
 def delete(obj):
@@ -1142,8 +1149,8 @@ def delete(obj):
         for child in obj.children:
             child.parent = obj.parent
 
-    obj.animation_data_clear()
-    bpy.data.objects.remove(obj)
+    objs = bpy.data.objects
+    objs.remove(objs[obj.name], True)
 
 
 def days_between(d1, d2, time_format):
@@ -1218,6 +1225,20 @@ def remove_unused_objects():
                 or (obj.type == 'LIGHT' and obj.name == 'Light') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
             delete_hierarchy(obj)
+
+
+def remove_no_user_objects():
+    print('\nREMOVE MESHES')
+    for block in bpy.data.meshes:
+        print(block.name, block.users)
+        if block.users == 0:
+            bpy.data.meshes.remove(block)
+
+    # print('\nREMOVE MATS')
+    # for block in bpy.data.materials:
+    #     print(block.name, block.users)
+    #     if block.users == 0:
+    #         bpy.data.materials.remove(block)
 
 
 def is_end_bone(name, armature_name):

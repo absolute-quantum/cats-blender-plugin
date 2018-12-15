@@ -359,7 +359,9 @@ class JoinMeshes(bpy.types.Operator):
         return meshes and len(meshes) > 0
 
     def execute(self, context):
-        tools.common.join_meshes()
+        if not tools.common.join_meshes():
+            self.report({'ERROR'}, 'Meshes could not be joined!')
+            return {'CANCELLED'}
 
         self.report({'INFO'}, 'Meshes joined.')
         return {'FINISHED'}
@@ -393,7 +395,9 @@ class JoinMeshesSelected(bpy.types.Operator):
             self.report({'ERROR'}, 'No meshes selected! Please select the meshes you want to join in the hierarchy!')
             return {'FINISHED'}
 
-        tools.common.join_meshes(mode=1)
+        if not tools.common.join_meshes(mode=1):
+            self.report({'ERROR'}, 'Selected meshes could not be joined!')
+            return {'CANCELLED'}
 
         self.report({'INFO'}, 'Selected meshes joined.')
         return {'FINISHED'}

@@ -290,6 +290,7 @@ class FixArmature(bpy.types.Operator):
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
+
         # tools.common.select(armature)
         #
         # # Correct pivot position
