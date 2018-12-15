@@ -6,8 +6,11 @@ import urllib
 import shutil
 import pathlib
 import zipfile
+import addon_utils
 from collections import OrderedDict
 from threading import Thread
+
+fake_update = True
 
 is_checking_for_update = False
 
@@ -19,12 +22,22 @@ latest_version_str = ''
 checked_with_button = False
 update_finished = False
 
+confirm_update_to = ''
+
 main_dir = os.path.dirname(__file__)
 downloads_dir = os.path.join(main_dir, "downloads")
 
+# Get package name, important for panel in user preferences
+package_name = ''
+for mod in addon_utils.modules():
+    if mod.bl_info['name'] == 'Cats Blender Plugin':
+        package_name = mod.__name__
+
 # Icons for UI
+ICON_ADD, ICON_REMOVE = 'ADD', 'REMOVE'
 ICON_URL = 'URL'
 if bpy.app.version < (2, 79, 9):
+    ICON_ADD, ICON_REMOVE = 'ZOOMIN', 'ZOOMOUT'
     ICON_URL = 'LOAD_FACTORY'
 
 
@@ -54,7 +67,10 @@ class UpdateToLatestButton(bpy.types.Operator):
         return update_needed
 
     def execute(self, context):
-        update_now(latest=True)
+        global confirm_update_to
+        confirm_update_to = 'latest'
+
+        bpy.ops.cats_updater.confirm_update_panel('INVOKE_DEFAULT')
         return {'FINISHED'}
 
 
@@ -70,7 +86,10 @@ class UpdateToSelectedButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        update_now(version=context.scene.cats_updater_version_list)
+        global confirm_update_to
+        confirm_update_to = context.scene.cats_updater_version_list
+
+        bpy.ops.cats_updater.confirm_update_panel('INVOKE_DEFAULT')
         return {'FINISHED'}
 
 
@@ -80,7 +99,10 @@ class UpdateToDevButton(bpy.types.Operator):
     bl_description = 'Updates CATS to the Development version'
 
     def execute(self, context):
-        update_now(dev=True)
+        global confirm_update_to
+        confirm_update_to = 'dev'
+
+        bpy.ops.cats_updater.confirm_update_panel('INVOKE_DEFAULT')
         return {'FINISHED'}
 
 
@@ -88,6 +110,12 @@ class ShowPatchnotesPanel(bpy.types.Operator):
     bl_idname = 'cats_updater.show_patchnotes'
     bl_label = 'Patchnotes'
     bl_description = 'Shows the patchnotes of the selected version'
+
+    @classmethod
+    def poll(cls, context):
+        if is_checking_for_update or not version_list:
+            return False
+        return True
 
     def execute(self, context):
         return {'FINISHED'}
@@ -123,6 +151,89 @@ class ShowPatchnotesPanel(bpy.types.Operator):
         col.separator()
 
 
+class ConfirmUpdatePanel(bpy.types.Operator):
+    bl_idname = 'cats_updater.confirm_update_panel'
+    bl_label = 'Confirm Update'
+    bl_description = 'This shows you a panel in which you have to confirm your update choice'
+
+    show_patchnotes = False
+
+    def execute(self, context):
+        print('UPDATE TO ' + confirm_update_to)
+        if confirm_update_to == 'dev':
+            update_now(dev=True)
+        elif confirm_update_to == 'latest':
+            update_now(latest=True)
+        else:
+            update_now(version=confirm_update_to)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.1, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        version_str = confirm_update_to
+        if confirm_update_to == 'latest':
+            version_str = latest_version_str
+        elif confirm_update_to == 'dev':
+            version_str = 'Development'
+
+        col.separator()
+        row = col.row(align=True)
+        row.label(text='Version: ' + version_str)
+
+        if confirm_update_to == 'dev':
+            col.separator()
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text='Warning:')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text=' The development version of CATS is the place where')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text=' we test new features and bug fixes.')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text=' This version might be very unstable and some features')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text=' might not work correctly.')
+
+        else:
+            row.operator(ShowPatchnotesPanel.bl_idname, text='Show Patchnotes')
+
+        # col.separator()
+        # col.separator()
+        # row = col.row(align=True)
+        # row.scale_y = 0.75
+        # row.label(text='Click somewhere outside to cancel.')
+        # col.separator()
+
+        # col.separator()
+        # col.separator()
+        # row = col.row(align=True)
+        # row.scale_y = 1.4
+        # row.operator(UpdateNowButton.bl_idname, text='Update now to ' + version_str)
+
+        col.separator()
+        col.separator()
+        # col.separator()
+        row = col.row(align=True)
+        row.scale_y = 0.65
+        # row.label(text='Update now to ' + version_str + ':', icon=ICON_URL)
+        row.label(text='Update now:', icon=ICON_URL)
+
+
 def check_for_update_background():
     global is_checking_for_update
     if is_checking_for_update:
@@ -138,7 +249,9 @@ def check_for_update():
     print('START UPDATE CHECK')
 
     # Get all releases from Github
-    get_github_tags()
+    print('GET RELEASES')
+    get_github_releases('Darkblader24')
+    get_github_releases('michaeldegroot')
 
     # Check if an update is needed
     global update_needed
@@ -151,17 +264,25 @@ def check_for_update():
     finish_update_checking()
 
 
-def get_github_tags():
-    print('GET RELEASES')
+def get_github_releases(repo):
     global version_list
+    version_list = OrderedDict()
+
+    if fake_update:
+        print('FAKE INSTALL!')
+        version_list['99.99.99'] = ['', 'Put existing new stuff here', 'Today']
+        version_list['12.34.56.78'] = ['', 'Nothing new to see', 'A week ago probably']
+        return
+
     try:
-        with urllib.request.urlopen("https://api.github.com/repos/michaeldegroot/cats-blender-plugin/releases") as url:
+        with urllib.request.urlopen('https://api.github.com/repos/' + repo + '/cats-blender-plugin/releases') as url:
             data = json.loads(url.read().decode())
     except urllib.error.URLError:
         print('URL ERROR')
         return False
+    if not data:
+        return False
 
-    version_list = OrderedDict()
     for version in data:
         if 'yanked' in version.get('name').lower():
             continue
@@ -211,12 +332,16 @@ def ui_refresh():
 
 
 def update_now(version=None, latest=False, dev=False):
+    if fake_update:
+        finish_update()
+        return
     if dev:
         print('UPDATE TO DEVELOPMENT')
         update_link = 'https://github.com/michaeldegroot/cats-blender-plugin/archive/development.zip'
     elif latest or not version:
         print('UPDATE TO ' + latest_version_str)
         update_link = version_list.get(latest_version_str)[0]
+        bpy.context.scene.cats_updater_version_list = latest_version_str
     else:
         print('UPDATE TO ' + version)
         update_link = version_list[version][0]
@@ -299,7 +424,7 @@ def download_file(update_url):
             file_dir = os.path.join(from_dir, file)
             target_dir = os.path.join(to_dir, file)
             print('MOVE', file_dir)
-            
+
             # If file exists
             if os.path.isfile(file_dir) and os.path.isfile(target_dir):
                 os.remove(target_dir)
@@ -319,16 +444,14 @@ def download_file(update_url):
     print('DELETE DOWNLOADS DIR')
     shutil.rmtree(downloads_dir)
 
+    # Finish the update
+    finish_update()
+
+
+def finish_update():
     global update_finished
     update_finished = True
-
     print("UPDATE DONE!")
-
-    # # Save update time in settings
-    # tools.settings.set_last_supporter_update(last_update)
-    #
-    # # Reload supporters
-    # reload_supporters()
 
 
 def clean_addon_dir():
@@ -397,13 +520,16 @@ def layout_split(layout, factor=0.0, align=False):
     return layout.split(factor=factor, align=align)
 
 
-def draw_updater_panel(context, layout):
+def draw_updater_panel(context, layout, user_preferences=False):
     box = layout.box()
     col = box.column(align=True)
 
+    scale_big = 2
+    scale_small = 1.2
+
     row = col.row(align=True)
     row.scale_y = 0.8
-    row.label(text='Updates:', icon=ICON_URL)
+    row.label(text='Updates:' if not user_preferences else 'Cats Updater:', icon=ICON_URL)
     col.separator()
 
     if update_finished:
@@ -416,63 +542,86 @@ def draw_updater_panel(context, layout):
     if is_checking_for_update:
         if not checked_with_button:
             row = col.row(align=True)
-            row.scale_y = 1.7
+            row.scale_y = scale_big
             row.operator(CheckForUpdateButton.bl_idname, text='Checking..')
         else:
             split = col.row(align=True)
             row = split.row(align=True)
-            row.scale_y = 1.7
+            row.scale_y = scale_big
             row.operator(CheckForUpdateButton.bl_idname, text='Checking..')
             row = split.row(align=True)
             row.alignment = 'RIGHT'
-            row.scale_y = 1.7
+            row.scale_y = scale_big
             row.operator(CheckForUpdateButton.bl_idname, text="", icon='FILE_REFRESH')
 
     elif update_needed:
         split = col.row(align=True)
         row = split.row(align=True)
-        row.scale_y = 1.7
+        row.scale_y = scale_big
         row.operator(UpdateToLatestButton.bl_idname, text='Update now to ' + latest_version_str)
         row = split.row(align=True)
         row.alignment = 'RIGHT'
-        row.scale_y = 1.7
+        row.scale_y = scale_big
         row.operator(CheckForUpdateButton.bl_idname, text="", icon='FILE_REFRESH')
 
     elif not checked_with_button or not version_list:
         row = col.row(align=True)
-        row.scale_y = 1.7
+        row.scale_y = scale_big
         row.operator(CheckForUpdateButton.bl_idname, text='Check now for Update')
 
     else:
         split = col.row(align=True)
         row = split.row(align=True)
-        row.scale_y = 1.7
+        row.scale_y = scale_big
         row.operator(UpdateToLatestButton.bl_idname, text='Up to Date!')
         row = split.row(align=True)
         row.alignment = 'RIGHT'
-        row.scale_y = 1.7
+        row.scale_y = scale_big
         row.operator(CheckForUpdateButton.bl_idname, text="", icon='FILE_REFRESH')
 
     col.separator()
     col.separator()
+    col.separator()
     row = layout_split(col, factor=0.6, align=True)
-    row.scale_y = 1
+    row.scale_y = 0.9
+    row.active = True if not is_checking_for_update and version_list else False
     row.label(text="Select Version:")
     row.prop(context.scene, 'cats_updater_version_list', text='')
 
     row = layout_split(col, factor=0.6, align=True)
-    row.scale_y = 1.4
+    row.scale_y = scale_small
     row.operator(UpdateToSelectedButton.bl_idname, text='Install Selected Version')
     row.operator(ShowPatchnotesPanel.bl_idname, text='Show Patchnotes')
 
-    col.separator()
+    # col.separator()
     col.separator()
     row = col.row(align=True)
-    row.scale_y = 1.4
+    row.scale_y = scale_small
     row.operator(UpdateToDevButton.bl_idname, text='Install Development Version')
 
 
+# demo bare-bones preferences
+class DemoPreferences(bpy.types.AddonPreferences):
+    bl_idname = package_name
+
+    def draw(self, context):
+        layout = self.layout
+        draw_updater_panel(context, layout, user_preferences=True)
+
+
+to_register = [
+    CheckForUpdateButton,
+    UpdateToLatestButton,
+    UpdateToSelectedButton,
+    UpdateToDevButton,
+    ShowPatchnotesPanel,
+    ConfirmUpdatePanel,
+    DemoPreferences,
+]
+
+
 def register(bl_info):
+    print('REGISTER CATS UPDATER')
     global current_version
 
     # Get current version
@@ -487,19 +636,13 @@ def register(bl_info):
     )
 
     # Register all Updater classes
-    bpy.utils.register_class(CheckForUpdateButton)
-    bpy.utils.register_class(UpdateToLatestButton)
-    bpy.utils.register_class(UpdateToSelectedButton)
-    bpy.utils.register_class(UpdateToDevButton)
-    bpy.utils.register_class(ShowPatchnotesPanel)
+    for cls in to_register:
+        bpy.utils.register_class(cls)
 
 
 def unregister():
     # Unregister all Updater classes
-    bpy.utils.unregister_class(CheckForUpdateButton)
-    bpy.utils.unregister_class(UpdateToLatestButton)
-    bpy.utils.unregister_class(UpdateToSelectedButton)
-    bpy.utils.unregister_class(UpdateToDevButton)
-    bpy.utils.unregister_class(ShowPatchnotesPanel)
+    for cls in reversed(to_register):
+        bpy.utils.unregister_class(cls)
 
     del bpy.types.Scene.cats_updater_version_list
