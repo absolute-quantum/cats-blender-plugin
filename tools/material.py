@@ -239,6 +239,7 @@ class CombineMaterialsButton(bpy.types.Operator):
         # print('CREATED COMBINED TEX', self.combined_tex)
 
     def execute(self, context):
+        print('COMBINE MATERIALS!')
         if not tools.common.version_2_79_or_older():
             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
             return {'CANCELLED'}

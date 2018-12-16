@@ -10,7 +10,7 @@ import addon_utils
 from collections import OrderedDict
 from threading import Thread
 
-fake_update = True
+fake_update = False
 
 is_checking_for_update = False
 
@@ -34,10 +34,8 @@ for mod in addon_utils.modules():
         package_name = mod.__name__
 
 # Icons for UI
-ICON_ADD, ICON_REMOVE = 'ADD', 'REMOVE'
 ICON_URL = 'URL'
 if bpy.app.version < (2, 79, 9):
-    ICON_ADD, ICON_REMOVE = 'ZOOMIN', 'ZOOMOUT'
     ICON_URL = 'LOAD_FACTORY'
 
 
@@ -284,7 +282,7 @@ def get_github_releases(repo):
         return False
 
     for version in data:
-        if 'yanked' in version.get('name').lower():
+        if 'yanked' in version.get('name').lower() or version_list.get(version.get('tag_name')):
             continue
         version_list[version.get('tag_name')] = [version.get('zipball_url'), version.get('body'), version.get('published_at').split('T')[0]]
 
