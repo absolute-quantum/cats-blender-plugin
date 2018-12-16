@@ -191,9 +191,9 @@ def register():
     Scene.max_tris = IntProperty(
         name='Tris',
         description="The target amount of tris after decimation",
-        default=19999,
+        default=70000,
         min=1,
-        max=100000
+        max=200000
     )
 
     # Eye Tracking

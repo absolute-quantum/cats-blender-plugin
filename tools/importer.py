@@ -523,7 +523,7 @@ class VrmToolsButton(bpy.types.Operator):
 
 # Export checks
 _meshes_count = 0
-_meshes_too_big = {}
+_tris_count = 0
 _mat_list = []
 _broken_shapes = []
 _textures_found = False
@@ -545,11 +545,11 @@ class ExportModel(bpy.types.Operator):
     def execute(self, context):
         # Check for warnings
         if not self.action == 'NO_CHECK':
-            global _meshes_count, _meshes_too_big, _mat_list, _broken_shapes, _textures_found
+            global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found
 
             # Reset export checks
             _meshes_count = 0
-            _meshes_too_big = {}
+            _tris_count = 0
             _mat_list = []
             _broken_shapes = []
             _textures_found = False
@@ -560,9 +560,7 @@ class ExportModel(bpy.types.Operator):
                 _meshes_count += 1
 
                 # Check tris count
-                tris = len(mesh.data.polygons)
-                if tris >= 65535:
-                    _meshes_too_big[mesh.name] = tris
+                _tris_count += len(mesh.data.polygons)
 
                 # Check material count
                 for mat_slot in mesh.material_slots:
@@ -601,7 +599,7 @@ class ExportModel(bpy.types.Operator):
 
             # Check if a warning should be shown
             if _meshes_count > 1 \
-                    or len(_meshes_too_big) > 0 \
+                    or _tris_count > 70000 \
                     or len(_mat_list) > 4 \
                     or len(_broken_shapes) > 0\
                     or not _textures_found and tools.settings.get_embed_textures():
@@ -651,7 +649,7 @@ class ErrorDisplay(bpy.types.Operator):
     bl_idname = "cats_importer.display_error"
     bl_label = "Warning:"
 
-    meshes_too_big = {}
+    tris_count = 0
     mat_list = []
     meshes_count = 0
     broken_shapes = []
@@ -661,9 +659,9 @@ class ErrorDisplay(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        global _meshes_count, _meshes_too_big, _mat_list, _broken_shapes, _textures_found
+        global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found
         self.meshes_count = _meshes_count
-        self.meshes_too_big = _meshes_too_big
+        self.tris_count = _tris_count
         self.mat_list = _mat_list
         self.broken_shapes = _broken_shapes
         self.textures_found = _textures_found
@@ -679,29 +677,18 @@ class ErrorDisplay(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        if self.meshes_too_big:
+        if self.tris_count > 70000:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Meshes are too big!", icon='ERROR')
+            row.label(text="Too many polygons!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="The following meshes have more than 65534 tris:")
-            col.separator()
-
-            for mesh, tris in self.meshes_too_big.items():
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="  - " + mesh + ' (' + str(tris) + ' tris)')
-
-            col.separator()
+            row.label(text="You have more than 70,000 tris in this model, which isn't allowed in VRChat!")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Unity will split these meshes in half and you will loose your shape keys.")
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text="You should decimate them before you export this model.")
+            row.label(text="You should decimate before you export this model.")
             col.separator()
             col.separator()
             col.separator()

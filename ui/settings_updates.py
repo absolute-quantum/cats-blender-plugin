@@ -5,7 +5,6 @@ import tools.common
 import tools.supporter
 
 from ui.main import ToolPanel
-from ui.main import get_emtpy_icon
 
 from tools import settings
 
@@ -49,7 +48,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
             row.label(text='Restart required.', icon='ERROR')
             row = col.row(align=True)
             row.scale_y = 0.8
-            row.label(text='Some changes require a Blender restart.', icon_value=get_emtpy_icon())
+            row.label(text='Some changes require a Blender restart.', icon='BLANK1')
             row = col.row(align=True)
             row.operator(settings.RevertChangesButton.bl_idname, icon='RECOVER_LAST')
 

@@ -25,7 +25,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.label(text='Cats Blender Plugin (' + globs.version_str + ')', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
-        row.label(text='Created by GiveMeAllYourCats and Hotox')
+        row.label(text='Created by Hotox and GiveMeAllYourCats')
         row = col.row(align=True)
         row.label(text='For the awesome VRChat community <3')
         row.scale_y = 0.5

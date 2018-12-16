@@ -5,7 +5,6 @@ import tools.supporter
 
 from ui.main import ToolPanel
 from ui.main import layout_split
-from ui.main import get_emtpy_icon
 
 from tools import supporter
 

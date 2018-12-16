@@ -1,5 +1,4 @@
 from tools.common import version_2_79_or_older
-from tools.supporter import preview_collections
 
 
 class ToolPanel(object):
@@ -14,7 +13,3 @@ def layout_split(layout, factor=0.0, align=False):
     if version_2_79_or_older():
         return layout.split(percentage=factor, align=align)
     return layout.split(factor=factor, align=align)
-
-
-def get_emtpy_icon():
-    return preview_collections["custom_icons"]["empty"].icon_id

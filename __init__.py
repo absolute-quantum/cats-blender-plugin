@@ -36,6 +36,7 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
+dev_branch = True
 
 import os
 import sys
@@ -225,11 +226,11 @@ def register():
 
     # Register Updater and check for CATS update
     print("Loading Updater..")
-    updater.register(bl_info)
-    # updater.check_for_update_background()
+    updater.register(bl_info, dev_branch)
+    updater.check_for_update_background()
 
     # Set some global settings
-    globs.dev_branch = True
+    globs.dev_branch = dev_branch
     globs.version = copy.deepcopy(bl_info.get('version'))
 
     # Load settings and show error if a faulty installation was deleted recently

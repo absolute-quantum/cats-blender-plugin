@@ -5,7 +5,6 @@ import tools.supporter
 import tools.armature_bones
 
 from ui.main import ToolPanel
-from ui.main import get_emtpy_icon
 
 from tools import armature_custom
 
@@ -97,7 +96,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                 col.label(text='An armature and a mesh are required!', icon='INFO')
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text='Make sure that the mesh has no parent.', icon_value=get_emtpy_icon())
+                row.label(text='Make sure that the mesh has no parent.', icon='BLANK1')
                 return
 
             row = col.row(align=True)

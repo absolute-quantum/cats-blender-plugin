@@ -6,7 +6,6 @@ import tools.supporter
 from tools import armature, importer, armature_manual
 
 from ui.main import ToolPanel
-from ui.main import get_emtpy_icon
 from tools.common import version_2_79_or_older
 
 from tools.register import register_wrap
@@ -29,10 +28,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label(text='Old Blender version detected!', icon='ERROR')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Some features might not work!', icon_value=get_emtpy_icon())
+            row.label(text='Some features might not work!', icon='BLANK1')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Please update to Blender 2.79!', icon_value=get_emtpy_icon())
+            row.label(text='Please update to Blender 2.79!', icon='BLANK1')
             col.separator()
             col.separator()
 
@@ -43,7 +42,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         #     row.label(text='New Cats version available!', icon='INFO')
         #     row = col.row(align=True)
         #     row.scale_y = 0.75
-        #     row.label(text='Check the Updater panel!', icon_value=get_emtpy_icon())
+        #     row.label(text='Check the Updater panel!', icon='BLANK1')
         #     col.separator()
         #     col.separator()
 
@@ -54,10 +53,10 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label(text='Dictionary not found!', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Translations will work, but are not optimized.', icon_value=get_emtpy_icon())
+            row.label(text='Translations will work, but are not optimized.', icon='BLANK1')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Reinstall Cats to fix this.', icon_value=get_emtpy_icon())
+            row.label(text='Reinstall Cats to fix this.', icon='BLANK1')
             col.separator()
             col.separator()
 
@@ -161,7 +160,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             row.label(text='You can safely ignore the', icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.5
-            row.label(text='"Spine length zero" warning in Unity.', icon_value=get_emtpy_icon())
+            row.label(text='"Spine length zero" warning in Unity.', icon='BLANK1')
             col.separator()
         else:
             col.separator()
