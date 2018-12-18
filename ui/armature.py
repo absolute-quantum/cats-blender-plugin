@@ -1,5 +1,6 @@
 import bpy
 import globs
+import updater
 import tools.common
 import tools.supporter
 
@@ -16,9 +17,11 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_label = 'Model'
 
     def draw(self, context):
-
         layout = self.layout
         box = layout.box()
+
+        updater.draw_update_notification_panel(box)
+
         col = box.column(align=True)
 
         if bpy.app.version < (2, 79, 0):

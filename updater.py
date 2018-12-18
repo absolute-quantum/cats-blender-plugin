@@ -21,6 +21,8 @@ latest_version = None
 latest_version_str = ''
 used_updater_panel = False
 update_finished = False
+remind_me_later = False
+is_ignored_version = False
 
 confirm_update_to = ''
 
@@ -28,6 +30,8 @@ show_error = ''
 
 main_dir = os.path.dirname(__file__)
 downloads_dir = os.path.join(main_dir, "downloads")
+resources_dir = os.path.join(main_dir, "resources")
+ignore_ver_file = os.path.join(resources_dir, "ignore_version.txt")
 
 # Get package name, important for panel in user preferences
 package_name = ''
@@ -45,6 +49,7 @@ class CheckForUpdateButton(bpy.types.Operator):
     bl_idname = 'cats_updater.check_for_update'
     bl_label = 'Check now for Update'
     bl_description = 'Checks if a new update is available for CATS'
+    bl_options = {'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -61,6 +66,7 @@ class UpdateToLatestButton(bpy.types.Operator):
     bl_idname = 'cats_updater.update_latest'
     bl_label = 'Update Now'
     bl_description = 'Updates CATS to the latest version'
+    bl_options = {'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -79,6 +85,7 @@ class UpdateToSelectedButton(bpy.types.Operator):
     bl_idname = 'cats_updater.update_selected'
     bl_label = 'Update to Selected version'
     bl_description = 'Updates CATS to the selected version'
+    bl_options = {'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -99,6 +106,7 @@ class UpdateToDevButton(bpy.types.Operator):
     bl_idname = 'cats_updater.update_dev'
     bl_label = 'Update to Development version'
     bl_description = 'Updates CATS to the Development version'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         global confirm_update_to, used_updater_panel
@@ -109,10 +117,36 @@ class UpdateToDevButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
+class RemindMeLaterButton(bpy.types.Operator):
+    bl_idname = 'cats_updater.remind_me_later'
+    bl_label = 'Remind me later'
+    bl_description = 'This hides the update notification til the next Blender restart'
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        global remind_me_later
+        remind_me_later = True
+        self.report({'INFO'}, 'You will be reminded later')
+        return {'FINISHED'}
+
+
+class IgnoreThisVersionButton(bpy.types.Operator):
+    bl_idname = 'cats_updater.ignore_this_version'
+    bl_label = 'Ignore this version'
+    bl_description = 'This ignores this version. You will be reminded again when the next version releases'
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        set_ignored_version()
+        self.report({'INFO'}, 'Version ' + latest_version_str + ' will be ignored.')
+        return {'FINISHED'}
+
+
 class ShowPatchnotesPanel(bpy.types.Operator):
     bl_idname = 'cats_updater.show_patchnotes'
     bl_label = 'Patchnotes'
     bl_description = 'Shows the patchnotes of the selected version'
+    bl_options = {'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -160,6 +194,7 @@ class ConfirmUpdatePanel(bpy.types.Operator):
     bl_idname = 'cats_updater.confirm_update_panel'
     bl_label = 'Confirm Update'
     bl_description = 'This shows you a panel in which you have to confirm your update choice'
+    bl_options = {'INTERNAL'}
 
     show_patchnotes = False
 
@@ -230,6 +265,7 @@ class UpdateCompletePanel(bpy.types.Operator):
     bl_idname = 'cats_updater.update_complete_panel'
     bl_label = 'Installation Report'
     bl_description = 'The update if now complete'
+    bl_options = {'INTERNAL'}
 
     show_patchnotes = False
 
@@ -293,6 +329,9 @@ def check_for_update():
         print('NO UPDATE NEEDED')
     else:
         print('UPDATE NEEDED')
+
+    global is_ignored_version
+    is_ignored_version = check_ignored_version()
 
     finish_update_checking()
 
@@ -551,6 +590,44 @@ def clean_addon_dir():
             print("Failed to pre-remove folder " + folder)
 
 
+def set_ignored_version():
+    # Create resources folder
+    pathlib.Path(resources_dir).mkdir(exist_ok=True)
+
+    # Create ignore file
+    with open(ignore_ver_file, 'w', encoding="utf8") as outfile:
+        outfile.write(latest_version_str)
+
+    # Set ignored status
+    global is_ignored_version
+    is_ignored_version = True
+    print('IGNORED VERSION ' + latest_version_str)
+
+
+def check_ignored_version():
+    if not os.path.isfile(ignore_ver_file):
+        print('IGNORE FILE NOT FOUND')
+        return False
+
+    # Read ignore file
+    with open(ignore_ver_file, 'r', encoding="utf8") as outfile:
+        version = outfile.read()
+
+    # Check if the latest version matches the one in the ignore file
+    if latest_version_str == version:
+        print('IGNORE THIS VERSION!')
+        return True
+
+    # Delete ignore version file if the latest version is not the version in the file
+    try:
+        os.remove(ignore_ver_file)
+        print("REMOVED IGNORE VERSION FILE")
+    except OSError:
+        print("Failed TO REMOVE IGNORE VERSION FILE")
+
+    return False
+
+
 def get_version_list(self, context):
     choices = []
     if version_list:
@@ -565,6 +642,35 @@ def layout_split(layout, factor=0.0, align=False):
     if bpy.app.version < (2, 79, 9):
         return layout.split(percentage=factor, align=align)
     return layout.split(factor=factor, align=align)
+
+
+def draw_update_notification_panel(layout):
+    if not update_needed or remind_me_later or is_ignored_version:
+        # pass
+        return
+
+    col = layout.column(align=True)
+
+    if update_finished:
+        col.separator()
+        row = col.row(align=True)
+        row.label(text='Restart Blender to complete update!', icon='ERROR')
+        col.separator()
+        return
+
+    row = col.row(align=True)
+    row.scale_y = 0.75
+    row.label(text='Cats v' + latest_version_str + ' available!', icon='SOLO_ON')
+
+    col.separator()
+    row = col.row(align=True)
+    row.scale_y = 1.3
+    row.operator(UpdateToLatestButton.bl_idname, text='Update Now')
+
+    row = col.row(align=True)
+    row.scale_y = 1
+    row.operator(RemindMeLaterButton.bl_idname, text='Remind me later')
+    row.operator(IgnoreThisVersionButton.bl_idname, text='Ignore this version')
 
 
 def draw_updater_panel(context, layout, user_preferences=False):
@@ -666,6 +772,8 @@ to_register = [
     UpdateToLatestButton,
     UpdateToSelectedButton,
     UpdateToDevButton,
+    RemindMeLaterButton,
+    IgnoreThisVersionButton,
     ShowPatchnotesPanel,
     ConfirmUpdatePanel,
     UpdateCompletePanel,
