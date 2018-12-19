@@ -10,12 +10,13 @@ import addon_utils
 from collections import OrderedDict
 from threading import Thread
 
-fake_update = False
+fake_update = True
 
 is_checking_for_update = False
-
+checked_on_startup = False
 version_list = None
 current_version = []
+current_version_str = ''
 update_needed = False
 latest_version = None
 latest_version_str = ''
@@ -302,13 +303,48 @@ class UpdateCompletePanel(bpy.types.Operator):
             row.label(text='See Updater Panel for more info.', icon='BLANK1')
 
 
-def check_for_update_background():
-    global is_checking_for_update
-    if is_checking_for_update:
-        print('UPDATE CHECK ALREADY IN PROGRESS')
-        return
-    is_checking_for_update = True
+class UpdateNotificationPopup(bpy.types.Operator):
+    bl_idname = 'cats_updater.update_notification_popup'
+    bl_label = 'Update available'
+    bl_description = 'This shows you that an update is available'
+    bl_options = {'INTERNAL'}
 
+    @classmethod
+    def poll(cls, context):
+        return True
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    # def invoke(self, context, event):
+    #     dpi_value = bpy.context.user_preferences.system.dpi
+    #     return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.1, height=-550)
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_props_dialog(self)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        draw_update_notification_panel(layout)
+
+
+def check_for_update_background(onstart=False):
+    if onstart and checked_on_startup:
+        # print('ALREADY CHECKED')
+        return
+    if is_checking_for_update:
+        # print('ALREADY CHECKING')
+        return
+
+    global is_checking_for_update, checked_on_startup
+    is_checking_for_update = True
+    checked_on_startup = True
+
+    print('STARTING UPDATE CHECK')
     thread = Thread(target=check_for_update, args=[])
     thread.start()
 
@@ -323,16 +359,17 @@ def check_for_update():
         return
 
     # Check if an update is needed
-    global update_needed
+    global update_needed, is_ignored_version
     update_needed = check_for_update_available()
-    if not update_needed:
-        print('NO UPDATE NEEDED')
-    else:
-        print('UPDATE NEEDED')
-
-    global is_ignored_version
     is_ignored_version = check_ignored_version()
 
+    # Update needed, show the notification popup if it wasn't checked through the UI
+    if update_needed:
+        print('UPDATE NEEDED')
+    else:
+        print('NO UPDATE NEEDED')
+
+    # Finish update checking, update the UI
     finish_update_checking()
 
 
@@ -342,7 +379,7 @@ def get_github_releases(repo):
 
     if fake_update:
         print('FAKE INSTALL!')
-        version_list['99.99.99'] = ['', 'Put existing new stuff here', 'Today']
+        version_list['99.99.99'] = ['', 'Put exiting new stuff here', 'Today']
         version_list['12.34.56.78'] = ['', 'Nothing new to see', 'A week ago probably']
         return True
 
@@ -393,6 +430,16 @@ def finish_update_checking(error=''):
         show_error = error
 
     ui_refresh()
+
+    if update_needed:
+        print('UPDATE NEEDED')
+        if not used_updater_panel and not is_ignored_version:
+            time.sleep(2)
+            print('SHOW UI')
+            #bpy.ops.cats_updater.update_notification_popup('INVOKE_SCREEN')
+            # re-launch this dialog
+            atr = UpdateNotificationPopup.bl_idname.split(".")
+            getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
 
 
 def ui_refresh():
@@ -737,25 +784,62 @@ def draw_updater_panel(context, layout, user_preferences=False):
         row.scale_y = scale_big
         row.operator(CheckForUpdateButton.bl_idname, text="", icon='FILE_REFRESH')
 
-    col.separator()
-    col.separator()
-    col.separator()
-    row = layout_split(col, factor=0.6, align=True)
-    row.scale_y = 0.9
-    row.active = True if not is_checking_for_update and version_list else False
-    row.label(text="Select Version:")
-    row.prop(context.scene, 'cats_updater_version_list', text='')
-
-    row = layout_split(col, factor=0.6, align=True)
-    row.scale_y = scale_small
-    row.operator(UpdateToSelectedButton.bl_idname, text='Install Selected Version')
-    row.operator(ShowPatchnotesPanel.bl_idname, text='Show Patchnotes')
-
     # col.separator()
+    # col.separator()
+    # col.separator()
+    # row = layout_split(col, factor=0.6, align=True)
+    # row.scale_y = 0.9
+    # row.active = True if not is_checking_for_update and version_list else False
+    # row.label(text="Select Version:")
+    # row.prop(context.scene, 'cats_updater_version_list', text='')
+    #
+    # row = layout_split(col, factor=0.6, align=True)
+    # row.scale_y = scale_small
+    # row.operator(UpdateToSelectedButton.bl_idname, text='Install Selected Version')
+    # row.operator(ShowPatchnotesPanel.bl_idname, text='Show Patchnotes')
+
+
     col.separator()
+    col.separator()
+    split = col.row(align=True)
+    row = layout_split(split, factor=0.55, align=True)
+    row.scale_y = scale_small
+    row.active = True if not is_checking_for_update and version_list else False
+    row.operator(UpdateToSelectedButton.bl_idname, text='Install Version:')
+    row.prop(context.scene, 'cats_updater_version_list', text='')
+    row = split.row(align=True)
+    row.scale_y = scale_small
+    row.operator(ShowPatchnotesPanel.bl_idname, text="", icon='WORDWRAP_ON')
+
+
+
+    # topsplit = layout_split(col, factor=0.55, align=True)
+    #
+    # split = topsplit.row(align=True)
+    # row = split.row(align=True)
+    # row.scale_y = scale_small
+    # row.active = True if not is_checking_for_update and version_list else False
+    # row.operator(UpdateToSelectedButton.bl_idname, text='Install Version:')
+    #
+    # row = split.row(align=True)
+    # row.alignment = 'RIGHT'
+    # row.scale_y = scale_small
+    # row.operator(ShowPatchnotesPanel.bl_idname, text="", icon='WORDWRAP_ON')
+    #
+    # row = topsplit.row(align=True)
+    # row.scale_y = scale_small
+    # row.prop(context.scene, 'cats_updater_version_list', text='')
+
+
+
     row = col.row(align=True)
     row.scale_y = scale_small
     row.operator(UpdateToDevButton.bl_idname, text='Install Development Version')
+
+    col.separator()
+    row = col.row(align=True)
+    row.scale_y = 0.65
+    row.label(text='Current version: ' + current_version_str)
 
 
 # demo bare-bones preferences
@@ -777,17 +861,19 @@ to_register = [
     ShowPatchnotesPanel,
     ConfirmUpdatePanel,
     UpdateCompletePanel,
+    UpdateNotificationPopup,
     DemoPreferences,
 ]
 
 
-def register(bl_info, dev_branch):
+def register(bl_info, dev_branch, version_str):
     print('REGISTER CATS UPDATER')
-    global current_version, fake_update
+    global current_version, fake_update, current_version_str
 
     # If not dev branch, always disable fake update!
     if not dev_branch:
         fake_update = False
+    current_version_str = version_str
 
     # Get current version
     current_version = []

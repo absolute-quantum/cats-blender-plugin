@@ -218,20 +218,54 @@ def remove_corrupted_files():
                           '\n\n\n')
 
 
+def set_cats_version_string():
+    version = bl_info.get('version')
+    version_temp = []
+    version_str = ''
+
+    for n in version:
+        version_temp.append(n)
+
+    # if in dev version, increase version
+    if dev_branch:
+        version_temp[len(version_temp)-1] += 1
+
+    if len(version_temp) > 0:
+        # if in dev version, increase version
+        if dev_branch:
+            version_temp[len(version_temp)-1] += 1
+
+        # Convert version to string
+        version_str += str(version_temp[0])
+        for index, i in enumerate(version_temp):
+            if index == 0:
+                continue
+            version_str += '.' + str(version_temp[index])
+
+    # Add -dev if in dev version
+    if dev_branch:
+        version_str += '-dev'
+
+    return version_str
+
+
 def register():
     print("\n### Loading CATS...")
 
     # Check for faulty CATS installations
     remove_corrupted_files()
 
+    # Set cats version string
+    version_str = set_cats_version_string()
+
     # Register Updater and check for CATS update
     print("Loading Updater..")
-    updater.register(bl_info, dev_branch)
-    updater.check_for_update_background()
+    updater.register(bl_info, dev_branch, version_str)
+    # updater.check_for_update_background()
 
-    # Set some global settings
+    # Set some global settings, first allowed use of globs
     globs.dev_branch = dev_branch
-    globs.version = copy.deepcopy(bl_info.get('version'))
+    globs.version_str = version_str
 
     # Load settings and show error if a faulty installation was deleted recently
     print("Loading settings..")
@@ -274,9 +308,6 @@ def register():
     # Register Scene types
     print("Registering scene types..")
     extend_types.register()
-
-    # Set cats version string
-    tools.common.set_cats_version_string()
 
     # Load supporter and settings icons and buttons
     print("Loading other stuff..")
