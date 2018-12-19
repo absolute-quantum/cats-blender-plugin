@@ -52,4 +52,5 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.operator(settings.RevertChangesButton.bl_idname, icon='RECOVER_LAST')
 
-        updater.draw_updater_panel(context, layout)
+        col.separator()
+        updater.draw_updater_panel(context, box)

@@ -261,7 +261,6 @@ def register():
     # Register Updater and check for CATS update
     print("Loading Updater..")
     updater.register(bl_info, dev_branch, version_str)
-    # updater.check_for_update_background()
 
     # Set some global settings, first allowed use of globs
     globs.dev_branch = dev_branch

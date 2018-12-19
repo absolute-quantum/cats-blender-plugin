@@ -10,7 +10,9 @@ import addon_utils
 from collections import OrderedDict
 from threading import Thread
 
-fake_update = True
+from bpy.app.handlers import persistent
+
+fake_update = False
 
 is_checking_for_update = False
 checked_on_startup = False
@@ -309,19 +311,25 @@ class UpdateNotificationPopup(bpy.types.Operator):
     bl_description = 'This shows you that an update is available'
     bl_options = {'INTERNAL'}
 
-    @classmethod
-    def poll(cls, context):
-        return True
-
     def execute(self, context):
+        action = context.scene.cats_update_action
+        if action == 'UPDATE':
+            update_now(latest=True)
+        elif action == 'IGNORE':
+            set_ignored_version()
+        else:
+            # Remind later aka defer
+            global remind_me_later
+            remind_me_later = True
+        ui_refresh()
         return {'FINISHED'}
 
-    # def invoke(self, context, event):
-    #     dpi_value = bpy.context.user_preferences.system.dpi
-    #     return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.1, height=-550)
-
     def invoke(self, context, event):
-        return context.window_manager.invoke_props_dialog(self)
+        dpi_value = bpy.context.user_preferences.system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.6, height=-550)
+
+    # def invoke(self, context, event):
+    #     return context.window_manager.invoke_props_dialog(self)
 
     def check(self, context):
         # Important for changing options
@@ -329,12 +337,23 @@ class UpdateNotificationPopup(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        draw_update_notification_panel(layout)
+        col = layout.column(align=True)
+
+        row = layout_split(col, factor=0.55, align=True)
+        row.scale_y = 1.05
+        row.label(text='Cats v' + latest_version_str + ' available!', icon='SOLO_ON')
+        row.operator(ShowPatchnotesPanel.bl_idname, text='Show Patchnotes')
+
+        col.separator()
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'cats_update_action', expand=True)
 
 
 def check_for_update_background(onstart=False):
     if onstart and checked_on_startup:
-        # print('ALREADY CHECKED')
+        # print('ALREADY CHECKED ON STARTUP')
         return
     if is_checking_for_update:
         # print('ALREADY CHECKING')
@@ -366,8 +385,12 @@ def check_for_update():
     # Update needed, show the notification popup if it wasn't checked through the UI
     if update_needed:
         print('UPDATE NEEDED')
+        if not used_updater_panel and not is_ignored_version:
+            print('SHOW UI')
+            prepare_to_show_update_notification()
     else:
         print('NO UPDATE NEEDED')
+
 
     # Finish update checking, update the UI
     finish_update_checking()
@@ -431,16 +454,6 @@ def finish_update_checking(error=''):
 
     ui_refresh()
 
-    if update_needed:
-        print('UPDATE NEEDED')
-        if not used_updater_panel and not is_ignored_version:
-            time.sleep(2)
-            print('SHOW UI')
-            #bpy.ops.cats_updater.update_notification_popup('INVOKE_SCREEN')
-            # re-launch this dialog
-            atr = UpdateNotificationPopup.bl_idname.split(".")
-            getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
-
 
 def ui_refresh():
     # A way to refresh the ui
@@ -455,6 +468,28 @@ def ui_refresh():
             # print('Refreshed UI')
         else:
             time.sleep(0.5)
+
+
+def prepare_to_show_update_notification():
+    # This is neccessary to show a popup directly after startup
+    # You will get a nasty error otherwise
+    # This will add the function to the scene_update_post and it will be executed every frame. that's why it needs to be removed again asap
+    print('PREPARE TO SHOW UI')
+    if show_update_notification not in bpy.app.handlers.scene_update_post:
+        bpy.app.handlers.scene_update_post.append(show_update_notification)
+
+
+@persistent
+def show_update_notification(scene):  # One argument in neccessary for some reason
+    print('SHOWING UI NOW!!!!')
+
+    # # Immediately remove this from handlers again
+    if show_update_notification in bpy.app.handlers.scene_update_post:
+        bpy.app.handlers.scene_update_post.remove(show_update_notification)
+
+    # Show notification popup
+    atr = UpdateNotificationPopup.bl_idname.split(".")
+    getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
 
 
 def update_now(version=None, latest=False, dev=False):
@@ -721,8 +756,7 @@ def draw_update_notification_panel(layout):
 
 
 def draw_updater_panel(context, layout, user_preferences=False):
-    box = layout.box()
-    col = box.column(align=True)
+    col = layout.column(align=True)
 
     scale_big = 2
     scale_small = 1.2
@@ -798,7 +832,6 @@ def draw_updater_panel(context, layout, user_preferences=False):
     # row.operator(UpdateToSelectedButton.bl_idname, text='Install Selected Version')
     # row.operator(ShowPatchnotesPanel.bl_idname, text='Show Patchnotes')
 
-
     col.separator()
     col.separator()
     split = col.row(align=True)
@@ -810,8 +843,6 @@ def draw_updater_panel(context, layout, user_preferences=False):
     row = split.row(align=True)
     row.scale_y = scale_small
     row.operator(ShowPatchnotesPanel.bl_idname, text="", icon='WORDWRAP_ON')
-
-
 
     # topsplit = layout_split(col, factor=0.55, align=True)
     #
@@ -829,8 +860,6 @@ def draw_updater_panel(context, layout, user_preferences=False):
     # row = topsplit.row(align=True)
     # row.scale_y = scale_small
     # row.prop(context.scene, 'cats_updater_version_list', text='')
-
-
 
     row = col.row(align=True)
     row.scale_y = scale_small
@@ -884,6 +913,15 @@ def register(bl_info, dev_branch, version_str):
         name='Version',
         description='Select the version you want to install\n',
         items=get_version_list
+    )
+    bpy.types.Scene.cats_update_action = bpy.props.EnumProperty(
+        name="Choose action",
+        description="Action",
+        items=[
+            ("UPDATE", "Update Now", "Updates now to the latest version"),
+            ("IGNORE", "Ignore this version", "This ignores this version. You will be reminded again when the next version releases"),
+            ("DEFER", "Remind me later", "Hides the update notification til the next Blender restart")
+        ]
     )
 
     # Register all Updater classes
