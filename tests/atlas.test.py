@@ -31,7 +31,7 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_atlas_button(self):
-        bpy.ops.armature.fix()
+        bpy.ops.cats_armature.fix()
 
         # bpy.context.scene.mesh_name_atlas = 'Body'
         # bpy.context.scene.texture_size = '1024'

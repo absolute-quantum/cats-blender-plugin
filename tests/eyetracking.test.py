@@ -34,7 +34,7 @@ class TestAddon(unittest.TestCase):
 
     def test_eye_tracking(self):
         return
-        bpy.ops.armature.fix()
+        bpy.ops.cats_armature.fix()
         if self.filename == 'armature.mmd1.blend':
             bpy.context.scene.eye_left = 'Eye_L'
             bpy.context.scene.eye_right = 'Eye_R'

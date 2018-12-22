@@ -32,7 +32,7 @@ import bpy
 class TestAddon(unittest.TestCase):
     def test_viseme_button(self):
         # first fix armature
-        bpy.ops.armature.fix()
+        bpy.ops.cats_armature.fix()
 
         # Then translate shapekeys
         bpy.ops.translate.shapekeys()

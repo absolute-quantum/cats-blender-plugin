@@ -31,7 +31,7 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_boneparenting(self):
-        bpy.ops.armature.fix()
+        bpy.ops.cats_armature.fix()
         bpy.ops.refresh.root()
         bpy.ops.root.function()
 

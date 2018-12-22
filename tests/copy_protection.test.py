@@ -31,7 +31,7 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_copy_protection(self):
-        bpy.ops.armature.fix()
+        bpy.ops.cats_armature.fix()
         bpy.ops.copyprotection.enable()
         bpy.ops.copyprotection.disable()
 

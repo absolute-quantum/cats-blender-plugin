@@ -352,6 +352,7 @@ class UpdateNotificationPopup(bpy.types.Operator):
 
 
 def check_for_update_background(onstart=False):
+    global is_checking_for_update, checked_on_startup
     if onstart and checked_on_startup:
         # print('ALREADY CHECKED ON STARTUP')
         return
@@ -359,7 +360,6 @@ def check_for_update_background(onstart=False):
         # print('ALREADY CHECKING')
         return
 
-    global is_checking_for_update, checked_on_startup
     is_checking_for_update = True
     checked_on_startup = True
 
