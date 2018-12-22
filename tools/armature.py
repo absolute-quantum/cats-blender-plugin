@@ -428,9 +428,10 @@ class FixArmature(bpy.types.Operator):
                     uv.data[vert].uv.y = 0
                     fixed_uv_coords += 1
 
-        # Translate bones
+        # Translate bones and unhide them all
         to_translate = []
         for bone in armature.data.bones:
+            bone.hide = False
             to_translate.append(bone.name)
         tools.translate.update_dictionary(to_translate)
         for bone in armature.data.bones:

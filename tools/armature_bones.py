@@ -94,6 +94,15 @@ bone_list_parenting = {
 
     # Special cases
     'M_Head_Copy': 'Head',
+
+    # 'J_L_Eye_UpperMiddle_001': 'Head',
+    # 'J_L_Eye_UnderOuter_001': 'Head',
+    # 'J_L_Eye_UnderMiddle_001': 'Head',
+    # 'J_L_Eye_UnderInner_001': 'Head',
+    # 'J_L_Eye_UnderCorner_001': 'Head',
+    # 'J_L_Eye_UpperInner_001': 'Head',
+    # 'J_L_Eye_UpperOuter_001': 'Head',
+    # 'J_L_Eye_UpperCorner_001': 'Head',
 }
 dont_delete_these_bones = [
     'Hips', 'Spine', 'Chest', 'Neck', 'Head',
@@ -141,7 +150,7 @@ dont_delete_these_main_bones = [
 ]
 bone_list_rename_unknown_side = {
     'Shoulder': 'shoulder',
-    'Shoulder_001': 'shoulder'
+    'Shoulder_001': 'shoulder',
 }
 bone_reweigth_to_parent = [
     'ShoulderC_\L',
@@ -292,6 +301,7 @@ bone_rename['Hips'] = [
     'Kosi',
     'HipMaster_01',
     'J_Bip_C_Hips',
+    'J_Hip',
 ]
 bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
     'Spine',  # First entry!
@@ -395,6 +405,10 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Spina01',
     'Spina02',
 
+    'J_Spine1',
+    'J_Spine2',
+    'J_Spine3',
+
     'Chest1',
     'Chest2',
     'Chest3',
@@ -460,6 +474,7 @@ bone_rename['Neck'] = [
     'Neck00',
     'kubi',
     'NeckA_01',
+    'J_Neck1',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
@@ -476,6 +491,7 @@ bone_rename['Head'] = [
     'Helmet_Upper',
     'Head_01',
     'Head_001',
+    'J_Head',
 ]
 bone_rename['\Left shoulder'] = [
     '\Left_Shoulder',
@@ -511,7 +527,9 @@ bone_rename['\Left shoulder'] = [
     'Cf_D_Shoulder_\L',
     'Cf_D_Shoulder2_\L',
     'Clavicle\LT_01',
-    'J_Bip_\L_Shoulder'
+    'J_Bip_\L_Shoulder',
+    'J_\L_Collar',
+    'J_\L_Shoulder',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',
@@ -549,7 +567,9 @@ bone_rename['\Left arm'] = [
     'Shoulder(\L)_1',
     '\L_Ude',
     'Shoulder\LT_01',
-    'J_Bip_\L_UpperArm'
+    'J_Bip_\L_UpperArm',
+    'J_\L_UpArm',
+    'J_\L_Elbow',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -592,6 +612,7 @@ bone_rename['\Left elbow'] = [
     '\L_Hiji',
     'Elbow\LT_01',
     'J_Bip_\L_LowerArm',
+    'J_\L_ForeArm',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -620,12 +641,13 @@ bone_rename['\Left wrist'] = [
     '\L_Te',
     'Hand\LT_01',
     'J_Bip_\L_Hand',
+    'J_\L_Wrist',
 ]
 bone_rename['Left wrist'] = [
-    'Left_Hand_003'
+    'Left_Hand_003',
 ]
 bone_rename['Right wrist'] = [
-    'Right_Hand_002'
+    'Right_Hand_002',
 ]
 bone_rename['\Left leg'] = [
     '\Left_Leg',
@@ -671,6 +693,7 @@ bone_rename['\Left leg'] = [
     '\L_Leg',
     'Hip\LT_01',
     'J_Bip_\L_UpperLeg',
+    'J_\L_UpLeg',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -710,6 +733,7 @@ bone_rename['\Left knee'] = [
     'Leg_Calf_\L',
     'Knee\LT_01',
     'J_Bip_\L_LowerLeg',
+    'J_\L_Leg',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
@@ -741,6 +765,7 @@ bone_rename['\Left ankle'] = [
     '\L_Asi',
     'Foot\LT_01',
     'J_Bip_\L_Foot',
+    'J_\L_Foot',
 ]
 bone_rename['\Left toe'] = [
     '\Left_Toe',
@@ -779,6 +804,7 @@ bone_rename['\Left toe'] = [
     'Leg(\L)03',
     'Toe\LT_01',
     'J_Bip_\L_ToeBase',
+    'J_\L_Toe',
 ]
 bone_rename['Eye_\L'] = [
     '\Left_Eye',
@@ -855,6 +881,7 @@ bone_reweight['Neck'] = [
     'NeckW',
     'NeckW2',
     'Neck01',
+    'J_Neck2',
 ]
 bone_reweight['Head'] = [
     'Neckx2',
@@ -1027,8 +1054,8 @@ bone_reweight['\Left elbow'] = [
     'Arm_\Left_Wrist_Adj',
     'Arm_\Left_Elbow_Adj_2',
     'Arm_\Left_Elbow_Adj_1',
-    'Arm_\Left_Forearm'
-    '\Left_Forearm_Twist'
+    'Arm_\Left_Forearm',
+    '\Left_Forearm_Twist',
     '\LHandEX',
     '\L_Sub_Elbow',
     'X_\L_ArmZoom6',
@@ -1126,6 +1153,8 @@ bone_reweight['\Left wrist'] = [
     'BK_\L_Hand_03',
     'BK_\L_Hand_04',
     'Arm_\Left_Finger_5_Base',
+    '\Left_Finger_Index_Metacarpal',
+    '\Left_Finger_Ring_Metacarpal',
 ]
 bone_reweight['Left wrist'] = [
     'Left_Hand_002',
@@ -1299,6 +1328,7 @@ bone_reweight['\Left knee'] = [
     'BK_\L_Knee_03',
     'BK_\L_Knee_04',
     'Foot\LT_Roll_01',
+    'J_\L_Knee',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',
