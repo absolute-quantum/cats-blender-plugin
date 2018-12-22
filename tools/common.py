@@ -608,9 +608,6 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
-    # Remove objects that have no user
-    tools.common.remove_no_user_objects()
-
     meshes = get_meshes_objects(armature_name=armature_name)
 
     # Find out which meshes to join
@@ -632,10 +629,19 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
     unselect_all()
 
+    # Check everywhere for broken meshes and delete them
+    for mesh in get_meshes_objects(mode=2):
+        set_active(mesh)
+        if not get_active():
+            print('CORRUPTED MESH FOUND:', mesh.name)
+            if mesh.name in meshes_to_join:
+                meshes_to_join.remove(mesh.name)
+            delete(mesh)
+
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:
         if mesh.name in meshes_to_join:
-            tools.common.set_active(mesh)
+            set_active(mesh)
 
             # Apply decimation modifiers
             for mod in mesh.modifiers:
@@ -668,22 +674,33 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                 if mesh.data.uv_layers:
                     mesh.data.uv_layers[0].name = 'UVMap'
 
-    print('CHECK')
-    for mesh in meshes:
-        print(mesh.name, mesh.users)
+    # print('CHECK')
+    # for mesh in meshes:
+    #     print(mesh.name, mesh.users)
+
+    # Get the name of the active mesh in order to check if it was deleted later
+    active_mesh_name = get_active().name
 
     # Join the meshes
     if bpy.ops.object.join.poll():
         bpy.ops.object.join()
     else:
         print('NO MESH COMBINED!')
-        return None
+
+    # Delete meshes that somehow weren't deleted. Both pre and post join mesh deletion methods are needed!
+    for mesh in get_meshes_objects(armature_name=armature_name):
+        if mesh.name == active_mesh_name:
+            set_active(mesh)
+        elif mesh.name in meshes_to_join:
+            delete(mesh)
+            print('DELETED', mesh.name, mesh.users)
 
     # Rename result to Body and correct modifiers
-    mesh = tools.common.get_active()
+    mesh = get_active()
     if mesh:
         mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
+        # return
 
         # Remove duplicate armature modifiers
         mod_count = 0
@@ -1228,11 +1245,21 @@ def remove_unused_objects():
 
 
 def remove_no_user_objects():
+    print('\nREMOVE OBJECTS')
+    for block in bpy.data.objects:
+        print(block.name, block.users)
+        if block.users == 0:
+            delete(block)
     print('\nREMOVE MESHES')
     for block in bpy.data.meshes:
         print(block.name, block.users)
         if block.users == 0:
             bpy.data.meshes.remove(block)
+    print('\nREMOVE MATERIALS')
+    for block in bpy.data.materials:
+        print(block.name, block.users)
+        if block.users == 0:
+            bpy.data.materials.remove(block)
 
     # print('\nREMOVE MATS')
     # for block in bpy.data.materials:
@@ -1458,34 +1485,6 @@ def matmul(a, b):
     return a @ b
 
 
-def set_cats_version_string():
-    version_str = ''
-    version_temp = []
-
-    for n in globs.version:
-        version_temp.append(n)
-
-    # if in dev version, increase version
-    if globs.dev_branch and len(version_temp) > 2:
-        version_temp[2] += 1
-
-    # Convert version to string
-    if len(version_temp) > 0:
-        version_str += str(version_temp[0])
-        for index, i in enumerate(version_temp):
-            if index == 0:
-                continue
-            version_str += '.' + str(version_temp[index])
-    if globs.dev_branch:
-        version_str += '-dev'
-
-    # Change the version back
-    if globs.dev_branch and len(version_temp) > 2:
-        version_temp[2] -= 1
-
-    globs.version_str = version_str
-
-
 def ui_refresh():
     # A way to refresh the ui
     refreshed = False
@@ -1582,12 +1581,12 @@ def html_to_text(html):
     try:
         parser.feed(html)
         parser.close()
-    except:  #HTMLParseError: No good replacement?
+    except:  # HTMLParseError: No good replacement?
         pass
     return parser.get_text()
 
 
-# === THIS CODE COULD BE USEFUL ===
+""" === THIS CODE COULD BE USEFUL === """
 
 # def addvertex(meshname, shapekey_name):
 #     mesh = bpy.data.objects[meshname].data
