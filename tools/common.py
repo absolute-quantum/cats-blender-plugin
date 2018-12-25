@@ -1158,7 +1158,7 @@ def delete_hierarchy(parent):
 
     objs = bpy.data.objects
     for obj in to_delete:
-        objs.remove(objs[obj.name], True)
+        objs.remove(objs[obj.name], do_unlink=True)
 
 
 def delete(obj):
@@ -1167,7 +1167,7 @@ def delete(obj):
             child.parent = obj.parent
 
     objs = bpy.data.objects
-    objs.remove(objs[obj.name], True)
+    objs.remove(objs[obj.name], do_unlink=True)
 
 
 def days_between(d1, d2, time_format):
@@ -1374,7 +1374,7 @@ class ShowError(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
 
     def draw(self, context):
@@ -1470,7 +1470,11 @@ def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
 
 
 def version_2_79_or_older():
-    return bpy.app.version < (2, 79, 9)
+    return bpy.app.version < (2, 80)
+
+
+def get_user_preferences():
+    return bpy.context.user_preferences if version_2_79_or_older() else bpy.context.preferences
 
 
 def has_shapekeys(mesh):

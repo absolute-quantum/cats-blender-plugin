@@ -996,6 +996,8 @@ bone_reweight['\Left arm'] = [
     'Arm_WayA_\L',
     '\L_Arm_EX',
     '\L_Elbow_EX',
+    'Arm1D_\L',
+    'Arm2D_\L',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',

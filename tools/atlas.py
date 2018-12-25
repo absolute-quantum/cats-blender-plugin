@@ -375,7 +375,7 @@ class InstallShotariya(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5.3, height=-550)
 
     def check(self, context):

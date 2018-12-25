@@ -61,6 +61,13 @@ if "bpy" not in locals():
 else:
     is_reloading = True
 
+# Don't allow Blender versions older than 2.75
+if bpy.app.version < (2, 75):
+    sys.tracebacklimit = 0
+    raise ImportError('\n\nThis Blender version is not supported by Cats. '
+                      '\nPlease use Blender 2.79 or later.')
+
+# Load or reload all cats modules
 if not is_reloading:
     import updater
     import mmd_tools_local
@@ -318,8 +325,8 @@ def register():
     globs.dict_found = tools.translate.load_translations()
 
     # Set preferred Blender options
-    bpy.context.user_preferences.system.use_international_fonts = True
-    bpy.context.user_preferences.filepaths.use_file_compression = True
+    tools.common.get_user_preferences().system.use_international_fonts = True
+    tools.common.get_user_preferences().filepaths.use_file_compression = True
 
     # Add shapekey button to shapekey menu
     bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)

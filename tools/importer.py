@@ -170,7 +170,7 @@ class ModelsPopup(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3, height=-550)
 
     def check(self, context):
@@ -319,7 +319,7 @@ class InstallXPS(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -351,7 +351,7 @@ class InstallSource(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -383,7 +383,7 @@ class InstallVRM(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -418,7 +418,7 @@ class EnableMMD(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
 
     def check(self, context):
@@ -564,7 +564,7 @@ class ExportModel(bpy.types.Operator):
 
                 # Check material count
                 for mat_slot in mesh.material_slots:
-                    if mat_slot and mat_slot.material and mat_slot.material.name not in _mat_list:
+                    if mat_slot and mat_slot.material and mat_slot.material.users and mat_slot.material.name not in _mat_list:
                         _mat_list.append(mat_slot.material.name)
 
                 # Check if any textures are found
@@ -666,7 +666,7 @@ class ErrorDisplay(bpy.types.Operator):
         self.broken_shapes = _broken_shapes
         self.textures_found = _textures_found
 
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
 
     def check(self, context):

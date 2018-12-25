@@ -5,12 +5,13 @@
       "custom_icon": "fire",
       "disabled": true
     },{
-      "info2": "Happy",
-      "icon": "INFO"
-    },{
       "info": "Happy Halloween!",
       "custom_icon": "halloween",
       "disabled": true
+    },{
+      "info": "Merry Christmas and Happy Holidays!",
+      "custom_icon": "christmas",
+      "disabled": false
     },{
       "info": "Translations are fixed in CATS v0.11.5! Please update.",
       "icon": "INFO",
@@ -322,6 +323,9 @@
       "startdate": "2018-12-15"
     },{
       "displayname": "ARobotDevil",
+      "startdate": "2018-12-15"
+    },{
+      "displayname": "Whittz",
       "startdate": "2018-12-15"
     }
   ]
