@@ -49,7 +49,7 @@ class CreateEyesButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not tools.common.get_meshes_objects():
+        if not tools.common.get_meshes_objects(check=False):
             return False
 
         if not context.scene.head \

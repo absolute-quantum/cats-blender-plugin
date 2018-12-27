@@ -41,7 +41,7 @@ class CopyProtectionEnable(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if len(tools.common.get_meshes_objects()) == 0:
+        if len(tools.common.get_meshes_objects(check=False)) == 0:
             return False
         return True
 

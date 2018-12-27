@@ -125,7 +125,7 @@ class AttachMesh(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(tools.common.get_armature_objects()) > 0 and len(tools.common.get_meshes_objects(mode=1)) > 0
+        return len(tools.common.get_armature_objects()) > 0 and len(tools.common.get_meshes_objects(mode=1, check=False)) > 0
 
     def execute(self, context):
         if not tools.common.version_2_79_or_older():

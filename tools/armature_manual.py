@@ -458,8 +458,8 @@ class SeparateByLooseParts(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
-        return meshes and len(meshes) >= 1
+        meshes = tools.common.get_meshes_objects(check=False)
+        return meshes
 
     def execute(self, context):
         obj = context.active_object
@@ -682,7 +682,7 @@ class RecalculateNormals(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
@@ -721,7 +721,7 @@ class FlipNormals(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
@@ -763,7 +763,7 @@ class RemoveDoubles(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
@@ -797,7 +797,7 @@ class RemoveDoublesNormal(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
@@ -826,7 +826,7 @@ class FixVRMShapesButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return tools.common.get_meshes_objects()
+        return tools.common.get_meshes_objects(check=False)
 
     def execute(self, context):
         mesh = tools.common.get_meshes_objects()[0]

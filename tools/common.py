@@ -280,7 +280,7 @@ def get_meshes(self, context):
 
     choices = []
 
-    for mesh in get_meshes_objects(mode=0):
+    for mesh in get_meshes_objects(mode=0, check=False):
         choices.append((mesh.name, mesh.name, mesh.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
@@ -471,7 +471,7 @@ def get_shapekeys_decimation_list(self, context):
 def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
     choices = []
     choices_simple = []
-    meshes_list = get_meshes_objects()
+    meshes_list = get_meshes_objects(check=False)
 
     if decimation:
         meshes = meshes_list
@@ -598,20 +598,17 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
                 if is_selected(ob):
                     meshes.append(ob)
 
-    # Check everywhere for broken meshes and delete them
+    # Check for broken meshes and delete them
     if check:
-        try:
-            current_active = get_active()
-            for mesh in meshes:
-                print(mesh.name, mesh.users)
-                set_active(mesh)
-                if not get_active():
-                    print('CORRUPTED MESH FOUND:', mesh.name)
-                    meshes.remove(mesh)
-                    delete(mesh)
-            set_active(current_active)
-        except AttributeError:
-            pass
+        current_active = get_active()
+        for mesh in meshes:
+            print(mesh.name, mesh.users)
+            set_active(mesh)
+            if not get_active():
+                print('CORRUPTED MESH FOUND:', mesh.name, mesh.users)
+                meshes.remove(mesh)
+                delete(mesh)
+        set_active(current_active)
 
     return meshes
 

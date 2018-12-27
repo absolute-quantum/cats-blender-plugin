@@ -43,7 +43,7 @@ class OneTexPerMatButton(bpy.types.Operator):
     def poll(cls, context):
         if tools.common.get_armature() is None:
             return False
-        return len(tools.common.get_meshes_objects()) > 0
+        return len(tools.common.get_meshes_objects(check=False)) > 0
 
     def execute(self, context):
         if not tools.common.version_2_79_or_older():
@@ -76,7 +76,7 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
     def poll(cls, context):
         if tools.common.get_armature() is None:
             return False
-        return len(tools.common.get_meshes_objects()) > 0
+        return len(tools.common.get_meshes_objects(check=False)) > 0
 
     def execute(self, context):
         if not tools.common.version_2_79_or_older():
@@ -108,7 +108,7 @@ class StandardizeTextures(bpy.types.Operator):
     def poll(cls, context):
         if tools.common.get_armature() is None:
             return False
-        return len(tools.common.get_meshes_objects()) > 0
+        return len(tools.common.get_meshes_objects(check=False)) > 0
 
     def execute(self, context):
         if not tools.common.version_2_79_or_older():
@@ -150,7 +150,7 @@ class CombineMaterialsButton(bpy.types.Operator):
     def poll(cls, context):
         if tools.common.get_armature() is None:
             return False
-        return len(tools.common.get_meshes_objects()) > 0
+        return len(tools.common.get_meshes_objects(check=False)) > 0
 
     def assignmatslots(self, ob, matlist):
         scn = bpy.context.scene
