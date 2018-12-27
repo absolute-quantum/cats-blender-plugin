@@ -20,7 +20,7 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        mesh_count = len(tools.common.get_meshes_objects())
+        mesh_count = len(tools.common.get_meshes_objects(check=False))
         if mesh_count == 0:
             row = col.row(align=True)
             row.scale_y = 1.1

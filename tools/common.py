@@ -568,7 +568,7 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-def get_meshes_objects(armature_name=None, mode=0):
+def get_meshes_objects(armature_name=None, mode=0, check=True):
     # Modes:
     # 0 = With armatures only
     # 1 = Top level only
@@ -597,6 +597,22 @@ def get_meshes_objects(armature_name=None, mode=0):
             elif mode == 3:
                 if is_selected(ob):
                     meshes.append(ob)
+
+    # Check everywhere for broken meshes and delete them
+    if check:
+        try:
+            current_active = get_active()
+            for mesh in meshes:
+                print(mesh.name, mesh.users)
+                set_active(mesh)
+                if not get_active():
+                    print('CORRUPTED MESH FOUND:', mesh.name)
+                    meshes.remove(mesh)
+                    delete(mesh)
+            set_active(current_active)
+        except AttributeError:
+            pass
+
     return meshes
 
 
@@ -629,14 +645,15 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
     unselect_all()
 
-    # Check everywhere for broken meshes and delete them
-    for mesh in get_meshes_objects(mode=2):
-        set_active(mesh)
-        if not get_active():
-            print('CORRUPTED MESH FOUND:', mesh.name)
-            if mesh.name in meshes_to_join:
-                meshes_to_join.remove(mesh.name)
-            delete(mesh)
+    # # Check everywhere for broken meshes and delete them
+    # for mesh in get_meshes_objects(mode=2):
+    #     print(mesh.name, mesh.users)
+    #     set_active(mesh)
+    #     if not get_active():
+    #         print('CORRUPTED MESH FOUND:', mesh.name)
+    #         if mesh.name in meshes_to_join:
+    #             meshes_to_join.remove(mesh.name)
+    #         delete(mesh)
 
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:

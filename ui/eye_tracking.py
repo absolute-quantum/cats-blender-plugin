@@ -27,7 +27,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
         if context.scene.eye_mode == 'CREATION':
 
-            mesh_count = len(tools.common.get_meshes_objects())
+            mesh_count = len(tools.common.get_meshes_objects(check=False))
             if mesh_count == 0:
                 col.separator()
                 row = col.row(align=True)

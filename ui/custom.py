@@ -90,7 +90,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.05
             row.label(text='Attach Mesh to Armature:')
 
-            if len(tools.common.get_armature_objects()) == 0 or len(tools.common.get_meshes_objects(mode=1)) == 0:
+            if len(tools.common.get_armature_objects()) == 0 or len(tools.common.get_meshes_objects(mode=1, check=False)) == 0:
                 row = col.row(align=True)
                 row.scale_y = 1.05
                 col.label(text='An armature and a mesh are required!', icon='INFO')

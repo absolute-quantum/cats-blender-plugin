@@ -40,7 +40,7 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 1.3
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         if len(meshes) > 0 and tools.common.has_shapekeys(meshes[0]) and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
             row.operator(copy_protection.CopyProtectionDisable.bl_idname, icon=globs.ICON_UNPROTECT)
             row = col.row(align=True)

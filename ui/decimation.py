@@ -46,7 +46,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         elif context.scene.decimation_mode == 'CUSTOM':
             col.separator()
 
-            if len(tools.common.get_meshes_objects()) <= 1:
+            if len(tools.common.get_meshes_objects(check=False)) <= 1:
                 row = col.row(align=True)
                 row.label(text='Start by Separating by Materials:')
                 row = col.row(align=True)

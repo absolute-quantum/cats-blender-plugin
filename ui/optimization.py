@@ -235,7 +235,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.operator(material.StandardizeTextures.bl_idname, icon=globs.ICON_SHADING_TEXTURE)
 
         elif context.scene.optimize_mode == 'BONEMERGING':
-            if len(tools.common.get_meshes_objects()) > 1:
+            if len(tools.common.get_meshes_objects(check=False)) > 1:
                 row = box.row(align=True)
                 row.prop(context.scene, 'merge_mesh')
             row = box.row(align=True)

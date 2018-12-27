@@ -355,7 +355,7 @@ class JoinMeshes(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes and len(meshes) > 0
 
     def execute(self, context):
@@ -382,7 +382,7 @@ class JoinMeshesSelected(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes and len(meshes) > 0
 
     def execute(self, context):
@@ -419,7 +419,7 @@ class SeparateByMaterials(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes and len(meshes) >= 1
 
     def execute(self, context):
