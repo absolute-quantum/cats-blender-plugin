@@ -602,10 +602,10 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
     if check:
         current_active = get_active()
         for mesh in meshes:
-            print(mesh.name, mesh.users)
+            # print(mesh.name, mesh.users)
             set_active(mesh)
             if not get_active():
-                print('CORRUPTED MESH FOUND:', mesh.name, mesh.users)
+                print('DELETED CORRUPTED MESH:', mesh.name, mesh.users)
                 meshes.remove(mesh)
                 delete(mesh)
         set_active(current_active)
@@ -1220,7 +1220,7 @@ def delete_zero_weight(armature_name=None, ignore=''):
 
     vertex_group_names_used = set()
     vertex_group_name_to_objects_having_same_named_vertex_group = dict()
-    for objects in armature.children:
+    for objects in get_meshes_objects(armature_name=armature_name):
         vertex_group_id_to_vertex_group_name = dict()
         for vertex_group in objects.vertex_groups:
             vertex_group_id_to_vertex_group_name[vertex_group.index] = vertex_group.name

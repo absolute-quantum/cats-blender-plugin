@@ -233,10 +233,6 @@ def set_cats_version_string():
     for n in version:
         version_temp.append(n)
 
-    # if in dev version, increase version
-    if dev_branch:
-        version_temp[len(version_temp)-1] += 1
-
     if len(version_temp) > 0:
         # if in dev version, increase version
         if dev_branch:

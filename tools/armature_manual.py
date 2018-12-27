@@ -580,9 +580,7 @@ class MergeWeightsToActive(bpy.types.Operator):
 def merge_weights(armature, parenting_list):
     tools.common.switch('OBJECT')
     # Merge the weights on the meshes
-    for mesh in armature.children:
-        if mesh.type != 'MESH':
-            continue
+    for mesh in tools.common.get_meshes_objects(armature_name=armature.name):
         tools.common.set_active(mesh)
 
         for bone, parent in parenting_list.items():
@@ -1147,9 +1145,7 @@ class DuplicateBonesButton(bpy.types.Operator):
 
         # Create the missing vertex groups and duplicate the weight
         tools.common.switch('OBJECT')
-        for mesh in armature.children:
-            if mesh.type != 'MESH':
-                continue
+        for mesh in tools.common.get_meshes_objects(armature_name=armature.name):
             tools.common.set_active(mesh)
 
             for bone_from, bone_to in duplicate_vertex_groups.items():
