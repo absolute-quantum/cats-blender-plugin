@@ -236,6 +236,12 @@ bone_list_conflicting_names = [
     ([], 'Root_Rot', 'Rot_Root'),
 
     # (['Elbowb_\L', 'Elbowc_\L'], 'Elbowa_\L', 'Arm05_\L'),
+
+    # Fix SSBU models
+    (['Trans', 'Rot', 'Hip'], 'Waist', 'Spine1'),
+    (['Trans', 'Rot', 'Hip'], 'Bust', 'Spine2'),
+    (['Trans', 'Rot', 'Hip'], 'Shoulder\L', '\Left arm'),
+    (['Trans', 'Rot', 'Hip'], 'Arm\L', '\Left elbow'),
 ]
 bone_finger_list = [
     'Thumb0_',
@@ -530,6 +536,7 @@ bone_rename['\Left shoulder'] = [
     'J_Bip_\L_Shoulder',
     'J_\L_Collar',
     'J_\L_Shoulder',
+    'Clavicle\L',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',
@@ -694,6 +701,7 @@ bone_rename['\Left leg'] = [
     'Hip\LT_01',
     'J_Bip_\L_UpperLeg',
     'J_\L_UpLeg',
+    'Leg\L',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -734,6 +742,7 @@ bone_rename['\Left knee'] = [
     'Knee\LT_01',
     'J_Bip_\L_LowerLeg',
     'J_\L_Leg',
+    'Knee\L',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
@@ -1113,6 +1122,7 @@ bone_reweight['\Left elbow'] = [
     'Wrist\LT_Roll_01',
     'ForArm\LT_Roll_01',
     'Arm_\Left_Forearm_Adj_1',
+    'H_Elbow\L',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
