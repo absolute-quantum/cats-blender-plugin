@@ -601,14 +601,19 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
     # Check for broken meshes and delete them
     if check:
         current_active = get_active()
+        to_remove = []
         for mesh in meshes:
             # print(mesh.name, mesh.users)
             set_active(mesh)
             if not get_active():
-                print('DELETED CORRUPTED MESH:', mesh.name, mesh.users)
-                meshes.remove(mesh)
-                delete(mesh)
-        set_active(current_active)
+                to_remove.append(mesh)
+        for mesh in to_remove:
+            print('DELETED CORRUPTED MESH:', mesh.name, mesh.users)
+            meshes.remove(mesh)
+            delete(mesh)
+
+        if current_active:
+            set_active(current_active)
 
     return meshes
 
