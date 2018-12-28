@@ -32,8 +32,9 @@ import bpy
 class TestAddon(unittest.TestCase):
     def test_boneparenting(self):
         bpy.ops.cats_armature.fix()
-        bpy.ops.refresh.root()
-        bpy.ops.root.function()
+        bpy.ops.cats_root.refresh_root_list()
+        bpy.ops.cats_root.create_root()
+
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

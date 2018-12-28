@@ -41,7 +41,7 @@ class TestAddon(unittest.TestCase):
         # bpy.context.scene.area_weight = 0.0
         # bpy.context.scene.island_margin = 0.01
 
-        result = bpy.ops.atlas.generate()
+        result = bpy.ops.cats_atlas.generate_atlas()
         self.assertTrue(result == {'CANCELLED'})
         # self.assertTrue(result == {'FINISHED'})  # Does not work because it requires an external plugin which is not installed
 
