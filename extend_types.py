@@ -16,9 +16,9 @@ def register():
     Scene.full_body = BoolProperty(
         name='Apply Full Body Tracking Fix',
         description="Applies a general fix for Full Body Tracking.\n\n"
-                    'Can potentially reduce the knee bending of every avatar in VRChat.\n'
-                    'You can safely ignore the "Spine length zero" warning in Unity.\n'
-                    'If you have problems with the hips ingame, uncheck this option and tell us!\n',
+                    'Can potentially reduce the knee bending of every avatar in VRChat',
+                    # 'You can safely ignore the "Spine length zero" warning in Unity.\n'
+                    # 'If you have problems with the hips ingame, uncheck this option and tell us!\n',
         default=False
     )
 

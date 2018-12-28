@@ -334,15 +334,17 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.12.2
-- **Model Options**:
-  - Join Meshes now finds and deleted corrupted meshes which previously resulted in many errors
+- **Model**:
+  - Removed the info that you can ignore the "Spine Length Zero" warning in Unity when enabling the FBT fix
+    - That error no longer appears in Unity 2017
 - **Exporter**:
   - No longer warns of meshes that could be split by Unity
   - Instead warns when having more than 70k tris
 - **Decimation**:
   - Changed default decimation value to 70,000 tris
 - **General**:
-  - Added automatic fixing of faulty Cats installation
+  - Fixed corrupted meshes breaking nearly all Cats features
+  - Added automatic fixing of faulty Cats installations
     - You might have to restart Cats if it doesn't show up after updating
   - Rewrote the entire updater
   - Added some Blender 2.8 compatibility fixes
