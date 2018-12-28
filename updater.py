@@ -12,7 +12,7 @@ from threading import Thread
 
 from bpy.app.handlers import persistent
 
-fake_update = False
+fake_update = True
 
 is_checking_for_update = False
 checked_on_startup = False

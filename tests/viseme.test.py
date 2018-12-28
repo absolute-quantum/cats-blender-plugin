@@ -37,7 +37,7 @@ class TestAddon(unittest.TestCase):
         # Then translate shapekeys
         bpy.ops.cats_translate.shapekeys()
 
-        result = bpy.ops.cats_visemes.create()
+        result = bpy.ops.cats_viseme.create()
         self.assertTrue(result == {'FINISHED'})
 
 
