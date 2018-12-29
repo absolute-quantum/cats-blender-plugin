@@ -27,7 +27,9 @@
 # Repo: https://github.com/scorpion81/blender-addons/blob/master/space_view3d_materials_utils.py
 # Edits by: GiveMeAllYourCats
 
+import os
 import bpy
+import copy
 import tools.common
 from tools.register import register_wrap
 
@@ -301,3 +303,68 @@ class CombineMaterialsButton(bpy.types.Operator):
             self.report({'INFO'}, 'Combined ' + str(i) + ' materials!')
 
         return{'FINISHED'}
+
+
+@register_wrap
+class ConvertAllToPngButton(bpy.types.Operator):
+    bl_idname = 'cats_material.convert_all_to_png'
+    bl_label = 'Convert Textures to PNG'
+    bl_description = 'Converts all texture files into PNG files.' \
+                     '\nThis helps with transparency and compatibility issues.' \
+                     '\n\nThe converted image files will be saved next to the old ones'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return tools.common.get_meshes_objects(mode=2, check=False)
+
+    def execute(self, context):
+        convertion_count = 0
+
+        for mesh in tools.common.get_meshes_objects(mode=2):
+            for mat_slot in mesh.material_slots:
+                if mat_slot and mat_slot.material:
+                    for tex_slot in mat_slot.material.texture_slots:
+                        if tex_slot and tex_slot.texture and tex_slot.texture.image:
+
+                            # Get texture path and check if the file should be converted
+                            tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
+                            if tex_path.endswith('.png') or not os.path.isfile(tex_path):
+                                continue
+
+                            # Save the old texture
+                            image_old = tex_slot.texture.image
+
+                            # Set the new image file name
+                            image_name = image_old.name
+                            print(image_name)
+                            image_name_new = ''
+                            for s in image_name.split('.')[0:-1]:
+                                image_name_new += s + '.'
+                            image_name_new += 'png'
+                            print(image_name_new)
+
+                            # Set the new image file path
+                            print(tex_path)
+                            tex_path_new = ''
+                            for s in tex_path.split('.')[0:-1]:
+                                tex_path_new += s + '.'
+                            tex_path_new += 'png'
+                            print(tex_path_new)
+
+                            # Save the image as a new png file
+                            scene = bpy.context.scene
+                            scene.render.image_settings.file_format = 'PNG'
+                            scene.render.image_settings.color_mode = 'RGBA'
+                            scene.render.image_settings.color_depth = '16'
+                            scene.render.image_settings.compression = 100
+                            image_old.save_render(tex_path_new, scene)
+
+                            # Exchange the old image in blender for the new one
+                            bpy.data.images[image_name].filepath = tex_path_new
+                            bpy.data.images[image_name].name = image_name_new
+
+                            convertion_count += 1
+
+        self.report({'INFO'}, 'Converted ' + str(convertion_count) + ' to PNG files.')
+        return {'FINISHED'}

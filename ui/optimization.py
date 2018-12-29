@@ -234,6 +234,11 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.1
             row.operator(material.StandardizeTextures.bl_idname, icon=globs.ICON_SHADING_TEXTURE)
 
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 1.1
+            row.operator(material.ConvertAllToPngButton.bl_idname, icon='IMAGE_RGB_ALPHA')
+
         elif context.scene.optimize_mode == 'BONEMERGING':
             if len(tools.common.get_meshes_objects(check=False)) > 1:
                 row = box.row(align=True)

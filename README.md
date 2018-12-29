@@ -334,6 +334,11 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.12.2
+- **Optimization**:
+  - Added new "Convert Textures to PNG" button
+    - This converts all texture files into PNG files
+    - This helps with transparency and compatibility issues
+    - The converted image files will be saved next to the old ones
 - **Model**:
   - Made SSBU models compatible
 - **Exporter**:
