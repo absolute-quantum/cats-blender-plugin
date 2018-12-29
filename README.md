@@ -335,6 +335,7 @@ It checks for a new version automatically once every day.
 
 #### 0.12.2
 - **Model**:
+  - Made SSBU models compatible
   - Removed the info that you can ignore the "Spine Length Zero" warning in Unity when enabling the FBT fix
     - That error no longer appears in Unity 2017
 - **Exporter**:
@@ -345,7 +346,7 @@ It checks for a new version automatically once every day.
 - **General**:
   - Fixed corrupted meshes breaking nearly all Cats features
   - Added automatic fixing of faulty Cats installations
-    - You might have to restart Cats if it doesn't show up after updating
+    - Restart Cats if it doesn't show up after updating
   - Rewrote the entire updater
   - Added some Blender 2.8 compatibility fixes
   - Updated mmd_tools

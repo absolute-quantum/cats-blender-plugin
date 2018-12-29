@@ -82,7 +82,7 @@ else:
     importlib.reload(tools)
     importlib.reload(ui)
 
-import extend_types
+import extentions
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
@@ -119,7 +119,7 @@ def remove_corrupted_files():
         '__init__.py',
         'addon_updater.py',
         'addon_updater_ops.py',
-        'extend_types.py',
+        'extensions.py',
         'globs.py',
         'updater.py',
     ]
@@ -309,7 +309,7 @@ def register():
 
     # Register Scene types
     print("Registering scene types..")
-    extend_types.register()
+    extentions.register()
 
     # Load supporter and settings icons and buttons
     print("Loading other stuff..")
