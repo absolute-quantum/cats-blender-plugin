@@ -931,6 +931,7 @@ class FixFBTButton(bpy.types.Operator):
     bl_description = "Applies a general fix for Full Body Tracking." \
                      "\n" \
                      '\nCan potentially reduce the knee bending of this avatar in VRChat.' \
+                     '\nIgnore the "Spine length zero" warning in Unity.' \
                      '\n' \
                      '\nRequires bones:' \
                      '\n - Hips, Spine, Left leg, Right leg'

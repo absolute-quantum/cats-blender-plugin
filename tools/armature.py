@@ -1241,15 +1241,15 @@ class ModelSettings(bpy.types.Operator):
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
 
-        # if context.scene.full_body:
-        #     col.separator()
-        #     row = col.row(align=True)
-        #     row.scale_y = 0.7
-        #     row.label(text='INFO:', icon='INFO')
-        #     row = col.row(align=True)
-        #     row.scale_y = 0.7
-        #     row.label(text='You can safely ignore the', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
-        #     row = col.row(align=True)
-        #     row.scale_y = 0.7
-        #     row.label(text='"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
-        #     col.separator()
+        if context.scene.full_body:
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label(text='INFO:', icon='INFO')
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label(text='You can safely ignore the', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            row = col.row(align=True)
+            row.scale_y = 0.7
+            row.label(text='"Spine length zero" warning in Unity.', icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+            col.separator()

@@ -336,8 +336,6 @@ It checks for a new version automatically once every day.
 #### 0.12.2
 - **Model**:
   - Made SSBU models compatible
-  - Removed the info that you can ignore the "Spine Length Zero" warning in Unity when enabling the FBT fix
-    - That error no longer appears in Unity 2017
 - **Exporter**:
   - No longer warns of meshes that could be split by Unity
   - Instead warns when having more than 70k tris

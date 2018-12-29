@@ -69,20 +69,20 @@ if bpy.app.version < (2, 75):
 
 # Load or reload all cats modules
 if not is_reloading:
+    # This order is important
     import updater
     import mmd_tools_local
-
-    # This order is important
     import tools
     import ui
+    import extentions
 else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
     importlib.reload(tools)
     importlib.reload(ui)
+    importlib.reload(extentions)
 
-import extentions
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
