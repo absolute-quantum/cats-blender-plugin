@@ -5,7 +5,8 @@ import tools.supporter
 import tools.armature_bones
 
 from ui.main import ToolPanel
-from ui.main import get_emtpy_icon
+
+from tools import armature_custom
 
 from tools.register import register_wrap
 from tools.common import version_2_79_or_older
@@ -31,7 +32,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             return
 
         row = col.row(align=True)
-        row.operator('armature_custom.button', text='How to Use', icon='FORWARD')
+        row.operator(armature_custom.CustomModelTutorialButton.bl_idname, text='How to Use', icon='FORWARD')
         col.separator()
 
         row = col.row(align=True)
@@ -81,7 +82,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.2
-            row.operator('armature_custom.merge_armatures', icon='ARMATURE_DATA')
+            row.operator(armature_custom.MergeArmature.bl_idname, icon='ARMATURE_DATA')
 
         # Attach Mesh
         else:
@@ -89,13 +90,13 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.05
             row.label(text='Attach Mesh to Armature:')
 
-            if len(tools.common.get_armature_objects()) == 0 or len(tools.common.get_meshes_objects(mode=1)) == 0:
+            if len(tools.common.get_armature_objects()) == 0 or len(tools.common.get_meshes_objects(mode=1, check=False)) == 0:
                 row = col.row(align=True)
                 row.scale_y = 1.05
                 col.label(text='An armature and a mesh are required!', icon='INFO')
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text='Make sure that the mesh has no parent.', icon_value=get_emtpy_icon())
+                row.label(text='Make sure that the mesh has no parent.', icon='BLANK1')
                 return
 
             row = col.row(align=True)
@@ -111,4 +112,4 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.2
-            row.operator('armature_custom.attach_mesh', icon='ARMATURE_DATA')
+            row.operator(armature_custom.AttachMesh.bl_idname, icon='ARMATURE_DATA')

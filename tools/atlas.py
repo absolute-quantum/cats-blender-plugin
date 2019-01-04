@@ -41,7 +41,7 @@ min_version = [1, 1, 6]
 
 @register_wrap
 class EnableSMC(bpy.types.Operator):
-    bl_idname = 'cats.enable_smc'
+    bl_idname = 'cats_atlas.enable_smc'
     bl_label = 'Enable Material Combiner'
     bl_description = 'Enables Material Combiner'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -57,7 +57,7 @@ class EnableSMC(bpy.types.Operator):
 
 @register_wrap
 class AutoAtlasNewButton(bpy.types.Operator):
-    bl_idname = 'atlas.generate'
+    bl_idname = 'cats_atlas.generate_atlas'
     bl_label = 'Create Atlas'
     bl_description = 'Generates a texture atlas.' \
                      '\n' \
@@ -259,7 +259,7 @@ class AutoAtlasNewButton(bpy.types.Operator):
 
         # Update material list
         if len(context.scene.material_list) > 0:
-            bpy.ops.atlas.gen_mat_list('INVOKE_DEFAULT')
+            bpy.ops.cats_atlas.gen_mat_list('INVOKE_DEFAULT')
 
         # Check if the atlas was successfully generated
         if not error and not atlas_name:
@@ -284,7 +284,7 @@ class MaterialsGroup(bpy.types.PropertyGroup):
 
 @register_wrap
 class GenerateMaterialListButton(bpy.types.Operator):
-    bl_idname = 'atlas.gen_mat_list'
+    bl_idname = 'cats_atlas.gen_mat_list'
     bl_label = 'Generate Material List'
     bl_description = 'This generates the material list.' \
                      '\nUse this to select which materials you want to combine.' \
@@ -332,7 +332,7 @@ class GenerateMaterialListButton(bpy.types.Operator):
 
 @register_wrap
 class AtlasHelpButton(bpy.types.Operator):
-    bl_idname = 'atlas.help'
+    bl_idname = 'cats_atlas.help'
     bl_label = 'Generate Material List'
     bl_description = 'Open Useful Atlas Tips'
     bl_options = {'INTERNAL'}
@@ -345,7 +345,7 @@ class AtlasHelpButton(bpy.types.Operator):
 
 @register_wrap
 class ClearMaterialListButton(bpy.types.Operator):
-    bl_idname = 'atlas.clear_mat_list'
+    bl_idname = 'cats_atlas.clear_mat_list'
     bl_label = 'Clear Material List'
     bl_description = 'Clears the material list'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -357,13 +357,13 @@ class ClearMaterialListButton(bpy.types.Operator):
 
 def update_material_list(self, context):
     if len(context.scene.material_list) > 0:
-        bpy.ops.atlas.gen_mat_list()
+        bpy.ops.cats_atlas.gen_mat_list()
     print('UPDATED MAT LIST')
 
 
 @register_wrap
 class InstallShotariya(bpy.types.Operator):
-    bl_idname = "install.shotariya"
+    bl_idname = "cats_atlas.install_shotariya_popup"
     bl_label = 'Error while loading Material Combiner:'
 
     action = bpy.props.EnumProperty(
@@ -375,7 +375,7 @@ class InstallShotariya(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5.3, height=-550)
 
     def check(self, context):
@@ -399,7 +399,7 @@ class InstallShotariya(bpy.types.Operator):
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon=globs.ICON_URL)
+            row.operator(ShotariyaButton.bl_idname, icon=globs.ICON_URL)
             col.separator()
 
         elif self.action == 'ENABLE':
@@ -428,13 +428,13 @@ class InstallShotariya(bpy.types.Operator):
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
-            row.operator('download.shotariya', icon=globs.ICON_URL)
+            row.operator(ShotariyaButton.bl_idname, icon=globs.ICON_URL)
             col.separator()
 
 
 @register_wrap
 class ShotariyaButton(bpy.types.Operator):
-    bl_idname = 'download.shotariya'
+    bl_idname = 'cats_atlas.download_shotariya'
     bl_label = 'Download Material Combiner'
 
     def execute(self, context):
@@ -446,7 +446,7 @@ class ShotariyaButton(bpy.types.Operator):
 
 @register_wrap
 class CheckMaterialListButton(bpy.types.Operator):
-    bl_idname = 'atlas.check_mat_list'
+    bl_idname = 'cats_atlas.check_mat_list'
     bl_label = 'Check/Uncheck Materials'
     bl_description = 'Checks or unchecks the whole material list'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -471,12 +471,12 @@ def shotariya_installed():
                 correct_version = True
 
     if not installed:
-        bpy.ops.install.shotariya('INVOKE_DEFAULT', action='INSTALL')
+        bpy.ops.cats_atlas.install_shotariya_popup('INVOKE_DEFAULT', action='INSTALL')
         print(addon_name + " not installed.")
         return False
 
     if not correct_version:
-        bpy.ops.install.shotariya('INVOKE_DEFAULT', action='VERSION')
+        bpy.ops.cats_atlas.install_shotariya_popup('INVOKE_DEFAULT', action='VERSION')
         print(addon_name + " has wrong version.")
         return False
 
@@ -485,7 +485,7 @@ def shotariya_installed():
         bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='ALL_MAT')
     except AttributeError:
         print(addon_name + " not enabled.")
-        bpy.ops.install.shotariya('INVOKE_DEFAULT', action='ENABLE')
+        bpy.ops.cats_atlas.install_shotariya_popup('INVOKE_DEFAULT', action='ENABLE')
         return False
 
     print(addon_name + " was successfully found!!!")

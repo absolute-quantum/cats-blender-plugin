@@ -32,12 +32,12 @@ import bpy
 class TestAddon(unittest.TestCase):
     def test_viseme_button(self):
         # first fix armature
-        bpy.ops.armature.fix()
+        bpy.ops.cats_armature.fix()
 
         # Then translate shapekeys
-        bpy.ops.translate.shapekeys()
+        bpy.ops.cats_translate.shapekeys()
 
-        result = bpy.ops.auto.viseme()
+        result = bpy.ops.cats_viseme.create()
         self.assertTrue(result == {'FINISHED'})
 
 

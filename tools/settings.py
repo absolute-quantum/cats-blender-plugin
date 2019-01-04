@@ -55,7 +55,7 @@ lock_settings = False
 
 @register_wrap
 class RevertChangesButton(bpy.types.Operator):
-    bl_idname = 'settings.revert'
+    bl_idname = 'cats_settings.revert'
     bl_label = 'Revert Settings'
     bl_description = 'Revert the changes back to how they were on Blender start-up'
     bl_options = {'INTERNAL'}
@@ -70,7 +70,7 @@ class RevertChangesButton(bpy.types.Operator):
 
 @register_wrap
 class ResetGoogleDictButton(bpy.types.Operator):
-    bl_idname = 'settings.reset_google_dict'
+    bl_idname = 'cats_settings.reset_google_dict'
     bl_label = 'Clear Local Google Translations'
     bl_description = "Deletes all currently saved Google Translations. You can't undo this"
     bl_options = {'INTERNAL'}
@@ -84,7 +84,7 @@ class ResetGoogleDictButton(bpy.types.Operator):
 
 @register_wrap
 class DebugTranslations(bpy.types.Operator):
-    bl_idname = 'settings.debug_translations'
+    bl_idname = 'cats_settings.debug_translations'
     bl_label = 'Debug Google Translations'
     bl_description = "Tests Google transaltions and prints the response into a file called 'google-response.txt' located in the cats addon folder > resources" \
                      "\nThis button is only visible in the cats development version"
@@ -105,14 +105,14 @@ class DebugTranslations(bpy.types.Operator):
 
 
 def load_settings():
-    print('READING SETTINGS FILE')
+    # print('READING SETTINGS FILE')
     global settings_data, settings_data_unchanged
 
     # Load settings file and reset it if errors are found
     try:
         with open(settings_file, encoding="utf8") as file:
             settings_data = json.load(file, object_pairs_hook=collections.OrderedDict)
-            print('SETTINGS LOADED!')
+            # print('SETTINGS LOADED!')
     except FileNotFoundError:
         print("SETTINGS FILE NOT FOUND!")
         reset_settings(full_reset=True)
@@ -153,7 +153,8 @@ def load_settings():
                 to_reset_settings.append(setting)
                 print('TIME', setting, 'IN FUTURE!', time_delta)
             else:
-                print('TIME', setting, 'IN PAST!', time_delta)
+                pass
+                # print('TIME', setting, 'IN PAST!', time_delta)
 
     # If there are settings to reset, reset them
     if to_reset_settings:
@@ -216,7 +217,7 @@ def apply_settings():
                 continue
 
             applied = True
-            print('Refreshed Settings!')
+            # print('Refreshed Settings!')
         else:
             time.sleep(0.3)
 

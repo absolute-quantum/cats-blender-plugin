@@ -2,11 +2,11 @@ import bpy
 import globs
 import tools.common
 import tools.supporter
-import addon_updater_ops
 
 from ui.main import ToolPanel
 from ui.main import layout_split
-from ui.main import get_emtpy_icon
+
+from tools import supporter
 
 from tools.register import register_wrap
 
@@ -29,7 +29,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.label(text='Do you like this plugin and want to support us?')
         row = col.row(align=True)
         row.scale_y = 1.2
-        row.operator('supporter.patreon', icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
+        row.operator(supporter.PatreonButton.bl_idname, icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
 
         if not tools.supporter.supporter_data or not tools.supporter.supporter_data.get('supporters') or len(tools.supporter.supporter_data.get('supporters')) == 0:
             return
@@ -56,7 +56,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.operator('supporter.reload', icon='FILE_REFRESH')
+        row.operator(supporter.ReloadButton.bl_idname, icon='FILE_REFRESH')
 
 
 def draw_supporter_list(col, show_tier=0):

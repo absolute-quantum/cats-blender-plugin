@@ -51,7 +51,7 @@ dictionary_google_file = os.path.join(resources_dir, "dictionary_google.json")
 
 @register_wrap
 class TranslateShapekeyButton(bpy.types.Operator):
-    bl_idname = 'translate.shapekeys'
+    bl_idname = 'cats_translate.shapekeys'
     bl_label = 'Translate Shape Keys'
     bl_description = "Translates all shape keys using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -90,7 +90,7 @@ class TranslateShapekeyButton(bpy.types.Operator):
 
 @register_wrap
 class TranslateBonesButton(bpy.types.Operator):
-    bl_idname = 'translate.bones'
+    bl_idname = 'cats_translate.bones'
     bl_label = 'Translate Bones'
     bl_description = "Translates all bones using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -122,7 +122,7 @@ class TranslateBonesButton(bpy.types.Operator):
 
 @register_wrap
 class TranslateObjectsButton(bpy.types.Operator):
-    bl_idname = 'translate.objects'
+    bl_idname = 'cats_translate.objects'
     bl_label = 'Translate Meshes & Objects'
     bl_description = "Translates all meshes and objects using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -166,7 +166,7 @@ class TranslateObjectsButton(bpy.types.Operator):
 
 @register_wrap
 class TranslateMaterialsButton(bpy.types.Operator):
-    bl_idname = 'translate.materials'
+    bl_idname = 'cats_translate.materials'
     bl_label = 'Translate Materials'
     bl_description = "Translates all materials using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -202,7 +202,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
 
 @register_wrap
 class TranslateTexturesButton(bpy.types.Operator):
-    bl_idname = 'translate.textures'
+    bl_idname = 'cats_translate.textures'
     bl_label = 'Translate Textures'
     bl_description = "Translates all textures using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -250,7 +250,7 @@ class TranslateTexturesButton(bpy.types.Operator):
 
 @register_wrap
 class TranslateAllButton(bpy.types.Operator):
-    bl_idname = 'translate.all'
+    bl_idname = 'cats_translate.all'
     bl_label = 'Translate Everything'
     bl_description = "Translates everything using the internal dictionary and Google Translate"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -264,27 +264,27 @@ class TranslateAllButton(bpy.types.Operator):
 
         try:
             if tools.common.get_armature():
-                bpy.ops.translate.bones('INVOKE_DEFAULT')
+                bpy.ops.cats_translate.bones('INVOKE_DEFAULT')
         except RuntimeError as e:
             self.report({'ERROR'}, str(e).replace('Error: ', ''))
             error_shown = True
 
         try:
-            bpy.ops.translate.shapekeys('INVOKE_DEFAULT')
+            bpy.ops.cats_translate.shapekeys('INVOKE_DEFAULT')
         except RuntimeError as e:
             if not error_shown:
                 self.report({'ERROR'}, str(e).replace('Error: ', ''))
                 error_shown = True
 
         try:
-            bpy.ops.translate.objects('INVOKE_DEFAULT')
+            bpy.ops.cats_translate.objects('INVOKE_DEFAULT')
         except RuntimeError as e:
             if not error_shown:
                 self.report({'ERROR'}, str(e).replace('Error: ', ''))
                 error_shown = True
 
         try:
-            bpy.ops.translate.materials('INVOKE_DEFAULT')
+            bpy.ops.cats_translate.materials('INVOKE_DEFAULT')
         except RuntimeError as e:
             if not error_shown:
                 self.report({'ERROR'}, str(e).replace('Error: ', ''))
@@ -308,7 +308,7 @@ def load_translations():
         with open(dictionary_file, encoding="utf8") as file:
             temp_dict = json.load(file, object_pairs_hook=collections.OrderedDict)
             dict_found = True
-            print('DICTIONARY LOADED!')
+            # print('DICTIONARY LOADED!')
     except FileNotFoundError:
         print('DICTIONARY NOT FOUND!')
         pass
@@ -338,7 +338,7 @@ def load_translations():
 
                     temp_dict[name] = trans
 
-            print('GOOGLE DICTIONARY LOADED!')
+            # print('GOOGLE DICTIONARY LOADED!')
     except FileNotFoundError:
         print('GOOGLE DICTIONARY NOT FOUND!')
         reset_google_dict()
@@ -551,8 +551,8 @@ def google_dict_too_old():
     # Let the user decide when to refresh the google dict
     return False
 
-    # created = datetime.strptime(dictionary_google.get('created'), globs.time_format)
-    # utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.time_format), globs.time_format)
+    # created = datetime.strptime(dictionary_google.get('created'), globs.globs.time_format)
+    # utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.globs.time_format), globs.globs.time_format)
     #
     # time_delta = abs((utc_now - created).days)
     #

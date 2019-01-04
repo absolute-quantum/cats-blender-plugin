@@ -4,6 +4,8 @@ import tools.supporter
 
 from ui.main import ToolPanel
 
+from tools import viseme
+
 from tools.register import register_wrap
 
 
@@ -18,7 +20,7 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        mesh_count = len(tools.common.get_meshes_objects())
+        mesh_count = len(tools.common.get_meshes_objects(check=False))
         if mesh_count == 0:
             row = col.row(align=True)
             row.scale_y = 1.1
@@ -46,4 +48,4 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         row = col.row(align=True)
-        row.operator('auto.viseme', icon='TRIA_RIGHT')
+        row.operator(viseme.AutoVisemeButton.bl_idname, icon='TRIA_RIGHT')

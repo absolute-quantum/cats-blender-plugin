@@ -1,7 +1,6 @@
-import globs
-
-if not globs.is_reloading:
-    # print('STARTUP UI!!')
+if "bpy" not in locals():
+    print('STARTUP UI!!')
+    import bpy
     import ui.main
     import ui.armature
     import ui.manual
@@ -16,7 +15,7 @@ if not globs.is_reloading:
     import ui.supporter
     import ui.credits
 else:
-    # print('RELOAD UI!!')
+    print('RELOAD UI!!')
     import importlib
     importlib.reload(ui.main)
     importlib.reload(ui.armature)

@@ -31,7 +31,7 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_atlas_button(self):
-        bpy.ops.armature.fix()
+        bpy.ops.cats_armature.fix()
 
         # bpy.context.scene.mesh_name_atlas = 'Body'
         # bpy.context.scene.texture_size = '1024'
@@ -41,7 +41,7 @@ class TestAddon(unittest.TestCase):
         # bpy.context.scene.area_weight = 0.0
         # bpy.context.scene.island_margin = 0.01
 
-        result = bpy.ops.atlas.generate()
+        result = bpy.ops.cats_atlas.generate_atlas()
         self.assertTrue(result == {'CANCELLED'})
         # self.assertTrue(result == {'FINISHED'})  # Does not work because it requires an external plugin which is not installed
 

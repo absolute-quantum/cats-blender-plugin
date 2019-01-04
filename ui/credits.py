@@ -5,6 +5,8 @@ import tools.supporter
 
 from ui.main import ToolPanel
 
+from tools import credits
+
 from tools.register import register_wrap
 from tools.common import version_2_79_or_older
 
@@ -23,7 +25,7 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row.label(text='Cats Blender Plugin (' + globs.version_str + ')', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
-        row.label(text='Created by GiveMeAllYourCats and Hotox')
+        row.label(text='Created by Hotox and GiveMeAllYourCats')
         row = col.row(align=True)
         row.label(text='For the awesome VRChat community <3')
         row.scale_y = 0.5
@@ -36,8 +38,8 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 1.4
-        row.operator('credits.discord', icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
+        row.operator(credits.DiscordButton.bl_idname, icon_value=tools.supporter.preview_collections["custom_icons"]["discord1"].icon_id)
         row = col.row(align=True)
-        row.operator('credits.forum', icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
+        row.operator(credits.ForumButton.bl_idname, icon_value=tools.supporter.preview_collections["custom_icons"]["cats1"].icon_id)
         row = col.row(align=True)
-        row.operator('credits.patchnotes', icon='WORDWRAP_ON')
+        row.operator(credits.PatchnotesButton.bl_idname, icon='WORDWRAP_ON')

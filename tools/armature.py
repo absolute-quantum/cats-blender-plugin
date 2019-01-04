@@ -44,7 +44,7 @@ mmd_tools_installed = True
 
 @register_wrap
 class FixArmature(bpy.types.Operator):
-    bl_idname = 'armature.fix'
+    bl_idname = 'cats_armature.fix'
     bl_label = 'Fix Model'
     bl_description = 'Automatically:\n' \
                      '- Reparents bones\n' \
@@ -230,7 +230,7 @@ class FixArmature(bpy.types.Operator):
             armature.data.display_type = 'OCTAHEDRAL'
             armature.data.show_bone_custom_shapes = False
             context.space_data.overlay.show_transparent_bones = True
-            context.space_data.overlay.show_backface_culling = False
+            context.space_data.shading.show_backface_culling = False
 
         # Remove Rigidbodies and joints
         to_delete = []
@@ -290,6 +290,7 @@ class FixArmature(bpy.types.Operator):
 
         # Joins meshes into one and calls it 'Body'
         mesh = tools.common.join_meshes()
+
         # tools.common.select(armature)
         #
         # # Correct pivot position
@@ -362,7 +363,7 @@ class FixArmature(bpy.types.Operator):
         # Combines same materials
         if context.scene.combine_mats:
             if version_2_79_or_older():
-                bpy.ops.combine.mats()
+                bpy.ops.cats_material.combine_mats()
             else:
                 pass
                 # TODO
@@ -427,9 +428,10 @@ class FixArmature(bpy.types.Operator):
                     uv.data[vert].uv.y = 0
                     fixed_uv_coords += 1
 
-        # Translate bones
+        # Translate bones and unhide them all
         to_translate = []
         for bone in armature.data.bones:
+            bone.hide = False
             to_translate.append(bone.name)
         tools.translate.update_dictionary(to_translate)
         for bone in armature.data.bones:
@@ -646,26 +648,6 @@ class FixArmature(bpy.types.Operator):
                     # Rename the bone
                     if bone[0] not in armature.data.edit_bones:
                         bone_final.name = bone[0]
-
-        # Add bones to parent reweight list
-        for name in Bones.bone_reweigth_to_parent:
-            if '\Left' in name or '\L' in name:
-                bones = [name.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'),
-                         name.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')]
-            else:
-                bones = [name]
-
-            for bone_name in bones:
-                # Search for bone in armature
-                bone = None
-                for bone_tmp in armature.data.edit_bones:
-                    if bone_tmp.name.lower() == bone_name.lower():
-                        bone = bone_tmp
-                        break
-
-                # Add bone to reweight list
-                if bone and bone.parent:
-                    temp_list_reweight_bones[bone.name] = bone.parent.name
 
         # Check if it is a mixamo model
         mixamo = False
@@ -986,6 +968,38 @@ class FixArmature(bpy.types.Operator):
             if mod.type == 'ARMATURE':
                 bpy.ops.object.modifier_remove(modifier=mod.name)
 
+        # Add bones to parent reweight list
+        for name in Bones.bone_reweigth_to_parent:
+            if '\Left' in name or '\L' in name:
+                bones = [name.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'),
+                         name.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')]
+            else:
+                bones = [name]
+
+            for bone_name in bones:
+                bone_child = None
+                bone_parent = None
+                for bone in armature.data.bones:
+                    if bone_name.lower() == bone.name.lower():
+                        bone_child = bone
+                        bone_parent = bone.parent
+
+                if not bone_child or not bone_parent:
+                    continue
+
+                if bone_child.name not in mesh.vertex_groups or bone_parent.name not in mesh.vertex_groups:
+                    continue
+
+                bone_tmp = armature.data.bones.get(bone_child.name)
+                if bone_tmp:
+                    for child in bone_tmp.children:
+                        if not temp_list_reparent_bones.get(child.name):
+                            temp_list_reparent_bones[child.name] = bone_parent.name
+
+                # Mix the weights
+                # print(vg_from.name, 'into', vg_to.name)
+                tools.common.mix_weights(mesh, bone_child.name, bone_parent.name)
+
         # Mix weights
         for bone_new, bones_old in temp_reweight_bones.items():
             if '\Left' in bone_new or '\L' in bone_new:
@@ -1199,14 +1213,14 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
 
 @register_wrap
 class ModelSettings(bpy.types.Operator):
-    bl_idname = "armature.settings"
+    bl_idname = "cats_armature.settings"
     bl_label = "Fix Model Settings"
 
     def execute(self, context):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3.25, height=-550)
 
     def check(self, context):

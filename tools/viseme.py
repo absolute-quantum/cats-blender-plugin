@@ -33,7 +33,7 @@ from collections import OrderedDict
 
 @register_wrap
 class AutoVisemeButton(bpy.types.Operator):
-    bl_idname = 'auto.viseme'
+    bl_idname = 'cats_viseme.create'
     bl_label = 'Create Visemes'
     bl_description = 'This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.\n' \
                      'It will generate 15 shape keys from the 3 shape keys you specify.'
@@ -41,7 +41,7 @@ class AutoVisemeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not tools.common.get_meshes_objects():
+        if not tools.common.get_meshes_objects(check=False):
             return False
 
         if not context.scene.mouth_a \

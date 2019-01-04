@@ -12,4 +12,5 @@ resources/downloads
 resources/settings.json
 resources/dictionary_google.json
 resources/google-response.txt
+resources/ignore_version.txt
 .coverage

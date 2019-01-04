@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.12.1)
+# Cats Blender Plugin (0.12.2)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -332,6 +332,28 @@ It checks for a new version automatically once every day.
 
 
 ## Changelog
+
+#### 0.12.2
+- **Optimization**:
+  - Added new "Convert Textures to PNG" button
+    - This converts all texture files into PNG files
+    - This helps with transparency and compatibility issues
+    - The converted image files will be saved next to the old ones
+- **Model**:
+  - Made SSBU models compatible
+- **Exporter**:
+  - No longer warns of meshes that could be split by Unity
+  - Instead warns when having more than 70k tris
+  - Now warns at 10 materials instead of 4, will be changed back when more nuanced warnings are in place
+- **Decimation**:
+  - Changed default decimation value to 70,000 tris
+- **General**:
+  - Fixed corrupted meshes breaking nearly all Cats features
+  - Added automatic fixing of faulty Cats installations
+    - Restart Cats if it doesn't show up after updating
+  - Rewrote the entire updater
+  - Added some Blender 2.8 compatibility fixes
+  - Updated mmd_tools
 
 #### 0.12.1
 - **General**:

@@ -31,7 +31,7 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_translate_shapekeys(self):
-        result = bpy.ops.translate.shapekeys()
+        result = bpy.ops.cats_translate.shapekeys()
         self.assertTrue(result == {'FINISHED'})
 
 

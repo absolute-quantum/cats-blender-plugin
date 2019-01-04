@@ -1,11 +1,12 @@
 import bpy
 import globs
+import updater
 import tools.common
 import tools.supporter
-import addon_updater_ops
 
 from ui.main import ToolPanel
-from ui.main import get_emtpy_icon
+
+from tools import settings
 
 from tools.register import register_wrap
 
@@ -34,11 +35,11 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         # row.prop(context.scene, 'disable_vrchat_features')
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.operator('settings.reset_google_dict', icon='X')
+        row.operator(settings.ResetGoogleDictButton.bl_idname, icon='X')
         if globs.dev_branch:
             row = col.row(align=True)
             row.scale_y = 0.8
-            row.operator('settings.debug_translations', icon='X')
+            row.operator(settings.DebugTranslations.bl_idname, icon='X')
 
         if tools.settings.settings_changed():
             col.separator()
@@ -47,10 +48,9 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
             row.label(text='Restart required.', icon='ERROR')
             row = col.row(align=True)
             row.scale_y = 0.8
-            row.label(text='Some changes require a Blender restart.', icon_value=get_emtpy_icon())
+            row.label(text='Some changes require a Blender restart.', icon='BLANK1')
             row = col.row(align=True)
-            row.operator('settings.revert', icon='RECOVER_LAST')
+            row.operator(settings.RevertChangesButton.bl_idname, icon='RECOVER_LAST')
 
-        # Updater
-        # addon_updater_ops.check_for_update_background()
-        addon_updater_ops.update_settings_ui(self, context)
+        col.separator()
+        updater.draw_updater_panel(context, box)

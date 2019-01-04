@@ -41,7 +41,7 @@ except:
 
 @register_wrap
 class StartPoseMode(bpy.types.Operator):
-    bl_idname = 'armature_manual.start_pose_mode'
+    bl_idname = 'cats_manual.start_pose_mode'
     bl_label = 'Start Pose Mode'
     bl_description = 'Starts the pose mode.\n' \
                      'This lets you test how your model will move'
@@ -101,7 +101,7 @@ class StartPoseMode(bpy.types.Operator):
 
 @register_wrap
 class StopPoseMode(bpy.types.Operator):
-    bl_idname = 'armature_manual.stop_pose_mode'
+    bl_idname = 'cats_manual.stop_pose_mode'
     bl_label = 'Stop Pose Mode'
     bl_description = 'Stops the pose mode and resets the pose to normal'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -146,7 +146,7 @@ class StopPoseMode(bpy.types.Operator):
 
 @register_wrap
 class PoseToShape(bpy.types.Operator):
-    bl_idname = 'armature_manual.pose_to_shape'
+    bl_idname = 'cats_manual.pose_to_shape'
     bl_label = 'Pose to Shape Key'
     bl_description = 'This saves your current pose as a new shape key.' \
                      '\nThe new shape key will be at the bottom of your shape key list of the mesh'
@@ -159,7 +159,7 @@ class PoseToShape(bpy.types.Operator):
 
     def execute(self, context):
         # pose_to_shapekey('Pose')
-        bpy.ops.pose.name_popup('INVOKE_DEFAULT')
+        bpy.ops.cats_manual.pose_name_popup('INVOKE_DEFAULT')
 
         return {'FINISHED'}
 
@@ -188,7 +188,7 @@ def pose_to_shapekey(name):
 
 @register_wrap
 class PoseNamePopup(bpy.types.Operator):
-    bl_idname = "pose.name_popup"
+    bl_idname = "cats_manual.pose_name_popup"
     bl_label = "Give this shapekey a name:"
     bl_description = 'Sets the shapekey name. Press anywhere outside to skip'
 
@@ -204,7 +204,7 @@ class PoseNamePopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         context.scene.pose_to_shapekey_name = 'Pose'
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
 
     def check(self, context):
@@ -222,7 +222,7 @@ class PoseNamePopup(bpy.types.Operator):
 
 @register_wrap
 class PoseToRest(bpy.types.Operator):
-    bl_idname = 'armature_manual.pose_to_rest'
+    bl_idname = 'cats_manual.pose_to_rest'
     bl_label = 'Apply as Rest Pose'
     bl_description = 'This applies the current pose position as the new rest position.' \
                      '\n' \
@@ -273,7 +273,7 @@ class PoseToRest(bpy.types.Operator):
             tools.common.set_active(mesh)
 
             mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
-            bpy.ops.object.shape_key_to_basis()
+            bpy.ops.cats_shapekey.shape_key_to_basis()
 
             # Remove old basis shape key from shape_key_to_basis operation
             for index in range(len(mesh.data.shape_keys.key_blocks) - 1, 0, -1):
@@ -334,7 +334,7 @@ class PoseToRest(bpy.types.Operator):
             tools.common.repair_shapekey_order(mesh.name)
 
         # Stop pose mode after operation
-        bpy.ops.armature_manual.stop_pose_mode()
+        bpy.ops.cats_manual.stop_pose_mode()
 
         self.report({'INFO'}, 'Pose successfully applied as rest pose.')
         return {'FINISHED'}
@@ -342,7 +342,7 @@ class PoseToRest(bpy.types.Operator):
 
 @register_wrap
 class JoinMeshes(bpy.types.Operator):
-    bl_idname = 'armature_manual.join_meshes'
+    bl_idname = 'cats_manual.join_meshes'
     bl_label = 'Join Meshes'
     bl_description = 'Joins all meshes of this model together.' \
                      '\nIt also:' \
@@ -355,11 +355,13 @@ class JoinMeshes(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes and len(meshes) > 0
 
     def execute(self, context):
-        tools.common.join_meshes()
+        if not tools.common.join_meshes():
+            self.report({'ERROR'}, 'Meshes could not be joined!')
+            return {'CANCELLED'}
 
         self.report({'INFO'}, 'Meshes joined.')
         return {'FINISHED'}
@@ -367,7 +369,7 @@ class JoinMeshes(bpy.types.Operator):
 
 @register_wrap
 class JoinMeshesSelected(bpy.types.Operator):
-    bl_idname = 'armature_manual.join_meshes_selected'
+    bl_idname = 'cats_manual.join_meshes_selected'
     bl_label = 'Join Selected Meshes'
     bl_description = 'Joins all selected meshes of this model together.' \
                      '\nIt also:' \
@@ -380,7 +382,7 @@ class JoinMeshesSelected(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes and len(meshes) > 0
 
     def execute(self, context):
@@ -393,7 +395,9 @@ class JoinMeshesSelected(bpy.types.Operator):
             self.report({'ERROR'}, 'No meshes selected! Please select the meshes you want to join in the hierarchy!')
             return {'FINISHED'}
 
-        tools.common.join_meshes(mode=1)
+        if not tools.common.join_meshes(mode=1):
+            self.report({'ERROR'}, 'Selected meshes could not be joined!')
+            return {'CANCELLED'}
 
         self.report({'INFO'}, 'Selected meshes joined.')
         return {'FINISHED'}
@@ -401,7 +405,7 @@ class JoinMeshesSelected(bpy.types.Operator):
 
 @register_wrap
 class SeparateByMaterials(bpy.types.Operator):
-    bl_idname = 'armature_manual.separate_by_materials'
+    bl_idname = 'cats_manual.separate_by_materials'
     bl_label = 'Separate by Materials'
     bl_description = 'Separates selected mesh by materials.\n' \
                      '\n' \
@@ -415,7 +419,7 @@ class SeparateByMaterials(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes and len(meshes) >= 1
 
     def execute(self, context):
@@ -441,7 +445,7 @@ class SeparateByMaterials(bpy.types.Operator):
 
 @register_wrap
 class SeparateByLooseParts(bpy.types.Operator):
-    bl_idname = 'armature_manual.separate_by_loose_parts'
+    bl_idname = 'cats_manual.separate_by_loose_parts'
     bl_label = 'Separate by Loose Parts'
     bl_description = 'Separates selected mesh by loose parts.\n' \
                      'This acts like separating by materials but creates more meshes for more precision'
@@ -454,8 +458,8 @@ class SeparateByLooseParts(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
-        return meshes and len(meshes) >= 1
+        meshes = tools.common.get_meshes_objects(check=False)
+        return meshes
 
     def execute(self, context):
         obj = context.active_object
@@ -480,7 +484,7 @@ class SeparateByLooseParts(bpy.types.Operator):
 
 @register_wrap
 class MergeWeights(bpy.types.Operator):
-    bl_idname = 'armature_manual.merge_weights'
+    bl_idname = 'cats_manual.merge_weights'
     bl_label = 'Merge Weights'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.' \
                      '\n' \
@@ -527,7 +531,7 @@ class MergeWeights(bpy.types.Operator):
 
 @register_wrap
 class MergeWeightsToActive(bpy.types.Operator):
-    bl_idname = 'armature_manual.merge_weights_to_active'
+    bl_idname = 'cats_manual.merge_weights_to_active'
     bl_label = 'Merge Weights'
     bl_description = 'Deletes the selected bones except the active one and adds their weights to the active bone.' \
                      '\nThe active bone is the one you selected last.' \
@@ -576,9 +580,7 @@ class MergeWeightsToActive(bpy.types.Operator):
 def merge_weights(armature, parenting_list):
     tools.common.switch('OBJECT')
     # Merge the weights on the meshes
-    for mesh in armature.children:
-        if mesh.type != 'MESH':
-            continue
+    for mesh in tools.common.get_meshes_objects(armature_name=armature.name):
         tools.common.set_active(mesh)
 
         for bone, parent in parenting_list.items():
@@ -600,7 +602,7 @@ def merge_weights(armature, parenting_list):
 
 @register_wrap
 class ApplyTransformations(bpy.types.Operator):
-    bl_idname = 'armature_manual.apply_transformations'
+    bl_idname = 'cats_manual.apply_transformations'
     bl_label = 'Apply Transformations'
     bl_description = "Applies the position, rotation and scale to the armature and it's meshes"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -620,7 +622,7 @@ class ApplyTransformations(bpy.types.Operator):
 
 @register_wrap
 class RemoveZeroWeight(bpy.types.Operator):
-    bl_idname = 'armature_manual.remove_zero_weight'
+    bl_idname = 'cats_manual.remove_zero_weight'
     bl_label = 'Remove Zero Weight Bones'
     bl_description = "Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices\n" \
                      "Don't use this if you plan to use 'Fix Model'"
@@ -643,7 +645,7 @@ class RemoveZeroWeight(bpy.types.Operator):
 
 @register_wrap
 class RemoveConstraints(bpy.types.Operator):
-    bl_idname = 'armature_manual.remove_constraints'
+    bl_idname = 'cats_manual.remove_constraints'
     bl_label = 'Remove Bone Constraints'
     bl_description = "Removes constrains between bones causing specific bone movement as these are not used by VRChat"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -665,7 +667,7 @@ class RemoveConstraints(bpy.types.Operator):
 
 @register_wrap
 class RecalculateNormals(bpy.types.Operator):
-    bl_idname = 'armature_manual.recalculate_normals'
+    bl_idname = 'cats_manual.recalculate_normals'
     bl_label = 'Recalculate Normals'
     bl_description = "Don't use this on good looking meshes as this can screw them up.\n" \
                      "Makes normals point inside of the selected mesh.\n" \
@@ -678,7 +680,7 @@ class RecalculateNormals(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
@@ -705,7 +707,7 @@ class RecalculateNormals(bpy.types.Operator):
 
 @register_wrap
 class FlipNormals(bpy.types.Operator):
-    bl_idname = 'armature_manual.flip_normals'
+    bl_idname = 'cats_manual.flip_normals'
     bl_label = 'Flip Normals'
     bl_description = "Flips the direction of the faces' normals of the selected mesh.\n" \
                      "Use this if all normals are inverted"
@@ -717,7 +719,7 @@ class FlipNormals(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
@@ -745,7 +747,7 @@ class FlipNormals(bpy.types.Operator):
 
 @register_wrap
 class RemoveDoubles(bpy.types.Operator):
-    bl_idname = 'armature_manual.remove_doubles'
+    bl_idname = 'cats_manual.remove_doubles'
     bl_label = 'Remove Doubles'
     bl_description = "Merges duplicated faces and vertices of the selected meshes." \
                      "\nThis is more precise than doing it manually:" \
@@ -759,7 +761,7 @@ class RemoveDoubles(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
@@ -781,7 +783,7 @@ class RemoveDoubles(bpy.types.Operator):
 
 @register_wrap
 class RemoveDoublesNormal(bpy.types.Operator):
-    bl_idname = 'armature_manual.remove_doubles_normal'
+    bl_idname = 'cats_manual.remove_doubles_normal'
     bl_label = 'Remove Doubles Normally'
     bl_description = "Merges duplicated faces and vertices of the selected meshes." \
                      "\nThis is exactly like doing it manually"
@@ -793,7 +795,7 @@ class RemoveDoublesNormal(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
@@ -815,14 +817,14 @@ class RemoveDoublesNormal(bpy.types.Operator):
 
 @register_wrap
 class FixVRMShapesButton(bpy.types.Operator):
-    bl_idname = 'armature_manual.fix_vrm_shapes'
+    bl_idname = 'cats_manual.fix_vrm_shapes'
     bl_label = 'Fix Koikatsu Shapekeys'
     bl_description = "Fixes the shapekeys of Koikatsu models"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
-        return tools.common.get_meshes_objects()
+        return tools.common.get_meshes_objects(check=False)
 
     def execute(self, context):
         mesh = tools.common.get_meshes_objects()[0]
@@ -924,7 +926,7 @@ class FixVRMShapesButton(bpy.types.Operator):
 
 @register_wrap
 class FixFBTButton(bpy.types.Operator):
-    bl_idname = 'armature_manual.fix_fbt'
+    bl_idname = 'cats_manual.fix_fbt'
     bl_label = 'Fix Full Body Tracking'
     bl_description = "Applies a general fix for Full Body Tracking." \
                      "\n" \
@@ -1018,7 +1020,7 @@ class FixFBTButton(bpy.types.Operator):
 
 @register_wrap
 class RemoveFBTButton(bpy.types.Operator):
-    bl_idname = 'armature_manual.remove_fbt'
+    bl_idname = 'cats_manual.remove_fbt'
     bl_label = 'Remove Full Body Tracking'
     bl_description = "Removes the fix for for Full Body Tracking." \
                      '\n' \
@@ -1097,7 +1099,7 @@ class RemoveFBTButton(bpy.types.Operator):
 
 @register_wrap
 class DuplicateBonesButton(bpy.types.Operator):
-    bl_idname = 'armature_manual.duplicate_bones'
+    bl_idname = 'cats_manual.duplicate_bones'
     bl_label = 'Duplicate Bones'
     bl_description = "Duplicates the selected bones including their weight and renames them to _L and _R"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -1143,9 +1145,7 @@ class DuplicateBonesButton(bpy.types.Operator):
 
         # Create the missing vertex groups and duplicate the weight
         tools.common.switch('OBJECT')
-        for mesh in armature.children:
-            if mesh.type != 'MESH':
-                continue
+        for mesh in tools.common.get_meshes_objects(armature_name=armature.name):
             tools.common.set_active(mesh)
 
             for bone_from, bone_to in duplicate_vertex_groups.items():

@@ -17,8 +17,7 @@ def register():
         name='Apply Full Body Tracking Fix',
         description="Applies a general fix for Full Body Tracking.\n\n"
                     'Can potentially reduce the knee bending of every avatar in VRChat.\n'
-                    'You can safely ignore the "Spine length zero" warning in Unity.\n'
-                    'If you have problems with the hips ingame, uncheck this option and tell us!\n',
+                    'You can safely ignore the "Spine length zero" warning in Unity',
         default=False
     )
 
@@ -191,9 +190,9 @@ def register():
     Scene.max_tris = IntProperty(
         name='Tris',
         description="The target amount of tris after decimation",
-        default=19999,
+        default=70000,
         min=1,
-        max=100000
+        max=200000
     )
 
     # Eye Tracking

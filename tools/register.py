@@ -34,14 +34,13 @@ __make_annotations = (not bpy.app.version < (2, 79, 9))
 def register_wrap(cls):
     if hasattr(cls, 'bl_rna'):
         __bl_classes.append(cls)
-    if __make_annotations:
-        cls = make_annotations(cls)
+    cls = make_annotations(cls)
     return cls
 
 
 def make_annotations(cls):
     if __make_annotations:
-        bl_props = {k:v for k, v in cls.__dict__.items() if isinstance(v, tuple)}
+        bl_props = {k: v for k, v in cls.__dict__.items() if isinstance(v, tuple)}
         if bl_props:
             if '__annotations__' not in cls.__dict__:
                 setattr(cls, '__annotations__', {})
@@ -53,7 +52,6 @@ def make_annotations(cls):
 
 
 def order_classes():
-    print('ORDER CLASSES')
     global __bl_ordered_classes
     deps_dict = {}
     classes_to_register = set(iter_classes_to_register())

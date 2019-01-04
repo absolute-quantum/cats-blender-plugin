@@ -4,6 +4,8 @@ import globs
 from ui.main import ToolPanel
 from ui.main import layout_split
 
+from tools import armature_manual, translate
+
 from tools.register import register_wrap
 
 
@@ -29,20 +31,20 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row = layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
         row.label(text="Separate by:", icon='MESH_DATA')
-        row.operator('armature_manual.separate_by_materials', text='Materials')
-        row.operator('armature_manual.separate_by_loose_parts', text='Loose Parts')
+        row.operator(armature_manual.SeparateByMaterials.bl_idname, text='Materials')
+        row.operator(armature_manual.SeparateByLooseParts.bl_idname, text='Loose Parts')
 
         row = layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
         row.label(text="Join Meshes:", icon='AUTOMERGE_ON')
-        row.operator('armature_manual.join_meshes', text='All')
-        row.operator('armature_manual.join_meshes_selected', text='Selected')
+        row.operator(armature_manual.JoinMeshes.bl_idname, text='All')
+        row.operator(armature_manual.JoinMeshesSelected.bl_idname, text='Selected')
 
         row = layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
         row.label(text="Merge Weights:", icon='BONE_DATA')
-        row.operator('armature_manual.merge_weights', text='To Parents')
-        row.operator('armature_manual.merge_weights_to_active', text='To Active')
+        row.operator(armature_manual.MergeWeights.bl_idname, text='To Parents')
+        row.operator(armature_manual.MergeWeightsToActive.bl_idname, text='To Active')
 
         # row = col.row(align=True)
         # row.scale_y = button_height
@@ -61,15 +63,15 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
 
         row = split.row(align=True)
         row.scale_y = 2
-        row.operator('translate.all', text='All', icon=globs.ICON_ALL)
+        row.operator(translate.TranslateAllButton.bl_idname, text='All', icon=globs.ICON_ALL)
 
         row = split.column(align=True)
-        row.operator('translate.shapekeys', text='Shape Keys', icon='SHAPEKEY_DATA')
-        row.operator('translate.objects', text='Objects', icon='MESH_DATA')
+        row.operator(translate.TranslateShapekeyButton.bl_idname, text='Shape Keys', icon='SHAPEKEY_DATA')
+        row.operator(translate.TranslateObjectsButton.bl_idname, text='Objects', icon='MESH_DATA')
 
         row = split.column(align=True)
-        row.operator('translate.bones', text='Bones', icon='BONE_DATA')
-        row.operator('translate.materials', text='Materials', icon='MATERIAL')
+        row.operator(translate.TranslateBonesButton.bl_idname, text='Bones', icon='BONE_DATA')
+        row.operator(translate.TranslateMaterialsButton.bl_idname, text='Materials', icon='MATERIAL')
 
         col.separator()
         # col.separator()
@@ -85,32 +87,32 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = layout_split(col, factor=0.23, align=True)
             row.scale_y = button_height
             row.label(text="Delete:", icon='X')
-            row.operator('armature_manual.remove_zero_weight', text='Zero Weight Bones')
-            row.operator('armature_manual.remove_constraints', text='Constraints')
+            row.operator(armature_manual.RemoveZeroWeight.bl_idname, text='Zero Weight Bones')
+            row.operator(armature_manual.RemoveConstraints.bl_idname, text='Constraints')
 
             row = col.row(align=True)
             row.scale_y = button_height
-            row.operator('armature_manual.duplicate_bones', icon='GROUP_BONE')
+            row.operator(armature_manual.DuplicateBonesButton.bl_idname, icon='GROUP_BONE')
 
             col.separator()
             row = layout_split(col, factor=0.27, align=True)
             row.scale_y = button_height
             row.label(text="Normals:", icon='SNAP_NORMAL')
-            row.operator('armature_manual.recalculate_normals', text='Recalculate')
-            row.operator('armature_manual.flip_normals', text='Flip')
+            row.operator(armature_manual.RecalculateNormals.bl_idname, text='Recalculate')
+            row.operator(armature_manual.FlipNormals.bl_idname, text='Flip')
 
             row = col.row(align=True)
             row.scale_y = button_height
-            row.operator('armature_manual.apply_transformations', icon='OUTLINER_DATA_ARMATURE')
+            row.operator(armature_manual.ApplyTransformations.bl_idname, icon='OUTLINER_DATA_ARMATURE')
 
             row = col.row(align=True)
             row.scale_y = 1
             subcol = layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
-            subcol.operator('armature_manual.remove_doubles', icon='STICKY_UVS_VERT')
+            subcol.operator(armature_manual.RemoveDoubles.bl_idname, icon='STICKY_UVS_VERT')
             subcol = layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
-            subcol.operator('armature_manual.remove_doubles_normal', text="", icon='X')
+            subcol.operator(armature_manual.RemoveDoublesNormal.bl_idname, text="", icon='X')
 
             col.separator()
             # row = col.row(align=True)
@@ -121,11 +123,11 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1
             subcol = layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
-            subcol.operator('armature_manual.fix_fbt', icon='MODIFIER')
+            subcol.operator(armature_manual.FixFBTButton.bl_idname, icon='MODIFIER')
             subcol = layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
-            subcol.operator('armature_manual.remove_fbt', text="", icon='X')
+            subcol.operator(armature_manual.RemoveFBTButton.bl_idname, text="", icon='X')
 
             row = col.row(align=True)
             row.scale_y = button_height
-            row.operator('armature_manual.fix_vrm_shapes', icon='SHAPEKEY_DATA')
+            row.operator(armature_manual.FixVRMShapesButton.bl_idname, icon='SHAPEKEY_DATA')

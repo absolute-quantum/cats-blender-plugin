@@ -5,6 +5,8 @@ import tools.supporter
 
 from ui.main import ToolPanel
 
+from tools import copy_protection, importer
+
 from tools.register import register_wrap
 from tools.common import version_2_79_or_older
 
@@ -28,7 +30,7 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.label(text='Before use: Read the documentation!')
         row = col.row(align=True)
-        row.operator('copyprotection.button', icon='FORWARD')
+        row.operator(copy_protection.ProtectionTutorialButton.bl_idname, icon='FORWARD')
         col.separator()
         col.separator()
         # row = col.row(align=True)
@@ -38,10 +40,10 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 1.3
-        meshes = tools.common.get_meshes_objects()
+        meshes = tools.common.get_meshes_objects(check=False)
         if len(meshes) > 0 and tools.common.has_shapekeys(meshes[0]) and meshes[0].data.shape_keys.key_blocks.get('Basis Original'):
-            row.operator('copyprotection.disable', icon=globs.ICON_UNPROTECT)
+            row.operator(copy_protection.CopyProtectionDisable.bl_idname, icon=globs.ICON_UNPROTECT)
             row = col.row(align=True)
-            row.operator('importer.export_model', icon='ARMATURE_DATA').action = 'CHECK'
+            row.operator(importer.ExportModel.bl_idname, icon='ARMATURE_DATA').action = 'CHECK'
         else:
-            row.operator('copyprotection.enable', icon=globs.ICON_PROTECT)
+            row.operator(copy_protection.CopyProtectionEnable.bl_idname, icon=globs.ICON_PROTECT)

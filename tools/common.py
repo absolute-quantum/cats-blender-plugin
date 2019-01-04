@@ -178,6 +178,11 @@ def set_default_stage_old():
 
 
 def set_default_stage(everything=False):
+    """
+
+    :param everything:
+    :return: the armature
+    """
     unhide_all(everything=everything)
     unselect_all()
 
@@ -280,7 +285,7 @@ def get_meshes(self, context):
 
     choices = []
 
-    for mesh in get_meshes_objects(mode=0):
+    for mesh in get_meshes_objects(mode=0, check=False):
         choices.append((mesh.name, mesh.name, mesh.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
@@ -471,7 +476,7 @@ def get_shapekeys_decimation_list(self, context):
 def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
     choices = []
     choices_simple = []
-    meshes_list = get_meshes_objects()
+    meshes_list = get_meshes_objects(check=False)
 
     if decimation:
         meshes = meshes_list
@@ -568,7 +573,7 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-def get_meshes_objects(armature_name=None, mode=0):
+def get_meshes_objects(armature_name=None, mode=0, check=True):
     # Modes:
     # 0 = With armatures only
     # 1 = Top level only
@@ -597,6 +602,24 @@ def get_meshes_objects(armature_name=None, mode=0):
             elif mode == 3:
                 if is_selected(ob):
                     meshes.append(ob)
+
+    # Check for broken meshes and delete them
+    if check:
+        current_active = get_active()
+        to_remove = []
+        for mesh in meshes:
+            # print(mesh.name, mesh.users)
+            set_active(mesh)
+            if not get_active():
+                to_remove.append(mesh)
+        for mesh in to_remove:
+            print('DELETED CORRUPTED MESH:', mesh.name, mesh.users)
+            meshes.remove(mesh)
+            delete(mesh)
+
+        if current_active:
+            set_active(current_active)
+
     return meshes
 
 
@@ -621,7 +644,6 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     if not meshes_to_join:
         return None
 
-    print(get_armature(armature_name).mode)
     set_default_stage()
     unselect_all()
 
@@ -630,10 +652,20 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
     unselect_all()
 
+    # # Check everywhere for broken meshes and delete them
+    # for mesh in get_meshes_objects(mode=2):
+    #     print(mesh.name, mesh.users)
+    #     set_active(mesh)
+    #     if not get_active():
+    #         print('CORRUPTED MESH FOUND:', mesh.name)
+    #         if mesh.name in meshes_to_join:
+    #             meshes_to_join.remove(mesh.name)
+    #         delete(mesh)
+
     # Apply existing decimation modifiers and select the meshes for joining
     for mesh in meshes:
         if mesh.name in meshes_to_join:
-            tools.common.set_active(mesh)
+            set_active(mesh)
 
             # Apply decimation modifiers
             for mod in mesh.modifiers:
@@ -666,17 +698,33 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                 if mesh.data.uv_layers:
                     mesh.data.uv_layers[0].name = 'UVMap'
 
+    # print('CHECK')
+    # for mesh in meshes:
+    #     print(mesh.name, mesh.users)
+
+    # Get the name of the active mesh in order to check if it was deleted later
+    active_mesh_name = get_active().name
+
     # Join the meshes
     if bpy.ops.object.join.poll():
         bpy.ops.object.join()
     else:
-        return None
+        print('NO MESH COMBINED!')
+
+    # Delete meshes that somehow weren't deleted. Both pre and post join mesh deletion methods are needed!
+    for mesh in get_meshes_objects(armature_name=armature_name):
+        if mesh.name == active_mesh_name:
+            set_active(mesh)
+        elif mesh.name in meshes_to_join:
+            delete(mesh)
+            print('DELETED', mesh.name, mesh.users)
 
     # Rename result to Body and correct modifiers
-    mesh = tools.common.get_active()
+    mesh = get_active()
     if mesh:
         mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
+        # return
 
         # Remove duplicate armature modifiers
         mod_count = 0
@@ -1132,9 +1180,9 @@ def delete_hierarchy(parent):
     get_child_names(parent)
     to_delete.append(parent)
 
+    objs = bpy.data.objects
     for obj in to_delete:
-        obj.animation_data_clear()
-        bpy.data.objects.remove(obj)
+        objs.remove(objs[obj.name], do_unlink=True)
 
 
 def delete(obj):
@@ -1142,8 +1190,8 @@ def delete(obj):
         for child in obj.children:
             child.parent = obj.parent
 
-    obj.animation_data_clear()
-    bpy.data.objects.remove(obj)
+    objs = bpy.data.objects
+    objs.remove(objs[obj.name], do_unlink=True)
 
 
 def days_between(d1, d2, time_format):
@@ -1182,7 +1230,7 @@ def delete_zero_weight(armature_name=None, ignore=''):
 
     vertex_group_names_used = set()
     vertex_group_name_to_objects_having_same_named_vertex_group = dict()
-    for objects in armature.children:
+    for objects in get_meshes_objects(armature_name=armature_name):
         vertex_group_id_to_vertex_group_name = dict()
         for vertex_group in objects.vertex_groups:
             vertex_group_id_to_vertex_group_name[vertex_group.index] = vertex_group.name
@@ -1218,6 +1266,30 @@ def remove_unused_objects():
                 or (obj.type == 'LIGHT' and obj.name == 'Light') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
             delete_hierarchy(obj)
+
+
+def remove_no_user_objects():
+    print('\nREMOVE OBJECTS')
+    for block in bpy.data.objects:
+        print(block.name, block.users)
+        if block.users == 0:
+            delete(block)
+    print('\nREMOVE MESHES')
+    for block in bpy.data.meshes:
+        print(block.name, block.users)
+        if block.users == 0:
+            bpy.data.meshes.remove(block)
+    print('\nREMOVE MATERIALS')
+    for block in bpy.data.materials:
+        print(block.name, block.users)
+        if block.users == 0:
+            bpy.data.materials.remove(block)
+
+    # print('\nREMOVE MATS')
+    # for block in bpy.data.materials:
+    #     print(block.name, block.users)
+    #     if block.users == 0:
+    #         bpy.data.materials.remove(block)
 
 
 def is_end_bone(name, armature_name):
@@ -1314,19 +1386,19 @@ def show_error(scale, error_list, override_header=False):
         bpy.utils.unregister_class(ShowError)
         bpy.utils.register_class(ShowError)
 
-    bpy.ops.error.show('INVOKE_DEFAULT')
+    bpy.ops.cats_common.show_error('INVOKE_DEFAULT')
 
 
 @register_wrap
 class ShowError(bpy.types.Operator):
-    bl_idname = 'error.show'
+    bl_idname = 'cats_common.show_error'
     bl_label = 'Report: Error'
 
     def execute(self, context):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = bpy.context.user_preferences.system.dpi
+        dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
 
     def draw(self, context):
@@ -1422,7 +1494,11 @@ def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
 
 
 def version_2_79_or_older():
-    return bpy.app.version < (2, 79, 9)
+    return bpy.app.version < (2, 80)
+
+
+def get_user_preferences():
+    return bpy.context.user_preferences if version_2_79_or_older() else bpy.context.preferences
 
 
 def has_shapekeys(mesh):
@@ -1433,36 +1509,8 @@ def has_shapekeys(mesh):
 
 def matmul(a, b):
     if version_2_79_or_older():
-        return a*b
-    return a.__matmul__(b)
-
-
-def set_cats_verion_string():
-    version_str = ''
-    version_temp = []
-
-    for n in globs.version:
-        version_temp.append(n)
-
-    # if in dev version, increase version
-    if globs.dev_branch and len(version_temp) > 2:
-        version_temp[2] += 1
-
-    # Convert version to string
-    if len(version_temp) > 0:
-        version_str += str(version_temp[0])
-        for index, i in enumerate(version_temp):
-            if index == 0:
-                continue
-            version_str += '.' + str(version_temp[index])
-    if globs.dev_branch:
-        version_str += '-dev'
-
-    # Change the version back
-    if globs.dev_branch and len(version_temp) > 2:
-        version_temp[2] -= 1
-
-    globs.version_str = version_str
+        return a * b
+    return a @ b
 
 
 def ui_refresh():
@@ -1475,7 +1523,7 @@ def ui_refresh():
                     for area in window.screen.areas:
                         area.tag_redraw()
             refreshed = True
-            print('Refreshed UI!')
+            # print('Refreshed UI')
         else:
             time.sleep(0.5)
 
@@ -1561,12 +1609,12 @@ def html_to_text(html):
     try:
         parser.feed(html)
         parser.close()
-    except:  #HTMLParseError: No good replacement?
+    except:  # HTMLParseError: No good replacement?
         pass
     return parser.get_text()
 
 
-# === THIS CODE COULD BE USEFUL ===
+""" === THIS CODE COULD BE USEFUL === """
 
 # def addvertex(meshname, shapekey_name):
 #     mesh = bpy.data.objects[meshname].data

@@ -40,7 +40,7 @@ iris_heights = None
 
 @register_wrap
 class CreateEyesButton(bpy.types.Operator):
-    bl_idname = 'create.eyes'
+    bl_idname = 'cats_eyes.create_eye_tracking'
     bl_label = 'Create Eye Tracking'
     bl_description = 'This will let you track someone when they come close to you and it enables blinking.\n' \
                      "You should do decimation before this operation.\n" \
@@ -49,7 +49,7 @@ class CreateEyesButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not tools.common.get_meshes_objects():
+        if not tools.common.get_meshes_objects(check=False):
             return False
 
         if not context.scene.head \
@@ -478,7 +478,7 @@ eye_right_data = None
 
 @register_wrap
 class StartTestingButton(bpy.types.Operator):
-    bl_idname = 'eyes.test'
+    bl_idname = 'cats_eyes.start_testing'
     bl_label = 'Start Eye Testing'
     bl_description = 'This will let you test how the eye movement will look ingame.\n' \
                      "Don't forget to stop the Testing process afterwards.\n" \
@@ -533,7 +533,7 @@ class StartTestingButton(bpy.types.Operator):
 
 @register_wrap
 class StopTestingButton(bpy.types.Operator):
-    bl_idname = 'eyes.test_stop'
+    bl_idname = 'cats_eyes.stop_testing'
     bl_label = 'Stop Eye Testing'
     bl_description = 'Stops the testing process'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -634,7 +634,7 @@ def stop_testing(self, context):
 
 @register_wrap
 class ResetRotationButton(bpy.types.Operator):
-    bl_idname = 'eyes.reset_rotation'
+    bl_idname = 'cats_eyes.reset_rotation'
     bl_label = 'Reset Rotation'
     bl_description = "This resets the eye positions"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -674,7 +674,7 @@ class ResetRotationButton(bpy.types.Operator):
 
 @register_wrap
 class AdjustEyesButton(bpy.types.Operator):
-    bl_idname = 'eyes.adjust_eyes'
+    bl_idname = 'cats_eyes.adjust_eyes'
     bl_label = 'Set Range'
     bl_description = "Lets you readjust the movement range of the eyes.\n" \
                      "This gets saved"
@@ -733,7 +733,7 @@ class AdjustEyesButton(bpy.types.Operator):
 
 @register_wrap
 class StartIrisHeightButton(bpy.types.Operator):
-    bl_idname = 'eyes.adjust_iris_height_start'
+    bl_idname = 'cats_eyes.adjust_iris_height_start'
     bl_label = 'Start Iris Height Adjustment'
     bl_description = "Lets you readjust the distance of the iris from the eye ball.\n" \
                      "Use this to fix clipping of the iris into the eye ball.\n" \
@@ -784,7 +784,7 @@ class StartIrisHeightButton(bpy.types.Operator):
 
 @register_wrap
 class TestBlinking(bpy.types.Operator):
-    bl_idname = 'eyes.test_blink'
+    bl_idname = 'cats_eyes.test_blinking'
     bl_label = 'Test'
     bl_description = "This lets you see how eye blinking will look ingame"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -813,7 +813,7 @@ class TestBlinking(bpy.types.Operator):
 
 @register_wrap
 class TestLowerlid(bpy.types.Operator):
-    bl_idname = 'eyes.test_lowerlid'
+    bl_idname = 'cats_eyes.test_lowerlid'
     bl_label = 'Test'
     bl_description = "This lets you see how lowerlids will look ingame"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
@@ -844,7 +844,7 @@ class TestLowerlid(bpy.types.Operator):
 
 @register_wrap
 class ResetBlinkTest(bpy.types.Operator):
-    bl_idname = 'eyes.reset_blink_test'
+    bl_idname = 'cats_eyes.reset_blink_test'
     bl_label = 'Reset Shapes'
     bl_description = "This resets the blink testing"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}

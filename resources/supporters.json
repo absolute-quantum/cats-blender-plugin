@@ -5,11 +5,12 @@
       "custom_icon": "fire",
       "disabled": true
     },{
-      "info2": "Happy",
-      "icon": "INFO"
-    },{
       "info": "Happy Halloween!",
       "custom_icon": "halloween",
+      "disabled": true
+    },{
+      "info": "Merry Christmas and Happy Holidays!",
+      "custom_icon": "christmas",
       "disabled": true
     },{
       "info": "Translations are fixed in CATS v0.11.5! Please update.",
@@ -18,6 +19,10 @@
     },{
       "info": "It is Wednesday, my dudes",
       "custom_icon": "wednesday",
+      "disabled": true
+    },{
+      "info": "Happy 2019!",
+      "custom_icon": "fireworks",
       "disabled": true
     }
   ],
@@ -317,6 +322,26 @@
     },{
       "displayname": "Q",
       "startdate": "2018-11-29"
+    },{
+      "displayname": "Nyashks",
+      "startdate": "2018-12-15"
+    },{
+      "displayname": "ARobotDevil",
+      "startdate": "2018-12-15"
+    },{
+      "displayname": "Whittz",
+      "startdate": "2018-12-23"
+    },{
+      "displayname": "Lhun",
+      "startdate": "2018-12-27"
+    },{
+      "displayname": "Googie",
+      "startdate": "2018-12-27",
+      "description": "Much love to the VRChat community and the creators that make it amazing <3\n",
+      "website": "https://www.twitch.tv/googie"
+    },{
+      "displayname": "Tierson",
+      "startdate": "2019-01-01"
     }
   ]
 }
