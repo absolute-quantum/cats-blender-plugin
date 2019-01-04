@@ -178,6 +178,11 @@ def set_default_stage_old():
 
 
 def set_default_stage(everything=False):
+    """
+
+    :param everything:
+    :return: the armature
+    """
     unhide_all(everything=everything)
     unselect_all()
 

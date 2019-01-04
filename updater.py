@@ -363,16 +363,14 @@ def check_for_update_background(onstart=False):
     is_checking_for_update = True
     checked_on_startup = True
 
-    print('STARTING UPDATE CHECK')
     thread = Thread(target=check_for_update, args=[])
     thread.start()
 
 
 def check_for_update():
-    print('START UPDATE CHECK')
+    print('Checking for Cats update...')
 
     # Get all releases from Github
-    print('GET RELEASES')
     if not get_github_releases('Darkblader24') and not get_github_releases('michaeldegroot'):
         finish_update_checking(error='Could not check for updates, try again later')
         return
@@ -384,13 +382,11 @@ def check_for_update():
 
     # Update needed, show the notification popup if it wasn't checked through the UI
     if update_needed:
-        print('UPDATE NEEDED')
+        print('Update found!')
         if not used_updater_panel and not is_ignored_version:
-            print('SHOW UI')
             prepare_to_show_update_notification()
     else:
-        print('NO UPDATE NEEDED')
-
+        print('No update found.')
 
     # Finish update checking, update the UI
     finish_update_checking()
@@ -420,8 +416,8 @@ def get_github_releases(repo):
             continue
         version_list[version.get('tag_name')] = [version.get('zipball_url'), version.get('body'), version.get('published_at').split('T')[0]]
 
-    for version, info in version_list.items():
-        print(version, info[0], info[2])
+    # for version, info in version_list.items():
+    #     print(version, info[0], info[2])
 
     return True
 
@@ -439,7 +435,7 @@ def check_for_update_available():
                 latest_version.append(int(i))
         break
 
-    print(latest_version, '>', current_version)
+    # print(latest_version, '>', current_version)
     if latest_version > current_version:
         return True
 
@@ -683,12 +679,12 @@ def set_ignored_version():
     # Set ignored status
     global is_ignored_version
     is_ignored_version = True
-    print('IGNORED VERSION ' + latest_version_str)
+    print('IGNORE VERSION ' + latest_version_str)
 
 
 def check_ignored_version():
     if not os.path.isfile(ignore_ver_file):
-        print('IGNORE FILE NOT FOUND')
+        # print('IGNORE FILE NOT FOUND')
         return False
 
     # Read ignore file
@@ -697,15 +693,14 @@ def check_ignored_version():
 
     # Check if the latest version matches the one in the ignore file
     if latest_version_str == version:
-        print('IGNORE THIS VERSION!')
+        print('Update ignored.')
         return True
 
     # Delete ignore version file if the latest version is not the version in the file
     try:
         os.remove(ignore_ver_file)
-        print("REMOVED IGNORE VERSION FILE")
     except OSError:
-        print("Failed TO REMOVE IGNORE VERSION FILE")
+        print("FAILED TO REMOVE IGNORE VERSION FILE")
 
     return False
 

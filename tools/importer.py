@@ -600,7 +600,7 @@ class ExportModel(bpy.types.Operator):
             # Check if a warning should be shown
             if _meshes_count > 1 \
                     or _tris_count > 70000 \
-                    or len(_mat_list) > 4 \
+                    or len(_mat_list) > 10 \
                     or len(_broken_shapes) > 0\
                     or not _textures_found and tools.settings.get_embed_textures():
                 bpy.ops.cats_importer.display_error('INVOKE_DEFAULT')
@@ -693,7 +693,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if len(self.mat_list) > 4:
+        if len(self.mat_list) > 10:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Model unoptimized!", icon='ERROR')

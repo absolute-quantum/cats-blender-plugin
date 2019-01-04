@@ -11,7 +11,7 @@
     },{
       "info": "Merry Christmas and Happy Holidays!",
       "custom_icon": "christmas",
-      "disabled": false
+      "disabled": true
     },{
       "info": "Translations are fixed in CATS v0.11.5! Please update.",
       "icon": "INFO",
@@ -19,6 +19,10 @@
     },{
       "info": "It is Wednesday, my dudes",
       "custom_icon": "wednesday",
+      "disabled": true
+    },{
+      "info": "Happy 2019!",
+      "custom_icon": "fireworks",
       "disabled": true
     }
   ],
@@ -335,6 +339,9 @@
       "startdate": "2018-12-27",
       "description": "Much love to the VRChat community and the creators that make it amazing <3\n",
       "website": "https://www.twitch.tv/googie"
+    },{
+      "displayname": "Tierson",
+      "startdate": "2019-01-01"
     }
   ]
 }

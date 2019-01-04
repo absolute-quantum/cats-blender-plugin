@@ -314,6 +314,9 @@ class ConvertAllToPngButton(bpy.types.Operator):
                      '\n\nThe converted image files will be saved next to the old ones'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    # Inspired by:
+    # https://cdn.discordapp.com/attachments/387450722410561547/526638724570677309/BlenderImageconvert.png
+
     @classmethod
     def poll(cls, context):
         return tools.common.get_meshes_objects(mode=2, check=False)

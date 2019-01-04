@@ -344,6 +344,7 @@ It checks for a new version automatically once every day.
 - **Exporter**:
   - No longer warns of meshes that could be split by Unity
   - Instead warns when having more than 70k tris
+  - Now warns at 10 materials instead of 4, will be changed back when more nuanced warnings are in place
 - **Decimation**:
   - Changed default decimation value to 70,000 tris
 - **General**:

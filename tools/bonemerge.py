@@ -55,13 +55,14 @@ class BoneMergeButton(bpy.types.Operator):
         parent_bones = globs.root_bones[context.scene.merge_bone]
         mesh = bpy.data.objects[context.scene.merge_mesh]
         ratio = context.scene.merge_ratio
+        # debug
         print(ratio)
 
         did = 0
         todo = 0
         for bone_name in parent_bones:
             bone = armature.data.bones.get(bone_name)
-            if bone is None:
+            if not bone:
                 continue
 
             for child in bone.children:
@@ -72,10 +73,9 @@ class BoneMergeButton(bpy.types.Operator):
 
         # Start the bone check for every parent
         for bone_name in parent_bones:
-            print('')
-            print('PARENT: ' + bone_name)
+            print('\nPARENT: ' + bone_name)
             bone = armature.data.bones.get(bone_name)
-            if bone is None:
+            if not bone:
                 continue
 
             children = []

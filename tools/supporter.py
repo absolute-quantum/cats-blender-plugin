@@ -228,6 +228,7 @@ def readJson():
         with open(supporters_file, encoding="utf8") as f:
             data = json.load(f)
     except json.decoder.JSONDecodeError:
+        print("JSON COULD NOT BE READ")
         return
 
     global supporter_data
