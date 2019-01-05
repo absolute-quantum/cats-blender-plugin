@@ -36,7 +36,7 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = False
+dev_branch = True
 
 import os
 import sys
@@ -302,7 +302,7 @@ def register():
     count = 0
     tools.register.order_classes()
     for cls in tools.register.__bl_classes:  # TODO ordered
-        # print(cls)
+        print(cls)
         bpy.utils.register_class(cls)
         count += 1
     print('Registered', count, 'CATS classes.')
