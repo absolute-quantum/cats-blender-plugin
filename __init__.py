@@ -302,7 +302,7 @@ def register():
     count = 0
     tools.register.order_classes()
     for cls in tools.register.__bl_classes:  # TODO ordered
-        print(cls)
+        # print(cls)
         bpy.utils.register_class(cls)
         count += 1
     print('Registered', count, 'CATS classes.')

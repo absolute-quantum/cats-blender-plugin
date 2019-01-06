@@ -386,12 +386,7 @@ class JoinMeshesSelected(bpy.types.Operator):
         return meshes and len(meshes) > 0
 
     def execute(self, context):
-        selected_meshes = 0
-        for mesh in tools.common.get_meshes_objects():
-            if tools.common.is_selected(mesh):
-                selected_meshes += 1
-
-        if selected_meshes == 0:
+        if not tools.common.get_meshes_objects(mode=3):
             self.report({'ERROR'}, 'No meshes selected! Please select the meshes you want to join in the hierarchy!')
             return {'FINISHED'}
 

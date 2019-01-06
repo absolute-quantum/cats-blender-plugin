@@ -608,10 +608,15 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
         current_active = get_active()
         to_remove = []
         for mesh in meshes:
+            selected = is_selected(mesh)
             # print(mesh.name, mesh.users)
             set_active(mesh)
             if not get_active():
                 to_remove.append(mesh)
+
+            if not selected:
+                select(mesh, False)
+
         for mesh in to_remove:
             print('DELETED CORRUPTED MESH:', mesh.name, mesh.users)
             meshes.remove(mesh)
@@ -631,16 +636,8 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
-    meshes = get_meshes_objects(armature_name=armature_name)
-
-    # Find out which meshes to join
-    meshes_to_join = []
-    for mesh in meshes:
-        if mode == 0:
-            meshes_to_join.append(mesh.name)
-        elif mode == 1 and is_selected(mesh):
-            meshes_to_join.append(mesh.name)
-
+    # Get meshes to join
+    meshes_to_join = get_meshes_objects(armature_name=armature_name, mode=3 if mode == 1 else 0)
     if not meshes_to_join:
         return None
 
@@ -652,55 +649,40 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
     unselect_all()
 
-    # # Check everywhere for broken meshes and delete them
-    # for mesh in get_meshes_objects(mode=2):
-    #     print(mesh.name, mesh.users)
-    #     set_active(mesh)
-    #     if not get_active():
-    #         print('CORRUPTED MESH FOUND:', mesh.name)
-    #         if mesh.name in meshes_to_join:
-    #             meshes_to_join.remove(mesh.name)
-    #         delete(mesh)
-
     # Apply existing decimation modifiers and select the meshes for joining
-    for mesh in meshes:
-        if mesh.name in meshes_to_join:
-            set_active(mesh)
+    for mesh in meshes_to_join:
+        set_active(mesh)
 
-            # Apply decimation modifiers
-            for mod in mesh.modifiers:
-                if mod.type == 'DECIMATE':
-                    if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
-                        mesh.modifiers.remove(mod)
-                        continue
-                    if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
-                        mesh.modifiers.remove(mod)
-                        continue
-
-                    if has_shapekeys(mesh):
-                        bpy.ops.object.shape_key_remove(all=True)
-                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
-                elif mod.type == 'SUBSURF':
+        # Apply decimation modifiers
+        for mod in mesh.modifiers:
+            if mod.type == 'DECIMATE':
+                if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
                     mesh.modifiers.remove(mod)
-                elif mod.type == 'MIRROR':
-                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+                    continue
+                if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
+                    mesh.modifiers.remove(mod)
+                    continue
 
-            # Standardize UV maps name
-            if version_2_79_or_older():
-                if mesh.data.uv_textures:
-                    mesh.data.uv_textures[0].name = 'UVMap'
-                for mat_slot in mesh.material_slots:
-                    if mat_slot and mat_slot.material:
-                        for tex_slot in mat_slot.material.texture_slots:
-                            if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
-                                tex_slot.uv_layer = 'UVMap'
-            else:
-                if mesh.data.uv_layers:
-                    mesh.data.uv_layers[0].name = 'UVMap'
+                if has_shapekeys(mesh):
+                    bpy.ops.object.shape_key_remove(all=True)
+                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+            elif mod.type == 'SUBSURF':
+                mesh.modifiers.remove(mod)
+            elif mod.type == 'MIRROR':
+                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
-    # print('CHECK')
-    # for mesh in meshes:
-    #     print(mesh.name, mesh.users)
+        # Standardize UV maps name
+        if version_2_79_or_older():
+            if mesh.data.uv_textures:
+                mesh.data.uv_textures[0].name = 'UVMap'
+            for mat_slot in mesh.material_slots:
+                if mat_slot and mat_slot.material:
+                    for tex_slot in mat_slot.material.texture_slots:
+                        if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
+                            tex_slot.uv_layer = 'UVMap'
+        else:
+            if mesh.data.uv_layers:
+                mesh.data.uv_layers[0].name = 'UVMap'
 
     # Get the name of the active mesh in order to check if it was deleted later
     active_mesh_name = get_active().name
