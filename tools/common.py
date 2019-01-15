@@ -1480,7 +1480,7 @@ def version_2_79_or_older():
 
 
 def get_user_preferences():
-    return bpy.context.user_preferences if version_2_79_or_older() else bpy.context.preferences
+    return bpy.context.user_preferences if hasattr(bpy.context, 'user_preferences') else bpy.context.preferences
 
 
 def has_shapekeys(mesh):

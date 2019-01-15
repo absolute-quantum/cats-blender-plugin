@@ -82,7 +82,7 @@ class ResetShading(Operator):
             shading.light = 'STUDIO'
             shading.color_type = 'MATERIAL'
             shading.show_object_outline = False
-            shading.show_backface_culling = False
+            shading.show_backface_culling = True
             return {'FINISHED'}
 
         context.scene.render.engine = 'BLENDER_RENDER'
@@ -101,7 +101,7 @@ class ResetShading(Operator):
         except TypeError:
             pass
         context.area.spaces[0].viewport_shade='SOLID'
-        context.area.spaces[0].show_backface_culling = False
+        context.area.spaces[0].show_backface_culling = True
         context.scene.game_settings.material_mode = 'MULTITEXTURE'
         return {'FINISHED'}
 

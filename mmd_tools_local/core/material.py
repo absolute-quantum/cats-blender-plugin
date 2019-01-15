@@ -515,8 +515,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         mat = self.material
         mmd_mat = mat.mmd_material
         mat.roughness = 1/max(mmd_mat.shininess, 1)
-        if hasattr(mat, 'matallic'):
-            mat.matallic = 1 - mat.roughness
+        if hasattr(mat, 'metallic'):
+            mat.metallic = 1 - mat.roughness
         if hasattr(mat, 'specular_hardness'):
             mat.specular_hardness = mmd_mat.shininess
         self.__update_shader_input('Reflect', mmd_mat.shininess)
@@ -586,8 +586,8 @@ class _FnMaterialCycles(_FnMaterialBI):
             node_output = next((n for n in nodes if isinstance(n, bpy.types.ShaderNodeOutputMaterial) and n.is_active_output), None)
             if node_output is None:
                 node_output = nodes.new('ShaderNodeOutputMaterial')
-                node_output.location = node_shader.location + Vector((400, 0))
                 node_output.is_active_output = True
+            node_output.location = node_shader.location + Vector((400, 0))
             links.new(node_shader.outputs['Shader'], node_output.inputs['Surface'])
 
         for name_id in ('Base', 'Toon', 'Sphere'):

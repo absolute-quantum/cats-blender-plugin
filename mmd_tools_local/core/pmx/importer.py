@@ -395,17 +395,10 @@ class PMXImporter:
             mmd_bone.transform_order = pmx_bone.transform_order
             mmd_bone.transform_after_dynamics = pmx_bone.transAfterPhis
 
-            if pmx_bone.displayConnection == -1 or pmx_bone.displayConnection == [0.0, 0.0, 0.0]:                
+            if pmx_bone.displayConnection == -1 or pmx_bone.displayConnection == [0.0, 0.0, 0.0]:
                 mmd_bone.is_tip = True
-                logging.debug('bone %s is a tip bone', pmx_bone.name)
             elif b_bone.name in specialTipBones:
                 mmd_bone.is_tip = True
-                logging.debug('bone %s is a special tip bone. DisplayConnection: %s', pmx_bone.name, str(pmx_bone.displayConnection))
-            elif not isinstance(pmx_bone.displayConnection, int):
-                logging.debug('bone %s is using a vector tail', pmx_bone.name)
-            else:
-                logging.debug('bone %s is not using a vector tail and is not a tip bone. DisplayConnection: %s', 
-                              pmx_bone.name, str(pmx_bone.displayConnection))
 
             b_bone.bone.hide = not pmx_bone.visible #or mmd_bone.is_tip
 

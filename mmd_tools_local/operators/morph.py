@@ -415,6 +415,22 @@ class ViewBoneMorph(Operator):
         return { 'FINISHED' }
 
 @register_wrap
+class ClearBoneMorphView(Operator):
+    bl_idname = 'mmd_tools.clear_bone_morph_view'
+    bl_label = 'Clear Bone Morph View'
+    bl_description = 'Reset transforms of all bones to their default values'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        obj = context.active_object
+        root = mmd_model.Model.findRoot(obj)
+        rig = mmd_model.Model(root)
+        armature = rig.armature()
+        for p_bone in armature.pose.bones:
+            p_bone.matrix_basis.identity()
+        return { 'FINISHED' }
+
+@register_wrap
 class ApplyBoneMorph(Operator):
     bl_idname = 'mmd_tools.apply_bone_morph'
     bl_label = 'Apply Bone Morph'

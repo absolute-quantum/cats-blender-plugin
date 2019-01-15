@@ -227,6 +227,12 @@ class FnBone(object):
                     return True
         return False
 
+    @staticmethod
+    def patch_rna_idprop(pose_bones): # workaround for Rigify conflicts
+        from rna_prop_ui import rna_idprop_ui_get
+        for b in pose_bones:
+            rna_idprop_ui_get(b, create=True)
+
     @classmethod
     def clean_additional_transformation(cls, armature):
         # clean shadow bones
@@ -252,6 +258,7 @@ class FnBone(object):
             remove_constraint(constraints, 'mmd_additional_location')
             if remove_constraint(constraints, 'mmd_additional_parent'):
                 p_bone.bone.use_inherit_rotation = True
+        cls.patch_rna_idprop(armature.pose.bones)
 
     @classmethod
     def apply_additional_transformation(cls, armature):
@@ -285,6 +292,7 @@ class FnBone(object):
         # finish
         for p_bone in dirty_bones:
             p_bone.mmd_bone.is_additional_transform_dirty = False
+        cls.patch_rna_idprop(armature.pose.bones)
 
     @classmethod
     def __setup_constraints(cls, p_bone):

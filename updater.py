@@ -716,7 +716,7 @@ def get_version_list(self, context):
 
 
 def get_user_preferences():
-    return bpy.context.user_preferences if bpy.app.version < (2, 80) else bpy.context.preferences
+    return bpy.context.user_preferences if hasattr(bpy.context, 'user_preferences') else bpy.context.preferences
 
 
 def layout_split(layout, factor=0.0, align=False):

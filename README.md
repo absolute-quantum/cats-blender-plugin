@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.12.2)
+# Cats Blender Plugin (0.12.3)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -333,6 +333,13 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.12.3
+- **Model Options**:
+  - Fixed "Join Selected Meshes" joining all meshes
+- **General**:
+  - Added some Blender 2.8 compatibility fixes
+  - Updated mmd_tools
+
 #### 0.12.2
 - **Optimization**:
   - Added new "Convert Textures to PNG" button
@@ -408,16 +415,6 @@ It checks for a new version automatically once every day.
   - Updated mmd_tools (for 2.8 compatibility)
   - Huge UI codebase cleanup
   - Loads of bug fixes
-
-#### 0.11.5
-- **General**:
-  - Fixed showing the wrong version number in CATS
- 
-#### 0.11.4
-- **Translations**:
-  - Fixed translations breaking due to a Google Translate API change (Thanks **BlueLament** for the fix!)
-- **Custom Model Creation**:
-  - Fixed Attach Mesh throwing an error when the mesh has no vertex groups
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
