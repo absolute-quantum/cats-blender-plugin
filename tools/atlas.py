@@ -460,6 +460,7 @@ class CheckMaterialListButton(bpy.types.Operator):
 
 
 def shotariya_installed():
+    print("show error!")
     installed = False
     correct_version = False
 
@@ -471,11 +472,13 @@ def shotariya_installed():
                 correct_version = True
 
     if not installed:
+        return False
         bpy.ops.cats_atlas.install_shotariya_popup('INVOKE_DEFAULT', action='INSTALL')
         print(addon_name + " not installed.")
         return False
 
     if not correct_version:
+        return False
         bpy.ops.cats_atlas.install_shotariya_popup('INVOKE_DEFAULT', action='VERSION')
         print(addon_name + " has wrong version.")
         return False
@@ -484,6 +487,7 @@ def shotariya_installed():
         bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_MAT')
         bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='ALL_MAT')
     except AttributeError:
+        return False
         print(addon_name + " not enabled.")
         bpy.ops.cats_atlas.install_shotariya_popup('INVOKE_DEFAULT', action='ENABLE')
         return False
