@@ -10,7 +10,7 @@ def register():
         name='Armature',
         description='Select the armature which will be used by Cats',
         items=tools.common.get_armature_list,
-        update=tools.atlas.update_material_list
+        update=tools.common.update_material_list
     )
 
     Scene.full_body = BoolProperty(
@@ -397,23 +397,23 @@ def register():
     )
 
     # Atlas
-    Material.add_to_atlas = BoolProperty(
-        description='Add this material to the atlas',
-        default=False
-    )
+    # Material.add_to_atlas = BoolProperty(
+    #     description='Add this material to the atlas',
+    #     default=False
+    # )
 
-    Scene.material_list_index = IntProperty(
-        default=0
-    )
+    # Scene.material_list_index = IntProperty(
+    #     default=0
+    # )
 
-    Scene.material_list = CollectionProperty(
-        type=tools.atlas.MaterialsGroup
-    )
+    # Scene.material_list = CollectionProperty(
+    #     type=tools.atlas.MaterialsGroup
+    # )
 
-    Scene.clear_materials = BoolProperty(
-        description='Clear materials checkbox',
-        default=True
-    )
+    # Scene.clear_materials = BoolProperty(
+    #     description='Clear materials checkbox',
+    #     default=True
+    # )
 
     # Bone Merging
     Scene.merge_ratio = FloatProperty(

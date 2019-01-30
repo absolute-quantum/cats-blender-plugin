@@ -1528,7 +1528,7 @@ def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
     switch(pre_mode)
 
 
-def update_material_list():
+def update_material_list(self=None, context=None):
     try:
         if hasattr(bpy.context.scene, 'smc_ob_data') and bpy.context.scene.smc_ob_data:
             bpy.ops.smc.refresh_ob_data()

@@ -289,8 +289,7 @@ class CombineMaterialsButton(bpy.types.Operator):
             tools.common.clean_material_names(mesh)
 
             # Update atlas list
-            if len(context.scene.material_list) > 0:
-                bpy.ops.cats_atlas.gen_mat_list()
+            tools.common.update_material_list()
 
             # print('CLEANED MAT SLOTS')
 
