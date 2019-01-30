@@ -95,50 +95,77 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.alignment = 'RIGHT'
             row.scale_y = 0.9
             row.operator(atlas.AtlasHelpButton.bl_idname, text="", icon='QUESTION')
+            # row.separator()
+            # row = split.row(align=False)
+            # row.alignment = 'RIGHT'
+            # row.scale_y = 0.9
+            # row.operator(atlas.AtlasHelpButton.bl_idname, text="", icon='QUESTION')
             col.separator()
 
             # Draw v1.0 mat comb ui
+            # if found_very_old_smc and not draw_smc_ui:
+            #     col.separator()
+            #
+            #     box2 = col.box()
+            #     col2 = box2.column(align=True)
+            #
+            #     row = col2.row(align=True)
+            #     row.scale_y = 0.75
+            #     row.label(text="Old Combiner version, consider upgrading:", icon='INFO')
+            #     col2.separator()
+            #     row = col2.row(align=True)
+            #     row.operator(atlas.ShotariyaButton.bl_idname, text='Download Material Combiner v2.0', icon=globs.ICON_URL)
+            #     col.separator()
+            #
+            #     if len(context.scene.material_list) == 0:
+            #         col.separator()
+            #         row = col.row(align=True)
+            #         row.scale_y = 1.2
+            #         row.operator(atlas.GenerateMaterialListButton.bl_idname, icon='TRIA_RIGHT')
+            #         col.separator()
+            #     else:
+            #         # row = col.row(align=True)
+            #         # row.scale_y = 0.75
+            #         # row.label(text='Select Materials to Combine:')
+            #         row = col.row(align=True)
+            #         row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=8, type='DEFAULT')
+            #
+            #         row = layout_split(col, factor=0.8, align=True)
+            #         row.scale_y = 1.2
+            #         row.operator(atlas.GenerateMaterialListButton.bl_idname, text='Update Material List', icon='FILE_REFRESH')
+            #         if context.scene.clear_materials:
+            #             row.operator(atlas.CheckMaterialListButton.bl_idname, text='', icon='CHECKBOX_HLT')
+            #         else:
+            #             row.operator(atlas.CheckMaterialListButton.bl_idname, text='', icon='CHECKBOX_DEHLT')
+            #
+            #         row.operator(atlas.ClearMaterialListButton.bl_idname, text='', icon='X')
+            #         col.separator()
+            #
+            #     row = col.row(align=True)
+            #     row.scale_y = 1.7
+            #     row.operator(atlas.AutoAtlasNewButton.bl_idname, icon='TRIA_RIGHT')
+            #     check_for_smc()
+            #     return
+
+            # Found very old v1.0 mat comb
             if found_very_old_smc and not draw_smc_ui:
                 col.separator()
-
-                box2 = col.box()
-                col2 = box2.column(align=True)
-
-                row = col2.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Old Combiner version, consider upgrading:", icon='INFO')
-                col2.separator()
-                row = col2.row(align=True)
-                row.operator(atlas.ShotariyaButton.bl_idname, text='Download Material Combiner v2.0', icon=globs.ICON_URL)
-                col.separator()
-
-                if len(context.scene.material_list) == 0:
-                    col.separator()
-                    row = col.row(align=True)
-                    row.scale_y = 1.2
-                    row.operator(atlas.GenerateMaterialListButton.bl_idname, icon='TRIA_RIGHT')
-                    col.separator()
-                else:
-                    # row = col.row(align=True)
-                    # row.scale_y = 0.75
-                    # row.label(text='Select Materials to Combine:')
-                    row = col.row(align=True)
-                    row.template_list('AtlasList', '', context.scene, 'material_list', context.scene, 'material_list_index', rows=8, type='DEFAULT')
-
-                    row = layout_split(col, factor=0.8, align=True)
-                    row.scale_y = 1.2
-                    row.operator(atlas.GenerateMaterialListButton.bl_idname, text='Update Material List', icon='FILE_REFRESH')
-                    if context.scene.clear_materials:
-                        row.operator(atlas.CheckMaterialListButton.bl_idname, text='', icon='CHECKBOX_HLT')
-                    else:
-                        row.operator(atlas.CheckMaterialListButton.bl_idname, text='', icon='CHECKBOX_DEHLT')
-
-                    row.operator(atlas.ClearMaterialListButton.bl_idname, text='', icon='X')
-                    col.separator()
+                box = col.box()
+                col = box.column(align=True)
 
                 row = col.row(align=True)
-                row.scale_y = 1.7
-                row.operator(atlas.AutoAtlasNewButton.bl_idname, icon='TRIA_RIGHT')
+                row.scale_y = 0.75
+                row.label(text="Your Material Combiner is outdated!")
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text="Please update to the latest version.")
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text="Download and install it manually:")
+                col.separator()
+                row = col.row(align=True)
+                row.operator(atlas.ShotariyaButton.bl_idname, icon=globs.ICON_URL)
+
                 check_for_smc()
                 return
 
