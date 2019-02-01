@@ -46,6 +46,17 @@ def register():
         default=False
     )
 
+    Scene.join_meshes = BoolProperty(
+        name='Join Meshes',
+        description='Joins all meshes of this model together.'
+                    '\nIt also:'
+                    '\n  - Applies all transformations'
+                    '\n  - Repairs broken armature modifiers'
+                    '\n  - Applies all decimation and mirror modifiers'
+                    '\n  - Merges UV maps correctly',
+        default=True
+    )
+
     Scene.use_google_only = BoolProperty(
         name='Use Old Translations (not recommended)',
         description="Ignores the internal dictionary and only uses the Google Translator for shape key translations."

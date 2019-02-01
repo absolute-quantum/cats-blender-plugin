@@ -238,8 +238,6 @@ class CombineMaterialsButton(bpy.types.Operator):
                     self.combined_tex[hash_this] = []
                 self.combined_tex[hash_this].append({'mat': mat_slot.name, 'index': index})
 
-        # print('CREATED COMBINED TEX', self.combined_tex)
-
     def execute(self, context):
         print('COMBINE MATERIALS!')
         if not tools.common.version_2_79_or_older():

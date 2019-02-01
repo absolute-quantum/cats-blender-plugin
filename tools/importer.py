@@ -600,7 +600,7 @@ class ExportModel(bpy.types.Operator):
             # Check if a warning should be shown
             if _meshes_count > 1 \
                     or _tris_count > 70000 \
-                    or len(_mat_list) > 10 \
+                    or len(_mat_list) > 4 \
                     or len(_broken_shapes) > 0\
                     or not _textures_found and tools.settings.get_embed_textures():
                 bpy.ops.cats_importer.display_error('INVOKE_DEFAULT')
@@ -651,6 +651,7 @@ class ErrorDisplay(bpy.types.Operator):
 
     tris_count = 0
     mat_list = []
+    mat_count = 0
     meshes_count = 0
     broken_shapes = []
     textures_found = False
@@ -663,6 +664,7 @@ class ErrorDisplay(bpy.types.Operator):
         self.meshes_count = _meshes_count
         self.tris_count = _tris_count
         self.mat_list = _mat_list
+        self.mat_count = len(_mat_list)
         self.broken_shapes = _broken_shapes
         self.textures_found = _textures_found
 
@@ -685,7 +687,7 @@ class ErrorDisplay(bpy.types.Operator):
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You have more than 70,000 tris in this model, which isn't allowed in VRChat!")
+            row.label(text="You have " + str(self.tris_count) + " tris in this model, which isn't allowed in VRChat! (max 70,000)")
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="You should decimate before you export this model.")
@@ -693,22 +695,18 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if len(self.mat_list) > 10:
+        if self.mat_count > 10:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Model unoptimized!", icon='ERROR')
+            row.label(text="Too many materials!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="This model has " + str(len(self.mat_list)) + " materials!")
-            col.separator()
+            row.label(text="You have " + str(self.mat_count) + " materials on this model, which isn't allowed in VRChat! (max 10)")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="It will be extremely unoptimized and cause lag for you and others.")
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text="Please be considerate and create a texture atlas.")
+            row.label(text="You should create a texture atlas before you export this model.")
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
@@ -717,10 +715,30 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
+        elif self.mat_count > 4:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Model not optimized!", icon='INFO')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="This model has " + str(self.mat_count) + " materials!")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="You should try to have a maximum of 4 materials on your model.")
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Creating a texture atlas in CATS is very easy, so please make use of it.")
+            col.separator()
+            col.separator()
+            col.separator()
+
         if self.meshes_count > 1:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Model unoptimized!", icon='ERROR')
+            row.label(text="Meshes not joined!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
@@ -732,7 +750,7 @@ class ErrorDisplay(bpy.types.Operator):
             row.label(text="It will be extremely unoptimized and cause lag for you and others.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Please be considerate and join your meshes, it's easy:")
+            row.label(text="You should always join your meshes, it's very easy:")
             col.separator()
             row = col.row(align=True)
             row.scale_y = 1

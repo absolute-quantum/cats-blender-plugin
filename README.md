@@ -336,6 +336,13 @@ It checks for a new version automatically once every day.
 #### 0.12.3
 - **Model Options**:
   - Fixed "Join Selected Meshes" joining all meshes
+- **Optimization**:
+  - Removed support for old v1.x Material Combiner versions
+    - This fixes the random "Material Combiner missing" errors
+    - If you still want to use the old versions, please use them directly via the shotariya tab
+- **Export**:
+  - Improved export warnings
+    - They will no longer exaggerate as much as before
 - **General**:
   - Added some Blender 2.8 compatibility fixes
   - Updated mmd_tools
