@@ -48,6 +48,34 @@ class OneTexPerMatButton(bpy.types.Operator):
         return len(tools.common.get_meshes_objects(check=False)) > 0
 
     def execute(self, context):
+
+        textures = []  # TODO Use and remove this
+        if tools.common.version_2_79_or_older():
+            for ob in bpy.data.objects:
+                if ob.type == "MESH":
+                    for mat_slot in ob.material_slots:
+                        if mat_slot.material:
+                            for tex_slot in mat_slot.material.texture_slots:
+                                if tex_slot and tex_slot.texture and tex_slot.texture.image:
+                                    textures.append(tex_slot.texture.image.name)
+        else:
+            for ob in bpy.data.objects:
+                if ob.type == "MESH":
+                    for mat_slot in ob.material_slots:
+                        if mat_slot.material:
+                            print('MAT: ', mat_slot.material.name)
+                            if mat_slot.material.node_tree:
+                                for node in mat_slot.material.node_tree.nodes:
+                                    print(' ', node.name, node.type)
+                                    if node.type == 'TEX_IMAGE':
+                                        textures.append(node.image.name)
+                                    for attr in dir(node.inputs):
+                                        print('   ', attr)
+                            break
+
+        # print(textures, len(textures))
+        # return{'FINISHED'}
+
         if not tools.common.version_2_79_or_older():
             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
             return {'CANCELLED'}

@@ -327,10 +327,10 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     armature = tools.common.get_armature(armature_name=base_armature_name)
 
     # Join the meshes
-    mesh_merge = tools.common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
+    mesh_merged = tools.common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
 
     # Clean up shape keys
-    tools.common.clean_shapekeys(mesh_merge)
+    tools.common.clean_shapekeys(mesh_merged)
 
     # Go into edit mode
     tools.common.unselect_all()
@@ -359,7 +359,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     tools.common.set_default_stage()
 
     # Merge bones into existing bones
-    tools.common.set_active(mesh_merge)
+    tools.common.set_active(mesh_merged)
     replace_bones = []
     if not mesh_only:
         if merge_same_bones:
@@ -377,11 +377,11 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
                 print(bone_base.name, bone_merge.name)
 
-                vg_base = mesh_merge.vertex_groups.get(bone_base.name)
-                vg_merge = mesh_merge.vertex_groups.get(bone_merge.name)
+                vg_base = mesh_merged.vertex_groups.get(bone_base.name)
+                vg_merge = mesh_merged.vertex_groups.get(bone_merge.name)
 
                 if vg_base and vg_merge:
-                    tools.common.mix_weights(mesh_merge, vg_merge.name, vg_base.name)
+                    tools.common.mix_weights(mesh_merged, vg_merge.name, vg_base.name)
 
                 to_delete.append(bone_merge.name)
 
@@ -400,8 +400,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
                 bone_base = bone_name
                 bone_merge = bone_name + '.merge'
 
-                vg_base = mesh_merge.vertex_groups.get(bone_base)
-                vg2 = mesh_merge.vertex_groups.get(bone_merge)
+                vg_base = mesh_merged.vertex_groups.get(bone_base)
+                vg2 = mesh_merged.vertex_groups.get(bone_merge)
 
                 if not vg_base:
                     if vg2:
@@ -411,7 +411,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
                 if not vg2:
                     continue
 
-                tools.common.mix_weights(mesh_merge, bone_merge, bone_base)
+                tools.common.mix_weights(mesh_merged, bone_merge, bone_base)
 
         # Remove ".merge" from all non duplicate bones
         for bone in armature.pose.bones:

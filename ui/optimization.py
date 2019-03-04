@@ -236,13 +236,13 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
         elif context.scene.optimize_mode == 'MATERIAL':
 
-            if not version_2_79_or_older():  # TODO
-                col = box.column(align=True)
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text='Not yet compatible with 2.8!', icon='INFO')
-                col.separator()
-                return
+            # if not version_2_79_or_older():  # TODO
+            #     col = box.column(align=True)
+            #     row = col.row(align=True)
+            #     row.scale_y = 0.75
+            #     row.label(text='Not yet compatible with 2.8!', icon='INFO')
+            #     col.separator()
+            #     return
 
             col = box.column(align=True)
             row = col.row(align=True)

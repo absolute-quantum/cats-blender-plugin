@@ -242,6 +242,13 @@ bone_list_conflicting_names = [
     (['Trans', 'Rot', 'Hip'], 'Bust', 'Spine2'),
     (['Trans', 'Rot', 'Hip'], 'Shoulder\L', '\Left arm'),
     (['Trans', 'Rot', 'Hip'], 'Arm\L', '\Left elbow'),
+
+    # Fix Alucard model
+    (['Hip', 'S_MantleR1'], 'Bust', 'Chest'),
+    (['Hip', 'S_MantleR1'], 'Waist', 'Spine'),
+    (['Hip', 'S_MantleR1'], 'Clavicle\L', '\Left shoulder'),
+    (['Hip', 'S_MantleR1'], 'Shoulder\L', '\Left arm'),
+    (['Hip', 'S_MantleR1'], 'Arm\L', '\Left elbow'),
 ]
 bone_finger_list = [
     'Thumb0_',
