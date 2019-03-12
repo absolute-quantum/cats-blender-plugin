@@ -669,7 +669,8 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
             elif mod.type == 'SUBSURF':
                 mesh.modifiers.remove(mod)
             elif mod.type == 'MIRROR':
-                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+                if has_shapekeys(mesh):
+                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
         # Standardize UV maps name
         if version_2_79_or_older():
