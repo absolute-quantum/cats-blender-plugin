@@ -321,7 +321,10 @@ def register():
     globs.dict_found = tools.translate.load_translations()
 
     # Set preferred Blender options
-    tools.common.get_user_preferences().system.use_international_fonts = True
+    if bpy.app.version < (2, 8):
+        tools.common.get_user_preferences().system.use_international_fonts = True
+    else:
+        tools.common.get_user_preferences().view.use_international_fonts = True
     tools.common.get_user_preferences().filepaths.use_file_compression = True
 
     # Add shapekey button to shapekey menu
