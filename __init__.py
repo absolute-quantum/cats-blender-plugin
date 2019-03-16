@@ -328,7 +328,10 @@ def register():
     tools.common.get_user_preferences().filepaths.use_file_compression = True
 
     # Add shapekey button to shapekey menu
-    bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+    try:
+        bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+    except AttributeError:
+        pass  # TODO https://cdn.discordapp.com/attachments/458749318124404736/556568672374620181/unknown.png
 
     # Disable request warning when using google translate
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
