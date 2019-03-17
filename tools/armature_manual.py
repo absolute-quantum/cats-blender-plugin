@@ -94,7 +94,7 @@ class StartPoseMode(bpy.types.Operator):
         if version_2_79_or_older():
             bpy.context.space_data.transform_manipulators = {'ROTATE'}
         else:
-            bpy.ops.wm.tool_set_by_name(name="Transform")
+            bpy.ops.wm.tool_set_by_id(name="builtin.transform")
 
         return {'FINISHED'}
 
@@ -137,7 +137,7 @@ class StopPoseMode(bpy.types.Operator):
         if version_2_79_or_older():
             bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
         else:
-            bpy.ops.wm.tool_set_by_name(name="Select Box")
+            bpy.ops.wm.tool_set_by_id(name="builtin.select_box")
 
         tools.eyetracking.eye_left = None
 
