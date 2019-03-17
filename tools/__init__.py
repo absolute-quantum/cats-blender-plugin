@@ -13,6 +13,7 @@ if "bpy" not in locals():
     import tools.credits
     import tools.decimation
     import tools.eyetracking
+    import tools.fbx_patch
     import tools.importer
     import tools.material
     import tools.rootbone
@@ -36,6 +37,7 @@ else:
     importlib.reload(tools.credits)
     importlib.reload(tools.decimation)
     importlib.reload(tools.eyetracking)
+    importlib.reload(tools.fbx_patch)
     importlib.reload(tools.importer)
     importlib.reload(tools.material)
     importlib.reload(tools.rootbone)

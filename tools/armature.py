@@ -1246,8 +1246,8 @@ class ModelSettings(bpy.types.Operator):
         row = col.row(align=True)
         row.active = context.scene.remove_zero_weight
         row.prop(context.scene, 'keep_end_bones')
-        # row = col.row(align=True)
-        # row.prop(context.scene, 'join_meshes')
+        row = col.row(align=True)
+        row.prop(context.scene, 'join_meshes')
         row = col.row(align=True)
         row.prop(context.scene, 'combine_mats')
         row = col.row(align=True)

@@ -53,7 +53,9 @@ def register():
                     '\n  - Applies all transformations'
                     '\n  - Repairs broken armature modifiers'
                     '\n  - Applies all decimation and mirror modifiers'
-                    '\n  - Merges UV maps correctly',
+                    '\n  - Merges UV maps correctly'
+                    '\n'
+                    '\nINFO: You should always join your meshes',
         default=True
     )
 

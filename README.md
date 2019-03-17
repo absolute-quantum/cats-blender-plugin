@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.12.3)
+# Cats Blender Plugin (0.13.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -333,9 +333,14 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
-#### 0.12.3
+#### 0.13.0
+- **Model**:
+  - Added option to not join the meshes when fixing the model
 - **Model Options**:
   - Fixed "Join Selected Meshes" joining all meshes
+- **Eye Tracking**:
+  - Fixed empty shape keys sometimes not exporting correctly
+    - This fixes the bug that you would open your mouth when looking down in VRChat
 - **Optimization**:
   - Removed support for old v1.x Material Combiner versions
     - This fixes the random "Material Combiner missing" errors
@@ -344,6 +349,8 @@ It checks for a new version automatically once every day.
   - Improved export warnings
     - They will no longer exaggerate as much as before
 - **General**:
+  - Modified FBX Exporter to always export empty shape keys
+    - This fixes the above described eye tracking bug
   - Added some Blender 2.8 compatibility fixes
   - Updated mmd_tools
 
@@ -375,53 +382,6 @@ It checks for a new version automatically once every day.
   - Fixed an error on Fix Model and other various buttons
   - Stopping Pose Mode in Blender 2.8 now selects the Box Selection tool instead of the 3D Cursor
   - Updated mmd_tools (improved 2.8 materials)
-
-#### 0.12.0
-- **Model**:
-  - Made VRoid (.vrm) models compatible
-  - Made Koikatsu (.pmx) models compatible
-  - Pose to Shapekey and Apply as Rest Pose no longer require you to have the armature selected
-  - Pose to Shapekey now asks for a shapekey name first
-  - Added separate buttons to enable and disable the Full Body tracking fix
-  - Improved Export button warnings
-  - Pose Mode now always makes the armature selectable
-  - Fixed meshes being deleted when a different layer than 0 was visible
-  - Fixed all bones being deleted on .dae models
-- **Model Options**:
-  - Put some model options under a new "Show More Options" button
-  - Added "Merge Weights To Active" button
-  - Added "Duplicate Bones" button
-  - Join Meshes now removes subsurface modifiers and applies mirror modifiers
-- **Custom Model Creation**:
-  - Attach Mesh and Merge Armatures no longer remove the full body tracking fix
-- **Importer**:
-  - Added VRM Importer
-    - Open the import menu to see the VRM button
-    - If its not installed it will provide you with a download link
-  - XNALara no longer randomly colorizes meshes
-    - This makes combining materials much easier
-- **Translations**:
-  - Locally stored Google translations no longer get deleted after 30 days
-  - Added a button to the settings menu to manually delete all local Google translations
-- **Eye Tracking**:
-  - Eyes will no longer be created in weird spots when the weight paint is off (thanks to **zaCade** for finding the cause of this!)
-  - Fixed "Reset Rotation" sometimes not resetting the rotation
-- **Visemes**:
-  - Selecting the "Basis" shapekey is no longer allowed
-- **Optimization**:
-  - Added support for Material Combiner 2.0
-- **Shapekeys**:
-  - Fixed a bug in "Apply Selected Shapekey as Basis"
-- **Updater**:
-  - The settings and locally stored Google translations no longer get reset during a CATS update
-- **General**:
-  - Updated CATS to Blender 2.8
-    - It is still compatible to Blender 2.79 and will stay compatible
-    - "Combine Materials", "Create Atlas" and "Custom Model Creation" is not yet working in 2.8
-    - If you have any issues with Cats in 2.8, please let us know!
-  - Updated mmd_tools (for 2.8 compatibility)
-  - Huge UI codebase cleanup
-  - Loads of bug fixes
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
