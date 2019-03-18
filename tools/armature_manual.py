@@ -582,7 +582,7 @@ def merge_weights(armature, parenting_list):
             if not mesh.vertex_groups.get(bone):
                 continue
             if not mesh.vertex_groups.get(parent):
-                mesh.vertex_groups.new(parent)
+                mesh.vertex_groups.new(name=parent)
             tools.common.mix_weights(mesh, bone, parent)
 
     # Select armature
@@ -1144,7 +1144,7 @@ class DuplicateBonesButton(bpy.types.Operator):
             tools.common.set_active(mesh)
 
             for bone_from, bone_to in duplicate_vertex_groups.items():
-                mesh.vertex_groups.new(bone_to)
+                mesh.vertex_groups.new(name=bone_to)
                 tools.common.mix_weights(mesh, bone_from, bone_to, delete_old_vg=False)
 
         # Select armature
