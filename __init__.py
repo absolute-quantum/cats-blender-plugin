@@ -336,15 +336,11 @@ def register():
     # Disable request warning when using google translate
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
+    # Monkey patch fbx exporter to include empty shapekeys
+    tools.fbx_patch.start_patch_fbx_exporter_timer()
+
     # Apply the settings after a short time, because you can't change checkboxes during register process
     tools.settings.start_apply_settings_timer()
-
-    # Monkey patch fbx exporter to include empty shapekeys
-    import io_scene_fbx.export_fbx_bin
-    if tools.common.version_2_79_or_older():
-        io_scene_fbx.export_fbx_bin.fbx_data_from_scene = tools.fbx_patch.fbx_data_from_scene_v279
-    else:
-        io_scene_fbx.export_fbx_bin.fbx_data_from_scene = tools.fbx_patch.fbx_data_from_scene_v280
 
     print("### Loaded CATS successfully!\n")
 

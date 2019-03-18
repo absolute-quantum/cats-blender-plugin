@@ -1,8 +1,10 @@
 # THis is directly taken from the export_fbx_bin.py to change it via monkey patching
 
+import bpy
+import time
 import array
-
 from collections import OrderedDict
+from threading import Thread
 
 from mathutils import Vector
 
@@ -16,8 +18,6 @@ if "bpy" in locals():
         importlib.reload(data_types)
     if "fbx_utils" in locals():
         importlib.reload(fbx_utils)
-    if "fbx_utils" in locals():
-        importlib.reload(export_fbx_bin)
 
 from io_scene_fbx import encode_bin, data_types, fbx_utils
 
@@ -49,6 +49,32 @@ else:
         FBXExportData, get_fbx_uuid_from_key, similar_values_iter, get_blender_nodetexture_key
     )
 
+
+def start_patch_fbx_exporter_timer():
+    thread = Thread(target=time_patch_fbx_exporter, args=[])
+    thread.start()
+
+
+def time_patch_fbx_exporter():
+    applied = False
+    while not applied:
+        if hasattr(bpy.context, 'scene'):
+            applied = True
+        else:
+            print('Not found')
+            time.sleep(0.5)
+
+    print('FINISHED LOADING')
+    patch_fbx_exporter()
+
+
+def patch_fbx_exporter():
+    import io_scene_fbx.export_fbx_bin
+
+    if tools.common.version_2_79_or_older():
+        io_scene_fbx.export_fbx_bin.fbx_data_from_scene = fbx_data_from_scene_v279
+    else:
+        io_scene_fbx.export_fbx_bin.fbx_data_from_scene = fbx_data_from_scene_v280
 
 
 def fbx_data_from_scene_v279(scene, settings):

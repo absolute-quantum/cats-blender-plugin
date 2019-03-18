@@ -608,6 +608,9 @@ class ExportModel(bpy.types.Operator):
 
         # Continue if there are no errors or the check was skipped
 
+        # Monkey patch FBX exporter again to import empty shape keys
+        tools.fbx_patch.patch_fbx_exporter()
+
         # Check if copy protection is enabled
         mesh_smooth_type = 'OFF'
         protected_export = False
@@ -640,6 +643,8 @@ class ExportModel(bpy.types.Operator):
                                      mesh_smooth_type=mesh_smooth_type)
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
+        except AttributeError:
+            self.report({'ERROR'}, 'FBX Exporter not enabled! Please enable it in your User Preferences.')
 
         return {'FINISHED'}
 
