@@ -338,6 +338,8 @@ It checks for a new version automatically once every day.
   - Added option to not join the meshes when fixing the model
 - **Model Options**:
   - Fixed "Join Selected Meshes" joining all meshes
+  - "Remove Doubles" now ignores vertices effected by shape keys
+    - This prevents cases like upper and lower teeth getting merged together
 - **Eye Tracking**:
   - Fixed empty shape keys sometimes not exporting correctly
     - This fixes the bug that you would open your mouth when looking down in VRChat

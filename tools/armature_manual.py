@@ -745,8 +745,8 @@ class RemoveDoubles(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_doubles'
     bl_label = 'Remove Doubles'
     bl_description = "Merges duplicated faces and vertices of the selected meshes." \
-                     "\nThis is more precise than doing it manually:" \
-                     "\n  - prevents deletion of unwanted vertices" \
+                     "\nThis is more save than doing it manually:" \
+                     "\n  - leaves shape keys completely untouched" \
                      "\n  - but removes less doubles overall"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -768,7 +768,7 @@ class RemoveDoubles(bpy.types.Operator):
         tools.common.set_default_stage()
 
         for mesh in meshes:
-            removed_tris += tools.common.remove_doubles(mesh, 0.00002)
+            removed_tris += tools.common.remove_doubles(mesh, 0.0001, save_shapes=True)
 
         tools.common.set_default_stage()
 
@@ -802,7 +802,7 @@ class RemoveDoublesNormal(bpy.types.Operator):
         tools.common.set_default_stage()
 
         for mesh in meshes:
-            removed_tris += tools.common.remove_doubles(mesh, 0.0001)
+            removed_tris += tools.common.remove_doubles(mesh, 0.0001, save_shapes=True)
 
         tools.common.set_default_stage()
 
@@ -1017,7 +1017,7 @@ class FixFBTButton(bpy.types.Operator):
 class RemoveFBTButton(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_fbt'
     bl_label = 'Remove Full Body Tracking'
-    bl_description = "Removes the fix for for Full Body Tracking." \
+    bl_description = "Removes the fix for Full Body Tracking." \
                      '\n' \
                      '\nRequires bones:' \
                      '\n - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2'

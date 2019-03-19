@@ -808,7 +808,7 @@ def separate_by_loose_parts(context, mesh):
 
     # Correctly put mesh together. This is done to prevent extremely small pieces.
     # This essentially does nothing but merges the extremely small parts together.
-    remove_doubles(mesh, 0)
+    remove_doubles(mesh, 0, save_shapes=True)
 
     utils.separateByMaterials(mesh)
 
@@ -1415,7 +1415,7 @@ class ShowError(bpy.types.Operator):
             print('    ' + line)
 
 
-def remove_doubles(mesh, threshold):
+def remove_doubles(mesh, threshold, save_shapes=True):
     if not mesh:
         return 0
 
@@ -1423,8 +1423,24 @@ def remove_doubles(mesh, threshold):
 
     set_active(mesh)
     switch('EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.select_mode(type="VERT")
+    bpy.ops.mesh.select_all(action='DESELECT')
+
+    if save_shapes and has_shapekeys(mesh):
+        switch('OBJECT')
+        for kb in mesh.data.shape_keys.key_blocks:
+            i = 0
+            for v0, v1 in zip(kb.relative_key.data, kb.data):
+                if v0.co != v1.co:
+                    mesh.data.vertices[i].select = True
+                i += 1
+        switch('EDIT')
+        bpy.ops.mesh.select_all(action='INVERT')
+    else:
+        bpy.ops.mesh.select_all(action='SELECT')
+
     bpy.ops.mesh.remove_doubles(threshold=threshold)
+    bpy.ops.mesh.select_all(action='DESELECT')
     switch('OBJECT')
 
     return pre_tris - len(mesh.data.polygons)

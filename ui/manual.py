@@ -106,13 +106,17 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.operator(armature_manual.ApplyTransformations.bl_idname, icon='OUTLINER_DATA_ARMATURE')
 
             row = col.row(align=True)
-            row.scale_y = 1
-            subcol = layout_split(row, factor=0, align=True)
-            subcol.scale_y = button_height
-            subcol.operator(armature_manual.RemoveDoubles.bl_idname, icon='STICKY_UVS_VERT')
-            subcol = layout_split(row, factor=0, align=True)
-            subcol.scale_y = button_height
-            subcol.operator(armature_manual.RemoveDoublesNormal.bl_idname, text="", icon='X')
+            row.scale_y = button_height
+            row.operator(armature_manual.RemoveDoubles.bl_idname, icon='X')
+
+            # row = col.row(align=True)
+            # row.scale_y = 1
+            # subcol = layout_split(row, factor=0, align=True)
+            # subcol.scale_y = button_height
+            # subcol.operator(armature_manual.RemoveDoubles.bl_idname, icon='STICKY_UVS_VERT')
+            # subcol = layout_split(row, factor=0, align=True)
+            # subcol.scale_y = button_height
+            # subcol.operator(armature_manual.RemoveDoublesNormal.bl_idname, text="", icon='X')
 
             col.separator()
             # row = col.row(align=True)
