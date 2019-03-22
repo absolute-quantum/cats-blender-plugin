@@ -571,7 +571,7 @@ class ExportModel(bpy.types.Operator):
                         if version_2_79_or_older():
                             if not _textures_found:
                                 for tex_slot in mat_slot.material.texture_slots:
-                                    if tex_slot and tex_slot.texture:
+                                    if tex_slot and tex_slot.texture and tex_slot.texture.image:
                                         tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
                                         if os.path.isfile(tex_path):
                                             _textures_found = True

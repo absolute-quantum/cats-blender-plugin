@@ -355,6 +355,7 @@ It checks for a new version automatically once every day.
     - This fixes the above described eye tracking bug
   - Added some Blender 2.8 compatibility fixes
   - Updated mmd_tools
+  - Fixed multiple errors
 
 #### 0.12.2
 - **Optimization**:
