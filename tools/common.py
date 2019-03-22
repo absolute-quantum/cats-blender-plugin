@@ -750,30 +750,7 @@ def apply_transforms(armature_name=None):
 
 
 def separate_by_materials(context, mesh):
-    set_default_stage()
-
-    # Remove Rigidbodies and joints
-    for obj in bpy.data.objects:
-        if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            delete_hierarchy(obj)
-
-    save_shapekey_order(mesh.name)
-    set_active(mesh)
-
-    for mod in mesh.modifiers:
-        if mod.type == 'DECIMATE':
-            mesh.modifiers.remove(mod)
-        else:
-            mod.show_expanded = False
-
-    clean_material_names(mesh)
-
-    # Correctly put mesh together. This is done to prevent extremely small pieces.
-    # This essentially does nothing but merges the extremely small parts together.
-    switch('EDIT')
-    bpy.ops.mesh.select_all(action='DESELECT')
-    bpy.ops.mesh.remove_doubles(threshold=0)
-    switch('OBJECT')
+    prepare_separation(mesh)
 
     utils.separateByMaterials(mesh)
 
@@ -788,23 +765,7 @@ def separate_by_materials(context, mesh):
 
 
 def separate_by_loose_parts(context, mesh):
-    set_default_stage()
-
-    # Remove Rigidbodies and joints
-    for obj in bpy.data.objects:
-        if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            delete_hierarchy(obj)
-
-    save_shapekey_order(mesh.name)
-    set_active(mesh)
-
-    for mod in mesh.modifiers:
-        if mod.type == 'DECIMATE':
-            mesh.modifiers.remove(mod)
-        else:
-            mod.show_expanded = False
-
-    clean_material_names(mesh)
+    prepare_separation(mesh)
 
     # Correctly put mesh together. This is done to prevent extremely small pieces.
     # This essentially does nothing but merges the extremely small parts together.
@@ -848,38 +809,69 @@ def separate_by_loose_parts(context, mesh):
 
     wm.progress_end()
 
-    ## Old separate method
-    # print("DEBUG3")
-    # bpy.ops.mesh.separate(type='LOOSE')
-    # print("DEBUG4")
-    #
-    # for ob in context.selected_objects:
-    #     print(ob.name)
-    #     if ob.type == 'MESH':
-    #         if ob.data.shape_keys:
-    #             for kb in ob.data.shape_keys.key_blocks:
-    #                 if can_remove(kb):
-    #                     ob.shape_key_remove(kb)
-    #
-    #         mesh = ob.data
-    #         materials = mesh.materials
-    #         if len(mesh.polygons) > 0:
-    #             if len(materials) > 1:
-    #                 mat_index = mesh.polygons[0].material_index
-    #                 for x in reversed(range(len(materials))):
-    #                     if x != mat_index:
-    #                         materials.pop(index=x, update_data=True)
-    #         ob.name = getattr(materials[0], 'name', 'None') if len(materials) else 'None'
-    #
-    #         if '. 001' in ob.name:
-    #             ob.name = ob.name.replace('. 001', '')
-    #         if '.000' in ob.name:
-    #             ob.name = ob.name.replace('.000', '')
+    utils.clearUnusedMeshes()
+
+    # Update the material list of the Material Combiner
+    update_material_list()
+
+
+def separate_by_shape_keys(context, mesh):
+    prepare_separation(mesh)
+
+    switch('EDIT')
+    bpy.ops.mesh.select_mode(type="VERT")
+    bpy.ops.mesh.select_all(action='DESELECT')
+
+    switch('OBJECT')
+    for kb in mesh.data.shape_keys.key_blocks:
+        for i, (v0, v1) in enumerate(zip(kb.relative_key.data, kb.data)):
+            if v0.co != v1.co:
+                mesh.data.vertices[i].select = True
+    switch('EDIT')
+    bpy.ops.mesh.select_all(action='INVERT')
+
+    bpy.ops.mesh.separate(type='SELECTED')
+
+    for ob in context.selected_objects:
+        if ob.type == 'MESH':
+            if ob != get_active():
+                print('not active', ob.name)
+                active_tmp = get_active()
+                ob.name = ob.name.replace('.001', '') + '.no_shapes'
+                set_active(ob)
+                bpy.ops.object.shape_key_remove(all=True)
+                set_active(active_tmp)
+                select(ob, False)
+            else:
+                print('active', ob.name)
+                clean_shapekeys(ob)
+                switch('OBJECT')
 
     utils.clearUnusedMeshes()
 
     # Update the material list of the Material Combiner
     update_material_list()
+
+
+def prepare_separation(mesh):
+    set_default_stage()
+    unselect_all()
+
+    # Remove Rigidbodies and joints
+    for obj in bpy.data.objects:
+        if 'rigidbodies' in obj.name or 'joints' in obj.name:
+            delete_hierarchy(obj)
+
+    save_shapekey_order(mesh.name)
+    set_active(mesh)
+
+    for mod in mesh.modifiers:
+        if mod.type == 'DECIMATE':
+            mesh.modifiers.remove(mod)
+        else:
+            mod.show_expanded = False
+
+    clean_material_names(mesh)
 
 
 def clean_shapekeys(mesh):

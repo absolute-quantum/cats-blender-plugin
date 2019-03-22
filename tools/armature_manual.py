@@ -478,6 +478,47 @@ class SeparateByLooseParts(bpy.types.Operator):
 
 
 @register_wrap
+class SeparateByShapekeys(bpy.types.Operator):
+    bl_idname = 'cats_manual.separate_by_shape_keys'
+    bl_label = 'Separate by Shape Keys'
+    bl_description = 'Separates selected mesh into two parts,' \
+                     '\ndepending on whether it is effected by a shape key or not.' \
+                     '\n' \
+                     '\nVery useful for manual decimation'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+
+        if obj and obj.type == 'MESH':
+            return True
+
+        meshes = tools.common.get_meshes_objects(check=False)
+        return meshes
+
+    def execute(self, context):
+        obj = context.active_object
+
+        if not obj or (obj and obj.type != 'MESH'):
+            tools.common.unselect_all()
+            meshes = tools.common.get_meshes_objects()
+            if len(meshes) == 0:
+                self.report({'ERROR'}, 'No meshes found!')
+                return {'FINISHED'}
+            if len(meshes) > 1:
+                self.report({'ERROR'}, 'Multiple meshes found!'
+                                       '\nPlease select the mesh you want to separate!')
+                return {'FINISHED'}
+            obj = meshes[0]
+
+        tools.common.separate_by_shape_keys(context, obj)
+
+        self.report({'INFO'}, 'Successfully separated by shape keys.')
+        return {'FINISHED'}
+
+
+@register_wrap
 class MergeWeights(bpy.types.Operator):
     bl_idname = 'cats_manual.merge_weights'
     bl_label = 'Merge Weights'

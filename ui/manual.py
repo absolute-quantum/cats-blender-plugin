@@ -28,11 +28,12 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         #     row = col.row(align=True)
         #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_DOWN')
 
-        row = layout_split(col, factor=0.4, align=True)
+        row = layout_split(col, factor=0.32, align=True)
         row.scale_y = button_height
         row.label(text="Separate by:", icon='MESH_DATA')
         row.operator(armature_manual.SeparateByMaterials.bl_idname, text='Materials')
         row.operator(armature_manual.SeparateByLooseParts.bl_idname, text='Loose Parts')
+        row.operator(armature_manual.SeparateByShapekeys.bl_idname, text='Shapes')
 
         row = layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height

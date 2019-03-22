@@ -337,6 +337,8 @@ It checks for a new version automatically once every day.
 - **Model**:
   - Added option to not join the meshes when fixing the model
 - **Model Options**:
+  - Added "Separate by Shape Keys"
+    - This splits the mesh into two parts, depending on whether it is effected by a shape key or not
   - Fixed "Join Selected Meshes" joining all meshes
   - "Remove Doubles" now ignores vertices effected by shape keys
     - This prevents cases like upper and lower teeth getting merged together
