@@ -138,7 +138,7 @@ def remove_corrupted_files():
     else:
         main_dir = str(pathlib.Path(os.path.dirname(__file__)).parent.resolve())
 
-    print('Checking for CATS files in the addon directory:\n' + main_dir)
+    # print('Checking for CATS files in the addon directory:\n' + main_dir)
     files = [f for f in os.listdir(main_dir) if os.path.isfile(os.path.join(main_dir, f))]
     folders = [f for f in os.listdir(main_dir) if os.path.isdir(os.path.join(main_dir, f))]
 
@@ -262,7 +262,7 @@ def register():
     version_str = set_cats_version_string()
 
     # Register Updater and check for CATS update
-    print("Loading Updater..")
+    # print("Loading Updater..")
     updater.register(bl_info, dev_branch, version_str)
 
     # Set some global settings, first allowed use of globs
@@ -270,7 +270,7 @@ def register():
     globs.version_str = version_str
 
     # Load settings and show error if a faulty installation was deleted recently
-    print("Loading settings..")
+    # print("Loading settings..")
     show_error = False
     try:
         tools.settings.load_settings()
@@ -290,29 +290,36 @@ def register():
     #     bpy.utils.unregister_module("mmd_tools")
 
     # Load mmd_tools
-    print("Loading mmd_tools..")
+    # print("Loading mmd_tools..")
     try:
         mmd_tools_local.register()
     except AttributeError:
         print('Could not register local mmd_tools')
         pass
+    except ValueError:
+        print('mmd_tools is already registered')
+        pass
 
     # Register all classes
-    print('Registering CATS classes..')
+    # print('Registering CATS classes..')
     count = 0
     tools.register.order_classes()
-    for cls in tools.register.__bl_classes:  # TODO ordered
-        # print(cls)
-        bpy.utils.register_class(cls)
-        count += 1
-    print('Registered', count, 'CATS classes.')
+    for cls in tools.register.__bl_classes:
+        try:
+            bpy.utils.register_class(cls)
+            count += 1
+        except ValueError:
+            pass
+    # print('Registered', count, 'CATS classes.')
+    if count < len(tools.register.__bl_classes):
+        print('Skipped', len(tools.register.__bl_classes) - count, 'CATS classes.')
 
     # Register Scene types
-    print("Registering scene types..")
+    # print("Registering scene types..")
     extentions.register()
 
     # Load supporter and settings icons and buttons
-    print("Loading other stuff..")
+    # print("Loading other stuff..")
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
     tools.supporter.register_dynamic_buttons()
@@ -328,10 +335,10 @@ def register():
     tools.common.get_user_preferences().filepaths.use_file_compression = True
 
     # Add shapekey button to shapekey menu
-    try:
+    if hasattr(bpy.types, 'MESH_MT_shape_key_specials'):  # pre 2.80
         bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
-    except AttributeError:
-        pass  # TODO https://cdn.discordapp.com/attachments/458749318124404736/556568672374620181/unknown.png
+    else:
+        bpy.types.MESH_MT_shape_key_context_menu.append(tools.shapekey.addToShapekeyMenu)
 
     # Disable request warning when using google translate
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)

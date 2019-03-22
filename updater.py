@@ -895,7 +895,7 @@ to_register = [
 
 
 def register(bl_info, dev_branch, version_str):
-    print('REGISTER CATS UPDATER')
+    # print('REGISTER CATS UPDATER')
     global current_version, fake_update, current_version_str
 
     # If not dev branch, always disable fake update!
@@ -924,8 +924,16 @@ def register(bl_info, dev_branch, version_str):
     )
 
     # Register all Updater classes
+    count = 0
     for cls in to_register:
-        bpy.utils.register_class(cls)
+        try:
+            bpy.utils.register_class(cls)
+            count += 1
+        except ValueError:
+            pass
+    # print('Registered', count, 'CATS updater classes.')
+    if count < len(to_register):
+        print('Skipped', len(to_register) - count, 'CATS updater classes.')
 
 
 def unregister():

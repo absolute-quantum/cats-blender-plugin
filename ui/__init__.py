@@ -1,5 +1,5 @@
 if "bpy" not in locals():
-    print('STARTUP UI!!')
+    # print('STARTUP UI!!')
     import bpy
     import ui.main
     import ui.armature
@@ -15,7 +15,7 @@ if "bpy" not in locals():
     import ui.supporter
     import ui.credits
 else:
-    print('RELOAD UI!!')
+    # print('RELOAD UI!!')
     import importlib
     importlib.reload(ui.main)
     importlib.reload(ui.armature)

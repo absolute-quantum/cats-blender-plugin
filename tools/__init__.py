@@ -1,5 +1,5 @@
 if "bpy" not in locals():
-    print('STARTUP TOOLS!!')
+    # print('STARTUP TOOLS!!')
     import bpy
     import tools.register
     import tools.armature
@@ -23,7 +23,7 @@ if "bpy" not in locals():
     import tools.translate
     import tools.viseme
 else:
-    print('RELOAD TOOLS!!')
+    # print('RELOAD TOOLS!!')
     import importlib
     importlib.reload(tools.register)  # Has to be first
     importlib.reload(tools.armature)

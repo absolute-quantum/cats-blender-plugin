@@ -61,10 +61,10 @@ def time_patch_fbx_exporter():
         if hasattr(bpy.context, 'scene'):
             applied = True
         else:
-            print('Not found')
+            # print('Not found')
             time.sleep(0.5)
 
-    print('FINISHED LOADING')
+    # print('FINISHED LOADING')
     patch_fbx_exporter()
 
 
