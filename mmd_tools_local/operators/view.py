@@ -17,8 +17,12 @@ class SetGLSLShading(Operator):
 
     def execute(self, context):
         bpy.ops.mmd_tools.reset_shading()
+
+        area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
+        space = next(space for space in area.spaces if space.type == 'VIEW_3D')
+
         if bpy.app.version >= (2, 80, 0):
-            shading = context.area.spaces[0].shading
+            shading = space.shading
             shading.light = 'STUDIO'
             shading.color_type = 'TEXTURE'
             return {'FINISHED'}
@@ -34,7 +38,7 @@ class SetGLSLShading(Operator):
             light.hide = True
             context.scene.objects.link(light)
 
-        context.area.spaces[0].viewport_shade='TEXTURED'
+        space.viewport_shade='TEXTURED'
         context.scene.game_settings.material_mode = 'GLSL'
         return {'FINISHED'}
 
@@ -47,8 +51,12 @@ class SetShadelessGLSLShading(Operator):
 
     def execute(self, context):
         bpy.ops.mmd_tools.reset_shading()
+
+        area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
+        space = next(space for space in area.spaces if space.type == 'VIEW_3D')
+
         if bpy.app.version >= (2, 80, 0):
-            shading = context.area.spaces[0].shading
+            shading = space.shading
             shading.light = 'FLAT'
             shading.color_type = 'TEXTURE'
             return {'FINISHED'}
@@ -63,7 +71,7 @@ class SetShadelessGLSLShading(Operator):
         except TypeError:
             pass # Blender was built without OpenColorIO:
 
-        context.area.spaces[0].viewport_shade='TEXTURED'
+        space.viewport_shade='TEXTURED'
         context.scene.game_settings.material_mode = 'GLSL'
         return {'FINISHED'}
 
@@ -75,9 +83,12 @@ class ResetShading(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     def execute(self, context):
+        area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
+        space = next(space for space in area.spaces if space.type == 'VIEW_3D')
+
         if bpy.app.version >= (2, 80, 0):
             context.scene.render.engine = 'BLENDER_EEVEE'
-            shading = context.area.spaces[0].shading
+            shading = space.shading
             shading.type = 'SOLID'
             shading.light = 'STUDIO'
             shading.color_type = 'MATERIAL'
@@ -100,8 +111,9 @@ class ResetShading(Operator):
             context.scene.display_settings.display_device = 'sRGB'
         except TypeError:
             pass
-        context.area.spaces[0].viewport_shade='SOLID'
-        context.area.spaces[0].show_backface_culling = True
+
+        space.viewport_shade='SOLID'
+        space.show_backface_culling = False
         context.scene.game_settings.material_mode = 'MULTITEXTURE'
         return {'FINISHED'}
 

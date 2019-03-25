@@ -223,8 +223,9 @@ class FixArmature(bpy.types.Operator):
             armature.layers[0] = True
 
             # Disable backface culling
-            if context.area:
-                context.area.spaces[0].show_backface_culling = False
+            area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
+            space = next(space for space in area.spaces if space.type == 'VIEW_3D')
+            space.show_backface_culling = False  # set the viewport shading
         else:
             armature.show_in_front = True
             armature.data.display_type = 'OCTAHEDRAL'
