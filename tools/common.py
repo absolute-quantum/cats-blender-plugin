@@ -705,9 +705,10 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     # Rename result to Body and correct modifiers
     mesh = get_active()
     if mesh:
-        mesh.name = 'Body'
+        # If its the only mesh in the armature left, rename it to Body
+        if len(get_meshes_objects(armature_name=armature_name)) == 1:
+            mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
-        # return
 
         # Remove duplicate armature modifiers
         mod_count = 0

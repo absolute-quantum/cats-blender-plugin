@@ -46,15 +46,15 @@ def check_for_smc():
             draw_smc_ui = getattr(import_module(mod.__name__ + '.operators.ui.include'), 'draw_ui')
 
 
-@register_wrap
-class AtlasList(bpy.types.UIList):
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
-        mat = item.material
-        row = layout.row()
-        row.prop(mat, 'name', emboss=False, text='', icon_value=layout.icon(mat))
-        sub_row = row.row()
-        sub_row.scale_x = 0.2
-        row.prop(mat, 'add_to_atlas', text='')
+# @register_wrap
+# class AtlasList(bpy.types.UIList):
+#     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+#         mat = item.material
+#         row = layout.row()
+#         row.prop(mat, 'name', emboss=False, text='', icon_value=layout.icon(mat))
+#         sub_row = row.row()
+#         sub_row.scale_x = 0.2
+#         row.prop(mat, 'add_to_atlas', text='')
 
 
 @register_wrap
