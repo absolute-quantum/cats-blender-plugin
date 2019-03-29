@@ -10,7 +10,7 @@ class MMDCamera:
         if obj.type == 'CAMERA':
             obj = obj.parent
         if obj and obj.type == 'EMPTY' and obj.mmd_type == 'CAMERA':
-            self.__emptyObj = obj
+            self.__emptyObj = getattr(obj, 'original', obj)
         else:
             raise ValueError('%s is not MMDCamera'%str(obj))
 
@@ -46,7 +46,7 @@ class MMDCamera:
                 expression = expression.replace('$type', var.name)
             d.driver.expression = expression
         #bpy.context.user_preferences.system.use_scripts_auto_execute = True
-        __add_ortho_driver(cameraObj.data, 'ortho_scale', '25*(abs($dis)/45)')
+        __add_ortho_driver(cameraObj.data, 'ortho_scale', '25*(-$dis if $dis<0 else $dis)/45')
         __add_ortho_driver(cameraObj, 'rotation_euler', 'pi if $type == 1 and $dis > 1e-5 else 0', index=1)
 
     @staticmethod

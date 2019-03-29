@@ -60,6 +60,7 @@ __properties = {
         'mmd_bone': bpy.props.PointerProperty(type=bone.MMDBone),
         'is_mmd_shadow_bone': bpy.props.BoolProperty(name='is_mmd_shadow_bone', default=False),
         'mmd_shadow_bone_type': bpy.props.StringProperty(name='mmd_shadow_bone_type'),
+        'mmd_ik_toggle': bone._MMDPoseBoneProp.mmd_ik_toggle,
         }
     }
 

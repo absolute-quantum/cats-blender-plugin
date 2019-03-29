@@ -214,7 +214,7 @@ class _MorphSlider:
     def __init__(self, model):
         self.__rig = model
 
-    def placeholder(self, create=False):
+    def placeholder(self, create=False, binded=False):
         rig = self.__rig
         root = rig.rootObject()
         obj = next((x for x in root.children if x.mmd_type == 'PLACEHOLDER' and x.type == 'MESH'), None)
@@ -226,7 +226,14 @@ class _MorphSlider:
         if obj and obj.data.shape_keys is None:
             key = obj.shape_key_add(name='--- morph sliders ---')
             key.mute = True
+        if binded and obj and obj.data.shape_keys.key_blocks[0].mute:
+            return None
         return obj
+
+    @property
+    def dummy_armature(self):
+        obj = self.placeholder()
+        return self.__dummy_armature(obj) if obj else None
 
     def __dummy_armature(self, obj, create=False):
         arm = next((x for x in obj.children if x.mmd_type == 'PLACEHOLDER' and x.type == 'ARMATURE'), None)
@@ -296,6 +303,12 @@ class _MorphSlider:
             for m in mesh.modifiers: # uv morph
                 if m.name.startswith('mmd_bind') and m.name not in names_in_use:
                     mesh.modifiers.remove(m)
+            for m in mesh.data.materials:
+                if m and m.node_tree:
+                    for n in m.node_tree.nodes:
+                        if n.name.startswith('mmd_bind'):
+                            m.node_tree.nodes.remove(n)
+                    m.mmd_material.is_double_sided = m.mmd_material.is_double_sided # update mmd shader
 
         attributes = set(TransformConstraintOp.min_max_attributes('LOCATION', 'to'))
         attributes |= set(TransformConstraintOp.min_max_attributes('ROTATION', 'to'))
@@ -307,6 +320,13 @@ class _MorphSlider:
                     b.constraints.remove(c)
 
     def unbind(self):
+        mmd_root = self.__rig.rootObject().mmd_root
+        for m in mmd_root.bone_morphs:
+            for d in m.data:
+                d.name = ''
+        for m in mmd_root.material_morphs:
+            for d in m.data:
+                d.name = ''
         obj = self.placeholder()
         if obj:
             obj.data.shape_keys.key_blocks[0].mute = True
@@ -398,8 +418,7 @@ class _MorphSlider:
                     if not d.bone:
                         d.name = ''
                         continue
-                    d.name = str(hash(d))
-                    name_bind = 'mmd_bind%s'%hash(d)
+                    d.name = name_bind = 'mmd_bind%s'%hash(d)
                     b = __get_bone(name_bind, 10, None)
                     groups = []
                     bone_offset_map[name_bind] = (m.name, d, b.name, data_path, groups)
@@ -422,13 +441,27 @@ class _MorphSlider:
                 if b.name.startswith('mmd_bind') and b.name not in used_bone_names:
                     edit_bones.remove(b)
 
-        for m in mmd_root.group_morphs:
+        material_offset_map = {}
+        for m in mmd_root.material_morphs:
+            morph_name = m.name.replace('"', '\\"')
+            data_path = 'data.shape_keys.key_blocks["%s"].value'%morph_name
+            groups = []
+            group_map.setdefault(('material_morphs', m.name), []).append(groups)
+            material_offset_map.setdefault('group_dict', {})[m.name] = (data_path, groups)
             for d in m.data:
+                d.name = name_bind = 'mmd_bind%s'%hash(d)
+                table = material_offset_map.setdefault(d.material_id, ([], []))
+                table[1 if d.offset_type == 'ADD' else 0].append((m.name, d, name_bind))
+
+        for m in mmd_root.group_morphs:
+            if len(m.data) != len(set(m.data.keys())):
+                print(' * Found duplicated morph data in Group Morph "%s"'%m.name)
+            morph_name = m.name.replace('"', '\\"')
+            morph_path = 'data.shape_keys.key_blocks["%s"].value'%morph_name
+            for d in m.data:
+                param = (morph_name, d.name.replace('"', '\\"'))
+                factor_path = 'mmd_root.group_morphs["%s"].data["%s"].factor'%param
                 for groups in group_map.get((d.morph_type, d.name), ()):
-                    morph_name = m.name.replace('"', '\\"')
-                    param = (morph_name, d.name.replace('"', '\\"'))
-                    factor_path = 'mmd_root.group_morphs["%s"].data["%s"].factor'%param
-                    morph_path = 'data.shape_keys.key_blocks["%s"].value'%morph_name
                     groups.append((m.name, morph_path, factor_path))
 
         self.__cleanup(shape_key_map.keys()|bone_offset_map.keys()|uv_morph_map.keys())
@@ -468,15 +501,8 @@ class _MorphSlider:
         attributes_loc = TransformConstraintOp.min_max_attributes('LOCATION', 'to')
         for morph_name, data, bname, morph_data_path, groups in bone_offset_map.values():
             b = arm.pose.bones[bname]
-            root_path = 'mmd_root.bone_morphs["%s"].data["%s"]'%(morph_name.replace('"', '\\"'), data.name)
-            for i in range(3):
-                data_path = '%s.location[%d]'%(root_path, i)
-                driver, variables = self.__driver_variables(b, 'location', index=i)
-                driver.expression = self.__add_single_prop(variables, root, data_path, 'L').name
-            for i in range(4):
-                data_path = '%s.rotation[%d]'%(root_path, i)
-                driver, variables = self.__driver_variables(b, 'rotation_quaternion', index=i)
-                driver.expression = self.__add_single_prop(variables, root, data_path, 'R').name
+            b.location = data.location
+            b.rotation_quaternion = data.rotation
             b.is_mmd_shadow_bone = True
             b.mmd_shadow_bone_type = 'BIND'
             pb = armObj.pose.bones[data.bone]
@@ -496,7 +522,28 @@ class _MorphSlider:
             fvar = self.__add_single_prop(variables, root, scale_path, 's')
             driver.expression = '(%s)*%s'%(__config_groups(variables, var.name, groups), fvar.name)
 
-        #TODO material morphs if possible
+        # material morphs
+        from mmd_tools_local.core.shader import _MaterialMorph
+        group_dict = material_offset_map.get('group_dict', {})
+
+        def __config_material_morph(mat, morph_list):
+            nodes = _MaterialMorph.setup_morph_nodes(mat, tuple(x[1] for x in morph_list))
+            for (morph_name, data, name_bind), node in zip(morph_list, nodes):
+                node.label, node.name = morph_name, name_bind
+                data_path, groups = group_dict[morph_name]
+                driver, variables = self.__driver_variables(mat.node_tree, node.inputs[0].path_from_id('default_value'))
+                var = self.__add_single_prop(variables, obj, data_path, 'm')
+                driver.expression = '%s'%__config_groups(variables, var.name, groups)
+
+        for mat in (m for m in rig.materials() if m and m.use_nodes and not m.name.startswith('mmd_')):
+            mat_id = mat.mmd_material.material_id
+            mul_all, add_all = material_offset_map.get(-1, ([], []))
+            mul_list, add_list = material_offset_map.get('' if mat_id < 0 else mat_id, ([], []))
+            morph_list = tuple(mul_all+mul_list+add_all+add_list)
+            __config_material_morph(mat, morph_list)
+            mat_edge = bpy.data.materials.get('mmd_edge.'+mat.name, None)
+            if mat_edge:
+                __config_material_morph(mat_edge, morph_list)
 
         morph_key_blocks[0].mute = False
 

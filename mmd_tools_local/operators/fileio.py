@@ -257,6 +257,11 @@ class ImportVmd(Operator, ImportHelper):
         default=False,
         options={'SKIP_SAVE'},
         )
+    use_mirror = bpy.props.BoolProperty(
+        name='Mirror Motion',
+        description='Import the motion by using X-Axis mirror',
+        default=False,
+        )
     update_scene_settings = bpy.props.BoolProperty(
         name='Update scene settings',
         description='Update frame range and frame rate (30 fps)',
@@ -278,6 +283,7 @@ class ImportVmd(Operator, ImportHelper):
             layout.prop(self, 'use_underscore')
             layout.prop(self, 'dictionary')
         layout.prop(self, 'use_pose_mode')
+        layout.prop(self, 'use_mirror')
 
         layout.prop(self, 'update_scene_settings')
 
@@ -308,6 +314,7 @@ class ImportVmd(Operator, ImportHelper):
             bone_mapper=bone_mapper,
             use_pose_mode=self.use_pose_mode,
             frame_margin=self.margin,
+            use_mirror=self.use_mirror,
             )
 
         for i in selected_objects:
@@ -478,7 +485,8 @@ class ExportPmx(Operator, ExportHelper):
 
     @classmethod
     def poll(cls, context):
-        return len(context.selected_objects) > 0
+        obj = context.active_object
+        return obj in context.selected_objects and mmd_model.Model.findRoot(obj)
 
     def execute(self, context):
         try:
@@ -603,7 +611,7 @@ class ExportVmd(Operator, ExportHelper):
         obj = context.active_object
         if obj.mmd_type == 'ROOT':
             rig = mmd_model.Model(obj)
-            params['mesh'] = rig.firstMesh()
+            params['mesh'] = rig.morph_slider.placeholder(binded=True) or rig.firstMesh()
             params['armature'] = rig.armature()
             params['model_name'] = obj.mmd_root.name or obj.name
         elif getattr(obj.data, 'shape_keys', None):
@@ -671,7 +679,7 @@ class ExportVpd(Operator, ExportHelper):
 
         if obj.mmd_type == 'ROOT':
             return True
-        if obj.mmd_type == 'NONE' and obj.type in {'MESH', 'ARMATURE'}:
+        if obj.mmd_type == 'NONE' and (obj.type == 'ARMATURE' or getattr(obj.data, 'shape_keys', None)):
             return True
 
         return False
@@ -694,10 +702,10 @@ class ExportVpd(Operator, ExportHelper):
         obj = context.active_object
         if obj.mmd_type == 'ROOT':
             rig = mmd_model.Model(obj)
-            params['mesh'] = rig.firstMesh()
+            params['mesh'] = rig.morph_slider.placeholder(binded=True) or rig.firstMesh()
             params['armature'] = rig.armature()
             params['model_name'] = obj.mmd_root.name or obj.name
-        elif obj.type == 'MESH':
+        elif getattr(obj.data, 'shape_keys', None):
             params['mesh'] = obj
             params['model_name'] = obj.name
         elif obj.type == 'ARMATURE':

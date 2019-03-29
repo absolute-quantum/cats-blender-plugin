@@ -315,10 +315,14 @@ class ConvertToMMDModel(Operator):
                 mmd_material.enabled_self_shadow_map = m.use_cast_buffer_shadows and m.alpha > 1e-3
                 mmd_material.enabled_self_shadow = m.use_shadows
             else:
-                diffuse = m.diffuse_color
+                diffuse = m.diffuse_color[:3]
                 mmd_material.diffuse_color = diffuse
                 mmd_material.ambient_color = [0.5*c for c in diffuse]
                 mmd_material.specular_color = m.specular_color
+                if hasattr(m, 'alpha'):
+                    mmd_material.alpha = m.alpha
+                elif len(m.diffuse_color) > 3:
+                    mmd_material.alpha = m.diffuse_color[3]
 
             if hasattr(m, 'line_color'): # freestyle line color
                 line_color = list(m.line_color)

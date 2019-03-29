@@ -57,13 +57,15 @@ class RigidBodyMaterial:
         if material_name not in bpy.data.materials:
             mat = bpy.data.materials.new(material_name)
             color = cls.COLORS[number]
-            mat.diffuse_color = [((0xff0000 & color) >> 16) / float(255), ((0x00ff00 & color) >> 8) / float(255), (0x0000ff & color) / float(255)]
+            mat.diffuse_color[:3] = [((0xff0000 & color) >> 16) / float(255), ((0x00ff00 & color) >> 8) / float(255), (0x0000ff & color) / float(255)]
             mat.specular_intensity = 0
             if bpy.app.version < (2, 80, 0):
                 mat.diffuse_intensity = 1
                 mat.alpha = 0.5
                 mat.use_transparency = True
                 mat.use_shadeless = True
+            elif len(mat.diffuse_color) > 3:
+                mat.diffuse_color[3] = 0.5
         else:
             mat = bpy.data.materials[material_name]
         return mat

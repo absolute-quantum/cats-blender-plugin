@@ -2,6 +2,10 @@
 import bpy
 import mathutils
 
+def __switchToCyclesRenderEngine():
+    if bpy.context.scene.render.engine != 'CYCLES':
+        bpy.context.scene.render.engine = 'CYCLES'
+
 def __exposeNodeTreeInput(in_socket, name, default_value, node_input, shader):
     t = len(node_input.outputs)-1
     i = node_input.outputs[t]
@@ -26,7 +30,7 @@ def __getMaterialOutput(nodes):
     return o
 
 def create_MMDAlphaShader():
-    bpy.context.scene.render.engine = 'CYCLES'
+    __switchToCyclesRenderEngine()
 
     if 'MMDAlphaShader' in bpy.data.node_groups:
         return bpy.data.node_groups['MMDAlphaShader']
@@ -52,7 +56,7 @@ def create_MMDAlphaShader():
     return shader
 
 def create_MMDBasicShader():
-    bpy.context.scene.render.engine = 'CYCLES'
+    __switchToCyclesRenderEngine()
 
     if 'MMDBasicShader' in bpy.data.node_groups:
         return bpy.data.node_groups['MMDBasicShader']
@@ -86,7 +90,7 @@ def convertToCyclesShader(obj):
     mmd_basic_shader_grp = create_MMDBasicShader()
     mmd_alpha_shader_grp = create_MMDAlphaShader()
 
-    bpy.context.scene.render.engine = 'CYCLES'
+    __switchToCyclesRenderEngine()
 
     for i in obj.material_slots:
         if i.material is None or i.material.use_nodes:
@@ -103,23 +107,23 @@ def convertToCyclesShader(obj):
 
         # Delete the redundant node
         for node in i.material.node_tree.nodes:
-            if isinstance(node, bpy.types.ShaderNodeBsdfDiffuse):
+            if node.bl_idname in {'ShaderNodeBsdfDiffuse', 'ShaderNodeBsdfPrincipled'}:
                 i.material.node_tree.nodes.remove(node)
                 break
 
         # Add nodes for Cycles Render
         shader = i.material.node_tree.nodes.new('ShaderNodeGroup')
         shader.node_tree = mmd_basic_shader_grp
-        shader.inputs[0].default_value = list(i.material.diffuse_color) + [1.0]
-        shader.inputs[1].default_value = list(i.material.specular_color) + [1.0]
-        shader.inputs['glossy_rough'].default_value = 1.0/i.material.specular_hardness
+        shader.inputs[0].default_value[:3] = i.material.diffuse_color[:3]
+        shader.inputs[1].default_value[:3] = i.material.specular_color[:3]
+        shader.inputs['glossy_rough'].default_value = 1.0/getattr(i.material, 'specular_hardness', 50)
         outplug = shader.outputs[0]
 
         node_tex, node_alpha = None, None
         location = shader.location.copy()
         location.x -= 1000
         reuse_nodes = {}
-        for j in i.material.texture_slots:
+        for j in getattr(i.material, 'texture_slots', ()):
             if j and j.use and isinstance(j.texture, bpy.types.ImageTexture) and getattr(j.texture.image, 'depth', 0):
                 if not (j.use_map_color_diffuse or j.use_map_alpha):
                     continue
@@ -222,12 +226,18 @@ def convertToCyclesShader(obj):
         if node_tex:
             i.material.node_tree.links.new(shader.inputs[0], node_tex.outputs[0])
 
-        if node_alpha or i.material.alpha < 1.0:
+        alpha_value = 1.0
+        if hasattr(i.material, 'alpha'):
+            alpha_value = i.material.alpha
+        elif len(i.material.diffuse_color) > 3:
+            alpha_value = i.material.diffuse_color[3]
+
+        if node_alpha or alpha_value < 1.0:
             alpha_shader = i.material.node_tree.nodes.new('ShaderNodeGroup')
             alpha_shader.location.x = shader.location.x + 250
             alpha_shader.location.y = shader.location.y - 150
             alpha_shader.node_tree = mmd_alpha_shader_grp
-            alpha_shader.inputs[1].default_value = i.material.alpha
+            alpha_shader.inputs[1].default_value = alpha_value
             i.material.node_tree.links.new(alpha_shader.inputs[0], outplug)
             outplug = alpha_shader.outputs[0]
             if node_alpha:
@@ -238,6 +248,8 @@ def convertToCyclesShader(obj):
         material_output.location.x = shader.location.x + 500
         material_output.location.y = shader.location.y - 150
 
+        if not hasattr(bpy.types, 'ShaderNodeMaterial'):
+            return
         # Add necessary nodes to retain Blender Render functionality
         mat_node = i.material.node_tree.nodes.new('ShaderNodeMaterial')
         out_node = i.material.node_tree.nodes.new('ShaderNodeOutput')

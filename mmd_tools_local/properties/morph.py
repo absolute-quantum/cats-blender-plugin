@@ -125,6 +125,16 @@ def _set_bone(prop, value):
     fnBone = FnBone(pose_bone)
     prop['bone_id'] = fnBone.bone_id
 
+def _update_bone_morph_data(prop, context):
+    if not prop.name.startswith('mmd_bind'):
+        return
+    arm = FnModel(prop.id_data).morph_slider.dummy_armature
+    if arm:
+        bone = arm.pose.bones.get(prop.name, None)
+        if bone:
+            bone.location = prop.location
+            bone.rotation_quaternion = prop.rotation
+
 @register_wrap
 class BoneMorphData(PropertyGroup):
     """
@@ -146,6 +156,7 @@ class BoneMorphData(PropertyGroup):
         subtype='TRANSLATION',
         size=3,
         default=[0, 0, 0],
+        update=_update_bone_morph_data,
         )
 
     rotation = FloatVectorProperty(
@@ -154,6 +165,7 @@ class BoneMorphData(PropertyGroup):
         subtype='QUATERNION',
         size=4,
         default=[1, 0, 0, 0],
+        update=_update_bone_morph_data,
         )
 
 @register_wrap
@@ -197,6 +209,18 @@ def _set_related_mesh(prop, value):
 def _get_related_mesh(prop):
     return prop.get('related_mesh', '')
 
+def _update_material_morph_data(prop, context):
+    if not prop.name.startswith('mmd_bind'):
+        return
+    from mmd_tools_local.core.shader import _MaterialMorph
+    mat_id = prop.get('material_id', -1)
+    if mat_id >= 0:
+        mat = getattr(FnMaterial.from_material_id(mat_id), 'material', None)
+        _MaterialMorph.update_morph_inputs(mat, prop)
+    elif mat_id == -1:
+        for mat in FnModel(prop.id_data).materials():
+            _MaterialMorph.update_morph_inputs(mat, prop)
+
 @register_wrap
 class MaterialMorphData(PropertyGroup):
     """
@@ -238,6 +262,7 @@ class MaterialMorphData(PropertyGroup):
         precision=3,
         step=0.1,
         default=[0, 0, 0, 1],
+        update=_update_material_morph_data,
         )
 
     specular_color = FloatVectorProperty(
@@ -250,6 +275,7 @@ class MaterialMorphData(PropertyGroup):
         precision=3,
         step=0.1,
         default=[0, 0, 0],
+        update=_update_material_morph_data,
         )
 
     shininess = FloatProperty(
@@ -259,6 +285,7 @@ class MaterialMorphData(PropertyGroup):
         soft_max=500,
         step=100.0,
         default=0.0,
+        update=_update_material_morph_data,
         )
 
     ambient_color = FloatVectorProperty(
@@ -271,6 +298,7 @@ class MaterialMorphData(PropertyGroup):
         precision=3,
         step=0.1,
         default=[0, 0, 0],
+        update=_update_material_morph_data,
         )
 
     edge_color = FloatVectorProperty(
@@ -283,6 +311,7 @@ class MaterialMorphData(PropertyGroup):
         precision=3,
         step=0.1,
         default=[0, 0, 0, 1],
+        update=_update_material_morph_data,
         )
 
     edge_weight = FloatProperty(
@@ -292,6 +321,7 @@ class MaterialMorphData(PropertyGroup):
         soft_max=2,
         step=0.1,
         default=0,
+        update=_update_material_morph_data,
         )
 
     texture_factor = FloatVectorProperty(
@@ -304,6 +334,7 @@ class MaterialMorphData(PropertyGroup):
         precision=3,
         step=0.1,
         default=[0, 0, 0, 1],
+        update=_update_material_morph_data,
         )
 
     sphere_texture_factor = FloatVectorProperty(
@@ -316,6 +347,7 @@ class MaterialMorphData(PropertyGroup):
         precision=3,
         step=0.1,
         default=[0, 0, 0, 1],
+        update=_update_material_morph_data,
         )
 
     toon_texture_factor = FloatVectorProperty(
@@ -328,6 +360,7 @@ class MaterialMorphData(PropertyGroup):
         precision=3,
         step=0.1,
         default=[0, 0, 0, 1],
+        update=_update_material_morph_data,
         )
 
 @register_wrap

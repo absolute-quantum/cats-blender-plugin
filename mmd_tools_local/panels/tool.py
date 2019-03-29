@@ -22,12 +22,11 @@ if bpy.app.version < (2, 80, 0):
 
 
 def draw_filter_wrap(func):
-    return func
-    # if bpy.app.version < (2, 80, 0):
-    #     return func
-    # def draw_filter_new(self_, context, layout, reverse=False):
-    #     func(self_, context, layout)
-    # return draw_filter_new
+    if 1 or bpy.app.version < (2, 80, 0):
+        return func
+    def draw_filter_new(self_, context, layout, reverse=False):
+        func(self_, context, layout)
+    return draw_filter_new
 
 if bpy.app.version < (2, 80, 0):
     def _layout_split(layout, factor, align):
@@ -322,10 +321,8 @@ class UL_Morphs(UIList):
 class UL_MaterialMorphOffsets(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if self.layout_type in {'DEFAULT'}:
-            if item.material == '':
-                layout.label(text='All Materials', translate=False, icon='MATERIAL')
-                return
-            layout.label(text=item.material, translate=False, icon='MATERIAL')
+            material = item.material or 'All Materials'
+            layout.label(text=material, translate=False, icon='MATERIAL')
         elif self.layout_type in {'COMPACT'}:
             pass
         elif self.layout_type in {'GRID'}:
@@ -496,7 +493,10 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
                 row.operator(operators.morph.ClearTempMaterials.bl_idname, text='Clear')
 
             row = c.row()
-            row.prop(data, 'offset_type')
+            row.prop(data, 'offset_type', expand=True)
+            r1 = row.row(align=True)
+            r1.operator(operators.morph.InitMaterialOffset.bl_idname, text='', icon='TRIA_LEFT').target_value = 0
+            r1.operator(operators.morph.InitMaterialOffset.bl_idname, text='', icon='TRIA_RIGHT').target_value = 1
             row = c.row()
             row.column(align=True).prop(data, 'diffuse_color', expand=True, slider=True)
             c1 = row.column(align=True)

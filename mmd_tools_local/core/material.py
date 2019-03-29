@@ -291,7 +291,7 @@ class _FnMaterialBI:
     def update_diffuse_color(self):
         mat = self.__material
         mmd_mat = mat.mmd_material
-        mat.diffuse_color = self._mixDiffuseAndAmbient(mmd_mat)
+        mat.diffuse_color[:3] = self._mixDiffuseAndAmbient(mmd_mat)
         mat.diffuse_intensity = 0.8
 
     def update_alpha(self):
@@ -482,13 +482,13 @@ class _FnMaterialCycles(_FnMaterialBI):
     def update_ambient_color(self):
         mat = self.material
         mmd_mat = mat.mmd_material
-        mat.diffuse_color = self._mixDiffuseAndAmbient(mmd_mat)
+        mat.diffuse_color[:3] = self._mixDiffuseAndAmbient(mmd_mat)
         self.__update_shader_input('Ambient Color', mmd_mat.ambient_color[:]+(1,))
 
     def update_diffuse_color(self):
         mat = self.material
         mmd_mat = mat.mmd_material
-        mat.diffuse_color = self._mixDiffuseAndAmbient(mmd_mat)
+        mat.diffuse_color[:3] = self._mixDiffuseAndAmbient(mmd_mat)
         self.__update_shader_input('Diffuse Color', mmd_mat.diffuse_color[:]+(1,))
 
     def update_alpha(self):
@@ -503,6 +503,8 @@ class _FnMaterialCycles(_FnMaterialBI):
             mat.game_settings.alpha_blend = 'ALPHA'
         if hasattr(mat, 'alpha'):
             mat.alpha = mmd_mat.alpha
+        elif len(mat.diffuse_color) > 3:
+            mat.diffuse_color[3] = mmd_mat.alpha
         self.__update_shader_input('Alpha', mmd_mat.alpha)
 
     def update_specular_color(self):
@@ -514,7 +516,7 @@ class _FnMaterialCycles(_FnMaterialBI):
     def update_shininess(self):
         mat = self.material
         mmd_mat = mat.mmd_material
-        mat.roughness = 1/max(mmd_mat.shininess, 1)
+        mat.roughness = 1/pow(max(mmd_mat.shininess, 1), 0.37)
         if hasattr(mat, 'metallic'):
             mat.metallic = 1 - mat.roughness
         if hasattr(mat, 'specular_hardness'):

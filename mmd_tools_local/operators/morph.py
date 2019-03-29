@@ -230,6 +230,34 @@ class RemoveMorphOffset(Operator):
         return { 'FINISHED' }
 
 @register_wrap
+class InitMaterialOffset(Operator):
+    bl_idname = 'mmd_tools.material_morph_offset_init'
+    bl_label = 'Init Material Offset'
+    bl_description = 'Set all offset values to target value'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    target_value = bpy.props.FloatProperty(
+        name='Target Value',
+        description='Target value',
+        default=0,
+        )
+
+    def execute(self, context):
+        obj = context.active_object
+        root = mmd_model.Model.findRoot(obj)
+        rig = mmd_model.Model(root)
+        mmd_root = root.mmd_root
+        morph = mmd_root.material_morphs[mmd_root.active_morph]
+        mat_data = morph.data[morph.active_data]
+
+        val = self.target_value
+        mat_data.diffuse_color = mat_data.edge_color = (val,)*4
+        mat_data.specular_color = mat_data.ambient_color = (val,)*3
+        mat_data.shininess = mat_data.edge_weight = val
+        mat_data.texture_factor = mat_data.toon_texture_factor = mat_data.sphere_texture_factor = (val,)*4
+        return {'FINISHED'}
+
+@register_wrap
 class ApplyMaterialOffset(Operator):
     bl_idname = 'mmd_tools.apply_material_morph_offset'
     bl_label = 'Apply Material Offset'

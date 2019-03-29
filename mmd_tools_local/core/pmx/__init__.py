@@ -93,7 +93,7 @@ class FileReadStream(FileStream):
         length = self.readInt()
         fmt = '<' + str(length) + 's'
         buf, = struct.unpack(fmt, self.__fin.read(length))
-        return str(buf, self.header().encoding.charset)
+        return str(buf, self.header().encoding.charset, errors='replace')
 
     def readFloat(self):
         v, = struct.unpack('<f', self.__fin.read(4))

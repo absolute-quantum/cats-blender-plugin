@@ -187,7 +187,9 @@ class __PmxExporter:
                         weight.bones = [0, 0, 0, 0]
                         weight.weights = [0.0, 0.0, 0.0, 0.0]
                         w_all = 0.0
-                        for i in range(min(len(v.groups), 4)):
+                        if t > 4:
+                            v.groups.sort(key=lambda x: -x[1])
+                        for i in range(min(t, 4)):
                             gn, w = v.groups[i]
                             weight.bones[i] = bone_map[vertex_group_names[gn]]
                             weight.weights[i] = w

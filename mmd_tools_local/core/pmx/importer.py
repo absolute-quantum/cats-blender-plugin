@@ -62,6 +62,10 @@ class PMXImporter:
         self.__materialFaceCountTable = None
 
     @staticmethod
+    def __safe_name(name, max_length=59):
+        return str(bytes(name, 'utf8')[:max_length], 'utf8', errors='replace')
+
+    @staticmethod
     def flipUV_V(uv):
         u, v = uv
         return u, 1.0-v
@@ -70,7 +74,7 @@ class PMXImporter:
         """ Create main objects and link them to scene.
         """
         pmxModel = self.__model
-        obj_name = bpy.path.display_name(pmxModel.filepath)
+        obj_name = self.__safe_name(bpy.path.display_name(pmxModel.filepath), max_length=54)
         self.__rig = mmd_model.Model.create(pmxModel.name, pmxModel.name_e, self.__scale, obj_name)
         root = self.__rig.rootObject()
         mmd_root = root.mmd_root
@@ -502,7 +506,7 @@ class PMXImporter:
 
         self.__materialFaceCountTable = []
         for i in pmxModel.materials:
-            mat = bpy.data.materials.new(name=i.name)
+            mat = bpy.data.materials.new(name=self.__safe_name(i.name, max_length=50))
             self.__materialTable.append(mat)
             mmd_mat = mat.mmd_material
             mmd_mat.name_j = i.name

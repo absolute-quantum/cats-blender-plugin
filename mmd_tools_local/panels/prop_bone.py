@@ -32,7 +32,10 @@ class MMDBonePanel(Panel):
         c = layout.column(align=True)
         c.prop(mmd_bone, 'name_j')
         c.prop(mmd_bone, 'name_e')
-        c.label(text='ID: %d'%(mmd_bone.bone_id))
+
+        row = layout.row()
+        row.label(text='ID: %d'%(mmd_bone.bone_id))
+        row.prop(pose_bone, 'mmd_ik_toggle')
 
         c = layout.column(align=True)
         row = c.row()
@@ -44,7 +47,7 @@ class MMDBonePanel(Panel):
 
         c = layout.column(align=True)
         row = c.row()
-        row.active = len([i for i in pose_bone.constraints if i.type == 'IK']) > 0
+        row.active = bool(next((i for i in pose_bone.constraints if i.type == 'IK'), None))
         row.prop(mmd_bone, 'ik_rotation_constraint')
 
         c = layout.column(align=True)

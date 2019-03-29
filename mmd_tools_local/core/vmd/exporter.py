@@ -91,6 +91,7 @@ class VMDExporter:
         self.__frame_start = 1
         self.__frame_end = float('inf')
         self.__bone_converter_cls = vmd.importer.BoneConverter
+        self.__ik_fcurves = {}
 
     def __allFrameKeys(self, curves):
         all_frames = set()
@@ -205,6 +206,9 @@ class VMDExporter:
             if bone.is_mmd_shadow_bone:
                 continue
             prop_name = m.group(2)
+            if prop_name == 'mmd_ik_toggle':
+                self.__ik_fcurves[bone] = fcurve
+                continue
             if prop_name not in {'location', prop_rotation_map.get(bone.rotation_mode, 'rotation_euler')}:
                 continue
 
@@ -302,6 +306,40 @@ class VMDExporter:
             logging.info('(mesh) frames:%5d  name: %s', len(anim), key_name)
         logging.info('---- morph animations:%5d  source: %s', len(vmd_morph_anim), meshObj.name)
         return vmd_morph_anim
+
+
+    def __exportPropertyAnimation(self, armObj):
+        if armObj is None:
+            return None
+
+        vmd_prop_anim = vmd.PropertyAnimation()
+
+        prop_curves = [_FCurve(True)] # visible, IKn
+
+        root = armObj.parent
+        if getattr(root, 'mmd_type', None) == 'ROOT':
+            animation_data = root.animation_data
+            if animation_data and animation_data.action:
+                for fcurve in animation_data.action.fcurves:
+                    if fcurve.data_path == 'mmd_root.show_meshes':
+                        prop_curves[0].setFCurve(fcurve)
+                        break
+
+        ik_name_list = []
+        for bone, fcurve in self.__ik_fcurves.items():
+            c = _FCurve(True)
+            c.setFCurve(fcurve)
+            prop_curves.append(c)
+            ik_name_list.append(bone.mmd_bone.name_j or bone.name)
+
+        for data in self.__allFrameKeys(prop_curves):
+            key = vmd.PropertyFrameKey()
+            key.frame_number = data[0] - self.__frame_start
+            key.visible = int(0.5 + data[1][0])
+            key.ik_states = [(ik_name, int(0.5+on_off[0])) for ik_name, on_off in zip(ik_name_list, data[2:])]
+            vmd_prop_anim.append(key)
+        logging.info('(property) frames:%5d  name: %s', len(vmd_prop_anim), root.name if root else armObj.name)
+        return vmd_prop_anim
 
 
     def __exportCameraAnimation(self, cameraObj):
@@ -427,6 +465,7 @@ class VMDExporter:
             vmdFile.header.model_name = args.get('model_name', '')
             vmdFile.boneAnimation = self.__exportBoneAnimation(armature)
             vmdFile.shapeKeyAnimation = self.__exportMorphAnimation(mesh)
+            vmdFile.propertyAnimation = self.__exportPropertyAnimation(armature)
             vmdFile.save(filepath=filepath)
 
         elif camera or lamp:

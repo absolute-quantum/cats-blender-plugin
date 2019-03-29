@@ -53,7 +53,7 @@ class Model:
     def __init__(self, root_obj):
         if root_obj.mmd_type != 'ROOT':
             raise ValueError('must be MMD ROOT type object')
-        self.__root = root_obj
+        self.__root = getattr(root_obj, 'original', root_obj)
         self.__arm = None
         self.__rigid_grp = None
         self.__joint_grp = None
