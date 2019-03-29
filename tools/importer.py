@@ -330,13 +330,17 @@ class InstallXPS(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        row = col.row(align=True)
-        row.label(text="The plugin 'XPS Tools' is required for this function.")
+        # row = col.row(align=True)
+        # row.label(text="The plugin 'XPS Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
         row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
         row.label(text="If it is not installed please download and install it manually.")
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.label(text="Make sure to install the version for Blender " + "2.79" if tools.common.version_2_79_or_older() else "2.80", icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(XpsToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -362,8 +366,8 @@ class InstallSource(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        row = col.row(align=True)
-        row.label(text="The plugin 'Source Tools' is required for this function.")
+        # row = col.row(align=True)
+        # row.label(text="The plugin 'Source Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
         row.label(text="If it is not enabled please enable it in your User Preferences.")
@@ -394,13 +398,13 @@ class InstallVRM(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        row = col.row(align=True)
-        row.label(text="The plugin 'VRM Importer' is required for this function.")
+        # row = col.row(align=True)
+        # row.label(text="The plugin 'VRM Importer' is required for this function.")
         col.separator()
         row = col.row(align=True)
         row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
-        row.label(text="Currently you have to select 'Testing' in the addons settings")
+        row.label(text="Currently you have to select 'Testing' in the addons settings.")
         col.separator()
         row = col.row(align=True)
         row.label(text="If it is not installed please download and install it manually.")
@@ -503,7 +507,7 @@ class SourceToolsButton(bpy.types.Operator):
     bl_label = 'Download Source Tools'
 
     def execute(self, context):
-        webbrowser.open('http://steamreview.org/BlenderSourceTools/')
+        webbrowser.open('https://github.com/Artfunkel/BlenderSourceTools')
 
         self.report({'INFO'}, 'Source Tools link opened')
         return {'FINISHED'}
@@ -515,7 +519,10 @@ class VrmToolsButton(bpy.types.Operator):
     bl_label = 'Download VRM Importer'
 
     def execute(self, context):
-        webbrowser.open('https://github.com/iCyP/VRM_IMPORTER')
+        if tools.common.version_2_79_or_older():
+            webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_79')
+        else:
+            webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_8')
 
         self.report({'INFO'}, 'VRM Importer link opened')
         return {'FINISHED'}
@@ -567,7 +574,7 @@ class ExportModel(bpy.types.Operator):
                     if mat_slot and mat_slot.material and mat_slot.material.users and mat_slot.material.name not in _mat_list:
                         _mat_list.append(mat_slot.material.name)
 
-                # Check if any textures are found
+                        # Check if any textures are found
                         if version_2_79_or_older():
                             if not _textures_found:
                                 for tex_slot in mat_slot.material.texture_slots:
