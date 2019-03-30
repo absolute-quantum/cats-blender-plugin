@@ -40,7 +40,7 @@ before_install:
 install:
   # Then update blender
   - mkdir tmp && cd tmp
-  - wget http://mirror.cs.umn.edu/blender.org/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2
+  - wget https://download.blender.org/release/Blender2.79/blender-2.79-linux-glibc219-x86_64.tar.bz2
   - tar jxf blender-2.79-linux-glibc219-x86_64.tar.bz2
   - mv blender-2.79-linux-glibc219-x86_64 blender
 
