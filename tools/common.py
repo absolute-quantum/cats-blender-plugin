@@ -183,6 +183,18 @@ def set_default_stage(everything=False):
     :param everything:
     :return: the armature
     """
+
+    # Remove rigidbody collections, as they cause issues if they are not in the view_layer
+    if not version_2_79_or_older():
+        print('Collections:')
+        for collection in bpy.data.collections:
+            print(' ' + collection.name, collection.name.lower())
+            if 'rigidbody' in collection.name.lower():
+                print('DELETE')
+                for obj in collection.objects:
+                    delete(obj)
+                bpy.data.collections.remove(collection)
+
     unhide_all(everything=everything)
     unselect_all()
 
@@ -1245,20 +1257,23 @@ def remove_unused_objects():
 
 
 def remove_no_user_objects():
-    print('\nREMOVE OBJECTS')
+    # print('\nREMOVE OBJECTS')
     for block in bpy.data.objects:
-        print(block.name, block.users)
+        # print(block.name, block.users)
         if block.users == 0:
+            print('Removing obj ', block.name)
             delete(block)
-    print('\nREMOVE MESHES')
+    # print('\nREMOVE MESHES')
     for block in bpy.data.meshes:
-        print(block.name, block.users)
+        # print(block.name, block.users)
         if block.users == 0:
+            print('Removing mesh ', block.name)
             bpy.data.meshes.remove(block)
-    print('\nREMOVE MATERIALS')
+    # print('\nREMOVE MATERIALS')
     for block in bpy.data.materials:
-        print(block.name, block.users)
+        # print(block.name, block.users)
         if block.users == 0:
+            print('Removing material ', block.name)
             bpy.data.materials.remove(block)
 
     # print('\nREMOVE MATS')
