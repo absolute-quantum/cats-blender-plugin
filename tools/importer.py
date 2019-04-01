@@ -534,6 +534,7 @@ _tris_count = 0
 _mat_list = []
 _broken_shapes = []
 _textures_found = False
+_eye_meshes_not_named_body = []
 
 
 @register_wrap
@@ -550,9 +551,11 @@ class ExportModel(bpy.types.Operator):
                ('NO_CHECK', '', 'Please Ignore')))
 
     def execute(self, context):
+        meshes = tools.common.get_meshes_objects()
+
         # Check for warnings
         if not self.action == 'NO_CHECK':
-            global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found
+            global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found, _eye_meshes_not_named_body
 
             # Reset export checks
             _meshes_count = 0
@@ -560,9 +563,16 @@ class ExportModel(bpy.types.Operator):
             _mat_list = []
             _broken_shapes = []
             _textures_found = False
+            _eye_meshes_not_named_body = []
+
+            body_extists = False
+            for mesh in meshes:
+                if mesh.name == 'Body':
+                    body_extists = True
+                    break
 
             # Check for export warnings
-            for mesh in tools.common.get_meshes_objects():
+            for mesh in meshes:
                 # Check mesh count
                 _meshes_count += 1
 
@@ -587,11 +597,9 @@ class ExportModel(bpy.types.Operator):
                             _textures_found = True
                             # TODO
 
-                # Check if there are broken shapekeys
                 if tools.common.has_shapekeys(mesh):
-                    for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                        if i == 0:
-                            continue
+                    # Check if there are broken shapekeys
+                    for shapekey in mesh.data.shape_keys.key_blocks[1:]:
                         vert_count = 0
                         for vert in shapekey.data:
                             vert_count += 1
@@ -604,12 +612,21 @@ class ExportModel(bpy.types.Operator):
                             if vert_count == 1000:
                                 break
 
+                    # Check if there are meshes with eye tracking, but are not named Body
+                    if not body_extists:
+                        for shapekey in mesh.data.shape_keys.key_blocks[1:]:
+                            if mesh.name not in _eye_meshes_not_named_body:
+                                if shapekey.name.startswith('vrc.blink') or shapekey.name.startswith('vrc.lower'):
+                                    _eye_meshes_not_named_body.append(mesh.name)
+                                    break
+
             # Check if a warning should be shown
             if _meshes_count > 1 \
                     or _tris_count > 70000 \
                     or len(_mat_list) > 4 \
-                    or len(_broken_shapes) > 0\
-                    or not _textures_found and tools.settings.get_embed_textures():
+                    or len(_broken_shapes) > 0 \
+                    or not _textures_found and tools.settings.get_embed_textures()\
+                    or len(_eye_meshes_not_named_body) > 0:
                 bpy.ops.cats_importer.display_error('INVOKE_DEFAULT')
                 return {'FINISHED'}
 
@@ -621,7 +638,7 @@ class ExportModel(bpy.types.Operator):
         # Check if copy protection is enabled
         mesh_smooth_type = 'OFF'
         protected_export = False
-        for mesh in tools.common.get_meshes_objects():
+        for mesh in meshes:
             if protected_export:
                 break
             if tools.common.has_shapekeys(mesh):
@@ -667,18 +684,20 @@ class ErrorDisplay(bpy.types.Operator):
     meshes_count = 0
     broken_shapes = []
     textures_found = False
+    eye_meshes_not_named_body = []
 
     def execute(self, context):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found
+        global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found, _eye_meshes_not_named_body
         self.meshes_count = _meshes_count
         self.tris_count = _tris_count
         self.mat_list = _mat_list
         self.mat_count = len(_mat_list)
         self.broken_shapes = _broken_shapes
         self.textures_found = _textures_found
+        self.eye_meshes_not_named_body = _eye_meshes_not_named_body
 
         dpi_value = tools.common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
@@ -759,7 +778,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="It will be extremely unoptimized and cause lag for you and others.")
+            row.label(text="It will be unoptimized and cause lag for you and others.")
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="You should always join your meshes, it's very easy:")
@@ -813,6 +832,41 @@ class ErrorDisplay(bpy.types.Operator):
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="This is not an issue, but you will have to import the textures manually into Unity.")
+            col.separator()
+            col.separator()
+            col.separator()
+
+        if len(self.eye_meshes_not_named_body) == 1:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Eyes not named 'Body'!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="The mesh '" + self.eye_meshes_not_named_body[0] + "' has Eye Tracking shapekeys but is not named 'Body'.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="If you want Eye Tracking to work, rename this mesh to 'Body'.")
+            col.separator()
+            col.separator()
+            col.separator()
+
+        elif len(self.eye_meshes_not_named_body) > 1:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Eyes not named 'Body'!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Multiple meshes have Eye Tracking shapekeys but are not named 'Body'.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Make sure that the mesh containing the eyes is named 'Body' in order")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="to get Eye Tracking to work.")
             col.separator()
             col.separator()
             col.separator()
