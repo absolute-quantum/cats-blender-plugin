@@ -349,13 +349,17 @@ It checks for a new version automatically once every day.
   - Removed support for old v1.x Material Combiner versions
     - This fixes the random "Material Combiner missing" errors
     - If you still want to use the old versions, please use them directly via the shotariya tab
+- **Import**:
+  - If a required plugin is not installed, it will now show you the link to the correct version
+     depending on if you use Blender 2.79 or 2.80
 - **Export**:
   - Improved export warnings
     - They will no longer exaggerate as much as before
+  - Added warning when Eye Tracking is set up but there are no meshes named "Body"
 - **General**:
   - Modified FBX Exporter to always export empty shape keys
     - This fixes the above described eye tracking bug
-  - Added some Blender 2.8 compatibility fixes
+  - Added multiple Blender 2.8 compatibility fixes
   - Updated mmd_tools
   - Fixed multiple errors
 

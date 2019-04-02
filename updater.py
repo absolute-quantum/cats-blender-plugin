@@ -939,6 +939,10 @@ def register(bl_info, dev_branch, version_str):
 def unregister():
     # Unregister all Updater classes
     for cls in reversed(to_register):
-        bpy.utils.unregister_class(cls)
+        try:
+            bpy.utils.unregister_class(cls)
+        except RuntimeError:
+            pass
 
-    del bpy.types.Scene.cats_updater_version_list
+    if hasattr(bpy.types.Scene, 'cats_updater_version_list'):
+        del bpy.types.Scene.cats_updater_version_list

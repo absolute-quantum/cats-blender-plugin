@@ -10,8 +10,7 @@ from mmd_tools_local.panels.tool import draw_filter_wrap
 from mmd_tools_local.panels.tool import _PanelBase
 
 @register_wrap
-class UL_Materials(UIList):
-
+class MMD_TOOLS_UL_Materials(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if self.layout_type in {'DEFAULT'}:
             if item:
@@ -48,7 +47,7 @@ class MMDMaterialSorter(_PanelBase, Panel):
 
         col = layout.column(align=True)
         row = col.row()
-        row.template_list("UL_Materials", "",
+        row.template_list("MMD_TOOLS_UL_Materials", "",
                           active_obj.data, "materials",
                           active_obj, "active_material_index")
         tb = row.column()
@@ -57,8 +56,7 @@ class MMDMaterialSorter(_PanelBase, Panel):
         tb1.operator('mmd_tools.move_material_down', text='', icon='TRIA_DOWN')
 
 @register_wrap
-class UL_ModelMeshes(UIList):
-
+class MMD_TOOLS_UL_ModelMeshes(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if self.layout_type in {'DEFAULT'}:
             layout.label(text=item.name, translate=False, icon='OBJECT_DATA')
@@ -115,7 +113,7 @@ class MMDMeshSorter(_PanelBase, Panel):
 
         col = layout.column(align=True)
         row = col.row()
-        row.template_list("UL_ModelMeshes", "",
+        row.template_list("MMD_TOOLS_UL_ModelMeshes", "",
                           SceneOp(context).id_scene, 'objects',
                           root.mmd_root, "active_mesh_index")
         tb = row.column()

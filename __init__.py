@@ -293,6 +293,7 @@ def register():
     # print("Loading mmd_tools..")
     try:
         mmd_tools_local.register()
+        pass
     except AttributeError:
         print('Could not register local mmd_tools')
         pass
@@ -364,6 +365,9 @@ def unregister():
     except AttributeError:
         print('Could not unregister local mmd_tools')
         pass
+    except ValueError:
+        print('mmd_tools was not registered')
+        pass
 
     # Unload all classes in reverse order
     count = 0
@@ -377,7 +381,11 @@ def unregister():
     tools.supporter.unload_icons()
 
     # Remove shapekey button from shapekey menu
-    bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
+    try:
+        bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
+    except AttributeError:
+        print('shapekey button was not registered')
+        pass
 
     print("### Unloaded CATS successfully!\n")
 
