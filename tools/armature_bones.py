@@ -636,6 +636,7 @@ bone_rename['\Left wrist'] = [
     'HandAux2_\L',
     'Mixamorig:\LeftHand',
     'Arm_\Left_Wrist',
+    'Arm_\Left_Wirst',
     'Bip_\L_Hand',
     'Bip_Hand_\L',
     'B_\L_Hand',

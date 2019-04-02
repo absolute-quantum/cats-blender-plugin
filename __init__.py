@@ -293,13 +293,10 @@ def register():
     # print("Loading mmd_tools..")
     try:
         mmd_tools_local.register()
-        pass
     except AttributeError:
         print('Could not register local mmd_tools')
-        pass
     except ValueError:
         print('mmd_tools is already registered')
-        pass
 
     # Register all classes
     # print('Registering CATS classes..')
