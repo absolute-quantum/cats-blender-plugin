@@ -584,6 +584,7 @@ bone_rename['\Left arm'] = [
     'J_Bip_\L_UpperArm',
     'J_\L_UpArm',
     'J_\L_Elbow',
+    'Arm_1_\L',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -627,6 +628,7 @@ bone_rename['\Left elbow'] = [
     'Elbow\LT_01',
     'J_Bip_\L_LowerArm',
     'J_\L_ForeArm',
+    'Arm_2_\L',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -710,6 +712,7 @@ bone_rename['\Left leg'] = [
     'J_Bip_\L_UpperLeg',
     'J_\L_UpLeg',
     'Leg\L',
+    'Leg_1_\L',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -751,6 +754,7 @@ bone_rename['\Left knee'] = [
     'J_Bip_\L_LowerLeg',
     'J_\L_Leg',
     'Knee\L',
+    'Leg_2_\L',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
