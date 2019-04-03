@@ -278,8 +278,7 @@ This works by checking all bones and trying to figure out if they can be grouped
 Game cache rips in most common cases do not include blendshapes and shaders. 
 This method will make it much harder for people that try to steal your avatar through ripping from cache.
 
-**We managed to fix the lighting bugs! Therefore the randomization options are not needed anymore.**
-
+**This is NOT a 100% protection**, but it's the best what you as a creator can currently do. If you want to be 100% safe, stay in private worlds with people you trust.
 
 #### How to setup:
 

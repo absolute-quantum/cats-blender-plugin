@@ -36,7 +36,8 @@ from tools.register import register_wrap
 class CopyProtectionEnable(bpy.types.Operator):
     bl_idname = 'cats_copyprotection.enable'
     bl_label = 'Enable Protection'
-    bl_description = 'Protects your model from piracy. Read the documentation before use'
+    bl_description = 'Protects your model from piracy. NOT a 100% protection!' \
+                     '\nRead the documentation before use'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod

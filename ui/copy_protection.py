@@ -24,8 +24,11 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
-        row.scale_y = 0.8
-        row.label(text='Protects your avatar from Unity cache ripping.')
+        row.scale_y = 0.75
+        row.label(text='Tries to protect your avatar from Unity cache ripping.')
+        row = col.row(align=True)
+        row.scale_y = 0.75
+        row.label(text='Not a 100% protection!')
         col.separator()
         row = col.row(align=True)
         row.label(text='Before use: Read the documentation!')
