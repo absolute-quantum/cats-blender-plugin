@@ -128,7 +128,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                 try:
                     bpy.ops.import_scene.fbx('EXEC_DEFAULT',
                                              filepath=file_path,
-                                             automatic_bone_orientation=True)
+                                             automatic_bone_orientation=False)  # Is true better? There are issues with True
                 except (TypeError, ValueError):
                     bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
                 except RuntimeError as e:
@@ -281,7 +281,7 @@ class ImportFBX(bpy.types.Operator):
             context.scene.layers[0] = True
 
         try:
-            bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=True)
+            bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=False)
         except (TypeError, ValueError):
             bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
 
