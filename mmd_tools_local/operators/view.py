@@ -14,7 +14,7 @@ class _SetShadingBase:
 
     @staticmethod
     def _get_view3d_spaces(context):
-        if context.area.type == 'VIEW_3D':
+        if context.area and context.area.type == 'VIEW_3D':
             return (context.area.spaces[0],)
         return (area.spaces[0] for area in context.screen.areas if area.type == 'VIEW_3D')
 
