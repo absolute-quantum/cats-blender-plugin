@@ -322,7 +322,7 @@ def register():
     tools.supporter.load_supporters()
     tools.supporter.register_dynamic_buttons()
 
-    # Load the dictionaries and check if they are found
+    # Load the dictionaries and check if they are found.
     globs.dict_found = tools.translate.load_translations()
 
     # Set preferred Blender options
