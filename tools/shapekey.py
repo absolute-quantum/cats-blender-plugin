@@ -33,8 +33,8 @@ from tools.register import register_wrap
 class ShapeKeyApplier(bpy.types.Operator):
     # Replace the 'Basis' shape key with the currently selected shape key
     bl_idname = "cats_shapekey.shape_key_to_basis"
-    bl_label = "Apply Selected Shapekey as Basis"
-    bl_description = 'Applies the selected shape key as the new Basis and creates a reverted shape key from the selected one'
+    bl_label = "Apply Selected Shapekey to Basis"
+    bl_description = 'Applies the selected shape key to the new Basis at it\'s current strength and creates a reverted shape key from the selected one'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -47,6 +47,7 @@ class ShapeKeyApplier(bpy.types.Operator):
         # Get shapekey which will be the new basis
         new_basis_shapekey = mesh.active_shape_key
         new_basis_shapekey_name = new_basis_shapekey.name
+        new_basis_shapekey_value = new_basis_shapekey.value
 
         # Check for reverted shape keys
         if ' - Reverted' in new_basis_shapekey_name and new_basis_shapekey.relative_key.name != 'Basis':
@@ -67,16 +68,29 @@ class ShapeKeyApplier(bpy.types.Operator):
         # Set up shape keys
         mesh.show_only_shape_key = False
         bpy.ops.object.shape_key_clear()
+
+        # Create a copy of the new basis shapekey to make it's current value stay as it is
+        new_basis_shapekey.value = new_basis_shapekey_value
+        if new_basis_shapekey_value == 0:
+            new_basis_shapekey.value = 1
+        new_basis_shapekey.name = new_basis_shapekey_name + '--Old'
+
+        # Replace old new basis with new new basis
+        new_basis_shapekey = mesh.shape_key_add(name=new_basis_shapekey_name, from_mix=True)
         new_basis_shapekey.value = 1
 
-        # Find old basis and rename it
-        old_basis_shapekey = None
-        for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-            if index == 0:
-                shapekey.name = new_basis_shapekey_name + ' - Reverted'
-                shapekey.relative_key = new_basis_shapekey
-                old_basis_shapekey = shapekey
+        # Delete the old one
+        for index in reversed(range(0, len(mesh.data.shape_keys.key_blocks))):
+            mesh.active_shape_key_index = index
+            shapekey = mesh.active_shape_key
+            if shapekey.name == new_basis_shapekey_name + '--Old':
+                bpy.ops.object.shape_key_remove(all=False)
                 break
+
+        # Find old basis and rename it
+        old_basis_shapekey = mesh.data.shape_keys.key_blocks[0]
+        old_basis_shapekey.name = new_basis_shapekey_name + ' - Reverted'
+        old_basis_shapekey.relative_key = new_basis_shapekey
 
         # Rename new basis after old basis was renamed
         new_basis_shapekey.name = 'Basis'
@@ -123,4 +137,4 @@ class ShapeKeyApplier(bpy.types.Operator):
 
 def addToShapekeyMenu(self, context):
     self.layout.separator()
-    self.layout.operator(ShapeKeyApplier.bl_idname, text="Apply Selected Shapekey as Basis", icon="KEY_HLT")
+    self.layout.operator(ShapeKeyApplier.bl_idname, text="Apply Selected Shapekey to Basis", icon="KEY_HLT")

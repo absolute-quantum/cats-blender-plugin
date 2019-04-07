@@ -355,6 +355,9 @@ It checks for a new version automatically once every day.
   - Improved export warnings
     - They will no longer exaggerate as much as before
   - Added warning when Eye Tracking is set up but there are no meshes named "Body"
+- **Shapekeys**:
+  - "Apply Shapekey to Basis" now applies the shapekey at its current strength into the basis
+     instead of at full strength
 - **General**:
   - Modified FBX Exporter to always export empty shape keys
     - This fixes the above described eye tracking bug

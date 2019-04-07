@@ -55,7 +55,7 @@ class StartPoseMode(bpy.types.Operator):
 
     def execute(self, context):
         current = ""
-        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
+        if bpy.context.active_object and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
                 bpy.context.selected_editable_bones) > 0:
             current = bpy.context.selected_editable_bones[0].name
 
@@ -65,6 +65,8 @@ class StartPoseMode(bpy.types.Operator):
         else:
             pass
             # TODO
+
+        saved_data = tools.common.SavedData()
 
         armature = tools.common.set_default_stage()
         tools.common.switch('POSE')
@@ -96,6 +98,8 @@ class StartPoseMode(bpy.types.Operator):
         else:
             bpy.ops.wm.tool_set_by_id(name="builtin.transform")
 
+        saved_data.load(ignore=armature.name)
+
         return {'FINISHED'}
 
 
@@ -113,6 +117,7 @@ class StopPoseMode(bpy.types.Operator):
         return True
 
     def execute(self, context):
+        saved_data = tools.common.SavedData()
         armature = tools.common.get_armature()
         tools.common.set_active(armature)
         tools.common.hide(armature, False)
@@ -140,6 +145,7 @@ class StopPoseMode(bpy.types.Operator):
             bpy.ops.wm.tool_set_by_id(name="builtin.select_box")
 
         tools.eyetracking.eye_left = None
+        saved_data.load(ignore=armature.name)
 
         return {'FINISHED'}
 
@@ -165,6 +171,8 @@ class PoseToShape(bpy.types.Operator):
 
 
 def pose_to_shapekey(name):
+    saved_data = tools.common.SavedData()
+
     for mesh in tools.common.get_meshes_objects():
         tools.common.unselect_all()
         tools.common.set_active(mesh)
@@ -183,6 +191,7 @@ def pose_to_shapekey(name):
     tools.common.switch('POSE')
     armature.data.pose_position = 'POSE'
 
+    saved_data.load(ignore=armature.name)
     return armature
 
 
@@ -236,6 +245,8 @@ class PoseToRest(bpy.types.Operator):
         return armature and armature.mode == 'POSE'
 
     def execute(self, context):
+        saved_data = tools.common.SavedData()
+
         armature = tools.common.get_armature()
         scales = {}
 
@@ -336,6 +347,8 @@ class PoseToRest(bpy.types.Operator):
         # Stop pose mode after operation
         bpy.ops.cats_manual.stop_pose_mode()
 
+        saved_data.load(ignore=armature.name)
+
         self.report({'INFO'}, 'Pose successfully applied as rest pose.')
         return {'FINISHED'}
 
@@ -359,10 +372,16 @@ class JoinMeshes(bpy.types.Operator):
         return meshes and len(meshes) > 0
 
     def execute(self, context):
-        if not tools.common.join_meshes():
+        saved_data = tools.common.SavedData()
+        mesh = tools.common.join_meshes()
+        if not mesh:
+            saved_data.load()
             self.report({'ERROR'}, 'Meshes could not be joined!')
             return {'CANCELLED'}
 
+        saved_data.load()
+        tools.common.unselect_all()
+        tools.common.set_active(mesh)
         self.report({'INFO'}, 'Meshes joined.')
         return {'FINISHED'}
 
@@ -386,14 +405,22 @@ class JoinMeshesSelected(bpy.types.Operator):
         return meshes and len(meshes) > 0
 
     def execute(self, context):
+        saved_data = tools.common.SavedData()
+
         if not tools.common.get_meshes_objects(mode=3):
+            saved_data.load()
             self.report({'ERROR'}, 'No meshes selected! Please select the meshes you want to join in the hierarchy!')
             return {'FINISHED'}
 
-        if not tools.common.join_meshes(mode=1):
+        mesh = tools.common.join_meshes(mode=1)
+        if not mesh:
+            saved_data.load()
             self.report({'ERROR'}, 'Selected meshes could not be joined!')
             return {'CANCELLED'}
 
+        saved_data.load()
+        tools.common.unselect_all()
+        tools.common.set_active(mesh)
         self.report({'INFO'}, 'Selected meshes joined.')
         return {'FINISHED'}
 
@@ -418,22 +445,28 @@ class SeparateByMaterials(bpy.types.Operator):
         return meshes and len(meshes) >= 1
 
     def execute(self, context):
+        saved_data = tools.common.SavedData()
         obj = context.active_object
 
         if not obj or (obj and obj.type != 'MESH'):
             tools.common.unselect_all()
             meshes = tools.common.get_meshes_objects()
             if len(meshes) == 0:
+                saved_data.load()
                 self.report({'ERROR'}, 'No meshes found!')
                 return {'FINISHED'}
             if len(meshes) > 1:
+                saved_data.load()
                 self.report({'ERROR'}, 'Multiple meshes found!'
                                        '\nPlease select the mesh you want to separate!')
                 return {'FINISHED'}
             obj = meshes[0]
 
+        obj_name = obj.name
+
         tools.common.separate_by_materials(context, obj)
 
+        saved_data.load(ignore=[obj_name])
         self.report({'INFO'}, 'Successfully separated by materials.')
         return {'FINISHED'}
 
@@ -457,22 +490,27 @@ class SeparateByLooseParts(bpy.types.Operator):
         return meshes
 
     def execute(self, context):
+        saved_data = tools.common.SavedData()
         obj = context.active_object
 
         if not obj or (obj and obj.type != 'MESH'):
             tools.common.unselect_all()
             meshes = tools.common.get_meshes_objects()
             if len(meshes) == 0:
+                saved_data.load()
                 self.report({'ERROR'}, 'No meshes found!')
                 return {'FINISHED'}
             if len(meshes) > 1:
+                saved_data.load()
                 self.report({'ERROR'}, 'Multiple meshes found!'
                                        '\nPlease select the mesh you want to separate!')
                 return {'FINISHED'}
             obj = meshes[0]
+        obj_name = obj.name
 
         tools.common.separate_by_loose_parts(context, obj)
 
+        saved_data.load(ignore=[obj_name])
         self.report({'INFO'}, 'Successfully separated by loose parts.')
         return {'FINISHED'}
 
@@ -498,6 +536,7 @@ class SeparateByShapekeys(bpy.types.Operator):
         return meshes
 
     def execute(self, context):
+        saved_data = tools.common.SavedData()
         obj = context.active_object
 
         if not obj or (obj and obj.type != 'MESH'):
@@ -511,9 +550,11 @@ class SeparateByShapekeys(bpy.types.Operator):
                                        '\nPlease select the mesh you want to separate!')
                 return {'FINISHED'}
             obj = meshes[0]
+        obj_name = obj.name
 
         tools.common.separate_by_shape_keys(context, obj)
 
+        saved_data.load(ignore=[obj_name])
         self.report({'INFO'}, 'Successfully separated by shape keys.')
         return {'FINISHED'}
 

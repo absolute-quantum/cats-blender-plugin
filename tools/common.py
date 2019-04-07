@@ -59,6 +59,61 @@ import re
 # - Eye tracking test set subcol like in updater
 
 
+class SavedData:
+    objects = {}
+    active_object = None
+
+    def __init__(self):
+        for obj in bpy.data.objects:
+            mode = obj.mode
+            selected = is_selected(obj)
+            hidden = is_hidden(obj)
+            self.objects[obj.name] = [mode, selected, hidden]
+
+            active = get_active()
+            if active:
+                self.active_object = active.name
+
+    def load(self, ignore=None):
+        if not ignore:
+            ignore = []
+
+        for obj_name, values in self.objects.items():
+            print(obj_name, ignore)
+            if obj_name in ignore:
+                continue
+
+            obj = bpy.data.objects.get(obj_name)
+            if not obj:
+                continue
+
+            mode, selected, hidden = values
+            print(obj_name, mode, selected, hidden)
+
+            if obj.mode != mode:
+                set_active(obj, skip_sel=True)
+                switch(obj.mode, check_mode=False)
+
+            select(obj, selected)
+            hide(obj, hidden)
+
+        # Set the active object
+        if bpy.data.objects.get(self.active_object):
+            if self.active_object not in ignore:
+                set_active(bpy.data.objects.get(self.active_object), skip_sel=True)
+        # If there is not active obj but only one obj is selected, make it the active obj
+        # else:
+        #     sel_count = 0
+        #     last_selected = None
+        #     for obj in bpy.data.objects:
+        #         if is_selected(obj):
+        #             print(obj.name + 'IS SELECTED!!!')
+        #             sel_count += 1
+        #             last_selected = obj
+        #     if sel_count == 1:
+        #         set_active(last_selected, skip_sel=True)
+
+
 def get_armature(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
@@ -115,8 +170,9 @@ def unselect_all():
         select(obj, False)
 
 
-def set_active(obj):
-    select(obj)
+def set_active(obj, skip_sel=False):
+    if not skip_sel:
+        select(obj)
     if version_2_79_or_older():
         bpy.context.scene.objects.active = obj
     else:
@@ -161,8 +217,8 @@ def set_unselectable(obj, val=True):
     obj.hide_select = val
 
 
-def switch(new_mode):
-    if get_active() and get_active().mode == new_mode:
+def switch(new_mode, check_mode=True):
+    if check_mode and get_active() and get_active().mode == new_mode:
         return
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode=new_mode, toggle=False)
@@ -769,6 +825,7 @@ def separate_by_materials(context, mesh):
 
     for ob in context.selected_objects:
         if ob.type == 'MESH':
+            hide(ob, False)
             clean_shapekeys(ob)
 
     utils.clearUnusedMeshes()
@@ -789,6 +846,7 @@ def separate_by_loose_parts(context, mesh):
     meshes = []
     for ob in context.selected_objects:
         if ob.type == 'MESH':
+            hide(ob, False)
             meshes.append(ob)
 
     wm = bpy.context.window_manager

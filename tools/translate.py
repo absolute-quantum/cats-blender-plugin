@@ -61,6 +61,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
+        saved_data = tools.common.SavedData()
+
         to_translate = []
 
         for mesh in tools.common.get_meshes_objects(mode=2):
@@ -83,6 +85,8 @@ class TranslateShapekeyButton(bpy.types.Operator):
                             i += 1
 
         tools.common.ui_refresh()
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Translated ' + str(i) + ' shape keys.')
         return {'FINISHED'}
@@ -176,6 +180,8 @@ class TranslateMaterialsButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
+        saved_data = tools.common.SavedData()
+
         to_translate = []
         for mesh in tools.common.get_meshes_objects(mode=2):
             for matslot in mesh.material_slots:
@@ -194,8 +200,7 @@ class TranslateMaterialsButton(bpy.types.Operator):
                     if translated:
                         i += 1
 
-        tools.common.unselect_all()
-
+        saved_data.load()
         self.report({'INFO'}, 'Translated ' + str(i) + ' materials.')
         return {'FINISHED'}
 

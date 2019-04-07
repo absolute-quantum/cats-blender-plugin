@@ -137,7 +137,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                                                       'Please use a tool such as the "Autodesk FBX Converter" to make it compatible.'])
                     print(str(e))
 
-            # DAE - not working in 2.79 because of bug:
+            # DAE, VRM - not working in 2.79 because of bug:
             # https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
             elif file_ending == 'dae':
                 try:
