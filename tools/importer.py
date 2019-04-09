@@ -766,7 +766,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if self.meshes_count > 1:
+        if self.meshes_count > 2:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Meshes not joined!", icon='ERROR')
@@ -778,7 +778,10 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="It will be unoptimized and cause lag for you and others.")
+            if self.meshes_count < 9:
+                row.label(text="It is not very optimized and might cause lag for you and others.")
+            else:
+                row.label(text="It is extremely unoptimized and will cause lag for you and others.")
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="You should always join your meshes, it's very easy:")

@@ -1042,6 +1042,7 @@ bone_reweight['\Left arm'] = [
     'Bip_UpperArmTwistBottom_\L',
     'Bip_ForearmHelper_\L',
     'Bip_ElbowHelper_\L',
+    'Hlp_UpperArm_\L',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -1169,6 +1170,8 @@ bone_reweight['\Left elbow'] = [
     'Bip_WristTwistN_\L',
     'Bip_WristTwistIn_\L',
     'Bip_WristTwistS_\L',
+    'Hlp_Wrist_\L',
+    'Hlp_LowerArm_\L',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1329,6 +1332,7 @@ bone_reweight['\Left leg'] = [
     'Bip_ThighTwistBottom_\L',
     'Bip_KneeIn_\L',
     'Bip_KneeOut_\L',
+    'Hlp_Hip_\L',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -1398,6 +1402,8 @@ bone_reweight['\Left knee'] = [
     'Bip_KneeTwistBottomIn_\L',
     'Bip_Ankle_\L',
     'Bip_AnkleHelper_\L',
+    'Hlp_Knee_\L',
+    'Hlp_Foot_\L',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',

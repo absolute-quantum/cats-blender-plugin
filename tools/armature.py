@@ -214,6 +214,8 @@ class FixArmature(bpy.types.Operator):
         # Reset to default
         armature = tools.common.set_default_stage()
 
+        bpy.context.space_data.clip_start = 0.001
+
         if version_2_79_or_older():
             # Set better bone view
             armature.data.draw_type = 'OCTAHEDRAL'
@@ -1122,6 +1124,11 @@ class FixArmature(bpy.types.Operator):
         # Zero weight bones should be deleted
         if context.scene.remove_zero_weight:
             tools.common.delete_zero_weight()
+
+        # Connect all bones with their children if they have exactly one
+        for bone in armature.data.edit_bones:
+            if len(bone.children) == 1:
+                bone.tail = bone.children[0].head
 
         # # This is code for testing
         # print('LOOKING FOR BONES!')

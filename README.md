@@ -333,8 +333,11 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.13.0
-- **Model**:
-  - Added option to not join the meshes when fixing the model
+- **Fix Model**:
+  - Added option to not join the meshes
+  - Now greatly reduces clipping distance
+    - This will allow you to move much closer to the model without clipping into it
+  - All bones with exactly one child bone will now be connected to that child
 - **Model Options**:
   - Added "Separate by Shape Keys"
     - This splits the mesh into two parts, depending on whether it is effected by a shape key or not
