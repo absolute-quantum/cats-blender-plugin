@@ -64,6 +64,9 @@ class SavedData:
     active_object = None
 
     def __init__(self):
+        self.objects = {}
+        self.active_object = None
+
         for obj in bpy.data.objects:
             mode = obj.mode
             selected = is_selected(obj)
@@ -74,9 +77,13 @@ class SavedData:
             if active:
                 self.active_object = active.name
 
-    def load(self, ignore=None):
+    def load(self, ignore=None, load_mode=True, load_select=True, load_hide=True, load_active=True, hide_only=False):
         if not ignore:
             ignore = []
+        if hide_only:
+            load_mode = False
+            load_select = False
+            load_active = False
 
         for obj_name, values in self.objects.items():
             print(obj_name, ignore)
@@ -90,28 +97,19 @@ class SavedData:
             mode, selected, hidden = values
             print(obj_name, mode, selected, hidden)
 
-            if obj.mode != mode:
+            if load_mode and obj.mode != mode:
                 set_active(obj, skip_sel=True)
-                switch(obj.mode, check_mode=False)
+                switch(mode, check_mode=False)
 
-            select(obj, selected)
-            hide(obj, hidden)
+            if load_select:
+                select(obj, selected)
+            if load_hide:
+                hide(obj, hidden)
 
         # Set the active object
-        if bpy.data.objects.get(self.active_object):
-            if self.active_object not in ignore:
+        if load_active and bpy.data.objects.get(self.active_object):
+            if self.active_object not in ignore and self.active_object != get_active():
                 set_active(bpy.data.objects.get(self.active_object), skip_sel=True)
-        # If there is not active obj but only one obj is selected, make it the active obj
-        # else:
-        #     sel_count = 0
-        #     last_selected = None
-        #     for obj in bpy.data.objects:
-        #         if is_selected(obj):
-        #             print(obj.name + 'IS SELECTED!!!')
-        #             sel_count += 1
-        #             last_selected = obj
-        #     if sel_count == 1:
-        #         set_active(last_selected, skip_sel=True)
 
 
 def get_armature(armature_name=None):
@@ -811,6 +809,7 @@ def apply_transforms(armature_name=None):
 
     unselect_all()
     set_active(get_armature(armature_name=armature_name))
+    switch('OBJECT')
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
     for mesh in get_meshes_objects(armature_name=armature_name):
         unselect_all()

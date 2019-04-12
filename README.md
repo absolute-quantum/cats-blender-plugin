@@ -339,6 +339,7 @@ It checks for a new version automatically once every day.
     - This will allow you to move much closer to the model without clipping into it
   - All bones with exactly one child bone will now be connected to that child
 - **Model Options**:
+  - QOL: Objects not longer get unhidden, unselected or get their mode changed when performing any action
   - Added "Separate by Shape Keys"
     - This splits the mesh into two parts, depending on whether it is effected by a shape key or not
   - Fixed "Join Selected Meshes" joining all meshes
