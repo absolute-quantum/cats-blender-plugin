@@ -384,6 +384,11 @@ def unregister():
         print('shapekey button was not registered')
         pass
 
+    # Remove files from sys path
+    file_dir = os.path.dirname(__file__)
+    if file_dir in sys.path:
+        sys.path.remove(file_dir)
+
     print("### Unloaded CATS successfully!\n")
 
 

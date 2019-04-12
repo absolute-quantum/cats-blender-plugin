@@ -1000,8 +1000,25 @@ class FixArmature(bpy.types.Operator):
                     if not bone_child or not bone_parent:
                         continue
 
-                    if bone_child.name not in mesh.vertex_groups or bone_parent.name not in mesh.vertex_groups:
+                    # search for next parent that is not in the "reweight to parent" list
+                    parent_in_list = True
+                    while parent_in_list:
+                        parent_in_list = False
+                        for name_tmp in Bones.bone_reweigth_to_parent:
+                            if bone_parent.name == name_tmp.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l') \
+                                    or bone_parent.name == name_tmp.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'):
+                                bone_parent = bone_parent.parent
+                                parent_in_list = True
+                                break
+
+                    if not bone_parent:
                         continue
+
+                    if bone_child.name not in mesh.vertex_groups:
+                        continue
+
+                    if bone_parent.name not in mesh.vertex_groups:
+                        mesh.vertex_groups.new(bone_parent.name)
 
                     bone_tmp = armature.data.bones.get(bone_child.name)
                     if bone_tmp:
@@ -1010,7 +1027,6 @@ class FixArmature(bpy.types.Operator):
                                 temp_list_reparent_bones[child.name] = bone_parent.name
 
                     # Mix the weights
-                    # print(vg_from.name, 'into', vg_to.name)
                     tools.common.mix_weights(mesh, bone_child.name, bone_parent.name)
 
             # Mix weights
