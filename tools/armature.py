@@ -364,7 +364,7 @@ class FixArmature(bpy.types.Operator):
             if is_vrm and tools.common.has_shapekeys(mesh):
                 shapekeys = mesh.data.shape_keys.key_blocks
                 for shapekey in shapekeys:
-                    shapekey.name = shapekey.name.replace('Face.M_F00_000_Fcl_', '').replace('_', ' ')
+                    shapekey.name = shapekey.name.replace('_', ' ').replace('Face.M F00 000 Fcl ', '').replace('Face.M F00 000 00 Fcl ', '')
 
                 # Sort shapekeys in categories
                 shapekey_order = []
