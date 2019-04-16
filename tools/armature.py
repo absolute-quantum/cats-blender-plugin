@@ -69,6 +69,10 @@ class FixArmature(bpy.types.Operator):
         return True
 
     def execute(self, context):
+
+
+
+
         is_vrm = False
         if len(tools.common.get_meshes_objects()) == 0:
             for mesh in tools.common.get_meshes_objects(mode=2):

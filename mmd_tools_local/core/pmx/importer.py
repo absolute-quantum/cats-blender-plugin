@@ -108,9 +108,8 @@ class PMXImporter:
         bpy.ops.object.shape_key_add()
 
     def __importVertexGroup(self):
-        self.__vertexGroupTable = []
-        for i in self.__model.bones:
-            self.__vertexGroupTable.append(self.__meshObj.vertex_groups.new(name=i.name))
+        vgroups = self.__meshObj.vertex_groups
+        self.__vertexGroupTable = [vgroups.new(name=i.name) for i in self.__model.bones] or [vgroups.new(name='NO BONES')]
 
     def __importVertices(self):
         self.__importVertexGroup()

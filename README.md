@@ -338,6 +338,7 @@ It checks for a new version automatically once every day.
   - Now greatly reduces clipping distance
     - This will allow you to move much closer to the model without clipping into it
   - All bones with exactly one child bone will now be connected to that child
+  - Improved compatibility with VRoid 6.X
 - **Model Options**:
   - QOL: Objects not longer get unhidden, unselected or get their mode changed when performing any action
   - Added "Separate by Shape Keys"

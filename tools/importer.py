@@ -726,27 +726,27 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if self.mat_count > 10:
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text="Too many materials!", icon='ERROR')
-            col.separator()
+        # if self.mat_count > 10:
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text="Too many materials!", icon='ERROR')
+        #     col.separator()
+        #
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text="You have " + str(self.mat_count) + " materials on this model! (max 10)")
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text="You should create a texture atlas before you export this model.")
+        #     col.separator()
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text="The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
+        #     col.separator()
+        #     col.separator()
+        #     col.separator()
 
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text="You have " + str(self.mat_count) + " materials on this model, which isn't allowed in VRChat! (max 10)")
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text="You should create a texture atlas before you export this model.")
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text="The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
-            col.separator()
-            col.separator()
-            col.separator()
-
-        elif self.mat_count > 4:
+        if self.mat_count > 4:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Model not optimized!", icon='INFO')

@@ -89,7 +89,7 @@ class _FnMaterialBI:
 
 
     def __same_image_file(self, image, filepath):
-        if image and image.source == 'FILE' and image.use_alpha:
+        if image and image.source == 'FILE':
             img_filepath = bpy.path.abspath(image.filepath) # image.filepath_from_user()
             if img_filepath == filepath:
                 return True
@@ -116,14 +116,15 @@ class _FnMaterialBI:
 
     def __load_texture(self, filepath):
         for t in bpy.data.textures:
-            if t.type == 'IMAGE' and self.__same_image_file(t.image, filepath) and t.use_alpha:
+            if t.type == 'IMAGE' and self.__same_image_file(t.image, filepath):
                 return t
         tex = bpy.data.textures.new(name=bpy.path.display_name_from_filepath(filepath), type='IMAGE')
         tex.image = self._load_image(filepath)
+        tex.use_alpha = tex.image.use_alpha = self.__has_alpha_channel(tex)
         return tex
 
     def __has_alpha_channel(self, texture):
-        return texture.type == 'IMAGE' and getattr(texture.image, 'depth', -1) == 32
+        return texture.type == 'IMAGE' and getattr(texture.image, 'depth', -1) == 32 and texture.image.file_format != 'BMP'
 
 
     def get_texture(self):
