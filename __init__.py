@@ -46,7 +46,6 @@ file_dir = os.path.dirname(__file__)
 if file_dir not in sys.path:
     sys.path.append(file_dir)
 
-import copy
 import shutil
 import pathlib
 import requests

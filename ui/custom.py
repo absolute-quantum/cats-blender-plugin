@@ -23,14 +23,6 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        if not version_2_79_or_older():  # TODO
-            col = box.column(align=True)
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text='Not yet compatible with 2.8!', icon='INFO')
-            col.separator()
-            return
-
         row = col.row(align=True)
         row.operator(armature_custom.CustomModelTutorialButton.bl_idname, text='How to Use', icon='FORWARD')
         col.separator()
@@ -53,7 +45,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
 
             row = col.row(align=True)
             row.scale_y = 1.05
-            row.prop(context.scene, 'merge_same_bones', text='Merge Same Bones Only')
+            row.prop(context.scene, 'merge_same_bones')
 
             row = col.row(align=True)
             row.scale_y = 1.05

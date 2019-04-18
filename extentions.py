@@ -108,8 +108,8 @@ def register():
     )
 
     Scene.merge_same_bones = BoolProperty(
-        name='Merge Similar Named Bones',
-        description='Merges all bones together that have the same name.'
+        name='Merge All Bones',
+        description='Merges all bones together that have the same name instead of only the base bones (Hips, Spine, etc).'
                     '\nYou will have to make sure that all the bones you want to merge have the same name.'
                     '\n'
                     "\nIf this is checked, you won't need to fix the model with CATS beforehand but it is still advised to do so."

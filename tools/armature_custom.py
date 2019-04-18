@@ -45,11 +45,6 @@ class MergeArmature(bpy.types.Operator):
         return len(tools.common.get_armature_objects()) > 1
 
     def execute(self, context):
-        # if not tools.common.version_2_79_or_older():
-        #     self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
-        #     return {'CANCELLED'}
-        #     # TODO
-
         # Set default stage
         tools.common.set_default_stage(everything=True)
         tools.common.unselect_all()
@@ -128,11 +123,6 @@ class AttachMesh(bpy.types.Operator):
         return len(tools.common.get_armature_objects()) > 0 and len(tools.common.get_meshes_objects(mode=1, check=False)) > 0
 
     def execute(self, context):
-        # if not tools.common.version_2_79_or_older():
-        #     self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
-        #     return {'CANCELLED'}
-        #     # TODO
-
         # Set default stage
         tools.common.set_default_stage(everything=True)
         tools.common.unselect_all()
@@ -208,13 +198,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     mesh_base = tools.common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
     mesh_merge = tools.common.join_meshes(armature_name=merge_armature_name, apply_transformations=False)
 
-    # Applies transforms an the base armature and mesh
-    tools.common.unselect_all()
-    tools.common.set_active(base_armature)
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-    tools.common.unselect_all()
-    tools.common.set_active(mesh_base)
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # Applies transforms of the base armature and mesh
+    tools.common.apply_transforms(armature_name=base_armature_name)
 
     # Check if merge armature is rotated. Because the code can handle everything except rotations
     for i in [0, 1, 2]:
@@ -249,28 +234,14 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
         merge_armature.rotation_euler[i] = mesh_merge.rotation_euler[i]
         merge_armature.scale[i] = mesh_merge.scale[i] * old_scale[i]
 
-    tools.common.set_default_stage()
-
-    # Apply all transformations on mesh
-    tools.common.unselect_all()
-    tools.common.set_active(mesh_merge)
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
-    # Apply all transformations on armature
-    tools.common.unselect_all()
-    tools.common.set_active(merge_armature)
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
-
-    # Reset all transformations on mesh
+    # Reset all transformations on merge mesh
     for i in [0, 1, 2]:
-        mesh_merge.location[i] = old_loc[i]
+        mesh_merge.location[i] = 0
         mesh_merge.rotation_euler[i] = 0
-        mesh_merge.scale[i] = old_scale[i]
+        mesh_merge.scale[i] = 1
 
-    # Apply all transformations on mesh again
-    tools.common.unselect_all()
-    tools.common.set_active(mesh_merge)
-    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # Apply all transforms of merge armature and mesh
+    tools.common.apply_transforms(armature_name=merge_armature_name)
 
     # Go into edit mode
     tools.common.unselect_all()

@@ -806,15 +806,36 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 def apply_transforms(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
+    armature = get_armature(armature_name=armature_name)
 
+    # Save armature position for 2.8
+    pos_tmp = [armature.location[0], armature.location[1], armature.location[2]]
+    rot_tmp = [armature.rotation_euler[0], armature.rotation_euler[1], armature.rotation_euler[2]]
+    scl_tmp = [armature.scale[0], armature.scale[1], armature.scale[2]]
+
+    # Apply transforms on armature
     unselect_all()
-    set_active(get_armature(armature_name=armature_name))
+    set_active(armature)
     switch('OBJECT')
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # Apply transforms of meshes
     for mesh in get_meshes_objects(armature_name=armature_name):
         unselect_all()
         set_active(mesh)
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # On Blender 2.80 move the meshes like the armature and then apply transforms again
+    if not version_2_79_or_older():
+        for mesh in get_meshes_objects(armature_name=armature_name):
+            for i in [0, 1, 2]:
+                mesh.location[i] = pos_tmp[i]
+                mesh.rotation_euler[i] = rot_tmp[i]
+                mesh.scale[i] = scl_tmp[i]
+
+            unselect_all()
+            set_active(mesh)
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
 
 def separate_by_materials(context, mesh):
@@ -1436,6 +1457,11 @@ def show_error(scale, error_list, override_header=False):
 
     bpy.ops.cats_common.show_error('INVOKE_DEFAULT')
 
+    print('')
+    print('Report: Error')
+    for line in error:
+        print('    ' + line)
+
 
 @register_wrap
 class ShowError(bpy.types.Operator):
@@ -1473,11 +1499,6 @@ class ShowError(bpy.types.Operator):
                     first_line = True
                 else:
                     row.label(text=line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
-
-        print('')
-        print('Report: Error')
-        for line in error:
-            print('    ' + line)
 
 
 def remove_doubles(mesh, threshold, save_shapes=True):
