@@ -218,7 +218,8 @@ class FixArmature(bpy.types.Operator):
         # Reset to default
         armature = tools.common.set_default_stage()
 
-        bpy.context.space_data.clip_start = 0.001
+        if bpy.context.space_data:
+            bpy.context.space_data.clip_start = 0.001
 
         if version_2_79_or_older():
             # Set better bone view
