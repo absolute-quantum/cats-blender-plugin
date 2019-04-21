@@ -1,4 +1,4 @@
-# THis is directly taken from the export_fbx_bin.py to change it via monkey patching
+# This is directly taken from the export_fbx_bin.py to change it via monkey patching
 import tools.common
 
 

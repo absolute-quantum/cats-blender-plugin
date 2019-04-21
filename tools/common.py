@@ -786,6 +786,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                     bpy.ops.object.modifier_remove(modifier=mod.name)
                     continue
                 mod.object = get_armature(armature_name=armature_name)
+                mod.show_viewport = True
 
         # Add armature mod if there is none
         if mod_count == 0:

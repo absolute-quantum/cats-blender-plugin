@@ -900,9 +900,30 @@ class FixArmature(bpy.types.Operator):
                                 if hips.tail[z_cord] > hips.head[z_cord]:
                                     hips.tail[z_cord] -= 0.1
 
+                                left_leg_new = armature.data.edit_bones.get('Left leg 2')
+                                right_leg_new = armature.data.edit_bones.get('Right leg 2')
+                                left_leg_new_alt = armature.data.edit_bones.get('Left_Leg_2')
+                                right_leg_new_alt = armature.data.edit_bones.get('Right_Leg_2')
+
                                 # Create new leg bones and put them at the old location
-                                left_leg_new = armature.data.edit_bones.new('Left leg 2')
-                                right_leg_new = armature.data.edit_bones.new('Right leg 2')
+                                if not left_leg_new:
+                                    print("DEBUG 1")
+                                    if left_leg_new_alt:
+                                        left_leg_new = left_leg_new_alt
+                                        left_leg_new.name = 'Left leg 2'
+                                        print("DEBUG 1.1")
+                                    else:
+                                        left_leg_new = armature.data.edit_bones.new('Left leg 2')
+                                        print("DEBUG 1.2")
+                                if not right_leg_new:
+                                    print("DEBUG 2")
+                                    if right_leg_new_alt:
+                                        right_leg_new = right_leg_new_alt
+                                        right_leg_new.name = 'Right leg 2'
+                                        print("DEBUG 2.1")
+                                    else:
+                                        right_leg_new = armature.data.edit_bones.new('Right leg 2')
+                                        print("DEBUG 2.2")
 
                                 left_leg_new.head = left_leg.head
                                 left_leg_new.tail = left_leg.tail

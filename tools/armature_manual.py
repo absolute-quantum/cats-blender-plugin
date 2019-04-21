@@ -1070,6 +1070,8 @@ class FixFBTButton(bpy.types.Operator):
         right_leg = armature.data.edit_bones.get('Right leg')
         left_leg_new = armature.data.edit_bones.get('Left leg 2')
         right_leg_new = armature.data.edit_bones.get('Right leg 2')
+        left_leg_new_alt = armature.data.edit_bones.get('Left_Leg_2')
+        right_leg_new_alt = armature.data.edit_bones.get('Right_Leg_2')
 
         if not hips or not spine or not left_leg or not right_leg:
             self.report({'ERROR'}, 'Required bones could not be found!'
@@ -1096,23 +1098,38 @@ class FixFBTButton(bpy.types.Operator):
         if hips.tail[z_cord] > hips.head[z_cord]:
             hips.tail[z_cord] -= 0.1
 
-        if not left_leg_new and not right_leg_new:
-            # Create new leg bones and put them at the old location
-            left_leg_new = armature.data.edit_bones.new('Left leg 2')
-            right_leg_new = armature.data.edit_bones.new('Right leg 2')
+        # Create new leg bones and put them at the old location
+        if not left_leg_new:
+            print("DEBUG 1")
+            if left_leg_new_alt:
+                left_leg_new = left_leg_new_alt
+                left_leg_new.name = 'Left leg 2'
+                print("DEBUG 1.1")
+            else:
+                left_leg_new = armature.data.edit_bones.new('Left leg 2')
+                print("DEBUG 1.2")
+        if not right_leg_new:
+            print("DEBUG 2")
+            if right_leg_new_alt:
+                right_leg_new = right_leg_new_alt
+                right_leg_new.name = 'Right leg 2'
+                print("DEBUG 2.1")
+            else:
+                right_leg_new = armature.data.edit_bones.new('Right leg 2')
+                print("DEBUG 2.2")
 
-            left_leg_new.head = left_leg.head
-            left_leg_new.tail = left_leg.tail
+        left_leg_new.head = left_leg.head
+        left_leg_new.tail = left_leg.tail
 
-            right_leg_new.head = right_leg.head
-            right_leg_new.tail = right_leg.tail
+        right_leg_new.head = right_leg.head
+        right_leg_new.tail = right_leg.tail
 
-            # Set new location for old leg bones
-            left_leg.tail = left_leg.head
-            left_leg.tail[z_cord] = left_leg.head[z_cord] + 0.1
+        # Set new location for old leg bones
+        left_leg.tail = left_leg.head
+        left_leg.tail[z_cord] = left_leg.head[z_cord] + 0.1
 
-            right_leg.tail = right_leg.head
-            right_leg.tail[z_cord] = right_leg.head[z_cord] + 0.1
+        right_leg.tail = right_leg.head
+        right_leg.tail[z_cord] = right_leg.head[z_cord] + 0.1
 
         left_leg_new.parent = left_leg
         right_leg_new.parent = right_leg
