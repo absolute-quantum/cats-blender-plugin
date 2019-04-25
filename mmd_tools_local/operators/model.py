@@ -3,11 +3,11 @@
 import bpy
 from bpy.types import Operator
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.bpyutils import SceneOp
-from mmd_tools_local.core.bone import FnBone
-from mmd_tools_local.translations import DictionaryEnum
-import mmd_tools_local.core.model as mmd_model
+from .. import register_wrap
+from ..bpyutils import SceneOp
+from ..core.bone import FnBone
+from ..translations import DictionaryEnum
+from ..core import model as mmd_model
 
 
 @register_wrap
@@ -329,7 +329,7 @@ class ConvertToMMDModel(Operator):
                 mmd_material.enabled_toon_edge = line_color[3] >= self.edge_threshold
                 mmd_material.edge_color = line_color[:3] + [max(line_color[3], self.edge_alpha_min)]
 
-        from mmd_tools_local.operators.display_item import DisplayItemQuickSetup
+        from .operators.display_item import DisplayItemQuickSetup
         DisplayItemQuickSetup.load_bone_groups(root.mmd_root, armature)
         rig.initialDisplayFrames(reset=False) # ensure default frames
         DisplayItemQuickSetup.load_facial_items(root.mmd_root)

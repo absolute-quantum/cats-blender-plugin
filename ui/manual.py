@@ -1,12 +1,11 @@
 import bpy
-import globs
 
-from ui.main import ToolPanel
-from ui.main import layout_split
-
-from tools import armature_manual, translate
-
-from tools.register import register_wrap
+from .. import globs
+from .main import ToolPanel
+from .main import layout_split
+from ..tools import translate as Translate
+from ..tools import armature_manual as Armature_manual
+from ..tools.register import register_wrap
 
 
 @register_wrap
@@ -31,25 +30,25 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row = layout_split(col, factor=0.32, align=True)
         row.scale_y = button_height
         row.label(text="Separate by:", icon='MESH_DATA')
-        row.operator(armature_manual.SeparateByMaterials.bl_idname, text='Materials')
-        row.operator(armature_manual.SeparateByLooseParts.bl_idname, text='Loose Parts')
-        row.operator(armature_manual.SeparateByShapekeys.bl_idname, text='Shapes')
+        row.operator(Armature_manual.SeparateByMaterials.bl_idname, text='Materials')
+        row.operator(Armature_manual.SeparateByLooseParts.bl_idname, text='Loose Parts')
+        row.operator(Armature_manual.SeparateByShapekeys.bl_idname, text='Shapes')
 
         row = layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
         row.label(text="Join Meshes:", icon='AUTOMERGE_ON')
-        row.operator(armature_manual.JoinMeshes.bl_idname, text='All')
-        row.operator(armature_manual.JoinMeshesSelected.bl_idname, text='Selected')
+        row.operator(Armature_manual.JoinMeshes.bl_idname, text='All')
+        row.operator(Armature_manual.JoinMeshesSelected.bl_idname, text='Selected')
 
         row = layout_split(col, factor=0.4, align=True)
         row.scale_y = button_height
         row.label(text="Merge Weights:", icon='BONE_DATA')
-        row.operator(armature_manual.MergeWeights.bl_idname, text='To Parents')
-        row.operator(armature_manual.MergeWeightsToActive.bl_idname, text='To Active')
+        row.operator(Armature_manual.MergeWeights.bl_idname, text='To Parents')
+        row.operator(Armature_manual.MergeWeightsToActive.bl_idname, text='To Active')
 
         # row = col.row(align=True)
         # row.scale_y = button_height
-        # row.operator('armature_manual.merge_weights', icon='BONE_DATA')
+        # row.operator('Armature_manual.merge_weights', icon='BONE_DATA')
 
         # Translate
         col.separator()
@@ -64,15 +63,15 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
 
         row = split.row(align=True)
         row.scale_y = 2
-        row.operator(translate.TranslateAllButton.bl_idname, text='All', icon=globs.ICON_ALL)
+        row.operator(Translate.TranslateAllButton.bl_idname, text='All', icon=globs.ICON_ALL)
 
         row = split.column(align=True)
-        row.operator(translate.TranslateShapekeyButton.bl_idname, text='Shape Keys', icon='SHAPEKEY_DATA')
-        row.operator(translate.TranslateObjectsButton.bl_idname, text='Objects', icon='MESH_DATA')
+        row.operator(Translate.TranslateShapekeyButton.bl_idname, text='Shape Keys', icon='SHAPEKEY_DATA')
+        row.operator(Translate.TranslateObjectsButton.bl_idname, text='Objects', icon='MESH_DATA')
 
         row = split.column(align=True)
-        row.operator(translate.TranslateBonesButton.bl_idname, text='Bones', icon='BONE_DATA')
-        row.operator(translate.TranslateMaterialsButton.bl_idname, text='Materials', icon='MATERIAL')
+        row.operator(Translate.TranslateBonesButton.bl_idname, text='Bones', icon='BONE_DATA')
+        row.operator(Translate.TranslateMaterialsButton.bl_idname, text='Materials', icon='MATERIAL')
 
         col.separator()
         # col.separator()
@@ -88,36 +87,36 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = layout_split(col, factor=0.23, align=True)
             row.scale_y = button_height
             row.label(text="Delete:", icon='X')
-            row.operator(armature_manual.RemoveZeroWeight.bl_idname, text='Zero Weight Bones')
-            row.operator(armature_manual.RemoveConstraints.bl_idname, text='Constraints')
+            row.operator(Armature_manual.RemoveZeroWeight.bl_idname, text='Zero Weight Bones')
+            row.operator(Armature_manual.RemoveConstraints.bl_idname, text='Constraints')
 
             row = col.row(align=True)
             row.scale_y = button_height
-            row.operator(armature_manual.DuplicateBonesButton.bl_idname, icon='GROUP_BONE')
+            row.operator(Armature_manual.DuplicateBonesButton.bl_idname, icon='GROUP_BONE')
 
             col.separator()
             row = layout_split(col, factor=0.27, align=True)
             row.scale_y = button_height
             row.label(text="Normals:", icon='SNAP_NORMAL')
-            row.operator(armature_manual.RecalculateNormals.bl_idname, text='Recalculate')
-            row.operator(armature_manual.FlipNormals.bl_idname, text='Flip')
+            row.operator(Armature_manual.RecalculateNormals.bl_idname, text='Recalculate')
+            row.operator(Armature_manual.FlipNormals.bl_idname, text='Flip')
 
             row = col.row(align=True)
             row.scale_y = button_height
-            row.operator(armature_manual.ApplyTransformations.bl_idname, icon='OUTLINER_DATA_ARMATURE')
+            row.operator(Armature_manual.ApplyTransformations.bl_idname, icon='OUTLINER_DATA_ARMATURE')
 
             row = col.row(align=True)
             row.scale_y = button_height
-            row.operator(armature_manual.RemoveDoubles.bl_idname, icon='X')
+            row.operator(Armature_manual.RemoveDoubles.bl_idname, icon='X')
 
             # row = col.row(align=True)
             # row.scale_y = 1
             # subcol = layout_split(row, factor=0, align=True)
             # subcol.scale_y = button_height
-            # subcol.operator(armature_manual.RemoveDoubles.bl_idname, icon='STICKY_UVS_VERT')
+            # subcol.operator(Armature_manual.RemoveDoubles.bl_idname, icon='STICKY_UVS_VERT')
             # subcol = layout_split(row, factor=0, align=True)
             # subcol.scale_y = button_height
-            # subcol.operator(armature_manual.RemoveDoublesNormal.bl_idname, text="", icon='X')
+            # subcol.operator(Armature_manual.RemoveDoublesNormal.bl_idname, text="", icon='X')
 
             col.separator()
             # row = col.row(align=True)
@@ -128,11 +127,11 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1
             subcol = layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
-            subcol.operator(armature_manual.FixFBTButton.bl_idname, icon='MODIFIER')
+            subcol.operator(Armature_manual.FixFBTButton.bl_idname, icon='MODIFIER')
             subcol = layout_split(row, factor=0, align=True)
             subcol.scale_y = button_height
-            subcol.operator(armature_manual.RemoveFBTButton.bl_idname, text="", icon='X')
+            subcol.operator(Armature_manual.RemoveFBTButton.bl_idname, text="", icon='X')
 
             row = col.row(align=True)
             row.scale_y = button_height
-            row.operator(armature_manual.FixVRMShapesButton.bl_idname, icon='SHAPEKEY_DATA')
+            row.operator(Armature_manual.FixVRMShapesButton.bl_idname, icon='SHAPEKEY_DATA')

@@ -4,14 +4,14 @@ import bpy
 from bpy.types import Operator
 from mathutils import Vector, Quaternion
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local import bpyutils
-from mmd_tools_local import utils
-from mmd_tools_local.utils import ItemOp, ItemMoveOp
-from mmd_tools_local.core.material import FnMaterial
-from mmd_tools_local.core.morph import FnMorph
-from mmd_tools_local.core.exceptions import MaterialNotFoundError, DivisionError
-import mmd_tools_local.core.model as mmd_model
+from .. import register_wrap
+from .. import bpyutils
+from .. import utils
+from ..utils import ItemOp, ItemMoveOp
+from ..core.material import FnMaterial
+from ..core.morph import FnMorph
+from ..core.exceptions import MaterialNotFoundError, DivisionError
+from ..core import model as mmd_model
 
 #Util functions
 def divide_vector_components(vec1, vec2):
@@ -426,7 +426,7 @@ class ViewBoneMorph(Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        from mmd_tools_local.bpyutils import matmul
+        from ..bpyutils import matmul
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
         mmd_root=root.mmd_root

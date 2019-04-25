@@ -10,16 +10,16 @@ import bpy
 import bmesh
 
 from collections import OrderedDict
-from mmd_tools_local.core import pmx
-from mmd_tools_local.core.bone import FnBone
-from mmd_tools_local.core.material import FnMaterial
-from mmd_tools_local.core.morph import FnMorph
-from mmd_tools_local.core.sdef import FnSDEF
-from mmd_tools_local.core.vmd.importer import BoneConverter, BoneConverterPoseMode
-from mmd_tools_local import bpyutils
-from mmd_tools_local.utils import saferelpath
-from mmd_tools_local.bpyutils import matmul
-from mmd_tools_local.operators.misc import MoveObject
+from .. import pmx
+from ..bone import FnBone
+from ..material import FnMaterial
+from ..morph import FnMorph
+from ..sdef import FnSDEF
+from ..vmd.importer import BoneConverter, BoneConverterPoseMode
+from ... import bpyutils
+from ...utils import saferelpath
+from ...bpyutils import matmul
+from ...operators.misc import MoveObject
 
 
 class _Vertex:

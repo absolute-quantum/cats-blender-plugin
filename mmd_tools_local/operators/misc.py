@@ -5,13 +5,13 @@ import re
 import bpy
 from bpy.types import Operator
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local import utils
-from mmd_tools_local.bpyutils import ObjectOp
-from mmd_tools_local.core import model as mmd_model
-from mmd_tools_local.core.morph import FnMorph
-from mmd_tools_local.core.material import FnMaterial
-from mmd_tools_local.core.bone import FnBone
+from ..import register_wrap
+from ..import utils
+from ..bpyutils import ObjectOp
+from ..core import model as mmd_model
+from ..core.morph import FnMorph
+from ..core.material import FnMaterial
+from ..core.bone import FnBone
 
 
 @register_wrap
@@ -192,7 +192,7 @@ class JoinMeshes(Operator):
             return { 'CANCELLED' }
         active_mesh = meshes_list[0]
 
-        from mmd_tools_local import bpyutils
+        from ..import bpyutils
         bpyutils.select_object(active_mesh, objects=meshes_list)
 
         # Store the current order of the materials

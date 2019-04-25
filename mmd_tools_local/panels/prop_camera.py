@@ -2,8 +2,8 @@
 
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.camera import MMDCamera
+from ..import register_wrap
+from ..core.camera import MMDCamera
 
 @register_wrap
 class MMDCameraPanel(Panel):

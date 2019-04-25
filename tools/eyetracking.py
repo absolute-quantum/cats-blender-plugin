@@ -27,12 +27,13 @@
 import bpy
 import bmesh
 import math
+
 from collections import OrderedDict
 from random import random
-from tools.register import register_wrap
 
-import tools.common
-import tools.armature
+from . import common as Common
+from . import armature as Armature
+from .register import register_wrap
 
 
 iris_heights = None
@@ -49,7 +50,7 @@ class CreateEyesButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not tools.common.get_meshes_objects(check=False):
+        if not Common.get_meshes_objects(check=False):
             return False
 
         if not context.scene.head \
@@ -70,8 +71,8 @@ class CreateEyesButton(bpy.types.Operator):
         wm = bpy.context.window_manager
 
         # Set the stage
-        armature = tools.common.set_default_stage()
-        tools.common.switch('EDIT')
+        armature = Common.set_default_stage()
+        Common.switch('EDIT')
 
         mesh_name = context.scene.mesh_name_eye
         mesh = bpy.data.objects.get(mesh_name)
@@ -141,7 +142,7 @@ class CreateEyesButton(bpy.types.Operator):
         if vg_right:
             mesh.vertex_groups.remove(vg_right)
 
-        if not tools.common.has_shapekeys(mesh):
+        if not Common.has_shapekeys(mesh):
             mesh.shape_key_add(name='Basis', from_mix=False)
 
         # Set head roll to 0 degrees
@@ -160,8 +161,8 @@ class CreateEyesButton(bpy.types.Operator):
         fix_eye_position(context, old_eye_right, new_right_eye, head, True)
 
         # Switch to mesh
-        tools.common.set_active(mesh)
-        tools.common.switch('OBJECT')
+        Common.set_active(mesh)
+        Common.switch('OBJECT')
 
         # Fix a small bug
         bpy.context.object.show_only_shape_key = False
@@ -201,7 +202,7 @@ class CreateEyesButton(bpy.types.Operator):
         shapes[3] = self.copy_shape_key(context, shapes[3], new_shapes, 4)
         wm.progress_update(4)
 
-        tools.common.sort_shape_keys(mesh_name)
+        Common.sort_shape_keys(mesh_name)
 
         # Reset the scenes in case they were changed
         context.scene.head = head.name
@@ -213,14 +214,14 @@ class CreateEyesButton(bpy.types.Operator):
         context.scene.lowerlid_right = shapes[3]
 
         # Remove empty objects
-        tools.common.set_default_stage()  # Fixes an error apparently
-        tools.common.remove_empty()
+        Common.set_default_stage()  # Fixes an error apparently
+        Common.remove_empty()
 
         # Fix armature name
-        tools.common.fix_armature_names()
+        Common.fix_armature_names()
 
         # Check for correct bone hierarchy
-        is_correct = tools.armature.check_hierarchy(True, [['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
+        is_correct = Armature.check_hierarchy(True, [['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
 
         # if context.scene.disable_eye_movement:
         #     # print('Repair with mouth.')
@@ -241,7 +242,7 @@ class CreateEyesButton(bpy.types.Operator):
 
         wm.progress_end()
 
-        tools.common.sort_shape_keys(mesh_name)
+        Common.sort_shape_keys(mesh_name)
 
         if not is_correct['result']:
             self.report({'ERROR'}, is_correct['message'])
@@ -314,12 +315,12 @@ def vertex_group_exists(mesh_name, bone_name):
 # Repair vrc shape keys
 def repair_shapekeys(mesh_name, vertex_group):
     # This is done to fix a very weird bug where the mouth stays open sometimes
-    tools.common.set_default_stage()
+    Common.set_default_stage()
     mesh = bpy.data.objects[mesh_name]
-    tools.common.unselect_all()
-    tools.common.set_active(mesh)
-    tools.common.switch('EDIT')
-    tools.common.switch('OBJECT')
+    Common.unselect_all()
+    Common.set_active(mesh)
+    Common.switch('EDIT')
+    Common.switch('OBJECT')
 
     bm = bmesh.new()
     bm.from_mesh(mesh.data)
@@ -358,11 +359,11 @@ def repair_shapekeys(mesh_name, vertex_group):
                 if index < i:
                     continue
                 shapekey = vert
-                shapekey_coords = tools.common.matmul(mesh.matrix_world, shapekey[value])
+                shapekey_coords = Common.matmul(mesh.matrix_world, shapekey[value])
                 shapekey_coords[0] -= 0.00007 * randBoolNumber()
                 shapekey_coords[1] -= 0.00007 * randBoolNumber()
                 shapekey_coords[2] -= 0.00007 * randBoolNumber()
-                shapekey[value] = tools.common.matmul(mesh.matrix_world.inverted(), shapekey_coords)
+                shapekey[value] = Common.matmul(mesh.matrix_world.inverted(), shapekey_coords)
                 print('DEBUG: Repaired shape: ' + key)
                 i += 1
                 moved = True
@@ -384,12 +385,12 @@ def randBoolNumber():
 # Repair vrc shape keys with random vertex
 def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
     # This is done to fix a very weird bug where the mouth stays open sometimes
-    tools.common.set_default_stage()
+    Common.set_default_stage()
     mesh = bpy.data.objects[mesh_name]
-    tools.common.unselect_all()
-    tools.common.set_active(mesh)
-    tools.common.switch('EDIT')
-    tools.common.switch('OBJECT')
+    Common.unselect_all()
+    Common.set_active(mesh)
+    Common.switch('EDIT')
+    Common.switch('OBJECT')
 
     bm = bmesh.new()
     bm.from_mesh(mesh.data)
@@ -403,11 +404,11 @@ def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
         value = bm.verts.layers.shape.get(key)
         for vert in bm.verts:
             shapekey = vert
-            shapekey_coords = tools.common.matmul(mesh.matrix_world, shapekey[value])
+            shapekey_coords = Common.matmul(mesh.matrix_world, shapekey[value])
             shapekey_coords[0] -= 0.00007
             shapekey_coords[1] -= 0.00007
             shapekey_coords[2] -= 0.00007
-            shapekey[value] = tools.common.matmul(mesh.matrix_world.inverted(), shapekey_coords)
+            shapekey[value] = Common.matmul(mesh.matrix_world.inverted(), shapekey_coords)
             print('TEST')
             moved = True
             break
@@ -426,17 +427,17 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
 
     if not context.scene.disable_eye_movement:
         if head is not None:
-            coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, old_eye.name)
+            coords_eye = Common.find_center_vector_of_vertex_group(mesh_name, old_eye.name)
         else:
-            coords_eye = tools.common.find_center_vector_of_vertex_group(mesh_name, new_eye.name)
+            coords_eye = Common.find_center_vector_of_vertex_group(mesh_name, new_eye.name)
 
         if coords_eye is False:
             return
 
         if head is not None:
             mesh = bpy.data.objects[mesh_name]
-            p1 = tools.common.matmul(mesh.matrix_world, head.head)
-            p2 = tools.common.matmul(mesh.matrix_world, coords_eye)
+            p1 = Common.matmul(mesh.matrix_world, head.head)
+            p2 = Common.matmul(mesh.matrix_world, coords_eye)
             length = (p1 - p2).length
             print(length)  # TODO calculate scale if bone is too close to center of the eye
 
@@ -450,7 +451,7 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
     # print(dist4)
 
     # Check if bone matrix == world matrix, important for xps models
-    x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(tools.common.get_armature())
+    x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(Common.get_armature())
 
     if context.scene.disable_eye_movement:
         if head is not None:
@@ -487,7 +488,7 @@ class StartTestingButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        armature = tools.common.get_armature()
+        armature = Common.get_armature()
         if 'LeftEye' in armature.pose.bones:
             if 'RightEye' in armature.pose.bones:
                 if bpy.data.objects.get(context.scene.mesh_name_eye) is not None:
@@ -495,8 +496,8 @@ class StartTestingButton(bpy.types.Operator):
         return False
 
     def execute(self, context):
-        armature = tools.common.set_default_stage()
-        tools.common.switch('POSE')
+        armature = Common.set_default_stage()
+        Common.switch('POSE')
         armature.data.pose_position = 'POSE'
 
         global eye_left, eye_right, eye_left_data, eye_right_data
@@ -511,12 +512,12 @@ class StartTestingButton(bpy.types.Operator):
         for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
             shape_key.value = 0
 
-        for pb in tools.common.get_armature().data.bones:
+        for pb in Common.get_armature().data.bones:
             pb.select = True
         bpy.ops.pose.rot_clear()
         bpy.ops.pose.scale_clear()
         bpy.ops.pose.transforms_clear()
-        for pb in tools.common.get_armature().data.bones:
+        for pb in Common.get_armature().data.bones:
             pb.select = False
             pb.hide = True
 
@@ -545,19 +546,19 @@ class StopTestingButton(bpy.types.Operator):
             context.scene.eye_rotation_y = 0
 
         if not context.object or context.object.mode != 'POSE':
-            tools.common.set_default_stage()
-            tools.common.switch('POSE')
+            Common.set_default_stage()
+            Common.switch('POSE')
 
-        for pb in tools.common.get_armature().data.bones:
+        for pb in Common.get_armature().data.bones:
             pb.hide = False
             pb.select = True
         bpy.ops.pose.rot_clear()
         bpy.ops.pose.scale_clear()
         bpy.ops.pose.transforms_clear()
-        for pb in tools.common.get_armature().data.bones:
+        for pb in Common.get_armature().data.bones:
             pb.select = False
 
-        armature = tools.common.set_default_stage()
+        armature = Common.set_default_stage()
         armature.data.pose_position = 'REST'
 
         for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
@@ -603,8 +604,8 @@ def stop_testing(self, context):
         if not eye_left or not eye_right or not eye_left_data or not eye_right_data:
             return None
 
-        armature = tools.common.set_default_stage()
-        tools.common.switch('POSE')
+        armature = Common.set_default_stage()
+        Common.switch('POSE')
         armature.data.pose_position = 'POSE'
 
         context.scene.eye_rotation_x = 0
@@ -619,7 +620,7 @@ def stop_testing(self, context):
         for pb in armature.data.bones:
             pb.select = False
 
-        armature = tools.common.set_default_stage()
+        armature = Common.set_default_stage()
         armature.data.pose_position = 'REST'
 
         for shape_key in bpy.data.objects[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
@@ -641,14 +642,14 @@ class ResetRotationButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        armature = tools.common.get_armature()
+        armature = Common.get_armature()
         if 'LeftEye' in armature.pose.bones:
             if 'RightEye' in armature.pose.bones:
                 return True
         return False
 
     def execute(self, context):
-        armature = tools.common.get_armature()
+        armature = Common.get_armature()
 
         context.scene.eye_rotation_x = 0
         context.scene.eye_rotation_y = 0
@@ -682,7 +683,7 @@ class AdjustEyesButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        armature = tools.common.get_armature()
+        armature = Common.get_armature()
         if 'LeftEye' in armature.pose.bones:
             if 'RightEye' in armature.pose.bones:
                 return True
@@ -707,10 +708,10 @@ class AdjustEyesButton(bpy.types.Operator):
                                                                             '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
             return {'CANCELLED'}
 
-        armature = tools.common.set_default_stage()
+        armature = Common.set_default_stage()
         armature.data.pose_position = 'POSE'
 
-        tools.common.switch('EDIT')
+        Common.switch('EDIT')
 
         new_eye_left = armature.data.edit_bones.get('LeftEye')
         new_eye_right = armature.data.edit_bones.get('RightEye')
@@ -720,7 +721,7 @@ class AdjustEyesButton(bpy.types.Operator):
         fix_eye_position(context, old_eye_left, new_eye_left, None, False)
         fix_eye_position(context, old_eye_right, new_eye_right, None, True)
 
-        tools.common.switch('POSE')
+        Common.switch('POSE')
 
         global eye_left, eye_right, eye_left_data, eye_right_data
         eye_left = armature.pose.bones.get('LeftEye')
@@ -742,7 +743,7 @@ class StartIrisHeightButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        armature = tools.common.get_armature()
+        armature = Common.get_armature()
         if 'LeftEye' in armature.pose.bones:
             if 'RightEye' in armature.pose.bones:
                 return True
@@ -752,16 +753,16 @@ class StartIrisHeightButton(bpy.types.Operator):
         if context.scene.disable_eye_movement:
             return {'FINISHED'}
 
-        armature = tools.common.set_default_stage()
-        tools.common.hide(armature)
+        armature = Common.set_default_stage()
+        Common.hide(armature)
 
         mesh = bpy.data.objects[context.scene.mesh_name_eye]
-        tools.common.set_active(mesh)
-        tools.common.switch('EDIT')
+        Common.set_active(mesh)
+        Common.switch('EDIT')
 
         if len(mesh.vertex_groups) > 0:
-            tools.common.set_active(mesh)
-            tools.common.switch('EDIT')
+            Common.set_active(mesh)
+            Common.switch('EDIT')
             bpy.ops.mesh.select_mode(type='VERT')
 
             vgs = [mesh.vertex_groups.get('LeftEye'), mesh.vertex_groups.get('RightEye')]
@@ -792,7 +793,7 @@ class TestBlinking(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         mesh = bpy.data.objects[context.scene.mesh_name_eye]
-        if tools.common.has_shapekeys(mesh):
+        if Common.has_shapekeys(mesh):
             if 'vrc.blink_left' in mesh.data.shape_keys.key_blocks:
                 if 'vrc.blink_right' in mesh.data.shape_keys.key_blocks:
                     return True
@@ -821,7 +822,7 @@ class TestLowerlid(bpy.types.Operator):
     @classmethod
     def poll(cls, context):
         mesh = bpy.data.objects[context.scene.mesh_name_eye]
-        if tools.common.has_shapekeys(mesh):
+        if Common.has_shapekeys(mesh):
             if 'vrc.lowerlid_left' in mesh.data.shape_keys.key_blocks:
                 if 'vrc.lowerlid_right' in mesh.data.shape_keys.key_blocks:
                     return True

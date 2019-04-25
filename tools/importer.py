@@ -25,20 +25,20 @@
 
 import os
 import bpy
-import globs
 import webbrowser
-import tools.common
-import tools.settings
-import tools.eyetracking
 import bpy_extras.io_utils
-from tools.common import version_2_79_or_older
-from tools.register import register_wrap
 
-from tools import armature_manual
+from .. import globs
+from . import armature_manual
+from . import common as Common
+from . import settings as Settings
+from . import fbx_patch as Fbx_patch
+from .common import version_2_79_or_older
+from .register import register_wrap
 
 mmd_tools_installed = False
 try:
-    import mmd_tools_local
+    from .. import mmd_tools_local
     mmd_tools_installed = True
 except:
     pass
@@ -79,7 +79,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
     def execute(self, context):
         # print(self.directory)
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -133,7 +133,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                     bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
                 except RuntimeError as e:
                     if 'unsupported, must be 7100 or later' in str(e):
-                        tools.common.show_error(6.2, ['The FBX file version is unsupported!',
+                        Common.show_error(6.2, ['The FBX file version is unsupported!',
                                                       'Please use a tool such as the "Autodesk FBX Converter" to make it compatible.'])
                     print(str(e))
 
@@ -170,7 +170,7 @@ class ModelsPopup(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3, height=-550)
 
     def check(self, context):
@@ -202,7 +202,7 @@ class ImportMMD(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -230,7 +230,7 @@ class ImportXPS(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -252,7 +252,7 @@ class ImportSource(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -274,7 +274,7 @@ class ImportFBX(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -296,7 +296,7 @@ class ImportVRM(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -319,7 +319,7 @@ class InstallXPS(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -340,7 +340,7 @@ class InstallXPS(bpy.types.Operator):
         col.separator()
         col.separator()
         row = col.row(align=True)
-        row.label(text="Make sure to install the version for Blender " + "2.79" if tools.common.version_2_79_or_older() else "2.80", icon="INFO")
+        row.label(text="Make sure to install the version for Blender " + "2.79" if Common.version_2_79_or_older() else "2.80", icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(XpsToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -355,7 +355,7 @@ class InstallSource(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -387,7 +387,7 @@ class InstallVRM(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -422,7 +422,7 @@ class EnableMMD(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
 
     def check(self, context):
@@ -519,7 +519,7 @@ class VrmToolsButton(bpy.types.Operator):
     bl_label = 'Download VRM Importer'
 
     def execute(self, context):
-        if tools.common.version_2_79_or_older():
+        if Common.version_2_79_or_older():
             webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_79')
         else:
             webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_8')
@@ -551,7 +551,7 @@ class ExportModel(bpy.types.Operator):
                ('NO_CHECK', '', 'Please Ignore')))
 
     def execute(self, context):
-        meshes = tools.common.get_meshes_objects()
+        meshes = Common.get_meshes_objects()
 
         # Check for warnings
         if not self.action == 'NO_CHECK':
@@ -597,7 +597,7 @@ class ExportModel(bpy.types.Operator):
                             _textures_found = True
                             # TODO
 
-                if tools.common.has_shapekeys(mesh):
+                if Common.has_shapekeys(mesh):
                     # Check if there are broken shapekeys
                     for shapekey in mesh.data.shape_keys.key_blocks[1:]:
                         vert_count = 0
@@ -625,7 +625,7 @@ class ExportModel(bpy.types.Operator):
                     or _tris_count > 70000 \
                     or len(_mat_list) > 4 \
                     or len(_broken_shapes) > 0 \
-                    or not _textures_found and tools.settings.get_embed_textures()\
+                    or not _textures_found and Settings.get_embed_textures()\
                     or len(_eye_meshes_not_named_body) > 0:
                 bpy.ops.cats_importer.display_error('INVOKE_DEFAULT')
                 return {'FINISHED'}
@@ -633,7 +633,7 @@ class ExportModel(bpy.types.Operator):
         # Continue if there are no errors or the check was skipped
 
         # Monkey patch FBX exporter again to import empty shape keys
-        tools.fbx_patch.patch_fbx_exporter()
+        Fbx_patch.patch_fbx_exporter()
 
         # Check if copy protection is enabled
         mesh_smooth_type = 'OFF'
@@ -641,7 +641,7 @@ class ExportModel(bpy.types.Operator):
         for mesh in meshes:
             if protected_export:
                 break
-            if tools.common.has_shapekeys(mesh):
+            if Common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if shapekey.name == 'Basis Original':
                         protected_export = True
@@ -651,7 +651,7 @@ class ExportModel(bpy.types.Operator):
 
         # Check if textures are found and if they should be embedded
         path_mode = 'AUTO'
-        if _textures_found and tools.settings.get_embed_textures():
+        if _textures_found and Settings.get_embed_textures():
             path_mode = 'COPY'
 
         # Open export window
@@ -699,7 +699,7 @@ class ErrorDisplay(bpy.types.Operator):
         self.textures_found = _textures_found
         self.eye_meshes_not_named_body = _eye_meshes_not_named_body
 
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
 
     def check(self, context):
@@ -820,7 +820,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if not self.textures_found and tools.settings.get_embed_textures():
+        if not self.textures_found and Settings.get_embed_textures():
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="No textures found!", icon='ERROR')

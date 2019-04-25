@@ -6,9 +6,9 @@ import os
 import bpy
 from mathutils import Matrix
 
-from mmd_tools_local import bpyutils
-from mmd_tools_local.core import vmd
-from mmd_tools_local.core import vpd
+from ... import bpyutils
+from .. import vmd
+from .. import vpd
 
 
 class VPDExporter:

@@ -25,8 +25,8 @@
 # Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
-import tools.common
-from tools.register import register_wrap
+from . import common as Common
+from .register import register_wrap
 
 from collections import OrderedDict
 
@@ -41,7 +41,7 @@ class AutoVisemeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not tools.common.get_meshes_objects(check=False):
+        if not Common.get_meshes_objects(check=False):
             return False
 
         if not context.scene.mouth_a \
@@ -58,12 +58,12 @@ class AutoVisemeButton(bpy.types.Operator):
             self.report({'ERROR'}, 'Please select the correct mouth shapekeys instead of "Basis"!')
             return {'CANCELLED'}
 
-        tools.common.set_default_stage()
+        Common.set_default_stage()
 
         wm = bpy.context.window_manager
 
         mesh = bpy.data.objects[context.scene.mesh_name_viseme]
-        tools.common.set_active(mesh)
+        Common.set_active(mesh)
 
         # Fix a small bug
         bpy.context.object.show_only_shape_key = False
@@ -236,14 +236,14 @@ class AutoVisemeButton(bpy.types.Operator):
         bpy.context.object.active_shape_key_index = 0
 
         # Remove empty objects
-        tools.common.switch('EDIT')
-        tools.common.remove_empty()
+        Common.switch('EDIT')
+        Common.remove_empty()
 
         # Fix armature name
-        tools.common.fix_armature_names()
+        Common.fix_armature_names()
 
         # Sort visemes
-        tools.common.sort_shape_keys(mesh.name)
+        Common.sort_shape_keys(mesh.name)
 
         wm.progress_end()
 

@@ -6,8 +6,8 @@ from bpy.types import PoseBone
 from math import pi
 import math
 from mathutils import Vector, Quaternion, Matrix
-from mmd_tools_local import bpyutils
-from mmd_tools_local.bpyutils import TransformConstraintOp
+from ..import bpyutils
+from ..bpyutils import TransformConstraintOp
 
 
 def remove_constraint(constraints, name):

@@ -3,8 +3,8 @@
 import bpy
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
-import mmd_tools_local.core.model as mmd_model
+from ..import register_wrap
+from ..core import model as mmd_model
 
 
 class _PanelBase(object):

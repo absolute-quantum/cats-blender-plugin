@@ -24,29 +24,23 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 
-from datetime import datetime
-
+import re
 import bpy
-import copy
 import time
-import bmesh
-import globs
-import numpy as np
-import tools.supporter
-import tools.decimation
-import tools.translate
-import tools.armature_bones as Bones
-from mathutils import Vector
+
 from math import degrees
-from collections import OrderedDict
-from tools.register import register_wrap
-
-from googletrans import Translator
-from mmd_tools_local import utils
-
+from mathutils import Vector
+from datetime import datetime
 from html.parser import HTMLParser
 from html.entities import name2codepoint
-import re
+
+from . import common as Common
+from . import supporter as Supporter
+from . import decimation as Decimation
+from . import translate as Translate
+from . import armature_bones as Bones
+from .register import register_wrap
+from ..mmd_tools_local import utils
 
 # TODO
 # - Add check if hips bone really needs to be rotated
@@ -428,7 +422,7 @@ def get_meshes_decimation(self, context):
     for object in bpy.context.scene.objects:
         if object.type == 'MESH':
             if object.parent is not None and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
-                if object.name in tools.decimation.ignore_meshes:
+                if object.name in Decimation.ignore_meshes:
                     continue
                 # 1. Will be returned by context.scene
                 # 2. Will be shown in lists
@@ -566,7 +560,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
                 continue
             if no_basis and name == 'Basis':
                 continue
-            if decimation and name in tools.decimation.ignore_shapes:
+            if decimation and name in Decimation.ignore_shapes:
                 continue
             # 1. Will be returned by context.scene
             # 2. Will be shown in lists
@@ -579,7 +573,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
     choices2 = []
     for name in names:
         if name in choices_simple and len(choices) > 1 and choices[0][0] != name:
-            if decimation and name in tools.decimation.ignore_shapes:
+            if decimation and name in Decimation.ignore_shapes:
                 continue
             choices2.append((name, name, name))
 
@@ -607,8 +601,8 @@ def fix_armature_names(armature_name=None):
     armature = get_armature(armature_name=armature_name)
     armature.name = 'Armature'
     if not armature.data.name.startswith('Armature'):
-        tools.translate.update_dictionary(armature.data.name)
-        armature.data.name = 'Armature (' + tools.translate.translate(armature.data.name, add_space=True)[0] + ')'
+        Translate.update_dictionary(armature.data.name)
+        armature.data.name = 'Armature (' + Translate.translate(armature.data.name, add_space=True)[0] + ')'
 
     # Reset the armature lists
     try:
@@ -987,7 +981,7 @@ def can_remove_shapekey(key_block):
 def separate_by_verts():
     for obj in bpy.context.selected_objects:
         if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
-            tools.common.set_active(obj)
+            Common.set_active(obj)
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type='VERT')
         for vgroup in obj.vertex_groups:
@@ -1099,7 +1093,7 @@ def update_shapekey_orders():
 
         # Get shape keys and translate them
         for shape_name in order:
-            shape_key_order_translated.append(tools.translate.translate(shape_name, add_space=True, translating_shapes=True)[0])
+            shape_key_order_translated.append(Translate.translate(shape_name, add_space=True, translating_shapes=True)[0])
 
         # print(armature.name, shape_key_order_translated)
         custom_data['shape_key_order'] = shape_key_order_translated
@@ -1473,7 +1467,7 @@ class ShowError(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
 
     def draw(self, context):
@@ -1499,7 +1493,7 @@ class ShowError(bpy.types.Operator):
                     row.label(text=line, icon='ERROR')
                     first_line = True
                 else:
-                    row.label(text=line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
+                    row.label(text=line, icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
 
 
 def remove_doubles(mesh, threshold, save_shapes=True):

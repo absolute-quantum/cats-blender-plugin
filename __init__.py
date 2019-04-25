@@ -42,16 +42,16 @@ import os
 import sys
 
 # Append files to sys path
-file_dir = os.path.dirname(__file__)
-if file_dir not in sys.path:
-    sys.path.append(file_dir)
+# file_dir = os.path.dirname(__file__)
+# if file_dir not in sys.path:
+#     sys.path.append(file_dir)
 
 import shutil
 import pathlib
 import requests
 import addon_utils
 
-import globs
+from . import globs
 
 # Check if cats is reloading or started fresh
 if "bpy" not in locals():
@@ -69,11 +69,11 @@ if bpy.app.version < (2, 75):
 # Load or reload all cats modules
 if not is_reloading:
     # This order is important
-    import updater
-    import mmd_tools_local
-    import tools
-    import ui
-    import extentions
+    from . import updater
+    from . import mmd_tools_local
+    from . import tools
+    from . import ui
+    from . import extentions
 else:
     import importlib
     importlib.reload(updater)
@@ -85,7 +85,7 @@ else:
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
-# Delete mmd_tools_local folder
+# Delete ..folder
 # Refactor folder name "mmd_tools" to "mmd_tools_local"
 # Search for "show_backface_culling" and set it to False in view.py
 # Done
@@ -170,18 +170,14 @@ def remove_corrupted_files():
                 print("Failed to remove folder " + folder)
 
     if no_perm:
+        unregister()
         sys.tracebacklimit = 0
-        raise ImportError('                                                                                                                                                                                    '
-                          '                     '
-                          '\n\nFaulty CATS installation found!                                                                Faulty CATS installation found!'
-                          '\nTo fix this restart Blender as admin!                                                        To fix this restart Blender as admin!'
-                          '\n\n\n\n\nFaulty CATS installation found!'
-                          '\nTo fix this restart Blender as admin!'
-                          '\n\n\n\n\nFaulty CATS installation found!'
-                          '\nTo fix this restart Blender as admin!'
-                          '\n\n\n')
+        raise ImportError('\n\nFaulty CATS installation found!'
+                          '\nTo fix this restart Blender as admin!     '
+                          '\n')
 
     if os_error:
+        unregister()
         sys.tracebacklimit = 0
         message = '                                                                                                                                                                                    ' \
                   '                     '\
@@ -190,38 +186,28 @@ def remove_corrupted_files():
                   '\n'
 
         for folder in folders:
-            if folder not in to_remove:
+            if folder in to_remove:
                 message += "\n- " + os.path.join(main_dir, folder)
 
         for file in files:
-            if file not in to_remove:
+            if file in to_remove:
                 message += "\n- " + os.path.join(main_dir, file)
 
         raise ImportError(message)
 
     if wrong_path:
+        unregister()
         sys.tracebacklimit = 0
-        raise ImportError('                                                                                                                                                                                    '
-                          '                     '
-                          '\n\nFaulty CATS installation found!                                                                   Faulty CATS installation found!'
-                          '\nPlease install CATS via User Preferences and restart Blender!                 Please install CATS via User Preferences and restart Blender!'
-                          '\n\n\n\n\nFaulty installation found!'
+        raise ImportError('\n\nFaulty CATS installation found!'
                           '\nPlease install CATS via User Preferences and restart Blender!'
-                          '\n\n\n\n\nFaulty installation found!'
-                          '\nPlease install CATS via User Preferences and restart Blender!'
-                          '\n\n\n')
+                          '\n')
 
     if faulty_installation:
+        unregister()
         sys.tracebacklimit = 0
-        raise ImportError('                                                                                                                                                                                    '
-                          '                     '
-                          '\n\nFaulty CATS installation was found and fixed!                                                             Faulty CATS installation was found and fixed!'
-                          '\nPlease restart Blender and enable CATS again!                                                           Please restart Blender and enable CATS again!'
-                          '\n\n\n\n\nFaulty CATS installation was found and fixed!'
+        raise ImportError('\n\nFaulty CATS installation was found and fixed!'
                           '\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n\n\nFaulty CATS installation was found and fixed!'
-                          '\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n')
+                          '\n')
 
 
 def set_cats_version_string():
@@ -368,8 +354,11 @@ def unregister():
     # Unload all classes in reverse order
     count = 0
     for cls in reversed(tools.register.__bl_ordered_classes):
-        bpy.utils.unregister_class(cls)
-        count += 1
+        try:
+            bpy.utils.unregister_class(cls)
+            count += 1
+        except ValueError:
+            pass
     print('Unregistered', count, 'CATS classes.')
 
     # Unregister all dynamic buttons and icons

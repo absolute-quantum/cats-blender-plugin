@@ -7,9 +7,9 @@ import bpy
 import math
 import mathutils
 
-from mmd_tools_local.core import vmd
-from mmd_tools_local.core.camera import MMDCamera
-from mmd_tools_local.core.lamp import MMDLamp
+from .. import vmd
+from ..camera import MMDCamera
+from ..lamp import MMDLamp
 
 
 class _FCurve:

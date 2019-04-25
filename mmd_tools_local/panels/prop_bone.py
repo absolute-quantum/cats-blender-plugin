@@ -2,7 +2,7 @@
 
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
+from ..import register_wrap
 
 @register_wrap
 class MMDBonePanel(Panel):

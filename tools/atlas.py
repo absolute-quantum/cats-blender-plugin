@@ -25,11 +25,12 @@
 # Edits by: Hotox
 
 import bpy
-import globs
 import webbrowser
 import addon_utils
-import tools.common
-from tools.register import register_wrap
+
+from . import common as Common
+from .register import register_wrap
+from .. import globs
 
 
 # addon_name = "Shotariya-don"
@@ -66,7 +67,7 @@ class EnableSMC(bpy.types.Operator):
 #     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 #
 #     def execute(self, context):
-#         if not tools.common.version_2_79_or_older():
+#         if not Common.version_2_79_or_older():
 #             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
 #             return {'CANCELLED'}
 #             # TODO
@@ -77,8 +78,8 @@ class EnableSMC(bpy.types.Operator):
 #             return {'CANCELLED'}
 #
 #         # Check if there are meshes in the model
-#         if not tools.common.get_meshes_objects():
-#             tools.common.show_error(2.8, ['No model with meshes found!'])
+#         if not Common.get_meshes_objects():
+#             Common.show_error(2.8, ['No model with meshes found!'])
 #             return {'CANCELLED'}
 #
 #         # Check if all textures are found and count the materials/textures to check if it is already atlased
@@ -87,7 +88,7 @@ class EnableSMC(bpy.types.Operator):
 #         texture_list = []
 #         empty_tex_count = 0
 #         if len(context.scene.material_list) == 0:
-#             for mesh in tools.common.get_meshes_objects():
+#             for mesh in Common.get_meshes_objects():
 #                 for mat_slot in mesh.material_slots:
 #                     if mat_slot and mat_slot.material:
 #                         mat = mat_slot.material
@@ -126,14 +127,14 @@ class EnableSMC(bpy.types.Operator):
 #         # Check if there is an atlas already
 #         if len(material_list) == 0:
 #             if len(context.scene.material_list) == 0:
-#                 tools.common.show_error(2.3, ['No materials found!'])
+#                 Common.show_error(2.3, ['No materials found!'])
 #             else:
-#                 tools.common.show_error(2.3, ['No materials selected!'])
+#                 Common.show_error(2.3, ['No materials selected!'])
 #             return {'CANCELLED'}
 #
 #         # Check if there is an atlas already
 #         if len(material_list) == 1:
-#             tools.common.show_error(5, ['No need to create an atlas, there is already only one material.'])
+#             Common.show_error(5, ['No need to create an atlas, there is already only one material.'])
 #             return {'CANCELLED'}
 #
 #         # Check if there are too few items selected in the list
@@ -144,16 +145,16 @@ class EnableSMC(bpy.types.Operator):
 #                     checked_mats_count += 1
 #
 #             if checked_mats_count <= 1:
-#                 tools.common.show_error(3.2, ['Please select more than one material.'])
+#                 Common.show_error(3.2, ['Please select more than one material.'])
 #                 return {'CANCELLED'}
 #
 #         # Check if too few textures are selected
 #         if len(texture_list) <= 1:
 #             if len(context.scene.material_list) > 0:
-#                 tools.common.show_error(4.1, ['You only selected materials with the same texture.',
+#                 Common.show_error(4.1, ['You only selected materials with the same texture.',
 #                                               'You need multiple textures to generate an atlas.'])
 #             else:
-#                 tools.common.show_error(3.4, ['All materials are using the same texture.',
+#                 Common.show_error(3.4, ['All materials are using the same texture.',
 #                                               'There is no need to create an atlas.'])
 #             return {'CANCELLED'}
 #
@@ -178,12 +179,12 @@ class EnableSMC(bpy.types.Operator):
 #             for char in longest_line:
 #                 width += 0.095
 #
-#             tools.common.show_error(width, message)
+#             Common.show_error(width, message)
 #             return {'CANCELLED'}
 #
 #         # Check if Blend file is saved
 #         if not bpy.data.is_saved:
-#             tools.common.show_error(4.5, ['You have to save this Blender file first!',
+#             Common.show_error(4.5, ['You have to save this Blender file first!',
 #                                           'The generated atlas will be saved to the same location.'])
 #             return {'CANCELLED'}
 #
@@ -197,7 +198,7 @@ class EnableSMC(bpy.types.Operator):
 #             files.append(file)
 #
 #         # Filling the list with textures and concurrently checking if shotaiyas plugin is installed
-#         tools.common.set_default_stage()
+#         Common.set_default_stage()
 #         bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='GENERATE_TEX')
 #
 #         # Sets the folder for saving the generated textures
@@ -206,7 +207,7 @@ class EnableSMC(bpy.types.Operator):
 #         # Deselects all textures and then selects only the ones from the current model
 #         bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_TEX')
 #         if len(context.scene.material_list) == 0:
-#             for mesh in tools.common.get_meshes_objects():
+#             for mesh in Common.get_meshes_objects():
 #                 for mat_slot in mesh.material_slots:
 #                     if mat_slot:
 #                         bpy.data.materials[mat_slot.material.name].to_tex = True
@@ -229,7 +230,7 @@ class EnableSMC(bpy.types.Operator):
 #         # Deselects all materials and then selects only the ones from the current model
 #         bpy.ops.shotariya.list_actions('INVOKE_DEFAULT', action='CLEAR_MAT')
 #         if len(context.scene.material_list) == 0:
-#             for mesh in tools.common.get_meshes_objects():
+#             for mesh in Common.get_meshes_objects():
 #                 for mat_slot in mesh.material_slots:
 #                     if mat_slot:
 #                         bpy.data.materials[mat_slot.material.name].to_combine = True
@@ -264,7 +265,7 @@ class EnableSMC(bpy.types.Operator):
 #             error = 'You only selected materials that are using the same texture. These materials were combined.'
 #
 #         # Finish
-#         tools.common.set_default_stage()
+#         Common.set_default_stage()
 #         if error:
 #             self.report({'ERROR'}, error)
 #         else:
@@ -290,7 +291,7 @@ class EnableSMC(bpy.types.Operator):
 #     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 #
 #     def execute(self, context):
-#         if not tools.common.version_2_79_or_older():
+#         if not Common.version_2_79_or_older():
 #             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
 #             return {'CANCELLED'}
 #             # TODO
@@ -300,8 +301,8 @@ class EnableSMC(bpy.types.Operator):
 #             return {'CANCELLED'}
 #
 #         # Check if there are meshes
-#         if not tools.common.get_meshes_objects():
-#             tools.common.show_error(2.8, ['No model with meshes found!'])
+#         if not Common.get_meshes_objects():
+#             Common.show_error(2.8, ['No model with meshes found!'])
 #             return {'CANCELLED'}
 #
 #         scene = context.scene
@@ -309,11 +310,11 @@ class EnableSMC(bpy.types.Operator):
 #         scene.clear_materials = True
 #         scene.material_list_index = 0
 #
-#         for mesh in tools.common.get_meshes_objects():
+#         for mesh in Common.get_meshes_objects():
 #             if not mesh.data.uv_layers.active:
 #                 continue
 #
-#             tools.common.clean_material_names(mesh)
+#             Common.clean_material_names(mesh)
 #
 #             for mat_slot in mesh.material_slots:
 #                 if mat_slot and mat_slot.material:
@@ -375,7 +376,7 @@ class InstallShotariya(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5.3, height=-550)
 
     def check(self, context):
@@ -512,20 +513,20 @@ class ShotariyaButton(bpy.types.Operator):
 #
 #     def execute(self, context):
 #         if not bpy.data.is_saved:
-#             tools.common.show_error(6.5, ['You have to save your Blender file first!',
+#             Common.show_error(6.5, ['You have to save your Blender file first!',
 #                                           'Please save it to your assets folder so unity can discover the generated atlas file.'])
 #             return {'CANCELLED'}
 #
-#         tools.common.set_default_stage()
+#         Common.set_default_stage()
 #
 #         atlas_mesh = bpy.data.objects[context.scene.mesh_name_atlas]
 #         atlas_mesh.hide = False
-#         tools.common.select(atlas_mesh)
+#         Common.select(atlas_mesh)
 #
 #         # Check uv index
 #         newUVindex = len(atlas_mesh.data.uv_textures) - 1
 #         if newUVindex >= 1:
-#             tools.common.show_error(4.5, ['You have more then one UVMap, please combine them.'])
+#             Common.show_error(4.5, ['You have more then one UVMap, please combine them.'])
 #             return {'CANCELLED'}
 #
 #         # Disable all texture slots for all materials except the first texture slot
@@ -543,8 +544,8 @@ class ShotariyaButton(bpy.types.Operator):
 #         atlas_mesh.hide_render = False
 #
 #         # Go into edit mode, deselect and select all
-#         tools.common.switch('EDIT')
-#         tools.common.switch('EDIT')
+#         Common.switch('EDIT')
+#         Common.switch('EDIT')
 #         bpy.ops.mesh.select_all(action='DESELECT')
 #         bpy.ops.mesh.select_all(action='SELECT')
 #
@@ -579,7 +580,7 @@ class ShotariyaButton(bpy.types.Operator):
 #             bpy.ops.uv.pack_islands(margin=0.001)
 #
 #         # Time to bake
-#         tools.common.switch('EDIT')
+#         Common.switch('EDIT')
 #         context.scene.render.bake_type = "TEXTURE"
 #         bpy.ops.object.bake_image()
 #
@@ -588,7 +589,7 @@ class ShotariyaButton(bpy.types.Operator):
 #
 #         # Deselect all and switch to object mode
 #         bpy.ops.mesh.select_all(action='DESELECT')
-#         tools.common.switch('OBJECT')
+#         Common.switch('OBJECT')
 #
 #         # Delete all materials
 #         for ob in bpy.context.selected_editable_objects:

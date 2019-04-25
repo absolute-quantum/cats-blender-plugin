@@ -104,7 +104,7 @@ def menu_func_armature(self, context):
 
 @persistent
 def load_handler(dummy):
-    from mmd_tools_local.core.sdef import FnSDEF
+    from .core.sdef import FnSDEF
     FnSDEF.clear_cache()
     FnSDEF.register_driver_function()
 

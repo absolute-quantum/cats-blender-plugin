@@ -3,12 +3,12 @@
 import bpy
 import mathutils
 
-from mmd_tools_local import bpyutils
-from mmd_tools_local.core import rigid_body
-from mmd_tools_local.core.bone import FnBone
-from mmd_tools_local.core.morph import FnMorph
-from mmd_tools_local.bpyutils import matmul
-from mmd_tools_local.bpyutils import SceneOp
+from ..import bpyutils
+from ..core import rigid_body
+from ..core.bone import FnBone
+from ..core.morph import FnMorph
+from ..bpyutils import matmul
+from ..bpyutils import SceneOp
 
 import logging
 import time

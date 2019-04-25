@@ -4,10 +4,10 @@ import bpy
 from bpy.types import Operator
 from bpy.props import StringProperty, BoolProperty
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.material import FnMaterial
-from mmd_tools_local.core.exceptions import MaterialNotFoundError
-from mmd_tools_local import cycles_converter
+from ..import register_wrap
+from ..core.material import FnMaterial
+from ..core.exceptions import MaterialNotFoundError
+from ..import cycles_converter
 
 @register_wrap
 class ConvertMaterialsForCycles(Operator):
@@ -175,7 +175,7 @@ class EdgePreviewSetup(Operator):
         )
 
     def execute(self, context):
-        from mmd_tools_local.core.model import Model
+        from ..core.model import Model
         root = Model.findRoot(context.active_object)
         if root is None:
             self.report({'ERROR'}, 'Select a MMD model')

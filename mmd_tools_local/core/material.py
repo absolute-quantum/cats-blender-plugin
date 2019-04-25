@@ -4,8 +4,8 @@ import logging
 import os
 
 import bpy
-from mmd_tools_local.bpyutils import addon_preferences, select_object
-from mmd_tools_local.core.exceptions import MaterialNotFoundError
+from ..bpyutils import addon_preferences, select_object
+from ..core.exceptions import MaterialNotFoundError
 
 SPHERE_MODE_OFF    = 0
 SPHERE_MODE_MULT   = 1
@@ -100,31 +100,28 @@ class _FnMaterialBI:
         return False
 
     def _load_image(self, filepath):
-        for i in bpy.data.images:
-            if self.__same_image_file(i, filepath):
-                return i
-
-        try:
-            return bpy.data.images.load(filepath)
-        except:
-            logging.warning('Cannot create a texture for %s. No such file.', filepath)
-
-        img = bpy.data.images.new(os.path.basename(filepath), 1, 1)
-        img.source = 'FILE'
-        img.filepath = filepath
+        img = next((i for i in bpy.data.images if self.__same_image_file(i, filepath)), None)
+        if img is None:
+            try:
+                img = bpy.data.images.load(filepath)
+            except:
+                logging.warning('Cannot create a texture for %s. No such file.', filepath)
+                img = bpy.data.images.new(os.path.basename(filepath), 1, 1)
+                img.source = 'FILE'
+                img.filepath = filepath
+            img.use_alpha = (img.depth == 32 and img.file_format != 'BMP')
         return img
 
     def __load_texture(self, filepath):
-        for t in bpy.data.textures:
-            if t.type == 'IMAGE' and self.__same_image_file(t.image, filepath):
-                return t
-        tex = bpy.data.textures.new(name=bpy.path.display_name_from_filepath(filepath), type='IMAGE')
-        tex.image = self._load_image(filepath)
-        tex.use_alpha = tex.image.use_alpha = self.__has_alpha_channel(tex)
+        tex = next((t for t in bpy.data.textures if t.type == 'IMAGE' and self.__same_image_file(t.image, filepath)), None)
+        if tex is None:
+            tex = bpy.data.textures.new(name=bpy.path.display_name_from_filepath(filepath), type='IMAGE')
+            tex.image = self._load_image(filepath)
+            tex.use_alpha = tex.image.use_alpha
         return tex
 
     def __has_alpha_channel(self, texture):
-        return texture.type == 'IMAGE' and getattr(texture.image, 'depth', -1) == 32 and texture.image.file_format != 'BMP'
+        return texture.type == 'IMAGE' and getattr(texture.image, 'use_alpha', False)
 
 
     def get_texture(self):

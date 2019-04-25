@@ -302,7 +302,7 @@ class DictionaryEnum:
             items.append((txt_name, txt_name, "bpy.data.texts['%s']"%txt_name, 'TEXT', len(items)))
 
         import os
-        from mmd_tools_local.bpyutils import addon_preferences
+        from .bpyutils import addon_preferences
         folder = addon_preferences('dictionary_folder', '')
         if os.path.isdir(folder):
             for filename in sorted(x for x in os.listdir(folder) if x.lower().endswith('.csv')):

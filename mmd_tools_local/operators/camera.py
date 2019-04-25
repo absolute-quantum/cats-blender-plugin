@@ -5,8 +5,8 @@ from bpy.props import BoolProperty
 from bpy.props import EnumProperty
 from bpy.types import Operator
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.camera import MMDCamera
+from ..import register_wrap
+from ..core.camera import MMDCamera
 
 @register_wrap
 class ConvertToMMDCamera(Operator):
@@ -55,7 +55,7 @@ class ConvertToMMDCamera(Operator):
 
     def execute(self, context):
         if self.bake_animation:
-            from mmd_tools_local.bpyutils import SceneOp
+            from ..bpyutils import SceneOp
             obj = context.active_object
             targets = [x for x in context.selected_objects if x != obj]
             target = targets[0] if len(targets) == 1 else None

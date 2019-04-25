@@ -1,16 +1,13 @@
 import bpy
-import globs
-import tools.common
-import tools.supporter
-import tools.decimation
 
-from ui.main import ToolPanel
-from ui.main import layout_split
-
-from tools import armature_manual, decimation
-
-from tools.register import register_wrap
-from tools.common import version_2_79_or_older
+from .. import globs
+from .main import ToolPanel
+from .main import layout_split
+from ..tools import common as Common
+from ..tools import decimation as Decimation
+from ..tools import armature_manual as Armature_manual
+from ..tools.register import register_wrap
+from ..tools.common import version_2_79_or_older
 
 
 @register_wrap
@@ -46,19 +43,19 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         elif context.scene.decimation_mode == 'CUSTOM':
             col.separator()
 
-            if len(tools.common.get_meshes_objects(check=False)) <= 1:
+            if len(Common.get_meshes_objects(check=False)) <= 1:
                 row = col.row(align=True)
                 row.label(text='Start by Separating by Materials:')
                 row = col.row(align=True)
                 row.scale_y = 1.2
-                row.operator(armature_manual.SeparateByMaterials.bl_idname, text='Separate by Materials', icon='PLAY')
+                row.operator(Armature_manual.SeparateByMaterials.bl_idname, text='Separate by Materials', icon='PLAY')
                 return
             else:
                 row = col.row(align=True)
                 row.label(text='Stop by Joining Meshes:')
                 row = col.row(align=True)
                 row.scale_y = 1.2
-                row.operator(armature_manual.JoinMeshes.bl_idname, icon='PAUSE')
+                row.operator(Armature_manual.JoinMeshes.bl_idname, icon='PAUSE')
 
             col.separator()
             col.separator()
@@ -72,24 +69,24 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
             if context.scene.selection_mode == 'SHAPES':
                 row = layout_split(col, factor=0.7, align=False)
                 row.prop(context.scene, 'add_shape_key', icon='SHAPEKEY_DATA')
-                row.operator(decimation.AddShapeButton.bl_idname, icon=globs.ICON_ADD)
+                row.operator(Decimation.AddShapeButton.bl_idname, icon=globs.ICON_ADD)
                 col.separator()
 
                 box2 = col.box()
                 col = box2.column(align=True)
 
-                if len(tools.decimation.ignore_shapes) == 0:
+                if len(Decimation.ignore_shapes) == 0:
                     col.label(text='No shape key selected')
 
-                for shape in tools.decimation.ignore_shapes:
+                for shape in Decimation.ignore_shapes:
                     row = layout_split(col, factor=0.8, align=False)
                     row.label(text=shape, icon='SHAPEKEY_DATA')
-                    op = row.operator(decimation.RemoveShapeButton.bl_idname, icon=globs.ICON_REMOVE)
+                    op = row.operator(Decimation.RemoveShapeButton.bl_idname, icon=globs.ICON_REMOVE)
                     op.shape_name = shape
             elif context.scene.selection_mode == 'MESHES':
                 row = layout_split(col, factor=0.7, align=False)
                 row.prop(context.scene, 'add_mesh', icon='MESH_DATA')
-                row.operator(decimation.AddMeshButton.bl_idname, icon=globs.ICON_ADD)
+                row.operator(Decimation.AddMeshButton.bl_idname, icon=globs.ICON_ADD)
                 col.separator()
 
                 if context.scene.add_mesh == '':
@@ -99,18 +96,18 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 box2 = col.box()
                 col = box2.column(align=True)
 
-                if len(tools.decimation.ignore_meshes) == 0:
+                if len(Decimation.ignore_meshes) == 0:
                     col.label(text='No mesh selected')
 
-                for mesh in tools.decimation.ignore_meshes:
+                for mesh in Decimation.ignore_meshes:
                     row = layout_split(col, factor=0.8, align=False)
                     row.label(text=mesh, icon='MESH_DATA')
-                    op = row.operator(decimation.RemoveMeshButton.bl_idname, icon=globs.ICON_REMOVE)
+                    op = row.operator(Decimation.RemoveMeshButton.bl_idname, icon=globs.ICON_REMOVE)
                     op.mesh_name = mesh
 
             col = box.column(align=True)
 
-            if len(tools.decimation.ignore_shapes) == 0 and len(tools.decimation.ignore_meshes) == 0:
+            if len(Decimation.ignore_shapes) == 0 and len(Decimation.ignore_meshes) == 0:
                 col.label(text='Both lists are empty, this equals Full Decimation!', icon='ERROR')
                 row = col.row(align=True)
             else:
@@ -138,4 +135,4 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.scale_y = 1.2
-        row.operator(decimation.AutoDecimateButton.bl_idname, icon='MOD_DECIM')
+        row.operator(Decimation.AutoDecimateButton.bl_idname, icon='MOD_DECIM')

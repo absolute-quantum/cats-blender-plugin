@@ -3,7 +3,7 @@
 import bpy
 import math
 
-from mmd_tools_local.bpyutils import SceneOp
+from ..bpyutils import SceneOp
 
 class MMDCamera:
     def __init__(self, obj):
@@ -114,7 +114,7 @@ class MMDCamera:
 
         from math import atan
         from mathutils import Matrix, Vector
-        from mmd_tools_local.bpyutils import matmul
+        from ..bpyutils import matmul
 
         render = scene.render
         factor = (render.resolution_y*render.pixel_aspect_y)/(render.resolution_x*render.pixel_aspect_x)

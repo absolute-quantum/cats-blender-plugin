@@ -1,14 +1,10 @@
 import bpy
-import globs
-import updater
-import tools.common
-import tools.supporter
 
-from ui.main import ToolPanel
-
-from tools import settings
-
-from tools.register import register_wrap
+from .. import globs
+from .. import updater
+from .main import ToolPanel
+from ..tools import settings as Settings
+from ..tools.register import register_wrap
 
 
 @register_wrap
@@ -35,13 +31,13 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         # row.prop(context.scene, 'disable_vrchat_features')
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.operator(settings.ResetGoogleDictButton.bl_idname, icon='X')
+        row.operator(Settings.ResetGoogleDictButton.bl_idname, icon='X')
         if globs.dev_branch:
             row = col.row(align=True)
             row.scale_y = 0.8
-            row.operator(settings.DebugTranslations.bl_idname, icon='X')
+            row.operator(Settings.DebugTranslations.bl_idname, icon='X')
 
-        if tools.settings.settings_changed():
+        if Settings.settings_changed():
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.8
@@ -50,7 +46,7 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 0.8
             row.label(text='Some changes require a Blender restart.', icon='BLANK1')
             row = col.row(align=True)
-            row.operator(settings.RevertChangesButton.bl_idname, icon='RECOVER_LAST')
+            row.operator(Settings.RevertChangesButton.bl_idname, icon='RECOVER_LAST')
 
         col.separator()
         updater.draw_updater_panel(context, box)

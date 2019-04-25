@@ -11,21 +11,21 @@ from bpy.types import Operator
 from bpy.types import OperatorFileListElement
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local import auto_scene_setup
-from mmd_tools_local.utils import makePmxBoneMap
-from mmd_tools_local.core.camera import MMDCamera
-from mmd_tools_local.core.lamp import MMDLamp
-from mmd_tools_local.translations import DictionaryEnum
+from ..import register_wrap
+from ..import auto_scene_setup
+from ..utils import makePmxBoneMap
+from ..core.camera import MMDCamera
+from ..core.lamp import MMDLamp
+from ..translations import DictionaryEnum
 
-import mmd_tools_local.core.pmd.importer as pmd_importer
-import mmd_tools_local.core.pmx.importer as pmx_importer
-import mmd_tools_local.core.pmx.exporter as pmx_exporter
-import mmd_tools_local.core.vmd.importer as vmd_importer
-import mmd_tools_local.core.vmd.exporter as vmd_exporter
-import mmd_tools_local.core.vpd.importer as vpd_importer
-import mmd_tools_local.core.vpd.exporter as vpd_exporter
-import mmd_tools_local.core.model as mmd_model
+from ..core.pmd import importer as pmd_importer
+from ..core.pmx import importer as pmx_importer
+from ..core.pmx import exporter as pmx_exporter
+from ..core.vmd import importer as vmd_importer
+from ..core.vmd import exporter as vmd_exporter
+from ..core.vpd import importer as vpd_importer
+from ..core.vpd import exporter as vpd_exporter
+from ..core import model as mmd_model
 
 
 

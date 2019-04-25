@@ -7,16 +7,16 @@ import bpy
 import math
 from mathutils import Vector, Quaternion
 
-from mmd_tools_local import utils
-from mmd_tools_local.bpyutils import matmul
-from mmd_tools_local.core import vmd
-from mmd_tools_local.core.camera import MMDCamera
-from mmd_tools_local.core.lamp import MMDLamp
+from ... import utils
+from ...bpyutils import matmul
+from ...core import vmd
+from ...core.camera import MMDCamera
+from ...core.lamp import MMDLamp
 
 
 class _MirrorMapper:
     def __init__(self, data_map=None):
-        from mmd_tools_local.operators.view import FlipPose
+        from ...operators.view import FlipPose
         self.__data_map = data_map
         self.__flip_name = FlipPose.flip_name
 

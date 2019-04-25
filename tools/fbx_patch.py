@@ -1,8 +1,8 @@
 # This is directly taken from the export_fbx_bin.py to change it via monkey patching
-import tools.common
+from . import common as Common
 
 
-if tools.common.version_2_79_or_older():
+if Common.version_2_79_or_older():
     import bpy
     import time
     import array
@@ -26,7 +26,7 @@ if tools.common.version_2_79_or_older():
 
 
 def start_patch_fbx_exporter_timer():
-    if tools.common.version_2_79_or_older():
+    if Common.version_2_79_or_older():
         thread = Thread(target=time_patch_fbx_exporter, args=[])
         thread.start()
 
@@ -44,7 +44,7 @@ def time_patch_fbx_exporter():
 
 
 def patch_fbx_exporter():
-    if tools.common.version_2_79_or_older():
+    if Common.version_2_79_or_older():
         export_fbx_bin.fbx_data_from_scene = fbx_data_from_scene_v279
 
 

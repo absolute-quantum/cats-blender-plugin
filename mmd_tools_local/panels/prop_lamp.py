@@ -2,8 +2,8 @@
 
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.lamp import MMDLamp
+from ..import register_wrap
+from ..core.lamp import MMDLamp
 
 @register_wrap
 class MMDLampPanel(Panel):

@@ -5,17 +5,17 @@ import bpy
 from bpy.types import PropertyGroup
 from bpy.props import BoolProperty, CollectionProperty, FloatProperty, IntProperty, StringProperty, EnumProperty
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local import utils
-from mmd_tools_local.bpyutils import SceneOp
-from mmd_tools_local.core.material import FnMaterial
-from mmd_tools_local.core.sdef import FnSDEF
-from mmd_tools_local.properties.morph import BoneMorph
-from mmd_tools_local.properties.morph import MaterialMorph
-from mmd_tools_local.properties.morph import VertexMorph
-from mmd_tools_local.properties.morph import UVMorph
-from mmd_tools_local.properties.morph import GroupMorph
-import mmd_tools_local.core.model as mmd_model
+from .. import register_wrap
+from .. import utils
+from ..bpyutils import SceneOp
+from ..core.material import FnMaterial
+from ..core.sdef import FnSDEF
+from ..properties.morph import BoneMorph
+from ..properties.morph import MaterialMorph
+from ..properties.morph import VertexMorph
+from ..properties.morph import UVMorph
+from ..properties.morph import GroupMorph
+from ..core import model as mmd_model
 
 #===========================================
 # Callback functions

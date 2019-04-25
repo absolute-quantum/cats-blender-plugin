@@ -1,4 +1,4 @@
-from tools.common import version_2_79_or_older
+from ..tools.common import version_2_79_or_older
 
 
 class ToolPanel(object):

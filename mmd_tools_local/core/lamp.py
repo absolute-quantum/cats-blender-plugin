@@ -2,7 +2,7 @@
 
 import bpy
 
-from mmd_tools_local.bpyutils import SceneOp
+from ..bpyutils import SceneOp
 
 class MMDLamp:
     def __init__(self, obj):

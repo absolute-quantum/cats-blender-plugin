@@ -1,5 +1,8 @@
-import tools.common
-import tools.atlas
+from .tools import common as Common
+from .tools import atlas as Atlas
+from .tools import eyetracking as Eyetracking
+from .tools import rootbone as Rootbone
+from .tools import settings as Settings
 
 from bpy.types import Scene, Material
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty
@@ -9,8 +12,8 @@ def register():
     Scene.armature = EnumProperty(
         name='Armature',
         description='Select the armature which will be used by Cats',
-        items=tools.common.get_armature_list,
-        update=tools.common.update_material_list
+        items=Common.get_armature_list,
+        update=Common.update_material_list
     )
 
     Scene.full_body = BoolProperty(
@@ -86,25 +89,25 @@ def register():
     Scene.merge_armature_into = EnumProperty(
         name='Base Armature',
         description='Select the armature into which the other armature will be merged\n',
-        items=tools.common.get_armature_list
+        items=Common.get_armature_list
     )
 
     Scene.attach_to_bone = EnumProperty(
         name='Attach to Bone',
         description='Select the bone to which the armature will be attached to\n',
-        items=tools.common.get_bones_merge
+        items=Common.get_bones_merge
     )
 
     Scene.merge_armature = EnumProperty(
         name='Merge Armature',
         description='Select the armature which will be merged into the selected armature above\n',
-        items=tools.common.get_armature_merge_list
+        items=Common.get_armature_merge_list
     )
 
     Scene.attach_mesh = EnumProperty(
         name='Attach Mesh',
         description='Select the mesh which will be attached to the selected bone in the selected armature\n',
-        items=tools.common.get_top_meshes
+        items=Common.get_top_meshes
     )
 
     Scene.merge_same_bones = BoolProperty(
@@ -162,13 +165,13 @@ def register():
     Scene.add_shape_key = EnumProperty(
         name='Shape',
         description='The shape key you want to keep',
-        items=tools.common.get_shapekeys_decimation
+        items=Common.get_shapekeys_decimation
     )
 
     Scene.add_mesh = EnumProperty(
         name='Mesh',
         description='The mesh you want to leave untouched by the decimation',
-        items=tools.common.get_meshes_decimation
+        items=Common.get_meshes_decimation
     )
 
     Scene.decimate_fingers = BoolProperty(
@@ -216,57 +219,57 @@ def register():
             ("CREATION", "Creation", "Here you can create eye tracking."),
             ("TESTING", "Testing", "Here you can test how eye tracking will look ingame.")
         ],
-        update=tools.eyetracking.stop_testing
+        update=Eyetracking.stop_testing
     )
 
     Scene.mesh_name_eye = EnumProperty(
         name='Mesh',
         description='The mesh with the eyes vertex groups',
-        items=tools.common.get_meshes
+        items=Common.get_meshes
     )
 
     Scene.head = EnumProperty(
         name='Head',
         description='The head bone containing the eye bones',
-        items=tools.common.get_bones_head
+        items=Common.get_bones_head
     )
 
     Scene.eye_left = EnumProperty(
         name='Left Eye',
         description='The models left eye bone',
-        items=tools.common.get_bones_eye_l
+        items=Common.get_bones_eye_l
     )
 
     Scene.eye_right = EnumProperty(
         name='Right Eye',
         description='The models right eye bone',
-        items=tools.common.get_bones_eye_r
+        items=Common.get_bones_eye_r
     )
 
     Scene.wink_left = EnumProperty(
         name='Blink Left',
         description='The shape key containing a blink with the left eye',
-        items=tools.common.get_shapekeys_eye_blink_l
+        items=Common.get_shapekeys_eye_blink_l
     )
 
     Scene.wink_right = EnumProperty(
         name='Blink Right',
         description='The shape key containing a blink with the right eye',
-        items=tools.common.get_shapekeys_eye_blink_r
+        items=Common.get_shapekeys_eye_blink_r
     )
 
     Scene.lowerlid_left = EnumProperty(
         name='Lowerlid Left',
         description='The shape key containing a slightly raised left lower lid.\n'
                     'Can be set to "Basis" to disable lower lid movement',
-        items=tools.common.get_shapekeys_eye_low_l
+        items=Common.get_shapekeys_eye_low_l
     )
 
     Scene.lowerlid_right = EnumProperty(
         name='Lowerlid Right',
         description='The shape key containing a slightly raised right lower lid.\n'
                     'Can be set to "Basis" to disable lower lid movement',
-        items=tools.common.get_shapekeys_eye_low_r
+        items=Common.get_shapekeys_eye_low_r
     )
 
     Scene.disable_eye_movement = BoolProperty(
@@ -308,7 +311,7 @@ def register():
         max=25,
         step=1,
         subtype='FACTOR',
-        update=tools.eyetracking.set_rotation
+        update=Eyetracking.set_rotation
     )
 
     Scene.eye_rotation_y = IntProperty(
@@ -320,7 +323,7 @@ def register():
         max=19,
         step=1,
         subtype='FACTOR',
-        update=tools.eyetracking.set_rotation
+        update=Eyetracking.set_rotation
     )
 
     Scene.iris_height = IntProperty(
@@ -359,25 +362,25 @@ def register():
     Scene.mesh_name_viseme = EnumProperty(
         name='Mesh',
         description='The mesh with the mouth shape keys',
-        items=tools.common.get_meshes
+        items=Common.get_meshes
     )
 
     Scene.mouth_a = EnumProperty(
         name='Viseme AA',
         description='Shape key containing mouth movement that looks like someone is saying "aa".\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_ah,
+        items=Common.get_shapekeys_mouth_ah,
     )
 
     Scene.mouth_o = EnumProperty(
         name='Viseme OH',
         description='Shape key containing mouth movement that looks like someone is saying "oh".\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_oh,
+        items=Common.get_shapekeys_mouth_oh,
     )
 
     Scene.mouth_ch = EnumProperty(
         name='Viseme CH',
         description='Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth.\nDo not put empty shape keys like "Basis" in here',
-        items=tools.common.get_shapekeys_mouth_ch,
+        items=Common.get_shapekeys_mouth_ch,
     )
 
     Scene.shape_intensity = FloatProperty(
@@ -395,7 +398,7 @@ def register():
     Scene.root_bone = EnumProperty(
         name='To Parent',
         description='List of bones that look like they could be parented together to a root bone',
-        items=tools.rootbone.get_parent_root_bones,
+        items=Rootbone.get_parent_root_bones,
     )
 
     # Optimize
@@ -420,7 +423,7 @@ def register():
     # )
 
     # Scene.material_list = CollectionProperty(
-    #     type=tools.atlas.MaterialsGroup
+    #     type=Atlas.MaterialsGroup
     # )
 
     # Scene.clear_materials = BoolProperty(
@@ -444,13 +447,13 @@ def register():
     Scene.merge_mesh = EnumProperty(
         name='Mesh',
         description='The mesh with the bones vertex groups',
-        items=tools.common.get_meshes
+        items=Common.get_meshes
     )
 
     Scene.merge_bone = EnumProperty(
         name='To Merge',
         description='List of bones that look like they could be merged together to reduce overall bones',
-        items=tools.rootbone.get_parent_root_bones,
+        items=Rootbone.get_parent_root_bones,
     )
 
     # Settings
@@ -460,13 +463,13 @@ def register():
                     '\nUnity will automatically extract these textures and put them into a separate folder.'
                     '\nThis might not work for everyone and it increases the file size of the exported FBX file',
         default=False,
-        update=tools.settings.update_settings
+        update=Settings.update_settings
     )
     Scene.use_custom_mmd_tools = BoolProperty(
         name='Use Custom mmd_tools',
         description='Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools',
         default=False,
-        update=tools.settings.update_settings
+        update=Settings.update_settings
     )
 
     Scene.debug_translations = BoolProperty(
@@ -482,7 +485,7 @@ def register():
     #                 '\n- Eye Tracking'
     #                 '\n- Visemes',
     #     default=False,
-    #     update=tools.settings.update_settings
+    #     update=Settings.update_settings
     # )
 
     # Copy Protection - obsolete

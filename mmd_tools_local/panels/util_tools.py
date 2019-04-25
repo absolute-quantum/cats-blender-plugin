@@ -2,12 +2,12 @@
 
 from bpy.types import Panel, UIList
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.bpyutils import SceneOp
-from mmd_tools_local.core.model import Model
-from mmd_tools_local.panels.tool import TRIA_UP_BAR, TRIA_DOWN_BAR
-from mmd_tools_local.panels.tool import draw_filter_wrap
-from mmd_tools_local.panels.tool import _PanelBase
+from ..import register_wrap
+from ..bpyutils import SceneOp
+from ..core.model import Model
+from .tool import TRIA_UP_BAR, TRIA_DOWN_BAR
+from .tool import draw_filter_wrap
+from .tool import _PanelBase
 
 @register_wrap
 class MMD_TOOLS_UL_Materials(UIList):

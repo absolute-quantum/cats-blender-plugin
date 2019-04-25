@@ -2,10 +2,10 @@
 import re
 
 import bpy
-from mmd_tools_local import bpyutils
-from mmd_tools_local.bpyutils import SceneOp
-from mmd_tools_local.bpyutils import ObjectOp
-from mmd_tools_local.bpyutils import TransformConstraintOp
+from ..import bpyutils
+from ..bpyutils import SceneOp
+from ..bpyutils import ObjectOp
+from ..bpyutils import TransformConstraintOp
 
 class FnMorph(object):
 
@@ -523,7 +523,7 @@ class _MorphSlider:
             driver.expression = '(%s)*%s'%(__config_groups(variables, var.name, groups), fvar.name)
 
         # material morphs
-        from mmd_tools_local.core.shader import _MaterialMorph
+        from ..core.shader import _MaterialMorph
         group_dict = material_offset_map.get('group_dict', {})
 
         def __config_material_morph(mat, morph_list):

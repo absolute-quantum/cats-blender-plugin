@@ -2,7 +2,7 @@
 
 from bpy.types import Header
 
-from mmd_tools_local import register_wrap
+from ..import register_wrap
 
 @register_wrap
 class MMDViewHeader(Header):

@@ -7,16 +7,16 @@ import time
 import bpy
 from mathutils import Vector, Matrix
 
-import mmd_tools_local.core.model as mmd_model
-from mmd_tools_local import utils
-from mmd_tools_local import bpyutils
-from mmd_tools_local.core import pmx
-from mmd_tools_local.core.bone import FnBone
-from mmd_tools_local.core.material import FnMaterial
-from mmd_tools_local.core.morph import FnMorph
-from mmd_tools_local.core.vmd.importer import BoneConverter
-from mmd_tools_local.operators.display_item import DisplayItemQuickSetup
-from mmd_tools_local.operators.misc import MoveObject
+from .. import model as mmd_model
+from ... import utils
+from ... import bpyutils
+from .. import pmx
+from ..bone import FnBone
+from ..material import FnMaterial
+from ..morph import FnMorph
+from ..vmd.importer import BoneConverter
+from ...operators.display_item import DisplayItemQuickSetup
+from ...operators.misc import MoveObject
 
 
 class PMXImporter:

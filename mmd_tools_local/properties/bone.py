@@ -3,8 +3,8 @@
 from bpy.types import PropertyGroup
 from bpy.props import StringProperty, IntProperty, BoolProperty, FloatProperty, FloatVectorProperty
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.bone import FnBone
+from .. import register_wrap
+from ..core.bone import FnBone
 
 def _updateMMDBoneAdditionalTransform(prop, context):
     prop['is_additional_transform_dirty'] = True

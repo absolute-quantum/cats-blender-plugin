@@ -28,17 +28,18 @@ import os
 import bpy
 import copy
 import json
-import globs
 import pathlib
 import collections
-import tools.common
 import requests.exceptions
-import mmd_tools_local.translations
 
-from tools.register import register_wrap
 from datetime import datetime, timezone
-from googletrans import Translator
 from collections import OrderedDict
+
+from . import common as Common
+from .register import register_wrap
+from .. import globs
+from ..googletrans import Translator
+from ..mmd_tools_local import translations
 
 dictionary = None
 dictionary_google = None
@@ -61,30 +62,30 @@ class TranslateShapekeyButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
-        saved_data = tools.common.SavedData()
+        saved_data = Common.SavedData()
 
         to_translate = []
 
-        for mesh in tools.common.get_meshes_objects(mode=2):
-            if tools.common.has_shapekeys(mesh):
+        for mesh in Common.get_meshes_objects(mode=2):
+            if Common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
                         to_translate.append(shapekey.name)
 
         update_dictionary(to_translate, translating_shapes=True, self=self)
 
-        tools.common.update_shapekey_orders()
+        Common.update_shapekey_orders()
 
         i = 0
-        for mesh in tools.common.get_meshes_objects(mode=2):
-            if tools.common.has_shapekeys(mesh):
+        for mesh in Common.get_meshes_objects(mode=2):
+            if Common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if 'vrc.' not in shapekey.name:
                         shapekey.name, translated = translate(shapekey.name, add_space=True, translating_shapes=True)
                         if translated:
                             i += 1
 
-        tools.common.ui_refresh()
+        Common.ui_refresh()
 
         saved_data.load()
 
@@ -101,20 +102,20 @@ class TranslateBonesButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not tools.common.get_armature():
+        if not Common.get_armature():
             return False
         return True
 
     def execute(self, context):
         to_translate = []
-        for armature in tools.common.get_armature_objects():
+        for armature in Common.get_armature_objects():
             for bone in armature.data.bones:
                 to_translate.append(bone.name)
 
         update_dictionary(to_translate, self=self)
 
         count = 0
-        for armature in tools.common.get_armature_objects():
+        for armature in Common.get_armature_objects():
             for bone in armature.data.bones:
                 bone.name, translated = translate(bone.name)
                 if translated:
@@ -180,10 +181,10 @@ class TranslateMaterialsButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
 
-        saved_data = tools.common.SavedData()
+        saved_data = Common.SavedData()
 
         to_translate = []
-        for mesh in tools.common.get_meshes_objects(mode=2):
+        for mesh in Common.get_meshes_objects(mode=2):
             for matslot in mesh.material_slots:
                 if matslot.name not in to_translate:
                     to_translate.append(matslot.name)
@@ -191,8 +192,8 @@ class TranslateMaterialsButton(bpy.types.Operator):
         update_dictionary(to_translate, self=self)
 
         i = 0
-        for mesh in tools.common.get_meshes_objects(mode=2):
-            tools.common.set_active(mesh)
+        for mesh in Common.get_meshes_objects(mode=2):
+            Common.set_active(mesh)
             for index, matslot in enumerate(mesh.material_slots):
                 mesh.active_material_index = index
                 if bpy.context.object.active_material:
@@ -247,7 +248,7 @@ class TranslateTexturesButton(bpy.types.Operator):
                             bpy.data.textures[texslot.name].name = translated[i]
                             i += 1
 
-        tools.common.unselect_all()
+        Common.unselect_all()
 
         self.report({'INFO'}, 'Translated ' + str(i) + 'textures.')
         return {'FINISHED'}
@@ -268,7 +269,7 @@ class TranslateAllButton(bpy.types.Operator):
         error_shown = False
 
         try:
-            if tools.common.get_armature():
+            if Common.get_armature():
                 bpy.ops.cats_translate.bones('INVOKE_DEFAULT')
         except RuntimeError as e:
             self.report({'ERROR'}, str(e).replace('Error: ', ''))
@@ -442,7 +443,7 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
         print('YOU GOT BANNED BY GOOGLE!')
         return
     except RuntimeError as e:
-        error = tools.common.html_to_text(str(e))
+        error = Common.html_to_text(str(e))
         if self:
             if 'Please try your request again later' in error:
                 self.report({'ERROR'}, 'It looks like you got banned from Google Translate temporarily!'
@@ -546,7 +547,7 @@ def translate(to_translate, add_space=False, translating_shapes=False):
 
 
 def fix_jp_chars(name):
-    for values in mmd_tools_local.translations.jp_half_to_full_tuples:
+    for values in translations.jp_half_to_full_tuples:
         if values[0] in name:
             name = name.replace(values[0], values[1])
     return name

@@ -3,11 +3,11 @@
 import bpy
 from bpy.types import Panel, Menu, UIList
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local import operators
-from mmd_tools_local.utils import ItemOp
-from mmd_tools_local.bpyutils import SceneOp
-import mmd_tools_local.core.model as mmd_model
+from .. import register_wrap
+from .. import operators
+from ..utils import ItemOp
+from ..bpyutils import SceneOp
+from ..core import model as mmd_model
 
 
 TRIA_UP_BAR = 'TRIA_UP_BAR'

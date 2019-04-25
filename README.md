@@ -371,6 +371,7 @@ It checks for a new version automatically once every day.
   - Modified FBX Exporter to always export empty shape keys
     - This fixes the above described eye tracking bug
   - Added multiple Blender 2.8 compatibility fixes
+  - Fixed all compatibility issues with other plugins
   - Updated mmd_tools
   - Fixed multiple errors
 

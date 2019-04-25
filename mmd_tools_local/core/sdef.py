@@ -4,7 +4,7 @@ from mathutils import Vector, Matrix, Quaternion
 import numpy as np
 import time
 
-from mmd_tools_local.bpyutils import matmul
+from ..bpyutils import matmul
 
 class FnSDEF():
     g_verts = {} # global cache
@@ -235,7 +235,7 @@ class FnSDEF():
 
     @classmethod
     def unbind(cls, obj):
-        from mmd_tools_local.bpyutils import ObjectOp
+        from ..bpyutils import ObjectOp
         if obj.data.shape_keys:
             if cls.SHAPEKEY_NAME in obj.data.shape_keys.key_blocks:
                 ObjectOp(obj).shape_key_remove(obj.data.shape_keys.key_blocks[cls.SHAPEKEY_NAME])

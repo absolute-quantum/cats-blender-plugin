@@ -9,12 +9,12 @@ from bpy.props import FloatProperty
 from bpy.props import CollectionProperty
 from bpy.props import EnumProperty
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.model import Model as FnModel
-from mmd_tools_local.core.bone import FnBone
-from mmd_tools_local.core.material import FnMaterial
-from mmd_tools_local.core.morph import FnMorph
-from mmd_tools_local import utils
+from ..import register_wrap
+from ..core.model import Model as FnModel
+from ..core.bone import FnBone
+from ..core.material import FnMaterial
+from ..core.morph import FnMorph
+from ..import utils
 
 
 def _get_name(prop):
@@ -212,7 +212,7 @@ def _get_related_mesh(prop):
 def _update_material_morph_data(prop, context):
     if not prop.name.startswith('mmd_bind'):
         return
-    from mmd_tools_local.core.shader import _MaterialMorph
+    from ..core.shader import _MaterialMorph
     mat_id = prop.get('material_id', -1)
     if mat_id >= 0:
         mat = getattr(FnMaterial.from_material_id(mat_id), 'material', None)

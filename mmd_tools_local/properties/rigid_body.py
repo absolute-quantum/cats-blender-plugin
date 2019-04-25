@@ -4,10 +4,10 @@ import bpy
 from bpy.types import PropertyGroup
 from bpy.props import StringProperty, IntProperty, BoolVectorProperty, EnumProperty, FloatVectorProperty
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local import bpyutils
-from mmd_tools_local.core import rigid_body
-from mmd_tools_local.core.model import getRigidBodySize, Model
+from ..import register_wrap
+from ..import bpyutils
+from ..core import rigid_body
+from ..core.model import getRigidBodySize, Model
 
 
 def _updateCollisionGroup(prop, context):

@@ -6,10 +6,10 @@ import mathutils
 
 from bpy.types import Operator
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local import utils
-from mmd_tools_local.core import rigid_body
-import mmd_tools_local.core.model as mmd_model
+from .. import register_wrap
+from .. import utils
+from ..core import rigid_body
+from ..core import model as mmd_model
 
 @register_wrap
 class SelectRigidBody(Operator):

@@ -4,11 +4,11 @@ import bpy
 from bpy.types import PropertyGroup
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, StringProperty
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core import material
-from mmd_tools_local.core.material import FnMaterial
-from mmd_tools_local.core.model import Model
-from mmd_tools_local import utils
+from ..import register_wrap
+from ..core import material
+from ..core.material import FnMaterial
+from ..core.model import Model
+from ..import utils
 
 
 def _updateAmbientColor(prop, context):
@@ -63,7 +63,7 @@ def _setNameJ(prop, value):
         root = Model.findRoot(bpy.context.active_object)
         if root:
             rig = Model(root)
-            prop_value = utils.uniqueName(value, [mat.mmd_material.name_j for mat in rig.materials()])
+            prop_value = utils.uniqueName(value, [mat.mmd_material.name_j for mat in rig.materials() if mat])
         else:
             prop_value = utils.uniqueName(value, [mat.mmd_material.name_j for mat in bpy.data.materials])
 

@@ -2,9 +2,9 @@
 
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.model import Model
-from mmd_tools_local.core.sdef import FnSDEF
+from ..import register_wrap
+from ..core.model import Model
+from ..core.sdef import FnSDEF
 
 class _PanelBase(object):
     bl_space_type = 'VIEW_3D'

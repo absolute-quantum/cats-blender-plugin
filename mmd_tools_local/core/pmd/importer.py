@@ -8,9 +8,9 @@ import logging
 
 import mathutils
 
-import mmd_tools_local.core.pmx.importer as import_pmx
-import mmd_tools_local.core.pmd as pmd
-import mmd_tools_local.core.pmx as pmx
+from ..pmx import importer as import_pmx
+from .. import pmd as pmd
+from .. import pmx as pmx
 
 from math import radians
 
