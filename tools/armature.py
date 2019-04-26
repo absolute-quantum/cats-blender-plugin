@@ -37,7 +37,7 @@ from . import supporter as Supporter
 from . import armature_bones as Bones
 from .common import version_2_79_or_older
 from .register import register_wrap
-from ..mmd_tools_local.operators import morph as Morph
+from mmd_tools_local.operators import morph as Morph
 
 
 mmd_tools_installed = True

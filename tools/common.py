@@ -40,7 +40,7 @@ from . import decimation as Decimation
 from . import translate as Translate
 from . import armature_bones as Bones
 from .register import register_wrap
-from ..mmd_tools_local import utils
+from mmd_tools_local import utils
 
 # TODO
 # - Add check if hips bone really needs to be rotated

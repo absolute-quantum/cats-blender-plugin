@@ -39,7 +39,7 @@ from . import common as Common
 from .register import register_wrap
 from .. import globs
 from ..googletrans import Translator
-from ..mmd_tools_local import translations
+from mmd_tools_local import translations
 
 dictionary = None
 dictionary_google = None

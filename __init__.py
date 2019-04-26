@@ -42,9 +42,9 @@ import os
 import sys
 
 # Append files to sys path
-# file_dir = os.path.dirname(__file__)
-# if file_dir not in sys.path:
-#     sys.path.append(file_dir)
+file_dir = os.path.join(os.path.dirname(__file__), 'extern_tools')
+if file_dir not in sys.path:
+    sys.path.append(file_dir)
 
 import shutil
 import pathlib
@@ -69,8 +69,8 @@ if bpy.app.version < (2, 75):
 # Load or reload all cats modules
 if not is_reloading:
     # This order is important
+    import mmd_tools_local
     from . import updater
-    from . import mmd_tools_local
     from . import tools
     from . import ui
     from . import extentions
@@ -85,7 +85,7 @@ else:
 
 # How to update mmd_tools:
 # Paste mmd_tools folder into project
-# Delete ..folder
+# Delete mmd_tools_local folder
 # Refactor folder name "mmd_tools" to "mmd_tools_local"
 # Search for "show_backface_culling" and set it to False in view.py
 # Done
@@ -373,7 +373,6 @@ def unregister():
         pass
 
     # Remove files from sys path
-    file_dir = os.path.dirname(__file__)
     if file_dir in sys.path:
         sys.path.remove(file_dir)
 
