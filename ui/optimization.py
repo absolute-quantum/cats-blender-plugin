@@ -4,7 +4,6 @@ from importlib import import_module
 
 from .. import globs
 from .main import ToolPanel
-from .main import layout_split
 from ..tools import common as Common
 from ..tools import supporter as Supporter
 from ..tools import atlas as Atlas

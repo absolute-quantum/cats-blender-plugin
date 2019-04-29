@@ -9,7 +9,6 @@ from ..tools import importer as Importer
 from ..tools import supporter as Supporter
 from ..tools import eyetracking as Eyetracking
 from ..tools import armature_manual as Armature_manual
-from ..tools.common import version_2_79_or_older
 from ..tools.register import register_wrap
 
 @register_wrap

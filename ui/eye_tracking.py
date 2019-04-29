@@ -5,7 +5,6 @@ from .main import ToolPanel
 from ..tools import common as Common
 from ..tools import eyetracking as Eyetracking
 from ..tools.register import register_wrap
-from ..tools.common import version_2_79_or_older
 
 
 @register_wrap

@@ -7,7 +7,6 @@ from ..tools import supporter as Supporter
 from ..tools import armature_bones as Armature_bones
 from ..tools import armature_custom as Armature_custom
 from ..tools.register import register_wrap
-from ..tools.common import version_2_79_or_older
 
 
 @register_wrap

@@ -1,7 +1,6 @@
 import bpy
 
 from .main import ToolPanel
-from .main import layout_split
 from ..tools import supporter as Supporter
 from ..tools.register import register_wrap
 

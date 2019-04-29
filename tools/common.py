@@ -42,34 +42,32 @@ from . import armature_bones as Bones
 from .register import register_wrap
 from mmd_tools_local import utils
 
-# TODO
-# - Add check if hips bone really needs to be rotated
-# - Reset Pivot
-# - Manual bone selection button for root bones
-# - Checkbox for eye blinking/moving
-# - Translate progress bar
-# - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
-# - Eye tracking test add reset blink
-# - Eye tracking test set subcol like in updater
+# TODO:
+#  - Add check if hips bone really needs to be rotated
+#  - Reset Pivot
+#  - Manual bone selection button for root bones
+#  - Checkbox for eye blinking/moving
+#  - Translate progress bar
 
 
 class SavedData:
-    objects = {}
-    active_object = None
+    __object_properties = {}
+    __active_object = None
 
     def __init__(self):
-        self.objects = {}
-        self.active_object = None
+        # initialize as instance attributes rather than class attributes
+        self.__object_properties = {}
+        self.__active_object = None
 
         for obj in bpy.data.objects:
             mode = obj.mode
             selected = is_selected(obj)
             hidden = is_hidden(obj)
-            self.objects[obj.name] = [mode, selected, hidden]
+            self.__object_properties[obj.name] = [mode, selected, hidden]
 
             active = get_active()
             if active:
-                self.active_object = active.name
+                self.__active_object = active.name
 
     def load(self, ignore=None, load_mode=True, load_select=True, load_hide=True, load_active=True, hide_only=False):
         if not ignore:
@@ -79,8 +77,8 @@ class SavedData:
             load_select = False
             load_active = False
 
-        for obj_name, values in self.objects.items():
-            print(obj_name, ignore)
+        for obj_name, values in self.__object_properties.items():
+            # print(obj_name, ignore)
             if obj_name in ignore:
                 continue
 
@@ -89,7 +87,7 @@ class SavedData:
                 continue
 
             mode, selected, hidden = values
-            print(obj_name, mode, selected, hidden)
+            # print(obj_name, mode, selected, hidden)
 
             if load_mode and obj.mode != mode:
                 set_active(obj, skip_sel=True)
@@ -101,9 +99,9 @@ class SavedData:
                 hide(obj, hidden)
 
         # Set the active object
-        if load_active and bpy.data.objects.get(self.active_object):
-            if self.active_object not in ignore and self.active_object != get_active():
-                set_active(bpy.data.objects.get(self.active_object), skip_sel=True)
+        if load_active and bpy.data.objects.get(self.__active_object):
+            if self.__active_object not in ignore and self.__active_object != get_active():
+                set_active(bpy.data.objects.get(self.__active_object), skip_sel=True)
 
 
 def get_armature(armature_name=None):
@@ -129,32 +127,38 @@ def get_top_parent(child):
     return child
 
 
-def unhide_all(everything=False, obj_to_unhide=None):
-    if not obj_to_unhide:
-        obj_to_unhide = get_armature()
+def unhide_all_unnecessary():
+    # TODO: Documentation? What does "unnecessary" mean?
+    bpy.ops.object.hide_view_clear()
+    for collection in bpy.data.collections:
+        collection.hide_select = False
+        collection.hide_viewport = False
 
-    if everything or not obj_to_unhide:
-        for obj in bpy.data.objects:
-            hide(obj, False)
-            set_unselectable(obj, False)
-    else:
-        def unhide_children(parent):
-            for child in parent.children:
-                hide(child, False)
-                set_unselectable(child, False)
-                unhide_children(child)
 
-        top_parent = get_top_parent(obj_to_unhide)
-        hide(top_parent, False)
-        set_unselectable(top_parent, False)
-        unhide_children(top_parent)
+def unhide_all():
+    for obj in bpy.data.objects:
+        hide(obj, False)
+        set_unselectable(obj, False)
 
-    # Unhide all the things that are stupidly hidden and make them selectable
     if not version_2_79_or_older():
-        bpy.ops.object.hide_view_clear()
-        for collection in bpy.data.collections:
-            collection.hide_select = False
-            collection.hide_viewport = False
+        unhide_all_unnecessary()
+
+
+def unhide_children(parent):
+    for child in parent.children:
+        hide(child, False)
+        set_unselectable(child, False)
+        unhide_children(child)
+
+
+def unhide_all_of(obj_to_unhide=None):
+    if not obj_to_unhide:
+        return
+
+    top_parent = get_top_parent(obj_to_unhide)
+    hide(top_parent, False)
+    set_unselectable(top_parent, False)
+    unhide_children(top_parent)
 
 
 def unselect_all():
@@ -225,10 +229,11 @@ def set_default_stage_old():
     return armature
 
 
-def set_default_stage(everything=False):
+def set_default_stage():
     """
 
-    :param everything:
+    Selects the armature, unhides everything and sets the modes of every object to object mode
+
     :return: the armature
     """
 
@@ -243,7 +248,7 @@ def set_default_stage(everything=False):
                     delete(obj)
                 bpy.data.collections.remove(collection)
 
-    unhide_all(everything=everything)
+    unhide_all()
     unselect_all()
 
     for obj in bpy.data.objects:
@@ -1632,6 +1637,7 @@ def update_material_list(self=None, context=None):
             bpy.ops.smc.refresh_ob_data()
     except AttributeError:
         print('Material Combiner not found')
+
 
 
 """

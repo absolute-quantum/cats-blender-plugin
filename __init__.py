@@ -49,7 +49,6 @@ if file_dir not in sys.path:
 import shutil
 import pathlib
 import requests
-import addon_utils
 
 from . import globs
 
@@ -107,6 +106,7 @@ def remove_corrupted_files():
     to_remove = [
         'googletrans',
         'mmd_tools_local',
+        'extern_tools',
         'resources',
         'tests',
         'tools',
@@ -247,7 +247,6 @@ def register():
     version_str = set_cats_version_string()
 
     # Register Updater and check for CATS update
-    # print("Loading Updater..")
     updater.register(bl_info, dev_branch, version_str)
 
     # Set some global settings, first allowed use of globs
@@ -255,7 +254,6 @@ def register():
     globs.version_str = version_str
 
     # Load settings and show error if a faulty installation was deleted recently
-    # print("Loading settings..")
     show_error = False
     try:
         tools.settings.load_settings()
@@ -263,19 +261,13 @@ def register():
         show_error = True
     if show_error:
         sys.tracebacklimit = 0
-        raise ImportError('                                                                                                                                                                                    '
-                          '                     '
-                          '\n\nPlease restart Blender and enable CATS again!                                                            Please restart Blender and enable CATS again!'
-                          '\n\n\n\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n\n')
+        raise ImportError('\n\nPlease restart Blender and enable CATS again!'
+                          '\n')
 
     # if not tools.settings.use_custom_mmd_tools():
     #     bpy.utils.unregister_module("mmd_tools")
 
     # Load mmd_tools
-    # print("Loading mmd_tools..")
     try:
         mmd_tools_local.register()
     except AttributeError:
@@ -284,7 +276,6 @@ def register():
         print('mmd_tools is already registered')
 
     # Register all classes
-    # print('Registering CATS classes..')
     count = 0
     tools.register.order_classes()
     for cls in tools.register.__bl_classes:
@@ -298,11 +289,9 @@ def register():
         print('Skipped', len(tools.register.__bl_classes) - count, 'CATS classes.')
 
     # Register Scene types
-    # print("Registering scene types..")
     extentions.register()
 
     # Load supporter and settings icons and buttons
-    # print("Loading other stuff..")
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
     tools.supporter.register_dynamic_buttons()
@@ -341,7 +330,7 @@ def unregister():
     # Unregister updater
     updater.unregister()
 
-    # # Unload mmd_tools
+    # Unload mmd_tools
     try:
         mmd_tools_local.unregister()
     except AttributeError:
@@ -372,7 +361,7 @@ def unregister():
         print('shapekey button was not registered')
         pass
 
-    # Remove files from sys path
+    # Remove folder from sys path
     if file_dir in sys.path:
         sys.path.remove(file_dir)
 

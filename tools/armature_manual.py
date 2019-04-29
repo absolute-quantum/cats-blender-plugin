@@ -34,7 +34,6 @@ from .register import register_wrap
 mmd_tools_installed = False
 try:
     import mmd_tools_local
-
     mmd_tools_installed = True
 except:
     pass

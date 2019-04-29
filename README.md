@@ -360,6 +360,7 @@ It checks for a new version automatically once every day.
 - **Import**:
   - If a required plugin is not installed, it will now show you the link to the correct version
      depending on if you use Blender 2.79 or 2.80
+  - Added .vrm files to the "Import Any Model" button in Blender 2.79
 - **Export**:
   - Improved export warnings
     - They will no longer exaggerate as much as before

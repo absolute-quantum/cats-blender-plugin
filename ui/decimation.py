@@ -7,7 +7,6 @@ from ..tools import common as Common
 from ..tools import decimation as Decimation
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
-from ..tools.common import version_2_79_or_older
 
 
 @register_wrap

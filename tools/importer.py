@@ -48,14 +48,25 @@ except:
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = 'cats_importer.import_any_model'
     bl_label = 'Import Any Model'
-    bl_description = 'Import a model of any supported type.' \
-                     '\n' \
-                     '\nSupported types:' \
-                     '\n- MMD: .pmx/.pmd' \
-                     '\n- XNALara: .xps/.mesh/.ascii' \
-                     '\n- Source: .smd/.qc/.vta/.dmx' \
-                     '\n- FBX .fbx'
-    # '\n- DAE .dae'
+    if version_2_79_or_older():
+        bl_description = 'Import a model of any supported type.' \
+                         '\n' \
+                         '\nSupported types:' \
+                         '\n- MMD: .pmx/.pmd' \
+                         '\n- XNALara: .xps/.mesh/.ascii' \
+                         '\n- Source: .smd/.qc/.vta' \
+                         '\n- VRM: .vrm' \
+                         '\n- FBX .fbx '
+    else:
+        bl_description = 'Import a model of any supported type.' \
+                         '\n' \
+                         '\nSupported types:' \
+                         '\n- MMD: .pmx/.pmd' \
+                         '\n- XNALara: .xps/.mesh/.ascii' \
+                         '\n- Source: .smd/.qc/.vta/.dmx' \
+                         '\n- VRM: .vrm' \
+                         '\n- FBX .fbx' \
+                         '\n- DAE .dae '
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
@@ -63,7 +74,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
     if version_2_79_or_older():
         filter_glob = bpy.props.StringProperty(
-            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx",
+            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.fbx;*.vrm;",
             options={'HIDDEN'}
         )
     else:
@@ -139,6 +150,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
             # DAE, VRM - not working in 2.79 because of bug:
             # https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
+            # EDIT: VRM now works in 2.79 because I removed .dmx from the 2.79 list. It seems that .dmx is the least used format
             elif file_ending == 'dae':
                 try:
                     bpy.ops.wm.collada_import('EXEC_DEFAULT',

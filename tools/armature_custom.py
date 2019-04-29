@@ -47,7 +47,7 @@ class MergeArmature(bpy.types.Operator):
 
     def execute(self, context):
         # Set default stage
-        Common.set_default_stage(everything=True)
+        Common.set_default_stage()
         Common.unselect_all()
 
         # Get both armatures
@@ -125,7 +125,7 @@ class AttachMesh(bpy.types.Operator):
 
     def execute(self, context):
         # Set default stage
-        Common.set_default_stage(everything=True)
+        Common.set_default_stage()
         Common.unselect_all()
 
         # Get armature and mesh

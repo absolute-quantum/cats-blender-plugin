@@ -6,7 +6,6 @@ from ..tools import common as Common
 from ..tools import copy_protection as Copy_protection
 from ..tools import importer as Importer
 from ..tools.register import register_wrap
-from ..tools.common import version_2_79_or_older
 
 
 @register_wrap

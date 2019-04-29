@@ -3,7 +3,6 @@ import bpy
 from .main import ToolPanel
 from ..tools import rootbone as Rootbone
 from ..tools.register import register_wrap
-from ..tools.common import version_2_79_or_older
 
 
 @register_wrap
