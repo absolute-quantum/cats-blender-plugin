@@ -70,9 +70,18 @@ class FixArmature(bpy.types.Operator):
         return True
 
     def execute(self, context):
-
-
-
+        # Todo: Remove this
+        # armature = Common.get_armature()
+        # Common.switch('EDIT')
+        #
+        # for bone in armature.data.edit_bones:
+        #     bone.tail = bone.head
+        #     bone.tail[2] += 0.1
+        #
+        # Common.switch('OBJECT')
+        #
+        #
+        # return {'FINISHED'}
 
         is_vrm = False
         if len(Common.get_meshes_objects()) == 0:
@@ -1173,7 +1182,7 @@ class FixArmature(bpy.types.Operator):
 
         # Connect all bones with their children if they have exactly one
         for bone in armature.data.edit_bones:
-            if len(bone.children) == 1:
+            if len(bone.children) == 1 and bone.name not in ['LeftEye', 'RightEye', 'Head', 'Hips']:
                 bone.tail = bone.children[0].head
 
         # # This is code for testing

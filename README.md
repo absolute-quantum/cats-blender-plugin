@@ -356,7 +356,7 @@ It checks for a new version automatically once every day.
 - **Optimization**:
   - Removed support for old v1.x Material Combiner versions
     - This fixes the random "Material Combiner missing" errors
-    - If you still want to use the old versions, please use them directly via the shotariya tab
+    - If you still want to use old versions, please use them directly via the shotariya tab
 - **Import**:
   - If a required plugin is not installed, it will now show you the link to the correct version
      depending on if you use Blender 2.79 or 2.80
