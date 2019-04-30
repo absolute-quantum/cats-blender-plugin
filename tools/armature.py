@@ -399,9 +399,9 @@ class FixArmature(bpy.types.Operator):
                     for mat_slot in mesh.material_slots:
                         mat_slot.material.alpha = 1
             else:
+                pass
                 # TODO
 
-                # TODO
                 # Makes all materials visible
                 # for i, mat_slot in enumerate(mesh.material_slots):
                 #     context.object.active_material_index = i
@@ -418,6 +418,9 @@ class FixArmature(bpy.types.Operator):
                 #     shader.roughness = 1
                 #     #shader.transmission = 0
                 #     #shader.transmission_roughness = 0
+
+                # Make materials exportable in Blender 2.8
+                Common.add_principle_shader()
 
                 for area in context.screen.areas:  # iterate through areas in current screen
                     if area.type == 'VIEW_3D':

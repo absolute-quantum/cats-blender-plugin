@@ -1639,6 +1639,129 @@ def update_material_list(self=None, context=None):
         print('Material Combiner not found')
 
 
+def unify_materials():
+    textures = []  # TODO
+
+    for ob in bpy.data.objects:
+        if ob.type == "MESH":
+            for mat_slot in ob.material_slots:
+                if mat_slot.material:
+                    mat_slot.material.blend_method = 'HASHED'
+                    # mat_slot.material.blend_method = 'BLEND'  # Use this for transparent textures only
+                    print('MAT: ', mat_slot.material.name)
+                    if mat_slot.material.node_tree:
+                        nodes = mat_slot.material.node_tree.nodes
+                        image = None
+                        for node in nodes:
+                            # print(' ' + node.name + ', ' + node.type + ', ' + node.label)
+                            if node.type == 'TEX_IMAGE' and 'toon' not in node.name and 'sphere' not in node.name:
+                                image = node.image
+                                # textures.append(node.image.name)
+                            mat_slot.material.node_tree.nodes.remove(node)
+
+                        # Create Image node
+                        node_texture = nodes.new(type='ShaderNodeTexImage')
+                        node_texture.location = 0, 0
+                        node_texture.image = image
+                        node_texture.label = 'Cats Texture'
+
+                        # Create Principled BSDF node
+                        node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
+                        node_prinipled.location = 300, -220
+                        node_prinipled.label = 'Cats Emission'
+                        node_prinipled.inputs['Specular'].default_value = 0
+                        node_prinipled.inputs['Roughness'].default_value = 0
+                        node_prinipled.inputs['Sheen Tint'].default_value = 0
+                        node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
+                        node_prinipled.inputs['IOR'].default_value = 0
+
+                        # Create Transparency BSDF node
+                        node_transparent = nodes.new(type='ShaderNodeBsdfTransparent')
+                        node_transparent.location = 325, -100
+                        node_transparent.label = 'Cats Transparency'
+
+                        # Create Mix Shader node
+                        node_mix = nodes.new(type='ShaderNodeMixShader')
+                        node_mix.location = 600, 0
+                        node_mix.label = 'Cats Mix'
+
+                        # Create Output node
+                        node_output = nodes.new(type='ShaderNodeOutputMaterial')
+                        node_output.location = 800, 0
+                        node_output.label = 'Cats Output'
+
+                        # Create 2nd Output node
+                        node_output2 = nodes.new(type='ShaderNodeOutputMaterial')
+                        node_output2.location = 800, -200
+                        node_output2.label = 'Cats Export'
+
+                        # Link nodes together
+                        mat_slot.material.node_tree.links.new(node_texture.outputs['Color'], node_prinipled.inputs['Base Color'])
+                        mat_slot.material.node_tree.links.new(node_texture.outputs['Alpha'], node_mix.inputs['Fac'])
+
+                        mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_mix.inputs[2])
+                        mat_slot.material.node_tree.links.new(node_transparent.outputs['BSDF'], node_mix.inputs[1])
+
+                        mat_slot.material.node_tree.links.new(node_mix.outputs['Shader'], node_output.inputs['Surface'])
+
+                        mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_output2.inputs['Surface'])
+
+                    # break
+
+    print(textures, len(textures))
+    return {'FINISHED'}
+
+
+def add_principle_shader():
+    for mesh in get_meshes_objects():
+        for mat_slot in mesh.material_slots:
+            if mat_slot.material and mat_slot.material.node_tree:
+                nodes = mat_slot.material.node_tree.nodes
+                node_image = None
+                node_image_count = 0
+
+                for node in nodes:
+                    if node.type == 'BSDF_PRINCIPLED' and node.location == (501, -500):
+                        node_image = None
+                        break
+                    if node.type == 'OUTPUT_MATERIAL' and node.location == (801, -500):
+                        node_image = None
+                        break
+
+                    if node.type != 'TEX_IMAGE':
+                        continue
+                    node_image_count += 1
+
+                    if node.name == 'mmd_base_tex' or node.label == 'MainTexture':
+                        node_image = node
+                        node_image_count = 0
+                        break
+
+                    node_image = node
+
+                if not node_image or node_image_count > 1:
+                    continue
+
+                # Create Principled BSDF node
+                node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
+                node_prinipled.location = 501, -500
+                node_prinipled.label = 'Cats Emission'
+                node_prinipled.inputs['Specular'].default_value = 0
+                node_prinipled.inputs['Roughness'].default_value = 0
+                node_prinipled.inputs['Sheen Tint'].default_value = 0
+                node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
+                node_prinipled.inputs['IOR'].default_value = 0
+
+                # Create Output node for correct image exports
+                node_output = nodes.new(type='ShaderNodeOutputMaterial')
+                node_output.location = 801, -500
+                node_output.label = 'Cats Export'
+
+                # Link nodes together
+                mat_slot.material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
+                mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_output.inputs['Surface'])
+
+
 
 """
 HTML <-> text conversions.

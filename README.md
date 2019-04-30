@@ -365,6 +365,8 @@ It checks for a new version automatically once every day.
   - Improved export warnings
     - They will no longer exaggerate as much as before
   - Added warning when Eye Tracking is set up but there are no meshes named "Body"
+  - Blender 2.80: MMD models will now have their textures correctly assigned to their materials in Unity
+    - VRM models as well but only partially at this moment
 - **Shapekeys**:
   - "Apply Shapekey to Basis" now applies the shapekey at its current strength into the basis
      instead of at full strength
