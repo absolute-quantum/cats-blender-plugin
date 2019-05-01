@@ -30,6 +30,7 @@ import time
 
 from math import degrees
 from mathutils import Vector
+from threading import Thread
 from datetime import datetime
 from html.parser import HTMLParser
 from html.entities import name2codepoint
@@ -50,6 +51,14 @@ from mmd_tools_local import utils
 #  - Translate progress bar
 
 
+def version_2_79_or_older():
+    return bpy.app.version < (2, 80)
+
+
+def get_objects():
+    return bpy.context.scene.objects if version_2_79_or_older() else bpy.context.view_layer.objects
+
+
 class SavedData:
     __object_properties = {}
     __active_object = None
@@ -59,7 +68,7 @@ class SavedData:
         self.__object_properties = {}
         self.__active_object = None
 
-        for obj in bpy.data.objects:
+        for obj in get_objects():
             mode = obj.mode
             selected = is_selected(obj)
             hidden = is_hidden(obj)
@@ -82,7 +91,7 @@ class SavedData:
             if obj_name in ignore:
                 continue
 
-            obj = bpy.data.objects.get(obj_name)
+            obj = get_objects().get(obj_name)
             if not obj:
                 continue
 
@@ -99,15 +108,15 @@ class SavedData:
                 hide(obj, hidden)
 
         # Set the active object
-        if load_active and bpy.data.objects.get(self.__active_object):
+        if load_active and get_objects().get(self.__active_object):
             if self.__active_object not in ignore and self.__active_object != get_active():
-                set_active(bpy.data.objects.get(self.__active_object), skip_sel=True)
+                set_active(get_objects().get(self.__active_object), skip_sel=True)
 
 
 def get_armature(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         if obj.type == 'ARMATURE' and obj.name == armature_name:
             return obj
     return None
@@ -115,7 +124,7 @@ def get_armature(armature_name=None):
 
 def get_armature_objects():
     armatures = []
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         if obj.type == 'ARMATURE':
             armatures.append(obj)
     return armatures
@@ -136,7 +145,7 @@ def unhide_all_unnecessary():
 
 
 def unhide_all():
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         hide(obj, False)
         set_unselectable(obj, False)
 
@@ -162,7 +171,7 @@ def unhide_all_of(obj_to_unhide=None):
 
 
 def unselect_all():
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         select(obj, False)
 
 
@@ -251,7 +260,7 @@ def set_default_stage():
     unhide_all()
     unselect_all()
 
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         set_active(obj)
         switch('OBJECT')
         if obj.type == 'ARMATURE':
@@ -293,7 +302,7 @@ def get_bone_angle(p1, p2):
 
 def remove_unused_vertex_groups(ignore_main_bones=False):
     unselect_all()
-    for ob in bpy.data.objects:
+    for ob in get_objects():
         if ob.type == 'MESH':
             ob.update_from_editmode()
 
@@ -311,9 +320,7 @@ def remove_unused_vertex_groups(ignore_main_bones=False):
                     ob.vertex_groups.remove(ob.vertex_groups[i])
 
 
-def find_center_vector_of_vertex_group(mesh_name, vertex_group):
-    mesh = bpy.data.objects[mesh_name]
-
+def find_center_vector_of_vertex_group(mesh, vertex_group):
     data = mesh.data
     verts = data.vertices
     verts_in_group = []
@@ -340,6 +347,22 @@ def find_center_vector_of_vertex_group(mesh_name, vertex_group):
     average = total / divide_by
 
     return average
+
+
+def vertex_group_exists(mesh_name, bone_name):
+    mesh = get_objects()[mesh_name]
+    data = mesh.data
+    verts = data.vertices
+
+    for vert in verts:
+        i = vert.index
+        try:
+            mesh.vertex_groups[bone_name].weight(i)
+            return True
+        except:
+            pass
+
+    return False
 
 
 def get_meshes(self, context):
@@ -380,18 +403,16 @@ def get_all_meshes(self, context):
 def get_armature_list(self, context):
     choices = []
 
-    for object in context.scene.objects:
-        if object.type == 'ARMATURE':
-            # 1. Will be returned by context.scene
-            # 2. Will be shown in lists
-            # 3. will be shown in the hover description (below description)
+    for armature in get_armature_objects():
+        # Set name displayed in list
+        name = armature.data.name
+        if name.startswith('Armature ('):
+            name = armature.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
 
-            # Set name displayed in list
-            name = object.data.name
-            if name.startswith('Armature ('):
-                name = object.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
-
-            choices.append((object.name, name, object.name))
+        # 1. Will be returned by context.scene
+        # 2. Will be shown in lists
+        # 3. will be shown in the hover description (below description)
+        choices.append((armature.name, name, armature.name))
 
     if len(choices) == 0:
         choices.append(('None', 'None', 'None'))
@@ -404,18 +425,20 @@ def get_armature_merge_list(self, context):
     choices = []
     current_armature = context.scene.merge_armature_into
 
-    for obj in context.scene.objects:
-        if obj.type == 'ARMATURE' and obj.name != current_armature:
+    for armature in get_armature_objects():
+        if armature.name != current_armature:
+            # Set name displayed in list
+            name = armature.data.name
+            if name.startswith('Armature ('):
+                name = armature.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
+
             # 1. Will be returned by context.scene
             # 2. Will be shown in lists
             # 3. will be shown in the hover description (below description)
+            choices.append((armature.name, name, armature.name))
 
-            # Set name displayed in list
-            name = obj.data.name
-            if name.startswith('Armature ('):
-                name = obj.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
-
-            choices.append((obj.name, name, obj.name))
+    if len(choices) == 0:
+        choices.append(('None', 'None', 'None'))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
@@ -547,9 +570,9 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
         meshes = meshes_list
     elif meshes_list:
         if is_mouth:
-            meshes = [bpy.data.objects.get(context.scene.mesh_name_viseme)]
+            meshes = [get_objects().get(context.scene.mesh_name_viseme)]
         else:
-            meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
+            meshes = [get_objects().get(context.scene.mesh_name_eye)]
     else:
         bpy.types.Object.Enum = choices
         return bpy.types.Object.Enum
@@ -646,7 +669,7 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
     # 3 = Selected only
 
     meshes = []
-    for ob in bpy.data.objects:
+    for ob in get_objects():
         if ob.type == 'MESH':
             if mode == 0:
                 if not armature_name:
@@ -674,8 +697,9 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
         to_remove = []
         for mesh in meshes:
             selected = is_selected(mesh)
-            # print(mesh.name, mesh.users)
+            print(mesh.name, mesh.users)
             set_active(mesh)
+
             if not get_active():
                 to_remove.append(mesh)
 
@@ -949,7 +973,7 @@ def prepare_separation(mesh):
     unselect_all()
 
     # Remove Rigidbodies and joints
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         if 'rigidbodies' in obj.name or 'joints' in obj.name:
             delete_hierarchy(obj)
 
@@ -1014,7 +1038,7 @@ def reset_context_scenes():
 
 
 def save_shapekey_order(mesh_name):
-    mesh = bpy.data.objects[mesh_name]
+    mesh = get_objects()[mesh_name]
     armature = get_armature()
 
     if not armature:
@@ -1106,7 +1130,7 @@ def update_shapekey_orders():
 
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
-    mesh = bpy.data.objects[mesh_name]
+    mesh = get_objects()[mesh_name]
     if not has_shapekeys(mesh):
         return
     set_active(mesh)
@@ -1195,7 +1219,7 @@ def sort_shape_keys(mesh_name, shape_key_order=None):
 
 
 def isEmptyGroup(group_name):
-    mesh = bpy.data.objects.get('Body')
+    mesh = get_objects().get('Body')
     if mesh is None:
         return True
     vgroup = mesh.vertex_groups.get(group_name)
@@ -1246,7 +1270,7 @@ def delete_hierarchy(parent):
     get_child_names(parent)
     to_delete.append(parent)
 
-    objs = bpy.data.objects
+    objs = get_objects()
     for obj in to_delete:
         objs.remove(objs[obj.name], do_unlink=True)
 
@@ -1256,7 +1280,7 @@ def delete(obj):
         for child in obj.children:
             child.parent = obj.parent
 
-    objs = bpy.data.objects
+    objs = get_objects()
     objs.remove(objs[obj.name], do_unlink=True)
 
 
@@ -1326,7 +1350,7 @@ def delete_zero_weight(armature_name=None, ignore=''):
 
 
 def remove_unused_objects():
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         if (obj.type == 'CAMERA' and obj.name == 'Camera') \
                 or (obj.type == 'LAMP' and obj.name == 'Lamp') \
                 or (obj.type == 'LIGHT' and obj.name == 'Light') \
@@ -1336,7 +1360,7 @@ def remove_unused_objects():
 
 def remove_no_user_objects():
     # print('\nREMOVE OBJECTS')
-    for block in bpy.data.objects:
+    for block in get_objects():
         # print(block.name, block.users)
         if block.users == 0:
             print('Removing obj ', block.name)
@@ -1578,10 +1602,6 @@ def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
         mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
 
 
-def version_2_79_or_older():
-    return bpy.app.version < (2, 80)
-
-
 def get_user_preferences():
     return bpy.context.user_preferences if hasattr(bpy.context, 'user_preferences') else bpy.context.preferences
 
@@ -1642,7 +1662,7 @@ def update_material_list(self=None, context=None):
 def unify_materials():
     textures = []  # TODO
 
-    for ob in bpy.data.objects:
+    for ob in get_objects():
         if ob.type == "MESH":
             for mat_slot in ob.material_slots:
                 if mat_slot.material:
@@ -1826,7 +1846,7 @@ def html_to_text(html):
 """ === THIS CODE COULD BE USEFUL === """
 
 # def addvertex(meshname, shapekey_name):
-#     mesh = bpy.data.objects[meshname].data
+#     mesh = get_objects()[meshname].data
 #     bm = bmesh.new()
 #     bm.from_mesh(mesh)
 #     bm.verts.ensure_lookup_table()
@@ -1849,7 +1869,7 @@ def html_to_text(html):
 
 # Check which shape keys will be deleted on export by Blender
 # def checkshapekeys():
-#     for ob in bpy.data.objects:
+#     for ob in get_objects():
 #         if ob.type == 'MESH':
 #             mesh = ob
 #     bm = bmesh.new()
@@ -1874,7 +1894,7 @@ def html_to_text(html):
 
 # # Repair vrc shape keys old
 # def repair_shapekeys():
-#     for ob in bpy.data.objects:
+#     for ob in get_objects():
 #         if ob.type == 'MESH':
 #             mesh = ob
 #             bm = bmesh.new()

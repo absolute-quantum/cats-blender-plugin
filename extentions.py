@@ -92,16 +92,16 @@ def register():
         items=Common.get_armature_list
     )
 
-    Scene.attach_to_bone = EnumProperty(
-        name='Attach to Bone',
-        description='Select the bone to which the armature will be attached to\n',
-        items=Common.get_bones_merge
-    )
-
     Scene.merge_armature = EnumProperty(
         name='Merge Armature',
         description='Select the armature which will be merged into the selected armature above\n',
         items=Common.get_armature_merge_list
+    )
+
+    Scene.attach_to_bone = EnumProperty(
+        name='Attach to Bone',
+        description='Select the bone to which the armature will be attached to\n',
+        items=Common.get_bones_merge
     )
 
     Scene.attach_mesh = EnumProperty(

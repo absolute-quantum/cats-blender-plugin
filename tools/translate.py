@@ -137,7 +137,7 @@ class TranslateObjectsButton(bpy.types.Operator):
             self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
             return {'FINISHED'}
         to_translate = []
-        for obj in bpy.data.objects:
+        for obj in Common.get_objects():
             if obj.name not in to_translate:
                 to_translate.append(obj.name)
             if obj.type == 'ARMATURE':
@@ -149,7 +149,7 @@ class TranslateObjectsButton(bpy.types.Operator):
         update_dictionary(to_translate, self=self)
 
         i = 0
-        for obj in bpy.data.objects:
+        for obj in Common.get_objects():
             obj.name, translated = translate(obj.name)
             if translated:
                 i += 1
@@ -221,7 +221,7 @@ class TranslateTexturesButton(bpy.types.Operator):
         translator = Translator()
 
         to_translate = []
-        for ob in bpy.data.objects:
+        for ob in Common.get_objects():
             if ob.type == 'MESH':
                 for matslot in ob.material_slots:
                     for texslot in bpy.data.materials[matslot.name].texture_slots:
@@ -240,7 +240,7 @@ class TranslateTexturesButton(bpy.types.Operator):
             translated.append(translation.text)
 
         i = 0
-        for ob in bpy.data.objects:
+        for ob in Common.get_objects():
             if ob.type == 'MESH':
                 for matslot in ob.material_slots:
                     for texslot in bpy.data.materials[matslot.name].texture_slots:

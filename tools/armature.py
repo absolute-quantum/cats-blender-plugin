@@ -261,7 +261,7 @@ class FixArmature(bpy.types.Operator):
                     to_delete.append(child2.name)
                     continue
         for obj_name in to_delete:
-            Common.delete_hierarchy(bpy.data.objects[obj_name])
+            Common.delete_hierarchy(Common.get_objects()[obj_name])
 
         # Remove objects from different layers and things that are not meshes
         get_current_layers = []

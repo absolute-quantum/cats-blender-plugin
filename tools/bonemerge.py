@@ -54,7 +54,7 @@ class BoneMergeButton(bpy.types.Operator):
         armature = Common.set_default_stage()
 
         parent_bones = globs.root_bones[context.scene.merge_bone]
-        mesh = bpy.data.objects[context.scene.merge_mesh]
+        mesh = Common.get_objects()[context.scene.merge_mesh]
         ratio = context.scene.merge_ratio
         # debug
         print(ratio)

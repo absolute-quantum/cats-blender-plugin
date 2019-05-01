@@ -519,7 +519,7 @@ class ShotariyaButton(bpy.types.Operator):
 #
 #         Common.set_default_stage()
 #
-#         atlas_mesh = bpy.data.objects[context.scene.mesh_name_atlas]
+#         atlas_mesh = Common.get_objects()[context.scene.mesh_name_atlas]
 #         atlas_mesh.hide = False
 #         Common.select(atlas_mesh)
 #

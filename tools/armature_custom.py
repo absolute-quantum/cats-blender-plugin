@@ -53,8 +53,8 @@ class MergeArmature(bpy.types.Operator):
         # Get both armatures
         base_armature_name = bpy.context.scene.merge_armature_into
         merge_armature_name = bpy.context.scene.merge_armature
-        base_armature = bpy.data.objects[base_armature_name]
-        merge_armature = bpy.data.objects[merge_armature_name]
+        base_armature = Common.get_objects()[base_armature_name]
+        merge_armature = Common.get_objects()[merge_armature_name]
 
         if not merge_armature:
             Common.show_error(5.2, ['The armature "' + merge_armature_name + '" could not be found.'])
@@ -132,7 +132,7 @@ class AttachMesh(bpy.types.Operator):
         mesh_name = bpy.context.scene.attach_mesh
         base_armature_name = bpy.context.scene.merge_armature_into
         attach_bone_name = bpy.context.scene.attach_to_bone
-        mesh = bpy.data.objects[mesh_name]
+        mesh = Common.get_objects()[mesh_name]
 
         # Create new armature
         bpy.ops.object.armature_add(location=(0, 0, 0))
@@ -186,8 +186,8 @@ class CustomModelTutorialButton(bpy.types.Operator):
 
 def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_name=None, merge_same_bones=False):
     tolerance = 0.00008726647  # around 0.005 degrees
-    base_armature = bpy.data.objects[base_armature_name]
-    merge_armature = bpy.data.objects[merge_armature_name]
+    base_armature = Common.get_objects()[base_armature_name]
+    merge_armature = Common.get_objects()[merge_armature_name]
 
     # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
     x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(base_armature)
@@ -311,17 +311,31 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Reparent all bones
     if merge_same_bones:
+        bones_to_merge = []
         for bone in armature.data.edit_bones:
             if bone.name.endswith('.merge'):
                 new_bone = armature.data.edit_bones.get(bone.name.replace('.merge', ''))
                 if new_bone:
                     bone.parent = new_bone
+                    bones_to_merge.append(new_bone.name)
     else:
+        # Merge base bones
         for bone_name in bones_to_merge:
             old = bone_name + '.merge'
             new = bone_name
             if old in armature.data.edit_bones and new in armature.data.edit_bones:
                 armature.data.edit_bones.get(old).parent = armature.data.edit_bones.get(new)
+
+        # Merge all bones that have the exact same position and name
+        for bone in armature.data.edit_bones:
+            if bone.name.endswith('.merge'):
+                new_bone = armature.data.edit_bones.get(bone.name.replace('.merge', ''))
+                if new_bone \
+                        and round(bone.head[0], 4) == round(new_bone.head[0], 4)\
+                        and round(bone.head[1], 4) == round(new_bone.head[1], 4)\
+                        and round(bone.head[2], 4) == round(new_bone.head[2], 4):
+                    bone.parent = new_bone
+                    bones_to_merge.append(new_bone.name)
 
     # Remove all unused bones, constraints and vertex groups
     Common.set_default_stage()
@@ -332,58 +346,28 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Merge bones into existing bones
     Common.set_active(mesh_merged)
-    replace_bones = []
     if not mesh_only:
-        if merge_same_bones:
-            print('MERGE SAME BONES!')
-            to_delete = []
-            for bone in armature.pose.bones:
-                if not bone.name.endswith('.merge'):
-                    continue
+        to_delete = []
+        for bone_name in bones_to_merge:
+            bone_base = bone_name
+            bone_merge = bone_name + '.merge'
 
-                bone_base = armature.pose.bones.get(bone.name.replace('.merge', ''))
-                bone_merge = armature.pose.bones.get(bone.name)
+            vg_base = mesh_merged.vertex_groups.get(bone_base)
+            vg_merge = mesh_merged.vertex_groups.get(bone_merge)
 
-                if not bone_base or not bone_merge:
-                    continue
-
-                print(bone_base.name, bone_merge.name)
-
-                vg_base = mesh_merged.vertex_groups.get(bone_base.name)
-                vg_merge = mesh_merged.vertex_groups.get(bone_merge.name)
-
-                if vg_base and vg_merge:
-                    Common.mix_weights(mesh_merged, vg_merge.name, vg_base.name)
-
-                to_delete.append(bone_merge.name)
-
-            Common.set_active(armature)
-            Common.switch('EDIT')
-
-            for bone_name in to_delete:
-                bone = armature.data.edit_bones.get(bone_name)
-                if bone:
-                    armature.data.edit_bones.remove(bone)
-
-            Common.switch('OBJECT')
-
-        else:
-            for bone_name in bones_to_merge:
-                bone_base = bone_name
-                bone_merge = bone_name + '.merge'
-
-                vg_base = mesh_merged.vertex_groups.get(bone_base)
-                vg2 = mesh_merged.vertex_groups.get(bone_merge)
-
-                if not vg_base:
-                    if vg2:
-                        # vg2.name = bone_base
-                        replace_bones.append(bone_base)
-                        continue
-                if not vg2:
-                    continue
-
+            if vg_base and vg_merge:
                 Common.mix_weights(mesh_merged, bone_merge, bone_base)
+                to_delete.append(bone_merge)
+
+        Common.set_active(armature)
+        Common.switch('EDIT')
+
+        for bone_name in to_delete:
+            bone = armature.data.edit_bones.get(bone_name)
+            if bone:
+                armature.data.edit_bones.remove(bone)
+
+        Common.switch('OBJECT')
 
         # Remove ".merge" from all non duplicate bones
         for bone in armature.pose.bones:
@@ -405,16 +389,16 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     Common.switch('EDIT')
 
     # Set new bone positions
-    for bone_name in replace_bones:
-        if bone_name in armature.data.edit_bones and bone_name + '.merge' in armature.data.edit_bones:
-            bone = armature.data.edit_bones.get(bone_name)
-            bone_merged = armature.data.edit_bones.get(bone_name + '.merge')
-
-            bone.name = bone.name + '_Old'
-            bone_merged.name = bone_merged.name.replace('.merge', '')
-
-            bone_merged.parent = bone.parent
-            bone.parent = bone_merged
+    # for bone_name in replace_bones:
+    #     if bone_name in armature.data.edit_bones and bone_name + '.merge' in armature.data.edit_bones:
+    #         bone = armature.data.edit_bones.get(bone_name)
+    #         bone_merged = armature.data.edit_bones.get(bone_name + '.merge')
+    #
+    #         bone.name = bone.name + '_Old'
+    #         bone_merged.name = bone_merged.name.replace('.merge', '')
+    #
+    #         bone_merged.parent = bone.parent
+    #         bone.parent = bone_merged
 
     # Fix bone connections (just for design)
     Common.correct_bone_positions(armature_name=base_armature_name)
