@@ -96,7 +96,7 @@ class StartPoseMode(bpy.types.Operator):
         if version_2_79_or_older():
             bpy.context.space_data.transform_manipulators = {'ROTATE'}
         else:
-            bpy.ops.wm.tool_set_by_id(name="builtin.transform")
+            bpy.ops.wm.tool_set_by_id(name="builtin.rotate")
 
         saved_data.load(hide_only=True)
 
