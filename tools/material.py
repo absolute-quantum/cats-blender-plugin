@@ -335,6 +335,7 @@ class ConvertAllToPngButton(bpy.types.Operator):
         return Common.get_meshes_objects(mode=2, check=False)
 
     def execute(self, context):
+        saved_data = Common.SavedData()
         convertion_count = 0
 
         for mesh in Common.get_meshes_objects(mode=2):
@@ -381,6 +382,8 @@ class ConvertAllToPngButton(bpy.types.Operator):
                             bpy.data.images[image_name].name = image_name_new
 
                             convertion_count += 1
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Converted ' + str(convertion_count) + ' to PNG files.')
         return {'FINISHED'}

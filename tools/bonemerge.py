@@ -51,6 +51,7 @@ class BoneMergeButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
+        saved_data = Common.SavedData()
         armature = Common.set_default_stage()
 
         parent_bones = globs.root_bones[context.scene.merge_bone]
@@ -89,6 +90,8 @@ class BoneMergeButton(bpy.types.Operator):
                 self.check_bone(mesh, child, ratio, ratio)
                 did += 1
                 wm.progress_update(did)
+
+        saved_data.load()
 
         wm.progress_end()
         self.report({'INFO'}, 'Merged bones.')
