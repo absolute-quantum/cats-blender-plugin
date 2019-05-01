@@ -47,6 +47,7 @@ class RootButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
+        saved_data = Common.SavedData()
         Common.set_default_stage()
 
         Common.switch('EDIT')
@@ -70,6 +71,8 @@ class RootButton(bpy.types.Operator):
 
         # reset the root bone cache
         globs.root_bones_choices = {}
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Bones parented!')
 

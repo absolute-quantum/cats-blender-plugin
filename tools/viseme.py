@@ -58,6 +58,8 @@ class AutoVisemeButton(bpy.types.Operator):
             self.report({'ERROR'}, 'Please select the correct mouth shapekeys instead of "Basis"!')
             return {'CANCELLED'}
 
+        saved_data = Common.SavedData()
+
         Common.set_default_stage()
 
         wm = bpy.context.window_manager
@@ -244,6 +246,8 @@ class AutoVisemeButton(bpy.types.Operator):
 
         # Sort visemes
         Common.sort_shape_keys(mesh.name)
+
+        saved_data.load()
 
         wm.progress_end()
 

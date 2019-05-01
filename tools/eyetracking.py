@@ -72,6 +72,8 @@ class CreateEyesButton(bpy.types.Operator):
     def execute(self, context):
         wm = bpy.context.window_manager
 
+        saved_data = Common.SavedData()
+
         # Set the stage
         armature = Common.set_default_stage()
         Common.switch('EDIT')
@@ -241,6 +243,8 @@ class CreateEyesButton(bpy.types.Operator):
         #     for key in deleted:
         #         text += key + ', '
         #     self.report({'WARNING'}, text)
+
+        saved_data.load()
 
         wm.progress_end()
 

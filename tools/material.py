@@ -53,6 +53,8 @@ class OneTexPerMatButton(bpy.types.Operator):
             return {'CANCELLED'}
             # TODO
 
+        saved_data = Common.SavedData()
+
         Common.set_default_stage()
 
         for mesh in Common.get_meshes_objects():
@@ -60,6 +62,8 @@ class OneTexPerMatButton(bpy.types.Operator):
                 for i, tex_slot in enumerate(mat_slot.material.texture_slots):
                     if i > 0 and tex_slot:
                         mat_slot.material.use_textures[i] = False
+
+        saved_data.load()
 
         self.report({'INFO'}, 'All materials have one texture now.')
         return{'FINISHED'}
@@ -86,6 +90,8 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
             return {'CANCELLED'}
             # TODO
 
+        saved_data = Common.SavedData()
+
         Common.set_default_stage()
 
         for mesh in Common.get_meshes_objects():
@@ -93,6 +99,8 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
                 for i, tex_slot in enumerate(mat_slot.material.texture_slots):
                     if i > 0 and tex_slot:
                         tex_slot.texture = None
+
+        saved_data.load()
 
         self.report({'INFO'}, 'All materials have one texture now.')
         return{'FINISHED'}
@@ -118,6 +126,8 @@ class StandardizeTextures(bpy.types.Operator):
             return {'CANCELLED'}
             # TODO
 
+        saved_data = Common.SavedData()
+
         Common.set_default_stage()
 
         for mesh in Common.get_meshes_objects():
@@ -131,6 +141,8 @@ class StandardizeTextures(bpy.types.Operator):
                         tex_slot.use_map_alpha = True
                         tex_slot.use_map_color_diffuse = True
                         tex_slot.blend_type = 'MULTIPLY'
+
+        saved_data.load()
 
         self.report({'INFO'}, 'All textures are now standardized.')
         return{'FINISHED'}
@@ -245,6 +257,8 @@ class CombineMaterialsButton(bpy.types.Operator):
             return {'CANCELLED'}
             # TODO
 
+        saved_data = Common.SavedData()
+
         Common.set_default_stage()
         self.generate_combined_tex()
         Common.switch('OBJECT')
@@ -293,6 +307,8 @@ class CombineMaterialsButton(bpy.types.Operator):
 
         # Update the material list of the Material Combiner
         Common.update_material_list()
+
+        saved_data.load()
 
         if i == 0:
             self.report({'INFO'}, 'No materials combined.')

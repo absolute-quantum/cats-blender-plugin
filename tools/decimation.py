@@ -154,6 +154,8 @@ class AutoDecimateButton(bpy.types.Operator):
             self.report({'ERROR'}, 'No meshes found!')
             return {'FINISHED'}
 
+        saved_data = Common.SavedData()
+
         if context.scene.decimation_mode != 'CUSTOM':
             mesh = Common.join_meshes(repair_shape_keys=False)
             Common.separate_by_materials(context, mesh)
@@ -161,6 +163,8 @@ class AutoDecimateButton(bpy.types.Operator):
         self.decimate(context)
 
         Common.join_meshes()
+
+        saved_data.load()
 
         return {'FINISHED'}
 
