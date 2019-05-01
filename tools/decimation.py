@@ -25,9 +25,10 @@
 # Edits by:
 
 import bpy
-import tools.common
-import tools.armature_bones as Bones
-from tools.register import register_wrap
+
+from . import common as Common
+from . import armature_bones as Bones
+from .register import register_wrap
 
 
 ignore_shapes = []
@@ -50,7 +51,7 @@ class ScanButton(bpy.types.Operator):
 
     def execute(self, context):
         shape = context.scene.add_shape_key
-        shapes = tools.common.get_shapekeys_decimation_list(self, context)
+        shapes = Common.get_shapekeys_decimation_list(self, context)
         count = len(shapes)
 
         if count > 1 and shapes.index(shape) == count - 1:
@@ -78,7 +79,7 @@ class AddShapeButton(bpy.types.Operator):
 
     def execute(self, context):
         shape = context.scene.add_shape_key
-        shapes = tools.common.get_shapekeys_decimation_list(self, context)
+        shapes = Common.get_shapekeys_decimation_list(self, context)
         count = len(shapes)
 
         if count > 1 and shapes.index(shape) == count - 1:
@@ -148,24 +149,28 @@ class AutoDecimateButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        meshes = tools.common.get_meshes_objects()
+        meshes = Common.get_meshes_objects()
         if not meshes or len(meshes) == 0:
             self.report({'ERROR'}, 'No meshes found!')
             return {'FINISHED'}
 
+        saved_data = Common.SavedData()
+
         if context.scene.decimation_mode != 'CUSTOM':
-            mesh = tools.common.join_meshes(repair_shape_keys=False)
-            tools.common.separate_by_materials(context, mesh)
+            mesh = Common.join_meshes(repair_shape_keys=False)
+            Common.separate_by_materials(context, mesh)
 
         self.decimate(context)
 
-        tools.common.join_meshes()
+        Common.join_meshes()
+
+        saved_data.load()
 
         return {'FINISHED'}
 
     def decimate(self, context):
         print('START DECIMATION')
-        tools.common.set_default_stage()
+        Common.set_default_stage()
 
         custom_decimation = context.scene.decimation_mode == 'CUSTOM'
         full_decimation = context.scene.decimation_mode == 'FULL'
@@ -177,21 +182,21 @@ class AutoDecimateButton(bpy.types.Operator):
         current_tris_count = 0
         tris_count = 0
 
-        meshes_obj = tools.common.get_meshes_objects()
+        meshes_obj = Common.get_meshes_objects()
 
         for mesh in meshes_obj:
-            tools.common.set_active(mesh)
-            tools.common.switch('EDIT')
+            Common.set_active(mesh)
+            Common.switch('EDIT')
             bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
-            tools.common.switch('OBJECT')
-            tools.common.remove_doubles(mesh, 0.00001)
+            Common.switch('OBJECT')
+            Common.remove_doubles(mesh, 0.00001, save_shapes=True)
             current_tris_count += len(mesh.data.polygons)
 
         if save_fingers:
             for mesh in meshes_obj:
                 if len(mesh.vertex_groups) > 0:
-                    tools.common.set_active(mesh)
-                    tools.common.switch('EDIT')
+                    Common.set_active(mesh)
+                    Common.switch('EDIT')
 
                     bpy.ops.mesh.select_mode(type='VERT')
 
@@ -209,17 +214,17 @@ class AutoDecimateButton(bpy.types.Operator):
 
                     bpy.ops.object.mode_set(mode='OBJECT')
 
-                    tools.common.unselect_all()
+                    Common.unselect_all()
 
         for mesh in meshes_obj:
-            tools.common.set_active(mesh)
+            Common.set_active(mesh)
             tris = len(mesh.data.polygons)
 
             if custom_decimation and mesh.name in ignore_meshes:
-                tools.common.unselect_all()
+                Common.unselect_all()
                 continue
 
-            if tools.common.has_shapekeys(mesh):
+            if Common.has_shapekeys(mesh):
                 if full_decimation:
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
@@ -231,7 +236,7 @@ class AutoDecimateButton(bpy.types.Operator):
                             found = True
                             break
                     if found:
-                        tools.common.unselect_all()
+                        Common.unselect_all()
                         continue
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
@@ -248,7 +253,7 @@ class AutoDecimateButton(bpy.types.Operator):
                 meshes.append((mesh, tris))
                 tris_count += tris
 
-            tools.common.unselect_all()
+            Common.unselect_all()
 
         print(current_tris_count)
         print(tris_count)
@@ -269,7 +274,7 @@ class AutoDecimateButton(bpy.types.Operator):
                 else:
                     message[1] = message[1][:-1]
                     message.append("or disable 'Save Fingers'.")
-            tools.common.show_error(6, message)
+            Common.show_error(6, message)
             return
 
         try:
@@ -277,10 +282,10 @@ class AutoDecimateButton(bpy.types.Operator):
         except ZeroDivisionError:
             decimation = 1
         if decimation >= 1:
-            tools.common.show_error(6, ['The model already has less than ' + str(max_tris) + ' tris. Nothing had to be decimated.'])
+            Common.show_error(6, ['The model already has less than ' + str(max_tris) + ' tris. Nothing had to be decimated.'])
             return
         elif decimation <= 0:
-            tools.common.show_error(4.5, ['The model could not be decimated to ' + str(max_tris) + ' tris.',
+            Common.show_error(4.5, ['The model could not be decimated to ' + str(max_tris) + ' tris.',
                                           'It got decimated as much as possible within the limits.'])
 
         meshes.sort(key=lambda x: x[1])
@@ -289,7 +294,7 @@ class AutoDecimateButton(bpy.types.Operator):
             mesh_obj = mesh[0]
             tris = mesh[1]
 
-            tools.common.set_active(mesh_obj)
+            Common.set_active(mesh_obj)
             print(mesh_obj.name)
 
             # Calculate new decimation ratio
@@ -312,7 +317,7 @@ class AutoDecimateButton(bpy.types.Operator):
             current_tris_count = current_tris_count - tris + tris_after
             tris_count = tris_count - tris
 
-            tools.common.unselect_all()
+            Common.unselect_all()
 
         # # Check if decimated correctly
         # if decimation < 0:
@@ -322,15 +327,15 @@ class AutoDecimateButton(bpy.types.Operator):
         #     current_tris_count = 0
         #     tris_count = 0
         #
-        #     for mesh in tools.common.get_meshes_objects():
-        #         tools.common.select(mesh)
+        #     for mesh in Common.get_meshes_objects():
+        #         Common.select(mesh)
         #         tris = len(bpy.context.active_object.data.polygons)
         #         tris_count += tris
         #         print(tris_count)
         #
         #     for mesh in reversed(meshes):
         #         mesh_obj = mesh[0]
-        #         tools.common.select(mesh_obj)
+        #         Common.select(mesh_obj)
         #
         #         # Calculate new decimation ratio
         #         decimation = (max_tris - tris_count) / tris_count
@@ -342,7 +347,7 @@ class AutoDecimateButton(bpy.types.Operator):
         #         mod.use_collapse_triangulate = True
         #         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
         #
-        #         tools.common.unselect_all()
+        #         Common.unselect_all()
         #         break
 
 

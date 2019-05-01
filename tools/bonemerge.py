@@ -25,9 +25,10 @@
 # Edits by: GiveMeAllYourCats
 
 import bpy
-import globs
-import tools.common
-from tools.register import register_wrap
+
+from . import common as Common
+from .register import register_wrap
+from .. import globs
 
 # wm = bpy.context.window_manager
 # wm.progress_begin(0, len(bone_merge))
@@ -50,10 +51,11 @@ class BoneMergeButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        armature = tools.common.set_default_stage()
+        saved_data = Common.SavedData()
+        armature = Common.set_default_stage()
 
         parent_bones = globs.root_bones[context.scene.merge_bone]
-        mesh = bpy.data.objects[context.scene.merge_mesh]
+        mesh = Common.get_objects()[context.scene.merge_mesh]
         ratio = context.scene.merge_ratio
         # debug
         print(ratio)
@@ -89,6 +91,8 @@ class BoneMergeButton(bpy.types.Operator):
                 did += 1
                 wm.progress_update(did)
 
+        saved_data.load()
+
         wm.progress_end()
         self.report({'INFO'}, 'Merged bones.')
         return {'FINISHED'}
@@ -118,28 +122,28 @@ class BoneMergeButton(bpy.types.Operator):
                 print('Merging ' + bone_name + ' into ' + parent_name+ ' with ratio ' + str(i) )
 
                 # # Set new parent bone position
-                # armature = tools.common.set_default_stage()
-                # tools.common.switch('EDIT')
+                # armature = Common.set_default_stage()
+                # Common.switch('EDIT')
                 #
                 # child = armature.data.edit_bones.get(bone_name)
                 # parent = armature.data.edit_bones.get(parent_name)
                 # parent.tail = child.tail
 
                 # Mix the weights
-                tools.common.set_default_stage()
-                tools.common.set_active(mesh)
+                Common.set_default_stage()
+                Common.set_active(mesh)
 
                 vg = mesh.vertex_groups.get(bone_name)
                 vg2 = mesh.vertex_groups.get(parent_name)
                 if vg is not None and vg2 is not None:
-                    tools.common.mix_weights(mesh, bone_name, parent_name)
+                    Common.mix_weights(mesh, bone_name, parent_name)
 
-                tools.common.set_default_stage()
+                Common.set_default_stage()
 
                 # We are done, remove the bone
-                tools.common.remove_bone(bone_name)
+                Common.remove_bone(bone_name)
 
-        armature = tools.common.set_default_stage()
+        armature = Common.set_default_stage()
         for child in children:
             bone = armature.data.bones.get(child)
             if bone is not None:

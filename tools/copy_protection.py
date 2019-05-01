@@ -24,43 +24,44 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 
-import webbrowser
-
 import bpy
 import random
-import tools.common
-from tools.register import register_wrap
+import webbrowser
+
+from . import common as Common
+from .register import register_wrap
 
 
 @register_wrap
 class CopyProtectionEnable(bpy.types.Operator):
     bl_idname = 'cats_copyprotection.enable'
     bl_label = 'Enable Protection'
-    bl_description = 'Protects your model from piracy. Read the documentation before use'
+    bl_description = 'Protects your model from piracy. NOT a 100% protection!' \
+                     '\nRead the documentation before use'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
-        if len(tools.common.get_meshes_objects(check=False)) == 0:
+        if len(Common.get_meshes_objects(check=False)) == 0:
             return False
         return True
 
     def execute(self, context):
-        for mesh in tools.common.get_meshes_objects():
-            armature = tools.common.set_default_stage()
-            tools.common.unselect_all()
-            tools.common.set_active(mesh)
-            tools.common.switch('EDIT')
+        for mesh in Common.get_meshes_objects():
+            armature = Common.set_default_stage()
+            Common.unselect_all()
+            Common.set_active(mesh)
+            Common.switch('EDIT')
 
             # Convert quad faces to tris first
             bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
 
-            tools.common.switch('OBJECT')
+            Common.switch('OBJECT')
 
             mesh.show_only_shape_key = False
             bpy.ops.object.shape_key_clear()
 
-            if not tools.common.has_shapekeys(mesh):
+            if not Common.has_shapekeys(mesh):
                 mesh.shape_key_add(name='Basis', from_mix=False)
 
             # 1. Rename original shapekey
@@ -77,7 +78,7 @@ class CopyProtectionEnable(bpy.types.Operator):
             for index, bone in enumerate(armature.pose.bones):
                 if index == 5:
                     bone_pos = bone.matrix
-                    world_pos = tools.common.matmul(armature.matrix_world, bone.matrix)
+                    world_pos = Common.matmul(armature.matrix_world, bone.matrix)
                     if abs(bone_pos[0][0]) != abs(world_pos[0][0]):
                         xps = True
                         break
@@ -119,7 +120,7 @@ class CopyProtectionEnable(bpy.types.Operator):
             basis_original.relative_key = basis_obfuscated
 
             # Make obfuscated basis the new basis and repair shape key order
-            tools.common.sort_shape_keys(mesh.name)
+            Common.sort_shape_keys(mesh.name)
 
         self.report({'INFO'}, 'Model secured!')
         return {'FINISHED'}
@@ -133,11 +134,11 @@ class CopyProtectionDisable(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        for mesh in tools.common.get_meshes_objects():
-            tools.common.set_default_stage()
-            tools.common.unselect_all()
-            tools.common.set_active(mesh)
-            tools.common.switch('OBJECT')
+        for mesh in Common.get_meshes_objects():
+            Common.set_default_stage()
+            Common.unselect_all()
+            Common.set_active(mesh)
+            Common.switch('OBJECT')
 
             for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
                 if i == 0:
@@ -149,7 +150,7 @@ class CopyProtectionDisable(bpy.types.Operator):
                     shapekey.relative_key = shapekey
                     break
 
-            tools.common.sort_shape_keys(mesh.name)
+            Common.sort_shape_keys(mesh.name)
 
         self.report({'INFO'}, 'Model un-secured!')
         return {'FINISHED'}
@@ -163,9 +164,9 @@ class ProtectionTutorialButton(bpy.types.Operator):
     def execute(self, context):
         webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#copy-protection')
 
-        # mesh = tools.common.get_meshes_objects()[0]
-        # tools.common.select(mesh)
-        # tools.common.switch('OBJECT')
+        # mesh = Common.get_meshes_objects()[0]
+        # Common.select(mesh)
+        # Common.switch('OBJECT')
         #
         # for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
         #     if i == 1:

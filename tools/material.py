@@ -29,9 +29,9 @@
 
 import os
 import bpy
-import copy
-import tools.common
-from tools.register import register_wrap
+
+from . import common as Common
+from .register import register_wrap
 
 
 @register_wrap
@@ -43,23 +43,27 @@ class OneTexPerMatButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if Common.get_armature() is None:
             return False
-        return len(tools.common.get_meshes_objects(check=False)) > 0
+        return len(Common.get_meshes_objects(check=False)) > 0
 
     def execute(self, context):
-        if not tools.common.version_2_79_or_older():
+        if not Common.version_2_79_or_older():
             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
             return {'CANCELLED'}
             # TODO
 
-        tools.common.set_default_stage()
+        saved_data = Common.SavedData()
 
-        for mesh in tools.common.get_meshes_objects():
+        Common.set_default_stage()
+
+        for mesh in Common.get_meshes_objects():
             for mat_slot in mesh.material_slots:
                 for i, tex_slot in enumerate(mat_slot.material.texture_slots):
                     if i > 0 and tex_slot:
                         mat_slot.material.use_textures[i] = False
+
+        saved_data.load()
 
         self.report({'INFO'}, 'All materials have one texture now.')
         return{'FINISHED'}
@@ -76,23 +80,27 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if Common.get_armature() is None:
             return False
-        return len(tools.common.get_meshes_objects(check=False)) > 0
+        return len(Common.get_meshes_objects(check=False)) > 0
 
     def execute(self, context):
-        if not tools.common.version_2_79_or_older():
+        if not Common.version_2_79_or_older():
             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
             return {'CANCELLED'}
             # TODO
 
-        tools.common.set_default_stage()
+        saved_data = Common.SavedData()
 
-        for mesh in tools.common.get_meshes_objects():
+        Common.set_default_stage()
+
+        for mesh in Common.get_meshes_objects():
             for mat_slot in mesh.material_slots:
                 for i, tex_slot in enumerate(mat_slot.material.texture_slots):
                     if i > 0 and tex_slot:
                         tex_slot.texture = None
+
+        saved_data.load()
 
         self.report({'INFO'}, 'All materials have one texture now.')
         return{'FINISHED'}
@@ -108,19 +116,21 @@ class StandardizeTextures(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if Common.get_armature() is None:
             return False
-        return len(tools.common.get_meshes_objects(check=False)) > 0
+        return len(Common.get_meshes_objects(check=False)) > 0
 
     def execute(self, context):
-        if not tools.common.version_2_79_or_older():
+        if not Common.version_2_79_or_older():
             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
             return {'CANCELLED'}
             # TODO
 
-        tools.common.set_default_stage()
+        saved_data = Common.SavedData()
 
-        for mesh in tools.common.get_meshes_objects():
+        Common.set_default_stage()
+
+        for mesh in Common.get_meshes_objects():
             for mat_slot in mesh.material_slots:
 
                 mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
@@ -131,6 +141,8 @@ class StandardizeTextures(bpy.types.Operator):
                         tex_slot.use_map_alpha = True
                         tex_slot.use_map_color_diffuse = True
                         tex_slot.blend_type = 'MULTIPLY'
+
+        saved_data.load()
 
         self.report({'INFO'}, 'All textures are now standardized.')
         return{'FINISHED'}
@@ -150,9 +162,9 @@ class CombineMaterialsButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if Common.get_armature() is None:
             return False
-        return len(tools.common.get_meshes_objects(check=False)) > 0
+        return len(Common.get_meshes_objects(check=False)) > 0
 
     def assignmatslots(self, ob, matlist):
         scn = bpy.context.scene
@@ -216,7 +228,7 @@ class CombineMaterialsButton(bpy.types.Operator):
     # Then uses this hash as the dict keys and material data as values
     def generate_combined_tex(self):
         self.combined_tex = {}
-        for ob in tools.common.get_meshes_objects():
+        for ob in Common.get_meshes_objects():
             for index, mat_slot in enumerate(ob.material_slots):
                 hash_this = ''
 
@@ -238,24 +250,24 @@ class CombineMaterialsButton(bpy.types.Operator):
                     self.combined_tex[hash_this] = []
                 self.combined_tex[hash_this].append({'mat': mat_slot.name, 'index': index})
 
-        # print('CREATED COMBINED TEX', self.combined_tex)
-
     def execute(self, context):
         print('COMBINE MATERIALS!')
-        if not tools.common.version_2_79_or_older():
+        if not Common.version_2_79_or_older():
             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
             return {'CANCELLED'}
             # TODO
 
-        tools.common.set_default_stage()
+        saved_data = Common.SavedData()
+
+        Common.set_default_stage()
         self.generate_combined_tex()
-        tools.common.switch('OBJECT')
+        Common.switch('OBJECT')
         i = 0
 
-        for index, mesh in enumerate(tools.common.get_meshes_objects()):
+        for index, mesh in enumerate(Common.get_meshes_objects()):
 
-            tools.common.unselect_all()
-            tools.common.set_active(mesh)
+            Common.unselect_all()
+            Common.set_active(mesh)
             for file in self.combined_tex:  # for each combined mat slot of scene object
                 combined_textures = self.combined_tex[file]
 
@@ -265,7 +277,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                 i += len(combined_textures)
 
                 # print('NEW', file, combined_textures, len(combined_textures))
-                tools.common.switch('EDIT')
+                Common.switch('EDIT')
                 bpy.ops.mesh.select_all(action='DESELECT')
 
                 # print('UNSELECT ALL')
@@ -280,22 +292,23 @@ class CombineMaterialsButton(bpy.types.Operator):
                 # print('ASSIGNED TO SLOT INDEX', bpy.context.object.active_material_index)
                 bpy.ops.mesh.select_all(action='DESELECT')
 
-            tools.common.unselect_all()
-            tools.common.set_active(mesh)
-            tools.common.switch('OBJECT')
+            Common.unselect_all()
+            Common.set_active(mesh)
+            Common.switch('OBJECT')
             self.cleanmatslots()
 
             # Clean material names
-            tools.common.clean_material_names(mesh)
+            Common.clean_material_names(mesh)
 
             # Update atlas list
-            if len(context.scene.material_list) > 0:
-                bpy.ops.cats_atlas.gen_mat_list()
+            Common.update_material_list()
 
             # print('CLEANED MAT SLOTS')
 
         # Update the material list of the Material Combiner
-        tools.common.update_material_list()
+        Common.update_material_list()
+
+        saved_data.load()
 
         if i == 0:
             self.report({'INFO'}, 'No materials combined.')
@@ -319,12 +332,13 @@ class ConvertAllToPngButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return tools.common.get_meshes_objects(mode=2, check=False)
+        return Common.get_meshes_objects(mode=2, check=False)
 
     def execute(self, context):
+        saved_data = Common.SavedData()
         convertion_count = 0
 
-        for mesh in tools.common.get_meshes_objects(mode=2):
+        for mesh in Common.get_meshes_objects(mode=2):
             for mat_slot in mesh.material_slots:
                 if mat_slot and mat_slot.material:
                     for tex_slot in mat_slot.material.texture_slots:
@@ -368,6 +382,8 @@ class ConvertAllToPngButton(bpy.types.Operator):
                             bpy.data.images[image_name].name = image_name_new
 
                             convertion_count += 1
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Converted ' + str(convertion_count) + ' to PNG files.')
         return {'FINISHED'}

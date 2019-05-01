@@ -14,3 +14,4 @@ resources/dictionary_google.json
 resources/google-response.txt
 resources/ignore_version.txt
 .coverage
+mmd_tools_local2

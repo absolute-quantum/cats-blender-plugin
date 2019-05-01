@@ -716,7 +716,7 @@ def get_version_list(self, context):
 
 
 def get_user_preferences():
-    return bpy.context.user_preferences if bpy.app.version < (2, 80) else bpy.context.preferences
+    return bpy.context.user_preferences if hasattr(bpy.context, 'user_preferences') else bpy.context.preferences
 
 
 def layout_split(layout, factor=0.0, align=False):
@@ -895,7 +895,7 @@ to_register = [
 
 
 def register(bl_info, dev_branch, version_str):
-    print('REGISTER CATS UPDATER')
+    # print('REGISTER CATS UPDATER')
     global current_version, fake_update, current_version_str
 
     # If not dev branch, always disable fake update!
@@ -924,13 +924,25 @@ def register(bl_info, dev_branch, version_str):
     )
 
     # Register all Updater classes
+    count = 0
     for cls in to_register:
-        bpy.utils.register_class(cls)
+        try:
+            bpy.utils.register_class(cls)
+            count += 1
+        except ValueError:
+            pass
+    # print('Registered', count, 'CATS updater classes.')
+    if count < len(to_register):
+        print('Skipped', len(to_register) - count, 'CATS updater classes.')
 
 
 def unregister():
     # Unregister all Updater classes
     for cls in reversed(to_register):
-        bpy.utils.unregister_class(cls)
+        try:
+            bpy.utils.unregister_class(cls)
+        except RuntimeError:
+            pass
 
-    del bpy.types.Scene.cats_updater_version_list
+    if hasattr(bpy.types.Scene, 'cats_updater_version_list'):
+        del bpy.types.Scene.cats_updater_version_list

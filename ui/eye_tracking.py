@@ -1,14 +1,10 @@
 import bpy
-import globs
-import tools.common
-import tools.supporter
 
-from ui.main import ToolPanel
-
-from tools import eyetracking
-
-from tools.register import register_wrap
-from tools.common import version_2_79_or_older
+from .. import globs
+from .main import ToolPanel
+from ..tools import common as Common
+from ..tools import eyetracking as Eyetracking
+from ..tools.register import register_wrap
 
 
 @register_wrap
@@ -27,7 +23,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
         if context.scene.eye_mode == 'CREATION':
 
-            mesh_count = len(tools.common.get_meshes_objects(check=False))
+            mesh_count = len(Common.get_meshes_objects(check=False))
             if mesh_count == 0:
                 col.separator()
                 row = col.row(align=True)
@@ -90,14 +86,14 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
             col = box.column(align=True)
             row = col.row(align=True)
-            row.operator(eyetracking.CreateEyesButton.bl_idname, icon='TRIA_RIGHT')
+            row.operator(Eyetracking.CreateEyesButton.bl_idname, icon='TRIA_RIGHT')
 
             # armature = common.get_armature()
             # if "RightEye" in armature.pose.bones:
             #     row = col.row(align=True)
             #     row.label(text='Eye Bone Tweaking:')
         else:
-            armature = tools.common.get_armature()
+            armature = Common.get_armature()
             if not armature:
                 box.label(text='No model found!', icon='ERROR')
                 return
@@ -106,7 +102,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 1.5
-                row.operator(eyetracking.StartTestingButton.bl_idname, icon='TRIA_RIGHT')
+                row.operator(Eyetracking.StartTestingButton.bl_idname, icon='TRIA_RIGHT')
             else:
                 # col.separator()
                 # row = col.row(align=True)
@@ -119,30 +115,30 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_rotation_y', icon='ARROW_LEFTRIGHT')
                 row = col.row(align=True)
-                row.operator(eyetracking.ResetRotationButton.bl_idname, icon=globs.ICON_EYE_ROTATION)
+                row.operator(Eyetracking.ResetRotationButton.bl_idname, icon=globs.ICON_EYE_ROTATION)
 
                 # global slider_z
                 # if context.scene.eye_blink_shape != slider_z:
                 #     slider_z = context.scene.eye_blink_shape
-                #     eyetracking.update_bones(context, slider_z)
+                #     Eyetracking.update_bones(context, slider_z)
 
                 col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_distance')
                 row = col.row(align=True)
-                row.operator(eyetracking.AdjustEyesButton.bl_idname, icon='CURVE_NCIRCLE')
+                row.operator(Eyetracking.AdjustEyesButton.bl_idname, icon='CURVE_NCIRCLE')
 
                 col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_blink_shape')
-                row.operator(eyetracking.TestBlinking.bl_idname, icon='RESTRICT_VIEW_OFF')
+                row.operator(Eyetracking.TestBlinking.bl_idname, icon='RESTRICT_VIEW_OFF')
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_lowerlid_shape')
-                row.operator(eyetracking.TestLowerlid.bl_idname, icon='RESTRICT_VIEW_OFF')
+                row.operator(Eyetracking.TestLowerlid.bl_idname, icon='RESTRICT_VIEW_OFF')
                 row = col.row(align=True)
-                row.operator(eyetracking.ResetBlinkTest.bl_idname, icon='FILE_REFRESH')
+                row.operator(Eyetracking.ResetBlinkTest.bl_idname, icon='FILE_REFRESH')
 
                 if armature.name != 'Armature':
                     col.separator()
@@ -181,4 +177,4 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
 
                 row = col.row(align=True)
                 row.scale_y = 1.5
-                row.operator(eyetracking.StopTestingButton.bl_idname, icon='PAUSE')
+                row.operator(Eyetracking.StopTestingButton.bl_idname, icon='PAUSE')

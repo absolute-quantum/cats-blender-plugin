@@ -25,7 +25,7 @@
 
 import bpy
 import webbrowser
-from tools.register import register_wrap
+from .register import register_wrap
 
 
 @register_wrap

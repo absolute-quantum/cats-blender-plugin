@@ -25,11 +25,11 @@
 # Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
-import tools.common
-import globs
-from tools.register import register_wrap
-
 from difflib import SequenceMatcher
+
+from . import common as Common
+from .register import register_wrap
+from .. import globs
 
 
 @register_wrap
@@ -47,9 +47,10 @@ class RootButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        tools.common.set_default_stage()
+        saved_data = Common.SavedData()
+        Common.set_default_stage()
 
-        tools.common.switch('EDIT')
+        Common.switch('EDIT')
 
         # this is the bones that will be parented
         child_bones = globs.root_bones[context.scene.root_bone]
@@ -71,13 +72,15 @@ class RootButton(bpy.types.Operator):
         # reset the root bone cache
         globs.root_bones_choices = {}
 
+        saved_data.load()
+
         self.report({'INFO'}, 'Bones parented!')
 
         return{'FINISHED'}
 
 
 def get_parent_root_bones(self, context):
-    armature = tools.common.get_armature()
+    armature = Common.get_armature()
     check_these_bones = []
     bone_groups = {}
     choices = []

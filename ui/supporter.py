@@ -1,14 +1,8 @@
 import bpy
-import globs
-import tools.common
-import tools.supporter
 
-from ui.main import ToolPanel
-from ui.main import layout_split
-
-from tools import supporter
-
-from tools.register import register_wrap
+from .main import ToolPanel
+from ..tools import supporter as Supporter
+from ..tools.register import register_wrap
 
 
 @register_wrap
@@ -23,15 +17,15 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        # supporter_data = tools.supporter.supporter_data
+        # supporter_data = Supporter.supporter_data
 
         row = col.row(align=True)
         row.label(text='Do you like this plugin and want to support us?')
         row = col.row(align=True)
         row.scale_y = 1.2
-        row.operator(supporter.PatreonButton.bl_idname, icon_value=tools.supporter.preview_collections["custom_icons"]["heart1"].icon_id)
+        row.operator(Supporter.PatreonButton.bl_idname, icon_value=Supporter.preview_collections["custom_icons"]["heart1"].icon_id)
 
-        if not tools.supporter.supporter_data or not tools.supporter.supporter_data.get('supporters') or len(tools.supporter.supporter_data.get('supporters')) == 0:
+        if not Supporter.supporter_data or not Supporter.supporter_data.get('supporters') or len(Supporter.supporter_data.get('supporters')) == 0:
             return
 
         col.separator()
@@ -56,12 +50,12 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.operator(supporter.ReloadButton.bl_idname, icon='FILE_REFRESH')
+        row.operator(Supporter.ReloadButton.bl_idname, icon='FILE_REFRESH')
 
 
 def draw_supporter_list(col, show_tier=0):
-    supporter_data = tools.supporter.supporter_data.get('supporters')
-    preview_collections = tools.supporter.preview_collections.get("supporter_icons")
+    supporter_data = Supporter.supporter_data.get('supporters')
+    preview_collections = Supporter.preview_collections.get("supporter_icons")
 
     i = 0
     j = 0
@@ -69,17 +63,17 @@ def draw_supporter_list(col, show_tier=0):
 
     while cont:
         try:
-            supporter = supporter_data[j]
-            name = supporter.get('displayname')
-            tier = supporter.get('tier')
-            idname = supporter.get('idname')
+            supporter_obj = supporter_data[j]
+            name = supporter_obj.get('displayname')
+            tier = supporter_obj.get('tier')
+            idname = supporter_obj.get('idname')
 
-            if not name or not idname or supporter.get('disabled'):
+            if not name or not idname or supporter_obj.get('disabled'):
                 j += 1
                 continue
 
             website = False
-            if 'website' in supporter.keys():
+            if 'website' in supporter_obj.keys():
                 website = True
             if not tier:
                 tier = 0

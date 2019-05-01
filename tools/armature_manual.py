@@ -25,15 +25,15 @@
 # Edits by: GiveMeAllYourCats
 
 import bpy
-import tools.common
-import tools.eyetracking
-from tools.common import version_2_79_or_older
-from tools.register import register_wrap
+
+from . import common as Common
+from . import eyetracking as Eyetracking
+from .common import version_2_79_or_older
+from .register import register_wrap
 
 mmd_tools_installed = False
 try:
     import mmd_tools_local
-
     mmd_tools_installed = True
 except:
     pass
@@ -49,13 +49,15 @@ class StartPoseMode(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if Common.get_armature() is None:
             return False
         return True
 
     def execute(self, context):
+        saved_data = Common.SavedData()
+
         current = ""
-        if bpy.context.active_object is not None and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
+        if bpy.context.active_object and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
                 bpy.context.selected_editable_bones) > 0:
             current = bpy.context.selected_editable_bones[0].name
 
@@ -66,12 +68,12 @@ class StartPoseMode(bpy.types.Operator):
             pass
             # TODO
 
-        armature = tools.common.set_default_stage()
-        tools.common.switch('POSE')
+        armature = Common.set_default_stage()
+        Common.switch('POSE')
         armature.data.pose_position = 'POSE'
 
-        for mesh in tools.common.get_meshes_objects():
-            if tools.common.has_shapekeys(mesh):
+        for mesh in Common.get_meshes_objects():
+            if Common.has_shapekeys(mesh):
                 for shape_key in mesh.data.shape_keys.key_blocks:
                     shape_key.value = 0
 
@@ -94,7 +96,10 @@ class StartPoseMode(bpy.types.Operator):
         if version_2_79_or_older():
             bpy.context.space_data.transform_manipulators = {'ROTATE'}
         else:
-            bpy.ops.wm.tool_set_by_name(name="Transform")
+            bpy.ops.wm.tool_set_by_id(name="builtin.rotate")
+
+        saved_data.load(hide_only=True)
+        Common.hide(armature, False)
 
         return {'FINISHED'}
 
@@ -108,14 +113,15 @@ class StopPoseMode(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature() is None:
+        if Common.get_armature() is None:
             return False
         return True
 
     def execute(self, context):
-        armature = tools.common.get_armature()
-        tools.common.set_active(armature)
-        tools.common.hide(armature, False)
+        saved_data = Common.SavedData()
+        armature = Common.get_armature()
+        Common.set_active(armature)
+        Common.hide(armature, False)
 
         for pb in armature.data.bones:
             pb.hide = False
@@ -126,20 +132,22 @@ class StopPoseMode(bpy.types.Operator):
         for pb in armature.data.bones:
             pb.select = False
 
-        armature = tools.common.set_default_stage()
+        armature = Common.set_default_stage()
         armature.data.pose_position = 'REST'
 
-        for mesh in tools.common.get_meshes_objects():
-            if tools.common.has_shapekeys(mesh):
+        for mesh in Common.get_meshes_objects():
+            if Common.has_shapekeys(mesh):
                 for shape_key in mesh.data.shape_keys.key_blocks:
                     shape_key.value = 0
 
         if version_2_79_or_older():
             bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
         else:
-            bpy.ops.wm.tool_set_by_name(name="Select Box")
+            bpy.ops.wm.tool_set_by_id(name="builtin.select_box")
 
-        tools.eyetracking.eye_left = None
+        Eyetracking.eye_left = None
+
+        saved_data.load(hide_only=True)
 
         return {'FINISHED'}
 
@@ -154,7 +162,7 @@ class PoseToShape(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        armature = tools.common.get_armature()
+        armature = Common.get_armature()
         return armature and armature.mode == 'POSE'
 
     def execute(self, context):
@@ -165,24 +173,27 @@ class PoseToShape(bpy.types.Operator):
 
 
 def pose_to_shapekey(name):
-    for mesh in tools.common.get_meshes_objects():
-        tools.common.unselect_all()
-        tools.common.set_active(mesh)
+    saved_data = Common.SavedData()
 
-        tools.common.switch('EDIT')
+    for mesh in Common.get_meshes_objects():
+        Common.unselect_all()
+        Common.set_active(mesh)
+
+        Common.switch('EDIT')
         bpy.ops.mesh.select_all(action='DESELECT')
         bpy.ops.mesh.remove_doubles(threshold=0)
-        tools.common.switch('OBJECT')
+        Common.switch('OBJECT')
 
         # Apply armature mod
         mod = mesh.modifiers.new(name, 'ARMATURE')
-        mod.object = tools.common.get_armature()
+        mod.object = Common.get_armature()
         bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
 
-    armature = tools.common.set_default_stage()
-    tools.common.switch('POSE')
+    armature = Common.set_default_stage()
+    Common.switch('POSE')
     armature.data.pose_position = 'POSE'
 
+    saved_data.load(ignore=armature.name)
     return armature
 
 
@@ -204,7 +215,7 @@ class PoseNamePopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         context.scene.pose_to_shapekey_name = 'Pose'
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
 
     def check(self, context):
@@ -232,11 +243,13 @@ class PoseToRest(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        armature = tools.common.get_armature()
+        armature = Common.get_armature()
         return armature and armature.mode == 'POSE'
 
     def execute(self, context):
-        armature = tools.common.get_armature()
+        saved_data = Common.SavedData()
+
+        armature = Common.get_armature()
         scales = {}
 
         # Find out how much each bone is scaled
@@ -268,9 +281,9 @@ class PoseToRest(bpy.types.Operator):
 
         bpy.ops.pose.armature_apply()
 
-        for mesh in tools.common.get_meshes_objects():
-            tools.common.unselect_all()
-            tools.common.set_active(mesh)
+        for mesh in Common.get_meshes_objects():
+            Common.unselect_all()
+            Common.set_active(mesh)
 
             mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
             bpy.ops.cats_shapekey.shape_key_to_basis()
@@ -331,10 +344,12 @@ class PoseToRest(bpy.types.Operator):
                     shapekey.name = shapekey.name[:-4]
 
             # Repair important shape key order
-            tools.common.repair_shapekey_order(mesh.name)
+            Common.repair_shapekey_order(mesh.name)
 
         # Stop pose mode after operation
         bpy.ops.cats_manual.stop_pose_mode()
+
+        saved_data.load(hide_only=True)
 
         self.report({'INFO'}, 'Pose successfully applied as rest pose.')
         return {'FINISHED'}
@@ -355,14 +370,20 @@ class JoinMeshes(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        meshes = tools.common.get_meshes_objects(check=False)
+        meshes = Common.get_meshes_objects(check=False)
         return meshes and len(meshes) > 0
 
     def execute(self, context):
-        if not tools.common.join_meshes():
+        saved_data = Common.SavedData()
+        mesh = Common.join_meshes()
+        if not mesh:
+            saved_data.load()
             self.report({'ERROR'}, 'Meshes could not be joined!')
             return {'CANCELLED'}
 
+        saved_data.load()
+        Common.unselect_all()
+        Common.set_active(mesh)
         self.report({'INFO'}, 'Meshes joined.')
         return {'FINISHED'}
 
@@ -382,23 +403,26 @@ class JoinMeshesSelected(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        meshes = tools.common.get_meshes_objects(check=False)
+        meshes = Common.get_meshes_objects(check=False)
         return meshes and len(meshes) > 0
 
     def execute(self, context):
-        selected_meshes = 0
-        for mesh in tools.common.get_meshes_objects():
-            if tools.common.is_selected(mesh):
-                selected_meshes += 1
+        saved_data = Common.SavedData()
 
-        if selected_meshes == 0:
+        if not Common.get_meshes_objects(mode=3):
+            saved_data.load()
             self.report({'ERROR'}, 'No meshes selected! Please select the meshes you want to join in the hierarchy!')
             return {'FINISHED'}
 
-        if not tools.common.join_meshes(mode=1):
+        mesh = Common.join_meshes(mode=1)
+        if not mesh:
+            saved_data.load()
             self.report({'ERROR'}, 'Selected meshes could not be joined!')
             return {'CANCELLED'}
 
+        saved_data.load()
+        Common.unselect_all()
+        Common.set_active(mesh)
         self.report({'INFO'}, 'Selected meshes joined.')
         return {'FINISHED'}
 
@@ -419,26 +443,32 @@ class SeparateByMaterials(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects(check=False)
+        meshes = Common.get_meshes_objects(check=False)
         return meshes and len(meshes) >= 1
 
     def execute(self, context):
+        saved_data = Common.SavedData()
         obj = context.active_object
 
         if not obj or (obj and obj.type != 'MESH'):
-            tools.common.unselect_all()
-            meshes = tools.common.get_meshes_objects()
+            Common.unselect_all()
+            meshes = Common.get_meshes_objects()
             if len(meshes) == 0:
+                saved_data.load()
                 self.report({'ERROR'}, 'No meshes found!')
                 return {'FINISHED'}
             if len(meshes) > 1:
+                saved_data.load()
                 self.report({'ERROR'}, 'Multiple meshes found!'
                                        '\nPlease select the mesh you want to separate!')
                 return {'FINISHED'}
             obj = meshes[0]
 
-        tools.common.separate_by_materials(context, obj)
+        obj_name = obj.name
 
+        Common.separate_by_materials(context, obj)
+
+        saved_data.load(ignore=[obj_name])
         self.report({'INFO'}, 'Successfully separated by materials.')
         return {'FINISHED'}
 
@@ -458,27 +488,78 @@ class SeparateByLooseParts(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects(check=False)
+        meshes = Common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
+        saved_data = Common.SavedData()
         obj = context.active_object
 
         if not obj or (obj and obj.type != 'MESH'):
-            tools.common.unselect_all()
-            meshes = tools.common.get_meshes_objects()
+            Common.unselect_all()
+            meshes = Common.get_meshes_objects()
             if len(meshes) == 0:
+                saved_data.load()
                 self.report({'ERROR'}, 'No meshes found!')
                 return {'FINISHED'}
             if len(meshes) > 1:
+                saved_data.load()
                 self.report({'ERROR'}, 'Multiple meshes found!'
                                        '\nPlease select the mesh you want to separate!')
                 return {'FINISHED'}
             obj = meshes[0]
+        obj_name = obj.name
 
-        tools.common.separate_by_loose_parts(context, obj)
+        Common.separate_by_loose_parts(context, obj)
 
+        saved_data.load(ignore=[obj_name])
         self.report({'INFO'}, 'Successfully separated by loose parts.')
+        return {'FINISHED'}
+
+
+@register_wrap
+class SeparateByShapekeys(bpy.types.Operator):
+    bl_idname = 'cats_manual.separate_by_shape_keys'
+    bl_label = 'Separate by Shape Keys'
+    bl_description = 'Separates selected mesh into two parts,' \
+                     '\ndepending on whether it is effected by a shape key or not.' \
+                     '\n' \
+                     '\nVery useful for manual decimation'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+
+        if obj and obj.type == 'MESH':
+            return True
+
+        meshes = Common.get_meshes_objects(check=False)
+        return meshes
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+        obj = context.active_object
+
+        if not obj or (obj and obj.type != 'MESH'):
+            Common.unselect_all()
+            meshes = Common.get_meshes_objects()
+            if len(meshes) == 0:
+                saved_data.load()
+                self.report({'ERROR'}, 'No meshes found!')
+                return {'FINISHED'}
+            if len(meshes) > 1:
+                saved_data.load()
+                self.report({'ERROR'}, 'Multiple meshes found!'
+                                       '\nPlease select the mesh you want to separate!')
+                return {'FINISHED'}
+            obj = meshes[0]
+        obj_name = obj.name
+
+        Common.separate_by_shape_keys(context, obj)
+
+        saved_data.load(ignore=[obj_name])
+        self.report({'INFO'}, 'Successfully separated by shape keys.')
         return {'FINISHED'}
 
 
@@ -504,10 +585,11 @@ class MergeWeights(bpy.types.Operator):
         return False
 
     def execute(self, context):
-        armature = bpy.context.object
-        armature_mode = armature.mode
+        saved_data = Common.SavedData()
 
-        tools.common.switch('EDIT')
+        armature = bpy.context.object
+
+        Common.switch('EDIT')
 
         # Find which bones to work on and put their name and their parent in a list
         parenting_list = {}
@@ -522,8 +604,7 @@ class MergeWeights(bpy.types.Operator):
         # Merge all the bones in the parenting list
         merge_weights(armature, parenting_list)
 
-        # Switch back to original mode
-        tools.common.switch(armature_mode)
+        saved_data.load()
 
         self.report({'INFO'}, 'Deleted ' + str(len(parenting_list)) + ' bones and added their weights to their parents.')
         return {'FINISHED'}
@@ -554,10 +635,11 @@ class MergeWeightsToActive(bpy.types.Operator):
         return False
 
     def execute(self, context):
-        armature = bpy.context.object
-        armature_mode = armature.mode
+        saved_data = Common.SavedData()
 
-        tools.common.switch('EDIT')
+        armature = bpy.context.object
+
+        Common.switch('EDIT')
 
         # Find which bones to work on and put their name and their parent in a list and parent the bones to the active one
         parenting_list = {}
@@ -570,30 +652,30 @@ class MergeWeightsToActive(bpy.types.Operator):
         # Merge all the bones in the parenting list
         merge_weights(armature, parenting_list)
 
-        # Switch back to original mode
-        tools.common.switch(armature_mode)
+        # Load original modes
+        saved_data.load()
 
         self.report({'INFO'}, 'Deleted ' + str(len(parenting_list)) + ' bones and added their weights to the active bone.')
         return {'FINISHED'}
 
 
 def merge_weights(armature, parenting_list):
-    tools.common.switch('OBJECT')
+    Common.switch('OBJECT')
     # Merge the weights on the meshes
-    for mesh in tools.common.get_meshes_objects(armature_name=armature.name):
-        tools.common.set_active(mesh)
+    for mesh in Common.get_meshes_objects(armature_name=armature.name):
+        Common.set_active(mesh)
 
         for bone, parent in parenting_list.items():
             if not mesh.vertex_groups.get(bone):
                 continue
             if not mesh.vertex_groups.get(parent):
-                mesh.vertex_groups.new(parent)
-            tools.common.mix_weights(mesh, bone, parent)
+                mesh.vertex_groups.new(name=parent)
+            Common.mix_weights(mesh, bone, parent)
 
     # Select armature
-    tools.common.unselect_all()
-    tools.common.set_active(armature)
-    tools.common.switch('EDIT')
+    Common.unselect_all()
+    Common.set_active(armature)
+    Common.switch('EDIT')
 
     # Delete merged bones
     for bone in parenting_list.keys():
@@ -609,13 +691,16 @@ class ApplyTransformations(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature():
+        if Common.get_armature():
             return True
         return False
 
     def execute(self, context):
-        tools.common.apply_transforms()
+        saved_data = Common.SavedData()
 
+        Common.apply_transforms()
+
+        saved_data.load()
         self.report({'INFO'}, 'Transformations applied.')
         return {'FINISHED'}
 
@@ -630,15 +715,18 @@ class RemoveZeroWeight(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature():
+        if Common.get_armature():
             return True
         return False
 
     def execute(self, context):
-        tools.common.set_default_stage()
-        count = tools.common.delete_zero_weight()
-        tools.common.set_default_stage()
+        saved_data = Common.SavedData()
 
+        Common.set_default_stage()
+        count = Common.delete_zero_weight()
+        Common.set_default_stage()
+
+        saved_data.load()
         self.report({'INFO'}, 'Deleted ' + str(count) + ' zero weight bones.')
         return {'FINISHED'}
 
@@ -652,15 +740,18 @@ class RemoveConstraints(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if tools.common.get_armature():
+        if Common.get_armature():
             return True
         return False
 
     def execute(self, context):
-        tools.common.set_default_stage()
-        tools.common.delete_bone_constraints()
-        tools.common.set_default_stage()
+        saved_data = Common.SavedData()
 
+        Common.set_default_stage()
+        Common.delete_bone_constraints()
+        Common.set_default_stage()
+
+        saved_data.load()
         self.report({'INFO'}, 'Removed all bone constraints.')
         return {'FINISHED'}
 
@@ -680,27 +771,33 @@ class RecalculateNormals(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects(check=False)
+        meshes = Common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
+        saved_data = Common.SavedData()
+
         obj = context.active_object
         if not obj or (obj and obj.type != 'MESH'):
-            tools.common.unselect_all()
-            meshes = tools.common.get_meshes_objects()
+            Common.unselect_all()
+            meshes = Common.get_meshes_objects()
             if len(meshes) == 0:
+                saved_data.load()
                 return {'FINISHED'}
             obj = meshes[0]
         mesh = obj
 
-        tools.common.set_active(mesh)
-        tools.common.switch('EDIT')
+        Common.unselect_all()
+        Common.set_active(mesh)
+        Common.switch('EDIT')
+        Common.switch('EDIT')
 
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.normals_make_consistent(inside=False)
 
-        tools.common.set_default_stage()
+        Common.set_default_stage()
 
+        saved_data.load()
         self.report({'INFO'}, 'Recalculated all normals.')
         return {'FINISHED'}
 
@@ -719,29 +816,35 @@ class FlipNormals(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects(check=False)
+        meshes = Common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
+        saved_data = Common.SavedData()
+
         obj = context.active_object
         if not obj or (obj and obj.type != 'MESH'):
-            tools.common.unselect_all()
-            meshes = tools.common.get_meshes_objects()
+            Common.unselect_all()
+            meshes = Common.get_meshes_objects()
             if len(meshes) == 0:
+                saved_data.load()
                 return {'FINISHED'}
             obj = meshes[0]
         mesh = obj
 
-        tools.common.set_active(mesh)
-        tools.common.switch('EDIT')
+        Common.unselect_all()
+        Common.set_active(mesh)
+        Common.switch('EDIT')
+        Common.switch('EDIT')
 
         bpy.ops.mesh.select_all(action='SELECT')
 
         bpy.ops.mesh.flip_normals()
 
-        tools.common.set_default_stage()
+        Common.set_default_stage()
 
-        self.report({'INFO'}, 'Recalculated all normals.')
+        saved_data.load()
+        self.report({'INFO'}, 'Flipped all normals.')
         return {'FINISHED'}
 
 
@@ -750,8 +853,8 @@ class RemoveDoubles(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_doubles'
     bl_label = 'Remove Doubles'
     bl_description = "Merges duplicated faces and vertices of the selected meshes." \
-                     "\nThis is more precise than doing it manually:" \
-                     "\n  - prevents deletion of unwanted vertices" \
+                     "\nThis is more save than doing it manually:" \
+                     "\n  - leaves shape keys completely untouched" \
                      "\n  - but removes less doubles overall"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -761,21 +864,25 @@ class RemoveDoubles(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects(check=False)
+        meshes = Common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
-        removed_tris = 0
-        meshes = tools.common.get_meshes_objects(mode=3)
-        if not meshes:
-            meshes = [tools.common.get_meshes_objects()[0]]
+        saved_data = Common.SavedData()
 
-        tools.common.set_default_stage()
+        removed_tris = 0
+        meshes = Common.get_meshes_objects(mode=3)
+        if not meshes:
+            meshes = [Common.get_meshes_objects()[0]]
+
+        Common.set_default_stage()
 
         for mesh in meshes:
-            removed_tris += tools.common.remove_doubles(mesh, 0.00002)
+            removed_tris += Common.remove_doubles(mesh, 0.0001, save_shapes=True)
 
-        tools.common.set_default_stage()
+        Common.set_default_stage()
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Removed ' + str(removed_tris) + ' vertices.')
         return {'FINISHED'}
@@ -795,21 +902,25 @@ class RemoveDoublesNormal(bpy.types.Operator):
         if obj and obj.type == 'MESH':
             return True
 
-        meshes = tools.common.get_meshes_objects(check=False)
+        meshes = Common.get_meshes_objects(check=False)
         return meshes
 
     def execute(self, context):
-        removed_tris = 0
-        meshes = tools.common.get_meshes_objects(mode=3)
-        if not meshes:
-            meshes = [tools.common.get_meshes_objects()[0]]
+        saved_data = Common.SavedData()
 
-        tools.common.set_default_stage()
+        removed_tris = 0
+        meshes = Common.get_meshes_objects(mode=3)
+        if not meshes:
+            meshes = [Common.get_meshes_objects()[0]]
+
+        Common.set_default_stage()
 
         for mesh in meshes:
-            removed_tris += tools.common.remove_doubles(mesh, 0.0001)
+            removed_tris += Common.remove_doubles(mesh, 0.0001, save_shapes=True)
 
-        tools.common.set_default_stage()
+        Common.set_default_stage()
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Removed ' + str(removed_tris) + ' vertices.')
         return {'FINISHED'}
@@ -824,18 +935,21 @@ class FixVRMShapesButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return tools.common.get_meshes_objects(check=False)
+        return Common.get_meshes_objects(check=False)
 
     def execute(self, context):
-        mesh = tools.common.get_meshes_objects()[0]
+        saved_data = Common.SavedData()
+
+        mesh = Common.get_meshes_objects()[0]
         slider_max_eyes = 0.33333
         slider_max_mouth = 0.94
 
-        if not tools.common.has_shapekeys(mesh):
+        if not Common.has_shapekeys(mesh):
             self.report({'INFO'}, 'No shapekeys detected!')
+            saved_data.load()
             return {'CANCELLED'}
 
-        tools.common.set_active(mesh)
+        Common.set_active(mesh)
         bpy.ops.object.shape_key_clear()
 
         shapekeys = enumerate(mesh.data.shape_keys.key_blocks)
@@ -920,6 +1034,8 @@ class FixVRMShapesButton(bpy.types.Operator):
             if shapekey.name in shapekeys_used:
                 bpy.ops.object.shape_key_remove(all=False)
 
+        saved_data.load()
+
         self.report({'INFO'}, 'Fixed VRM shapekeys.')
         return {'FINISHED'}
 
@@ -939,13 +1055,15 @@ class FixFBTButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return tools.common.get_armature()
+        return Common.get_armature()
 
     def execute(self, context):
-        armature = tools.common.set_default_stage()
-        tools.common.switch('EDIT')
+        saved_data = Common.SavedData()
 
-        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(armature)
+        armature = Common.set_default_stage()
+        Common.switch('EDIT')
+
+        x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(armature)
 
         hips = armature.data.edit_bones.get('Hips')
         spine = armature.data.edit_bones.get('Spine')
@@ -953,13 +1071,15 @@ class FixFBTButton(bpy.types.Operator):
         right_leg = armature.data.edit_bones.get('Right leg')
         left_leg_new = armature.data.edit_bones.get('Left leg 2')
         right_leg_new = armature.data.edit_bones.get('Right leg 2')
+        left_leg_new_alt = armature.data.edit_bones.get('Left_Leg_2')
+        right_leg_new_alt = armature.data.edit_bones.get('Right_Leg_2')
 
         if not hips or not spine or not left_leg or not right_leg:
-            tools.common.switch('OBJECT')
             self.report({'ERROR'}, 'Required bones could not be found!'
                                    '\nPlease make sure that your armature contains the following bones:'
                                    '\n - Hips, Spine, Left leg, Right leg'
                                    '\nExact names are required!')
+            saved_data.load()
             return {'CANCELLED'}
 
         # FBT Fix
@@ -979,23 +1099,38 @@ class FixFBTButton(bpy.types.Operator):
         if hips.tail[z_cord] > hips.head[z_cord]:
             hips.tail[z_cord] -= 0.1
 
-        if not left_leg_new and not right_leg_new:
-            # Create new leg bones and put them at the old location
-            left_leg_new = armature.data.edit_bones.new('Left leg 2')
-            right_leg_new = armature.data.edit_bones.new('Right leg 2')
+        # Create new leg bones and put them at the old location
+        if not left_leg_new:
+            print("DEBUG 1")
+            if left_leg_new_alt:
+                left_leg_new = left_leg_new_alt
+                left_leg_new.name = 'Left leg 2'
+                print("DEBUG 1.1")
+            else:
+                left_leg_new = armature.data.edit_bones.new('Left leg 2')
+                print("DEBUG 1.2")
+        if not right_leg_new:
+            print("DEBUG 2")
+            if right_leg_new_alt:
+                right_leg_new = right_leg_new_alt
+                right_leg_new.name = 'Right leg 2'
+                print("DEBUG 2.1")
+            else:
+                right_leg_new = armature.data.edit_bones.new('Right leg 2')
+                print("DEBUG 2.2")
 
-            left_leg_new.head = left_leg.head
-            left_leg_new.tail = left_leg.tail
+        left_leg_new.head = left_leg.head
+        left_leg_new.tail = left_leg.tail
 
-            right_leg_new.head = right_leg.head
-            right_leg_new.tail = right_leg.tail
+        right_leg_new.head = right_leg.head
+        right_leg_new.tail = right_leg.tail
 
-            # Set new location for old leg bones
-            left_leg.tail = left_leg.head
-            left_leg.tail[z_cord] = left_leg.head[z_cord] + 0.1
+        # Set new location for old leg bones
+        left_leg.tail = left_leg.head
+        left_leg.tail[z_cord] = left_leg.head[z_cord] + 0.1
 
-            right_leg.tail = right_leg.head
-            right_leg.tail[z_cord] = right_leg.head[z_cord] + 0.1
+        right_leg.tail = right_leg.head
+        right_leg.tail[z_cord] = right_leg.head[z_cord] + 0.1
 
         left_leg_new.parent = left_leg
         right_leg_new.parent = right_leg
@@ -1010,9 +1145,11 @@ class FixFBTButton(bpy.types.Operator):
                 else:
                     bone.tail[z_cord] += 0.1
 
-        tools.common.switch('OBJECT')
+        Common.switch('OBJECT')
 
         context.scene.full_body = True
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Successfully applied the Full Body Tracking fix.')
         return {'FINISHED'}
@@ -1022,7 +1159,7 @@ class FixFBTButton(bpy.types.Operator):
 class RemoveFBTButton(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_fbt'
     bl_label = 'Remove Full Body Tracking'
-    bl_description = "Removes the fix for for Full Body Tracking." \
+    bl_description = "Removes the fix for Full Body Tracking." \
                      '\n' \
                      '\nRequires bones:' \
                      '\n - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2'
@@ -1030,13 +1167,15 @@ class RemoveFBTButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return tools.common.get_armature()
+        return Common.get_armature()
 
     def execute(self, context):
-        armature = tools.common.set_default_stage()
-        tools.common.switch('EDIT')
+        saved_data = Common.SavedData()
 
-        x_cord, y_cord, z_cord, fbx = tools.common.get_bone_orientations(armature)
+        armature = Common.set_default_stage()
+        Common.switch('EDIT')
+
+        x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(armature)
 
         hips = armature.data.edit_bones.get('Hips')
         spine = armature.data.edit_bones.get('Spine')
@@ -1046,15 +1185,16 @@ class RemoveFBTButton(bpy.types.Operator):
         right_leg_new = armature.data.edit_bones.get('Right leg 2')
 
         if not hips or not spine or not left_leg or not right_leg:
-            tools.common.switch('OBJECT')
+            saved_data.load()
             self.report({'ERROR'}, 'Required bones could not be found!'
                                    '\nPlease make sure that your armature contains the following bones:'
                                    '\n - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2'
                                    '\nExact names are required!')
+            saved_data.load()
             return {'CANCELLED'}
 
         if not left_leg_new or not right_leg_new:
-            tools.common.switch('OBJECT')
+            saved_data.load()
             self.report({'ERROR'}, 'The Full Body Tracking Fix is not applied!')
             return {'CANCELLED'}
 
@@ -1089,9 +1229,11 @@ class RemoveFBTButton(bpy.types.Operator):
                     and round(bone.head[z_cord], 5) == round(bone.tail[z_cord], 5):
                 bone.tail[z_cord] += 0.1
 
-        tools.common.switch('OBJECT')
+        Common.switch('OBJECT')
 
         context.scene.full_body = False
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Successfully removed the Full Body Tracking fix.')
         return {'FINISHED'}
@@ -1117,10 +1259,11 @@ class DuplicateBonesButton(bpy.types.Operator):
         return False
 
     def execute(self, context):
-        armature = bpy.context.object
-        armature_mode = armature.mode
+        saved_data = Common.SavedData()
 
-        tools.common.switch('EDIT')
+        armature = bpy.context.object
+
+        Common.switch('EDIT')
 
         bone_count = len(bpy.context.selected_editable_bones)
 
@@ -1144,20 +1287,15 @@ class DuplicateBonesButton(bpy.types.Operator):
                 bone.parent = armature.data.edit_bones.get(duplicate_vertex_groups[bone.parent.name])
 
         # Create the missing vertex groups and duplicate the weight
-        tools.common.switch('OBJECT')
-        for mesh in tools.common.get_meshes_objects(armature_name=armature.name):
-            tools.common.set_active(mesh)
+        Common.switch('OBJECT')
+        for mesh in Common.get_meshes_objects(armature_name=armature.name):
+            Common.set_active(mesh)
 
             for bone_from, bone_to in duplicate_vertex_groups.items():
-                mesh.vertex_groups.new(bone_to)
-                tools.common.mix_weights(mesh, bone_from, bone_to, delete_old_vg=False)
+                mesh.vertex_groups.new(name=bone_to)
+                Common.mix_weights(mesh, bone_from, bone_to, delete_old_vg=False)
 
-        # Select armature
-        tools.common.unselect_all()
-        tools.common.set_active(armature)
-        tools.common.switch('EDIT')
-
-        tools.common.switch(armature_mode)
+        saved_data.load()
 
         self.report({'INFO'}, 'Successfully duplicated ' + str(bone_count) + ' bones.')
         return {'FINISHED'}

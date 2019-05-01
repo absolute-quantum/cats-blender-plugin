@@ -28,15 +28,16 @@ import bpy
 import json
 import copy
 import time
-import globs
 import pathlib
 import collections
-import tools.supporter
-import tools.translate
 from threading import Thread
 from datetime import datetime, timezone
 from collections import OrderedDict
-from tools.register import register_wrap
+
+from .. import globs
+from ..tools.register import register_wrap
+from ..googletrans import Translator
+from . import translate as Translate
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -76,8 +77,8 @@ class ResetGoogleDictButton(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.translate.reset_google_dict()
-        tools.translate.load_translations()
+        Translate.reset_google_dict()
+        Translate.load_translations()
         self.report({'INFO'}, 'Local Google Dictionary cleared!')
         return {'FINISHED'}
 
@@ -92,7 +93,6 @@ class DebugTranslations(bpy.types.Operator):
 
     def execute(self, context):
         bpy.context.scene.debug_translations = True
-        from googletrans import Translator
         translator = Translator()
         try:
             translator.translate('猫')

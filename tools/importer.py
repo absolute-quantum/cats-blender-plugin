@@ -25,16 +25,16 @@
 
 import os
 import bpy
-import globs
 import webbrowser
-import tools.common
-import tools.settings
-import tools.eyetracking
 import bpy_extras.io_utils
-from tools.common import version_2_79_or_older
-from tools.register import register_wrap
 
-from tools import armature_manual
+from .. import globs
+from . import armature_manual
+from . import common as Common
+from . import settings as Settings
+from . import fbx_patch as Fbx_patch
+from .common import version_2_79_or_older
+from .register import register_wrap
 
 mmd_tools_installed = False
 try:
@@ -48,14 +48,25 @@ except:
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = 'cats_importer.import_any_model'
     bl_label = 'Import Any Model'
-    bl_description = 'Import a model of any supported type.' \
-                     '\n' \
-                     '\nSupported types:' \
-                     '\n- MMD: .pmx/.pmd' \
-                     '\n- XNALara: .xps/.mesh/.ascii' \
-                     '\n- Source: .smd/.qc/.vta/.dmx' \
-                     '\n- FBX .fbx'
-    # '\n- DAE .dae'
+    if version_2_79_or_older():
+        bl_description = 'Import a model of any supported type.' \
+                         '\n' \
+                         '\nSupported types:' \
+                         '\n- MMD: .pmx/.pmd' \
+                         '\n- XNALara: .xps/.mesh/.ascii' \
+                         '\n- Source: .smd/.qc/.vta' \
+                         '\n- VRM: .vrm' \
+                         '\n- FBX .fbx '
+    else:
+        bl_description = 'Import a model of any supported type.' \
+                         '\n' \
+                         '\nSupported types:' \
+                         '\n- MMD: .pmx/.pmd' \
+                         '\n- XNALara: .xps/.mesh/.ascii' \
+                         '\n- Source: .smd/.qc/.vta/.dmx' \
+                         '\n- VRM: .vrm' \
+                         '\n- FBX .fbx' \
+                         '\n- DAE .dae '
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
@@ -63,7 +74,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
     if version_2_79_or_older():
         filter_glob = bpy.props.StringProperty(
-            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx",
+            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.fbx;*.vrm;",
             options={'HIDDEN'}
         )
     else:
@@ -79,7 +90,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
     def execute(self, context):
         # print(self.directory)
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -128,17 +139,18 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                 try:
                     bpy.ops.import_scene.fbx('EXEC_DEFAULT',
                                              filepath=file_path,
-                                             automatic_bone_orientation=True)
+                                             automatic_bone_orientation=False)  # Is true better? There are issues with True
                 except (TypeError, ValueError):
                     bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
                 except RuntimeError as e:
                     if 'unsupported, must be 7100 or later' in str(e):
-                        tools.common.show_error(6.2, ['The FBX file version is unsupported!',
+                        Common.show_error(6.2, ['The FBX file version is unsupported!',
                                                       'Please use a tool such as the "Autodesk FBX Converter" to make it compatible.'])
                     print(str(e))
 
-            # DAE - not working in 2.79 because of bug:
+            # DAE, VRM - not working in 2.79 because of bug:
             # https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
+            # EDIT: VRM now works in 2.79 because I removed .dmx from the 2.79 list. It seems that .dmx is the least used format
             elif file_ending == 'dae':
                 try:
                     bpy.ops.wm.collada_import('EXEC_DEFAULT',
@@ -170,7 +182,7 @@ class ModelsPopup(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3, height=-550)
 
     def check(self, context):
@@ -202,7 +214,7 @@ class ImportMMD(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -230,7 +242,7 @@ class ImportXPS(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -252,7 +264,7 @@ class ImportSource(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -274,14 +286,14 @@ class ImportFBX(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
             context.scene.layers[0] = True
 
         try:
-            bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=True)
+            bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=False)
         except (TypeError, ValueError):
             bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
 
@@ -296,7 +308,7 @@ class ImportVRM(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        tools.common.remove_unused_objects()
+        Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
         if version_2_79_or_older():
@@ -319,7 +331,7 @@ class InstallXPS(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -330,13 +342,17 @@ class InstallXPS(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        row = col.row(align=True)
-        row.label(text="The plugin 'XPS Tools' is required for this function.")
+        # row = col.row(align=True)
+        # row.label(text="The plugin 'XPS Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
         row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
         row.label(text="If it is not installed please download and install it manually.")
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.label(text="Make sure to install the version for Blender " + "2.79" if Common.version_2_79_or_older() else "2.80", icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(XpsToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -351,7 +367,7 @@ class InstallSource(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -362,8 +378,8 @@ class InstallSource(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        row = col.row(align=True)
-        row.label(text="The plugin 'Source Tools' is required for this function.")
+        # row = col.row(align=True)
+        # row.label(text="The plugin 'Source Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
         row.label(text="If it is not enabled please enable it in your User Preferences.")
@@ -383,7 +399,7 @@ class InstallVRM(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
 
     def check(self, context):
@@ -394,13 +410,13 @@ class InstallVRM(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        row = col.row(align=True)
-        row.label(text="The plugin 'VRM Importer' is required for this function.")
+        # row = col.row(align=True)
+        # row.label(text="The plugin 'VRM Importer' is required for this function.")
         col.separator()
         row = col.row(align=True)
         row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
-        row.label(text="Currently you have to select 'Testing' in the addons settings")
+        row.label(text="Currently you have to select 'Testing' in the addons settings.")
         col.separator()
         row = col.row(align=True)
         row.label(text="If it is not installed please download and install it manually.")
@@ -418,7 +434,7 @@ class EnableMMD(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
 
     def check(self, context):
@@ -503,7 +519,7 @@ class SourceToolsButton(bpy.types.Operator):
     bl_label = 'Download Source Tools'
 
     def execute(self, context):
-        webbrowser.open('http://steamreview.org/BlenderSourceTools/')
+        webbrowser.open('https://github.com/Artfunkel/BlenderSourceTools')
 
         self.report({'INFO'}, 'Source Tools link opened')
         return {'FINISHED'}
@@ -515,7 +531,10 @@ class VrmToolsButton(bpy.types.Operator):
     bl_label = 'Download VRM Importer'
 
     def execute(self, context):
-        webbrowser.open('https://github.com/iCyP/VRM_IMPORTER')
+        if Common.version_2_79_or_older():
+            webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_79')
+        else:
+            webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_8')
 
         self.report({'INFO'}, 'VRM Importer link opened')
         return {'FINISHED'}
@@ -527,6 +546,7 @@ _tris_count = 0
 _mat_list = []
 _broken_shapes = []
 _textures_found = False
+_eye_meshes_not_named_body = []
 
 
 @register_wrap
@@ -543,9 +563,11 @@ class ExportModel(bpy.types.Operator):
                ('NO_CHECK', '', 'Please Ignore')))
 
     def execute(self, context):
+        meshes = Common.get_meshes_objects()
+
         # Check for warnings
         if not self.action == 'NO_CHECK':
-            global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found
+            global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found, _eye_meshes_not_named_body
 
             # Reset export checks
             _meshes_count = 0
@@ -553,9 +575,16 @@ class ExportModel(bpy.types.Operator):
             _mat_list = []
             _broken_shapes = []
             _textures_found = False
+            _eye_meshes_not_named_body = []
+
+            body_extists = False
+            for mesh in meshes:
+                if mesh.name == 'Body':
+                    body_extists = True
+                    break
 
             # Check for export warnings
-            for mesh in tools.common.get_meshes_objects():
+            for mesh in meshes:
                 # Check mesh count
                 _meshes_count += 1
 
@@ -567,11 +596,11 @@ class ExportModel(bpy.types.Operator):
                     if mat_slot and mat_slot.material and mat_slot.material.users and mat_slot.material.name not in _mat_list:
                         _mat_list.append(mat_slot.material.name)
 
-                # Check if any textures are found
+                        # Check if any textures are found
                         if version_2_79_or_older():
                             if not _textures_found:
                                 for tex_slot in mat_slot.material.texture_slots:
-                                    if tex_slot and tex_slot.texture:
+                                    if tex_slot and tex_slot.texture and tex_slot.texture.image:
                                         tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
                                         if os.path.isfile(tex_path):
                                             _textures_found = True
@@ -580,11 +609,9 @@ class ExportModel(bpy.types.Operator):
                             _textures_found = True
                             # TODO
 
-                # Check if there are broken shapekeys
-                if tools.common.has_shapekeys(mesh):
-                    for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                        if i == 0:
-                            continue
+                if Common.has_shapekeys(mesh):
+                    # Check if there are broken shapekeys
+                    for shapekey in mesh.data.shape_keys.key_blocks[1:]:
                         vert_count = 0
                         for vert in shapekey.data:
                             vert_count += 1
@@ -597,24 +624,36 @@ class ExportModel(bpy.types.Operator):
                             if vert_count == 1000:
                                 break
 
+                    # Check if there are meshes with eye tracking, but are not named Body
+                    if not body_extists:
+                        for shapekey in mesh.data.shape_keys.key_blocks[1:]:
+                            if mesh.name not in _eye_meshes_not_named_body:
+                                if shapekey.name.startswith('vrc.blink') or shapekey.name.startswith('vrc.lower'):
+                                    _eye_meshes_not_named_body.append(mesh.name)
+                                    break
+
             # Check if a warning should be shown
             if _meshes_count > 1 \
                     or _tris_count > 70000 \
-                    or len(_mat_list) > 10 \
-                    or len(_broken_shapes) > 0\
-                    or not _textures_found and tools.settings.get_embed_textures():
+                    or len(_mat_list) > 4 \
+                    or len(_broken_shapes) > 0 \
+                    or not _textures_found and Settings.get_embed_textures()\
+                    or len(_eye_meshes_not_named_body) > 0:
                 bpy.ops.cats_importer.display_error('INVOKE_DEFAULT')
                 return {'FINISHED'}
 
         # Continue if there are no errors or the check was skipped
 
+        # Monkey patch FBX exporter again to import empty shape keys
+        Fbx_patch.patch_fbx_exporter()
+
         # Check if copy protection is enabled
         mesh_smooth_type = 'OFF'
         protected_export = False
-        for mesh in tools.common.get_meshes_objects():
+        for mesh in meshes:
             if protected_export:
                 break
-            if tools.common.has_shapekeys(mesh):
+            if Common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
                     if shapekey.name == 'Basis Original':
                         protected_export = True
@@ -624,7 +663,7 @@ class ExportModel(bpy.types.Operator):
 
         # Check if textures are found and if they should be embedded
         path_mode = 'AUTO'
-        if _textures_found and tools.settings.get_embed_textures():
+        if _textures_found and Settings.get_embed_textures():
             path_mode = 'COPY'
 
         # Open export window
@@ -640,6 +679,8 @@ class ExportModel(bpy.types.Operator):
                                      mesh_smooth_type=mesh_smooth_type)
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
+        except AttributeError:
+            self.report({'ERROR'}, 'FBX Exporter not enabled! Please enable it in your User Preferences.')
 
         return {'FINISHED'}
 
@@ -651,22 +692,26 @@ class ErrorDisplay(bpy.types.Operator):
 
     tris_count = 0
     mat_list = []
+    mat_count = 0
     meshes_count = 0
     broken_shapes = []
     textures_found = False
+    eye_meshes_not_named_body = []
 
     def execute(self, context):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found
+        global _meshes_count, _tris_count, _mat_list, _broken_shapes, _textures_found, _eye_meshes_not_named_body
         self.meshes_count = _meshes_count
         self.tris_count = _tris_count
         self.mat_list = _mat_list
+        self.mat_count = len(_mat_list)
         self.broken_shapes = _broken_shapes
         self.textures_found = _textures_found
+        self.eye_meshes_not_named_body = _eye_meshes_not_named_body
 
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
 
     def check(self, context):
@@ -685,7 +730,7 @@ class ErrorDisplay(bpy.types.Operator):
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You have more than 70,000 tris in this model, which isn't allowed in VRChat!")
+            row.label(text="You have " + str(self.tris_count) + " tris in this model, which isn't allowed in VRChat! (max 70,000)")
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="You should decimate before you export this model.")
@@ -693,34 +738,50 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if len(self.mat_list) > 10:
+        # if self.mat_count > 10:
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text="Too many materials!", icon='ERROR')
+        #     col.separator()
+        #
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text="You have " + str(self.mat_count) + " materials on this model! (max 10)")
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text="You should create a texture atlas before you export this model.")
+        #     col.separator()
+        #     row = col.row(align=True)
+        #     row.scale_y = 0.75
+        #     row.label(text="The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
+        #     col.separator()
+        #     col.separator()
+        #     col.separator()
+
+        if self.mat_count > 4:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Model unoptimized!", icon='ERROR')
+            row.label(text="Model not optimized!", icon='INFO')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="This model has " + str(len(self.mat_list)) + " materials!")
+            row.label(text="This model has " + str(self.mat_count) + " materials!")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="You should try to have a maximum of 4 materials on your model.")
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="It will be extremely unoptimized and cause lag for you and others.")
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text="Please be considerate and create a texture atlas.")
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 0.75
-            row.label(text="The Auto Atlas in CATS is now better and easier than ever, so please make use of it.")
+            row.label(text="Creating a texture atlas in CATS is very easy, so please make use of it.")
             col.separator()
             col.separator()
             col.separator()
 
-        if self.meshes_count > 1:
+        if self.meshes_count > 2:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Model unoptimized!", icon='ERROR')
+            row.label(text="Meshes not joined!", icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
@@ -729,10 +790,13 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="It will be extremely unoptimized and cause lag for you and others.")
+            if self.meshes_count < 9:
+                row.label(text="It is not very optimized and might cause lag for you and others.")
+            else:
+                row.label(text="It is extremely unoptimized and will cause lag for you and others.")
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Please be considerate and join your meshes, it's easy:")
+            row.label(text="You should always join your meshes, it's very easy:")
             col.separator()
             row = col.row(align=True)
             row.scale_y = 1
@@ -768,7 +832,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if not self.textures_found and tools.settings.get_embed_textures():
+        if not self.textures_found and Settings.get_embed_textures():
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="No textures found!", icon='ERROR')
@@ -783,6 +847,41 @@ class ErrorDisplay(bpy.types.Operator):
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="This is not an issue, but you will have to import the textures manually into Unity.")
+            col.separator()
+            col.separator()
+            col.separator()
+
+        if len(self.eye_meshes_not_named_body) == 1:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Eyes not named 'Body'!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="The mesh '" + self.eye_meshes_not_named_body[0] + "' has Eye Tracking shapekeys but is not named 'Body'.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="If you want Eye Tracking to work, rename this mesh to 'Body'.")
+            col.separator()
+            col.separator()
+            col.separator()
+
+        elif len(self.eye_meshes_not_named_body) > 1:
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Eyes not named 'Body'!", icon='ERROR')
+            col.separator()
+
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Multiple meshes have Eye Tracking shapekeys but are not named 'Body'.")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="Make sure that the mesh containing the eyes is named 'Body' in order")
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text="to get Eye Tracking to work.")
             col.separator()
             col.separator()
             col.separator()

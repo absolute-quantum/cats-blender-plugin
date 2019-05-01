@@ -1,11 +1,8 @@
 import bpy
 
-from ui.main import ToolPanel
-
-from tools import rootbone
-
-from tools.register import register_wrap
-from tools.common import version_2_79_or_older
+from .main import ToolPanel
+from ..tools import rootbone as Rootbone
+from ..tools.register import register_wrap
 
 
 @register_wrap
@@ -20,5 +17,5 @@ class BoneRootPanel(ToolPanel, bpy.types.Panel):
         row = box.row(align=True)
         row.prop(context.scene, 'root_bone', icon='BONE_DATA')
         row = box.row(align=True)
-        row.operator(rootbone.RefreshRootButton.bl_idname, icon='FILE_REFRESH')
-        row.operator(rootbone.RootButton.bl_idname, icon='TRIA_RIGHT')
+        row.operator(Rootbone.RefreshRootButton.bl_idname, icon='FILE_REFRESH')
+        row.operator(Rootbone.RootButton.bl_idname, icon='TRIA_RIGHT')

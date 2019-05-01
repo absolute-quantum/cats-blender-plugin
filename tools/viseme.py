@@ -25,8 +25,8 @@
 # Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
-import tools.common
-from tools.register import register_wrap
+from . import common as Common
+from .register import register_wrap
 
 from collections import OrderedDict
 
@@ -41,7 +41,7 @@ class AutoVisemeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not tools.common.get_meshes_objects(check=False):
+        if not Common.get_meshes_objects(check=False):
             return False
 
         if not context.scene.mouth_a \
@@ -58,12 +58,14 @@ class AutoVisemeButton(bpy.types.Operator):
             self.report({'ERROR'}, 'Please select the correct mouth shapekeys instead of "Basis"!')
             return {'CANCELLED'}
 
-        tools.common.set_default_stage()
+        saved_data = Common.SavedData()
+
+        Common.set_default_stage()
 
         wm = bpy.context.window_manager
 
-        mesh = bpy.data.objects[context.scene.mesh_name_viseme]
-        tools.common.set_active(mesh)
+        mesh = Common.get_objects()[context.scene.mesh_name_viseme]
+        Common.set_active(mesh)
 
         # Fix a small bug
         bpy.context.object.show_only_shape_key = False
@@ -71,7 +73,7 @@ class AutoVisemeButton(bpy.types.Operator):
         # Rename selected shapes and rename them back at the end
         shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
         renamed_shapes = [context.scene.mouth_a, context.scene.mouth_o, context.scene.mouth_ch]
-        mesh = bpy.data.objects[context.scene.mesh_name_viseme]
+        mesh = Common.get_objects()[context.scene.mesh_name_viseme]
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
             if shapekey.name == context.scene.mouth_a:
                 print(shapekey.name + " " + context.scene.mouth_a)
@@ -236,14 +238,16 @@ class AutoVisemeButton(bpy.types.Operator):
         bpy.context.object.active_shape_key_index = 0
 
         # Remove empty objects
-        tools.common.switch('EDIT')
-        tools.common.remove_empty()
+        Common.switch('EDIT')
+        Common.remove_empty()
 
         # Fix armature name
-        tools.common.fix_armature_names()
+        Common.fix_armature_names()
 
         # Sort visemes
-        tools.common.sort_shape_keys(mesh.name)
+        Common.sort_shape_keys(mesh.name)
+
+        saved_data.load()
 
         wm.progress_end()
 
@@ -252,7 +256,7 @@ class AutoVisemeButton(bpy.types.Operator):
         return {'FINISHED'}
 
     def mix_shapekey(self, context, shapes, shapekey_data, rename_to, intensity):
-        mesh = bpy.data.objects[context.scene.mesh_name_viseme]
+        mesh = Common.get_objects()[context.scene.mesh_name_viseme]
 
         # Remove existing shapekey
         for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):

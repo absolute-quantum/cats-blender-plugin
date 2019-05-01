@@ -27,7 +27,6 @@
 import os
 import bpy
 import json
-import globs
 import shutil
 import pathlib
 import zipfile
@@ -35,11 +34,16 @@ import webbrowser
 import json.decoder
 import urllib.error
 import urllib.request
-import tools.settings
+
 from threading import Thread
 from datetime import datetime, timezone
-from tools.register import register_wrap
 from bpy.utils import previews
+
+
+from . import common as Common
+from . import settings as Settings
+from .. import globs
+from ..tools.register import register_wrap
 
 # global variables
 preview_collections = {}
@@ -208,7 +212,7 @@ def download_file():
     shutil.rmtree(downloads_dir)
 
     # Save update time in settings
-    tools.settings.set_last_supporter_update(last_update)
+    Settings.set_last_supporter_update(last_update)
 
     # Reload supporters
     reload_supporters()
@@ -324,7 +328,7 @@ def finish_reloading():
     reloading = False
 
     # Refresh ui because of async running
-    tools.common.ui_refresh()
+    Common.ui_refresh()
 
 
 def load_other_icons():
@@ -384,11 +388,11 @@ def update_needed():
     last_update = commit_date_str
     # print(last_update)
 
-    if not tools.settings.get_last_supporter_update():
+    if not Settings.get_last_supporter_update():
         print('SETTINGS NOT FOUND')
         return True
 
-    last_update_str = tools.settings.get_last_supporter_update()
+    last_update_str = Settings.get_last_supporter_update()
 
     if commit_date_str == last_update_str:
         # print('COMMIT IDENTICAL')

@@ -24,45 +24,99 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
 
-from datetime import datetime
-
+import re
 import bpy
-import copy
 import time
-import bmesh
-import globs
-import numpy as np
-import tools.supporter
-import tools.decimation
-import tools.translate
-import tools.armature_bones as Bones
-from mathutils import Vector
+
 from math import degrees
-from collections import OrderedDict
-from tools.register import register_wrap
-
-from googletrans import Translator
-from mmd_tools_local import utils
-
+from mathutils import Vector
+from threading import Thread
+from datetime import datetime
 from html.parser import HTMLParser
 from html.entities import name2codepoint
-import re
 
-# TODO
-# - Add check if hips bone really needs to be rotated
-# - Reset Pivot
-# - Manual bone selection button for root bones
-# - Checkbox for eye blinking/moving
-# - Translate progress bar
-# - Eye tracking should remove vertex group from eye if there is one already bound to it and "No Movement" is checked
-# - Eye tracking test add reset blink
-# - Eye tracking test set subcol like in updater
+from . import common as Common
+from . import supporter as Supporter
+from . import decimation as Decimation
+from . import translate as Translate
+from . import armature_bones as Bones
+from .register import register_wrap
+from mmd_tools_local import utils
+
+# TODO:
+#  - Add check if hips bone really needs to be rotated
+#  - Reset Pivot
+#  - Manual bone selection button for root bones
+#  - Checkbox for eye blinking/moving
+#  - Translate progress bar
+
+
+def version_2_79_or_older():
+    return bpy.app.version < (2, 80)
+
+
+def get_objects():
+    return bpy.context.scene.objects if version_2_79_or_older() else bpy.context.view_layer.objects
+
+
+class SavedData:
+    __object_properties = {}
+    __active_object = None
+
+    def __init__(self):
+        # initialize as instance attributes rather than class attributes
+        self.__object_properties = {}
+        self.__active_object = None
+
+        for obj in get_objects():
+            mode = obj.mode
+            selected = is_selected(obj)
+            hidden = is_hidden(obj)
+            self.__object_properties[obj.name] = [mode, selected, hidden]
+
+            active = get_active()
+            if active:
+                self.__active_object = active.name
+
+    def load(self, ignore=None, load_mode=True, load_select=True, load_hide=True, load_active=True, hide_only=False):
+        if not ignore:
+            ignore = []
+        if hide_only:
+            load_mode = False
+            load_select = False
+            load_active = False
+
+        for obj_name, values in self.__object_properties.items():
+            # print(obj_name, ignore)
+            if obj_name in ignore:
+                continue
+
+            obj = get_objects().get(obj_name)
+            if not obj:
+                continue
+
+            mode, selected, hidden = values
+            # print(obj_name, mode, selected, hidden)
+
+            if load_mode and obj.mode != mode:
+                set_active(obj, skip_sel=True)
+                switch(mode, check_mode=False)
+
+            if load_select:
+                select(obj, selected)
+            if load_hide:
+                hide(obj, hidden)
+
+        # Set the active object
+        if load_active and get_objects().get(self.__active_object):
+            if self.__active_object not in ignore and self.__active_object != get_active():
+                set_active(get_objects().get(self.__active_object), skip_sel=True)
 
 
 def get_armature(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         if obj.type == 'ARMATURE' and obj.name == armature_name:
             return obj
     return None
@@ -70,7 +124,7 @@ def get_armature(armature_name=None):
 
 def get_armature_objects():
     armatures = []
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         if obj.type == 'ARMATURE':
             armatures.append(obj)
     return armatures
@@ -82,41 +136,48 @@ def get_top_parent(child):
     return child
 
 
-def unhide_all(everything=False, obj_to_unhide=None):
-    if not obj_to_unhide:
-        obj_to_unhide = get_armature()
+def unhide_all_unnecessary():
+    # TODO: Documentation? What does "unnecessary" mean?
+    bpy.ops.object.hide_view_clear()
+    for collection in bpy.data.collections:
+        collection.hide_select = False
+        collection.hide_viewport = False
 
-    if everything or not obj_to_unhide:
-        for obj in bpy.data.objects:
-            hide(obj, False)
-            set_unselectable(obj, False)
-    else:
-        def unhide_children(parent):
-            for child in parent.children:
-                hide(child, False)
-                set_unselectable(child, False)
-                unhide_children(child)
 
-        top_parent = get_top_parent(obj_to_unhide)
-        hide(top_parent, False)
-        set_unselectable(top_parent, False)
-        unhide_children(top_parent)
+def unhide_all():
+    for obj in get_objects():
+        hide(obj, False)
+        set_unselectable(obj, False)
 
-    # Unhide all the things that are stupidly hidden and make them selectable
     if not version_2_79_or_older():
-        bpy.ops.object.hide_view_clear()
-        for collection in bpy.data.collections:
-            collection.hide_select = False
-            collection.hide_viewport = False
+        unhide_all_unnecessary()
+
+
+def unhide_children(parent):
+    for child in parent.children:
+        hide(child, False)
+        set_unselectable(child, False)
+        unhide_children(child)
+
+
+def unhide_all_of(obj_to_unhide=None):
+    if not obj_to_unhide:
+        return
+
+    top_parent = get_top_parent(obj_to_unhide)
+    hide(top_parent, False)
+    set_unselectable(top_parent, False)
+    unhide_children(top_parent)
 
 
 def unselect_all():
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         select(obj, False)
 
 
-def set_active(obj):
-    select(obj)
+def set_active(obj, skip_sel=False):
+    if not skip_sel:
+        select(obj)
     if version_2_79_or_older():
         bpy.context.scene.objects.active = obj
     else:
@@ -161,8 +222,8 @@ def set_unselectable(obj, val=True):
     obj.hide_select = val
 
 
-def switch(new_mode):
-    if get_active() and get_active().mode == new_mode:
+def switch(new_mode, check_mode=True):
+    if check_mode and get_active() and get_active().mode == new_mode:
         return
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode=new_mode, toggle=False)
@@ -177,16 +238,29 @@ def set_default_stage_old():
     return armature
 
 
-def set_default_stage(everything=False):
+def set_default_stage():
     """
 
-    :param everything:
+    Selects the armature, unhides everything and sets the modes of every object to object mode
+
     :return: the armature
     """
-    unhide_all(everything=everything)
+
+    # Remove rigidbody collections, as they cause issues if they are not in the view_layer
+    if not version_2_79_or_older():
+        print('Collections:')
+        for collection in bpy.data.collections:
+            print(' ' + collection.name, collection.name.lower())
+            if 'rigidbody' in collection.name.lower():
+                print('DELETE')
+                for obj in collection.objects:
+                    delete(obj)
+                bpy.data.collections.remove(collection)
+
+    unhide_all()
     unselect_all()
 
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         set_active(obj)
         switch('OBJECT')
         if obj.type == 'ARMATURE':
@@ -228,7 +302,7 @@ def get_bone_angle(p1, p2):
 
 def remove_unused_vertex_groups(ignore_main_bones=False):
     unselect_all()
-    for ob in bpy.data.objects:
+    for ob in get_objects():
         if ob.type == 'MESH':
             ob.update_from_editmode()
 
@@ -246,9 +320,7 @@ def remove_unused_vertex_groups(ignore_main_bones=False):
                     ob.vertex_groups.remove(ob.vertex_groups[i])
 
 
-def find_center_vector_of_vertex_group(mesh_name, vertex_group):
-    mesh = bpy.data.objects[mesh_name]
-
+def find_center_vector_of_vertex_group(mesh, vertex_group):
     data = mesh.data
     verts = data.vertices
     verts_in_group = []
@@ -275,6 +347,22 @@ def find_center_vector_of_vertex_group(mesh_name, vertex_group):
     average = total / divide_by
 
     return average
+
+
+def vertex_group_exists(mesh_name, bone_name):
+    mesh = get_objects()[mesh_name]
+    data = mesh.data
+    verts = data.vertices
+
+    for vert in verts:
+        i = vert.index
+        try:
+            mesh.vertex_groups[bone_name].weight(i)
+            return True
+        except:
+            pass
+
+    return False
 
 
 def get_meshes(self, context):
@@ -315,18 +403,16 @@ def get_all_meshes(self, context):
 def get_armature_list(self, context):
     choices = []
 
-    for object in context.scene.objects:
-        if object.type == 'ARMATURE':
-            # 1. Will be returned by context.scene
-            # 2. Will be shown in lists
-            # 3. will be shown in the hover description (below description)
+    for armature in get_armature_objects():
+        # Set name displayed in list
+        name = armature.data.name
+        if name.startswith('Armature ('):
+            name = armature.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
 
-            # Set name displayed in list
-            name = object.data.name
-            if name.startswith('Armature ('):
-                name = object.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
-
-            choices.append((object.name, name, object.name))
+        # 1. Will be returned by context.scene
+        # 2. Will be shown in lists
+        # 3. will be shown in the hover description (below description)
+        choices.append((armature.name, name, armature.name))
 
     if len(choices) == 0:
         choices.append(('None', 'None', 'None'))
@@ -339,18 +425,20 @@ def get_armature_merge_list(self, context):
     choices = []
     current_armature = context.scene.merge_armature_into
 
-    for obj in context.scene.objects:
-        if obj.type == 'ARMATURE' and obj.name != current_armature:
+    for armature in get_armature_objects():
+        if armature.name != current_armature:
+            # Set name displayed in list
+            name = armature.data.name
+            if name.startswith('Armature ('):
+                name = armature.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
+
             # 1. Will be returned by context.scene
             # 2. Will be shown in lists
             # 3. will be shown in the hover description (below description)
+            choices.append((armature.name, name, armature.name))
 
-            # Set name displayed in list
-            name = obj.data.name
-            if name.startswith('Armature ('):
-                name = obj.name + ' (' + name.replace('Armature (', '')[:-1] + ')'
-
-            choices.append((obj.name, name, obj.name))
+    if len(choices) == 0:
+        choices.append(('None', 'None', 'None'))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
     return bpy.types.Object.Enum
@@ -362,7 +450,7 @@ def get_meshes_decimation(self, context):
     for object in bpy.context.scene.objects:
         if object.type == 'MESH':
             if object.parent is not None and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
-                if object.name in tools.decimation.ignore_meshes:
+                if object.name in Decimation.ignore_meshes:
                     continue
                 # 1. Will be returned by context.scene
                 # 2. Will be shown in lists
@@ -482,9 +570,9 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
         meshes = meshes_list
     elif meshes_list:
         if is_mouth:
-            meshes = [bpy.data.objects.get(context.scene.mesh_name_viseme)]
+            meshes = [get_objects().get(context.scene.mesh_name_viseme)]
         else:
-            meshes = [bpy.data.objects.get(context.scene.mesh_name_eye)]
+            meshes = [get_objects().get(context.scene.mesh_name_eye)]
     else:
         bpy.types.Object.Enum = choices
         return bpy.types.Object.Enum
@@ -500,7 +588,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
                 continue
             if no_basis and name == 'Basis':
                 continue
-            if decimation and name in tools.decimation.ignore_shapes:
+            if decimation and name in Decimation.ignore_shapes:
                 continue
             # 1. Will be returned by context.scene
             # 2. Will be shown in lists
@@ -513,7 +601,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
     choices2 = []
     for name in names:
         if name in choices_simple and len(choices) > 1 and choices[0][0] != name:
-            if decimation and name in tools.decimation.ignore_shapes:
+            if decimation and name in Decimation.ignore_shapes:
                 continue
             choices2.append((name, name, name))
 
@@ -541,8 +629,8 @@ def fix_armature_names(armature_name=None):
     armature = get_armature(armature_name=armature_name)
     armature.name = 'Armature'
     if not armature.data.name.startswith('Armature'):
-        tools.translate.update_dictionary(armature.data.name)
-        armature.data.name = 'Armature (' + tools.translate.translate(armature.data.name, add_space=True)[0] + ')'
+        Translate.update_dictionary(armature.data.name)
+        armature.data.name = 'Armature (' + Translate.translate(armature.data.name, add_space=True)[0] + ')'
 
     # Reset the armature lists
     try:
@@ -581,7 +669,7 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
     # 3 = Selected only
 
     meshes = []
-    for ob in bpy.data.objects:
+    for ob in get_objects():
         if ob.type == 'MESH':
             if mode == 0:
                 if not armature_name:
@@ -608,10 +696,16 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
         current_active = get_active()
         to_remove = []
         for mesh in meshes:
-            # print(mesh.name, mesh.users)
+            selected = is_selected(mesh)
+            print(mesh.name, mesh.users)
             set_active(mesh)
+
             if not get_active():
                 to_remove.append(mesh)
+
+            if not selected:
+                select(mesh, False)
+
         for mesh in to_remove:
             print('DELETED CORRUPTED MESH:', mesh.name, mesh.users)
             meshes.remove(mesh)
@@ -631,16 +725,8 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     if not armature_name:
         armature_name = bpy.context.scene.armature
 
-    meshes = get_meshes_objects(armature_name=armature_name)
-
-    # Find out which meshes to join
-    meshes_to_join = []
-    for mesh in meshes:
-        if mode == 0:
-            meshes_to_join.append(mesh.name)
-        elif mode == 1 and is_selected(mesh):
-            meshes_to_join.append(mesh.name)
-
+    # Get meshes to join
+    meshes_to_join = get_meshes_objects(armature_name=armature_name, mode=3 if mode == 1 else 0)
     if not meshes_to_join:
         return None
 
@@ -652,55 +738,41 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
     unselect_all()
 
-    # # Check everywhere for broken meshes and delete them
-    # for mesh in get_meshes_objects(mode=2):
-    #     print(mesh.name, mesh.users)
-    #     set_active(mesh)
-    #     if not get_active():
-    #         print('CORRUPTED MESH FOUND:', mesh.name)
-    #         if mesh.name in meshes_to_join:
-    #             meshes_to_join.remove(mesh.name)
-    #         delete(mesh)
-
     # Apply existing decimation modifiers and select the meshes for joining
-    for mesh in meshes:
-        if mesh.name in meshes_to_join:
-            set_active(mesh)
+    for mesh in meshes_to_join:
+        set_active(mesh)
 
-            # Apply decimation modifiers
-            for mod in mesh.modifiers:
-                if mod.type == 'DECIMATE':
-                    if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
-                        mesh.modifiers.remove(mod)
-                        continue
-                    if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
-                        mesh.modifiers.remove(mod)
-                        continue
-
-                    if has_shapekeys(mesh):
-                        bpy.ops.object.shape_key_remove(all=True)
-                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
-                elif mod.type == 'SUBSURF':
+        # Apply decimation modifiers
+        for mod in mesh.modifiers:
+            if mod.type == 'DECIMATE':
+                if mod.decimate_type == 'COLLAPSE' and mod.ratio == 1:
                     mesh.modifiers.remove(mod)
-                elif mod.type == 'MIRROR':
+                    continue
+                if mod.decimate_type == 'UNSUBDIV' and mod.iterations == 0:
+                    mesh.modifiers.remove(mod)
+                    continue
+
+                if has_shapekeys(mesh):
+                    bpy.ops.object.shape_key_remove(all=True)
+                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+            elif mod.type == 'SUBSURF':
+                mesh.modifiers.remove(mod)
+            elif mod.type == 'MIRROR':
+                if has_shapekeys(mesh):
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
-            # Standardize UV maps name
-            if version_2_79_or_older():
-                if mesh.data.uv_textures:
-                    mesh.data.uv_textures[0].name = 'UVMap'
-                for mat_slot in mesh.material_slots:
-                    if mat_slot and mat_slot.material:
-                        for tex_slot in mat_slot.material.texture_slots:
-                            if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
-                                tex_slot.uv_layer = 'UVMap'
-            else:
-                if mesh.data.uv_layers:
-                    mesh.data.uv_layers[0].name = 'UVMap'
-
-    # print('CHECK')
-    # for mesh in meshes:
-    #     print(mesh.name, mesh.users)
+        # Standardize UV maps name
+        if version_2_79_or_older():
+            if mesh.data.uv_textures:
+                mesh.data.uv_textures[0].name = 'UVMap'
+            for mat_slot in mesh.material_slots:
+                if mat_slot and mat_slot.material:
+                    for tex_slot in mat_slot.material.texture_slots:
+                        if tex_slot and tex_slot.texture and tex_slot.texture_coords == 'UV':
+                            tex_slot.uv_layer = 'UVMap'
+        else:
+            if mesh.data.uv_layers:
+                mesh.data.uv_layers[0].name = 'UVMap'
 
     # Get the name of the active mesh in order to check if it was deleted later
     active_mesh_name = get_active().name
@@ -722,9 +794,10 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     # Rename result to Body and correct modifiers
     mesh = get_active()
     if mesh:
-        mesh.name = 'Body'
+        # If its the only mesh in the armature left, rename it to Body
+        if len(get_meshes_objects(armature_name=armature_name)) == 1:
+            mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
-        # return
 
         # Remove duplicate armature modifiers
         mod_count = 0
@@ -736,6 +809,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
                     bpy.ops.object.modifier_remove(modifier=mod.name)
                     continue
                 mod.object = get_armature(armature_name=armature_name)
+                mod.show_viewport = True
 
         # Add armature mod if there is none
         if mod_count == 0:
@@ -756,46 +830,46 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 def apply_transforms(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
+    armature = get_armature(armature_name=armature_name)
 
+    # Save armature position for 2.8
+    pos_tmp = [armature.location[0], armature.location[1], armature.location[2]]
+    rot_tmp = [armature.rotation_euler[0], armature.rotation_euler[1], armature.rotation_euler[2]]
+    scl_tmp = [armature.scale[0], armature.scale[1], armature.scale[2]]
+
+    # Apply transforms on armature
     unselect_all()
-    set_active(get_armature(armature_name=armature_name))
+    set_active(armature)
+    switch('OBJECT')
     bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+    # Apply transforms of meshes
     for mesh in get_meshes_objects(armature_name=armature_name):
         unselect_all()
         set_active(mesh)
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
+    # On Blender 2.80 move the meshes like the armature and then apply transforms again
+    if not version_2_79_or_older():
+        for mesh in get_meshes_objects(armature_name=armature_name):
+            for i in [0, 1, 2]:
+                mesh.location[i] = pos_tmp[i]
+                mesh.rotation_euler[i] = rot_tmp[i]
+                mesh.scale[i] = scl_tmp[i]
+
+            unselect_all()
+            set_active(mesh)
+            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
 
 def separate_by_materials(context, mesh):
-    set_default_stage()
-
-    # Remove Rigidbodies and joints
-    for obj in bpy.data.objects:
-        if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            delete_hierarchy(obj)
-
-    save_shapekey_order(mesh.name)
-    set_active(mesh)
-
-    for mod in mesh.modifiers:
-        if mod.type == 'DECIMATE':
-            mesh.modifiers.remove(mod)
-        else:
-            mod.show_expanded = False
-
-    clean_material_names(mesh)
-
-    # Correctly put mesh together. This is done to prevent extremely small pieces.
-    # This essentially does nothing but merges the extremely small parts together.
-    switch('EDIT')
-    bpy.ops.mesh.select_all(action='DESELECT')
-    bpy.ops.mesh.remove_doubles(threshold=0)
-    switch('OBJECT')
+    prepare_separation(mesh)
 
     utils.separateByMaterials(mesh)
 
     for ob in context.selected_objects:
         if ob.type == 'MESH':
+            hide(ob, False)
             clean_shapekeys(ob)
 
     utils.clearUnusedMeshes()
@@ -805,33 +879,18 @@ def separate_by_materials(context, mesh):
 
 
 def separate_by_loose_parts(context, mesh):
-    set_default_stage()
-
-    # Remove Rigidbodies and joints
-    for obj in bpy.data.objects:
-        if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            delete_hierarchy(obj)
-
-    save_shapekey_order(mesh.name)
-    set_active(mesh)
-
-    for mod in mesh.modifiers:
-        if mod.type == 'DECIMATE':
-            mesh.modifiers.remove(mod)
-        else:
-            mod.show_expanded = False
-
-    clean_material_names(mesh)
+    prepare_separation(mesh)
 
     # Correctly put mesh together. This is done to prevent extremely small pieces.
     # This essentially does nothing but merges the extremely small parts together.
-    remove_doubles(mesh, 0)
+    remove_doubles(mesh, 0, save_shapes=True)
 
     utils.separateByMaterials(mesh)
 
     meshes = []
     for ob in context.selected_objects:
         if ob.type == 'MESH':
+            hide(ob, False)
             meshes.append(ob)
 
     wm = bpy.context.window_manager
@@ -865,38 +924,69 @@ def separate_by_loose_parts(context, mesh):
 
     wm.progress_end()
 
-    ## Old separate method
-    # print("DEBUG3")
-    # bpy.ops.mesh.separate(type='LOOSE')
-    # print("DEBUG4")
-    #
-    # for ob in context.selected_objects:
-    #     print(ob.name)
-    #     if ob.type == 'MESH':
-    #         if ob.data.shape_keys:
-    #             for kb in ob.data.shape_keys.key_blocks:
-    #                 if can_remove(kb):
-    #                     ob.shape_key_remove(kb)
-    #
-    #         mesh = ob.data
-    #         materials = mesh.materials
-    #         if len(mesh.polygons) > 0:
-    #             if len(materials) > 1:
-    #                 mat_index = mesh.polygons[0].material_index
-    #                 for x in reversed(range(len(materials))):
-    #                     if x != mat_index:
-    #                         materials.pop(index=x, update_data=True)
-    #         ob.name = getattr(materials[0], 'name', 'None') if len(materials) else 'None'
-    #
-    #         if '. 001' in ob.name:
-    #             ob.name = ob.name.replace('. 001', '')
-    #         if '.000' in ob.name:
-    #             ob.name = ob.name.replace('.000', '')
+    utils.clearUnusedMeshes()
+
+    # Update the material list of the Material Combiner
+    update_material_list()
+
+
+def separate_by_shape_keys(context, mesh):
+    prepare_separation(mesh)
+
+    switch('EDIT')
+    bpy.ops.mesh.select_mode(type="VERT")
+    bpy.ops.mesh.select_all(action='DESELECT')
+
+    switch('OBJECT')
+    for kb in mesh.data.shape_keys.key_blocks:
+        for i, (v0, v1) in enumerate(zip(kb.relative_key.data, kb.data)):
+            if v0.co != v1.co:
+                mesh.data.vertices[i].select = True
+    switch('EDIT')
+    bpy.ops.mesh.select_all(action='INVERT')
+
+    bpy.ops.mesh.separate(type='SELECTED')
+
+    for ob in context.selected_objects:
+        if ob.type == 'MESH':
+            if ob != get_active():
+                print('not active', ob.name)
+                active_tmp = get_active()
+                ob.name = ob.name.replace('.001', '') + '.no_shapes'
+                set_active(ob)
+                bpy.ops.object.shape_key_remove(all=True)
+                set_active(active_tmp)
+                select(ob, False)
+            else:
+                print('active', ob.name)
+                clean_shapekeys(ob)
+                switch('OBJECT')
 
     utils.clearUnusedMeshes()
 
     # Update the material list of the Material Combiner
     update_material_list()
+
+
+def prepare_separation(mesh):
+    set_default_stage()
+    unselect_all()
+
+    # Remove Rigidbodies and joints
+    for obj in get_objects():
+        if 'rigidbodies' in obj.name or 'joints' in obj.name:
+            delete_hierarchy(obj)
+
+    save_shapekey_order(mesh.name)
+    set_active(mesh)
+
+    for mod in mesh.modifiers:
+        if mod.type == 'DECIMATE':
+            mesh.modifiers.remove(mod)
+        else:
+            mod.show_expanded = False
+
+    clean_material_names(mesh)
 
 
 def clean_shapekeys(mesh):
@@ -920,7 +1010,7 @@ def can_remove_shapekey(key_block):
 def separate_by_verts():
     for obj in bpy.context.selected_objects:
         if obj.type == 'MESH' and len(obj.vertex_groups) > 0:
-            tools.common.set_active(obj)
+            Common.set_active(obj)
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.select_mode(type='VERT')
         for vgroup in obj.vertex_groups:
@@ -948,7 +1038,7 @@ def reset_context_scenes():
 
 
 def save_shapekey_order(mesh_name):
-    mesh = bpy.data.objects[mesh_name]
+    mesh = get_objects()[mesh_name]
     armature = get_armature()
 
     if not armature:
@@ -1032,7 +1122,7 @@ def update_shapekey_orders():
 
         # Get shape keys and translate them
         for shape_name in order:
-            shape_key_order_translated.append(tools.translate.translate(shape_name, add_space=True, translating_shapes=True)[0])
+            shape_key_order_translated.append(Translate.translate(shape_name, add_space=True, translating_shapes=True)[0])
 
         # print(armature.name, shape_key_order_translated)
         custom_data['shape_key_order'] = shape_key_order_translated
@@ -1040,7 +1130,7 @@ def update_shapekey_orders():
 
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
-    mesh = bpy.data.objects[mesh_name]
+    mesh = get_objects()[mesh_name]
     if not has_shapekeys(mesh):
         return
     set_active(mesh)
@@ -1129,7 +1219,7 @@ def sort_shape_keys(mesh_name, shape_key_order=None):
 
 
 def isEmptyGroup(group_name):
-    mesh = bpy.data.objects.get('Body')
+    mesh = get_objects().get('Body')
     if mesh is None:
         return True
     vgroup = mesh.vertex_groups.get(group_name)
@@ -1260,7 +1350,7 @@ def delete_zero_weight(armature_name=None, ignore=''):
 
 
 def remove_unused_objects():
-    for obj in bpy.data.objects:
+    for obj in get_objects():
         if (obj.type == 'CAMERA' and obj.name == 'Camera') \
                 or (obj.type == 'LAMP' and obj.name == 'Lamp') \
                 or (obj.type == 'LIGHT' and obj.name == 'Light') \
@@ -1269,20 +1359,23 @@ def remove_unused_objects():
 
 
 def remove_no_user_objects():
-    print('\nREMOVE OBJECTS')
-    for block in bpy.data.objects:
-        print(block.name, block.users)
+    # print('\nREMOVE OBJECTS')
+    for block in get_objects():
+        # print(block.name, block.users)
         if block.users == 0:
+            print('Removing obj ', block.name)
             delete(block)
-    print('\nREMOVE MESHES')
+    # print('\nREMOVE MESHES')
     for block in bpy.data.meshes:
-        print(block.name, block.users)
+        # print(block.name, block.users)
         if block.users == 0:
+            print('Removing mesh ', block.name)
             bpy.data.meshes.remove(block)
-    print('\nREMOVE MATERIALS')
+    # print('\nREMOVE MATERIALS')
     for block in bpy.data.materials:
-        print(block.name, block.users)
+        # print(block.name, block.users)
         if block.users == 0:
+            print('Removing material ', block.name)
             bpy.data.materials.remove(block)
 
     # print('\nREMOVE MATS')
@@ -1388,6 +1481,11 @@ def show_error(scale, error_list, override_header=False):
 
     bpy.ops.cats_common.show_error('INVOKE_DEFAULT')
 
+    print('')
+    print('Report: Error')
+    for line in error:
+        print('    ' + line)
+
 
 @register_wrap
 class ShowError(bpy.types.Operator):
@@ -1398,7 +1496,7 @@ class ShowError(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = tools.common.get_user_preferences().system.dpi
+        dpi_value = Common.get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
 
     def draw(self, context):
@@ -1424,15 +1522,10 @@ class ShowError(bpy.types.Operator):
                     row.label(text=line, icon='ERROR')
                     first_line = True
                 else:
-                    row.label(text=line, icon_value=tools.supporter.preview_collections["custom_icons"]["empty"].icon_id)
-
-        print('')
-        print('Report: Error')
-        for line in error:
-            print('    ' + line)
+                    row.label(text=line, icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
 
 
-def remove_doubles(mesh, threshold):
+def remove_doubles(mesh, threshold, save_shapes=True):
     if not mesh:
         return 0
 
@@ -1440,8 +1533,24 @@ def remove_doubles(mesh, threshold):
 
     set_active(mesh)
     switch('EDIT')
-    bpy.ops.mesh.select_all(action='SELECT')
+    bpy.ops.mesh.select_mode(type="VERT")
+    bpy.ops.mesh.select_all(action='DESELECT')
+
+    if save_shapes and has_shapekeys(mesh):
+        switch('OBJECT')
+        for kb in mesh.data.shape_keys.key_blocks:
+            i = 0
+            for v0, v1 in zip(kb.relative_key.data, kb.data):
+                if v0.co != v1.co:
+                    mesh.data.vertices[i].select = True
+                i += 1
+        switch('EDIT')
+        bpy.ops.mesh.select_all(action='INVERT')
+    else:
+        bpy.ops.mesh.select_all(action='SELECT')
+
     bpy.ops.mesh.remove_doubles(threshold=threshold)
+    bpy.ops.mesh.select_all(action='DESELECT')
     switch('OBJECT')
 
     return pre_tris - len(mesh.data.polygons)
@@ -1493,12 +1602,8 @@ def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
         mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
 
 
-def version_2_79_or_older():
-    return bpy.app.version < (2, 80)
-
-
 def get_user_preferences():
-    return bpy.context.user_preferences if version_2_79_or_older() else bpy.context.preferences
+    return bpy.context.user_preferences if hasattr(bpy.context, 'user_preferences') else bpy.context.preferences
 
 
 def has_shapekeys(mesh):
@@ -1546,12 +1651,136 @@ def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
     switch(pre_mode)
 
 
-def update_material_list():
+def update_material_list(self=None, context=None):
     try:
         if hasattr(bpy.context.scene, 'smc_ob_data') and bpy.context.scene.smc_ob_data:
             bpy.ops.smc.refresh_ob_data()
     except AttributeError:
         print('Material Combiner not found')
+
+
+def unify_materials():
+    textures = []  # TODO
+
+    for ob in get_objects():
+        if ob.type == "MESH":
+            for mat_slot in ob.material_slots:
+                if mat_slot.material:
+                    mat_slot.material.blend_method = 'HASHED'
+                    # mat_slot.material.blend_method = 'BLEND'  # Use this for transparent textures only
+                    print('MAT: ', mat_slot.material.name)
+                    if mat_slot.material.node_tree:
+                        nodes = mat_slot.material.node_tree.nodes
+                        image = None
+                        for node in nodes:
+                            # print(' ' + node.name + ', ' + node.type + ', ' + node.label)
+                            if node.type == 'TEX_IMAGE' and 'toon' not in node.name and 'sphere' not in node.name:
+                                image = node.image
+                                # textures.append(node.image.name)
+                            mat_slot.material.node_tree.nodes.remove(node)
+
+                        # Create Image node
+                        node_texture = nodes.new(type='ShaderNodeTexImage')
+                        node_texture.location = 0, 0
+                        node_texture.image = image
+                        node_texture.label = 'Cats Texture'
+
+                        # Create Principled BSDF node
+                        node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
+                        node_prinipled.location = 300, -220
+                        node_prinipled.label = 'Cats Emission'
+                        node_prinipled.inputs['Specular'].default_value = 0
+                        node_prinipled.inputs['Roughness'].default_value = 0
+                        node_prinipled.inputs['Sheen Tint'].default_value = 0
+                        node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
+                        node_prinipled.inputs['IOR'].default_value = 0
+
+                        # Create Transparency BSDF node
+                        node_transparent = nodes.new(type='ShaderNodeBsdfTransparent')
+                        node_transparent.location = 325, -100
+                        node_transparent.label = 'Cats Transparency'
+
+                        # Create Mix Shader node
+                        node_mix = nodes.new(type='ShaderNodeMixShader')
+                        node_mix.location = 600, 0
+                        node_mix.label = 'Cats Mix'
+
+                        # Create Output node
+                        node_output = nodes.new(type='ShaderNodeOutputMaterial')
+                        node_output.location = 800, 0
+                        node_output.label = 'Cats Output'
+
+                        # Create 2nd Output node
+                        node_output2 = nodes.new(type='ShaderNodeOutputMaterial')
+                        node_output2.location = 800, -200
+                        node_output2.label = 'Cats Export'
+
+                        # Link nodes together
+                        mat_slot.material.node_tree.links.new(node_texture.outputs['Color'], node_prinipled.inputs['Base Color'])
+                        mat_slot.material.node_tree.links.new(node_texture.outputs['Alpha'], node_mix.inputs['Fac'])
+
+                        mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_mix.inputs[2])
+                        mat_slot.material.node_tree.links.new(node_transparent.outputs['BSDF'], node_mix.inputs[1])
+
+                        mat_slot.material.node_tree.links.new(node_mix.outputs['Shader'], node_output.inputs['Surface'])
+
+                        mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_output2.inputs['Surface'])
+
+                    # break
+
+    print(textures, len(textures))
+    return {'FINISHED'}
+
+
+def add_principle_shader():
+    for mesh in get_meshes_objects():
+        for mat_slot in mesh.material_slots:
+            if mat_slot.material and mat_slot.material.node_tree:
+                nodes = mat_slot.material.node_tree.nodes
+                node_image = None
+                node_image_count = 0
+
+                for node in nodes:
+                    if node.type == 'BSDF_PRINCIPLED' and node.location == (501, -500):
+                        node_image = None
+                        break
+                    if node.type == 'OUTPUT_MATERIAL' and node.location == (801, -500):
+                        node_image = None
+                        break
+
+                    if node.type != 'TEX_IMAGE':
+                        continue
+                    node_image_count += 1
+
+                    if node.name == 'mmd_base_tex' or node.label == 'MainTexture':
+                        node_image = node
+                        node_image_count = 0
+                        break
+
+                    node_image = node
+
+                if not node_image or node_image_count > 1:
+                    continue
+
+                # Create Principled BSDF node
+                node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
+                node_prinipled.location = 501, -500
+                node_prinipled.label = 'Cats Emission'
+                node_prinipled.inputs['Specular'].default_value = 0
+                node_prinipled.inputs['Roughness'].default_value = 0
+                node_prinipled.inputs['Sheen Tint'].default_value = 0
+                node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
+                node_prinipled.inputs['IOR'].default_value = 0
+
+                # Create Output node for correct image exports
+                node_output = nodes.new(type='ShaderNodeOutputMaterial')
+                node_output.location = 801, -500
+                node_output.label = 'Cats Export'
+
+                # Link nodes together
+                mat_slot.material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
+                mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_output.inputs['Surface'])
+
 
 
 """
@@ -1617,7 +1846,7 @@ def html_to_text(html):
 """ === THIS CODE COULD BE USEFUL === """
 
 # def addvertex(meshname, shapekey_name):
-#     mesh = bpy.data.objects[meshname].data
+#     mesh = get_objects()[meshname].data
 #     bm = bmesh.new()
 #     bm.from_mesh(mesh)
 #     bm.verts.ensure_lookup_table()
@@ -1640,7 +1869,7 @@ def html_to_text(html):
 
 # Check which shape keys will be deleted on export by Blender
 # def checkshapekeys():
-#     for ob in bpy.data.objects:
+#     for ob in get_objects():
 #         if ob.type == 'MESH':
 #             mesh = ob
 #     bm = bmesh.new()
@@ -1665,7 +1894,7 @@ def html_to_text(html):
 
 # # Repair vrc shape keys old
 # def repair_shapekeys():
-#     for ob in bpy.data.objects:
+#     for ob in get_objects():
 #         if ob.type == 'MESH':
 #             mesh = ob
 #             bm = bmesh.new()

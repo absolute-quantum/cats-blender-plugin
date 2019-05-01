@@ -1,32 +1,32 @@
 if "bpy" not in locals():
-    print('STARTUP UI!!')
+    # print('STARTUP UI!!')
     import bpy
-    import ui.main
-    import ui.armature
-    import ui.manual
-    import ui.custom
-    import ui.decimation
-    import ui.eye_tracking
-    import ui.visemes
-    import ui.bone_root
-    import ui.optimization
-    import ui.copy_protection
-    import ui.settings_updates
-    import ui.supporter
-    import ui.credits
+    from . import main
+    from . import armature
+    from . import manual
+    from . import custom
+    from . import decimation
+    from . import eye_tracking
+    from . import visemes
+    from . import bone_root
+    from . import optimization
+    from . import copy_protection
+    from . import settings_updates
+    from . import supporter
+    from . import credits
 else:
-    print('RELOAD UI!!')
+    # print('RELOAD UI!!')
     import importlib
-    importlib.reload(ui.main)
-    importlib.reload(ui.armature)
-    importlib.reload(ui.manual)
-    importlib.reload(ui.custom)
-    importlib.reload(ui.decimation)
-    importlib.reload(ui.eye_tracking)
-    importlib.reload(ui.visemes)
-    importlib.reload(ui.bone_root)
-    importlib.reload(ui.optimization)
-    importlib.reload(ui.copy_protection)
-    importlib.reload(ui.settings_updates)
-    importlib.reload(ui.supporter)
-    importlib.reload(ui.credits)
+    importlib.reload(main)
+    importlib.reload(armature)
+    importlib.reload(manual)
+    importlib.reload(custom)
+    importlib.reload(decimation)
+    importlib.reload(eye_tracking)
+    importlib.reload(visemes)
+    importlib.reload(bone_root)
+    importlib.reload(optimization)
+    importlib.reload(copy_protection)
+    importlib.reload(settings_updates)
+    importlib.reload(supporter)
+    importlib.reload(credits)

@@ -36,23 +36,21 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = False
+dev_branch = True
 
 import os
 import sys
 
 # Append files to sys path
-file_dir = os.path.dirname(__file__)
+file_dir = os.path.join(os.path.dirname(__file__), 'extern_tools')
 if file_dir not in sys.path:
     sys.path.append(file_dir)
 
-import copy
 import shutil
 import pathlib
 import requests
-import addon_utils
 
-import globs
+from . import globs
 
 # Check if cats is reloading or started fresh
 if "bpy" not in locals():
@@ -70,11 +68,11 @@ if bpy.app.version < (2, 75):
 # Load or reload all cats modules
 if not is_reloading:
     # This order is important
-    import updater
     import mmd_tools_local
-    import tools
-    import ui
-    import extentions
+    from . import updater
+    from . import tools
+    from . import ui
+    from . import extentions
 else:
     import importlib
     importlib.reload(updater)
@@ -108,6 +106,7 @@ def remove_corrupted_files():
     to_remove = [
         'googletrans',
         'mmd_tools_local',
+        'extern_tools',
         'resources',
         'tests',
         'tools',
@@ -138,7 +137,7 @@ def remove_corrupted_files():
     else:
         main_dir = str(pathlib.Path(os.path.dirname(__file__)).parent.resolve())
 
-    print('Checking for CATS files in the addon directory:\n' + main_dir)
+    # print('Checking for CATS files in the addon directory:\n' + main_dir)
     files = [f for f in os.listdir(main_dir) if os.path.isfile(os.path.join(main_dir, f))]
     folders = [f for f in os.listdir(main_dir) if os.path.isdir(os.path.join(main_dir, f))]
 
@@ -171,18 +170,14 @@ def remove_corrupted_files():
                 print("Failed to remove folder " + folder)
 
     if no_perm:
+        unregister()
         sys.tracebacklimit = 0
-        raise ImportError('                                                                                                                                                                                    '
-                          '                     '
-                          '\n\nFaulty CATS installation found!                                                                Faulty CATS installation found!'
-                          '\nTo fix this restart Blender as admin!                                                        To fix this restart Blender as admin!'
-                          '\n\n\n\n\nFaulty CATS installation found!'
-                          '\nTo fix this restart Blender as admin!'
-                          '\n\n\n\n\nFaulty CATS installation found!'
-                          '\nTo fix this restart Blender as admin!'
-                          '\n\n\n')
+        raise ImportError('\n\nFaulty CATS installation found!'
+                          '\nTo fix this restart Blender as admin!     '
+                          '\n')
 
     if os_error:
+        unregister()
         sys.tracebacklimit = 0
         message = '                                                                                                                                                                                    ' \
                   '                     '\
@@ -191,38 +186,28 @@ def remove_corrupted_files():
                   '\n'
 
         for folder in folders:
-            if folder not in to_remove:
+            if folder in to_remove:
                 message += "\n- " + os.path.join(main_dir, folder)
 
         for file in files:
-            if file not in to_remove:
+            if file in to_remove:
                 message += "\n- " + os.path.join(main_dir, file)
 
         raise ImportError(message)
 
     if wrong_path:
+        unregister()
         sys.tracebacklimit = 0
-        raise ImportError('                                                                                                                                                                                    '
-                          '                     '
-                          '\n\nFaulty CATS installation found!                                                                   Faulty CATS installation found!'
-                          '\nPlease install CATS via User Preferences and restart Blender!                 Please install CATS via User Preferences and restart Blender!'
-                          '\n\n\n\n\nFaulty installation found!'
+        raise ImportError('\n\nFaulty CATS installation found!'
                           '\nPlease install CATS via User Preferences and restart Blender!'
-                          '\n\n\n\n\nFaulty installation found!'
-                          '\nPlease install CATS via User Preferences and restart Blender!'
-                          '\n\n\n')
+                          '\n')
 
     if faulty_installation:
+        unregister()
         sys.tracebacklimit = 0
-        raise ImportError('                                                                                                                                                                                    '
-                          '                     '
-                          '\n\nFaulty CATS installation was found and fixed!                                                             Faulty CATS installation was found and fixed!'
-                          '\nPlease restart Blender and enable CATS again!                                                           Please restart Blender and enable CATS again!'
-                          '\n\n\n\n\nFaulty CATS installation was found and fixed!'
+        raise ImportError('\n\nFaulty CATS installation was found and fixed!'
                           '\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n\n\nFaulty CATS installation was found and fixed!'
-                          '\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n')
+                          '\n')
 
 
 def set_cats_version_string():
@@ -262,7 +247,6 @@ def register():
     version_str = set_cats_version_string()
 
     # Register Updater and check for CATS update
-    print("Loading Updater..")
     updater.register(bl_info, dev_branch, version_str)
 
     # Set some global settings, first allowed use of globs
@@ -270,7 +254,6 @@ def register():
     globs.version_str = version_str
 
     # Load settings and show error if a faulty installation was deleted recently
-    print("Loading settings..")
     show_error = False
     try:
         tools.settings.load_settings()
@@ -278,57 +261,62 @@ def register():
         show_error = True
     if show_error:
         sys.tracebacklimit = 0
-        raise ImportError('                                                                                                                                                                                    '
-                          '                     '
-                          '\n\nPlease restart Blender and enable CATS again!                                                            Please restart Blender and enable CATS again!'
-                          '\n\n\n\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n\nPlease restart Blender and enable CATS again!'
-                          '\n\n\n\n')
+        raise ImportError('\n\nPlease restart Blender and enable CATS again!'
+                          '\n')
 
     # if not tools.settings.use_custom_mmd_tools():
     #     bpy.utils.unregister_module("mmd_tools")
 
     # Load mmd_tools
-    print("Loading mmd_tools..")
     try:
         mmd_tools_local.register()
     except AttributeError:
         print('Could not register local mmd_tools')
-        pass
+    except ValueError:
+        print('mmd_tools is already registered')
 
     # Register all classes
-    print('Registering CATS classes..')
     count = 0
     tools.register.order_classes()
-    for cls in tools.register.__bl_classes:  # TODO ordered
-        # print(cls)
-        bpy.utils.register_class(cls)
-        count += 1
-    print('Registered', count, 'CATS classes.')
+    for cls in tools.register.__bl_classes:
+        try:
+            bpy.utils.register_class(cls)
+            count += 1
+        except ValueError:
+            pass
+    # print('Registered', count, 'CATS classes.')
+    if count < len(tools.register.__bl_classes):
+        print('Skipped', len(tools.register.__bl_classes) - count, 'CATS classes.')
 
     # Register Scene types
-    print("Registering scene types..")
     extentions.register()
 
     # Load supporter and settings icons and buttons
-    print("Loading other stuff..")
     tools.supporter.load_other_icons()
     tools.supporter.load_supporters()
     tools.supporter.register_dynamic_buttons()
 
-    # Load the dictionaries and check if they are found
+    # Load the dictionaries and check if they are found.
     globs.dict_found = tools.translate.load_translations()
 
     # Set preferred Blender options
-    tools.common.get_user_preferences().system.use_international_fonts = True
+    if tools.common.version_2_79_or_older():
+        tools.common.get_user_preferences().system.use_international_fonts = True
+    else:
+        tools.common.get_user_preferences().view.use_international_fonts = True
     tools.common.get_user_preferences().filepaths.use_file_compression = True
 
     # Add shapekey button to shapekey menu
-    bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+    if hasattr(bpy.types, 'MESH_MT_shape_key_specials'):  # pre 2.80
+        bpy.types.MESH_MT_shape_key_specials.append(tools.shapekey.addToShapekeyMenu)
+    else:
+        bpy.types.MESH_MT_shape_key_context_menu.append(tools.shapekey.addToShapekeyMenu)
 
     # Disable request warning when using google translate
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
+    # Monkey patch fbx exporter to include empty shapekeys
+    tools.fbx_patch.start_patch_fbx_exporter_timer()
 
     # Apply the settings after a short time, because you can't change checkboxes during register process
     tools.settings.start_apply_settings_timer()
@@ -342,18 +330,24 @@ def unregister():
     # Unregister updater
     updater.unregister()
 
-    # # Unload mmd_tools
+    # Unload mmd_tools
     try:
         mmd_tools_local.unregister()
     except AttributeError:
         print('Could not unregister local mmd_tools')
         pass
+    except ValueError:
+        print('mmd_tools was not registered')
+        pass
 
     # Unload all classes in reverse order
     count = 0
     for cls in reversed(tools.register.__bl_ordered_classes):
-        bpy.utils.unregister_class(cls)
-        count += 1
+        try:
+            bpy.utils.unregister_class(cls)
+            count += 1
+        except ValueError:
+            pass
     print('Unregistered', count, 'CATS classes.')
 
     # Unregister all dynamic buttons and icons
@@ -361,7 +355,15 @@ def unregister():
     tools.supporter.unload_icons()
 
     # Remove shapekey button from shapekey menu
-    bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
+    try:
+        bpy.types.MESH_MT_shape_key_specials.remove(tools.shapekey.addToShapekeyMenu)
+    except AttributeError:
+        print('shapekey button was not registered')
+        pass
+
+    # Remove folder from sys path
+    if file_dir in sys.path:
+        sys.path.remove(file_dir)
 
     print("### Unloaded CATS successfully!\n")
 
