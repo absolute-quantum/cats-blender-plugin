@@ -1270,7 +1270,7 @@ def delete_hierarchy(parent):
     get_child_names(parent)
     to_delete.append(parent)
 
-    objs = get_objects()
+    objs = bpy.data.objects
     for obj in to_delete:
         objs.remove(objs[obj.name], do_unlink=True)
 
@@ -1280,7 +1280,7 @@ def delete(obj):
         for child in obj.children:
             child.parent = obj.parent
 
-    objs = get_objects()
+    objs = bpy.data.objects
     objs.remove(objs[obj.name], do_unlink=True)
 
 
