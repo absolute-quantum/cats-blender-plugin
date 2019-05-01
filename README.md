@@ -372,7 +372,7 @@ It checks for a new version automatically once every day.
   - "Apply Shapekey to Basis" now applies the shapekey at its current strength into the basis
      instead of at full strength
 - **General**:
-  - Modified FBX Exporter to always export empty shape keys
+  - Modified default FBX Exporter to always export empty shape keys
     - This fixes the above described eye tracking bug
   - Added multiple Blender 2.8 compatibility fixes
   - Fixed all compatibility issues with other plugins

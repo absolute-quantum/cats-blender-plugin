@@ -54,6 +54,8 @@ class StartPoseMode(bpy.types.Operator):
         return True
 
     def execute(self, context):
+        saved_data = Common.SavedData()
+
         current = ""
         if bpy.context.active_object and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
                 bpy.context.selected_editable_bones) > 0:
@@ -65,8 +67,6 @@ class StartPoseMode(bpy.types.Operator):
         else:
             pass
             # TODO
-
-        saved_data = Common.SavedData()
 
         armature = Common.set_default_stage()
         Common.switch('POSE')
@@ -99,6 +99,7 @@ class StartPoseMode(bpy.types.Operator):
             bpy.ops.wm.tool_set_by_id(name="builtin.rotate")
 
         saved_data.load(hide_only=True)
+        Common.hide(armature, False)
 
         return {'FINISHED'}
 
