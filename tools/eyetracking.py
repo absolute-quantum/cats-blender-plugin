@@ -227,13 +227,13 @@ class CreateEyesButton(bpy.types.Operator):
         # Check for correct bone hierarchy
         is_correct = Armature.check_hierarchy(True, [['Hips', 'Spine', 'Chest', 'Neck', 'Head']])
 
-        # if context.scene.disable_eye_movement:
-        #     # print('Repair with mouth.')
-        #     repair_shapekeys_mouth(mesh_name)
-        #     # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
-        # else:
-        #     # print('Repair normal "' + new_right_eye.name + '".')
-        #     repair_shapekeys(mesh_name, new_right_eye.name)
+        if context.scene.disable_eye_movement:
+            # print('Repair with mouth.')
+            repair_shapekeys_mouth(mesh_name)
+            # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
+        else:
+            # print('Repair normal "' + new_right_eye.name + '".')
+            repair_shapekeys(mesh_name, new_right_eye.name)
 
         # deleted = []
         # # deleted = checkshapekeys()
@@ -364,111 +364,111 @@ def fix_eye_position(context, old_eye, new_eye, head, right_side):
     new_eye.tail[z_cord] = new_eye.head[z_cord] + 0.1
 
 
-# # Repair vrc shape keys
-# def repair_shapekeys(mesh_name, vertex_group):
-#     # This is done to fix a very weird bug where the mouth stays open sometimes
-#     Common.set_default_stage()
-#     mesh = Common.get_objects()[mesh_name]
-#     Common.unselect_all()
-#     Common.set_active(mesh)
-#     Common.switch('EDIT')
-#     Common.switch('OBJECT')
-#
-#     bm = bmesh.new()
-#     bm.from_mesh(mesh.data)
-#     bm.verts.ensure_lookup_table()
-#
-#     # Get a vertex from the eye vertex group # TODO https://i.imgur.com/tWi8lk6.png after many times resetting the eyes
-#     print('DEBUG: Group: ' + vertex_group)
-#     group = mesh.vertex_groups.get(vertex_group)
-#     if group is None:
-#         print('DEBUG: Group: ' + vertex_group + ' not found!')
-#         repair_shapekeys_mouth(mesh_name)
-#         return
-#     print('DEBUG: Group: ' + vertex_group + ' found!')
-#
-#     vcoords = None
-#     gi = group.index
-#     for v in mesh.data.vertices:
-#         for g in v.groups:
-#             if g.group == gi:
-#                 vcoords = v.co.xyz
-#
-#     if not vcoords:
-#         return
-#
-#     print('DEBUG: Repairing shapes!')
-#     # Move that vertex by a tiny amount
-#     moved = False
-#     i = 0
-#     for key in bm.verts.layers.shape.keys():
-#         if not key.startswith('vrc.'):
-#             continue
-#         print('DEBUG: Repairing shape: ' + key)
-#         value = bm.verts.layers.shape.get(key)
-#         for index, vert in enumerate(bm.verts):
-#             if vert.co.xyz == vcoords:
-#                 if index < i:
-#                     continue
-#                 shapekey = vert
-#                 shapekey_coords = Common.matmul(mesh.matrix_world, shapekey[value])
-#                 shapekey_coords[0] -= 0.00007 * randBoolNumber()
-#                 shapekey_coords[1] -= 0.00007 * randBoolNumber()
-#                 shapekey_coords[2] -= 0.00007 * randBoolNumber()
-#                 shapekey[value] = Common.matmul(mesh.matrix_world.inverted(), shapekey_coords)
-#                 print('DEBUG: Repaired shape: ' + key)
-#                 i += 1
-#                 moved = True
-#                 break
-#
-#     bm.to_mesh(mesh.data)
-#
-#     if not moved:
-#         print('Error: Shapekey repairing failed for some reason! Using random shapekey method now.')
-#         repair_shapekeys_mouth(mesh_name)
-#
-#
-# def randBoolNumber():
-#     if random() < 0.5:
-#         return -1
-#     return 1
-#
-#
-# # Repair vrc shape keys with random vertex
-# def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
-#     # This is done to fix a very weird bug where the mouth stays open sometimes
-#     Common.set_default_stage()
-#     mesh = Common.get_objects()[mesh_name]
-#     Common.unselect_all()
-#     Common.set_active(mesh)
-#     Common.switch('EDIT')
-#     Common.switch('OBJECT')
-#
-#     bm = bmesh.new()
-#     bm.from_mesh(mesh.data)
-#     bm.verts.ensure_lookup_table()
-#
-#     # Move that vertex by a tiny amount
-#     moved = False
-#     for key in bm.verts.layers.shape.keys():
-#         if not key.startswith('vrc'):
-#             continue
-#         value = bm.verts.layers.shape.get(key)
-#         for vert in bm.verts:
-#             shapekey = vert
-#             shapekey_coords = Common.matmul(mesh.matrix_world, shapekey[value])
-#             shapekey_coords[0] -= 0.00007
-#             shapekey_coords[1] -= 0.00007
-#             shapekey_coords[2] -= 0.00007
-#             shapekey[value] = Common.matmul(mesh.matrix_world.inverted(), shapekey_coords)
-#             print('TEST')
-#             moved = True
-#             break
-#
-#     bm.to_mesh(mesh.data)
-#
-#     if not moved:
-#         print('Error: Random shapekey repairing failed for some reason! Canceling!')
+# Repair vrc shape keys
+def repair_shapekeys(mesh_name, vertex_group):
+    # This is done to fix a very weird bug where the mouth stays open sometimes
+    Common.set_default_stage()
+    mesh = Common.get_objects()[mesh_name]
+    Common.unselect_all()
+    Common.set_active(mesh)
+    Common.switch('EDIT')
+    Common.switch('OBJECT')
+
+    bm = bmesh.new()
+    bm.from_mesh(mesh.data)
+    bm.verts.ensure_lookup_table()
+
+    # Get a vertex from the eye vertex group # TODO https://i.imgur.com/tWi8lk6.png after many times resetting the eyes
+    print('DEBUG: Group: ' + vertex_group)
+    group = mesh.vertex_groups.get(vertex_group)
+    if group is None:
+        print('DEBUG: Group: ' + vertex_group + ' not found!')
+        repair_shapekeys_mouth(mesh_name)
+        return
+    print('DEBUG: Group: ' + vertex_group + ' found!')
+
+    vcoords = None
+    gi = group.index
+    for v in mesh.data.vertices:
+        for g in v.groups:
+            if g.group == gi:
+                vcoords = v.co.xyz
+
+    if not vcoords:
+        return
+
+    print('DEBUG: Repairing shapes!')
+    # Move that vertex by a tiny amount
+    moved = False
+    i = 0
+    for key in bm.verts.layers.shape.keys():
+        if not key.startswith('vrc.'):
+            continue
+        print('DEBUG: Repairing shape: ' + key)
+        value = bm.verts.layers.shape.get(key)
+        for index, vert in enumerate(bm.verts):
+            if vert.co.xyz == vcoords:
+                if index < i:
+                    continue
+                shapekey = vert
+                shapekey_coords = Common.matmul(mesh.matrix_world, shapekey[value])
+                shapekey_coords[0] -= 0.00007 * randBoolNumber()
+                shapekey_coords[1] -= 0.00007 * randBoolNumber()
+                shapekey_coords[2] -= 0.00007 * randBoolNumber()
+                shapekey[value] = Common.matmul(mesh.matrix_world.inverted(), shapekey_coords)
+                print('DEBUG: Repaired shape: ' + key)
+                i += 1
+                moved = True
+                break
+
+    bm.to_mesh(mesh.data)
+
+    if not moved:
+        print('Error: Shapekey repairing failed for some reason! Using random shapekey method now.')
+        repair_shapekeys_mouth(mesh_name)
+
+
+def randBoolNumber():
+    if random() < 0.5:
+        return -1
+    return 1
+
+
+# Repair vrc shape keys with random vertex
+def repair_shapekeys_mouth(mesh_name):  # TODO Add vertex repairing!
+    # This is done to fix a very weird bug where the mouth stays open sometimes
+    Common.set_default_stage()
+    mesh = Common.get_objects()[mesh_name]
+    Common.unselect_all()
+    Common.set_active(mesh)
+    Common.switch('EDIT')
+    Common.switch('OBJECT')
+
+    bm = bmesh.new()
+    bm.from_mesh(mesh.data)
+    bm.verts.ensure_lookup_table()
+
+    # Move that vertex by a tiny amount
+    moved = False
+    for key in bm.verts.layers.shape.keys():
+        if not key.startswith('vrc'):
+            continue
+        value = bm.verts.layers.shape.get(key)
+        for vert in bm.verts:
+            shapekey = vert
+            shapekey_coords = Common.matmul(mesh.matrix_world, shapekey[value])
+            shapekey_coords[0] -= 0.00007
+            shapekey_coords[1] -= 0.00007
+            shapekey_coords[2] -= 0.00007
+            shapekey[value] = Common.matmul(mesh.matrix_world.inverted(), shapekey_coords)
+            print('TEST')
+            moved = True
+            break
+
+    bm.to_mesh(mesh.data)
+
+    if not moved:
+        print('Error: Random shapekey repairing failed for some reason! Canceling!')
 
 
 eye_left = None

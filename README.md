@@ -335,6 +335,10 @@ It checks for a new version automatically once every day.
 #### 0.13.2
 - **Fix Model**:
   - Changed clipping planes to 0.01 and 150
+    - This prevents rendering inaccuracies (thanks Rokk!)
+- **Eye Tracking**:
+  - Added random vertex movement back in
+    - Instead of the exporter, Fix Model deleted empty shapekeys now (whoops)
 - **General**
   - Disabled backface culling in mmd_tools again
 
