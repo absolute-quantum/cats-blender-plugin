@@ -30,7 +30,6 @@ import time
 
 from math import degrees
 from mathutils import Vector
-from threading import Thread
 from datetime import datetime
 from html.parser import HTMLParser
 from html.entities import name2codepoint
@@ -1649,6 +1648,13 @@ def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
                 print('YES')
 
     switch(pre_mode)
+
+
+def fix_bone_orientations(armature):
+    # Connect all bones with their children if they have exactly one
+    for bone in armature.data.edit_bones:
+        if len(bone.children) == 1 and bone.name not in ['LeftEye', 'RightEye', 'Head', 'Hips']:
+            bone.tail = bone.children[0].head
 
 
 def update_material_list(self=None, context=None):
