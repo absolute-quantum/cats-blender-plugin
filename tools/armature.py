@@ -83,6 +83,8 @@ class FixArmature(bpy.types.Operator):
         #
         # return {'FINISHED'}
 
+        saved_data = Common.SavedData()
+
         is_vrm = False
         if len(Common.get_meshes_objects()) == 0:
             for mesh in Common.get_meshes_objects(mode=2):
@@ -229,7 +231,8 @@ class FixArmature(bpy.types.Operator):
         armature = Common.set_default_stage()
 
         if bpy.context.space_data:
-            bpy.context.space_data.clip_start = 0.001
+            bpy.context.space_data.clip_start = 0.01
+            bpy.context.space_data.clip_end = 150
 
         if version_2_79_or_older():
             # Set better bone view
@@ -1181,9 +1184,8 @@ class FixArmature(bpy.types.Operator):
             Common.delete_zero_weight()
 
         # Connect all bones with their children if they have exactly one
-        for bone in armature.data.edit_bones:
-            if len(bone.children) == 1 and bone.name not in ['LeftEye', 'RightEye', 'Head', 'Hips']:
-                bone.tail = bone.children[0].head
+        if context.scene.connect_bones:
+            Common.fix_bone_orientations(armature)
 
         # # This is code for testing
         # print('LOOKING FOR BONES!')
@@ -1222,13 +1224,17 @@ class FixArmature(bpy.types.Operator):
 
         if not hierarchy_check_hips['result']:
             self.report({'ERROR'}, hierarchy_check_hips['message'])
+            saved_data.load()
             return {'FINISHED'}
 
         if fixed_uv_coords:
+            saved_data.load()
             Common.show_error(6.2, ['The model was successfully fixed, but there were ' + str(fixed_uv_coords) + ' faulty UV coordinates.',
                                           'This could result in broken textures and you might have to fix them manually.',
                                           'This issue is often caused by edits in PMX editor.'])
             return {'FINISHED'}
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Model successfully fixed.')
         return {'FINISHED'}
@@ -1311,6 +1317,8 @@ class ModelSettings(bpy.types.Operator):
         row.prop(context.scene, 'keep_end_bones')
         row = col.row(align=True)
         row.prop(context.scene, 'join_meshes')
+        row = col.row(align=True)
+        row.prop(context.scene, 'connect_bones')
         row = col.row(align=True)
         row.prop(context.scene, 'combine_mats')
         row = col.row(align=True)

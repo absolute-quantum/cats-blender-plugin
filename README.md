@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.13.1)
+# Cats Blender Plugin (0.13.2)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -331,6 +331,21 @@ It checks for a new version automatically once every day.
 
 
 ## Changelog
+
+#### 0.13.2
+- **Importer**:
+  - Now selects the imported armature in Cats
+  - Added bone orientation fix after import if all bones point in the same direction
+- **Fix Model**:
+  - Changed clipping planes to 0.01 and 150
+    - This prevents rendering inaccuracies (thanks Rokk!)
+  - Fix Model also no longer resets the visibility of objects
+  - Added option to not connect the bones to their respective child
+- **Eye Tracking**:
+  - Added random vertex movement back in
+    - Instead of the exporter, Fix Model deleted empty shapekeys now (whoops)
+- **General**
+  - Disabled backface culling in mmd_tools again
 
 #### 0.13.1
 - **Fix Model**:
