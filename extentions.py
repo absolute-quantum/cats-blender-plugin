@@ -62,6 +62,13 @@ def register():
         default=True
     )
 
+    Scene.connect_bones = BoolProperty(
+        name='Connect Bones',
+        description="This connects all bones to their child bone if they have exactly one child bone.\n"
+                    "This will not change how the bones function in any way, it just improves the aesthetic of the armature",
+        default=True
+    )
+
     Scene.use_google_only = BoolProperty(
         name='Use Old Translations (not recommended)',
         description="Ignores the internal dictionary and only uses the Google Translator for shape key translations."

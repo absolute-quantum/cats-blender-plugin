@@ -334,12 +334,13 @@ It checks for a new version automatically once every day.
 
 #### 0.13.2
 - **Importer**:
-  - Now selects the imported armature after import
+  - Now selects the imported armature in Cats
   - Added bone orientation fix after import if all bones point in the same direction
 - **Fix Model**:
   - Changed clipping planes to 0.01 and 150
     - This prevents rendering inaccuracies (thanks Rokk!)
   - Fix Model also no longer resets the visibility of objects
+  - Added option to not connect the bones to their respective child
 - **Eye Tracking**:
   - Added random vertex movement back in
     - Instead of the exporter, Fix Model deleted empty shapekeys now (whoops)

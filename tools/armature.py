@@ -1184,7 +1184,8 @@ class FixArmature(bpy.types.Operator):
             Common.delete_zero_weight()
 
         # Connect all bones with their children if they have exactly one
-        Common.fix_bone_orientations(armature)
+        if context.scene.connect_bones:
+            Common.fix_bone_orientations(armature)
 
         # # This is code for testing
         # print('LOOKING FOR BONES!')
@@ -1316,6 +1317,8 @@ class ModelSettings(bpy.types.Operator):
         row.prop(context.scene, 'keep_end_bones')
         row = col.row(align=True)
         row.prop(context.scene, 'join_meshes')
+        row = col.row(align=True)
+        row.prop(context.scene, 'connect_bones')
         row = col.row(align=True)
         row.prop(context.scene, 'combine_mats')
         row = col.row(align=True)
