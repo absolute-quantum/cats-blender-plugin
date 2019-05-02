@@ -332,6 +332,12 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.13.2
+- **Fix Model**:
+  - Changed clipping planes to 0.01 and 150
+- **General**
+  - Disabled backface culling in mmd_tools again
+
 #### 0.13.1
 - **Fix Model**:
   - Added option to not join the meshes
