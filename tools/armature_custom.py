@@ -330,7 +330,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
         for bone in armature.data.edit_bones:
             if bone.name.endswith('.merge'):
                 new_bone = armature.data.edit_bones.get(bone.name.replace('.merge', ''))
-                if new_bone \
+                if new_bone and new_bone.name not in bones_to_merge \
                         and round(bone.head[0], 4) == round(new_bone.head[0], 4)\
                         and round(bone.head[1], 4) == round(new_bone.head[1], 4)\
                         and round(bone.head[2], 4) == round(new_bone.head[2], 4):
@@ -355,9 +355,13 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
             vg_base = mesh_merged.vertex_groups.get(bone_base)
             vg_merge = mesh_merged.vertex_groups.get(bone_merge)
 
-            if vg_base and vg_merge:
-                Common.mix_weights(mesh_merged, bone_merge, bone_base)
-                to_delete.append(bone_merge)
+            if not vg_base:
+                mesh_merged.vertex_groups.new(name=bone_base)
+            if not vg_merge:
+                mesh_merged.vertex_groups.new(name=bone_merge)
+
+            Common.mix_weights(mesh_merged, bone_merge, bone_base)
+            to_delete.append(bone_merge)
 
         Common.set_active(armature)
         Common.switch('EDIT')

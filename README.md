@@ -332,6 +332,12 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.13.3
+- **Custom Model Creation**:
+  - Now properly merges bones when the vertex group of one of the merging bones is missing
+- **Model Options**:
+  - Fixed error when switching to object mode during pose mode
+
 #### 0.13.2
 - **Importer**:
   - Now selects the imported armature in Cats
@@ -393,35 +399,6 @@ It checks for a new version automatically once every day.
   - Fixed all compatibility issues with other plugins
   - Updated mmd_tools
   - Fixed multiple errors
-
-#### 0.12.2
-- **Optimization**:
-  - Added new "Convert Textures to PNG" button
-    - This converts all texture files into PNG files
-    - This helps with transparency and compatibility issues
-    - The converted image files will be saved next to the old ones
-- **Model**:
-  - Made SSBU models compatible
-- **Exporter**:
-  - No longer warns of meshes that could be split by Unity
-  - Instead warns when having more than 70k tris
-  - Now warns at 10 materials instead of 4, will be changed back when more nuanced warnings are in place
-- **Decimation**:
-  - Changed default decimation value to 70,000 tris
-- **General**:
-  - Fixed corrupted meshes breaking nearly all Cats features
-  - Added automatic fixing of faulty Cats installations
-    - Restart Cats if it doesn't show up after updating
-  - Rewrote the entire updater
-  - Added some Blender 2.8 compatibility fixes
-  - Updated mmd_tools
-
-#### 0.12.1
-- **General**:
-  - Fixed an error removing the whole Cats UI
-  - Fixed an error on Fix Model and other various buttons
-  - Stopping Pose Mode in Blender 2.8 now selects the Box Selection tool instead of the 3D Cursor
-  - Updated mmd_tools (improved 2.8 materials)
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
