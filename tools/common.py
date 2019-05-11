@@ -382,7 +382,7 @@ def get_meshes(self, context):
 def get_top_meshes(self, context):
     choices = []
 
-    for mesh in get_meshes_objects(mode=1):
+    for mesh in get_meshes_objects(mode=1, check=False):
         choices.append((mesh.name, mesh.name, mesh.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
@@ -392,7 +392,7 @@ def get_top_meshes(self, context):
 def get_all_meshes(self, context):
     choices = []
 
-    for mesh in get_meshes_objects(mode=2):
+    for mesh in get_meshes_objects(mode=2, check=False):
         choices.append((mesh.name, mesh.name, mesh.name))
 
     bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
