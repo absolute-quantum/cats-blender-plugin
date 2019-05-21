@@ -59,7 +59,7 @@ class _SetShadingBase:
             shade, context.scene.game_settings.material_mode = ('TEXTURED', 'GLSL') if shading_mode else ('SOLID', 'MULTITEXTURE')
             for space in self._get_view3d_spaces(context):
                 space.viewport_shade = shade
-                space.show_backface_culling = True
+                space.show_backface_culling = False
             return {'FINISHED'}
     else:
         def execute(self, context): #TODO

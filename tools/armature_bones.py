@@ -267,6 +267,13 @@ bone_list_conflicting_names = [
     # Fix Detroit model
     (['Bip_UpperArmBase_L', 'Bip_ArmpitRingBase_L'], 'Bip_UpperArm_R', 'Bip_UpperArm_L'),
     (['Bip_UpperArmBase_L', 'Bip_ArmpitRingBase_L'], 'Bip_UpperArm_R_001', 'Bip_UpperArm_R'),
+
+    # Fix fox inverted spines model
+    (['Neck03', 'Bum_L', 'Upperleg01_L', 'Upperleg02_L'], 'Spine01', 'Spine5'),
+    (['Neck03', 'Bum_L', 'Upperleg01_L', 'Upperleg02_L'], 'Spine02', 'Spine4'),
+    (['Neck03', 'Bum_L', 'Upperleg01_L', 'Upperleg02_L'], 'Spine03', 'Spine3'),
+    (['Neck03', 'Bum_L', 'Upperleg01_L', 'Upperleg02_L'], 'Spine04', 'Spine2'),
+    (['Neck03', 'Bum_L', 'Upperleg01_L', 'Upperleg02_L'], 'Spine05', 'Spine1'),
 ]
 bone_finger_list = [
     'Thumb0_',
@@ -333,6 +340,8 @@ bone_rename['Hips'] = [
     'HipMaster_01',
     'J_Bip_C_Hips',
     'J_Hip',
+    'Pelvis_L',
+    'Pelvis_R',
 ]
 bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
     'Spine',  # First entry!
@@ -605,6 +614,7 @@ bone_rename['\Left arm'] = [
     'J_\L_Elbow',
     'Arm_1_\L',
     'Bip_UpperArm_\L',
+    'Upperarm01_\L',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -650,6 +660,7 @@ bone_rename['\Left elbow'] = [
     'J_\L_ForeArm',
     'Arm_2_\L',
     'Bip_Forearm_\L',
+    'Lowerarm01_\L',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -669,7 +680,6 @@ bone_rename['\Left wrist'] = [
     '\LHandN',
     '\LeftHand',
     '\Left_Hand',
-    'Finger3_1_\L',
     '\L_Hand',
     '\L_Hand_1',
     '\LFingerBaseN',
@@ -736,6 +746,7 @@ bone_rename['\Left leg'] = [
     'Leg_1_\L',
     'Bip_Thigh_\L',
     'Groin_\L',
+    'Upperleg01_\L',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -779,6 +790,7 @@ bone_rename['\Left knee'] = [
     'Knee\L',
     'Leg_2_\L',
     'Bip_Leg_\L',
+    'Lowerleg01_\L',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
@@ -851,6 +863,7 @@ bone_rename['\Left toe'] = [
     'J_Bip_\L_ToeBase',
     'J_\L_Toe',
     'Bip_Toe_\L',
+    'Toe_Boot_\L',
 ]
 bone_rename['Eye_\L'] = [
     '\Left_Eye',
@@ -933,6 +946,8 @@ bone_reweight['Neck'] = [
     'NeckW',
     'NeckW2',
     'Neck01',
+    'Neck02',
+    'Neck03',
     'J_Neck2',
 ]
 bone_reweight['Head'] = [
@@ -1058,6 +1073,7 @@ bone_reweight['\Left arm'] = [
     'Bip_ForearmHelper_\L',
     'Bip_ElbowHelper_\L',
     'Hlp_UpperArm_\L',
+    'Upperarm02_\L',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -1187,6 +1203,7 @@ bone_reweight['\Left elbow'] = [
     'Bip_WristTwistS_\L',
     'Hlp_Wrist_\L',
     'Hlp_LowerArm_\L',
+    'Lowerarm02_\L',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1231,6 +1248,10 @@ bone_reweight['\Left wrist'] = [
     'Arm_\Left_Finger_5_Base',
     '\Left_Finger_Index_Metacarpal',
     '\Left_Finger_Ring_Metacarpal',
+    'Metacarpal1_\L',
+    'Metacarpal2_\L',
+    'Metacarpal3_\L',
+    'Metacarpal4_\L',
 ]
 bone_reweight['Left wrist'] = [
     'Left_Hand_002',
@@ -1339,6 +1360,7 @@ bone_reweight['\Left leg'] = [
     'Bip_KneeIn_\L',
     'Bip_KneeOut_\L',
     'Hlp_Hip_\L',
+    'Upperleg02_\L',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -1405,6 +1427,7 @@ bone_reweight['\Left knee'] = [
     'Hlp_Foot_\L',
     'KneeUpper_\L',
     'KneeLower_\L',
+    'Lowerleg02_\L',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',
