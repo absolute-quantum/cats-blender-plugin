@@ -333,6 +333,8 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.13.3
+- **Importer**:
+  - Fixed imported armatures being in edit mode
 - **Custom Model Creation**:
   - Now properly merges bones when the vertex group of one of the merging bones is missing
   - Attach Mesh no longer removes zero weight bones and constraints
