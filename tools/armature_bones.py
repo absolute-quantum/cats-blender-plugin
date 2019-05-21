@@ -449,6 +449,10 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'J_Spine2',
     'J_Spine3',
 
+    'Spine_Jnt_01',
+    'Spine_Jnt_02',
+    'Spine_Jnt_03',
+
     'Chest1',
     'Chest2',
     'Chest3',
@@ -572,6 +576,7 @@ bone_rename['\Left shoulder'] = [
     'J_\L_Shoulder',
     'Clavicle\L',
     'Bip_Clavicle_\L',
+    '\L_Clavic',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',
@@ -615,6 +620,7 @@ bone_rename['\Left arm'] = [
     'Arm_1_\L',
     'Bip_UpperArm_\L',
     'Upperarm01_\L',
+    '\L_Shldr',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -690,6 +696,7 @@ bone_rename['\Left wrist'] = [
     'Hand\LT_01',
     'J_Bip_\L_Hand',
     'J_\L_Wrist',
+    '\L_Wrist',
 ]
 bone_rename['Left wrist'] = [
     'Left_Hand_003',
