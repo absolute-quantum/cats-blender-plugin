@@ -14,7 +14,10 @@ if bpy.app.version < (2, 80, 0):
         pass
 else:
     def __update_depsgraph(cam, data_prop_name):
-        cam_dep = bpy.context.depsgraph.objects.get(cam.name, None)
+        if hasattr(bpy.context, 'depsgraph'): #XXX
+            cam_dep = bpy.context.depsgraph.objects.get(cam.name, None)
+        else:
+            cam_dep = cam.evaluated_get(bpy.context.evaluated_depsgraph_get())
         if cam_dep:
             setattr(cam_dep.data, data_prop_name, getattr(cam.data, data_prop_name))
 

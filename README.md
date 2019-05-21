@@ -338,6 +338,8 @@ It checks for a new version automatically once every day.
   - Attach Mesh no longer removes zero weight bones and constraints
 - **Model Options**:
   - Fixed error when switching to object mode during pose mode
+- **General**
+  - Updated mmd_tools
 
 #### 0.13.2
 - **Importer**:

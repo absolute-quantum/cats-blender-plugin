@@ -83,9 +83,10 @@ else:
 
 
 # How to update mmd_tools:
-# Paste mmd_tools folder into project
 # Delete mmd_tools_local folder
+# Paste mmd_tools folder into project
 # Refactor folder name "mmd_tools" to "mmd_tools_local"
+# Move mmd_tools_local folder into extern_tools folder
 # Search for "show_backface_culling" and set it to False in view.py
 # Done
 

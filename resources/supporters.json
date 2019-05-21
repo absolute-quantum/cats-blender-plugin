@@ -382,6 +382,12 @@
     },{
       "displayname": "Coolcakes",
       "startdate": "2019-05-06"
+    },{
+      "displayname": "Nacho Replay",
+      "startdate": "2019-05-21",
+      "description": "I put 200 hrs in VrChat in about 2 weeks; I have no regrets",
+      "website": "https://github.com/NachoReplay",
+      "tier": 1
     }
   ]
 }

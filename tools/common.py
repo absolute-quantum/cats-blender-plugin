@@ -1738,7 +1738,10 @@ def unify_materials():
     return {'FINISHED'}
 
 
-def add_principle_shader():
+def add_principled_shader():
+    principled_shader_pos = (501, -500)
+    output_shader_pos = (801, -500)
+
     for mesh in get_meshes_objects():
         for mat_slot in mesh.material_slots:
             if mat_slot.material and mat_slot.material.node_tree:
@@ -1746,23 +1749,28 @@ def add_principle_shader():
                 node_image = None
                 node_image_count = 0
 
+                # Check if and where the new nodes should be added
                 for node in nodes:
-                    if node.type == 'BSDF_PRINCIPLED' and node.location == (501, -500):
+                    # Cancel if the cats nodes are already found
+                    if node.type == 'BSDF_PRINCIPLED' and node.location == principled_shader_pos:
                         node_image = None
                         break
-                    if node.type == 'OUTPUT_MATERIAL' and node.location == (801, -500):
+                    if node.type == 'OUTPUT_MATERIAL' and node.location == output_shader_pos:
                         node_image = None
                         break
 
+                    # Skip if this node is not an image node
                     if node.type != 'TEX_IMAGE':
                         continue
                     node_image_count += 1
 
+                    # If an mmd_texture is found, link it to the principled shader later
                     if node.name == 'mmd_base_tex' or node.label == 'MainTexture':
                         node_image = node
                         node_image_count = 0
                         break
 
+                    # This is an image node, so link it to the principled shader later
                     node_image = node
 
                 if not node_image or node_image_count > 1:
@@ -1770,7 +1778,7 @@ def add_principle_shader():
 
                 # Create Principled BSDF node
                 node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
-                node_prinipled.location = 501, -500
+                node_prinipled.location = principled_shader_pos
                 node_prinipled.label = 'Cats Emission'
                 node_prinipled.inputs['Specular'].default_value = 0
                 node_prinipled.inputs['Roughness'].default_value = 0
@@ -1780,7 +1788,7 @@ def add_principle_shader():
 
                 # Create Output node for correct image exports
                 node_output = nodes.new(type='ShaderNodeOutputMaterial')
-                node_output.location = 801, -500
+                node_output.location = output_shader_pos
                 node_output.label = 'Cats Export'
 
                 # Link nodes together
