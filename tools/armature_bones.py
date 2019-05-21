@@ -735,6 +735,7 @@ bone_rename['\Left leg'] = [
     'Leg\L',
     'Leg_1_\L',
     'Bip_Thigh_\L',
+    'Groin_\L',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',

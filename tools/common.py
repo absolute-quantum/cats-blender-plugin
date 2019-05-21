@@ -989,6 +989,7 @@ def prepare_separation(mesh):
 
 
 def clean_shapekeys(mesh):
+    # Remove empty shapekeys
     if has_shapekeys(mesh):
         for kb in mesh.data.shape_keys.key_blocks:
             if can_remove_shapekey(kb):

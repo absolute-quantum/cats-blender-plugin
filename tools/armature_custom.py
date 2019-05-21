@@ -298,11 +298,12 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     bpy.context.scene.armature = base_armature_name
     armature = Common.get_armature(armature_name=base_armature_name)
 
+    # Clean up shape keys
+    Common.clean_shapekeys(mesh_base)
+    Common.clean_shapekeys(mesh_merge)
+
     # Join the meshes
     mesh_merged = Common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
-
-    # Clean up shape keys
-    Common.clean_shapekeys(mesh_merged)
 
     # Go into edit mode
     Common.unselect_all()
