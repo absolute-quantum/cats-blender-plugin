@@ -298,11 +298,12 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     bpy.context.scene.armature = base_armature_name
     armature = Common.get_armature(armature_name=base_armature_name)
 
+    # Clean up shape keys
+    Common.clean_shapekeys(mesh_base)
+    Common.clean_shapekeys(mesh_merge)
+
     # Join the meshes
     mesh_merged = Common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
-
-    # Clean up shape keys
-    Common.clean_shapekeys(mesh_merged)
 
     # Go into edit mode
     Common.unselect_all()
@@ -330,7 +331,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
         for bone in armature.data.edit_bones:
             if bone.name.endswith('.merge'):
                 new_bone = armature.data.edit_bones.get(bone.name.replace('.merge', ''))
-                if new_bone \
+                if new_bone and new_bone.name not in bones_to_merge \
                         and round(bone.head[0], 4) == round(new_bone.head[0], 4)\
                         and round(bone.head[1], 4) == round(new_bone.head[1], 4)\
                         and round(bone.head[2], 4) == round(new_bone.head[2], 4):
@@ -339,10 +340,11 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Remove all unused bones, constraints and vertex groups
     Common.set_default_stage()
-    Common.delete_bone_constraints(armature_name=base_armature_name)
-    Common.remove_unused_vertex_groups(ignore_main_bones=True)
-    Common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
-    Common.set_default_stage()
+    if not mesh_only:
+        Common.delete_bone_constraints(armature_name=base_armature_name)
+        Common.remove_unused_vertex_groups(ignore_main_bones=True)
+        Common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
+        Common.set_default_stage()
 
     # Merge bones into existing bones
     Common.set_active(mesh_merged)
@@ -355,9 +357,13 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
             vg_base = mesh_merged.vertex_groups.get(bone_base)
             vg_merge = mesh_merged.vertex_groups.get(bone_merge)
 
-            if vg_base and vg_merge:
-                Common.mix_weights(mesh_merged, bone_merge, bone_base)
-                to_delete.append(bone_merge)
+            if not vg_base:
+                mesh_merged.vertex_groups.new(name=bone_base)
+            if not vg_merge:
+                mesh_merged.vertex_groups.new(name=bone_merge)
+
+            Common.mix_weights(mesh_merged, bone_merge, bone_base)
+            to_delete.append(bone_merge)
 
         Common.set_active(armature)
         Common.switch('EDIT')
@@ -405,9 +411,10 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Remove all unused bones, constraints and vertex groups
     Common.set_default_stage()
-    Common.remove_unused_vertex_groups()
-    Common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
-    Common.set_default_stage()
+    if not mesh_only:
+        Common.remove_unused_vertex_groups()
+        Common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
+        Common.set_default_stage()
 
     # Fix armature name
     Common.fix_armature_names(armature_name=base_armature_name)

@@ -250,6 +250,7 @@ class PoseToRest(bpy.types.Operator):
         saved_data = Common.SavedData()
 
         armature = Common.get_armature()
+        Common.set_active(armature)
         scales = {}
 
         # Find out how much each bone is scaled

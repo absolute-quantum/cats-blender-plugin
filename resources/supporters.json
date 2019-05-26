@@ -368,7 +368,8 @@
       "startdate": "2019-03-25"
     },{
       "displayname": "honnmaguro",
-      "startdate": "2019-04-05"
+      "startdate": "2019-04-05",
+      "tier": 1
     },{
       "displayname": "Subcom",
       "startdate": "2019-04-23",
@@ -378,6 +379,18 @@
     },{
       "displayname": "Nyako_Sai",
       "startdate": "2019-05-02"
+    },{
+      "displayname": "Coolcakes",
+      "startdate": "2019-05-06"
+    },{
+      "displayname": "Nacho Replay",
+      "startdate": "2019-05-21",
+      "description": "I put 200 hrs in VrChat in about 2 weeks; I have no regrets",
+      "website": "https://github.com/NachoReplay",
+      "tier": 1
+    },{
+      "displayname": "Hammey",
+      "startdate": "2019-05-25"
     }
   ]
 }

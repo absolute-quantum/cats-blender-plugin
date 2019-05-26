@@ -57,6 +57,21 @@ class MMDCamera:
         cameraObj.driver_remove('rotation_euler')
 
     @staticmethod
+    def __focus_object_get(cameraObj):
+        camera = cameraObj.data
+        data = getattr(camera, 'dof', camera)
+        return data.focus_object if hasattr(data, 'focus_object') else data.dof_object
+
+    @staticmethod
+    def __focus_object_set(cameraObj, focus):
+        camera = cameraObj.data
+        data = getattr(camera, 'dof', camera)
+        if hasattr(data, 'focus_object'):
+            data.focus_object = focus
+        else:
+            data.dof_object = focus
+
+    @staticmethod
     def convertToMMDCamera(cameraObj, scale=1.0):
         if MMDCamera.isMMDCamera(cameraObj):
             return MMDCamera(cameraObj)
@@ -65,7 +80,6 @@ class MMDCamera:
         SceneOp(bpy.context).link_object(empty)
 
         cameraObj.parent = empty
-        cameraObj.data.dof_object = empty
         cameraObj.data.sensor_fit = 'VERTICAL'
         cameraObj.data.lens_unit = 'MILLIMETERS' # MILLIMETERS, FOV
         cameraObj.data.ortho_scale = 25*scale
@@ -77,6 +91,7 @@ class MMDCamera:
         cameraObj.lock_location = (True, False, True)
         cameraObj.lock_rotation = (True, True, True)
         cameraObj.lock_scale = (True, True, True)
+        MMDCamera.__focus_object_set(cameraObj, empty)
         MMDCamera.addDrivers(cameraObj)
 
         empty.location = (0, 0, 10*scale)
@@ -105,7 +120,7 @@ class MMDCamera:
 
         _target_override_func = None
         if cameraTarget is None:
-            _target_override_func = lambda camObj: camObj.data.dof_object or camObj
+            _target_override_func = lambda camObj: MMDCamera.__focus_object_get(camObj) or camObj
 
         action_name = mmd_cam_root.name
         parent_action = bpy.data.actions.new(name=action_name)

@@ -432,7 +432,7 @@ class FixArmature(bpy.types.Operator):
                 #     #shader.transmission_roughness = 0
 
                 # Make materials exportable in Blender 2.8
-                Common.add_principle_shader()
+                Common.add_principled_shader()
 
                 for area in context.screen.areas:  # iterate through areas in current screen
                     if area.type == 'VIEW_3D':

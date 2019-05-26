@@ -30,7 +30,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': (0, 13, 2),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
+    'version': (0, 13, 3),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -83,9 +83,10 @@ else:
 
 
 # How to update mmd_tools:
-# Paste mmd_tools folder into project
 # Delete mmd_tools_local folder
+# Paste mmd_tools folder into project
 # Refactor folder name "mmd_tools" to "mmd_tools_local"
+# Move mmd_tools_local folder into extern_tools folder
 # Search for "show_backface_culling" and set it to False in view.py
 # Done
 
