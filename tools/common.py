@@ -696,7 +696,7 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
         to_remove = []
         for mesh in meshes:
             selected = is_selected(mesh)
-            print(mesh.name, mesh.users)
+            # print(mesh.name, mesh.users)
             set_active(mesh)
 
             if not get_active():
