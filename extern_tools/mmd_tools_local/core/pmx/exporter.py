@@ -33,7 +33,7 @@ class _Vertex:
         self.index = None
         self.uv = None
         self.normal = None
-        self.sdef_data = None # (C, R0, R1)
+        self.sdef_data = [] # (C, R0, R1)
         self.add_uvs = [None]*4 # UV1~UV4
 
 class _Face:
@@ -1005,15 +1005,15 @@ class __PmxExporter:
         loop_normals = self.__triangulate(base_mesh, self.__get_normals(base_mesh, normal_matrix))
         base_mesh.transform(pmx_matrix)
 
-        def _get_weight(vertex_group, vertex, default_weight):
+        def _get_weight(vertex_group_index, vertex, default_weight):
             for i in vertex.groups:
-                if i.group == vertex_group.index:
-                    return vertex_group.weight(vertex.index)
+                if i.group == vertex_group_index:
+                    return i.weight
             return default_weight
 
         get_edge_scale = None
         if vg_edge_scale:
-            get_edge_scale = lambda x: _get_weight(vg_edge_scale, x, 1)
+            get_edge_scale = lambda x: _get_weight(vg_edge_scale.index, x, 1)
         else:
             get_edge_scale = lambda x: 1
 
@@ -1022,7 +1022,7 @@ class __PmxExporter:
             mesh_id = self.__vertex_order_map.setdefault('mesh_id', 0)
             self.__vertex_order_map['mesh_id'] += 1
             if vg_vertex_order and self.__vertex_order_map['method'] == 'CUSTOM':
-                get_vertex_order = lambda x: (mesh_id, _get_weight(vg_vertex_order, x, 2), x.index)
+                get_vertex_order = lambda x: (mesh_id, _get_weight(vg_vertex_order.index, x, 2), x.index)
             else:
                 get_vertex_order = lambda x: (mesh_id, x.index)
         else:
@@ -1079,14 +1079,9 @@ class __PmxExporter:
                 material_faces[face.material_index] = []
             material_faces[face.material_index].append(t)
 
-        # assign default material
-        if len(base_mesh.materials) < len(material_faces):
-            base_mesh.materials.append(self.__getDefaultMaterial())
-        else:
-            for i, m in enumerate(base_mesh.materials):
-                if m is None:
-                    base_mesh.materials[i] = self.__getDefaultMaterial()
-        material_names = tuple(i.name for i in base_mesh.materials)
+        _mat_name = lambda x: x.name if x else self.__getDefaultMaterial().name
+        material_names = tuple(_mat_name(i) for i in base_mesh.materials)
+        material_names += tuple(_mat_name(None) for i in range(1+max(material_faces.keys())-len(material_names)))
 
         # export add UV
         bl_add_uvs = [i for i in base_mesh.uv_layers[1:] if not i.name.startswith('_')]
@@ -1148,7 +1143,7 @@ class __PmxExporter:
                         c_co = v.co
                         if (c_co - base_co).length < 0.001:
                             continue
-                        base.sdef_data = [tuple(c_co), base_co, base_co]
+                        base.sdef_data[:] = tuple(c_co), base_co, base_co
                         sdef_counts += 1
                     logging.info('   - Restored %d SDEF vertices', sdef_counts)
                 elif sdef_counts > 0:

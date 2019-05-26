@@ -27,7 +27,6 @@ import bpy
 import webbrowser
 from .register import register_wrap
 
-
 @register_wrap
 class ForumButton(bpy.types.Operator):
     bl_idname = 'cats_credits.forum'

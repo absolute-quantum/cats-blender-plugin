@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.13.2)
+# Cats Blender Plugin (0.13.3)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -46,6 +46,7 @@ https://catsblenderplugin.com
 ![](https://i.imgur.com/eZV1zrs.gif)
 
  - Check your 3d view and there should be a new menu item called **CATS** ....w00t
+   - Since Blender 2.80 the CATS tab is on the right in the menu that opens when pressing 'N'
 
 ![](https://i.imgur.com/ItJLtNJ.png)
 
@@ -336,12 +337,13 @@ It checks for a new version automatically once every day.
 - **Importer**:
   - Fixed imported armatures being in edit mode
 - **Custom Model Creation**:
-  - Now properly merges bones when the vertex group of one of the merging bones is missing
+  - Merge Armatures now properly merges bones when the vertex group of one of the merging bones is missing
   - Attach Mesh no longer removes zero weight bones and constraints
 - **Model Options**:
   - Fixed error when switching to object mode during pose mode
 - **General**
   - Updated mmd_tools
+  - The Blender 2.80 API is stable now, so Cats should no longer break in 2.80
 
 #### 0.13.2
 - **Importer**:

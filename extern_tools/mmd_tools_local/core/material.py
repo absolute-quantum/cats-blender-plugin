@@ -109,7 +109,11 @@ class _FnMaterialBI:
                 img = bpy.data.images.new(os.path.basename(filepath), 1, 1)
                 img.source = 'FILE'
                 img.filepath = filepath
-            # img.use_alpha = (img.depth == 32 and img.file_format != 'BMP')
+            use_alpha = (img.depth == 32 and img.file_format != 'BMP')
+            if hasattr(img, 'use_alpha'):
+                img.use_alpha = use_alpha
+            elif not use_alpha:
+                img.alpha_mode = 'NONE'
         return img
 
     def __load_texture(self, filepath):
@@ -420,7 +424,7 @@ class _FnMaterialCycles(_FnMaterialBI):
                 if hasattr(texture, 'color_space'):
                     texture.color_space = 'NONE' if is_sph_add else 'COLOR'
                 elif hasattr(texture.image, 'colorspace_settings'):
-                    texture.image.colorspace_settings.name = 'Non-Color' if is_sph_add else 'sRGB'
+                    texture.image.colorspace_settings.name = 'Linear' if is_sph_add else 'sRGB'
 
                 mat = self.material
                 nodes, links = mat.node_tree.nodes, mat.node_tree.links
