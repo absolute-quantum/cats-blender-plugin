@@ -431,7 +431,8 @@ class FixArmature(bpy.types.Operator):
                 #     #shader.transmission = 0
                 #     #shader.transmission_roughness = 0
 
-                # Make materials exportable in Blender 2.8
+                # Make materials exportable in Blender 2.8 and remove buggy toon shader
+                Common.remove_toon_shader()
                 Common.add_principled_shader()
 
                 for area in context.screen.areas:  # iterate through areas in current screen

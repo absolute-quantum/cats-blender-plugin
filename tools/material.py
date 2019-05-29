@@ -49,6 +49,7 @@ class OneTexPerMatButton(bpy.types.Operator):
 
     def execute(self, context):
         # Common.unify_materials()
+        # Common.add_principled_shader()
         # return {'FINISHED'}
         if not Common.version_2_79_or_older():
             self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
