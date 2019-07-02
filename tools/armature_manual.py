@@ -363,7 +363,7 @@ class JoinMeshes(bpy.types.Operator):
     bl_description = 'Joins all meshes of this model together.' \
                      '\nIt also:' \
                      '\n  - Reorders all shape keys correctly' \
-                     '\n  - Applies all transformations' \
+                     '\n  - Applies all transforms' \
                      '\n  - Repairs broken armature modifiers' \
                      '\n  - Applies all decimation and mirror modifiers' \
                      '\n  - Merges UV maps correctly'
@@ -396,7 +396,7 @@ class JoinMeshesSelected(bpy.types.Operator):
     bl_description = 'Joins all selected meshes of this model together.' \
                      '\nIt also:' \
                      '\n  - Reorders all shape keys correctly' \
-                     '\n  - Applies all transformations' \
+                     '\n  - Applies all transforms' \
                      '\n  - Repairs broken armature modifiers' \
                      '\n  - Applies all decimation and mirror modifiers' \
                      '\n  - Merges UV maps correctly'

@@ -330,8 +330,7 @@ def load_translations():
 
             if 'created' not in dictionary_google \
                     or 'translations' not in dictionary_google \
-                    or 'translations_full' not in dictionary_google \
-                    or google_dict_too_old():
+                    or 'translations_full' not in dictionary_google:
                 reset_google_dict()
             else:
                 for name, trans in dictionary_google.get('translations').items():
@@ -425,7 +424,7 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
         # print('NO GOOGLE TRANSLATIONS')
         return
 
-    # Translate the list with google translate
+    # Translate the rest with google translate
     print('GOOGLE DICT UPDATE!')
     translator = Translator()
     try:
@@ -551,24 +550,6 @@ def fix_jp_chars(name):
         if values[0] in name:
             name = name.replace(values[0], values[1])
     return name
-
-
-def google_dict_too_old():
-    # Let the user decide when to refresh the google dict
-    return False
-
-    # created = datetime.strptime(dictionary_google.get('created'), globs.globs.time_format)
-    # utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.globs.time_format), globs.globs.time_format)
-    #
-    # time_delta = abs((utc_now - created).days)
-    #
-    # print('DAYS SINCE GOOGLE DICT CREATION:', time_delta)
-    #
-    # if time_delta <= 30:
-    #     return False
-    #
-    # print('DICT TOO OLD')
-    # return True
 
 
 def reset_google_dict():
