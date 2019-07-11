@@ -108,7 +108,7 @@ class SavedData:
                 hide(obj, hidden)
 
         # Set the active object
-        if load_active and get_objects().get(self.__active_object):
+        if load_active and self.__active_object and get_objects().get(self.__active_object):
             if self.__active_object not in ignore and self.__active_object != get_active():
                 set_active(get_objects().get(self.__active_object), skip_sel=True)
 

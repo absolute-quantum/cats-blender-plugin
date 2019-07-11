@@ -349,6 +349,8 @@ def unregister():
             count += 1
         except ValueError:
             pass
+        except RuntimeError:
+            pass
     print('Unregistered', count, 'CATS classes.')
 
     # Unregister all dynamic buttons and icons
