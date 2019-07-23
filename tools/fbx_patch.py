@@ -51,10 +51,10 @@ def start_patch_fbx_exporter_timer():
 
 def time_patch_fbx_exporter():
     import time
-    applied = False
-    while not applied:
+    found_scene = False
+    while not found_scene:
         if hasattr(bpy.context, 'scene'):
-            applied = True
+            found_scene = True
         else:
             time.sleep(0.5)
 

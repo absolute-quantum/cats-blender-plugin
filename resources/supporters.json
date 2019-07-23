@@ -220,7 +220,7 @@
       "startdate": "2018-04-05",
       "disabled": true
     },{
-      "displayname": "Antivirus-Chan",
+      "displayname": "FlippantFeline",
       "startdate": "2018-04-05"
     },{
       "displayname": "Rayduxz",
@@ -381,7 +381,8 @@
     },{
       "displayname": "honnmaguro",
       "startdate": "2019-04-05",
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
       "displayname": "Subcom",
       "startdate": "2019-04-23",
