@@ -171,8 +171,8 @@ class CombineMaterialsButton(bpy.types.Operator):
 
     def assignmatslots(self, ob, matlist):
         scn = bpy.context.scene
-        ob_active = bpy.context.active_object
-        scn.objects.active = ob
+        ob_active = Common.get_active()
+        Common.set_active(ob)
 
         for s in ob.material_slots:
             bpy.ops.object.material_slot_remove()
@@ -183,7 +183,7 @@ class CombineMaterialsButton(bpy.types.Operator):
             ob.data.materials.append(mat)
             i += 1
 
-        scn.objects.active = ob_active
+        Common.set_active(ob_active)
 
     def cleanmatslots(self):
         objs = bpy.context.selected_editable_objects
@@ -235,31 +235,96 @@ class CombineMaterialsButton(bpy.types.Operator):
             for index, mat_slot in enumerate(ob.material_slots):
                 hash_this = ''
 
-                if mat_slot.material:
-                    for tex_index, mtex_slot in enumerate(mat_slot.material.texture_slots):
-                        if mtex_slot:
-                            if mat_slot.material.use_textures[tex_index]:
-                                if hasattr(mtex_slot.texture, 'image') and bpy.data.materials[mat_slot.name].use_textures[tex_index] and mtex_slot.texture.image:
-                                    hash_this += mtex_slot.texture.image.filepath   # Filepaths makes the hash unique
-                    hash_this += str(mat_slot.material.alpha)           # Alpha setting on material makes the hash unique
-                    hash_this += str(mat_slot.material.diffuse_color)   # Diffuse color makes the hash unique
-                    # hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique  # Specular Color is no used by Unity
+                if Common.version_2_79_or_older():
+                    if mat_slot.material:
+                        for tex_index, mtex_slot in enumerate(mat_slot.material.texture_slots):
+                            if mtex_slot:
+                                if mat_slot.material.use_textures[tex_index]:
+                                    if hasattr(mtex_slot.texture, 'image') and bpy.data.materials[mat_slot.name].use_textures[tex_index] and mtex_slot.texture.image:
+                                        hash_this += mtex_slot.texture.image.filepath   # Filepaths makes the hash unique
+                        hash_this += str(mat_slot.material.alpha)           # Alpha setting on material makes the hash unique
+                        hash_this += str(mat_slot.material.diffuse_color)   # Diffuse color makes the hash unique
+                        # hash_this += str(mat_slot.material.specular_color)  # Specular color makes the hash unique  # Specular Color is no used by Unity
 
-                # print('---------------------------------------------------')
-                # print(mat_slot.name, hash_this)
+                    # print('---------------------------------------------------')
+                    # print(mat_slot.name, hash_this)
 
-                # Now create or add to the dict key that has this hash value
-                if hash_this not in self.combined_tex:
-                    self.combined_tex[hash_this] = []
-                self.combined_tex[hash_this].append({'mat': mat_slot.name, 'index': index})
+                    # Now create or add to the dict key that has this hash value
+                    if hash_this not in self.combined_tex:
+                        self.combined_tex[hash_this] = []
+                    self.combined_tex[hash_this].append({'mat': mat_slot.name, 'index': index})
+
+                else:
+                    hash_this = ''
+                    ignore_nodes = ['Material Output', 'mmd_tex_uv', 'Cats Export Shader']
+
+                    if mat_slot.material and mat_slot.material.node_tree:
+                        print('MAT: ', mat_slot.material.name)
+                        nodes = mat_slot.material.node_tree.nodes
+                        for node in nodes:
+
+                            # Skip certain known nodes
+                            ignore_this_node = False
+                            for name in ignore_nodes:
+                                if name in node.name or name in node.label:
+                                    ignore_this_node = True
+                                    break
+                            if ignore_this_node:
+                                continue
+                            # Add images to hash and skip toon and shpere textures
+                            if node.type == 'TEX_IMAGE':
+                                image = node.image
+                                if 'toon' in node.name or 'sphere' in node.name:
+                                    nodes.remove(node)
+                                    continue
+                                if not image:
+                                    nodes.remove(node)
+                                    continue
+                                print('  ', node.name)
+                                print('    ', image.name)
+                                hash_this += node.name + image.name
+                                continue
+                            # Skip nodes with no input
+                            if not node.inputs:
+                                continue
+
+                            # On MMD models only add diffuse and transparency to the hash
+                            if node.name == 'mmd_shader':
+                                print('  ', node.name)
+                                print('    ', node.inputs['Diffuse Color'].default_value[:])
+                                print('    ', node.inputs['Alpha'].default_value)
+                                hash_this += node.name\
+                                             + str(node.inputs['Diffuse Color'].default_value[:])\
+                                             + str(node.inputs['Alpha'].default_value)
+                                continue
+
+                            # Add all other nodes to the hash
+                            print('  ', node.name)
+                            hash_this += node.name
+                            for input, value in node.inputs.items():
+                                if hasattr(value, 'default_value'):
+                                    try:
+                                        print('    ', input, value.default_value[:])
+                                        hash_this += str(value.default_value[:])
+                                    except TypeError:
+                                        print('    ', input, value.default_value)
+                                        hash_this += str(value.default_value)
+                                else:
+                                    print('    ', input, 'name:', value.name)
+                                    hash_this += value.name
+
+                    # Now create or add to the dict key that has this hash value
+                    if hash_this not in self.combined_tex:
+                        self.combined_tex[hash_this] = []
+                    self.combined_tex[hash_this].append({'mat': mat_slot.name, 'index': index})
+
+        # for key, value in self.combined_tex.items():
+        #     print(key)
+        #     for mat in value:
+        #         print(mat)
 
     def execute(self, context):
         print('COMBINE MATERIALS!')
-        if not Common.version_2_79_or_older():
-            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
-            return {'CANCELLED'}
-            # TODO
-
         saved_data = Common.SavedData()
 
         Common.set_default_stage()
@@ -303,9 +368,6 @@ class CombineMaterialsButton(bpy.types.Operator):
             # Clean material names
             Common.clean_material_names(mesh)
 
-            # Update atlas list
-            Common.update_material_list()
-
             # print('CLEANED MAT SLOTS')
 
         # Update the material list of the Material Combiner
@@ -335,58 +397,75 @@ class ConvertAllToPngButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return Common.get_meshes_objects(mode=2, check=False)
+        return bpy.data.images
 
     def execute(self, context):
-        saved_data = Common.SavedData()
+        # saved_data = Common.SavedData()
         convertion_count = 0
 
-        for mesh in Common.get_meshes_objects(mode=2):
-            for mat_slot in mesh.material_slots:
-                if mat_slot and mat_slot.material:
-                    for tex_slot in mat_slot.material.texture_slots:
-                        if tex_slot and tex_slot.texture and tex_slot.texture.image:
+        for image in bpy.data.images:
+            if self.convert(image):
+                convertion_count += 1
 
-                            # Get texture path and check if the file should be converted
-                            tex_path = bpy.path.abspath(tex_slot.texture.image.filepath)
-                            if tex_path.endswith('.png') or not os.path.isfile(tex_path):
-                                continue
+        # for mesh in Common.get_meshes_objects(mode=2):
+        #     for mat_slot in mesh.material_slots:
+        #         if mat_slot and mat_slot.material:
+        #
+        #             for tex_slot in mat_slot.material.texture_slots:
+        #                 if tex_slot and tex_slot.texture and tex_slot.texture.image:
+        #
+        #                     # Convert image it to PNG
+        #                     if self.convert(tex_slot.texture.image):
+        #                         convertion_count += 1
 
-                            # Save the old texture
-                            image_old = tex_slot.texture.image
-
-                            # Set the new image file name
-                            image_name = image_old.name
-                            print(image_name)
-                            image_name_new = ''
-                            for s in image_name.split('.')[0:-1]:
-                                image_name_new += s + '.'
-                            image_name_new += 'png'
-                            print(image_name_new)
-
-                            # Set the new image file path
-                            print(tex_path)
-                            tex_path_new = ''
-                            for s in tex_path.split('.')[0:-1]:
-                                tex_path_new += s + '.'
-                            tex_path_new += 'png'
-                            print(tex_path_new)
-
-                            # Save the image as a new png file
-                            scene = bpy.context.scene
-                            scene.render.image_settings.file_format = 'PNG'
-                            scene.render.image_settings.color_mode = 'RGBA'
-                            scene.render.image_settings.color_depth = '16'
-                            scene.render.image_settings.compression = 100
-                            image_old.save_render(tex_path_new, scene)
-
-                            # Exchange the old image in blender for the new one
-                            bpy.data.images[image_name].filepath = tex_path_new
-                            bpy.data.images[image_name].name = image_name_new
-
-                            convertion_count += 1
-
-        saved_data.load()
+        # saved_data.load()
 
         self.report({'INFO'}, 'Converted ' + str(convertion_count) + ' to PNG files.')
         return {'FINISHED'}
+
+    def convert(self, image):
+        # Get texture path and check if the file should be converted
+        tex_path = bpy.path.abspath(image.filepath)
+        if tex_path.endswith('.png') or not os.path.isfile(tex_path):
+            print('IGNORED:', image.name, tex_path)
+            return False
+
+        # Set the new image file name
+        image_name = image.name
+        print(image_name)
+        image_name_new = ''
+        for s in image_name.split('.')[0:-1]:
+            image_name_new += s + '.'
+        image_name_new += 'png'
+        print(image_name_new)
+
+        # Set the new image file path
+        print(tex_path)
+        tex_path_new = ''
+        for s in tex_path.split('.')[0:-1]:
+            tex_path_new += s + '.'
+        tex_path_new += 'png'
+        print(tex_path_new)
+
+        # In 2.80 save the Color Management View Transform and change it to standard
+        view_transform = bpy.context.scene.view_settings.view_transform
+        if not Common.version_2_79_or_older():
+            bpy.context.scene.view_settings.view_transform = 'Standard'
+
+        # Save the image as a new png file
+        scene = bpy.context.scene
+        scene.render.image_settings.file_format = 'PNG'
+        scene.render.image_settings.color_mode = 'RGBA'
+        scene.render.image_settings.color_depth = '16'
+        scene.render.image_settings.compression = 100
+        image.save_render(tex_path_new, scene=scene)
+
+        # In 2.80 change the view transform back
+        if not Common.version_2_79_or_older():
+            bpy.context.scene.view_settings.view_transform = view_transform
+
+        # Exchange the old image in blender for the new one
+        bpy.data.images[image_name].filepath = tex_path_new
+        bpy.data.images[image_name].name = image_name_new
+
+        return True

@@ -329,11 +329,7 @@ class FixArmature(bpy.types.Operator):
 
         # Combines same materials
         if context.scene.combine_mats:
-            if version_2_79_or_older():
-                bpy.ops.cats_material.combine_mats()
-            else:
-                pass
-                # TODO
+            bpy.ops.cats_material.combine_mats()
 
         # Puts all meshes into a list and joins them if selected
         if context.scene.join_meshes:

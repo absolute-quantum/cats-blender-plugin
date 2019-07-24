@@ -250,17 +250,18 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.1
             row.operator(Material.CombineMaterialsButton.bl_idname, icon='MATERIAL')
 
-            row = col.row(align=True)
-            row.scale_y = 1.1
-            row.operator(Material.OneTexPerMatButton.bl_idname, icon='TEXTURE')
-            subcol = row.row(align=True)
-            subcol.alignment = 'RIGHT'
-            subcol.scale_y = 1.1
-            subcol.operator(Material.OneTexPerMatOnlyButton.bl_idname, text="", icon='X')
+            if version_2_79_or_older():
+                row = col.row(align=True)
+                row.scale_y = 1.1
+                row.operator(Material.OneTexPerMatButton.bl_idname, icon='TEXTURE')
+                subcol = row.row(align=True)
+                subcol.alignment = 'RIGHT'
+                subcol.scale_y = 1.1
+                subcol.operator(Material.OneTexPerMatOnlyButton.bl_idname, text="", icon='X')
 
-            row = col.row(align=True)
-            row.scale_y = 1.1
-            row.operator(Material.StandardizeTextures.bl_idname, icon=globs.ICON_SHADING_TEXTURE)
+                row = col.row(align=True)
+                row.scale_y = 1.1
+                row.operator(Material.StandardizeTextures.bl_idname, icon=globs.ICON_SHADING_TEXTURE)
 
             col.separator()
             row = col.row(align=True)
