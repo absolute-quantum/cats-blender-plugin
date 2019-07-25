@@ -122,9 +122,13 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             # XNALara
             elif file_ending == 'xps' or file_ending == 'mesh' or file_ending == 'ascii':
                 try:
-                    bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
-                                                   filepath=file_path,
-                                                   colorizeMesh=False)
+                    if version_2_79_or_older():
+                        bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
+                                                       filepath=file_path,
+                                                       colorizeMesh=False)
+                    else:
+                        bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
+                                                       filepath=file_path)
                 except AttributeError:
                     bpy.ops.cats_importer.install_xps('INVOKE_DEFAULT')
 
@@ -284,7 +288,10 @@ class ImportXPS(bpy.types.Operator):
             context.scene.layers[0] = True
 
         try:
-            bpy.ops.xps_tools.import_model('INVOKE_DEFAULT', colorizeMesh=False)
+            if version_2_79_or_older():
+                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT', colorizeMesh=False)
+            else:
+                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
         except AttributeError:
             bpy.ops.cats_importer.install_xps('INVOKE_DEFAULT')
 
