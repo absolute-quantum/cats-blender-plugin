@@ -416,6 +416,7 @@ class FixArmature(bpy.types.Operator):
                 # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
                 # Common.remove_toon_shader(mesh)
                 Common.fix_mmd_shader(mesh)
+                Common.fix_vrm_shader(mesh)
                 Common.add_principled_shader(mesh)
 
             # Reorders vrc shape keys to the correct order

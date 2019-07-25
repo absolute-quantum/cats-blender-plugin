@@ -1827,6 +1827,39 @@ def fix_mmd_shader(mesh):
                     node.inputs['Reflect'].default_value = 1
 
 
+def fix_vrm_shader(mesh):
+    for mat_slot in mesh.material_slots:
+        if mat_slot.material and mat_slot.material.node_tree:
+            is_vrm_mat = False
+            nodes = mat_slot.material.node_tree.nodes
+            for node in nodes:
+                if hasattr(node, 'node_tree') and 'MToon_unversioned' in node.node_tree.name:
+                    node.inputs['ReceiveShadow_Texture_alpha'].default_value = -10000
+                    node.inputs['ShadeTexture'].default_value = (1.0, 1.0, 1.0, 1.0)
+                    node.inputs['NomalmapTexture'].default_value = (1.0, 1.0, 1.0, 1.0)
+                    node.inputs['Emission_Texture'].default_value = (0.0, 0.0, 0.0, 0.0)
+                    node.inputs['SphereAddTexture'].default_value = (0.0, 0.0, 0.0, 0.0)
+                    is_vrm_mat = True
+                    break
+            if not is_vrm_mat:
+                continue
+
+            for node in nodes:
+                # Delete all unneccessary nodes
+                if 'RGB' in node.name \
+                        or 'Value' in node.name \
+                        or 'Image Texture' in node.name \
+                        or 'UV Map' in node.name \
+                        or 'Mapping' in node.name:
+                    if node.label != 'DiffuseColor' and node.label != 'MainTexture':
+                        nodes.remove(node)
+                        continue
+
+                if hasattr(node, 'node_tree') and 'matcap_vector' in node.node_tree.name:
+                    nodes.remove(node)
+                    continue
+
+
 
 """
 HTML <-> text conversions.
