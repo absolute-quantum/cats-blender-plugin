@@ -253,6 +253,12 @@ class FixArmature(bpy.types.Operator):
             # context.space_data.overlay.show_transparent_bones = True
             context.space_data.shading.show_backface_culling = False
 
+            # Set the Color Management View Transform to "Standard" instead of the Blender default "Filmic"
+            context.scene.view_settings.view_transform = 'Standard'
+
+            # Set shading to 3D view
+            set_material_shading()
+
         # Remove Rigidbodies and joints
         to_delete = []
         for child in Common.get_top_parent(armature).children:
@@ -407,36 +413,10 @@ class FixArmature(bpy.types.Operator):
                     for mat_slot in mesh.material_slots:
                         mat_slot.material.alpha = 1
             else:
-                pass
-                # TODO
-
-                # Makes all materials visible
-                # for i, mat_slot in enumerate(mesh.material_slots):
-                #     context.object.active_material_index = i
-                #     bpy.context.object.active_material.blend_method = 'OPAQUE'
-                #
-                #     # bpy.data.node_groups["Shader Nodetree"].nodes["Principled BSDF"].inputs[5].default_value = 0
-                #     from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
-                #     shader = PrincipledBSDFWrapper(mat_slot.material, is_readonly=False)
-                #     if i == 0:
-                #         for atr in dir(shader):
-                #             print(atr, getattr(shader, atr))
-                #     shader.specular = 0
-                #     shader.metallic = 0
-                #     shader.roughness = 1
-                #     #shader.transmission = 0
-                #     #shader.transmission_roughness = 0
-
-                # Make materials exportable in Blender 2.8 and remove buggy toon shader
-                Common.remove_toon_shader()
-                Common.add_principled_shader()
-
-                for area in context.screen.areas:  # iterate through areas in current screen
-                    if area.type == 'VIEW_3D':
-                        for space in area.spaces:  # iterate through spaces in current VIEW_3D area
-                            if space.type == 'VIEW_3D':  # check if space is a 3D view
-                                space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
-                                space.shading.studio_light = 'forest.exr'
+                # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
+                # Common.remove_toon_shader(mesh)
+                Common.fix_mmd_shader(mesh)
+                Common.add_principled_shader(mesh)
 
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)
@@ -1209,11 +1189,9 @@ class FixArmature(bpy.types.Operator):
         # Fix shading (check for runtime error because of ci tests)
         if not source_engine:
             try:
-                if version_2_79_or_older():
-                    bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-                else:
-                    pass
-                    # TODO
+                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                if not version_2_79_or_older():
+                    set_material_shading()
             except RuntimeError:
                 pass
 
@@ -1285,6 +1263,18 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                             return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
 
     return {'result': True}
+
+
+def set_material_shading():
+    # Set shading to 3D view
+    for area in bpy.context.screen.areas:  # iterate through areas in current screen
+        if area.type == 'VIEW_3D':
+            for space in area.spaces:  # iterate through spaces in current VIEW_3D area
+                if space.type == 'VIEW_3D':  # check if space is a 3D view
+                    space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
+                    space.shading.studio_light = 'forest.exr'
+                    space.shading.studiolight_rotate_z = 0.0
+                    space.shading.studiolight_background_alpha = 0.0
 
 
 @register_wrap

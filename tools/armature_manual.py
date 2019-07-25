@@ -567,11 +567,11 @@ class SeparateByShapekeys(bpy.types.Operator):
 @register_wrap
 class MergeWeights(bpy.types.Operator):
     bl_idname = 'cats_manual.merge_weights'
-    bl_label = 'Merge Weights'
+    bl_label = 'Merge Weights to Parent'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.' \
                      '\n' \
                      '\nOnly available in Edit or Pose Mode with bones selected'
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
@@ -614,12 +614,12 @@ class MergeWeights(bpy.types.Operator):
 @register_wrap
 class MergeWeightsToActive(bpy.types.Operator):
     bl_idname = 'cats_manual.merge_weights_to_active'
-    bl_label = 'Merge Weights'
+    bl_label = 'Merge Weights to Active'
     bl_description = 'Deletes the selected bones except the active one and adds their weights to the active bone.' \
                      '\nThe active bone is the one you selected last.' \
                      '\n' \
                      '\nOnly available in Edit or Pose Mode with bones selected'
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
@@ -712,7 +712,7 @@ class RemoveZeroWeight(bpy.types.Operator):
     bl_label = 'Remove Zero Weight Bones'
     bl_description = "Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices\n" \
                      "Don't use this if you plan to use 'Fix Model'"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):

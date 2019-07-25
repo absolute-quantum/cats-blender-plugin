@@ -10,8 +10,6 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_supporter_v3'
     bl_label = 'Supporters'
 
-    # bl_options = {'DEFAULT_CLOSED'}
-
     def draw(self, context):
         layout = self.layout
         box = layout.box()

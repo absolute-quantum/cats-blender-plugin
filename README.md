@@ -335,13 +335,17 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.13.4
+- **Model Options**:
+  - Made "Merge Weights" and "Remove Zero Weight Bones" accessible from the spacebar search
 - **Optimization**:
   - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
   - Added support for Shotariya's Material Combiner in Blender 2.80
     - This means that Cats is now fully 2.80 compatible!
+- **Credits**:
+  - Removed "Join our Discord" from the spacebar search
 - **General**
+  - Improved shading in 2.80
   - Updated mmd_tools
-  - Removed some Cats buttons from the spacebar search
   - Fixed a bug while loading settings during startup
   - Fixed a bug while loading the initial state after an operation
 

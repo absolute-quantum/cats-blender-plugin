@@ -1740,84 +1740,91 @@ def unify_materials():
     return {'FINISHED'}
 
 
-def add_principled_shader():
+def add_principled_shader(mesh):
     # This adds a principled shader and material output node in order for
     # Unity to automatically detect exported materials
     principled_shader_pos = (501, -500)
     output_shader_pos = (801, -500)
 
-    for mesh in get_meshes_objects():
-        for mat_slot in mesh.material_slots:
-            if mat_slot.material and mat_slot.material.node_tree:
-                nodes = mat_slot.material.node_tree.nodes
-                node_image = None
-                node_image_count = 0
+    for mat_slot in mesh.material_slots:
+        if mat_slot.material and mat_slot.material.node_tree:
+            nodes = mat_slot.material.node_tree.nodes
+            node_image = None
+            node_image_count = 0
 
-                # Check if the new nodes should be added and to which image node they should be attached to
-                for node in nodes:
-                    # Cancel if the cats nodes are already found
-                    if node.type == 'BSDF_PRINCIPLED' and node.location == principled_shader_pos:
-                        node_image = None
-                        break
-                    if node.type == 'OUTPUT_MATERIAL' and node.location == output_shader_pos:
-                        node_image = None
-                        break
+            # Check if the new nodes should be added and to which image node they should be attached to
+            for node in nodes:
+                # Cancel if the cats nodes are already found
+                if node.type == 'BSDF_PRINCIPLED' and node.location == principled_shader_pos:
+                    node_image = None
+                    break
+                if node.type == 'OUTPUT_MATERIAL' and node.location == output_shader_pos:
+                    node_image = None
+                    break
 
-                    # Skip if this node is not an image node
-                    if node.type != 'TEX_IMAGE':
-                        continue
-                    node_image_count += 1
-
-                    # If an mmd_texture is found, link it to the principled shader later
-                    if node.name == 'mmd_base_tex' or node.label == 'MainTexture':
-                        node_image = node
-                        node_image_count = 0
-                        break
-
-                    # This is an image node, so link it to the principled shader later
-                    node_image = node
-
-                if not node_image or node_image_count > 1:
+                # Skip if this node is not an image node
+                if node.type != 'TEX_IMAGE':
                     continue
+                node_image_count += 1
 
-                # Create Principled BSDF node
-                node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
-                node_prinipled.label = 'Cats Export Shader'
-                node_prinipled.location = principled_shader_pos
-                node_prinipled.inputs['Specular'].default_value = 0
-                node_prinipled.inputs['Roughness'].default_value = 0
-                node_prinipled.inputs['Sheen Tint'].default_value = 0
-                node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
-                node_prinipled.inputs['IOR'].default_value = 0
+                # If an mmd_texture is found, link it to the principled shader later
+                if node.name == 'mmd_base_tex' or node.label == 'MainTexture':
+                    node_image = node
+                    node_image_count = 0
+                    break
 
-                # Create Output node for correct image exports
-                node_output = nodes.new(type='ShaderNodeOutputMaterial')
-                node_output.label = 'Cats Export'
-                node_output.location = output_shader_pos
+                # This is an image node, so link it to the principled shader later
+                node_image = node
 
-                # Link nodes together
-                mat_slot.material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
-                mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_output.inputs['Surface'])
+            if not node_image or node_image_count > 1:
+                continue
+
+            # Create Principled BSDF node
+            node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
+            node_prinipled.label = 'Cats Export Shader'
+            node_prinipled.location = principled_shader_pos
+            node_prinipled.inputs['Specular'].default_value = 0
+            node_prinipled.inputs['Roughness'].default_value = 0
+            node_prinipled.inputs['Sheen Tint'].default_value = 0
+            node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
+            node_prinipled.inputs['IOR'].default_value = 0
+
+            # Create Output node for correct image exports
+            node_output = nodes.new(type='ShaderNodeOutputMaterial')
+            node_output.label = 'Cats Export'
+            node_output.location = output_shader_pos
+
+            # Link nodes together
+            mat_slot.material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
+            mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_output.inputs['Surface'])
 
 
-def remove_toon_shader():
-    for mesh in get_meshes_objects():
-        for mat_slot in mesh.material_slots:
-            if mat_slot.material and mat_slot.material.node_tree:
-                nodes = mat_slot.material.node_tree.nodes
-                for node in nodes:
-                    if node.name == 'mmd_toon_tex':
-                        print('Toon tex removed from material', mat_slot.material.name)
-                        nodes.remove(node)
-                        # if not node.image or not node.image.filepath:
-                        #     print('Toon tex removed: Empty, from material', mat_slot.material.name)
-                        #     nodes.remove(node)
-                        #     continue
-                        #
-                        # image_filepath = bpy.path.abspath(node.image.filepath)
-                        # if not os.path.isfile(image_filepath):
-                        #     print('Toon tex removed:', node.image.name, 'from material', mat_slot.material.name)
-                        #     nodes.remove(node)
+def remove_toon_shader(mesh):
+    for mat_slot in mesh.material_slots:
+        if mat_slot.material and mat_slot.material.node_tree:
+            nodes = mat_slot.material.node_tree.nodes
+            for node in nodes:
+                if node.name == 'mmd_toon_tex':
+                    print('Toon tex removed from material', mat_slot.material.name)
+                    nodes.remove(node)
+                    # if not node.image or not node.image.filepath:
+                    #     print('Toon tex removed: Empty, from material', mat_slot.material.name)
+                    #     nodes.remove(node)
+                    #     continue
+                    #
+                    # image_filepath = bpy.path.abspath(node.image.filepath)
+                    # if not os.path.isfile(image_filepath):
+                    #     print('Toon tex removed:', node.image.name, 'from material', mat_slot.material.name)
+                    #     nodes.remove(node)
+
+
+def fix_mmd_shader(mesh):
+    for mat_slot in mesh.material_slots:
+        if mat_slot.material and mat_slot.material.node_tree:
+            nodes = mat_slot.material.node_tree.nodes
+            for node in nodes:
+                if node.name == 'mmd_shader':
+                    node.inputs['Reflect'].default_value = 1
 
 
 
