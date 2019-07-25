@@ -45,8 +45,7 @@ def _toggleUseSDEF(self, context):
     rig = mmd_model.Model(root)
     mute_sdef = not self.use_sdef
     for i in rig.meshes():
-        if FnSDEF.SHAPEKEY_NAME in getattr(i.data.shape_keys, 'key_blocks', ()):
-            i.data.shape_keys.key_blocks[FnSDEF.SHAPEKEY_NAME].mute = mute_sdef
+        FnSDEF.mute_sdef_set(i, mute_sdef)
 
 def _toggleVisibilityOfMeshes(self, context):
     root = self.id_data

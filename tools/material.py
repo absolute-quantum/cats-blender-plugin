@@ -426,7 +426,7 @@ class ConvertAllToPngButton(bpy.types.Operator):
     def convert(self, image):
         # Get texture path and check if the file should be converted
         tex_path = bpy.path.abspath(image.filepath)
-        if tex_path.endswith('.png') or not os.path.isfile(tex_path):
+        if tex_path.endswith('.png') or tex_path.endswith('.spa') or not os.path.isfile(tex_path):
             print('IGNORED:', image.name, tex_path)
             return False
 

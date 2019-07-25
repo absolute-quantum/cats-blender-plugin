@@ -11,6 +11,8 @@ from mmd_tools_local.core import vmd
 from mmd_tools_local.core.camera import MMDCamera
 from mmd_tools_local.core.lamp import MMDLamp
 
+from mmd_tools_local.core.vmd.importer import _FnBezier
+
 
 class _FCurve:
 
@@ -22,22 +24,42 @@ class _FCurve:
         assert(fcurve.is_valid and self.__fcurve is None)
         self.__fcurve = fcurve
 
+    @staticmethod
+    def __get_keys(keyframe_points):
+        kp0 = None
+        for kp1 in sorted(keyframe_points, key=lambda x: x.co[0]):
+            yield int(kp1.co[0]+0.5)
+            if kp0 and kp0.interpolation != 'LINEAR' and kp1.co.x - kp0.co.x > 2.5:
+                if kp0.interpolation == 'CONSTANT':
+                    yield int(kp1.co[0]-0.5)
+                elif kp0.interpolation == 'BEZIER':
+                    bz = _FnBezier.from_fcurve(kp0, kp1)
+                    for t in bz.find_critical():
+                        yield int(bz.evaluate(t).x+0.5)
+            kp0 = kp1
+
     def frameNumbers(self):
         if self.__fcurve is None:
             return set()
-        return {int(kp.co[0]+0.5) for kp in self.__fcurve.keyframe_points}
+        #return {int(kp.co[0]+0.5) for kp in self.__fcurve.keyframe_points}
+        return set(self.__get_keys(self.__fcurve.keyframe_points))
 
     @staticmethod
     def getVMDControlPoints(kp0, kp1):
-        if kp0.interpolation == 'LINEAR':
-            return ((20, 20), (107, 107))
+        if kp0.interpolation == 'BEZIER':
+            return _FCurve.__toVMDControlPoints(_FnBezier.from_fcurve(kp0, kp1))
+        return ((20, 20), (107, 107))
 
-        dx, dy = kp1.co - kp0.co
+    @staticmethod
+    def __toVMDControlPoints(bezier):
+        p0, p1, p2, p3 = bezier.points
+
+        dx, dy = p3 - p0
         if abs(dy) < 1e-6 or abs(dx) < 1.5:
             return ((20, 20), (107, 107))
 
-        x1, y1 = kp0.handle_right - kp0.co
-        x2, y2 = kp1.handle_left - kp0.co
+        x1, y1 = p1 - p0
+        x2, y2 = p2 - p0
         x1 = max(0, min(127, int(0.5 + x1*127.0/dx)))
         x2 = max(0, min(127, int(0.5 + x2*127.0/dx)))
         y1 = max(0, min(127, int(0.5 + y1*127.0/dy)))
@@ -74,8 +96,13 @@ class _FCurve:
                     yield [kp.co[1], ((20, 20), (107, 107))]
             elif len(frames) == 1:
                 yield [kp.co[1], self.getVMDControlPoints(prev_kp, kp)]
+            elif prev_kp.interpolation == 'BEZIER':
+                bz = _FnBezier.from_fcurve(prev_kp, kp)
+                for f in frames[:-1]:
+                    b1, bz, pt = bz.split_by_x(f)
+                    yield [pt.y, self.__toVMDControlPoints(b1)]
+                yield [bz.points[-1].y, self.__toVMDControlPoints(bz)]
             else:
-                #FIXME better evaluated values and interpolations
                 for f in frames:
                     yield [evaluate(f), ((20, 20), (107, 107))]
             prev_kp = kp
@@ -250,7 +277,8 @@ class VMDExporter:
                 key.rotation = curr_rot[1:] + curr_rot[0:1] # (w, x, y, z) to (x, y, z, w)
                 #FIXME we can only choose one interpolation from (rw, rx, ry, rz) for bone's rotation
                 ir = self.__pickRotationInterpolation([rw[1], rx[1], ry[1], rz[1]])
-                key.interp = self.__getVMDBoneInterpolation(x[1], z[1], y[1], ir) # x, z, y, q
+                ix, iy, iz = converter.convert_interpolation([x[1], y[1], z[1]])
+                key.interp = self.__getVMDBoneInterpolation(ix, iy, iz, ir)
                 frame_keys.append(key)
             logging.info('(bone) frames:%5d  name: %s', len(frame_keys), key_name)
         logging.info('---- bone animations:%5d  source: %s', len(vmd_bone_anim), armObj.name)

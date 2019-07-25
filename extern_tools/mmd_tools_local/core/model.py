@@ -151,9 +151,11 @@ class Model:
         obj.mmd_type = 'RIGID_BODY'
         obj.rotation_mode = 'YXZ'
         obj.draw_type = 'SOLID'
-        obj.show_wire = True
+        #obj.show_wire = True
         obj.show_transparent = True
         obj.hide_render = True
+        if hasattr(obj, 'display'):
+            obj.display.show_shadows = False
         if hasattr(obj, 'cycles_visibility'):
             for attr_name in ('camera', 'diffuse', 'glossy', 'scatter', 'shadow', 'transmission'):
                 if hasattr(obj.cycles_visibility, attr_name):

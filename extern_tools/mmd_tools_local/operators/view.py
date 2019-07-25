@@ -72,7 +72,7 @@ class _SetShadingBase:
                 shading.light = 'FLAT' if shading_mode == 'SHADELESS' else 'STUDIO'
                 shading.color_type = 'TEXTURE' if shading_mode else 'MATERIAL'
                 shading.show_object_outline = False
-                shading.show_backface_culling = True
+                shading.show_backface_culling = False
             return {'FINISHED'}
 
 

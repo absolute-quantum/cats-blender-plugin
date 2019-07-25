@@ -56,6 +56,21 @@ class RenamedBoneMapper:
         return self.__pose_bones.get(bl_bone_name, default)
 
 
+class _InterpolationHelper:
+    def __init__(self, mat):
+        self.__indices = indices = [0, 1, 2]
+        l = sorted((-abs(mat[i][j]), i, j) for i in range(3) for j in range(3))
+        _, i, j = l[0]
+        if i != j:
+            indices[i], indices[j] = indices[j], indices[i]
+        _, i, j = next(k for k in l if k[1] != i and k[2] != j)
+        if indices[i] != j:
+            idx = indices.index(j)
+            indices[i], indices[idx] = indices[idx], indices[i]
+
+    def convert(self, interpolation_xyz):
+        return (interpolation_xyz[i] for i in self.__indices)
+
 class BoneConverter:
     def __init__(self, pose_bone, scale, invert=False):
         mat = pose_bone.bone.matrix_local.to_3x3()
@@ -64,6 +79,7 @@ class BoneConverter:
         self.__scale = scale
         if invert:
             self.__mat.invert()
+        self.convert_interpolation = _InterpolationHelper(self.__mat).convert
 
     def convert_location(self, location):
         return matmul(self.__mat, Vector(location)) * self.__scale
@@ -90,6 +106,7 @@ class BoneConverterPoseMode:
             self.__mat_loc.invert()
             self.convert_location = self._convert_location_inverted
             self.convert_rotation = self._convert_rotation_inverted
+        self.convert_interpolation = _InterpolationHelper(self.__mat_loc).convert
 
     def _convert_location(self, location):
         return self.__offset + matmul(self.__mat_loc, Vector(location)) * self.__scale
@@ -108,6 +125,121 @@ class BoneConverterPoseMode:
         rot.x, rot.y, rot.z, rot.w = rotation_xyzw
         rot = matmul(self.__mat_rot, rot.to_matrix()).to_quaternion()
         return Quaternion(matmul(self.__mat, rot.axis) * -1, rot.angle).normalized()
+
+
+class _FnBezier:
+    @classmethod
+    def from_fcurve(cls, kp0, kp1):
+        p0, p1, p2, p3 = kp0.co, kp0.handle_right, kp1.handle_left, kp1.co
+        if p1.x > p2.x: # F-Curve correction
+            t = (p3.x - p0.x) / (p1.x - p0.x + p3.x - p2.x)
+            p1 = (1-t)*p0 + p1*t
+            p2 = (1-t)*p3 + p2*t
+        return cls(p0, p1, p2, p3)
+
+    def __init__(self, p0, p1, p2, p3): # assuming VMD's bezier or F-Curve's bezier
+        #assert(p0.x <= p1.x <= p3.x and p0.x <= p2.x <= p3.x)
+        self._p0, self._p1, self._p2, self._p3 = p0, p1, p2, p3
+
+    @property
+    def points(self):
+        return self._p0, self._p1, self._p2, self._p3
+
+    def split(self, t):
+        p0, p1, p2, p3 = self._p0, self._p1, self._p2, self._p3
+        p01t = (1-t)*p0 + t*p1
+        p12t = (1-t)*p1 + t*p2
+        p23t = (1-t)*p2 + t*p3
+        p012t = (1-t)*p01t + t*p12t
+        p123t = (1-t)*p12t + t*p23t
+        pt = (1-t)*p012t + t*p123t
+        return _FnBezier(p0, p01t, p012t, pt), _FnBezier(pt, p123t, p23t, p3), pt
+
+    def evaluate(self, t):
+        p0, p1, p2, p3 = self._p0, self._p1, self._p2, self._p3
+        p01t = (1-t)*p0 + t*p1
+        p12t = (1-t)*p1 + t*p2
+        p23t = (1-t)*p2 + t*p3
+        p012t = (1-t)*p01t + t*p12t
+        p123t = (1-t)*p12t + t*p23t
+        return (1-t)*p012t + t*p123t
+
+    def split_by_x(self, x):
+        return self.split(self.axis_to_t(x))
+
+    def evaluate_by_x(self, x):
+        return self.evaluate(self.axis_to_t(x))
+
+    def axis_to_t(self, val, axis=0):
+        p0, p1, p2, p3 = self._p0[axis], self._p1[axis], self._p2[axis], self._p3[axis]
+        a = p3 - p0 + 3 * (p1 - p2)
+        b = 3 * (p0 - 2*p1 + p2)
+        c = 3 * (p1 - p0)
+        d = p0 - val
+        return next(self.__find_roots(a, b, c, d))
+
+    def find_critical(self):
+        p0, p1, p2, p3 = self._p0.y, self._p1.y, self._p2.y, self._p3.y
+        p_min, p_max = (p0, p3) if p0 < p3 else (p3, p0)
+        if p1 > p_max or p1 < p_min or p2 > p_max or p2 < p_min:
+            a = 3 * (p3 - p0 + 3 * (p1 - p2))
+            b = 6 * (p0 - 2*p1 + p2)
+            c = 3 * (p1 - p0)
+            yield from self.__find_roots(0, a, b, c)
+
+    @staticmethod
+    def __find_roots(a, b, c, d): # a*t*t*t + b*t*t + c*t + d = 0
+        #TODO fix precision errors (ex: t=0 and t=1) and improve performance
+        if a == 0:
+            if b == 0:
+                t = -d/c
+                if 0 <= t <= 1:
+                    yield t
+            else:
+                D = c*c - 4*b*d
+                if D < 0:
+                    return
+                D = D**0.5
+                b2 = 2*b
+                t = (-c + D)/b2
+                if 0 <= t <= 1:
+                    yield t
+                t = (-c - D)/b2
+                if 0 <= t <= 1:
+                    yield t
+            return
+
+        def _sqrt3(v):
+            return -((-v)**(1/3)) if v < 0 else v**(1/3)
+
+        A = b*c/(6*a*a) - b*b*b/(27*a*a*a) - d/(2*a)
+        B = c/(3*a) - b*b/(9*a*a)
+        b_3a = -b/(3*a)
+        D = A*A + B*B*B
+
+        if D > 0:
+            D = D**0.5
+            t = b_3a + _sqrt3(A+D) + _sqrt3(A-D)
+            if 0 <= t <= 1:
+                yield t
+        elif D == 0:
+            t = b_3a + _sqrt3(A)*2
+            if 0 <= t <= 1:
+                yield t
+            t = b_3a - _sqrt3(A)
+            if 0 <= t <= 1:
+                yield t
+        else:
+            R = A / (-B*B*B)**0.5
+            t = b_3a + 2*(-B)**0.5 * math.cos(math.acos(R) / 3)
+            if 0 <= t <= 1:
+                yield t
+            t = b_3a + 2*(-B)**0.5 * math.cos((math.acos(R) + 2*math.pi) / 3)
+            if 0 <= t <= 1:
+                yield t
+            t = b_3a + 2*(-B)**0.5 * math.cos((math.acos(R) - 2*math.pi) / 3)
+            if 0 <= t <= 1:
+                yield t
 
 
 class VMDImporter:
@@ -143,17 +275,19 @@ class VMDImporter:
             kp0.interpolation = 'LINEAR'
         else:
             kp0.interpolation = 'BEZIER'
-            kp0.handle_right_type = 'FREE'
-            kp1.handle_left_type = 'FREE'
-            d = (kp1.co - kp0.co) / 127.0
-            kp0.handle_right = kp0.co + Vector((d.x * bezier[0], d.y * bezier[1]))
-            kp1.handle_left = kp0.co + Vector((d.x * bezier[2], d.y * bezier[3]))
+        kp0.handle_right_type = 'FREE'
+        kp1.handle_left_type = 'FREE'
+        d = (kp1.co - kp0.co) / 127.0
+        kp0.handle_right = kp0.co + Vector((d.x * bezier[0], d.y * bezier[1]))
+        kp1.handle_left = kp0.co + Vector((d.x * bezier[2], d.y * bezier[3]))
 
     @staticmethod
     def __fixFcurveHandles(fcurve):
         kp0 = fcurve.keyframe_points[0]
+        kp0.handle_left_type = 'FREE'
         kp0.handle_left = kp0.co + Vector((-1, 0))
         kp = fcurve.keyframe_points[-1]
+        kp.handle_right_type = 'FREE'
         kp.handle_right = kp.co + Vector((1, 0))
 
 
@@ -211,7 +345,7 @@ class VMDImporter:
 
             converter = self.__bone_util_cls(bone, self.__scale)
             prev_rot = bone.rotation_quaternion if extra_frame else None
-            prev_kps, indices = None, (0, 32, 16, 48, 48, 48, 48) # x, z, y, rw, rx, ry, rz
+            prev_kps, indices = None, tuple(converter.convert_interpolation((0, 16, 32)))+(48,)*4
             keyFrames.sort(key=lambda x:x.frame_number)
             for k, x, y, z, rw, rx, ry, rz in zip(keyFrames, *fcurves):
                 frame = k.frame_number + self.__frame_margin
