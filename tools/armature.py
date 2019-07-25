@@ -232,7 +232,7 @@ class FixArmature(bpy.types.Operator):
 
         if bpy.context.space_data:
             bpy.context.space_data.clip_start = 0.01
-            bpy.context.space_data.clip_end = 150
+            bpy.context.space_data.clip_end = 300
 
         if version_2_79_or_older():
             # Set better bone view

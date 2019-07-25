@@ -48,7 +48,7 @@ https://catsblenderplugin.com
  - Check your 3d view and there should be a new menu item called **CATS** ....w00t
    - Since Blender 2.80 the CATS tab is on the right in the menu that opens when pressing 'N'
 
-![](https://i.imgur.com/ItJLtNJ.png)
+![](https://i.imgur.com/pJfVsho.png)
 
  - If you need help figuring out how to use the tool:
 
