@@ -6,7 +6,8 @@ Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/P
 With Cats it takes only a few minutes to upload your model into VRChat.
 All the hours long processes of fixing your models are compressed into a few functions!
 
-So if you enjoy how this plugin saves you countless hours of work consider supporting us through Patreon:
+So if you enjoy how this plugin saves you countless hours of work consider supporting us through Patreon.
+There are a lot of perks like having your name inside the plugin!
 
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
@@ -336,15 +337,20 @@ It checks for a new version automatically once every day.
 
 #### 0.13.4
 - **Model Options**:
-  - Made "Merge Weights" and "Remove Zero Weight Bones" accessible from the spacebar search
+  - Added "Merge Weights" and "Remove Zero Weight Bones" to the spacebar search
+  - Separating Meshes now deletes the Basisshape key if it is the last shape key left
 - **Optimization**:
   - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
   - Added support for Shotariya's Material Combiner in Blender 2.80
     - This means that Cats is now fully 2.80 compatible!
+    - Minimum required Material Combiner version is now v2.1.1.1
+      - Material Combiner now also fully supports VRM models
 - **Credits**:
   - Removed "Join our Discord" from the spacebar search
 - **General**
   - Improved shading in 2.80
+  - Improved initial state restoration after an operation
+  - Upon startup Cats now enables "Testing" as supported addon level
   - Updated mmd_tools
   - Fixed a bug while loading settings during startup
   - Fixed a bug while loading the initial state after an operation

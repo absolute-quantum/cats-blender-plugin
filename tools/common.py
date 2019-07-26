@@ -72,7 +72,10 @@ class SavedData:
             mode = obj.mode
             selected = is_selected(obj)
             hidden = is_hidden(obj)
-            self.__object_properties[obj.name] = [mode, selected, hidden]
+            pose = None
+            if obj.type == 'ARMATURE':
+                pose = obj.data.pose_position
+            self.__object_properties[obj.name] = [mode, selected, hidden, pose]
 
             active = get_active()
             if active:
@@ -95,12 +98,15 @@ class SavedData:
             if not obj:
                 continue
 
-            mode, selected, hidden = values
+            mode, selected, hidden, pose = values
             # print(obj_name, mode, selected, hidden)
+            print(obj_name, pose)
 
             if load_mode and obj.mode != mode:
                 set_active(obj, skip_sel=True)
                 switch(mode, check_mode=False)
+                if pose:
+                    obj.data.pose_position = pose
 
             if load_select:
                 select(obj, selected)
@@ -995,6 +1001,8 @@ def clean_shapekeys(mesh):
         for kb in mesh.data.shape_keys.key_blocks:
             if can_remove_shapekey(kb):
                 mesh.shape_key_remove(kb)
+        if len(mesh.data.shape_keys.key_blocks) == 1:
+            mesh.shape_key_remove(mesh.data.shape_keys.key_blocks[0])
 
 
 def can_remove_shapekey(key_block):
@@ -1745,6 +1753,9 @@ def add_principled_shader(mesh):
     # Unity to automatically detect exported materials
     principled_shader_pos = (501, -500)
     output_shader_pos = (801, -500)
+    principled_shader_label = 'Cats Export Shader'
+    output_shader_label = 'Cats Export'
+
 
     for mat_slot in mesh.material_slots:
         if mat_slot.material and mat_slot.material.node_tree:
@@ -1755,10 +1766,10 @@ def add_principled_shader(mesh):
             # Check if the new nodes should be added and to which image node they should be attached to
             for node in nodes:
                 # Cancel if the cats nodes are already found
-                if node.type == 'BSDF_PRINCIPLED' and node.location == principled_shader_pos:
+                if node.type == 'BSDF_PRINCIPLED' and node.label == principled_shader_label:
                     node_image = None
                     break
-                if node.type == 'OUTPUT_MATERIAL' and node.location == output_shader_pos:
+                if node.type == 'OUTPUT_MATERIAL' and node.label == output_shader_label:
                     node_image = None
                     break
 
@@ -1834,6 +1845,7 @@ def fix_vrm_shader(mesh):
             nodes = mat_slot.material.node_tree.nodes
             for node in nodes:
                 if hasattr(node, 'node_tree') and 'MToon_unversioned' in node.node_tree.name:
+                    node.location[0] = 200
                     node.inputs['ReceiveShadow_Texture_alpha'].default_value = -10000
                     node.inputs['ShadeTexture'].default_value = (1.0, 1.0, 1.0, 1.0)
                     node.inputs['NomalmapTexture'].default_value = (1.0, 1.0, 1.0, 1.0)
@@ -1844,6 +1856,10 @@ def fix_vrm_shader(mesh):
             if not is_vrm_mat:
                 continue
 
+            nodes_to_keep = ['DiffuseColor', 'MainTexture', 'Emission_Texture']
+            if 'HAIR' in mat_slot.material.name:
+                nodes_to_keep = ['DiffuseColor', 'MainTexture', 'Emission_Texture', 'SphereAddTexture']
+
             for node in nodes:
                 # Delete all unneccessary nodes
                 if 'RGB' in node.name \
@@ -1851,13 +1867,17 @@ def fix_vrm_shader(mesh):
                         or 'Image Texture' in node.name \
                         or 'UV Map' in node.name \
                         or 'Mapping' in node.name:
-                    if node.label != 'DiffuseColor' and node.label != 'MainTexture':
-                        nodes.remove(node)
+                    if node.label not in nodes_to_keep:
+                        for output in node.outputs:
+                            for link in output.links:
+                                mat_slot.material.node_tree.links.remove(link)
                         continue
 
-                if hasattr(node, 'node_tree') and 'matcap_vector' in node.node_tree.name:
-                    nodes.remove(node)
-                    continue
+                # if hasattr(node, 'node_tree') and 'matcap_vector' in node.node_tree.name:
+                #     for output in node.outputs:
+                #         for link in output.links:
+                #             mat_slot.material.node_tree.links.remove(link)
+                #     continue
 
 
 

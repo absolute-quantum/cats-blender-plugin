@@ -1105,6 +1105,7 @@ bone_reweight['\Left arm'] = [
     '\LArmJiggle2',
     '\LArmJiggle3',
     '\LShldrTwist',
+    'J_Sec_\L_UpperArm',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -1240,6 +1241,7 @@ bone_reweight['\Left elbow'] = [
     '\LForearmJiggle2',
     '\LCuffsMain',
     '\LForearmTwist',
+    'J_Sec_\L_LowerArm',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1402,6 +1404,7 @@ bone_reweight['\Left leg'] = [
     'Hlp_Hip_\L',
     'Upperleg02_\L',
     '\LThighTwist',
+    'J_Sec_\L_UpperLeg',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
@@ -1470,6 +1473,7 @@ bone_reweight['\Left knee'] = [
     'KneeLower_\L',
     'Lowerleg02_\L',
     '\LKneeJiggle',
+    'J_Sec_\L_LowerLeg',
 ]
 bone_reweight['\Left ankle'] = [
     'AnkleD_\L',

@@ -306,6 +306,7 @@ def register():
     else:
         tools.common.get_user_preferences().view.use_international_fonts = True
     tools.common.get_user_preferences().filepaths.use_file_compression = True
+    bpy.context.window_manager.addon_support = {'OFFICIAL', 'COMMUNITY', 'TESTING'}
 
     # Add shapekey button to shapekey menu
     if hasattr(bpy.types, 'MESH_MT_shape_key_specials'):  # pre 2.80

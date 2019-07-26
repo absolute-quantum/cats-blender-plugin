@@ -91,19 +91,23 @@ class CreateEyesButton(bpy.types.Operator):
                                                        or context.scene.wink_right == ""
                                                        or context.scene.lowerlid_left == ""
                                                        or context.scene.lowerlid_right == ""):
+            saved_data.load()
             self.report({'ERROR'}, 'You have no shape keys selected.'
                                    '\nPlease choose a mesh containing shape keys or check "Disable Eye Blinking".')
             return {'CANCELLED'}
 
         if head is None:
+            saved_data.load()
             self.report({'ERROR'}, 'The bone "' + context.scene.head + '" does not exist.')
             return {'CANCELLED'}
 
         if not old_eye_left:
+            saved_data.load()
             self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" does not exist.')
             return {'CANCELLED'}
 
         if not old_eye_right:
+            saved_data.load()
             self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" does not exist.')
             return {'CANCELLED'}
 
@@ -116,6 +120,7 @@ class CreateEyesButton(bpy.types.Operator):
                 eye_name = context.scene.eye_right
 
             if eye_name:
+                saved_data.load()
                 self.report({'ERROR'}, 'The bone "' + eye_name + '" has no existing vertex group or no vertices assigned to it.'
                                        '\nThis might be because you selected the wrong mesh or the wrong bone.'
                                        '\nAlso make sure that the selected eye bones actually move the eyes in pose mode.')
@@ -124,6 +129,7 @@ class CreateEyesButton(bpy.types.Operator):
         # Find existing LeftEye/RightEye and rename or delete
         if 'LeftEye' in armature.data.edit_bones:
             if old_eye_left.name == 'LeftEye':
+                saved_data.load()
                 self.report({'ERROR'}, 'Please do not use "LeftEye" as the input bone.'
                                        '\nIf you are sure that you want to use that bone please rename it to "Eye_L".')
                 return {'CANCELLED'}
@@ -132,6 +138,7 @@ class CreateEyesButton(bpy.types.Operator):
 
         if 'RightEye' in armature.data.edit_bones:
             if old_eye_right.name == 'RightEye':
+                saved_data.load()
                 self.report({'ERROR'}, 'Please do not use "RightEye" as the input bone.'
                                        '\nIf you are sure that you want to use that bone please rename it to "Eye_R".')
                 return {'CANCELLED'}
