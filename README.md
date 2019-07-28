@@ -102,14 +102,14 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/bGDy5wn.png)
+![](https://i.imgur.com/ZiyyAsn.png)
 
 ##### Translation
 - Translate certain entities from any japanese to english.
 This uses an internal dictionary and Google Translate.
 
-##### Separate by material / loose parts
-- Separates a mesh by materials or loose parts
+##### Separate by material / loose parts / shapes
+- Separates a mesh by materials or loose parts or by whether or not the mesh is effected by a shape key
 
 ##### Join meshes
 - Joins all/selected meshes together
@@ -339,6 +339,7 @@ It checks for a new version automatically once every day.
 - **Cats is now fully compatible with Blender 2.80!**
 - **Model Options**:
   - Added "Merge Weights" and "Remove Zero Weight Bones" to the spacebar search
+  - Added "Apply All Transforms" button to correctly apply the transforms of all objects
   - Separating Meshes now deletes the Basis shape key if it is the last shape key left
 - **Optimization**:
   - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80

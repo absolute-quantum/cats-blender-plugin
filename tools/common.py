@@ -838,11 +838,6 @@ def apply_transforms(armature_name=None):
         armature_name = bpy.context.scene.armature
     armature = get_armature(armature_name=armature_name)
 
-    # Save armature position for 2.8
-    pos_tmp = [armature.location[0], armature.location[1], armature.location[2]]
-    rot_tmp = [armature.rotation_euler[0], armature.rotation_euler[1], armature.rotation_euler[2]]
-    scl_tmp = [armature.scale[0], armature.scale[1], armature.scale[2]]
-
     # Apply transforms on armature
     unselect_all()
     set_active(armature)
@@ -855,17 +850,20 @@ def apply_transforms(armature_name=None):
         set_active(mesh)
         bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
-    # On Blender 2.80 move the meshes like the armature and then apply transforms again
-    if not version_2_79_or_older():
-        for mesh in get_meshes_objects(armature_name=armature_name):
-            for i in [0, 1, 2]:
-                mesh.location[i] = pos_tmp[i]
-                mesh.rotation_euler[i] = rot_tmp[i]
-                mesh.scale[i] = scl_tmp[i]
 
-            unselect_all()
-            set_active(mesh)
-            bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+def apply_all_transforms():
+
+    def apply_transforms_with_children(parent):
+        unselect_all()
+        set_active(parent)
+        switch('OBJECT')
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        for child in parent.children:
+            apply_transforms_with_children(child)
+
+    for obj in get_objects():
+        if not obj.parent:
+            apply_transforms_with_children(obj)
 
 
 def separate_by_materials(context, mesh):

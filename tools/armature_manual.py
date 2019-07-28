@@ -707,6 +707,23 @@ class ApplyTransformations(bpy.types.Operator):
 
 
 @register_wrap
+class ApplyAllTransformations(bpy.types.Operator):
+    bl_idname = 'cats_manual.apply_all_transformations'
+    bl_label = 'Apply All Transformations'
+    bl_description = "Applies the position, rotation and scale of all objects"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+
+        Common.apply_all_transforms()
+
+        saved_data.load()
+        self.report({'INFO'}, 'Transformations applied.')
+        return {'FINISHED'}
+
+
+@register_wrap
 class RemoveZeroWeight(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_zero_weight'
     bl_label = 'Remove Zero Weight Bones'
