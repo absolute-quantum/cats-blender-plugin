@@ -1590,13 +1590,13 @@ def get_bone_orientations(armature):
 
 
 def clean_material_names(mesh):
-        for j, mat in enumerate(mesh.material_slots):
-            if mat.name.endswith('.001'):
-                mesh.active_material_index = j
-                mesh.active_material.name = mat.name[:-4]
-            if mat.name.endswith('. 001') or mat.name.endswith(' .001'):
-                mesh.active_material_index = j
-                mesh.active_material.name = mat.name[:-5]
+    for j, mat in enumerate(mesh.material_slots):
+        if mat.name.endswith('.001'):
+            mesh.active_material_index = j
+            mesh.active_material.name = mat.name[:-4]
+        if mat.name.endswith(('. 001', ' .001')):
+            mesh.active_material_index = j
+            mesh.active_material.name = mat.name[:-5]
 
 
 def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):

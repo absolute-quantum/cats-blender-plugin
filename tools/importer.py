@@ -670,7 +670,7 @@ class ExportModel(bpy.types.Operator):
                     if not body_extists:
                         for shapekey in mesh.data.shape_keys.key_blocks[1:]:
                             if mesh.name not in _eye_meshes_not_named_body:
-                                if shapekey.name.startswith('vrc.blink') or shapekey.name.startswith('vrc.lower'):
+                                if shapekey.name.startswith(('vrc.blink', 'vrc.lower')):
                                     _eye_meshes_not_named_body.append(mesh.name)
                                     break
 

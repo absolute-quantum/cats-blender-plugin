@@ -400,36 +400,35 @@ class ConvertAllToPngButton(bpy.types.Operator):
         return bpy.data.images
 
     def execute(self, context):
-        # saved_data = Common.SavedData()
-        convertion_count = 0
+        images_to_convert = self.get_convert_list()
 
-        for image in bpy.data.images:
-            if self.convert(image):
-                convertion_count += 1
+        if images_to_convert:
+            current_step = 0
+            wm = bpy.context.window_manager
+            wm.progress_begin(current_step, len(images_to_convert))
 
-        # for mesh in Common.get_meshes_objects(mode=2):
-        #     for mat_slot in mesh.material_slots:
-        #         if mat_slot and mat_slot.material:
-        #
-        #             for tex_slot in mat_slot.material.texture_slots:
-        #                 if tex_slot and tex_slot.texture and tex_slot.texture.image:
-        #
-        #                     # Convert image it to PNG
-        #                     if self.convert(tex_slot.texture.image):
-        #                         convertion_count += 1
+            for image in images_to_convert:
+                self.convert(image)
+                current_step += 1
+                wm.progress_update(current_step)
 
-        # saved_data.load()
+            wm.progress_end()
 
-        self.report({'INFO'}, 'Converted ' + str(convertion_count) + ' to PNG files.')
+        self.report({'INFO'}, 'Converted ' + str(len(images_to_convert)) + ' to PNG files.')
         return {'FINISHED'}
 
-    def convert(self, image):
-        # Get texture path and check if the file should be converted
-        tex_path = bpy.path.abspath(image.filepath)
-        if tex_path.endswith('.png') or tex_path.endswith('.spa') or not os.path.isfile(tex_path):
-            print('IGNORED:', image.name, tex_path)
-            return False
+    def get_convert_list(self):
+        images_to_convert = []
+        for image in bpy.data.images:
+            # Get texture path and check if the file should be converted
+            tex_path = bpy.path.abspath(image.filepath)
+            if tex_path.endswith(('.png', '.spa', '.sph')) or not os.path.isfile(tex_path):
+                print('IGNORED:', image.name, tex_path)
+                continue
+            images_to_convert.append(image)
+        return images_to_convert
 
+    def convert(self, image):
         # Set the new image file name
         image_name = image.name
         print(image_name)
@@ -440,6 +439,7 @@ class ConvertAllToPngButton(bpy.types.Operator):
         print(image_name_new)
 
         # Set the new image file path
+        tex_path = bpy.path.abspath(image.filepath)
         print(tex_path)
         tex_path_new = ''
         for s in tex_path.split('.')[0:-1]:

@@ -88,7 +88,7 @@ class FixArmature(bpy.types.Operator):
         is_vrm = False
         if len(Common.get_meshes_objects()) == 0:
             for mesh in Common.get_meshes_objects(mode=2):
-                if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
+                if mesh.name.endswith(('.baked', '.baked0')):
                     is_vrm = True  # TODO
             if not is_vrm:
                 self.report({'ERROR'}, 'No mesh inside the armature found!')
@@ -218,13 +218,7 @@ class FixArmature(bpy.types.Operator):
             for mesh in Common.get_meshes_objects():
                 if len(Common.get_meshes_objects()) == 1:
                     break
-                if mesh.name.endswith('_physics')\
-                        or mesh.name.endswith('_lod1')\
-                        or mesh.name.endswith('_lod2')\
-                        or mesh.name.endswith('_lod3')\
-                        or mesh.name.endswith('_lod4')\
-                        or mesh.name.endswith('_lod5')\
-                        or mesh.name.endswith('_lod6'):
+                if mesh.name.endswith(('_physics', '_lod1', '_lod2', '_lod3', '_lod4', '_lod5', '_lod6')):
                     Common.delete_hierarchy(mesh)
 
         # Reset to default
@@ -328,7 +322,7 @@ class FixArmature(bpy.types.Operator):
         # Fix VRM meshes being outside of the armature
         if is_vrm:
             for mesh in Common.get_meshes_objects(mode=2):
-                if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
+                if mesh.name.endswith(('.baked', '.baked0')):
                     mesh.parent = armature  # TODO
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position

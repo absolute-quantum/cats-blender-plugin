@@ -336,18 +336,20 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.13.4
+- **Cats is now fully compatible with Blender 2.80!**
 - **Model Options**:
   - Added "Merge Weights" and "Remove Zero Weight Bones" to the spacebar search
-  - Separating Meshes now deletes the Basisshape key if it is the last shape key left
+  - Separating Meshes now deletes the Basis shape key if it is the last shape key left
 - **Optimization**:
   - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
-  - Added support for Shotariya's Material Combiner in Blender 2.80
-    - This means that Cats is now fully 2.80 compatible!
+  - Added loading cursor to "Convert Textures to PNG"
+  - Added support for Shotariyas Material Combiner in Blender 2.80
     - Minimum required Material Combiner version is now v2.1.1.1
-      - Material Combiner now also fully supports VRM models
+      - It now fully supports VRM models, has a greatly improved combining logic and an updated UI
+      - It also got compression removed, so you will always get full quality images now
 - **Credits**:
   - Removed "Join our Discord" from the spacebar search
-- **General**
+- **General**:
   - Improved shading in 2.80
   - Improved initial state restoration after an operation
   - Upon startup Cats now enables "Testing" as supported addon level
@@ -363,7 +365,7 @@ It checks for a new version automatically once every day.
   - Attach Mesh no longer removes zero weight bones and constraints
 - **Model Options**:
   - Fixed error when switching to object mode during pose mode
-- **General**
+- **General**:
   - Updated mmd_tools
   - The Blender 2.80 API is stable now, so Cats should no longer break in 2.80
 
