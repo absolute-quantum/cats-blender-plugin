@@ -46,6 +46,8 @@ class MergeArmature(bpy.types.Operator):
         return len(Common.get_armature_objects()) > 1
 
     def execute(self, context):
+        saved_data = Common.SavedData()
+
         # Set default stage
         Common.set_default_stage()
         Common.unselect_all()
@@ -57,9 +59,11 @@ class MergeArmature(bpy.types.Operator):
         merge_armature = Common.get_objects()[merge_armature_name]
 
         if not merge_armature:
+            saved_data.load()
             Common.show_error(5.2, ['The armature "' + merge_armature_name + '" could not be found.'])
             return {'CANCELLED'}
         if not base_armature:
+            saved_data.load()
             Common.show_error(5.2, ['The armature "' + base_armature_name + '" could not be found.'])
             return {'CANCELLED'}
 
@@ -70,6 +74,7 @@ class MergeArmature(bpy.types.Operator):
                 if merge_parent:
                     for i in [0, 1, 2]:
                         if merge_parent.scale[i] != 1 or merge_parent.location[i] != 0 or merge_parent.rotation_euler[i] != 0:
+                            saved_data.load()
                             Common.show_error(6.5,[
                                                         'Please make sure that the parent of the merge armature has the following transforms:',
                                                         ' - Location at 0',
@@ -81,6 +86,7 @@ class MergeArmature(bpy.types.Operator):
                 if base_parent:
                     for i in [0, 1, 2]:
                         if base_parent.scale[i] != 1 or base_parent.location[i] != 0 or base_parent.rotation_euler[i] != 0:
+                            saved_data.load()
                             Common.show_error(6.5,[
                                                         'Please make sure that the parent of the base armature has the following transforms:',
                                                         ' - Location at 0',
@@ -89,6 +95,7 @@ class MergeArmature(bpy.types.Operator):
                             return {'CANCELLED'}
                     Common.delete(base_armature.parent)
             else:
+                saved_data.load()
                 Common.show_error(6.2,
                                         ['Please use the "Fix Model" feature on the selected armatures first!',
                                          'Make sure to select the armature you want to fix above the "Fix Model" button!',
@@ -96,14 +103,18 @@ class MergeArmature(bpy.types.Operator):
                 return {'CANCELLED'}
 
         if len(Common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
+            saved_data.load()
             Common.show_error(5.2, ['The armature "' + merge_armature_name + '" does not have any meshes.'])
             return {'CANCELLED'}
         if len(Common.get_meshes_objects(armature_name=base_armature_name)) == 0:
+            saved_data.load()
             Common.show_error(5.2, ['The armature "' + base_armature_name + '" does not have any meshes.'])
             return {'CANCELLED'}
 
         # Merge armatures
         merge_armatures(base_armature_name, merge_armature_name, False, merge_same_bones=context.scene.merge_same_bones)
+
+        saved_data.load()
 
         self.report({'INFO'}, 'Armatures successfully joined.')
         return {'FINISHED'}
@@ -124,6 +135,8 @@ class AttachMesh(bpy.types.Operator):
         return len(Common.get_armature_objects()) > 0 and len(Common.get_meshes_objects(mode=1, check=False)) > 0
 
     def execute(self, context):
+        saved_data = Common.SavedData()
+
         # Set default stage
         Common.set_default_stage()
         Common.unselect_all()
@@ -168,6 +181,8 @@ class AttachMesh(bpy.types.Operator):
         # Merge armatures
         merge_armatures(base_armature_name, new_armature.name, True, mesh_name=mesh_name)
 
+        saved_data.load()
+
         self.report({'INFO'}, 'Mesh successfully attached to armature.')
         return {'FINISHED'}
 
@@ -202,47 +217,51 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     # Applies transforms of the base armature and mesh
     Common.apply_transforms(armature_name=base_armature_name)
 
-    # Check if merge armature is rotated. Because the code can handle everything except rotations
-    for i in [0, 1, 2]:
-        if abs(merge_armature.rotation_euler[i]) > tolerance or abs(mesh_merge.rotation_euler[i]) > tolerance:
+    # Applies the transforms to the merge armature and mesh
+    if bpy.context.scene.apply_transforms and not mesh_only:
+        Common.apply_transforms(armature_name=merge_armature_name)
+    else:
+        # Check if merge armature is rotated. Because the code can handle everything except rotations
+        for i in [0, 1, 2]:
+            if abs(merge_armature.rotation_euler[i]) > tolerance or abs(mesh_merge.rotation_euler[i]) > tolerance:
 
-            if merge_armature.location[i] != 0 or abs(merge_armature.rotation_euler[i]) > tolerance or merge_armature.scale[i] != 1:
+                if merge_armature.location[i] != 0 or abs(merge_armature.rotation_euler[i]) > tolerance or merge_armature.scale[i] != 1:
 
-                # Reset wrong merge armature rotations
-                for i2 in [0, 1, 2]:
-                    merge_armature.location[i2] = 0
-                    merge_armature.rotation_euler[i2] = 0
-                    merge_armature.scale[i2] = 1
+                    # Reset wrong merge armature rotations
+                    for i2 in [0, 1, 2]:
+                        merge_armature.location[i2] = 0
+                        merge_armature.rotation_euler[i2] = 0
+                        merge_armature.scale[i2] = 1
 
-                Common.unselect_all()
-                Common.set_active(mesh_merge)
+                    Common.unselect_all()
+                    Common.set_active(mesh_merge)
 
-                Common.show_error(7.5,
-                                        ['If you want to rotate the new part, only modify the mesh instead of the armature!',
-                                         '',
-                                         'The transforms of the merge armature got reset and the mesh you have to modify got selected.',
-                                         'Now place this selected mesh where and how you want it to be and then merge the armatures again.',
-                                         "If you don't want that, undo this operation."])
-                return
+                    Common.show_error(7.5,
+                                            ['If you want to rotate the new part, only modify the mesh instead of the armature!',
+                                             '',
+                                             'The transforms of the merge armature got reset and the mesh you have to modify got selected.',
+                                             'Now place this selected mesh where and how you want it to be and then merge the armatures again.',
+                                             "If you don't want that, undo this operation."])
+                    return
 
-    # Save the transforms of the merge armature
-    old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
-    old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
+        # Save the transforms of the merge armature
+        old_loc = [merge_armature.location[0], merge_armature.location[1], merge_armature.location[2]]
+        old_scale = [merge_armature.scale[0], merge_armature.scale[1], merge_armature.scale[2]]
 
-    # Apply transformation from mesh to armature
-    for i in [0, 1, 2]:
-        merge_armature.location[i] = (mesh_merge.location[i] * old_scale[i]) + old_loc[i]
-        merge_armature.rotation_euler[i] = mesh_merge.rotation_euler[i]
-        merge_armature.scale[i] = mesh_merge.scale[i] * old_scale[i]
+        # Apply transformation from mesh to armature
+        for i in [0, 1, 2]:
+            merge_armature.location[i] = (mesh_merge.location[i] * old_scale[i]) + old_loc[i]
+            merge_armature.rotation_euler[i] = mesh_merge.rotation_euler[i]
+            merge_armature.scale[i] = mesh_merge.scale[i] * old_scale[i]
 
-    # Reset all transformations on merge mesh
-    for i in [0, 1, 2]:
-        mesh_merge.location[i] = 0
-        mesh_merge.rotation_euler[i] = 0
-        mesh_merge.scale[i] = 1
+        # Reset all transformations on merge mesh
+        for i in [0, 1, 2]:
+            mesh_merge.location[i] = 0
+            mesh_merge.rotation_euler[i] = 0
+            mesh_merge.scale[i] = 1
 
-    # Apply all transforms of merge armature and mesh
-    Common.apply_transforms(armature_name=merge_armature_name)
+        # Apply all transforms of merge armature and mesh
+        Common.apply_transforms(armature_name=merge_armature_name)
 
     # Go into edit mode
     Common.unselect_all()

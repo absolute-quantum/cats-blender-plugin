@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.13.4)
+# Cats Blender Plugin (0.14.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -139,7 +139,7 @@ This uses an internal dictionary and Google Translate.
 
 ## Custom Model Creation
 
-![](https://i.imgur.com/epkhkmy.png)
+![](https://i.imgur.com/szIWglS.png)
 ![](https://i.imgur.com/04O63q1.png)
 
 **This makes creating custom avatars a breeze!**
@@ -152,10 +152,18 @@ This uses an internal dictionary and Google Translate.
     - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
     - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure (https://i.imgur.com/F5KEt0M.png)
     - DO NOT delete any main bones by yourself! CATS will merge them and delete all unused bones afterwards
-  - Move the mesh (and only the mesh!) of the merge armature to the desired position
-    - You can use Move, Scale and Rotate
-    - CATS will position the bones according to the mesh automatically
-    - If you want multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
+  - Now you have two options:
+    - Only move the mesh:
+      - Uncheck the checkbox "Apply Transforms"
+      - Move the mesh (and only the mesh!) of the merge armature to the desired position
+        - You can use Move, Scale and Rotate
+        - CATS will position the bones according to the mesh automatically
+    - OR move the armature (and with it the mesh):
+      - Check the checkbox "Apply Transforms"
+      - Move the armature to the desired position
+        - You can use Move, Scale and Rotate
+        - Make sure that both meshes and armatures are at their correct positions as they will stay exactly like this
+    - If you want to merge multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
   - Select the base armature and the armature you want to merge into the base armature in the panel
   - If CATS can't detect the bone structure automatically: select a bone you want to attach the new armature to
     - E.g.: For a hair armature select "Head" as the bone
@@ -335,12 +343,16 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
-#### 0.13.4
+#### 0.14.0
 - **Cats is now fully compatible with Blender 2.80!**
 - **Model Options**:
   - Added "Merge Weights" and "Remove Zero Weight Bones" to the spacebar search
   - Added "Apply All Transforms" button to correctly apply the transforms of all objects
   - Separating Meshes now deletes the Basis shape key if it is the last shape key left
+- **Custom Model Creation**:
+  - Added "Apply Transforms" option to "Merge Armatures"
+    - Use this if both armatures and meshes are already at their correct positions
+  - Merge Armature and Attach Mesh now correctly restore the initial state from before the operation
 - **Optimization**:
   - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
   - Added loading cursor to "Convert Textures to PNG"

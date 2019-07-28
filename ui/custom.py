@@ -41,8 +41,12 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                 return
 
             row = col.row(align=True)
-            row.scale_y = 1.05
+            row.scale_y = 0.95
             row.prop(context.scene, 'merge_same_bones')
+
+            row = col.row(align=True)
+            row.scale_y = 0.95
+            row.prop(context.scene, 'apply_transforms')
 
             row = col.row(align=True)
             row.scale_y = 1.05
