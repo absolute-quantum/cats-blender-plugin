@@ -398,7 +398,15 @@ def get_github_releases(repo):
 
     if fake_update:
         print('FAKE INSTALL!')
-        version_list['99.99.99'] = ['', 'Put exiting new stuff here', 'Today']
+
+        version = 'v-99-99-99'
+        version_tag = version.replace('-', '.')
+        if version_tag.startswith('v.'):
+            version_tag = version_tag[2:]
+        if version_tag.startswith('v'):
+            version_tag = version_tag[1:]
+
+        version_list[version_tag] = ['', 'Put exiting new stuff here', 'Today']
         version_list['12.34.56.78'] = ['', 'Nothing new to see', 'A week ago probably']
         return True
 
@@ -414,7 +422,14 @@ def get_github_releases(repo):
     for version in data:
         if 'yanked' in version.get('name').lower() or version_list.get(version.get('tag_name')):
             continue
-        version_list[version.get('tag_name')] = [version.get('zipball_url'), version.get('body'), version.get('published_at').split('T')[0]]
+
+        version_tag = version.get('tag_name').replace('-', '.')
+        if version_tag.startswith('v.'):
+            version_tag = version_tag[2:]
+        if version_tag.startswith('v'):
+            version_tag = version_tag[1:]
+
+        version_list[version_tag] = [version.get('zipball_url'), version.get('body'), version.get('published_at').split('T')[0]]
 
     # for version, info in version_list.items():
     #     print(version, info[0], info[2])
@@ -433,7 +448,8 @@ def check_for_update_available():
         for i in version.split('.'):
             if i.isdigit():
                 latest_version.append(int(i))
-        break
+        if latest_version:
+            break
 
     # print(latest_version, '>', current_version)
     if latest_version > current_version:

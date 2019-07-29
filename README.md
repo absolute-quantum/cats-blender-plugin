@@ -360,6 +360,8 @@ It checks for a new version automatically once every day.
     - Minimum required Material Combiner version is now v2.1.1.1
       - It now fully supports VRM models, has a greatly improved combining logic and an updated UI
       - It also got compression removed, so you will always get full quality images now
+- **Updater**:
+  - Made it more robust to different version naming schemes
 - **Credits**:
   - Removed "Join our Discord" from the spacebar search
 - **General**:
