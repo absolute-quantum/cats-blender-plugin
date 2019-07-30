@@ -338,7 +338,6 @@ class FixArmature(bpy.types.Operator):
         else:
             meshes = Common.get_meshes_objects()
 
-
         # Common.select(armature)
         #
         # # Correct pivot position
@@ -1190,6 +1189,8 @@ class FixArmature(bpy.types.Operator):
                     set_material_shading()
             except RuntimeError:
                 pass
+
+        Common.reset_context_scenes()
 
         wm.progress_end()
 

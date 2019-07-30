@@ -778,8 +778,8 @@ class RemoveConstraints(bpy.types.Operator):
 class RecalculateNormals(bpy.types.Operator):
     bl_idname = 'cats_manual.recalculate_normals'
     bl_label = 'Recalculate Normals'
-    bl_description = "Don't use this on good looking meshes as this can screw them up.\n" \
-                     "Makes normals point inside of the selected mesh.\n" \
+    bl_description = "Makes normals point inside of the selected mesh.\n\n" \
+                     "Don't use this on good looking meshes as this can screw them up.\n" \
                      "Use this if there are random inverted or darker faces on the mesh"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 

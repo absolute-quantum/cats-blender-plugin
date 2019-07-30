@@ -353,6 +353,8 @@ It checks for a new version automatically once every day.
   - Added "Apply Transforms" option to "Merge Armatures"
     - Use this if both armatures and meshes are already at their correct positions
   - Merge Armature and Attach Mesh now correctly restore the initial state from before the operation
+- **Visemes**:
+  - Fixed shape keys sometimes not appearing in the viseme list
 - **Optimization**:
   - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
   - Added loading cursor to "Convert Textures to PNG"

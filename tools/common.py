@@ -734,6 +734,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     # Get meshes to join
     meshes_to_join = get_meshes_objects(armature_name=armature_name, mode=3 if mode == 1 else 0)
     if not meshes_to_join:
+        reset_context_scenes()
         return None
 
     set_default_stage()
@@ -1038,10 +1039,12 @@ def reset_context_scenes():
     meshes = get_meshes(None, bpy.context)
     if len(meshes) > 0:
         mesh = meshes[0][0]
-        bpy.context.scene.mesh_name_eye = mesh
-        bpy.context.scene.mesh_name_viseme = mesh
-        # bpy.context.scene.mesh_name_atlas = mesh # TODO remove this
-        bpy.context.scene.merge_mesh = mesh
+        if not bpy.context.scene.mesh_name_eye:
+            bpy.context.scene.mesh_name_eye = mesh
+        if not bpy.context.scene.mesh_name_viseme:
+            bpy.context.scene.mesh_name_viseme = mesh
+        if not bpy.context.scene.merge_mesh:
+            bpy.context.scene.merge_mesh = mesh
 
 
 def save_shapekey_order(mesh_name):
