@@ -12,7 +12,7 @@ from threading import Thread
 
 from bpy.app.handlers import persistent
 
-fake_update = True
+fake_update = False
 
 is_checking_for_update = False
 checked_on_startup = False
@@ -22,7 +22,7 @@ current_version_str = ''
 update_needed = False
 latest_version = None
 latest_version_str = ''
-used_updater_panel = True
+used_updater_panel = False
 update_finished = False
 remind_me_later = False
 is_ignored_version = False

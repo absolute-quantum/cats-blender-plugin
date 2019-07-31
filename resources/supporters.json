@@ -410,9 +410,15 @@
       "description": "Join this Discord for asset/help on your projects (discord.gg/qhmUUCy)"
     },{
       "displayname": "orels1",
-      "startdate": "2018-07-01",
+      "startdate": "2019-07-01",
       "description": "CATS saved me from pulling my hair out more than I would usually do. 10/10 would pledge again",
       "website": "https://orels.sh",
+      "tier": 1
+    },{
+      "displayname": "CodysUniverse",
+      "startdate": "2019-08-01",
+      "description": "Thanks to this amazing program I was able to make some amazing VRchat character, make alot of friends and have so much fun in doing so!",
+      "website": "https://www.twitch.tv/codysuniverse",
       "tier": 1
     }
   ]
