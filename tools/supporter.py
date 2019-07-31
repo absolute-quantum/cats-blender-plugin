@@ -60,6 +60,7 @@ resources_dir = os.path.join(str(main_dir), "resources")
 class PatreonButton(bpy.types.Operator):
     bl_idname = 'cats_supporter.patreon'
     bl_label = 'Become a Patron'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://www.patreon.com/catsblenderplugin')
@@ -73,6 +74,7 @@ class ReloadButton(bpy.types.Operator):
     bl_idname = 'cats_supporter.reload'
     bl_label = 'Reload List'
     bl_description = 'Reloads the supporter list'
+    bl_options = {'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
@@ -93,6 +95,7 @@ class DynamicPatronButton(bpy.types.Operator):
     bl_idname = 'cats_supporter.dynamic_patron_button'
     bl_label = 'Supporter Name'
     bl_description = 'This is an awesome supporter'
+    bl_options = {'INTERNAL'}
 
     website = None
 
@@ -130,6 +133,7 @@ def register_dynamic_buttons():
                   {'bl_idname': idname,
                    'bl_label': name,
                    'bl_description': description,
+                   'bl_options': {'INTERNAL'},
                    'website': website
                    })
 

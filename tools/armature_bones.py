@@ -916,6 +916,7 @@ bone_rename['Eye_R'] = [
 ]
 bone_rename['Breast_\L'] = [
     'J_Sec_\L_Bust1',
+    '\LPectoral',
 ]
 
 ################################

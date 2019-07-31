@@ -216,6 +216,7 @@ class ModelsPopup(bpy.types.Operator):
     bl_idname = "cats_importer.model_popup"
     bl_label = "Select which you want to import:"
     bl_description = 'Show individual import options'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -368,6 +369,7 @@ class ImportVRM(bpy.types.Operator):
 class InstallXPS(bpy.types.Operator):
     bl_idname = "cats_importer.install_xps"
     bl_label = "XPS Tools is not installed or enabled!"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -404,6 +406,7 @@ class InstallXPS(bpy.types.Operator):
 class InstallSource(bpy.types.Operator):
     bl_idname = "cats_importer.install_source"
     bl_label = "Source Tools is not installed or enabled!"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -436,6 +439,7 @@ class InstallSource(bpy.types.Operator):
 class InstallVRM(bpy.types.Operator):
     bl_idname = "cats_importer.install_vrm"
     bl_label = "VRM Importer is not installed or enabled!"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -471,6 +475,7 @@ class InstallVRM(bpy.types.Operator):
 class EnableMMD(bpy.types.Operator):
     bl_idname = "cats_importer.enable_mmd"
     bl_label = "Mmd_tools is not enabled!"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -547,6 +552,7 @@ class EnableMMD(bpy.types.Operator):
 class XpsToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_xps_tools'
     bl_label = 'Download XPS Tools'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
@@ -559,6 +565,7 @@ class XpsToolsButton(bpy.types.Operator):
 class SourceToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_source_tools'
     bl_label = 'Download Source Tools'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://github.com/Artfunkel/BlenderSourceTools')
@@ -571,6 +578,7 @@ class SourceToolsButton(bpy.types.Operator):
 class VrmToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_vrm'
     bl_label = 'Download VRM Importer'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         if Common.version_2_79_or_older():
@@ -731,6 +739,7 @@ class ExportModel(bpy.types.Operator):
 class ErrorDisplay(bpy.types.Operator):
     bl_idname = "cats_importer.display_error"
     bl_label = "Warning:"
+    bl_options = {'INTERNAL'}
 
     tris_count = 0
     mat_list = []

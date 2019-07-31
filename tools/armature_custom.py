@@ -191,6 +191,7 @@ class AttachMesh(bpy.types.Operator):
 class CustomModelTutorialButton(bpy.types.Operator):
     bl_idname = 'cats_custom.tutorial'
     bl_label = 'Go to Documentation'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation')

@@ -366,11 +366,10 @@ It checks for a new version automatically once every day.
       - It also got compression removed, so you will always get full quality images now
 - **Updater**:
   - Made it more robust to different version naming schemes
-- **Credits**:
-  - Removed "Join our Discord" from the spacebar search
 - **General**:
   - Improved shading in 2.80
   - Improved initial state restoration after an operation
+  - Removed tons of unintended functions from the spacebar search
   - Upon startup Cats now enables "Testing" as supported addon level
   - Updated mmd_tools
   - Fixed a bug while loading settings during startup
