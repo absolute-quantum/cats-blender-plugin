@@ -369,6 +369,7 @@ It checks for a new version automatically once every day.
 - **General**:
   - Improved shading in 2.80
   - Improved initial state restoration after an operation
+  - Backface culling is now always toggled on
   - Removed tons of unintended functions from the spacebar search
   - Upon startup Cats now enables "Testing" as supported addon level
   - Updated mmd_tools

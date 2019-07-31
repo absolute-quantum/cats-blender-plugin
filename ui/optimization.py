@@ -33,7 +33,7 @@ def check_for_smc():
             continue
         if mod.bl_info['name'] == "Shotariya's Material Combiner":
             # print(mod.bl_info['version'])
-            if mod.bl_info['version'] < (2, 1, 1, 1):
+            if mod.bl_info['version'] < (2, 1, 1, 2):
                 old_smc_version = True
                 # print('TOO OLD!')
                 continue
