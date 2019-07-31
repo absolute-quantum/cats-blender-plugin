@@ -177,6 +177,8 @@ bone_reweigth_to_parent = [
     'Knee6_2_\L',
     'Knee7_\L',
     'Knee7_2_\L',
+    'AbdomenLower',
+    'ChestUpper',
 ]
 bone_list_conflicting_names = [
     (['\L_Clavicle'], '\L_Shoulder', 'Arm_\L'),
@@ -499,10 +501,8 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Torso_1',
     'Torso_2',
 
-    'AbdomenLower',
     'AbdomenUpper',
     'ChestLower',
-    'ChestUpper',
 
     'Mune',
 

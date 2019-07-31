@@ -1051,7 +1051,7 @@ class FixArmature(bpy.types.Operator):
                         continue
 
                     if bone_parent.name not in mesh.vertex_groups:
-                        mesh.vertex_groups.new(bone_parent.name)
+                        mesh.vertex_groups.new(name=bone_parent.name)
 
                     bone_tmp = armature.data.bones.get(bone_child.name)
                     if bone_tmp:

@@ -345,6 +345,8 @@ It checks for a new version automatically once every day.
 
 #### 0.14.0
 - **Cats is now fully compatible with Blender 2.80!**
+- **Fix Model**:
+  - Improved DAZ compatibility
 - **Model Options**:
   - Added "Merge Weights" and "Remove Zero Weight Bones" to the spacebar search
   - Added "Apply All Transforms" button to correctly apply the transforms of all objects
