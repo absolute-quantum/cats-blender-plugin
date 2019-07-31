@@ -490,17 +490,17 @@ def get_update_post():
 
 
 def prepare_to_show_update_notification():
-    # This is neccessary to show a popup directly after startup
+    # This is necessary to show a popup directly after startup
     # You will get a nasty error otherwise
     # This will add the function to the scene_update_post and it will be executed every frame. that's why it needs to be removed again asap
-    print('PREPARE TO SHOW UI')
+    # print('PREPARE TO SHOW UI')
     if show_update_notification not in get_update_post():
         get_update_post().append(show_update_notification)
 
 
 @persistent
-def show_update_notification(scene):  # One argument in neccessary for some reason
-    print('SHOWING UI NOW!!!!')
+def show_update_notification(scene):  # One argument in necessary for some reason
+    # print('SHOWING UI NOW!!!!')
 
     # # Immediately remove this from handlers again
     if show_update_notification in get_update_post():

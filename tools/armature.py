@@ -325,6 +325,14 @@ class FixArmature(bpy.types.Operator):
                 if mesh.name.endswith(('.baked', '.baked0')):
                     mesh.parent = armature  # TODO
 
+        # Check if DAZ model
+        is_daz = False
+        print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
+        if round(armature.scale[0], 2) == 0.01 \
+                and round(armature.scale[1], 2) == 0.01 \
+                and round(armature.scale[2], 2) == 0.01:
+            is_daz = True
+
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
         Common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
 
@@ -431,6 +439,17 @@ class FixArmature(bpy.types.Operator):
                     if math.isnan(uv.data[vert].uv.y):
                         uv.data[vert].uv.y = 0
                         fixed_uv_coords += 1
+
+        # If DAZ model, reset all transforms and delete key frames. This has to be done after join meshes
+        print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
+        if is_daz:
+            Common.reset_transforms()
+
+            # Delete keyframes
+            Common.set_active(armature)
+            armature.animation_data_clear()
+            for mesh in Common.get_meshes_objects():
+                mesh.animation_data_clear()
 
         # Translate bones and unhide them all
         to_translate = []

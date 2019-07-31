@@ -259,7 +259,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                     ignore_nodes = ['Material Output', 'mmd_tex_uv', 'Cats Export Shader']
 
                     if mat_slot.material and mat_slot.material.node_tree:
-                        print('MAT: ', mat_slot.material.name)
+                        # print('MAT: ', mat_slot.material.name)
                         nodes = mat_slot.material.node_tree.nodes
                         for node in nodes:
 
@@ -280,8 +280,8 @@ class CombineMaterialsButton(bpy.types.Operator):
                                 if not image:
                                     nodes.remove(node)
                                     continue
-                                print('  ', node.name)
-                                print('    ', image.name)
+                                # print('  ', node.name)
+                                # print('    ', image.name)
                                 hash_this += node.name + image.name
                                 continue
                             # Skip nodes with no input
@@ -290,27 +290,27 @@ class CombineMaterialsButton(bpy.types.Operator):
 
                             # On MMD models only add diffuse and transparency to the hash
                             if node.name == 'mmd_shader':
-                                print('  ', node.name)
-                                print('    ', node.inputs['Diffuse Color'].default_value[:])
-                                print('    ', node.inputs['Alpha'].default_value)
+                                # print('  ', node.name)
+                                # print('    ', node.inputs['Diffuse Color'].default_value[:])
+                                # print('    ', node.inputs['Alpha'].default_value)
                                 hash_this += node.name\
                                              + str(node.inputs['Diffuse Color'].default_value[:])\
                                              + str(node.inputs['Alpha'].default_value)
                                 continue
 
                             # Add all other nodes to the hash
-                            print('  ', node.name)
+                            # print('  ', node.name)
                             hash_this += node.name
                             for input, value in node.inputs.items():
                                 if hasattr(value, 'default_value'):
                                     try:
-                                        print('    ', input, value.default_value[:])
+                                        # print('    ', input, value.default_value[:])
                                         hash_this += str(value.default_value[:])
                                     except TypeError:
-                                        print('    ', input, value.default_value)
+                                        # print('    ', input, value.default_value)
                                         hash_this += str(value.default_value)
                                 else:
-                                    print('    ', input, 'name:', value.name)
+                                    # print('    ', input, 'name:', value.name)
                                     hash_this += value.name
 
                     # Now create or add to the dict key that has this hash value

@@ -867,6 +867,25 @@ def apply_all_transforms():
             apply_transforms_with_children(obj)
 
 
+def reset_transforms(armature_name=None):
+    if not armature_name:
+        armature_name = bpy.context.scene.armature
+    armature = get_armature(armature_name=armature_name)
+
+    # Reset transforms on armature
+    for i in range(0, 3):
+        armature.location[i] = 0
+        armature.rotation_euler[i] = 0
+        armature.scale[i] = 1
+
+    # Apply transforms of meshes
+    for mesh in get_meshes_objects(armature_name=armature_name):
+        for i in range(0, 3):
+            mesh.location[i] = 0
+            mesh.rotation_euler[i] = 0
+            mesh.scale[i] = 1
+
+
 def separate_by_materials(context, mesh):
     prepare_separation(mesh)
 
@@ -1756,7 +1775,6 @@ def add_principled_shader(mesh):
     output_shader_pos = (801, -500)
     principled_shader_label = 'Cats Export Shader'
     output_shader_label = 'Cats Export'
-
 
     for mat_slot in mesh.material_slots:
         if mat_slot.material and mat_slot.material.node_tree:
