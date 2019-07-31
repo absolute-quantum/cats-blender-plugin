@@ -32,17 +32,17 @@ def check_for_smc():
                 found_very_old_smc = True
             continue
         if mod.bl_info['name'] == "Shotariya's Material Combiner":
-            print(mod.bl_info['version'])
+            # print(mod.bl_info['version'])
             if mod.bl_info['version'] < (2, 1, 1, 1):
                 old_smc_version = True
-                print('TOO OLD!')
+                # print('TOO OLD!')
                 continue
             if not hasattr(bpy.context.scene, 'smc_ob_data'):
                 smc_is_disabled = True
-                print('DISABLED!')
+                # print('DISABLED!')
                 continue
 
-            print('FOUND!')
+            # print('FOUND!')
             old_smc_version = False
             smc_is_disabled = False
             draw_smc_ui = getattr(import_module(mod.__name__ + '.operators.ui.include'), 'draw_ui')

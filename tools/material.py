@@ -447,10 +447,9 @@ class ConvertAllToPngButton(bpy.types.Operator):
         tex_path_new += 'png'
         print(tex_path_new)
 
-        # In 2.80 save the Color Management View Transform and change it to standard
+        # Save the Color Management View Transform and change it to Standard, as any other would screw with the colors
         view_transform = bpy.context.scene.view_settings.view_transform
-        if not Common.version_2_79_or_older():
-            bpy.context.scene.view_settings.view_transform = 'Standard'
+        bpy.context.scene.view_settings.view_transform = 'Default' if Common.version_2_79_or_older() else 'Standard'
 
         # Save the image as a new png file
         scene = bpy.context.scene
@@ -458,11 +457,10 @@ class ConvertAllToPngButton(bpy.types.Operator):
         scene.render.image_settings.color_mode = 'RGBA'
         scene.render.image_settings.color_depth = '16'
         scene.render.image_settings.compression = 100
-        image.save_render(tex_path_new, scene=scene)
+        image.save_render(tex_path_new, scene=scene)  # TODO: FInd out how to use image.save here, to prevent anything from changing the colors
 
-        # In 2.80 change the view transform back
-        if not Common.version_2_79_or_older():
-            bpy.context.scene.view_settings.view_transform = view_transform
+        # Change the view transform back
+        bpy.context.scene.view_settings.view_transform = view_transform
 
         # Exchange the old image in blender for the new one
         bpy.data.images[image_name].filepath = tex_path_new

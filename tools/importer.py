@@ -93,7 +93,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         # Save all current objects to check which armatures got added by the importer
@@ -256,7 +256,7 @@ class ImportMMD(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         if not mmd_tools_installed:
@@ -284,7 +284,7 @@ class ImportXPS(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         try:
@@ -309,7 +309,7 @@ class ImportSource(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         try:
@@ -331,7 +331,7 @@ class ImportFBX(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         try:
@@ -353,7 +353,7 @@ class ImportVRM(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         try:

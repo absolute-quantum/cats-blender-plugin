@@ -301,7 +301,7 @@ def register():
     globs.dict_found = tools.translate.load_translations()
 
     # Set preferred Blender options
-    if tools.common.version_2_79_or_older():
+    if hasattr(tools.common.get_user_preferences(), 'system') and hasattr(tools.common.get_user_preferences().system, 'use_international_fonts'):
         tools.common.get_user_preferences().system.use_international_fonts = True
     else:
         tools.common.get_user_preferences().view.use_international_fonts = True

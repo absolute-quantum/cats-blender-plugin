@@ -269,7 +269,7 @@ class FixArmature(bpy.types.Operator):
 
         # Remove objects from different layers and things that are not meshes
         get_current_layers = []
-        if version_2_79_or_older():  # TODO
+        if hasattr(bpy.context.scene, 'layers'):
             for i, layer in enumerate(bpy.context.scene.layers):
                 if layer:
                     get_current_layers.append(i)
@@ -294,7 +294,7 @@ class FixArmature(bpy.types.Operator):
                 for i in get_current_layers:
                     if child.layers[i]:
                         in_layer = True
-                if not in_layer and version_2_79_or_older():  # TODO
+                if not in_layer and hasattr(bpy.context.scene, 'layers'):
                     Common.delete(child)
 
         # Unlock all transforms
@@ -367,7 +367,7 @@ class FixArmature(bpy.types.Operator):
                 mesh.lock_scale[i] = False
 
             # Set layer of mesh to 0
-            if version_2_79_or_older():
+            if hasattr(mesh, 'layers'):
                 mesh.layers[0] = True
 
             # Fix Source Shapekeys

@@ -325,7 +325,7 @@ class UpdateNotificationPopup(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = get_user_preferences.system.dpi
+        dpi_value = get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.6, height=-550)
 
     # def invoke(self, context, event):
@@ -482,13 +482,20 @@ def ui_refresh():
             time.sleep(0.5)
 
 
+def get_update_post():
+    if hasattr(bpy.app.handlers, 'scene_update_post'):
+        return bpy.app.handlers.scene_update_post
+    else:
+        return bpy.app.handlers.depsgraph_update_post
+
+
 def prepare_to_show_update_notification():
     # This is neccessary to show a popup directly after startup
     # You will get a nasty error otherwise
     # This will add the function to the scene_update_post and it will be executed every frame. that's why it needs to be removed again asap
     print('PREPARE TO SHOW UI')
-    if show_update_notification not in bpy.app.handlers.scene_update_post:
-        bpy.app.handlers.scene_update_post.append(show_update_notification)
+    if show_update_notification not in get_update_post():
+        get_update_post().append(show_update_notification)
 
 
 @persistent
@@ -496,8 +503,8 @@ def show_update_notification(scene):  # One argument in neccessary for some reas
     print('SHOWING UI NOW!!!!')
 
     # # Immediately remove this from handlers again
-    if show_update_notification in bpy.app.handlers.scene_update_post:
-        bpy.app.handlers.scene_update_post.remove(show_update_notification)
+    if show_update_notification in get_update_post():
+        get_update_post().remove(show_update_notification)
 
     # Show notification popup
     atr = UpdateNotificationPopup.bl_idname.split(".")
