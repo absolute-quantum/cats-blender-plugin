@@ -88,7 +88,7 @@ class FixArmature(bpy.types.Operator):
         is_vrm = False
         if len(Common.get_meshes_objects()) == 0:
             for mesh in Common.get_meshes_objects(mode=2):
-                if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
+                if mesh.name.endswith(('.baked', '.baked0')):
                     is_vrm = True  # TODO
             if not is_vrm:
                 self.report({'ERROR'}, 'No mesh inside the armature found!')
@@ -218,13 +218,7 @@ class FixArmature(bpy.types.Operator):
             for mesh in Common.get_meshes_objects():
                 if len(Common.get_meshes_objects()) == 1:
                     break
-                if mesh.name.endswith('_physics')\
-                        or mesh.name.endswith('_lod1')\
-                        or mesh.name.endswith('_lod2')\
-                        or mesh.name.endswith('_lod3')\
-                        or mesh.name.endswith('_lod4')\
-                        or mesh.name.endswith('_lod5')\
-                        or mesh.name.endswith('_lod6'):
+                if mesh.name.endswith(('_physics', '_lod1', '_lod2', '_lod3', '_lod4', '_lod5', '_lod6')):
                     Common.delete_hierarchy(mesh)
 
         # Reset to default
@@ -232,7 +226,7 @@ class FixArmature(bpy.types.Operator):
 
         if bpy.context.space_data:
             bpy.context.space_data.clip_start = 0.01
-            bpy.context.space_data.clip_end = 150
+            bpy.context.space_data.clip_end = 300
 
         if version_2_79_or_older():
             # Set better bone view
@@ -245,13 +239,20 @@ class FixArmature(bpy.types.Operator):
             # Disable backface culling
             area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
             space = next(space for space in area.spaces if space.type == 'VIEW_3D')
-            space.show_backface_culling = False  # set the viewport shading
+            space.show_backface_culling = True  # set the viewport shading
         else:
-            armature.show_in_front = True
             armature.data.display_type = 'OCTAHEDRAL'
+            armature.draw_type = 'WIRE'
+            armature.show_in_front = True
             armature.data.show_bone_custom_shapes = False
             # context.space_data.overlay.show_transparent_bones = True
-            context.space_data.shading.show_backface_culling = False
+            context.space_data.shading.show_backface_culling = True
+
+            # Set the Color Management View Transform to "Standard" instead of the Blender default "Filmic"
+            context.scene.view_settings.view_transform = 'Standard'
+
+            # Set shading to 3D view
+            set_material_shading()
 
         # Remove Rigidbodies and joints
         to_delete = []
@@ -268,7 +269,7 @@ class FixArmature(bpy.types.Operator):
 
         # Remove objects from different layers and things that are not meshes
         get_current_layers = []
-        if version_2_79_or_older():  # TODO
+        if hasattr(bpy.context.scene, 'layers'):
             for i, layer in enumerate(bpy.context.scene.layers):
                 if layer:
                     get_current_layers.append(i)
@@ -293,7 +294,7 @@ class FixArmature(bpy.types.Operator):
                 for i in get_current_layers:
                     if child.layers[i]:
                         in_layer = True
-                if not in_layer and version_2_79_or_older():  # TODO
+                if not in_layer and hasattr(bpy.context.scene, 'layers'):
                     Common.delete(child)
 
         # Unlock all transforms
@@ -321,26 +322,29 @@ class FixArmature(bpy.types.Operator):
         # Fix VRM meshes being outside of the armature
         if is_vrm:
             for mesh in Common.get_meshes_objects(mode=2):
-                if mesh.name.endswith('.baked') or mesh.name.endswith('.baked0'):
+                if mesh.name.endswith(('.baked', '.baked0')):
                     mesh.parent = armature  # TODO
+
+        # Check if DAZ model
+        is_daz = False
+        print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
+        if round(armature.scale[0], 2) == 0.01 \
+                and round(armature.scale[1], 2) == 0.01 \
+                and round(armature.scale[2], 2) == 0.01:
+            is_daz = True
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
         Common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
 
         # Combines same materials
         if context.scene.combine_mats:
-            if version_2_79_or_older():
-                bpy.ops.cats_material.combine_mats()
-            else:
-                pass
-                # TODO
+            bpy.ops.cats_material.combine_mats()
 
         # Puts all meshes into a list and joins them if selected
         if context.scene.join_meshes:
             meshes = [Common.join_meshes()]
         else:
             meshes = Common.get_meshes_objects()
-
 
         # Common.select(armature)
         #
@@ -371,7 +375,7 @@ class FixArmature(bpy.types.Operator):
                 mesh.lock_scale[i] = False
 
             # Set layer of mesh to 0
-            if version_2_79_or_older():
+            if hasattr(mesh, 'layers'):
                 mesh.layers[0] = True
 
             # Fix Source Shapekeys
@@ -411,35 +415,11 @@ class FixArmature(bpy.types.Operator):
                     for mat_slot in mesh.material_slots:
                         mat_slot.material.alpha = 1
             else:
-                pass
-                # TODO
-
-                # Makes all materials visible
-                # for i, mat_slot in enumerate(mesh.material_slots):
-                #     context.object.active_material_index = i
-                #     bpy.context.object.active_material.blend_method = 'OPAQUE'
-                #
-                #     # bpy.data.node_groups["Shader Nodetree"].nodes["Principled BSDF"].inputs[5].default_value = 0
-                #     from bpy_extras.node_shader_utils import PrincipledBSDFWrapper
-                #     shader = PrincipledBSDFWrapper(mat_slot.material, is_readonly=False)
-                #     if i == 0:
-                #         for atr in dir(shader):
-                #             print(atr, getattr(shader, atr))
-                #     shader.specular = 0
-                #     shader.metallic = 0
-                #     shader.roughness = 1
-                #     #shader.transmission = 0
-                #     #shader.transmission_roughness = 0
-
-                # Make materials exportable in Blender 2.8
-                Common.add_principled_shader()
-
-                for area in context.screen.areas:  # iterate through areas in current screen
-                    if area.type == 'VIEW_3D':
-                        for space in area.spaces:  # iterate through spaces in current VIEW_3D area
-                            if space.type == 'VIEW_3D':  # check if space is a 3D view
-                                space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
-                                space.shading.studio_light = 'forest.exr'
+                # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
+                # Common.remove_toon_shader(mesh)
+                Common.fix_mmd_shader(mesh)
+                Common.fix_vrm_shader(mesh)
+                Common.add_principled_shader(mesh)
 
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)
@@ -459,6 +439,17 @@ class FixArmature(bpy.types.Operator):
                     if math.isnan(uv.data[vert].uv.y):
                         uv.data[vert].uv.y = 0
                         fixed_uv_coords += 1
+
+        # If DAZ model, reset all transforms and delete key frames. This has to be done after join meshes
+        print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
+        if is_daz:
+            Common.reset_transforms()
+
+            # Delete keyframes
+            Common.set_active(armature)
+            armature.animation_data_clear()
+            for mesh in Common.get_meshes_objects():
+                mesh.animation_data_clear()
 
         # Translate bones and unhide them all
         to_translate = []
@@ -1060,7 +1051,7 @@ class FixArmature(bpy.types.Operator):
                         continue
 
                     if bone_parent.name not in mesh.vertex_groups:
-                        mesh.vertex_groups.new(bone_parent.name)
+                        mesh.vertex_groups.new(name=bone_parent.name)
 
                     bone_tmp = armature.data.bones.get(bone_child.name)
                     if bone_tmp:
@@ -1212,13 +1203,13 @@ class FixArmature(bpy.types.Operator):
         # Fix shading (check for runtime error because of ci tests)
         if not source_engine:
             try:
-                if version_2_79_or_older():
-                    bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-                else:
-                    pass
-                    # TODO
+                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                if not version_2_79_or_older():
+                    set_material_shading()
             except RuntimeError:
                 pass
+
+        Common.reset_context_scenes()
 
         wm.progress_end()
 
@@ -1288,6 +1279,18 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                             return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
 
     return {'result': True}
+
+
+def set_material_shading():
+    # Set shading to 3D view
+    for area in bpy.context.screen.areas:  # iterate through areas in current screen
+        if area.type == 'VIEW_3D':
+            for space in area.spaces:  # iterate through spaces in current VIEW_3D area
+                if space.type == 'VIEW_3D':  # check if space is a 3D view
+                    space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
+                    space.shading.studio_light = 'forest.exr'
+                    space.shading.studiolight_rotate_z = 0.0
+                    space.shading.studiolight_background_alpha = 0.0
 
 
 @register_wrap

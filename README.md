@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.13.3)
+# Cats Blender Plugin (0.14.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -6,7 +6,8 @@ Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/P
 With Cats it takes only a few minutes to upload your model into VRChat.
 All the hours long processes of fixing your models are compressed into a few functions!
 
-So if you enjoy how this plugin saves you countless hours of work consider supporting us through Patreon:
+So if you enjoy how this plugin saves you countless hours of work consider supporting us through Patreon.
+There are a lot of perks like having your name inside the plugin!
 
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
@@ -36,7 +37,7 @@ https://catsblenderplugin.com
 
 ## Requirement
 
- - Blender 2.79 or 2.80 **(run as administrator)**
+ - Blender 2.79 or 2.80 (run as administrator is recommended)
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
 
 ## Installation
@@ -48,7 +49,7 @@ https://catsblenderplugin.com
  - Check your 3d view and there should be a new menu item called **CATS** ....w00t
    - Since Blender 2.80 the CATS tab is on the right in the menu that opens when pressing 'N'
 
-![](https://i.imgur.com/ItJLtNJ.png)
+![](https://i.imgur.com/pJfVsho.png)
 
  - If you need help figuring out how to use the tool:
 
@@ -87,6 +88,7 @@ This tries to completely fix your model with one click.
   - Deleting unused vertex groups
   - Using the correct shading
   - Making it compatible with Full Body Tracking
+  - Combining similar materials
 
 ##### Start Pose Mode
 - Lets you test how bones will move.
@@ -100,14 +102,14 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/bGDy5wn.png)
+![](https://i.imgur.com/ZiyyAsn.png)
 
 ##### Translation
 - Translate certain entities from any japanese to english.
 This uses an internal dictionary and Google Translate.
 
-##### Separate by material / loose parts
-- Separates a mesh by materials or loose parts
+##### Separate by material / loose parts / shapes
+- Separates a mesh by materials or loose parts or by whether or not the mesh is effected by a shape key
 
 ##### Join meshes
 - Joins all/selected meshes together
@@ -137,7 +139,7 @@ This uses an internal dictionary and Google Translate.
 
 ## Custom Model Creation
 
-![](https://i.imgur.com/epkhkmy.png)
+![](https://i.imgur.com/szIWglS.png)
 ![](https://i.imgur.com/04O63q1.png)
 
 **This makes creating custom avatars a breeze!**
@@ -150,10 +152,18 @@ This uses an internal dictionary and Google Translate.
     - Ignore the "Bones are missing" warning if one of the armatures is incomplete (e.g hair only)
     - If you don't want to use "Fix Model" make sure that the armature follows the CATS bone structure (https://i.imgur.com/F5KEt0M.png)
     - DO NOT delete any main bones by yourself! CATS will merge them and delete all unused bones afterwards
-  - Move the mesh (and only the mesh!) of the merge armature to the desired position
-    - You can use Move, Scale and Rotate
-    - CATS will position the bones according to the mesh automatically
-    - If you want multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
+  - Now you have two options:
+    - Only move the mesh:
+      - Uncheck the checkbox "Apply Transforms"
+      - Move the mesh (and only the mesh!) of the merge armature to the desired position
+        - You can use Move, Scale and Rotate
+        - CATS will position the bones according to the mesh automatically
+    - OR move the armature (and with it the mesh):
+      - Check the checkbox "Apply Transforms"
+      - Move the armature to the desired position
+        - You can use Move, Scale and Rotate
+        - Make sure that both meshes and armatures are at their correct positions as they will stay exactly like this
+    - If you want to merge multiple objects from the same model it is often better to duplicate the armature for each of them and merge them individually
   - Select the base armature and the armature you want to merge into the base armature in the panel
   - If CATS can't detect the bone structure automatically: select a bone you want to attach the new armature to
     - E.g.: For a hair armature select "Head" as the bone
@@ -333,6 +343,39 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.14.0
+- **Cats is now fully compatible with Blender 2.80!**
+- **Fix Model**:
+  - Improved DAZ compatibility
+- **Model Options**:
+  - Added "Merge Weights" and "Remove Zero Weight Bones" to the spacebar search
+  - Added "Apply All Transforms" button to correctly apply the transforms of all objects
+  - Separating Meshes now deletes the Basis shape key if it is the last shape key left
+- **Custom Model Creation**:
+  - Added "Apply Transforms" option to "Merge Armatures"
+    - Use this if both armatures and meshes are already at their correct positions
+  - Merge Armature and Attach Mesh now correctly restore the initial state from before the operation
+- **Visemes**:
+  - Fixed shape keys sometimes not appearing in the viseme list
+- **Optimization**:
+  - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
+  - Added loading cursor to "Convert Textures to PNG"
+  - Added support for Shotariyas Material Combiner in Blender 2.80
+    - Minimum required Material Combiner version is now v2.1.1.1
+      - It now fully supports VRM models, has a greatly improved combining logic and an updated UI
+      - It also got compression removed, so you will always get full quality images now
+- **Updater**:
+  - Made it more robust to different version naming schemes
+- **General**:
+  - Improved shading in 2.80
+  - Improved initial state restoration after an operation
+  - Backface culling is now always toggled on
+  - Removed tons of unintended functions from the spacebar search
+  - Upon startup Cats now enables "Testing" as supported addon level
+  - Updated mmd_tools
+  - Fixed a bug while loading settings during startup
+  - Fixed a bug while loading the initial state after an operation
+
 #### 0.13.3
 - **Importer**:
   - Fixed imported armatures being in edit mode
@@ -341,7 +384,7 @@ It checks for a new version automatically once every day.
   - Attach Mesh no longer removes zero weight bones and constraints
 - **Model Options**:
   - Fixed error when switching to object mode during pose mode
-- **General**
+- **General**:
   - Updated mmd_tools
   - The Blender 2.80 API is stable now, so Cats should no longer break in 2.80
 
@@ -359,53 +402,6 @@ It checks for a new version automatically once every day.
     - Instead of the exporter, Fix Model deleted empty shapekeys now (whoops)
 - **General**
   - Disabled backface culling in mmd_tools again
-
-#### 0.13.1
-- **Fix Model**:
-  - Added option to not join the meshes
-  - Now greatly reduces clipping distance
-    - This will allow you to move much closer to the model without clipping into it
-  - All bones with exactly one child bone will now be connected to that child
-  - Improved compatibility with VRoid 6.X
-  - Fixed bug which caused the FBT fix to create multiple leg bones when "Remove Zero Weight Bones" was unchecked
-- **Custom Model Creation**:
-  - Merge Armatures and Attach Mesh are now compatible with Blender 2.80
-  - Renamed "Merge Same Bones Only" to "Merge All Bones" to better reflect what it actually does
-  - Merge Armatures now always merges bones that have the exact same name and position
-- **Model Options**:
-  - Added "Separate by Shape Keys"
-    - This splits the mesh into two parts, depending on whether it is effected by a shape key or not
-  - Fixed "Join Selected Meshes" joining all meshes
-  - "Remove Doubles" now ignores vertices effected by shape keys
-    - This prevents cases like upper and lower teeth getting merged together
-- **Eye Tracking**:
-  - Fixed empty shape keys sometimes not exporting correctly
-    - This fixes the bug that you would open your mouth when looking down in VRChat
-- **Optimization**:
-  - Removed support for old v1.x Material Combiner versions
-    - This fixes the random "Material Combiner missing" errors
-    - If you still want to use old versions, please use them directly via the shotariya tab
-- **Import**:
-  - If a required plugin is not installed, it will now show you the link to the correct version
-     depending on if you use Blender 2.79 or 2.80
-  - Added .vrm files to the "Import Any Model" button in Blender 2.79
-- **Export**:
-  - Improved export warnings
-    - They will no longer exaggerate as much as before
-  - Added warning when Eye Tracking is set up but there are no meshes named "Body"
-  - Blender 2.80: MMD models will now have their textures correctly assigned to their materials in Unity
-    - VRM models as well but only partially at this moment
-- **Shapekeys**:
-  - "Apply Shapekey to Basis" now applies the shapekey at its current strength into the basis
-     instead of at full strength
-- **General**:
-  - QOL: Objects not longer get unhidden, unselected or get their mode changed when performing any action
-  - Modified default FBX Exporter to always export empty shape keys
-    - This fixes the above described eye tracking bug
-  - Added multiple Blender 2.8 compatibility fixes
-  - Fixed all compatibility issues with other plugins
-  - Updated mmd_tools
-  - Fixed multiple errors
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

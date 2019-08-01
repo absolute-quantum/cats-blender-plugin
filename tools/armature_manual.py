@@ -202,6 +202,7 @@ class PoseNamePopup(bpy.types.Operator):
     bl_idname = "cats_manual.pose_name_popup"
     bl_label = "Give this shapekey a name:"
     bl_description = 'Sets the shapekey name. Press anywhere outside to skip'
+    bl_options = {'INTERNAL'}
 
     bpy.types.Scene.pose_to_shapekey_name = bpy.props.StringProperty(name="Pose Name")
 
@@ -363,7 +364,7 @@ class JoinMeshes(bpy.types.Operator):
     bl_description = 'Joins all meshes of this model together.' \
                      '\nIt also:' \
                      '\n  - Reorders all shape keys correctly' \
-                     '\n  - Applies all transformations' \
+                     '\n  - Applies all transforms' \
                      '\n  - Repairs broken armature modifiers' \
                      '\n  - Applies all decimation and mirror modifiers' \
                      '\n  - Merges UV maps correctly'
@@ -396,7 +397,7 @@ class JoinMeshesSelected(bpy.types.Operator):
     bl_description = 'Joins all selected meshes of this model together.' \
                      '\nIt also:' \
                      '\n  - Reorders all shape keys correctly' \
-                     '\n  - Applies all transformations' \
+                     '\n  - Applies all transforms' \
                      '\n  - Repairs broken armature modifiers' \
                      '\n  - Applies all decimation and mirror modifiers' \
                      '\n  - Merges UV maps correctly'
@@ -567,11 +568,11 @@ class SeparateByShapekeys(bpy.types.Operator):
 @register_wrap
 class MergeWeights(bpy.types.Operator):
     bl_idname = 'cats_manual.merge_weights'
-    bl_label = 'Merge Weights'
+    bl_label = 'Merge Weights to Parent'
     bl_description = 'Deletes the selected bones and adds their weight to their respective parents.' \
                      '\n' \
                      '\nOnly available in Edit or Pose Mode with bones selected'
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
@@ -614,12 +615,12 @@ class MergeWeights(bpy.types.Operator):
 @register_wrap
 class MergeWeightsToActive(bpy.types.Operator):
     bl_idname = 'cats_manual.merge_weights_to_active'
-    bl_label = 'Merge Weights'
+    bl_label = 'Merge Weights to Active'
     bl_description = 'Deletes the selected bones except the active one and adds their weights to the active bone.' \
                      '\nThe active bone is the one you selected last.' \
                      '\n' \
                      '\nOnly available in Edit or Pose Mode with bones selected'
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
@@ -707,12 +708,29 @@ class ApplyTransformations(bpy.types.Operator):
 
 
 @register_wrap
+class ApplyAllTransformations(bpy.types.Operator):
+    bl_idname = 'cats_manual.apply_all_transformations'
+    bl_label = 'Apply All Transformations'
+    bl_description = "Applies the position, rotation and scale of all objects"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+
+        Common.apply_all_transforms()
+
+        saved_data.load()
+        self.report({'INFO'}, 'Transformations applied.')
+        return {'FINISHED'}
+
+
+@register_wrap
 class RemoveZeroWeight(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_zero_weight'
     bl_label = 'Remove Zero Weight Bones'
     bl_description = "Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices\n" \
                      "Don't use this if you plan to use 'Fix Model'"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
@@ -761,8 +779,8 @@ class RemoveConstraints(bpy.types.Operator):
 class RecalculateNormals(bpy.types.Operator):
     bl_idname = 'cats_manual.recalculate_normals'
     bl_label = 'Recalculate Normals'
-    bl_description = "Don't use this on good looking meshes as this can screw them up.\n" \
-                     "Makes normals point inside of the selected mesh.\n" \
+    bl_description = "Makes normals point inside of the selected mesh.\n\n" \
+                     "Don't use this on good looking meshes as this can screw them up.\n" \
                      "Use this if there are random inverted or darker faces on the mesh"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 

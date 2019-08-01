@@ -325,7 +325,7 @@ class UpdateNotificationPopup(bpy.types.Operator):
         return {'FINISHED'}
 
     def invoke(self, context, event):
-        dpi_value = get_user_preferences.system.dpi
+        dpi_value = get_user_preferences().system.dpi
         return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.6, height=-550)
 
     # def invoke(self, context, event):
@@ -398,7 +398,15 @@ def get_github_releases(repo):
 
     if fake_update:
         print('FAKE INSTALL!')
-        version_list['99.99.99'] = ['', 'Put exiting new stuff here', 'Today']
+
+        version = 'v-99-99-99'
+        version_tag = version.replace('-', '.')
+        if version_tag.startswith('v.'):
+            version_tag = version_tag[2:]
+        if version_tag.startswith('v'):
+            version_tag = version_tag[1:]
+
+        version_list[version_tag] = ['', 'Put exiting new stuff here', 'Today']
         version_list['12.34.56.78'] = ['', 'Nothing new to see', 'A week ago probably']
         return True
 
@@ -414,7 +422,14 @@ def get_github_releases(repo):
     for version in data:
         if 'yanked' in version.get('name').lower() or version_list.get(version.get('tag_name')):
             continue
-        version_list[version.get('tag_name')] = [version.get('zipball_url'), version.get('body'), version.get('published_at').split('T')[0]]
+
+        version_tag = version.get('tag_name').replace('-', '.')
+        if version_tag.startswith('v.'):
+            version_tag = version_tag[2:]
+        if version_tag.startswith('v'):
+            version_tag = version_tag[1:]
+
+        version_list[version_tag] = [version.get('zipball_url'), version.get('body'), version.get('published_at').split('T')[0]]
 
     # for version, info in version_list.items():
     #     print(version, info[0], info[2])
@@ -433,7 +448,8 @@ def check_for_update_available():
         for i in version.split('.'):
             if i.isdigit():
                 latest_version.append(int(i))
-        break
+        if latest_version:
+            break
 
     # print(latest_version, '>', current_version)
     if latest_version > current_version:
@@ -466,22 +482,29 @@ def ui_refresh():
             time.sleep(0.5)
 
 
+def get_update_post():
+    if hasattr(bpy.app.handlers, 'scene_update_post'):
+        return bpy.app.handlers.scene_update_post
+    else:
+        return bpy.app.handlers.depsgraph_update_post
+
+
 def prepare_to_show_update_notification():
-    # This is neccessary to show a popup directly after startup
+    # This is necessary to show a popup directly after startup
     # You will get a nasty error otherwise
     # This will add the function to the scene_update_post and it will be executed every frame. that's why it needs to be removed again asap
-    print('PREPARE TO SHOW UI')
-    if show_update_notification not in bpy.app.handlers.scene_update_post:
-        bpy.app.handlers.scene_update_post.append(show_update_notification)
+    # print('PREPARE TO SHOW UI')
+    if show_update_notification not in get_update_post():
+        get_update_post().append(show_update_notification)
 
 
 @persistent
-def show_update_notification(scene):  # One argument in neccessary for some reason
-    print('SHOWING UI NOW!!!!')
+def show_update_notification(scene):  # One argument in necessary for some reason
+    # print('SHOWING UI NOW!!!!')
 
     # # Immediately remove this from handlers again
-    if show_update_notification in bpy.app.handlers.scene_update_post:
-        bpy.app.handlers.scene_update_post.remove(show_update_notification)
+    if show_update_notification in get_update_post():
+        get_update_post().remove(show_update_notification)
 
     # Show notification popup
     atr = UpdateNotificationPopup.bl_idname.split(".")

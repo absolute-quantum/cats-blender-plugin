@@ -35,9 +35,11 @@
       "website": "https://www.mycoolwebsite.com    - Makes the name clickable with a link to a website. Setting it to null makes it a button but not clickable",
       "tier": 1,
       "disabled": true,
+      "ignored": true,
 
       "other info 1": " tier: 1                    - Puts the name on top of the list. Only 1 is available currently",
-      "other info 2": " disabled: true             - Hides that person in the list"
+      "other info 2": " disabled: true             - Hides that person in the list",
+      "other info 3": " ignored: true               - Makes that person not getting reported by the supporter check"
     },{
       "displayname": "Xeverian",
       "startdate": "2018-01-05",
@@ -45,7 +47,9 @@
     },{
       "displayname": "Tupper",
       "startdate": "2018-02-05",
-      "disabled": true
+      "disabled": true,
+      "ignored": true,
+      "info": "this entry is just here for the original position"
     },{
       "displayname": "idea",
       "startdate": "2018-03-05",
@@ -72,7 +76,8 @@
       "startdate": "2018-01-05"
     },{
       "displayname": "Derpmare",
-      "startdate": "2018-02-05"
+      "startdate": "2018-02-05",
+      "disabled": true
     },{
       "displayname": "Chikan Celeryman",
       "startdate": "2018-03-05",
@@ -97,16 +102,13 @@
       "displayname": "goblox",
       "startdate": "2018-04-05"
     },{
-      "displayname": "azupwn",
+      "displayname": "m o t h",
       "startdate": "2018-04-05",
-      "info": "Cancelled May",
       "disabled": true
     },{
-      "displayname": "m o t h",
-      "startdate": "2018-04-05"
-    },{
       "displayname": "Yorx",
-      "startdate": "2018-05-21"
+      "startdate": "2018-05-21",
+      "disabled": true
     },{
       "displayname": "Tomnautical",
       "startdate": "2018-04-05"
@@ -115,7 +117,8 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "Shanie",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Sifu",
       "startdate": "2018-04-05",
@@ -151,7 +154,7 @@
     },{
       "displayname": "Karma",
       "startdate": "2018-04-05",
-      "disabled": false,
+      "disabled": true,
       "info": "Cancelled November"
     },{
       "displayname": "SolarSnowball",
@@ -160,7 +163,8 @@
     },{
       "displayname": "Bones",
       "startdate": "2018-01-22",
-      "info": "PP 50"
+      "info": "PP 50",
+      "disabled": true
     },{
       "displayname": "Axo_",
       "startdate": "2018-04-05",
@@ -183,11 +187,13 @@
       "startdate": "2018-04-05",
       "description": "I do what I do, and make what I make. For the people I love and care so much about",
       "website": "https://www.twitch.tv/nekonatsukivr",
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
       "displayname": "AlphaSatanOmega",
       "startdate": "2018-04-05",
-      "info": "He can stay <3"
+      "info": "He can stay <3",
+      "ignored": true
     },{
       "displayname": "Curio",
       "startdate": "2018-04-05"
@@ -204,7 +210,8 @@
       "disabled": true
     },{
       "displayname": "Brindin_wF",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Serry Jane",
       "startdate": "2018-04-05"
@@ -213,7 +220,7 @@
       "startdate": "2018-04-05",
       "disabled": true
     },{
-      "displayname": "Antivirus-Chan",
+      "displayname": "FlippantFeline",
       "startdate": "2018-04-05"
     },{
       "displayname": "Rayduxz",
@@ -235,7 +242,7 @@
       "displayname": "Highom<3",
       "iconname": "Highom3",
       "startdate": "2018-05-20",
-      "disabled": false,
+      "disabled": true,
       "info": "Cancelled November"
     },{
       "displayname": "Skashe",
@@ -254,15 +261,16 @@
       "description": "DON'T CLICK ME!\n",
       "website": "https://www.twitch.tv/hectikgamez",
       "tier": 1,
-      "disabled": false,
-      "info": "declined november, check back later"
+      "disabled": true,
+      "info": "declined november, check back later. june still declined"
     },{
       "displayname": "Oclac",
       "startdate": "2018-06-17",
       "disabled": true
     },{
       "displayname": "Netrosis",
-      "startdate": "2018-06-20"
+      "startdate": "2018-06-20",
+      "disabled": true
     },{
       "displayname": "Krisu.Miushy",
       "startdate": "2018-06-21",
@@ -276,7 +284,7 @@
       "website": "https://www.twitch.tv/atiriontv",
       "tier": 1
     },{
-      "displayname": "Murakuumoo",
+      "displayname": "Murakumo",
       "startdate": "2018-07-02",
       "info": "Was added 4 months late."
     },{
@@ -288,7 +296,7 @@
     },{
       "displayname": "baffler",
       "startdate": "2018-08-07",
-      "info": "Was added 2 months late."
+      "info": "Was added 2 months late. ended may, remove july"
     },{
       "displayname": "Aliquem",
       "startdate": "2018-08-07",
@@ -300,19 +308,22 @@
       "startdate": "2018-08-07",
       "description": "We <3 the VRChat Community",
       "website": "https://vrcmods.com/",
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
       "displayname": "Sir Matrix",
       "startdate": "2018-09-16",
       "description": "Just a man that likes to play vrchat when he's not doing army stuff!\n",
       "website": "http://www.thematrixservers.com/forums/index.php",
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
       "displayname": "Lazlo",
       "startdate": "2018-10-15",
       "description": "WTB Intelligence ",
       "website": null,
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
       "displayname": "Rincewind",
       "startdate": "2018-10-28"
@@ -365,11 +376,13 @@
       "startdate": "2019-02-25"
     },{
       "displayname": "Yoraiz0r",
-      "startdate": "2019-03-25"
+      "startdate": "2019-03-25",
+      "description": "Yoraiz0r is a really awesome supporter"
     },{
       "displayname": "honnmaguro",
       "startdate": "2019-04-05",
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
       "displayname": "Subcom",
       "startdate": "2019-04-23",
@@ -391,6 +404,22 @@
     },{
       "displayname": "Hammey",
       "startdate": "2019-05-25"
+    },{
+      "displayname": "TabaskoSweet",
+      "startdate": "2019-06-03",
+      "description": "Join this Discord for asset/help on your projects (discord.gg/qhmUUCy)"
+    },{
+      "displayname": "orels1",
+      "startdate": "2019-07-01",
+      "description": "CATS saved me from pulling my hair out more than I would usually do. 10/10 would pledge again",
+      "website": "https://orels.sh",
+      "tier": 1
+    },{
+      "displayname": "CodysUniverse",
+      "startdate": "2019-08-01",
+      "description": "Thanks to this amazing program I was able to make some amazing VRchat character, make alot of friends and have so much fun in doing so!",
+      "website": "https://www.twitch.tv/codysuniverse",
+      "tier": 1
     }
   ]
 }

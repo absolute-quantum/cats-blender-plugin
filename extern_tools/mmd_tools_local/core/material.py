@@ -503,7 +503,7 @@ class _FnMaterialCycles(_FnMaterialBI):
         mmd_mat = mat.mmd_material
         if hasattr(mat, 'blend_method'):
             mat.blend_method = 'HASHED' # 'BLEND'
-            #mat.show_transparent_backside = False
+            #mat.show_transparent_back = False
         elif hasattr(mat, 'transparency_method'):
             mat.use_transparency = True
             mat.transparency_method = 'Z_TRANSPARENCY'

@@ -160,6 +160,7 @@ class CopyProtectionDisable(bpy.types.Operator):
 class ProtectionTutorialButton(bpy.types.Operator):
     bl_idname = 'cats_copyprotection.tutorial'
     bl_label = 'Go to Documentation'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#copy-protection')

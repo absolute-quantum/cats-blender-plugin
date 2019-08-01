@@ -102,8 +102,13 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.operator(Armature_manual.FlipNormals.bl_idname, text='Flip')
 
             row = col.row(align=True)
-            row.scale_y = button_height
-            row.operator(Armature_manual.ApplyTransformations.bl_idname, icon='OUTLINER_DATA_ARMATURE')
+            row.scale_y = 1
+            subcol = layout_split(row, factor=0, align=True)
+            subcol.scale_y = button_height
+            subcol.operator(Armature_manual.ApplyTransformations.bl_idname, icon='OUTLINER_DATA_ARMATURE')
+            subcol = layout_split(row, factor=0, align=True)
+            subcol.scale_y = button_height
+            subcol.operator(Armature_manual.ApplyAllTransformations.bl_idname, text="", icon=globs.ICON_ALL)
 
             row = col.row(align=True)
             row.scale_y = button_height

@@ -11,7 +11,7 @@ def _get_selected_objects(context):
     selected_objects = set(i for i in context.selected_objects if i.type == 'MESH')
     for i in context.selected_objects:
         root = Model.findRoot(i)
-        if root == i:
+        if root and root in {i, i.parent}:
             selected_objects |= set(Model(root).meshes())
     return selected_objects
 

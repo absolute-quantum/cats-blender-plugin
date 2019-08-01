@@ -93,7 +93,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         # Save all current objects to check which armatures got added by the importer
@@ -122,9 +122,13 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             # XNALara
             elif file_ending == 'xps' or file_ending == 'mesh' or file_ending == 'ascii':
                 try:
-                    bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
-                                                   filepath=file_path,
-                                                   colorizeMesh=False)
+                    if version_2_79_or_older():
+                        bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
+                                                       filepath=file_path,
+                                                       colorizeMesh=False)
+                    else:
+                        bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
+                                                       filepath=file_path)
                 except AttributeError:
                     bpy.ops.cats_importer.install_xps('INVOKE_DEFAULT')
 
@@ -212,6 +216,7 @@ class ModelsPopup(bpy.types.Operator):
     bl_idname = "cats_importer.model_popup"
     bl_label = "Select which you want to import:"
     bl_description = 'Show individual import options'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -252,7 +257,7 @@ class ImportMMD(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         if not mmd_tools_installed:
@@ -280,11 +285,14 @@ class ImportXPS(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         try:
-            bpy.ops.xps_tools.import_model('INVOKE_DEFAULT', colorizeMesh=False)
+            if version_2_79_or_older():
+                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT', colorizeMesh=False)
+            else:
+                bpy.ops.xps_tools.import_model('INVOKE_DEFAULT')
         except AttributeError:
             bpy.ops.cats_importer.install_xps('INVOKE_DEFAULT')
 
@@ -302,7 +310,7 @@ class ImportSource(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         try:
@@ -324,7 +332,7 @@ class ImportFBX(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         try:
@@ -346,7 +354,7 @@ class ImportVRM(bpy.types.Operator):
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
-        if version_2_79_or_older():
+        if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
         try:
@@ -361,6 +369,7 @@ class ImportVRM(bpy.types.Operator):
 class InstallXPS(bpy.types.Operator):
     bl_idname = "cats_importer.install_xps"
     bl_label = "XPS Tools is not installed or enabled!"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -397,6 +406,7 @@ class InstallXPS(bpy.types.Operator):
 class InstallSource(bpy.types.Operator):
     bl_idname = "cats_importer.install_source"
     bl_label = "Source Tools is not installed or enabled!"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -429,6 +439,7 @@ class InstallSource(bpy.types.Operator):
 class InstallVRM(bpy.types.Operator):
     bl_idname = "cats_importer.install_vrm"
     bl_label = "VRM Importer is not installed or enabled!"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -464,6 +475,7 @@ class InstallVRM(bpy.types.Operator):
 class EnableMMD(bpy.types.Operator):
     bl_idname = "cats_importer.enable_mmd"
     bl_label = "Mmd_tools is not enabled!"
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         return {'FINISHED'}
@@ -540,6 +552,7 @@ class EnableMMD(bpy.types.Operator):
 class XpsToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_xps_tools'
     bl_label = 'Download XPS Tools'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
@@ -552,6 +565,7 @@ class XpsToolsButton(bpy.types.Operator):
 class SourceToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_source_tools'
     bl_label = 'Download Source Tools'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://github.com/Artfunkel/BlenderSourceTools')
@@ -564,6 +578,7 @@ class SourceToolsButton(bpy.types.Operator):
 class VrmToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_vrm'
     bl_label = 'Download VRM Importer'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         if Common.version_2_79_or_older():
@@ -663,7 +678,7 @@ class ExportModel(bpy.types.Operator):
                     if not body_extists:
                         for shapekey in mesh.data.shape_keys.key_blocks[1:]:
                             if mesh.name not in _eye_meshes_not_named_body:
-                                if shapekey.name.startswith('vrc.blink') or shapekey.name.startswith('vrc.lower'):
+                                if shapekey.name.startswith(('vrc.blink', 'vrc.lower')):
                                     _eye_meshes_not_named_body.append(mesh.name)
                                     break
 
@@ -724,6 +739,7 @@ class ExportModel(bpy.types.Operator):
 class ErrorDisplay(bpy.types.Operator):
     bl_idname = "cats_importer.display_error"
     bl_label = "Warning:"
+    bl_options = {'INTERNAL'}
 
     tris_count = 0
     mat_list = []

@@ -366,6 +366,7 @@ class AtlasHelpButton(bpy.types.Operator):
 class InstallShotariya(bpy.types.Operator):
     bl_idname = "cats_atlas.install_shotariya_popup"
     bl_label = 'Error while loading Material Combiner:'
+    bl_options = {'INTERNAL'}
 
     action = bpy.props.EnumProperty(
         items=(('INSTALL', '', ''),
@@ -437,6 +438,7 @@ class InstallShotariya(bpy.types.Operator):
 class ShotariyaButton(bpy.types.Operator):
     bl_idname = 'cats_atlas.download_shotariya'
     bl_label = 'Download Material Combiner'
+    bl_options = {'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://vrcat.club/threads/material-combiner-blender-addon-1-1-3.2255/')

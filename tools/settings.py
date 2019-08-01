@@ -122,6 +122,11 @@ def load_settings():
         reset_settings(full_reset=True)
         return
 
+    if not settings_data:
+        print("NO DATA IN SETTINGS FILE")
+        reset_settings(full_reset=True)
+        return
+
     to_reset_settings = []
 
     # Check for missing entries, reset if necessary

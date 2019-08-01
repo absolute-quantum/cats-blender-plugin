@@ -39,6 +39,14 @@ class FnSDEF():
         return False
 
     @classmethod
+    def mute_sdef_set(cls, obj, mute):
+        key_blocks = getattr(obj.data.shape_keys, 'key_blocks', ())
+        if cls.SHAPEKEY_NAME in key_blocks:
+            shapekey = key_blocks[cls.SHAPEKEY_NAME]
+            shapekey.mute = mute
+            cls.__sdef_muted(obj, shapekey)
+
+    @classmethod
     def __sdef_muted(cls, obj, shapekey):
         mute = shapekey.mute
         if mute != cls.g_bone_check[hash(obj)].get('sdef_mute'):
@@ -210,7 +218,8 @@ class FnSDEF():
             return False
         # Create the shapekey for the driver
         shapekey = obj.shape_key_add(name=cls.SHAPEKEY_NAME, from_mix=False)
-        cls.__init_cache(obj, obj.data.shape_keys.key_blocks[cls.SHAPEKEY_NAME])
+        cls.__init_cache(obj, shapekey)
+        cls.__sdef_muted(obj, shapekey)
         cls.register_driver_function()
         if bulk_update is None:
             bulk_update = cls.__get_benchmark_result(obj, shapekey, use_scale, use_skip)

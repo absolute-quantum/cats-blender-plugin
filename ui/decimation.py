@@ -20,12 +20,12 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        row = col.row(align=True)
-        row.label(text='Auto Decimation is currently experimental.')
-        row = col.row(align=True)
-        row.scale_y = 0.5
-        row.label(text='It works but it might not look good. Test for yourself.')
-        col.separator()
+        # row = col.row(align=True)
+        # row.label(text='Auto Decimation is currently experimental.')
+        # row = col.row(align=True)
+        # row.scale_y = 0.5
+        # row.label(text='It works but it might not look good. Test for yourself.')
+        # col.separator()
         row = col.row(align=True)
         row.label(text='Decimation Mode:')
         row = col.row(align=True)

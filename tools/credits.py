@@ -31,6 +31,7 @@ from .register import register_wrap
 class ForumButton(bpy.types.Operator):
     bl_idname = 'cats_credits.forum'
     bl_label = 'Go to the Forums'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://vrcat.club/threads/cats-blender-plugin.6/')
@@ -43,6 +44,7 @@ class ForumButton(bpy.types.Operator):
 class DiscordButton(bpy.types.Operator):
     bl_idname = 'cats_credits.discord'
     bl_label = 'Join our Discord'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://discord.gg/f8yZGnv')
@@ -55,6 +57,7 @@ class DiscordButton(bpy.types.Operator):
 class PatchnotesButton(bpy.types.Operator):
     bl_idname = 'cats_credits.patchnotes'
     bl_label = 'Latest Patchnotes'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/releases')

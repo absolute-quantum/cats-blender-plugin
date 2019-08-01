@@ -36,22 +36,22 @@ class AutoVisemeButton(bpy.types.Operator):
     bl_idname = 'cats_viseme.create'
     bl_label = 'Create Visemes'
     bl_description = 'This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.\n' \
-                     'It will generate 15 shape keys from the 3 shape keys you specify.'
+                     'It will generate 15 shape keys from the 3 shape keys you specify'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
     def poll(cls, context):
         if not Common.get_meshes_objects(check=False):
             return False
-
-        if not context.scene.mouth_a \
-                or not context.scene.mouth_o \
-                or not context.scene.mouth_ch:
-            return False
-
         return True
 
     def execute(self, context):
+        mesh = Common.get_objects()[context.scene.mesh_name_viseme]
+
+        if not Common.has_shapekeys(mesh):
+            self.report({'ERROR'}, 'This mesh has no shapekeys!')
+            return {'CANCELLED'}
+
         if context.scene.mouth_a == "Basis" \
                 or context.scene.mouth_o == "Basis" \
                 or context.scene.mouth_ch == "Basis":
@@ -265,9 +265,8 @@ class AutoVisemeButton(bpy.types.Operator):
                 bpy.ops.object.shape_key_remove()
                 break
 
-        # rename shapekey if it already exists and set value to 0
-        for shapekey in mesh.data.shape_keys.key_blocks:
-            shapekey.value = 0
+        # Reset all shape keys
+        bpy.ops.object.shape_key_clear()
 
         # Set the shape key values
         for shapekey_data_context in shapekey_data:

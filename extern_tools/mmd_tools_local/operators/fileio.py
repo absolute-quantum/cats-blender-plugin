@@ -515,10 +515,6 @@ class ExportPmx(Operator, ExportHelper):
             handler = log_handler(self.log_level, filepath=self.filepath + '.mmd_tools.export.log')
             logger.addHandler(handler)
 
-        if root:
-            bpy.ops.mmd_tools.clear_temp_materials()
-            bpy.ops.mmd_tools.clear_uv_morph_view()
-
         rig = mmd_model.Model(root)
         arm = rig.armature()
         orig_pose_position = None

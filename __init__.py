@@ -27,10 +27,10 @@
 bl_info = {
     'name': 'Cats Blender Plugin',
     'category': '3D View',
-    'author': 'GiveMeAllYourCats',
+    'author': 'GiveMeAllYourCats & Hotox',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': (0, 13, 3),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
+    'version': (0, 14, 0),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -301,11 +301,12 @@ def register():
     globs.dict_found = tools.translate.load_translations()
 
     # Set preferred Blender options
-    if tools.common.version_2_79_or_older():
+    if hasattr(tools.common.get_user_preferences(), 'system') and hasattr(tools.common.get_user_preferences().system, 'use_international_fonts'):
         tools.common.get_user_preferences().system.use_international_fonts = True
     else:
         tools.common.get_user_preferences().view.use_international_fonts = True
     tools.common.get_user_preferences().filepaths.use_file_compression = True
+    bpy.context.window_manager.addon_support = {'OFFICIAL', 'COMMUNITY', 'TESTING'}
 
     # Add shapekey button to shapekey menu
     if hasattr(bpy.types, 'MESH_MT_shape_key_specials'):  # pre 2.80
@@ -348,6 +349,8 @@ def unregister():
             bpy.utils.unregister_class(cls)
             count += 1
         except ValueError:
+            pass
+        except RuntimeError:
             pass
     print('Unregistered', count, 'CATS classes.')
 

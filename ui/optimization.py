@@ -32,16 +32,17 @@ def check_for_smc():
                 found_very_old_smc = True
             continue
         if mod.bl_info['name'] == "Shotariya's Material Combiner":
-            if mod.bl_info['version'] < (2, 0, 3, 2):
+            # print(mod.bl_info['version'])
+            if mod.bl_info['version'] < (2, 1, 1, 2):
                 old_smc_version = True
-                print('TOO OLD!')
+                # print('TOO OLD!')
                 continue
             if not hasattr(bpy.context.scene, 'smc_ob_data'):
                 smc_is_disabled = True
-                print('DISABLED!')
+                # print('DISABLED!')
                 continue
 
-            print('FOUND!')
+            # print('FOUND!')
             old_smc_version = False
             smc_is_disabled = False
             draw_smc_ui = getattr(import_module(mod.__name__ + '.operators.ui.include'), 'draw_ui')
@@ -75,13 +76,13 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
         if context.scene.optimize_mode == 'ATLAS':
 
-            if not version_2_79_or_older():  # TODO
-                col = box.column(align=True)
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text='Not yet compatible with 2.8!', icon='INFO')
-                col.separator()
-                return
+            # if not version_2_79_or_older():  # TODO
+            #     col = box.column(align=True)
+            #     row = col.row(align=True)
+            #     row.scale_y = 0.75
+            #     row.label(text='Not yet compatible with 2.8!', icon='INFO')
+            #     col.separator()
+            #     return
 
             col = box.column(align=True)
             row = col.row(align=True)
@@ -250,17 +251,18 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.1
             row.operator(Material.CombineMaterialsButton.bl_idname, icon='MATERIAL')
 
-            row = col.row(align=True)
-            row.scale_y = 1.1
-            row.operator(Material.OneTexPerMatButton.bl_idname, icon='TEXTURE')
-            subcol = row.row(align=True)
-            subcol.alignment = 'RIGHT'
-            subcol.scale_y = 1.1
-            subcol.operator(Material.OneTexPerMatOnlyButton.bl_idname, text="", icon='X')
+            if version_2_79_or_older():
+                row = col.row(align=True)
+                row.scale_y = 1.1
+                row.operator(Material.OneTexPerMatButton.bl_idname, icon='TEXTURE')
+                subcol = row.row(align=True)
+                subcol.alignment = 'RIGHT'
+                subcol.scale_y = 1.1
+                subcol.operator(Material.OneTexPerMatOnlyButton.bl_idname, text="", icon='X')
 
-            row = col.row(align=True)
-            row.scale_y = 1.1
-            row.operator(Material.StandardizeTextures.bl_idname, icon=globs.ICON_SHADING_TEXTURE)
+                row = col.row(align=True)
+                row.scale_y = 1.1
+                row.operator(Material.StandardizeTextures.bl_idname, icon=globs.ICON_SHADING_TEXTURE)
 
             col.separator()
             row = col.row(align=True)

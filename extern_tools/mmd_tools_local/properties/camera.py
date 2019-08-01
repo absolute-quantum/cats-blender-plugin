@@ -9,39 +9,40 @@ from bpy.props import FloatProperty, BoolProperty
 from mmd_tools_local import register_wrap
 import mmd_tools_local.core.camera as mmd_camera
 
+
 if bpy.app.version < (2, 80, 0):
-    def __update_depsgraph(cam, data_prop_name):
-        pass
+    def __get_camera(empty):
+        return mmd_camera.MMDCamera(empty).camera()
 else:
-    def __update_depsgraph(cam, data_prop_name):
-        if hasattr(bpy.context, 'depsgraph'): #XXX
-            cam_dep = bpy.context.depsgraph.objects.get(cam.name, None)
-        else:
-            cam_dep = cam.evaluated_get(bpy.context.evaluated_depsgraph_get())
-        if cam_dep:
-            setattr(cam_dep.data, data_prop_name, getattr(cam.data, data_prop_name))
+    def __get_camera(empty):
+        cam = mmd_camera.MMDCamera(empty).camera()
+        return cam.evaluated_get(__find_depsgraph(empty)) if empty.is_evaluated else cam
+
+    def __find_depsgraph(obj):
+        depsgraph = bpy.context.view_layer.depsgraph
+        if obj == depsgraph.objects.get(obj.name):
+            return depsgraph
+        for view_layer in bpy.context.scene.view_layers:
+            if obj == view_layer.depsgraph.objects.get(obj.name):
+                return view_layer.depsgraph
+        raise Exception('Bug???')
+
 
 def _getMMDCameraAngle(prop):
-    empty = prop.id_data
-    cam = mmd_camera.MMDCamera(empty).camera()
+    cam = __get_camera(prop.id_data)
     return math.atan(cam.data.sensor_height/cam.data.lens/2) * 2
 
 def _setMMDCameraAngle(prop, value):
-    empty = prop.id_data
-    cam = mmd_camera.MMDCamera(empty).camera()
+    cam = __get_camera(prop.id_data)
     cam.data.lens = cam.data.sensor_height/math.tan(value/2)/2
-    __update_depsgraph(cam, 'lens')
 
 def _getIsPerspective(prop):
-    empty = prop.id_data
-    cam = mmd_camera.MMDCamera(empty).camera()
+    cam = __get_camera(prop.id_data)
     return cam.data.type == 'PERSP'
 
 def _setIsPerspective(prop, value):
-    empty = prop.id_data
-    cam = mmd_camera.MMDCamera(empty).camera()
+    cam = __get_camera(prop.id_data)
     cam.data.type = 'PERSP' if value else 'ORTHO'
-    __update_depsgraph(cam, 'type')
 
 
 @register_wrap
@@ -52,9 +53,10 @@ class MMDCamera(PropertyGroup):
         subtype='ANGLE',
         get=_getMMDCameraAngle,
         set=_setMMDCameraAngle,
-        min=0.1,
+        min=math.radians(1),
         max=math.radians(180),
-        step=0.1,
+        soft_max=math.radians(125),
+        step=100.0,
         )
 
     is_perspective = BoolProperty(

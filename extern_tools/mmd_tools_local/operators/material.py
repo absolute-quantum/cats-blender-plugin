@@ -338,7 +338,8 @@ class EdgePreviewSetup(Operator):
         node_alpha = __new_node('ShaderNodeMath', (XPOS*0, YPOS*2))
         node_alpha.operation = 'MULTIPLY'
         node_trans = __new_node('ShaderNodeBsdfTransparent', (XPOS*0, YPOS*0))
-        node_rgb = __new_node('ShaderNodeBsdfDiffuse', (XPOS*0, YPOS*-1))
+        EDGE_NODE_NAME = 'ShaderNodeEmission' if bpy.app.version < (2, 80, 0) else 'ShaderNodeBackground'
+        node_rgb = __new_node(EDGE_NODE_NAME, (XPOS*0, YPOS*-1)) # BsdfDiffuse/Background/Emission
         node_mix = __new_node('ShaderNodeMixShader', (XPOS*1, YPOS*1))
 
         links.new(node_ray.outputs['Is Camera Ray'], node_max.inputs[0])
@@ -348,7 +349,7 @@ class EdgePreviewSetup(Operator):
         links.new(node_gt.outputs['Value'], node_alpha.inputs[0])
         links.new(node_alpha.outputs['Value'], node_mix.inputs['Fac'])
         links.new(node_trans.outputs['BSDF'], node_mix.inputs[1])
-        links.new(node_rgb.outputs['BSDF'], node_mix.inputs[2])
+        links.new(node_rgb.outputs[0], node_mix.inputs[2])
         links.new(node_color.outputs['Color'], node_rgb.inputs['Color'])
 
         __new_io(shader.inputs, node_input.outputs, 'Alpha', node_alpha.inputs[1])
