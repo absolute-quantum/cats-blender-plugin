@@ -343,6 +343,12 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.14.1
+- **Importer**:
+  - FBX no longer import animations and poses by default
+- **Fix Model**:
+  - Now always applies transforms of the model
+
 #### 0.14.0
 - **Cats is now fully compatible with Blender 2.80!**
 - **Fix Model**:
@@ -361,7 +367,7 @@ It checks for a new version automatically once every day.
   - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
   - Added loading cursor to "Convert Textures to PNG"
   - Added support for Shotariyas Material Combiner in Blender 2.80
-    - Minimum required Material Combiner version is now v2.1.1.1
+    - Minimum required Material Combiner version is now v2.1.1.2
       - It now fully supports VRM models, has a greatly improved combining logic and an updated UI
       - It also got compression removed, so you will always get full quality images now
 - **Updater**:
@@ -387,21 +393,6 @@ It checks for a new version automatically once every day.
 - **General**:
   - Updated mmd_tools
   - The Blender 2.80 API is stable now, so Cats should no longer break in 2.80
-
-#### 0.13.2
-- **Importer**:
-  - Now selects the imported armature in Cats
-  - Added bone orientation fix after import if all bones point in the same direction
-- **Fix Model**:
-  - Changed clipping planes to 0.01 and 150
-    - This prevents rendering inaccuracies (thanks Rokk!)
-  - Fix Model also no longer resets the visibility of objects
-  - Added option to not connect the bones to their respective child
-- **Eye Tracking**:
-  - Added random vertex movement back in
-    - Instead of the exporter, Fix Model deleted empty shapekeys now (whoops)
-- **General**
-  - Disabled backface culling in mmd_tools again
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

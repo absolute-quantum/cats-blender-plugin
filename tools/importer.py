@@ -146,7 +146,9 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                 try:
                     bpy.ops.import_scene.fbx('EXEC_DEFAULT',
                                              filepath=file_path,
-                                             automatic_bone_orientation=False)  # Is true better? There are issues with True
+                                             automatic_bone_orientation=False,  # Is true better? There are issues with True
+                                             use_prepost_rot=False,
+                                             use_anim=False)
                 except (TypeError, ValueError):
                     bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
                 except RuntimeError as e:
@@ -265,7 +267,10 @@ class ImportMMD(bpy.types.Operator):
             return {'FINISHED'}
 
         try:
-            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT', scale=0.08, types={'MESH', 'ARMATURE', 'MORPHS'}, log_level='WARNING')
+            bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT',
+                                           scale=0.08,
+                                           types={'MESH', 'ARMATURE', 'MORPHS'},
+                                           log_level='WARNING')
         except AttributeError:
             bpy.ops.cats_importer.enable_mmd('INVOKE_DEFAULT')
         except (TypeError, ValueError):
@@ -336,7 +341,10 @@ class ImportFBX(bpy.types.Operator):
             context.scene.layers[0] = True
 
         try:
-            bpy.ops.import_scene.fbx('INVOKE_DEFAULT', automatic_bone_orientation=False)
+            bpy.ops.import_scene.fbx('INVOKE_DEFAULT',
+                                     automatic_bone_orientation=False,
+                                     use_prepost_rot=False,
+                                     use_anim=False)
         except (TypeError, ValueError):
             bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
 
