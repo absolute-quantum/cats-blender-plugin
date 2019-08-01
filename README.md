@@ -11,9 +11,7 @@ There are a lot of perks like having your name inside the plugin!
 
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
-Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=master)
-
-Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
+#### Download here: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
 
 ## Features
  - Optimizing model with one click!
@@ -31,14 +29,15 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
 
 *More to come!*
 
-## Website
-Check our website to report errors, suggestions or make comments!
-https://catsblenderplugin.com
+## Discord
+Join our Discord to report errors, suggestions or make comments!
 
-## Requirement
+**Discord: https://discord.gg/f8yZGnv**
 
+## Requirements
  - Blender 2.79 or 2.80 (run as administrator is recommended)
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
+ - If you have custom Python installed which Blender might use, you need to have Numpy installed
 
 ## Installation
  - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
