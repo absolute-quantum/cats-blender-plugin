@@ -30,12 +30,12 @@ There are a lot of perks like having your name inside the plugin!
 *More to come!*
 
 ## Discord
-Join our Discord to report errors, suggestions or make comments!
+Join our Discord to report errors, suggestions and make comments!
 
 **Discord: https://discord.gg/f8yZGnv**
 
 ## Requirements
- - Blender 2.79 or 2.80 (run as administrator is recommended)
+ - Blender **2.79** or **2.80** (run as administrator is recommended)
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
  - If you have custom Python installed which Blender might use, you need to have Numpy installed
 
@@ -344,9 +344,11 @@ It checks for a new version automatically once every day.
 
 #### 0.14.1
 - **Importer**:
-  - FBX no longer import animations and poses by default
+  - FBX no longer imports animations and poses by default
 - **Fix Model**:
   - Now always applies transforms of the model
+- **Model**:
+  - Fixed pose mode error in 2.80
 
 #### 0.14.0
 - **Cats is now fully compatible with Blender 2.80!**

@@ -121,11 +121,14 @@ class StopPoseMode(bpy.types.Operator):
         saved_data = Common.SavedData()
         armature = Common.get_armature()
         Common.set_active(armature)
-        Common.hide(armature, False)
+
+        # Make all objects visible
+        bpy.ops.object.hide_view_clear()
 
         for pb in armature.data.bones:
             pb.hide = False
             pb.select = True
+
         bpy.ops.pose.rot_clear()
         bpy.ops.pose.scale_clear()
         bpy.ops.pose.transforms_clear()
