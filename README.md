@@ -347,6 +347,7 @@ It checks for a new version automatically once every day.
   - FBX no longer imports animations and poses by default
 - **Fix Model**:
   - Now always applies transforms of the model
+  - Fixed a bug which could delete bones unintentionally
 - **Model**:
   - Fixed pose mode error in 2.80
 

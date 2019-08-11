@@ -7,9 +7,8 @@ import shutil
 import pathlib
 import zipfile
 import addon_utils
-from collections import OrderedDict
 from threading import Thread
-
+from collections import OrderedDict
 from bpy.app.handlers import persistent
 
 fake_update = False

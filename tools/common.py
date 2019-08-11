@@ -23,7 +23,6 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
-
 import re
 import os
 import bpy
@@ -1684,7 +1683,13 @@ def fix_bone_orientations(armature):
     # Connect all bones with their children if they have exactly one
     for bone in armature.data.edit_bones:
         if len(bone.children) == 1 and bone.name not in ['LeftEye', 'RightEye', 'Head', 'Hips']:
-            bone.tail = bone.children[0].head
+            p1 = bone.head
+            p2 = bone.children[0].head
+            dist = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2 + (p2[2] - p1[2]) ** 2) ** (1/2)
+
+            # Only connect them if the other bone is a certain distance away, otherwise blender will delete them
+            if dist > 0.005:
+                bone.tail = bone.children[0].head
 
 
 def update_material_list(self=None, context=None):
