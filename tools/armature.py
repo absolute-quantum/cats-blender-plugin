@@ -975,6 +975,9 @@ class FixArmature(bpy.types.Operator):
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
         Common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
 
+        # Merged bones that should be deleted
+        bones_to_delete = []
+
         # Mixing the weights
         for mesh in meshes:
             Common.unselect_all()
@@ -1026,6 +1029,9 @@ class FixArmature(bpy.types.Operator):
                         continue
 
                     if bone_child.name not in mesh.vertex_groups:
+                        # Add bone to delete list
+                        if bone_child.name not in bones_to_delete:
+                            bones_to_delete.append(bone_child.name)
                         continue
 
                     if bone_parent.name not in mesh.vertex_groups:
@@ -1040,7 +1046,11 @@ class FixArmature(bpy.types.Operator):
                     # Mix the weights
                     Common.mix_weights(mesh, bone_child.name, bone_parent.name)
 
-            # Mix weights
+                    # Add bone to delete list
+                    if bone_child.name not in bones_to_delete:
+                        bones_to_delete.append(bone_child.name)
+
+            # Merge weights
             for bone_new, bones_old in temp_reweight_bones.items():
                 if '\Left' in bone_new or '\L' in bone_new:
                     bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
@@ -1067,6 +1077,9 @@ class FixArmature(bpy.types.Operator):
 
                         # Cancel if vertex group was not found
                         if not vg:
+                            # Add bone to delete list
+                            if bone[1] not in bones_to_delete:
+                                bones_to_delete.append(bone[1])
                             continue
 
                         if bone[0] == vg.name:
@@ -1094,6 +1107,10 @@ class FixArmature(bpy.types.Operator):
                         # print(vg.name + " to " + bone[0])
                         Common.mix_weights(mesh, vg.name, bone[0])
 
+                        # Add bone to delete list
+                        if vg.name not in bones_to_delete:
+                            bones_to_delete.append(vg.name)
+
             # Old mixing weights. Still important
             for key, value in temp_list_reweight_bones.items():
                 current_step += 1
@@ -1113,7 +1130,14 @@ class FixArmature(bpy.types.Operator):
                             break
 
                 # Cancel if vertex groups was not found
-                if not vg_from or not vg_to:
+                if not vg_from:
+                    # Add bone to delete list
+                    if key not in bones_to_delete:
+                        bones_to_delete.append(key)
+                    continue
+
+                # Cancel if vertex groups was not found
+                if not vg_to:
                     continue
 
                 bone_tmp = armature.data.bones.get(vg_from.name)
@@ -1130,6 +1154,10 @@ class FixArmature(bpy.types.Operator):
                 # print(vg_from.name, 'into', vg_to.name)
                 Common.mix_weights(mesh, vg_from.name, vg_to.name)
 
+                # Add bone to delete list
+                if vg_from.name not in bones_to_delete:
+                    bones_to_delete.append(vg_from.name)
+
             # Put back armature modifier
             mod = mesh.modifiers.new("Armature", 'ARMATURE')
             mod.object = armature
@@ -1138,10 +1166,13 @@ class FixArmature(bpy.types.Operator):
         Common.set_active(armature)
         Common.switch('EDIT')
 
+        # Delete all the leftover bones from the merging process
+        for bone_name in bones_to_delete:
+            if bone_name in armature.data.edit_bones:
+                armature.data.edit_bones.remove(armature.data.edit_bones.get(bone_name))
+
         # Reparent all bones to be correct for unity mapping and vrc itself
         for key, value in temp_list_reparent_bones.items():
-            # current_step += 1
-            # wm.progress_update(current_step)
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
 
