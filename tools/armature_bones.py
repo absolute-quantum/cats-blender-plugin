@@ -360,6 +360,7 @@ bone_rename['Hips'] = [
     'Pelvis_L',
     'Pelvis_R',
     'Root_Pelvis_1',
+    'Root_X',
 ]
 bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. They will be correctly fixed
     'Spine',  # First entry!
@@ -517,6 +518,9 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'AbdomenUpper',
     'ChestLower',
 
+    'Spine_01_X',
+    'Spine_02_X',
+
     'Mune',
 
     'SpineTop',
@@ -544,6 +548,7 @@ bone_rename['Neck'] = [
     'NeckA_01',
     'J_Neck1',
     'NeckLower',
+    'Neck_X',
 ]
 bone_rename['Head'] = [
     'Mixamorig:Head',
@@ -561,6 +566,7 @@ bone_rename['Head'] = [
     'Head_01',
     'Head_001',
     'J_Head',
+    'Head_X',
 ]
 bone_rename['\Left shoulder'] = [
     '\Left_Shoulder',
@@ -647,6 +653,7 @@ bone_rename['\Left arm'] = [
     'Upperarm01_\L',
     '\L_Shldr',
     '\LShldrBend',
+    'Arm_Stretch_\L',
 ]
 bone_rename['Left arm'] = [
     '+_Leisure_Elder_Supplement',
@@ -695,6 +702,7 @@ bone_rename['\Left elbow'] = [
     'Lowerarm01_\L',
     '\LElbow',
     '\LForearmBend',
+    'Forearm_Stretch_\L',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -784,6 +792,7 @@ bone_rename['\Left leg'] = [
     'Groin_\L',
     'Upperleg01_\L',
     '\LThighBend',
+    'Thigh_Stretch_\L',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -828,6 +837,7 @@ bone_rename['\Left knee'] = [
     'Leg_2_\L',
     'Bip_Leg_\L',
     'Lowerleg01_\L',
+    'Leg_Stretch_\L',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',
@@ -902,6 +912,7 @@ bone_rename['\Left toe'] = [
     'J_\L_Toe',
     'Bip_Toe_\L',
     'Toe_Boot_\L',
+    'Toes_01_\L',
 ]
 bone_rename['Eye_\L'] = [
     '\Left_Eye',

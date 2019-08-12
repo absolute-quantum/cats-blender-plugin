@@ -306,6 +306,7 @@ def get_bone_angle(p1, p2):
 
 
 def remove_unused_vertex_groups(ignore_main_bones=False):
+    remove_count = 0
     unselect_all()
     for ob in get_objects():
         if ob.type == 'MESH':
@@ -323,6 +324,8 @@ def remove_unused_vertex_groups(ignore_main_bones=False):
                     if ignore_main_bones and ob.vertex_groups[i].name in Bones.dont_delete_these_main_bones:
                         continue
                     ob.vertex_groups.remove(ob.vertex_groups[i])
+                    remove_count += 1
+    return remove_count
 
 
 def find_center_vector_of_vertex_group(mesh, vertex_group):

@@ -648,6 +648,7 @@ class FixArmature(bpy.types.Operator):
 
                     # Rename the bone
                     if bone[0] not in armature.data.edit_bones:
+                        # print(bone_final.name, '>', bone[0])
                         bone_final.name = bone[0]
 
         # Check if it is a mixamo model

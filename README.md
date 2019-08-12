@@ -350,6 +350,8 @@ It checks for a new version automatically once every day.
   - Fixed a bug which could delete bones unintentionally
 - **Model**:
   - Fixed pose mode error in 2.80
+- **Model Options**:
+  - Added new "Delete Zero Weight Vertex Groups" button
 
 #### 0.14.0
 - **Cats is now fully compatible with Blender 2.80!**

@@ -3,6 +3,7 @@ import bpy
 from .. import globs
 from .main import ToolPanel
 from .main import layout_split
+from ..tools import supporter
 from ..tools import translate as Translate
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
@@ -84,12 +85,19 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'show_more_options', icon=globs.ICON_REMOVE, emboss=True, expand=False, toggle=False, event=False)
 
             col.separator()
-            row = layout_split(col, factor=0.23, align=True)
+            row = layout_split(col, factor=0.24, align=True)
             row.scale_y = button_height
             row.label(text="Delete:", icon='X')
-            row.operator(Armature_manual.RemoveZeroWeight.bl_idname, text='Zero Weight Bones')
-            row.operator(Armature_manual.RemoveConstraints.bl_idname, text='Constraints')
+            row2 = layout_split(row, factor=0.61, align=True)
+            row2.operator(Armature_manual.RemoveZeroWeightBones.bl_idname, text='Zero Weight Bones')
+            row2.operator(Armature_manual.RemoveConstraints.bl_idname, text='Constraints')
 
+            row = layout_split(col, factor=0.24, align=True)
+            row.scale_y = button_height
+            row.label(text="")
+            row.operator(Armature_manual.RemoveZeroWeightGroups.bl_idname, text='Zero Weight Vertex Groups')
+
+            col.separator()
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.DuplicateBonesButton.bl_idname, icon='GROUP_BONE')

@@ -728,8 +728,8 @@ class ApplyAllTransformations(bpy.types.Operator):
 
 
 @register_wrap
-class RemoveZeroWeight(bpy.types.Operator):
-    bl_idname = 'cats_manual.remove_zero_weight'
+class RemoveZeroWeightBones(bpy.types.Operator):
+    bl_idname = 'cats_manual.remove_zero_weight_bones'
     bl_label = 'Remove Zero Weight Bones'
     bl_description = "Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices\n" \
                      "Don't use this if you plan to use 'Fix Model'"
@@ -750,6 +750,30 @@ class RemoveZeroWeight(bpy.types.Operator):
 
         saved_data.load()
         self.report({'INFO'}, 'Deleted ' + str(count) + ' zero weight bones.')
+        return {'FINISHED'}
+
+
+@register_wrap
+class RemoveZeroWeightGroups(bpy.types.Operator):
+    bl_idname = 'cats_manual.remove_zero_weight_groups'
+    bl_label = 'Remove Zero Weight Vertex Groups'
+    bl_description = "Cleans up the vertex groups, deleting all groups that don't directly affect any vertices"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        if Common.get_armature():
+            return True
+        return False
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+
+        Common.set_default_stage()
+        count = Common.remove_unused_vertex_groups()
+
+        saved_data.load()
+        self.report({'INFO'}, 'Removed ' + str(count) + ' zero weight vertex groups.')
         return {'FINISHED'}
 
 
