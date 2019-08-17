@@ -20,7 +20,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
 
-        updater.check_for_update_background(onstart=True)
+        updater.check_for_update_background(check_on_startup=True)
         updater.draw_update_notification_panel(box)
 
         col = box.column(align=True)
