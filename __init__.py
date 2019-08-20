@@ -211,6 +211,16 @@ def remove_corrupted_files():
                           '\n')
 
 
+def check_unsupported_blender_versions():
+    # Versions 2.80.0 to 2.80.74 are beta versions, stable is 2.80.75
+    if (2, 80, 0) <= bpy.app.version < (2, 80, 75):
+        unregister()
+        sys.tracebacklimit = 0
+        raise ImportError('\n\nYou are still on the beta version of Blender 2.80!'
+                          '\nPlease update to the release version of Blender 2.80.'
+                          '\n')
+
+
 def set_cats_version_string():
     version = bl_info.get('version')
     version_temp = []
@@ -240,6 +250,9 @@ def set_cats_version_string():
 
 def register():
     print("\n### Loading CATS...")
+
+    # Check for unsupported Blender versions
+    check_unsupported_blender_versions()
 
     # Check for faulty CATS installations
     remove_corrupted_files()
