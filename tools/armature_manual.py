@@ -1193,8 +1193,6 @@ class FixFBTButton(bpy.types.Operator):
 
         Common.switch('OBJECT')
 
-        context.scene.full_body = True
-
         saved_data.load()
 
         self.report({'INFO'}, 'Successfully applied the Full Body Tracking fix.')
@@ -1276,8 +1274,6 @@ class RemoveFBTButton(bpy.types.Operator):
                 bone.tail[z_cord] += 0.1
 
         Common.switch('OBJECT')
-
-        context.scene.full_body = False
 
         saved_data.load()
 

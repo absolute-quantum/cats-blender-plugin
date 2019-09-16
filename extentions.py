@@ -16,14 +16,6 @@ def register():
         update=Common.update_material_list
     )
 
-    Scene.full_body = BoolProperty(
-        name='Apply Full Body Tracking Fix',
-        description="Applies a general fix for Full Body Tracking.\n\n"
-                    'Can potentially reduce the knee bending of every avatar in VRChat.\n'
-                    'You can safely ignore the "Spine length zero" warning in Unity',
-        default=False
-    )
-
     Scene.combine_mats = BoolProperty(
         name='Combine Same Materials',
         description="Combines similar materials into one, reducing draw calls.\n\n"

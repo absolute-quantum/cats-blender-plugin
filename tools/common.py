@@ -1666,7 +1666,7 @@ def ui_refresh():
             time.sleep(0.5)
 
 
-def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
+def fix_zero_length_bones(armature, x_cord, y_cord, z_cord):
     pre_mode = armature.mode
     set_active(armature)
     switch('EDIT')
@@ -1675,11 +1675,7 @@ def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
         if round(bone.head[x_cord], 4) == round(bone.tail[x_cord], 4) \
                 and round(bone.head[y_cord], 4) == round(bone.tail[y_cord], 4) \
                 and round(bone.head[z_cord], 4) == round(bone.tail[z_cord], 4):
-            if bone.name == 'Hips' and full_body_tracking:
-                bone.tail[z_cord] -= 0.1
-            else:
-                bone.tail[z_cord] += 0.1
-                print('YES')
+            bone.tail[z_cord] += 0.1
 
     switch(pre_mode)
 

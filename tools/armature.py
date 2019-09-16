@@ -98,7 +98,6 @@ class FixArmature(bpy.types.Operator):
 
         wm = bpy.context.window_manager
         armature = Common.set_default_stage()
-        full_body_tracking = context.scene.full_body
 
         # Check if bone matrix == world matrix, important for xps models
         x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(armature)
@@ -338,7 +337,7 @@ class FixArmature(bpy.types.Operator):
                 mesh.animation_data_clear()
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        Common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
+        Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
         # Combines same materials
         if context.scene.combine_mats:
@@ -821,52 +820,52 @@ class FixArmature(bpy.types.Operator):
                             right_leg = armature.data.edit_bones.get('Right leg')
 
                             # Fixing the hips
-                            if not full_body_tracking:
 
-                                # Hips should have x value of 0 in both head and tail
-                                middle_x = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
-                                hips.head[x_cord] = middle_x
-                                hips.tail[x_cord] = middle_x
+                            # Hips should have x value of 0 in both head and tail
+                            middle_x = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
+                            hips.head[x_cord] = middle_x
+                            hips.tail[x_cord] = middle_x
 
-                                # Make sure the hips bone (tail and head tip) is aligned with the legs Y
-                                hips.head[y_cord] = right_leg.head[y_cord]
-                                hips.tail[y_cord] = right_leg.head[y_cord]
+                            # Make sure the hips bone (tail and head tip) is aligned with the legs Y
+                            hips.head[y_cord] = right_leg.head[y_cord]
+                            hips.tail[y_cord] = right_leg.head[y_cord]
 
-                                hips.head[z_cord] = right_leg.head[z_cord]
-                                hips.tail[z_cord] = spine.head[z_cord]
+                            hips.head[z_cord] = right_leg.head[z_cord]
+                            hips.tail[z_cord] = spine.head[z_cord]
 
-                                if hips.tail[z_cord] < hips.head[z_cord]:
-                                    hips.tail[z_cord] = hips.tail[z_cord] + 0.1
+                            if hips.tail[z_cord] < hips.head[z_cord]:
+                                hips.tail[z_cord] = hips.tail[z_cord] + 0.1
 
-                                # if hips.tail[z_cord] < hips.head[z_cord]:
-                                #     hips_height = hips.head[z_cord]
-                                #     hips.head = hips.tail
-                                #     hips.tail[z_cord] = hips_height
-                                #
-                                #
-                                #
-                                # hips_height = hips.head[z_cord]
-                                # hips.head = hips.tail
-                                # hips.tail[z_cord] = hips_height
+                            # if hips.tail[z_cord] < hips.head[z_cord]:
+                            #     hips_height = hips.head[z_cord]
+                            #     hips.head = hips.tail
+                            #     hips.tail[z_cord] = hips_height
+                            #
+                            #
+                            #
+                            # hips_height = hips.head[z_cord]
+                            # hips.head = hips.tail
+                            # hips.tail[z_cord] = hips_height
 
-                                # # Hips should have x value of 0 in both head and tail
-                                # hips.head[x_cord] = 0
-                                # hips.tail[x_cord] = 0
+                            # # Hips should have x value of 0 in both head and tail
+                            # hips.head[x_cord] = 0
+                            # hips.tail[x_cord] = 0
 
-                                # # Make sure the hips bone (tail and head tip) is aligned with the legs Y
-                                # hips.head[y_cord] = right_leg.head[y_cord]
-                                # hips.tail[y_cord] = right_leg.head[y_cord]
+                            # # Make sure the hips bone (tail and head tip) is aligned with the legs Y
+                            # hips.head[y_cord] = right_leg.head[y_cord]
+                            # hips.tail[y_cord] = right_leg.head[y_cord]
 
-                                # Flip the hips bone and make sure the hips bone is not below the legs bone
-                                # hip_bone_length = abs(hips.tail[z_cord] - hips.head[z_cord])
-                                # hips.head[z_cord] = right_leg.head[z_cord]
-                                # hips.tail[z_cord] = hips.head[z_cord] + hip_bone_length
+                            # Flip the hips bone and make sure the hips bone is not below the legs bone
+                            # hip_bone_length = abs(hips.tail[z_cord] - hips.head[z_cord])
+                            # hips.head[z_cord] = right_leg.head[z_cord]
+                            # hips.tail[z_cord] = hips.head[z_cord] + hip_bone_length
 
-                                # hips.head[z_cord] = right_leg.head[z_cord]
-                                # hips.tail[z_cord] = spine.head[z_cord]
+                            # hips.head[z_cord] = right_leg.head[z_cord]
+                            # hips.tail[z_cord] = spine.head[z_cord]
 
-                                # if hips.tail[z_cord] < hips.head[z_cord]:
-                                #     hips.tail[z_cord] = hips.tail[z_cord] + 0.1
+                            # if hips.tail[z_cord] < hips.head[z_cord]:
+                            #     hips.tail[z_cord] = hips.tail[z_cord] + 0.1
+
 
                             # elif spine and chest and neck and head:
                             #     bones = [hips, spine, chest, neck, head]
@@ -876,53 +875,7 @@ class FixArmature(bpy.types.Operator):
                             #         bone.tail[y_cord] = bone.head[y_cord]
                             #         bone.tail[z_cord] = bone.head[z_cord] + bone_length
 
-                            else:
-                                # FBT Fix
-                                # Flip hips
-                                hips.head = spine.head
-                                hips.tail = spine.head
-                                hips.tail[z_cord] = left_leg.head[z_cord]
 
-                                if hips.tail[z_cord] > hips.head[z_cord]:
-                                    hips.tail[z_cord] -= 0.1
-
-                                left_leg_new = armature.data.edit_bones.get('Left leg 2')
-                                right_leg_new = armature.data.edit_bones.get('Right leg 2')
-                                left_leg_new_alt = armature.data.edit_bones.get('Left_Leg_2')
-                                right_leg_new_alt = armature.data.edit_bones.get('Right_Leg_2')
-
-                                # Create new leg bones and put them at the old location
-                                if not left_leg_new:
-                                    print("DEBUG 1")
-                                    if left_leg_new_alt:
-                                        left_leg_new = left_leg_new_alt
-                                        left_leg_new.name = 'Left leg 2'
-                                        print("DEBUG 1.1")
-                                    else:
-                                        left_leg_new = armature.data.edit_bones.new('Left leg 2')
-                                        print("DEBUG 1.2")
-                                if not right_leg_new:
-                                    print("DEBUG 2")
-                                    if right_leg_new_alt:
-                                        right_leg_new = right_leg_new_alt
-                                        right_leg_new.name = 'Right leg 2'
-                                        print("DEBUG 2.1")
-                                    else:
-                                        right_leg_new = armature.data.edit_bones.new('Right leg 2')
-                                        print("DEBUG 2.2")
-
-                                left_leg_new.head = left_leg.head
-                                left_leg_new.tail = left_leg.tail
-
-                                right_leg_new.head = right_leg.head
-                                right_leg_new.tail = right_leg.tail
-
-                                # Set new location for old leg bones
-                                left_leg.tail = left_leg.head
-                                left_leg.tail[z_cord] = left_leg.head[z_cord] + 0.1
-
-                                right_leg.tail = right_leg.head
-                                right_leg.tail[z_cord] = right_leg.head[z_cord] + 0.1
 
                             # # Fixing legs
                             # right_knee = armature.data.edit_bones.get('Right knee')
@@ -974,7 +927,7 @@ class FixArmature(bpy.types.Operator):
                     mesh.rotation_euler = (math.radians(180), 0, 0)
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        Common.fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord)
+        Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
         # Merged bones that should be deleted
         bones_to_delete = []
@@ -1324,8 +1277,6 @@ class ModelSettings(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.prop(context.scene, 'full_body')
-        row = col.row(align=True)
         row.active = context.scene.remove_zero_weight
         row.prop(context.scene, 'keep_end_bones')
         row = col.row(align=True)
@@ -1337,15 +1288,14 @@ class ModelSettings(bpy.types.Operator):
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
 
-        if context.scene.full_body:
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 0.7
-            row.label(text='INFO:', icon='INFO')
-            row = col.row(align=True)
-            row.scale_y = 0.7
-            row.label(text='You can safely ignore the', icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
-            row = col.row(align=True)
-            row.scale_y = 0.7
-            row.label(text='"Spine length zero" warning in Unity.', icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
-            col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.scale_y = 0.7
+        row.label(text='The Full Body Tracking Fix', icon='INFO')
+        row = col.row(align=True)
+        row.scale_y = 0.7
+        row.label(text='is no longer needed for VRChat.', icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
+        row = col.row(align=True)
+        row.scale_y = 0.7
+        row.label(text='It\'s still available in Model Options.', icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
+        col.separator()

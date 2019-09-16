@@ -157,19 +157,8 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row.alignment = 'RIGHT'
         row.scale_y = 1.5
         row.operator(Armature.ModelSettings.bl_idname, text="", icon='MODIFIER')
-
-        if context.scene.full_body:
-            col.separator()
-            row = col.row(align=True)
-            row.scale_y = 0.9
-            row.label(text='You can safely ignore the', icon='INFO')
-            row = col.row(align=True)
-            row.scale_y = 0.5
-            row.label(text='"Spine length zero" warning in Unity.', icon='BLANK1')
-            col.separator()
-        else:
-            col.separator()
-            col.separator()
+        col.separator()
+        col.separator()
 
         armature_obj = Common.get_armature()
         if not armature_obj or armature_obj.mode != 'POSE':
