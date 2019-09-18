@@ -1146,6 +1146,11 @@ class FixFBTButton(bpy.types.Operator):
             saved_data.load()
             return {'CANCELLED'}
 
+        if left_leg_new or right_leg_new or left_leg_new_alt or right_leg_new_alt:
+            self.report({'ERROR'}, 'Full Body Tracking Fix already applied!')
+            saved_data.load()
+            return {'CANCELLED'}
+
         # FBT Fix
         # Disconnect bones
         for child in hips.children:
@@ -1165,23 +1170,17 @@ class FixFBTButton(bpy.types.Operator):
 
         # Create new leg bones and put them at the old location
         if not left_leg_new:
-            print("DEBUG 1")
             if left_leg_new_alt:
                 left_leg_new = left_leg_new_alt
                 left_leg_new.name = 'Left leg 2'
-                print("DEBUG 1.1")
             else:
                 left_leg_new = armature.data.edit_bones.new('Left leg 2')
-                print("DEBUG 1.2")
         if not right_leg_new:
-            print("DEBUG 2")
             if right_leg_new_alt:
                 right_leg_new = right_leg_new_alt
                 right_leg_new.name = 'Right leg 2'
-                print("DEBUG 2.1")
             else:
                 right_leg_new = armature.data.edit_bones.new('Right leg 2')
-                print("DEBUG 2.2")
 
         left_leg_new.head = left_leg.head
         left_leg_new.tail = left_leg.tail
@@ -1263,15 +1262,18 @@ class RemoveFBTButton(bpy.types.Operator):
         # Remove FBT Fix
         # Corrects hips
         if hips.head[z_cord] > hips.tail[z_cord]:
-            middle_x = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
-            hips.head[x_cord] = middle_x
-            hips.tail[x_cord] = middle_x
+            hips.head[x_cord] = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
 
-            hips.head[y_cord] = right_leg.head[y_cord]
-            hips.tail[y_cord] = right_leg.head[y_cord]
+            # If Hips are below or at the leg bones, put them above
+            hips.head[z_cord] = right_leg.head[z_cord] + 0.1
 
-            hips.head[z_cord] = right_leg.head[z_cord]
+            # Make Hips point straight up
+            hips.tail[x_cord] = hips.head[x_cord]
+            hips.tail[y_cord] = hips.head[y_cord]
             hips.tail[z_cord] = spine.head[z_cord]
+
+            if hips.tail[z_cord] < hips.head[z_cord]:
+                hips.tail[z_cord] = hips.tail[z_cord] + 0.1
 
         # Put the original legs at their old location
         left_leg.head = left_leg_new.head
