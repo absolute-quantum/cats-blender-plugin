@@ -310,23 +310,41 @@ def get_bone_angle(p1, p2):
 def remove_unused_vertex_groups(ignore_main_bones=False):
     remove_count = 0
     unselect_all()
-    for ob in get_objects():
-        if ob.type == 'MESH':
-            ob.update_from_editmode()
+    for mesh in get_meshes_objects(mode=2):
+        mesh.update_from_editmode()
 
-            vgroup_used = {i: False for i, k in enumerate(ob.vertex_groups)}
+        vgroup_used = {i: False for i, k in enumerate(mesh.vertex_groups)}
 
-            for v in ob.data.vertices:
-                for g in v.groups:
-                    if g.weight > 0.0:
-                        vgroup_used[g.group] = True
+        for v in mesh.data.vertices:
+            for g in v.groups:
+                if g.weight > 0.0:
+                    vgroup_used[g.group] = True
 
-            for i, used in sorted(vgroup_used.items(), reverse=True):
-                if not used:
-                    if ignore_main_bones and ob.vertex_groups[i].name in Bones.dont_delete_these_main_bones:
-                        continue
-                    ob.vertex_groups.remove(ob.vertex_groups[i])
-                    remove_count += 1
+        for i, used in sorted(vgroup_used.items(), reverse=True):
+            if not used:
+                if ignore_main_bones and mesh.vertex_groups[i].name in Bones.dont_delete_these_main_bones:
+                    continue
+                mesh.vertex_groups.remove(mesh.vertex_groups[i])
+                remove_count += 1
+    return remove_count
+
+
+def remove_unused_vertex_groups_of_mesh(mesh):
+    remove_count = 0
+    unselect_all()
+    mesh.update_from_editmode()
+
+    vgroup_used = {i: False for i, k in enumerate(mesh.vertex_groups)}
+
+    for v in mesh.data.vertices:
+        for g in v.groups:
+            if g.weight > 0.0:
+                vgroup_used[g.group] = True
+
+    for i, used in sorted(vgroup_used.items(), reverse=True):
+        if not used:
+            mesh.vertex_groups.remove(mesh.vertex_groups[i])
+            remove_count += 1
     return remove_count
 
 
@@ -1431,11 +1449,16 @@ def correct_bone_positions(armature_name=None):
         armature_name = bpy.context.scene.armature
     armature = get_armature(armature_name=armature_name)
 
+    upper_chest = armature.data.edit_bones.get('Upper Chest')
     chest = armature.data.edit_bones.get('Chest')
     neck = armature.data.edit_bones.get('Neck')
     head = armature.data.edit_bones.get('Head')
     if chest and neck:
-        chest.tail = neck.head
+        if upper_chest and bpy.context.scene.keep_upper_chest:
+            chest.tail = upper_chest.head
+            upper_chest.tail = neck.head
+        else:
+            chest.tail = neck.head
     if neck and head:
         neck.tail = head.head
 

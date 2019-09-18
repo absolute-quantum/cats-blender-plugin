@@ -347,11 +347,19 @@ It checks for a new version automatically once every day.
   - FBX no longer imports animations and poses by default
 - **Fix Model**:
   - Now always applies transforms of the model
-  - Fixed a bug which could delete bones unintentionally
+  - Added "Keep Upper Chest" option
+    - Warning: Currently having an Upper Chest breaks Eye Tracking, so don't use this if you want Eye Tracking
+  - Removed "Fix Full Body Tracking" option
+    - It is no longer needed for VrChat
+    - The button to add/remove the fix is still available in Model Options
+  - Improved Hips placement for better general movement
+  - Legs are now getting bend forward very slightly if they are completely straight
+  - Fixed a bug which could sometimes delete bones unintentionally
 - **Model**:
   - Fixed pose mode error in 2.80
 - **Model Options**:
   - Added new "Delete Zero Weight Vertex Groups" button
+  - Improved layout of the "Full Body Tracking Fix" buttons
 
 #### 0.14.0
 - **Cats is now fully compatible with Blender 2.80!**

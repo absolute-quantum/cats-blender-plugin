@@ -21,12 +21,6 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         button_height = 1
 
         col = box.column(align=True)
-        # if not context.scene.show_manual_options:
-        #     row = col.row(align=False)
-        #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_RIGHT')
-        # else:
-        #     row = col.row(align=True)
-        #     row.prop(context.scene, 'show_manual_options', emboss=True, expand=False, icon='TRIA_DOWN')
 
         row = layout_split(col, factor=0.32, align=True)
         row.scale_y = button_height
@@ -46,10 +40,6 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.label(text="Merge Weights:", icon='BONE_DATA')
         row.operator(Armature_manual.MergeWeights.bl_idname, text='To Parents')
         row.operator(Armature_manual.MergeWeightsToActive.bl_idname, text='To Active')
-
-        # row = col.row(align=True)
-        # row.scale_y = button_height
-        # row.operator('Armature_manual.merge_weights', icon='BONE_DATA')
 
         # Translate
         col.separator()
@@ -75,7 +65,6 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.operator(Translate.TranslateMaterialsButton.bl_idname, text='Materials', icon='MATERIAL')
 
         col.separator()
-        # col.separator()
         row = col.row(align=True)
         row.scale_y = 0.85
 
@@ -122,28 +111,13 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = button_height
             row.operator(Armature_manual.RemoveDoubles.bl_idname, icon='X')
 
-            # row = col.row(align=True)
-            # row.scale_y = 1
-            # subcol = layout_split(row, factor=0, align=True)
-            # subcol.scale_y = button_height
-            # subcol.operator(Armature_manual.RemoveDoubles.bl_idname, icon='STICKY_UVS_VERT')
-            # subcol = layout_split(row, factor=0, align=True)
-            # subcol.scale_y = button_height
-            # subcol.operator(Armature_manual.RemoveDoublesNormal.bl_idname, text="", icon='X')
-
             col.separator()
-            # row = col.row(align=True)
-            # row.scale_y = button_height
-            # row.label(text="Other:", icon='COLLAPSEMENU')
-
-            row = col.row(align=True)
-            row.scale_y = 1
-            subcol = layout_split(row, factor=0, align=True)
-            subcol.scale_y = button_height
-            subcol.operator(Armature_manual.FixFBTButton.bl_idname, icon='MODIFIER')
-            subcol = layout_split(row, factor=0, align=True)
-            subcol.scale_y = button_height
-            subcol.operator(Armature_manual.RemoveFBTButton.bl_idname, text="", icon='X')
+            row = layout_split(col, factor=0.6, align=True)
+            row.scale_y = button_height
+            row.label(text="Full Body Tracking Fix:", icon='ARMATURE_DATA')
+            row2 = layout_split(row, factor=0.4, align=True)
+            row2.operator(Armature_manual.FixFBTButton.bl_idname, text='Add')
+            row2.operator(Armature_manual.RemoveFBTButton.bl_idname, text="Remove")
 
             row = col.row(align=True)
             row.scale_y = button_height

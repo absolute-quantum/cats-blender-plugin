@@ -34,10 +34,11 @@ bone_list_with = ['_Shadow_', '_Dummy_', 'Dummy_', 'WaistCancel', 'LegIKParent',
 bone_list_parenting = {
     'Spine': 'Hips',
     'Chest': 'Spine',
-    'Neck': 'Chest',
+    'Upper Chest': 'Chest',
+    'Neck': 'Upper Chest',
     'Head': 'Neck',
-    'Left shoulder': 'Chest',
-    'Right shoulder': 'Chest',
+    'Left shoulder': 'Upper Chest',
+    'Right shoulder': 'Upper Chest',
     'Left arm': 'Left shoulder',
     'Right arm': 'Right shoulder',
     'Left elbow': 'Left arm',
@@ -105,7 +106,7 @@ bone_list_parenting = {
     # 'J_L_Eye_UpperCorner_001': 'Head',
 }
 dont_delete_these_bones = [
-    'Hips', 'Spine', 'Chest', 'Neck', 'Head',
+    'Hips', 'Spine', 'Chest', 'Upper Chest', 'Neck', 'Head',
     'Left leg', 'Left knee', 'Left ankle', 'Left toe',
     'Right leg', 'Right knee', 'Right ankle', 'Right toe',
     'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
@@ -128,7 +129,7 @@ dont_delete_these_bones = [
     'Breast_L', 'Breast_R',
 ]
 dont_delete_these_main_bones = [
-    'Hips', 'Spine', 'Chest', 'Neck', 'Head',
+    'Hips', 'Spine', 'Chest', 'Upper Chest', 'Neck', 'Head',
     'Left leg', 'Left knee', 'Left ankle', 'Left toe',
     'Right leg', 'Right knee', 'Right ankle', 'Right toe',
     'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist',
@@ -487,6 +488,7 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
 
     'J_Bip_C_Spine',
     'J_Bip_C_Chest',
+    'J_Bip_C_UpperChest',
 
     'Pelwas',
     'Pelwas2',
@@ -525,7 +527,11 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
 
     'SpineTop',
 
-    'Chest'  # Last entry!
+    'UpperBodyx2',
+
+    'Chest',
+
+    'Upper_Chest'  # Last entry!
 ]
 bone_rename['Neck'] = [
     'Mixamorig:Neck',
@@ -991,13 +997,15 @@ bone_reweight['Spine'] = [
     'Bip_Spine0a',
 ]
 bone_reweight['Chest'] = [
-    'UpperBodyx2',
-    'Spine_Upper_Adj',
+    # 'UpperBodyx2',
+    # 'J_Bip_C_UpperChest',
     'Bip_Spine1a',
-    'J_Bip_C_UpperChest',
-    'J_Adj_C_UpperChest',
     'Bip_CollarHelper_L',
     'Bip_CollarHelper_R',
+]
+bone_reweight['Upper Chest'] = [
+    'J_Adj_C_UpperChest',
+    'Spine_Upper_Adj',
 ]
 bone_reweight['Neck'] = [
     'Neck1',

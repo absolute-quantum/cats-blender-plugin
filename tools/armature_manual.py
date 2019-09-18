@@ -757,14 +757,12 @@ class RemoveZeroWeightBones(bpy.types.Operator):
 class RemoveZeroWeightGroups(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_zero_weight_groups'
     bl_label = 'Remove Zero Weight Vertex Groups'
-    bl_description = "Cleans up the vertex groups, deleting all groups that don't directly affect any vertices"
+    bl_description = "Cleans up the vertex groups of all meshes, deleting all groups that don't directly affect any vertices"
     bl_options = {'REGISTER', 'UNDO'}
 
     @classmethod
     def poll(cls, context):
-        if Common.get_armature():
-            return True
-        return False
+        return Common.get_meshes_objects(mode=2, check=False)
 
     def execute(self, context):
         saved_data = Common.SavedData()
@@ -775,6 +773,24 @@ class RemoveZeroWeightGroups(bpy.types.Operator):
         saved_data.load()
         self.report({'INFO'}, 'Removed ' + str(count) + ' zero weight vertex groups.')
         return {'FINISHED'}
+
+    # Maybe only remove groups from selected meshes instead of from all of them
+    # THis still needs some work
+    #
+    # @classmethod
+    # def poll2(cls, context):
+    #     return Common.get_meshes_objects(mode=3, check=False)
+    #
+    # def execute2(self, context):
+    #     saved_data = Common.SavedData()
+    #     remove_count = 0
+    #
+    #     for mesh in Common.get_meshes_objects(mode=3):
+    #         remove_count += Common.remove_unused_vertex_groups_of_mesh(mesh)
+    #
+    #     saved_data.load()
+    #     self.report({'INFO'}, 'Removed ' + str(remove_count) + ' zero weight vertex groups.')
+    #     return {'FINISHED'}
 
 
 @register_wrap
@@ -1091,6 +1107,8 @@ class FixFBTButton(bpy.types.Operator):
     bl_idname = 'cats_manual.fix_fbt'
     bl_label = 'Fix Full Body Tracking'
     bl_description = "Applies a general fix for Full Body Tracking." \
+                     "\n" \
+                     '\nThis fix is no longer needed for VrChat!' \
                      "\n" \
                      '\nCan potentially reduce the knee bending of this avatar in VRChat.' \
                      '\nIgnore the "Spine length zero" warning in Unity.' \

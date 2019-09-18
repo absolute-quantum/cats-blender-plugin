@@ -11,6 +11,7 @@ from ..tools import eyetracking as Eyetracking
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
 
+
 @register_wrap
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature_v3'
@@ -156,7 +157,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row = split.row(align=True)
         row.alignment = 'RIGHT'
         row.scale_y = 1.5
-        row.operator(Armature.ModelSettings.bl_idname, text="", icon='MODIFIER')
+        row.operator(ModelSettings.bl_idname, text="", icon='MODIFIER')
         col.separator()
         col.separator()
 
@@ -176,3 +177,50 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.scale_y = 0.9
                 row.operator(Armature_manual.PoseToRest.bl_idname, icon='POSE_HLT')
+
+
+@register_wrap
+class ModelSettings(bpy.types.Operator):
+    bl_idname = "cats_armature.settings"
+    bl_label = "Fix Model Settings"
+
+    def execute(self, context):
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = Common.get_user_preferences().system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3.25, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return True
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.active = context.scene.remove_zero_weight
+        row.prop(context.scene, 'keep_end_bones')
+        row = col.row(align=True)
+        row.prop(context.scene, 'keep_upper_chest')
+        row = col.row(align=True)
+        row.prop(context.scene, 'join_meshes')
+        row = col.row(align=True)
+        row.prop(context.scene, 'connect_bones')
+        row = col.row(align=True)
+        row.prop(context.scene, 'combine_mats')
+        row = col.row(align=True)
+        row.prop(context.scene, 'remove_zero_weight')
+
+        col.separator()
+        row = col.row(align=True)
+        row.scale_y = 0.7
+        row.label(text='The Full Body Tracking Fix', icon='INFO')
+        row = col.row(align=True)
+        row.scale_y = 0.7
+        row.label(text='is no longer needed for VrChat.', icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
+        row = col.row(align=True)
+        row.scale_y = 0.7
+        row.label(text='It\'s still available in Model Options.', icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
+        col.separator()

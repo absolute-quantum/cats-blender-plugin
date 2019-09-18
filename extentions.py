@@ -16,6 +16,13 @@ def register():
         update=Common.update_material_list
     )
 
+    Scene.keep_upper_chest = BoolProperty(
+        name='Keep Upper Chest',
+        description="VrChat now partially supports the Upper Chest bone, so deleting it is no longer necessary."
+                    "\n\nWARNING: Currently this breaks Eye Tracking, so don't check this if you want Eye Tracking",
+        default=False
+    )
+
     Scene.combine_mats = BoolProperty(
         name='Combine Same Materials',
         description="Combines similar materials into one, reducing draw calls.\n\n"
