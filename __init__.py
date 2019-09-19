@@ -30,13 +30,13 @@ bl_info = {
     'author': 'GiveMeAllYourCats & Hotox',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': (0, 14, 0),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
+    'version': (0, 15, 0),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = True
+dev_branch = False
 
 import os
 import sys
@@ -58,12 +58,6 @@ if "bpy" not in locals():
     is_reloading = False
 else:
     is_reloading = True
-
-# Don't allow Blender versions older than 2.75
-if bpy.app.version < (2, 75):
-    sys.tracebacklimit = 0
-    raise ImportError('\n\nThis Blender version is not supported by Cats. '
-                      '\nPlease use Blender 2.79 or later.')
 
 # Load or reload all cats modules
 if not is_reloading:
@@ -212,6 +206,14 @@ def remove_corrupted_files():
 
 
 def check_unsupported_blender_versions():
+    # Don't allow Blender versions older than 2.75
+    if bpy.app.version < (2, 75):
+        unregister()
+        sys.tracebacklimit = 0
+        raise ImportError('\n\nBlender versions older than 2.75 are not supported by Cats. '
+                          '\nPlease use Blender 2.79 or later.'
+                          '\n')
+
     # Versions 2.80.0 to 2.80.74 are beta versions, stable is 2.80.75
     if (2, 80, 0) <= bpy.app.version < (2, 80, 75):
         unregister()
