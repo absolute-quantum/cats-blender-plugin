@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.15.0)
+# Cats Blender Plugin (0.15.1)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -342,6 +342,10 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.15.1
+- **Fix Model**:
+  - Hips bone will now be larger than before, to comply with the just adjusted VRChat recommendation
+
 #### 0.15.0
 - **Importer**:
   - FBX no longer imports animations and poses by default
@@ -350,7 +354,7 @@ It checks for a new version automatically once every day.
   - Added "Keep Upper Chest" option
     - Warning: Currently having an Upper Chest breaks Eye Tracking, so don't use this if you want Eye Tracking
   - Removed "Fix Full Body Tracking" option
-    - It is no longer needed for VrChat
+    - It is no longer needed for VRChat
     - The button to add/remove the fix is still available in Model Options
   - Improved Hips placement as recommended by VRChat
   - Legs are now getting bend forward very slightly if they are completely straight
