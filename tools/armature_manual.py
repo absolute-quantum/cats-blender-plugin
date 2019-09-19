@@ -121,11 +121,14 @@ class StopPoseMode(bpy.types.Operator):
         saved_data = Common.SavedData()
         armature = Common.get_armature()
         Common.set_active(armature)
-        Common.hide(armature, False)
+
+        # Make all objects visible
+        bpy.ops.object.hide_view_clear()
 
         for pb in armature.data.bones:
             pb.hide = False
             pb.select = True
+
         bpy.ops.pose.rot_clear()
         bpy.ops.pose.scale_clear()
         bpy.ops.pose.transforms_clear()
@@ -725,8 +728,8 @@ class ApplyAllTransformations(bpy.types.Operator):
 
 
 @register_wrap
-class RemoveZeroWeight(bpy.types.Operator):
-    bl_idname = 'cats_manual.remove_zero_weight'
+class RemoveZeroWeightBones(bpy.types.Operator):
+    bl_idname = 'cats_manual.remove_zero_weight_bones'
     bl_label = 'Remove Zero Weight Bones'
     bl_description = "Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices\n" \
                      "Don't use this if you plan to use 'Fix Model'"
@@ -748,6 +751,46 @@ class RemoveZeroWeight(bpy.types.Operator):
         saved_data.load()
         self.report({'INFO'}, 'Deleted ' + str(count) + ' zero weight bones.')
         return {'FINISHED'}
+
+
+@register_wrap
+class RemoveZeroWeightGroups(bpy.types.Operator):
+    bl_idname = 'cats_manual.remove_zero_weight_groups'
+    bl_label = 'Remove Zero Weight Vertex Groups'
+    bl_description = "Cleans up the vertex groups of all meshes, deleting all groups that don't directly affect any vertices"
+    bl_options = {'REGISTER', 'UNDO'}
+
+    @classmethod
+    def poll(cls, context):
+        return Common.get_meshes_objects(mode=2, check=False)
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+
+        Common.set_default_stage()
+        count = Common.remove_unused_vertex_groups()
+
+        saved_data.load()
+        self.report({'INFO'}, 'Removed ' + str(count) + ' zero weight vertex groups.')
+        return {'FINISHED'}
+
+    # Maybe only remove groups from selected meshes instead of from all of them
+    # THis still needs some work
+    #
+    # @classmethod
+    # def poll2(cls, context):
+    #     return Common.get_meshes_objects(mode=3, check=False)
+    #
+    # def execute2(self, context):
+    #     saved_data = Common.SavedData()
+    #     remove_count = 0
+    #
+    #     for mesh in Common.get_meshes_objects(mode=3):
+    #         remove_count += Common.remove_unused_vertex_groups_of_mesh(mesh)
+    #
+    #     saved_data.load()
+    #     self.report({'INFO'}, 'Removed ' + str(remove_count) + ' zero weight vertex groups.')
+    #     return {'FINISHED'}
 
 
 @register_wrap
@@ -1063,13 +1106,10 @@ class FixVRMShapesButton(bpy.types.Operator):
 class FixFBTButton(bpy.types.Operator):
     bl_idname = 'cats_manual.fix_fbt'
     bl_label = 'Fix Full Body Tracking'
-    bl_description = "Applies a general fix for Full Body Tracking." \
+    bl_description = "WARNING: This fix is no longer needed for VRChat, you should not use it!" \
                      "\n" \
-                     '\nCan potentially reduce the knee bending of this avatar in VRChat.' \
-                     '\nIgnore the "Spine length zero" warning in Unity.' \
-                     '\n' \
-                     '\nRequires bones:' \
-                     '\n - Hips, Spine, Left leg, Right leg'
+                     "\nApplies a general fix for Full Body Tracking." \
+                     '\nIgnore the "Spine length zero" warning in Unity'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -1101,6 +1141,11 @@ class FixFBTButton(bpy.types.Operator):
             saved_data.load()
             return {'CANCELLED'}
 
+        if left_leg_new or right_leg_new or left_leg_new_alt or right_leg_new_alt:
+            self.report({'ERROR'}, 'Full Body Tracking Fix already applied!')
+            saved_data.load()
+            return {'CANCELLED'}
+
         # FBT Fix
         # Disconnect bones
         for child in hips.children:
@@ -1120,23 +1165,17 @@ class FixFBTButton(bpy.types.Operator):
 
         # Create new leg bones and put them at the old location
         if not left_leg_new:
-            print("DEBUG 1")
             if left_leg_new_alt:
                 left_leg_new = left_leg_new_alt
                 left_leg_new.name = 'Left leg 2'
-                print("DEBUG 1.1")
             else:
                 left_leg_new = armature.data.edit_bones.new('Left leg 2')
-                print("DEBUG 1.2")
         if not right_leg_new:
-            print("DEBUG 2")
             if right_leg_new_alt:
                 right_leg_new = right_leg_new_alt
                 right_leg_new.name = 'Right leg 2'
-                print("DEBUG 2.1")
             else:
                 right_leg_new = armature.data.edit_bones.new('Right leg 2')
-                print("DEBUG 2.2")
 
         left_leg_new.head = left_leg.head
         left_leg_new.tail = left_leg.tail
@@ -1166,8 +1205,6 @@ class FixFBTButton(bpy.types.Operator):
 
         Common.switch('OBJECT')
 
-        context.scene.full_body = True
-
         saved_data.load()
 
         self.report({'INFO'}, 'Successfully applied the Full Body Tracking fix.')
@@ -1177,8 +1214,8 @@ class FixFBTButton(bpy.types.Operator):
 @register_wrap
 class RemoveFBTButton(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_fbt'
-    bl_label = 'Remove Full Body Tracking'
-    bl_description = "Removes the fix for Full Body Tracking." \
+    bl_label = 'Remove Full Body Tracking Fix'
+    bl_description = "Removes the fix for Full Body Tracking, since it is no longer advised to use it." \
                      '\n' \
                      '\nRequires bones:' \
                      '\n - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2'
@@ -1220,15 +1257,23 @@ class RemoveFBTButton(bpy.types.Operator):
         # Remove FBT Fix
         # Corrects hips
         if hips.head[z_cord] > hips.tail[z_cord]:
-            middle_x = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
-            hips.head[x_cord] = middle_x
-            hips.tail[x_cord] = middle_x
+            # Put Hips in the center of the leg bones
+            hips.head[x_cord] = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
 
-            hips.head[y_cord] = right_leg.head[y_cord]
-            hips.tail[y_cord] = right_leg.head[y_cord]
+            # Put Hips at 90% between spine and legs
+            hips.head[z_cord] = left_leg.head[z_cord] + (spine.head[z_cord] - left_leg.head[z_cord]) * 0.9
 
-            hips.head[z_cord] = right_leg.head[z_cord]
+            # If Hips are below or at the leg bones, put them above
+            if hips.head[z_cord] <= right_leg.head[z_cord]:
+                hips.head[z_cord] = right_leg.head[z_cord] + 0.1
+
+            # Make Hips point straight up
+            hips.tail[x_cord] = hips.head[x_cord]
+            hips.tail[y_cord] = hips.head[y_cord]
             hips.tail[z_cord] = spine.head[z_cord]
+
+            if hips.tail[z_cord] < hips.head[z_cord]:
+                hips.tail[z_cord] = hips.tail[z_cord] + 0.1
 
         # Put the original legs at their old location
         left_leg.head = left_leg_new.head
@@ -1249,8 +1294,6 @@ class RemoveFBTButton(bpy.types.Operator):
                 bone.tail[z_cord] += 0.1
 
         Common.switch('OBJECT')
-
-        context.scene.full_body = False
 
         saved_data.load()
 

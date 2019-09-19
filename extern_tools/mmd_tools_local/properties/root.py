@@ -52,14 +52,15 @@ def _toggleVisibilityOfMeshes(self, context):
     rig = mmd_model.Model(root)
     hide = not self.show_meshes
     for i in rig.meshes():
-        i.hide = hide
-    if hide and context.active_object is None:
+        i.hide = i.hide_render = hide
+    if hide and not getattr(context, 'active_object', True):
         SceneOp(context).active_object = root
 
 def _show_meshes_get(prop):
     return prop.get('show_meshes', True)
 
 def _show_meshes_set(prop, v):
+    #FIXME animation is not working well on Blender 2.8. Using driver is another way but it's troublesome.
     if v != prop.get('show_meshes', None):
         prop['show_meshes'] = v
         _toggleVisibilityOfMeshes(prop, bpy.context)

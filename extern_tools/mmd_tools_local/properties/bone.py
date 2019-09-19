@@ -181,6 +181,7 @@ def _mmd_ik_toggle_get(prop):
     return prop.get('mmd_ik_toggle', True)
 
 def _mmd_ik_toggle_set(prop, v):
+    #FIXME animation is not working well on Blender 2.8. Using driver is another way but it's troublesome.
     if v != prop.get('mmd_ik_toggle', None):
         prop['mmd_ik_toggle'] = v
         #print('_mmd_ik_toggle_set', v, prop.name)

@@ -130,7 +130,7 @@ def load_settings():
     to_reset_settings = []
 
     # Check for missing entries, reset if necessary
-    for setting in ['last_supporter_update', 'last_cats_update_check', 'ignore_cats_version']:
+    for setting in ['last_supporter_update']:
         if setting not in settings_data and setting not in to_reset_settings:
             to_reset_settings.append(setting)
             print('RESET SETTING', setting)
@@ -143,7 +143,7 @@ def load_settings():
 
     # Check if timestamps are correct
     utc_now = datetime.strptime(datetime.now(timezone.utc).strftime(globs.time_format), globs.time_format)
-    for setting in ['last_supporter_update', 'last_cats_update_check']:
+    for setting in ['last_supporter_update']:
         if setting not in to_reset_settings and settings_data.get(setting):
             try:
                 timestamp = datetime.strptime(settings_data.get(setting), globs.time_format)
@@ -184,8 +184,6 @@ def reset_settings(full_reset=False, to_reset_settings=None):
     if full_reset:
         settings_data = OrderedDict()
         settings_data['last_supporter_update'] = None
-        settings_data['last_cats_update_check'] = None
-        settings_data['ignore_cats_version'] = None
 
         for setting, value in settings_default.items():
             settings_data[setting] = value[0]

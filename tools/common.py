@@ -23,7 +23,6 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
-
 import re
 import os
 import bpy
@@ -277,6 +276,8 @@ def set_default_stage():
     armature = get_armature()
     if armature:
         set_active(armature)
+        if version_2_79_or_older():
+            armature.layers[0] = True
     return armature
 
 
@@ -307,23 +308,44 @@ def get_bone_angle(p1, p2):
 
 
 def remove_unused_vertex_groups(ignore_main_bones=False):
+    remove_count = 0
     unselect_all()
-    for ob in get_objects():
-        if ob.type == 'MESH':
-            ob.update_from_editmode()
+    for mesh in get_meshes_objects(mode=2):
+        mesh.update_from_editmode()
 
-            vgroup_used = {i: False for i, k in enumerate(ob.vertex_groups)}
+        vgroup_used = {i: False for i, k in enumerate(mesh.vertex_groups)}
 
-            for v in ob.data.vertices:
-                for g in v.groups:
-                    if g.weight > 0.0:
-                        vgroup_used[g.group] = True
+        for v in mesh.data.vertices:
+            for g in v.groups:
+                if g.weight > 0.0:
+                    vgroup_used[g.group] = True
 
-            for i, used in sorted(vgroup_used.items(), reverse=True):
-                if not used:
-                    if ignore_main_bones and ob.vertex_groups[i].name in Bones.dont_delete_these_main_bones:
-                        continue
-                    ob.vertex_groups.remove(ob.vertex_groups[i])
+        for i, used in sorted(vgroup_used.items(), reverse=True):
+            if not used:
+                if ignore_main_bones and mesh.vertex_groups[i].name in Bones.dont_delete_these_main_bones:
+                    continue
+                mesh.vertex_groups.remove(mesh.vertex_groups[i])
+                remove_count += 1
+    return remove_count
+
+
+def remove_unused_vertex_groups_of_mesh(mesh):
+    remove_count = 0
+    unselect_all()
+    mesh.update_from_editmode()
+
+    vgroup_used = {i: False for i, k in enumerate(mesh.vertex_groups)}
+
+    for v in mesh.data.vertices:
+        for g in v.groups:
+            if g.weight > 0.0:
+                vgroup_used[g.group] = True
+
+    for i, used in sorted(vgroup_used.items(), reverse=True):
+        if not used:
+            mesh.vertex_groups.remove(mesh.vertex_groups[i])
+            remove_count += 1
+    return remove_count
 
 
 def find_center_vector_of_vertex_group(mesh, vertex_group):
@@ -1427,11 +1449,16 @@ def correct_bone_positions(armature_name=None):
         armature_name = bpy.context.scene.armature
     armature = get_armature(armature_name=armature_name)
 
+    upper_chest = armature.data.edit_bones.get('Upper Chest')
     chest = armature.data.edit_bones.get('Chest')
     neck = armature.data.edit_bones.get('Neck')
     head = armature.data.edit_bones.get('Head')
     if chest and neck:
-        chest.tail = neck.head
+        if upper_chest and bpy.context.scene.keep_upper_chest:
+            chest.tail = upper_chest.head
+            upper_chest.tail = neck.head
+        else:
+            chest.tail = neck.head
     if neck and head:
         neck.tail = head.head
 
@@ -1629,6 +1656,7 @@ def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
     bpy.ops.object.modifier_apply(modifier=mod.name)
     if delete_old_vg:
         mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
+    mesh.active_shape_key_index = 0  # This line fixes a visual bug in 2.80 which causes random weights to be stuck after being merged
 
 
 def get_user_preferences():
@@ -1662,7 +1690,7 @@ def ui_refresh():
             time.sleep(0.5)
 
 
-def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
+def fix_zero_length_bones(armature, x_cord, y_cord, z_cord):
     pre_mode = armature.mode
     set_active(armature)
     switch('EDIT')
@@ -1671,11 +1699,7 @@ def fix_zero_length_bones(armature, full_body_tracking, x_cord, y_cord, z_cord):
         if round(bone.head[x_cord], 4) == round(bone.tail[x_cord], 4) \
                 and round(bone.head[y_cord], 4) == round(bone.tail[y_cord], 4) \
                 and round(bone.head[z_cord], 4) == round(bone.tail[z_cord], 4):
-            if bone.name == 'Hips' and full_body_tracking:
-                bone.tail[z_cord] -= 0.1
-            else:
-                bone.tail[z_cord] += 0.1
-                print('YES')
+            bone.tail[z_cord] += 0.1
 
     switch(pre_mode)
 
@@ -1684,7 +1708,13 @@ def fix_bone_orientations(armature):
     # Connect all bones with their children if they have exactly one
     for bone in armature.data.edit_bones:
         if len(bone.children) == 1 and bone.name not in ['LeftEye', 'RightEye', 'Head', 'Hips']:
-            bone.tail = bone.children[0].head
+            p1 = bone.head
+            p2 = bone.children[0].head
+            dist = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2 + (p2[2] - p1[2]) ** 2) ** (1/2)
+
+            # Only connect them if the other bone is a certain distance away, otherwise blender will delete them
+            if dist > 0.005:
+                bone.tail = bone.children[0].head
 
 
 def update_material_list(self=None, context=None):

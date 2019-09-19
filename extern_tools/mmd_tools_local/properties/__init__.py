@@ -74,8 +74,8 @@ def __patch(properties): # temporary patching, should be removed in the future
         set=lambda prop, value: prop.select_set(value),
         )
     prop_obj['hide'] = bpy.props.BoolProperty(
-        get=lambda prop: prop.hide_viewport,
-        set=lambda prop, value: setattr(prop, 'hide_viewport', value),
+        get=lambda prop: prop.hide_get(),
+        set=lambda prop, value: prop.hide_set(value) or setattr(prop, 'hide_viewport', False),
         )
     prop_obj['show_x_ray'] = bpy.props.BoolProperty(
         get=lambda prop: prop.show_in_front,

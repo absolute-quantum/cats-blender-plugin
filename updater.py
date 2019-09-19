@@ -7,11 +7,11 @@ import shutil
 import pathlib
 import zipfile
 import addon_utils
-from collections import OrderedDict
 from threading import Thread
-
+from collections import OrderedDict
 from bpy.app.handlers import persistent
 
+no_ver_check = False
 fake_update = False
 
 is_checking_for_update = False
@@ -35,6 +35,7 @@ main_dir = os.path.dirname(__file__)
 downloads_dir = os.path.join(main_dir, "downloads")
 resources_dir = os.path.join(main_dir, "resources")
 ignore_ver_file = os.path.join(resources_dir, "ignore_version.txt")
+no_auto_ver_check_file = os.path.join(resources_dir, "no_auto_ver_check.txt")
 
 # Get package name, important for panel in user preferences
 package_name = ''
@@ -351,17 +352,22 @@ class UpdateNotificationPopup(bpy.types.Operator):
         row.prop(context.scene, 'cats_update_action', expand=True)
 
 
-def check_for_update_background(onstart=False):
+def check_for_update_background(check_on_startup=False):
     global is_checking_for_update, checked_on_startup
-    if onstart and checked_on_startup:
+    if check_on_startup and checked_on_startup:
         # print('ALREADY CHECKED ON STARTUP')
         return
     if is_checking_for_update:
         # print('ALREADY CHECKING')
         return
 
-    is_checking_for_update = True
     checked_on_startup = True
+
+    if check_on_startup and os.path.isfile(no_auto_ver_check_file):
+        print('AUTO CHECK DISABLED VIA FILE')
+        return
+
+    is_checking_for_update = True
 
     thread = Thread(target=check_for_update, args=[])
     thread.start()

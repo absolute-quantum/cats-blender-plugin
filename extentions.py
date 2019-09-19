@@ -16,11 +16,10 @@ def register():
         update=Common.update_material_list
     )
 
-    Scene.full_body = BoolProperty(
-        name='Apply Full Body Tracking Fix',
-        description="Applies a general fix for Full Body Tracking.\n\n"
-                    'Can potentially reduce the knee bending of every avatar in VRChat.\n'
-                    'You can safely ignore the "Spine length zero" warning in Unity',
+    Scene.keep_upper_chest = BoolProperty(
+        name='Keep Upper Chest',
+        description="VrChat now partially supports the Upper Chest bone, so deleting it is no longer necessary."
+                    "\n\nWARNING: Currently this breaks Eye Tracking, so don't check this if you want Eye Tracking",
         default=False
     )
 

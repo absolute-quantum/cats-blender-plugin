@@ -207,9 +207,9 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
     # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
     x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(base_armature)
-    Common.fix_zero_length_bones(base_armature, False, x_cord, y_cord, z_cord)
+    Common.fix_zero_length_bones(base_armature, x_cord, y_cord, z_cord)
     x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(merge_armature)
-    Common.fix_zero_length_bones(merge_armature, False, x_cord, y_cord, z_cord)
+    Common.fix_zero_length_bones(merge_armature, x_cord, y_cord, z_cord)
 
     # Join meshes in both armatures
     mesh_base = Common.join_meshes(armature_name=base_armature_name, apply_transformations=False)

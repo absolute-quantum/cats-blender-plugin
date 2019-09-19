@@ -130,7 +130,8 @@
       "disabled": true
     },{
       "displayname": "Naranar",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "liquid (retso)",
       "startdate": "2018-04-05",
@@ -275,7 +276,7 @@
       "displayname": "Krisu.Miushy",
       "startdate": "2018-06-21",
       "description": "I'll support your creations, let's keep the hard work everyone!\n",
-      "website": "https://www.youtube.com/watch?v=VHAxxGV1hNI",
+      "website": "https://www.youtube.com/watch?v=8H5e3L_nXdY",
       "tier": 1
     },{
       "displayname": "Atirion",
@@ -296,7 +297,8 @@
     },{
       "displayname": "baffler",
       "startdate": "2018-08-07",
-      "info": "Was added 2 months late. ended may, remove july"
+      "info": "Was added 2 months late. ended may, remove july",
+      "disabled": true
     },{
       "displayname": "Aliquem",
       "startdate": "2018-08-07",
@@ -326,7 +328,8 @@
       "disabled": true
     },{
       "displayname": "Rincewind",
-      "startdate": "2018-10-28"
+      "startdate": "2018-10-28",
+      "disabled": true
     },{
       "displayname": "Vanilla Neko",
       "startdate": "2018-11-08",
@@ -354,11 +357,12 @@
       "tier": 1
     },{
       "displayname": "Tierson",
-      "startdate": "2019-01-01"
+      "startdate": "2019-01-01",
+      "disabled": true
     },{
       "displayname": "azupwn",
       "startdate": "2019-01-25",
-      "info": "Cancelled May, Rejoined Jan 19, duplicate is above"
+      "disabled": true
     },{
       "displayname": "liggi",
       "startdate": "2019-01-25"
@@ -400,7 +404,8 @@
       "startdate": "2019-05-21",
       "description": "I put 200 hrs in VrChat in about 2 weeks; I have no regrets",
       "website": "https://github.com/NachoReplay",
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
       "displayname": "Hammey",
       "startdate": "2019-05-25"
@@ -420,6 +425,21 @@
       "description": "Thanks to this amazing program I was able to make some amazing VRchat character, make alot of friends and have so much fun in doing so!",
       "website": "https://www.twitch.tv/codysuniverse",
       "tier": 1
+    },{
+      "displayname": "SiriusSelf",
+      "startdate": "2019-08-11",
+      "description": "Cats is a major part of my workflow and I'll gladly raise a glass to the team behind this impressive piece of work any day",
+      "website": "https://twitter.com/SiriusSelf",
+      "tier": 1
+    },{
+      "displayname": "Ziggy_Stardust_",
+      "startdate": "2019-08-11"
+    },{
+      "displayname": "Anon27",
+      "startdate": "2019-08-17"
+    },{
+      "displayname": "FustyLugs",
+      "startdate": "2019-08-22"
     }
   ]
 }

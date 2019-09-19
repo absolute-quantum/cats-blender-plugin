@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.14.0)
+# Cats Blender Plugin (0.15.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -11,9 +11,7 @@ There are a lot of perks like having your name inside the plugin!
 
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
-Master branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=master)
-
-Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-plugin.svg?branch=development)
+#### Download here: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
 
 ## Features
  - Optimizing model with one click!
@@ -31,14 +29,15 @@ Development branch: ![](https://api.travis-ci.org/michaeldegroot/cats-blender-pl
 
 *More to come!*
 
-## Website
-Check our website to report errors, suggestions or make comments!
-https://catsblenderplugin.com
+## Discord
+Join our Discord to report errors, suggestions and make comments!
 
-## Requirement
+**Discord: https://discord.gg/f8yZGnv**
 
- - Blender 2.79 or 2.80 (run as administrator is recommended)
+## Requirements
+ - Blender **2.79** or **2.80** (run as administrator is recommended)
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
+ - If you have custom Python installed which Blender might use, you need to have Numpy installed
 
 ## Installation
  - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
@@ -102,7 +101,7 @@ This tries to completely fix your model with one click.
 
 ## Model Options
 
-![](https://i.imgur.com/ZiyyAsn.png)
+![](https://i.imgur.com/ZPj2VUJ.png)
 
 ##### Translation
 - Translate certain entities from any japanese to english.
@@ -343,6 +342,30 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.15.0
+- **Importer**:
+  - FBX no longer imports animations and poses by default
+- **Fix Model**:
+  - Now always applies transforms of the model
+  - Added "Keep Upper Chest" option
+    - Warning: Currently having an Upper Chest breaks Eye Tracking, so don't use this if you want Eye Tracking
+  - Removed "Fix Full Body Tracking" option
+    - It is no longer needed for VrChat
+    - The button to add/remove the fix is still available in Model Options
+  - Improved Hips placement as recommended by VRChat
+  - Legs are now getting bend forward very slightly if they are completely straight
+  - Fixed a bug which could sometimes delete bones unintentionally
+- **Model**:
+  - Fixed pose mode error in 2.80
+- **Model Options**:
+  - Added new "Delete Zero Weight Vertex Groups" button
+  - Improved layout of the "Full Body Tracking Fix" buttons
+  - Fixed visual "Merge Weights" bug in Blender 2.80
+- **Optimization**:
+  - Improved Material Combiner detection algorithm
+- **General**:
+  - Updated mmd_tools
+
 #### 0.14.0
 - **Cats is now fully compatible with Blender 2.80!**
 - **Fix Model**:
@@ -361,7 +384,7 @@ It checks for a new version automatically once every day.
   - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
   - Added loading cursor to "Convert Textures to PNG"
   - Added support for Shotariyas Material Combiner in Blender 2.80
-    - Minimum required Material Combiner version is now v2.1.1.1
+    - Minimum required Material Combiner version is now v2.1.1.2
       - It now fully supports VRM models, has a greatly improved combining logic and an updated UI
       - It also got compression removed, so you will always get full quality images now
 - **Updater**:
@@ -387,21 +410,6 @@ It checks for a new version automatically once every day.
 - **General**:
   - Updated mmd_tools
   - The Blender 2.80 API is stable now, so Cats should no longer break in 2.80
-
-#### 0.13.2
-- **Importer**:
-  - Now selects the imported armature in Cats
-  - Added bone orientation fix after import if all bones point in the same direction
-- **Fix Model**:
-  - Changed clipping planes to 0.01 and 150
-    - This prevents rendering inaccuracies (thanks Rokk!)
-  - Fix Model also no longer resets the visibility of objects
-  - Added option to not connect the bones to their respective child
-- **Eye Tracking**:
-  - Added random vertex movement back in
-    - Instead of the exporter, Fix Model deleted empty shapekeys now (whoops)
-- **General**
-  - Disabled backface culling in mmd_tools again
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 

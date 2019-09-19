@@ -49,6 +49,7 @@ from ..tools.register import register_wrap
 preview_collections = {}
 supporter_data = None
 reloading = False
+auto_updated = False
 button_list = []
 last_update = None
 
@@ -81,12 +82,7 @@ class ReloadButton(bpy.types.Operator):
         return not reloading
 
     def execute(self, context):
-        global reloading
-        reloading = True
-
-        thread = Thread(target=download_file, args=[])
-        thread.start()
-
+        check_for_update_background(force_update=True)
         return {'FINISHED'}
 
 
@@ -244,12 +240,6 @@ def readJson():
 
 
 def load_supporters():
-    # Check for update
-    global reloading
-    reloading = True
-    thread = Thread(target=check_for_update, args=[])
-    thread.start()
-
     # Read existing supporter list
     readJson()
 
@@ -364,8 +354,27 @@ def unload_icons():
     print('DONE!')
 
 
-def check_for_update():
-    if update_needed():
+def check_for_update_background(force_update=False):
+    global reloading, auto_updated
+    if reloading:
+        return
+
+    if not force_update:
+        if auto_updated:
+            return
+        auto_updated = True
+
+    reloading = True
+
+    thread = Thread(target=check_for_update, args=[force_update])
+    thread.start()
+
+
+def check_for_update(force_update):
+    if force_update:
+        print('Force updating supporter list..')
+        download_file()
+    elif update_needed():
         print('Updating supporter list..')
         download_file()
     else:

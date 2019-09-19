@@ -16,16 +16,19 @@ if bpy.app.version < (2, 80, 0):
 else:
     def __get_camera(empty):
         cam = mmd_camera.MMDCamera(empty).camera()
-        return cam.evaluated_get(__find_depsgraph(empty)) if empty.is_evaluated else cam
+        if empty.is_evaluated:
+            depsgraph = __find_depsgraph(empty)
+            return cam.evaluated_get(depsgraph) if depsgraph else cam
+        return cam
 
     def __find_depsgraph(obj):
         depsgraph = bpy.context.view_layer.depsgraph
         if obj == depsgraph.objects.get(obj.name):
             return depsgraph
-        for view_layer in bpy.context.scene.view_layers:
+        for view_layer in (l for s in bpy.data.scenes for l in s.view_layers):
             if obj == view_layer.depsgraph.objects.get(obj.name):
                 return view_layer.depsgraph
-        raise Exception('Bug???')
+        return None
 
 
 def _getMMDCameraAngle(prop):

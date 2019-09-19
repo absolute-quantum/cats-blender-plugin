@@ -32,12 +32,13 @@ def check_for_smc():
                 found_very_old_smc = True
             continue
         if mod.bl_info['name'] == "Shotariya's Material Combiner":
-            # print(mod.bl_info['version'])
+            # print(mod.__name__, mod.bl_info['version'])
+            # print(addon_utils.check(mod.__name__))
             if mod.bl_info['version'] < (2, 1, 1, 2):
                 old_smc_version = True
                 # print('TOO OLD!')
                 continue
-            if not hasattr(bpy.context.scene, 'smc_ob_data'):
+            if not addon_utils.check(mod.__name__)[0]:
                 smc_is_disabled = True
                 # print('DISABLED!')
                 continue
@@ -45,7 +46,9 @@ def check_for_smc():
             # print('FOUND!')
             old_smc_version = False
             smc_is_disabled = False
+            found_very_old_smc = False
             draw_smc_ui = getattr(import_module(mod.__name__ + '.operators.ui.include'), 'draw_ui')
+            break
 
 
 # @register_wrap
@@ -149,29 +152,26 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             #     check_for_smc()
             #     return
 
-            # Found very old v1.0 mat comb
-            if found_very_old_smc and not draw_smc_ui:
+            # If supported version is outdated
+            if smc_is_disabled:
                 col.separator()
                 box = col.box()
                 col = box.column(align=True)
 
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Your Material Combiner is outdated!")
+                row.label(text="Material Combiner is not enabled!")
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Please update to the latest version.")
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Download and install it manually:")
+                row.label(text="Enable it in your user preferences:")
                 col.separator()
                 row = col.row(align=True)
-                row.operator(Atlas.ShotariyaButton.bl_idname, icon=globs.ICON_URL)
+                row.operator(Atlas.EnableSMC.bl_idname, icon='CHECKBOX_HLT')
 
                 check_for_smc()
                 return
 
-            # Draw v2.0 mat comb ui
+            # If old version is installed
             if old_smc_version:
                 col.separator()
                 box = col.box()
@@ -194,24 +194,29 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 check_for_smc()
                 return
 
-            if smc_is_disabled:
+            # Found very old v1.0 mat comb
+            if found_very_old_smc:
                 col.separator()
                 box = col.box()
                 col = box.column(align=True)
 
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Material Combiner is not enabled!")
+                row.label(text="Your Material Combiner is outdated!")
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Enable it in your user preferences:")
+                row.label(text="Please update to the latest version.")
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text="Download and install it manually:")
                 col.separator()
                 row = col.row(align=True)
-                row.operator(Atlas.EnableSMC.bl_idname, icon='CHECKBOX_HLT')
+                row.operator(Atlas.ShotariyaButton.bl_idname, icon=globs.ICON_URL)
 
                 check_for_smc()
                 return
 
+            # If no matcomb is found
             if not draw_smc_ui:
                 col.separator()
                 box = col.box()

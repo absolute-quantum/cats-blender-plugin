@@ -3,6 +3,7 @@ import bpy
 from .main import ToolPanel
 from ..tools import supporter as Supporter
 from ..tools.register import register_wrap
+from ..tools.supporter import check_for_update_background
 
 
 @register_wrap
@@ -16,6 +17,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         # supporter_data = Supporter.supporter_data
+        check_for_update_background()
 
         row = col.row(align=True)
         row.label(text='Do you like this plugin and want to support us?')
