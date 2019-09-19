@@ -968,11 +968,6 @@ class __PmxExporter:
         if bpy.app.version < (2, 80, 0):
             _to_mesh = lambda obj: obj.to_mesh(bpy.context.scene, apply_modifiers=True, settings='PREVIEW', calc_tessface=False, calc_undeformed=False)
             _to_mesh_clear = lambda obj, mesh: bpy.data.meshes.remove(mesh)
-        elif hasattr(bpy.context, 'depsgraph'): #XXX
-            def _to_mesh(obj):
-                bpy.context.view_layer.update()
-                return obj.to_mesh(bpy.context.depsgraph, apply_modifiers=True, calc_undeformed=False)
-            _to_mesh_clear = lambda obj, mesh: bpy.data.meshes.remove(mesh)
         else:
             def _to_mesh(obj):
                 bpy.context.view_layer.update()

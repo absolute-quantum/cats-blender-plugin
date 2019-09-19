@@ -545,8 +545,6 @@ class _FnMaterialCycles(_FnMaterialBI):
         cast_shadows = mmd_mat.enabled_self_shadow_map if mmd_mat.alpha > 1e-3 else False
         if hasattr(mat, 'shadow_method'):
             mat.shadow_method = 'HASHED' if cast_shadows else 'NONE'
-        if hasattr(mat, 'transparent_shadow_method'): #XXX
-            mat.transparent_shadow_method = 'HASHED' if cast_shadows else 'NONE'
 
     def update_self_shadow(self):
         mat = self.material

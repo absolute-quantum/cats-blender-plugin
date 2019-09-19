@@ -45,10 +45,31 @@ class EnableSMC(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
+        # disable all wrong versions
+        for mod in addon_utils.modules():
+            if mod.bl_info['name'] == "Shotariya-don":
+                if addon_utils.check(mod.__name__)[0]:
+                    try:
+                        bpy.ops.wm.addon_disable(module=mod.__name__)
+                    except:
+                        pass
+                    continue
+            if mod.bl_info['name'] == "Shotariya's Material Combiner":
+                if mod.bl_info['version'] < (2, 1, 1, 2) and addon_utils.check(mod.__name__)[0]:
+                    try:
+                        bpy.ops.wm.addon_disable(module=mod.__name__)
+                    except:
+                        pass
+                    continue
+
+        # then enable correct version
         for mod in addon_utils.modules():
             if mod.bl_info['name'] == "Shotariya's Material Combiner":
-                bpy.ops.wm.addon_enable(module=mod.__name__)
-                break
+                if mod.bl_info['version'] < (2, 1, 1, 2):
+                    continue
+                if not addon_utils.check(mod.__name__)[0]:
+                    bpy.ops.wm.addon_enable(module=mod.__name__)
+                    break
         self.report({'INFO'}, 'Enabled Material Combiner!')
         return {'FINISHED'}
 

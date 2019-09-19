@@ -21,13 +21,6 @@ if bpy.app.version < (2, 80, 0):
     ICON_ADD, ICON_REMOVE = 'ZOOMIN', 'ZOOMOUT'
 
 
-def draw_filter_wrap(func):
-    if 1 or bpy.app.version < (2, 80, 0):
-        return func
-    def draw_filter_new(self_, context, layout, reverse=False):
-        func(self_, context, layout)
-    return draw_filter_new
-
 if bpy.app.version < (2, 80, 0):
     def _layout_split(layout, factor, align):
         return layout.split(percentage=factor, align=align)
@@ -202,7 +195,6 @@ class MMD_ROOT_UL_display_items(UIList):
 
         return flt_flags, flt_neworder
 
-    @draw_filter_wrap
     def draw_filter(self, context, layout):
         row = layout.row()
         row.prop(self, 'morph_filter', expand=True)
@@ -628,7 +620,6 @@ class UL_ObjectsMixIn(object):
             layout.alignment = 'CENTER'
             layout.label(text='', icon=self.icon)
 
-    @draw_filter_wrap
     def draw_filter(self, context, layout):
         row = layout.row(align=True)
         row.prop(self, 'model_filter', expand=True)

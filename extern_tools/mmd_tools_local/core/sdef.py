@@ -52,6 +52,7 @@ class FnSDEF():
         if mute != cls.g_bone_check[hash(obj)].get('sdef_mute'):
             mod = obj.modifiers.get('mmd_bone_order_override')
             if mod and mod.type == 'ARMATURE':
+                #FIXME not working well inside driver function on Blender 2.8
                 if not mute and cls.MASK_NAME not in obj.vertex_groups:
                     mask = tuple(i[0] for v in cls.g_verts[hash(obj)].values() for i in v[2])
                     obj.vertex_groups.new(name=cls.MASK_NAME).add(mask, 1, 'REPLACE')
@@ -223,6 +224,9 @@ class FnSDEF():
         cls.register_driver_function()
         if bulk_update is None:
             bulk_update = cls.__get_benchmark_result(obj, shapekey, use_scale, use_skip)
+        # FIXME: force disable use_skip=True for bulk_update=False on 2.8
+        if bpy.app.version >= (2, 80, 0) and (not bulk_update and use_skip):
+            use_skip = False
         # Add the driver to the shapekey
         f = obj.data.shape_keys.driver_add('key_blocks["'+cls.SHAPEKEY_NAME+'"].value', -1)
         if hasattr(f.driver, 'show_debug_info'):
@@ -233,6 +237,13 @@ class FnSDEF():
         ov.type = 'SINGLE_PROP'
         ov.targets[0].id = obj
         ov.targets[0].data_path = 'name'
+        mod = obj.modifiers.get('mmd_bone_order_override')
+        if mod and mod.type == 'ARMATURE':
+            ov = f.driver.variables.new()
+            ov.name = 'arm'
+            ov.type = 'SINGLE_PROP'
+            ov.targets[0].id = mod.object
+            ov.targets[0].data_path = 'name'
         if hasattr(f.driver, 'use_self'): # Blender 2.78+
             f.driver.use_self = True
             param = (bulk_update, use_skip, use_scale)

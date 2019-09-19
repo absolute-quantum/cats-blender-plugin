@@ -4,7 +4,7 @@ from bpy.types import Header
 
 from mmd_tools_local import register_wrap
 
-@register_wrap
+#@register_wrap # use draw function instead
 class MMDViewHeader(Header):
     bl_idname = 'MMD_TOOLS_HT_view_header'
     bl_space_type = 'VIEW_3D'

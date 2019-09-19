@@ -74,10 +74,7 @@ class  FileReadStream(FileStream):
         return v
 
     def readVector(self, size):
-        fmt = '<'
-        for i in range(size):
-            fmt += 'f'
-        return list(struct.unpack(fmt, self.__fin.read(4*size)))
+        return struct.unpack('<'+'f'*size, self.__fin.read(4*size))
 
     def readByte(self):
         v, = struct.unpack('<B', self.__fin.read(1))

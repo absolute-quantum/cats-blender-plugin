@@ -360,6 +360,11 @@ It checks for a new version automatically once every day.
 - **Model Options**:
   - Added new "Delete Zero Weight Vertex Groups" button
   - Improved layout of the "Full Body Tracking Fix" buttons
+  - Fixed visual "Merge Weights" bug in Blender 2.80
+- **Optimization**:
+  - Improved Material Combiner detection algorithm
+- **General**:
+  - Updated mmd_tools
 
 #### 0.14.0
 - **Cats is now fully compatible with Blender 2.80!**

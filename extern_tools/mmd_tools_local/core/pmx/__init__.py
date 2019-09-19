@@ -91,8 +91,7 @@ class FileReadStream(FileStream):
 
     def readStr(self):
         length = self.readInt()
-        fmt = '<' + str(length) + 's'
-        buf, = struct.unpack(fmt, self.__fin.read(length))
+        buf, = struct.unpack('<%ds'%length, self.__fin.read(length))
         return str(buf, self.header().encoding.charset, errors='replace')
 
     def readFloat(self):
@@ -100,10 +99,7 @@ class FileReadStream(FileStream):
         return v
 
     def readVector(self, size):
-        fmt = '<'
-        for i in range(size):
-            fmt += 'f'
-        return list(struct.unpack(fmt, self.__fin.read(4*size)))
+        return struct.unpack('<'+'f'*size, self.__fin.read(4*size))
 
     def readByte(self):
         v, = struct.unpack('<B', self.__fin.read(1))
@@ -172,11 +168,7 @@ class FileWriteStream(FileStream):
         self.__fout.write(struct.pack('<f', float(v)))
 
     def writeVector(self, v):
-        l = len(v)
-        fmt = '<'
-        for i in range(l):
-            fmt += 'f'
-        self.__fout.write(struct.pack(fmt, *v))
+        self.__fout.write(struct.pack('<'+'f'*len(v), *v))
 
     def writeByte(self, v):
         self.__fout.write(struct.pack('<B', int(v)))

@@ -62,7 +62,7 @@ class _SetShadingBase:
                 space.show_backface_culling = True
             return {'FINISHED'}
     else:
-        def execute(self, context):  #TODO
+        def execute(self, context): #TODO
             context.scene.render.engine = 'BLENDER_EEVEE'
 
             shading_mode = getattr(self, '_shading_mode', None)
