@@ -115,7 +115,7 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = layout_split(col, factor=0.6, align=True)
             row.scale_y = button_height
             row.label(text="Full Body Tracking Fix:", icon='ARMATURE_DATA')
-            row2 = layout_split(row, factor=0.4, align=True)
+            row2 = layout_split(row, factor=0.35, align=True)
             row2.operator(Armature_manual.FixFBTButton.bl_idname, text='Add')
             row2.operator(Armature_manual.RemoveFBTButton.bl_idname, text="Remove")
 

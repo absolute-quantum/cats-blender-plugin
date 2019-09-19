@@ -1106,15 +1106,10 @@ class FixVRMShapesButton(bpy.types.Operator):
 class FixFBTButton(bpy.types.Operator):
     bl_idname = 'cats_manual.fix_fbt'
     bl_label = 'Fix Full Body Tracking'
-    bl_description = "Applies a general fix for Full Body Tracking." \
+    bl_description = "WARNING: This fix is no longer needed for VRChat, you should not use it!" \
                      "\n" \
-                     '\nThis fix is no longer needed for VrChat!' \
-                     "\n" \
-                     '\nCan potentially reduce the knee bending of this avatar in VRChat.' \
-                     '\nIgnore the "Spine length zero" warning in Unity.' \
-                     '\n' \
-                     '\nRequires bones:' \
-                     '\n - Hips, Spine, Left leg, Right leg'
+                     "\nApplies a general fix for Full Body Tracking." \
+                     '\nIgnore the "Spine length zero" warning in Unity'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -1219,8 +1214,8 @@ class FixFBTButton(bpy.types.Operator):
 @register_wrap
 class RemoveFBTButton(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_fbt'
-    bl_label = 'Remove Full Body Tracking'
-    bl_description = "Removes the fix for Full Body Tracking." \
+    bl_label = 'Remove Full Body Tracking Fix'
+    bl_description = "Removes the fix for Full Body Tracking, since it is no longer advised to use it." \
                      '\n' \
                      '\nRequires bones:' \
                      '\n - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2'
@@ -1262,10 +1257,15 @@ class RemoveFBTButton(bpy.types.Operator):
         # Remove FBT Fix
         # Corrects hips
         if hips.head[z_cord] > hips.tail[z_cord]:
+            # Put Hips in the center of the leg bones
             hips.head[x_cord] = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
 
+            # Put Hips at 90% between spine and legs
+            hips.head[z_cord] = left_leg.head[z_cord] + (spine.head[z_cord] - left_leg.head[z_cord]) * 0.9
+
             # If Hips are below or at the leg bones, put them above
-            hips.head[z_cord] = right_leg.head[z_cord] + 0.1
+            if hips.head[z_cord] <= right_leg.head[z_cord]:
+                hips.head[z_cord] = right_leg.head[z_cord] + 0.1
 
             # Make Hips point straight up
             hips.tail[x_cord] = hips.head[x_cord]
