@@ -122,8 +122,9 @@ def get_armature(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
     for obj in get_objects():
-        if obj.type == 'ARMATURE' and obj.name == armature_name:
-            return obj
+        if obj.type == 'ARMATURE':
+            if (armature_name and obj.name == armature_name) or not armature_name:
+                return obj
     return None
 
 
@@ -278,6 +279,11 @@ def set_default_stage():
         set_active(armature)
         if version_2_79_or_older():
             armature.layers[0] = True
+
+    # Fix broken armatures
+    if not bpy.context.scene.armature:
+        bpy.context.scene.armature = armature.name
+
     return armature
 
 
@@ -696,12 +702,15 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
     # 2 = All meshes
     # 3 = Selected only
 
+    if not armature_name:
+        armature = get_armature()
+        if armature:
+            armature_name = armature.name
+
     meshes = []
     for ob in get_objects():
         if ob.type == 'MESH':
             if mode == 0:
-                if not armature_name:
-                    armature_name = bpy.context.scene.armature
                 if ob.parent:
                     if ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
                         meshes.append(ob)
