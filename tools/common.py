@@ -1594,6 +1594,10 @@ def remove_doubles(mesh, threshold, save_shapes=True):
     if not mesh:
         return 0
 
+    # If the mesh has no shapekeys, don't remove doubles
+    if not has_shapekeys(mesh) or len(mesh.data.shape_keys.key_blocks) == 1:
+        return 0
+
     pre_tris = len(mesh.data.polygons)
 
     set_active(mesh)
