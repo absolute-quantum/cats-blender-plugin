@@ -830,8 +830,8 @@ class FixArmature(bpy.types.Operator):
                             # Put Hips in the center of the leg bones
                             hips.head[x_cord] = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
 
-                            # Put Hips at 90% between spine and legs
-                            hips.head[z_cord] = left_leg.head[z_cord] + (spine.head[z_cord] - left_leg.head[z_cord]) * 0.5
+                            # Put Hips at 33% between spine and legs
+                            hips.head[z_cord] = left_leg.head[z_cord] + (spine.head[z_cord] - left_leg.head[z_cord]) * 0.33
 
                             # If Hips are below or at the leg bones, put them above
                             if hips.head[z_cord] <= right_leg.head[z_cord]:

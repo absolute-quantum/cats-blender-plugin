@@ -111,7 +111,6 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             self.import_file(self.directory, file_name)
 
         # Import all models from zip files that contain only one importable model
-        print('Zip file content:')
         remove_keys = []
         for zip_path, files in zip_files.items():
             context.scene.zip_content = zip_path + ' ||| ' + files[0]
@@ -232,8 +231,8 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         zip_id = bpy.context.scene.zip_content.split(' ||| ')
         zip_path = zip_id[0]
         zip_extract_path = '.'.join(zip_path.split('.')[:-1])
-        model_path = zip_id[1]
-        model_path_full = encode_str(os.path.join(zip_extract_path, model_path))
+        model_path = encode_str(zip_id[1])
+        model_path_full = os.path.join(zip_extract_path, model_path)
         model_dir = os.path.dirname(model_path_full)
         model_file_name = os.path.basename(model_path_full)
 
@@ -343,12 +342,12 @@ def get_zip_content(self, context):
     return bpy.types.Object.Enum
 
 
-def encode_str(str):
+def encode_str(s):
     try:
-        str = str.encode('cp437').decode('cp932')
+        s = s.encode('cp437').decode('cp932')
     except UnicodeEncodeError:
         pass
-    return str
+    return s
 
 
 @register_wrap
