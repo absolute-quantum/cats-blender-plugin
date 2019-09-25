@@ -343,8 +343,17 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.15.1
+- **Importer**:
+  - Added support for ZIP files
+    - It will only extract the zip if importable models are found
+    - If multiple models are found in the zip, you can select the one you want in a popup window
 - **Fix Model**:
   - Hips bone will now be larger than before, to comply with the just adjusted VRChat recommendation
+  - FFXIV models are now compatible
+- **Model Options**:
+  - Remove Doubles no longer effects meshes with no shapekeys
+- **General**:
+  - Fixed armature sometimes not getting detected
 
 #### 0.15.0
 - **Importer**:

@@ -3,6 +3,7 @@ from .tools import atlas as Atlas
 from .tools import eyetracking as Eyetracking
 from .tools import rootbone as Rootbone
 from .tools import settings as Settings
+from .tools import importer as Importer
 
 from bpy.types import Scene, Material
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty
@@ -14,6 +15,12 @@ def register():
         description='Select the armature which will be used by Cats',
         items=Common.get_armature_list,
         update=Common.update_material_list
+    )
+
+    Scene.zip_content = EnumProperty(
+        name='Zip Content',
+        description='Select the model you want to import',
+        items=Importer.get_zip_content
     )
 
     Scene.keep_upper_chest = BoolProperty(
