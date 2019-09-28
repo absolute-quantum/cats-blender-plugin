@@ -347,13 +347,17 @@ It checks for a new version automatically once every day.
   - Added support for ZIP files
     - It will only extract the zip if importable models are found
     - If multiple models are found in the zip, you can select the one you want in a popup window
+    - Japanese zip files will be extracted with the correct encoding
 - **Fix Model**:
-  - Hips bone will now be larger than before, to comply with the just adjusted VRChat recommendation
+  - Hips bone will now be larger than before, to comply with the adjusted VRChat recommendation
   - FFXIV models are now compatible
 - **Model Options**:
   - Remove Doubles no longer effects meshes with no shapekeys
+- **Optimization**:
+  - Added manual download button if Material Combiner is outdated
 - **General**:
   - Fixed armature sometimes not getting detected
+  - Small bug fixes
 
 #### 0.15.0
 - **Importer**:

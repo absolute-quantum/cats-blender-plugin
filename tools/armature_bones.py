@@ -424,6 +424,7 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Spine_Lower',
     'Spine_Lower_1',
     'Spine_Lower_2',
+    'Spine_Middle',
     'Spine_Upper',
     'Spine_Upper_1',
     'Spine_Upper_2',
@@ -1009,7 +1010,6 @@ bone_reweight['Spine'] = [
     'UpperBodyx',
     'Spine_Lower_Adj',
     'Spine_Middle_Adj',
-    'Spine_Middle',
     'Bip_Spine0a',
 ]
 bone_reweight['Chest'] = [
@@ -1168,6 +1168,8 @@ bone_reweight['\Left arm'] = [
     'UpArmLow_\L',
     'UpArmUp_\L',
     'N_Hkata_\L',
+    'Arm_\Left_Shoulder_Tw_A',
+    'Arm_\Left_Shoulder_Tw_B',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -1306,6 +1308,7 @@ bone_reweight['\Left elbow'] = [
     'ForearmUp_\L',
     'N_Hhiji_\L',
     'N_Hte_\L',
+    'Arm_\Left_Wrist_Tw_E',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',

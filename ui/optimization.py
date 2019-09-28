@@ -183,6 +183,7 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.scale_y = 0.75
                 row.label(text="Please update to the latest version.")
+
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 0.75
@@ -190,6 +191,14 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.scale_y = 0.75
                 row.label(text="in the 'MatCombiner' tab to the " + ("left." if version_2_79_or_older() else "right."))
+
+                col.separator()
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text="Or download and install it manually:")
+                col.separator()
+                row = col.row(align=True)
+                row.operator(Atlas.ShotariyaButton.bl_idname, icon=globs.ICON_URL)
 
                 check_for_smc()
                 return

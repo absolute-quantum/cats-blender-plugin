@@ -848,8 +848,6 @@ class FixArmature(bpy.types.Operator):
                             # Make legs bend very slightly forward
                             right_knee = armature.data.edit_bones.get('Right knee')
                             left_knee = armature.data.edit_bones.get('Left knee')
-                            print(round(left_leg.head[x_cord], 4), round(left_leg.head[y_cord], 4))
-                            print(round(left_knee.head[x_cord], 4), round(left_knee.head[y_cord], 4))
                             if left_knee:
                                 if round(left_leg.head[x_cord], 4) == round(left_knee.head[x_cord], 4) \
                                         and round(left_leg.head[y_cord], 4) == round(left_knee.head[y_cord], 4):
