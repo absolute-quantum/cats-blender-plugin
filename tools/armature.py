@@ -491,6 +491,7 @@ class FixArmature(bpy.types.Operator):
             ('Cf_J_', ''),
             ('G_', ''),
             ('Joint_', ''),
+            ('DEF_', ''),
         ]
 
         # Standardize names

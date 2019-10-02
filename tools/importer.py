@@ -105,10 +105,15 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         pre_import_objects = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE']
 
         # Import the files using their corresponding importer
-        for f in self.files:
-            file_name = f['name']
-            print(file_name)
-            self.import_file(self.directory, file_name)
+        if self.directory:
+            for f in self.files:
+                file_name = f.name
+                print(file_name)
+                self.import_file(self.directory, file_name)
+        # If this operator is called with no directory but a filepath argument, import that
+        elif self.filepath:
+            print(self.filepath)
+            self.import_file(os.path.dirname(self.filepath), os.path.basename(self.filepath))
 
         # Import all models from zip files that contain only one importable model
         remove_keys = []
