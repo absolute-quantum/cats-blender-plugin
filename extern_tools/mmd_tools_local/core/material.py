@@ -647,8 +647,12 @@ class _FnMaterialCycles(_FnMaterialBI):
 
         node_vector = __new_node('ShaderNodeMapping', (2, -1))
         node_vector.vector_type = 'POINT'
-        node_vector.translation = (0.5, 0.5, 0.0)
-        node_vector.scale = (0.5, 0.5, 1.0)
+        if bpy.app.version < (2, 81, 0):
+            node_vector.translation = (0.5, 0.5, 0.0)
+            node_vector.scale = (0.5, 0.5, 1.0)
+        else:
+            node_vector.inputs['Location'].default_value = (0.5, 0.5, 0.0)
+            node_vector.inputs['Scale'].default_value = (0.5, 0.5, 1.0)
 
         links.new(tex_coord.outputs['Normal'], vec_trans.inputs['Vector'])
         links.new(vec_trans.outputs['Vector'], node_vector.inputs['Vector'])

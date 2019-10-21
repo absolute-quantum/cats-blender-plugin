@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.15.1)
+# Cats Blender Plugin (0.16.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -342,7 +342,8 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
-#### 0.15.1
+#### 0.16.0
+- **Cats is now fully compatible with Blender 2.81!**
 - **Importer**:
   - Added support for ZIP files
     - It will only extract the zip if importable models are found
@@ -359,6 +360,7 @@ It checks for a new version automatically once every day.
 - **General**:
   - Fixed armature sometimes not getting detected
   - Small bug fixes
+  - Updated mmd_tools
 
 #### 0.15.0
 - **Importer**:

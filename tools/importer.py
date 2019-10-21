@@ -44,6 +44,8 @@ try:
 except:
     pass
 
+current_blender_version = str(bpy.app.version[:2])[1:-1].replace(', ', '.')
+
 # In blender 2.79 this string gets cut off after char 63, so don't go over that limit
 # Bug Report: https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
 #             <                                                               > Don't go outside these brackets
@@ -546,7 +548,7 @@ class InstallXPS(bpy.types.Operator):
         col.separator()
         col.separator()
         row = col.row(align=True)
-        row.label(text="Make sure to install the version for Blender " + "2.79" if Common.version_2_79_or_older() else "2.80", icon="INFO")
+        row.label(text="Make sure to install the version for Blender " + current_blender_version, icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(XpsToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -580,6 +582,10 @@ class InstallSource(bpy.types.Operator):
         row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
         row.label(text="If it is not installed please download and install it manually.")
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.label(text="Make sure to install the version for Blender " + current_blender_version, icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(SourceToolsButton.bl_idname, icon=globs.ICON_URL)
