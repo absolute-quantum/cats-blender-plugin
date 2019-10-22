@@ -211,17 +211,22 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(merge_armature)
     Common.fix_zero_length_bones(merge_armature, x_cord, y_cord, z_cord)
 
-    # Join meshes in both armatures
-    mesh_base = Common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
-    mesh_merge = Common.join_meshes(armature_name=merge_armature_name, apply_transformations=False)
+    # Get all meshes and join if neccessary
+    if bpy.context.scene.merge_armatures_join_meshes:
+        meshes_base = [Common.join_meshes(armature_name=base_armature_name, apply_transformations=False)]
+        meshes_merge = [Common.join_meshes(armature_name=merge_armature_name, apply_transformations=False)]
+    else:
+        meshes_base = Common.get_meshes_objects(armature_name=base_armature_name)
+        meshes_merge = Common.get_meshes_objects(armature_name=merge_armature_name)
 
     # Applies transforms of the base armature and mesh
     Common.apply_transforms(armature_name=base_armature_name)
 
     # Applies the transforms to the merge armature and mesh
-    if bpy.context.scene.apply_transforms and not mesh_only:
+    if (len(meshes_merge) != 1 or not bpy.context.scene.merge_armatures_join_meshes or bpy.context.scene.apply_transforms) and not mesh_only:
         Common.apply_transforms(armature_name=merge_armature_name)
     else:
+        mesh_merge = meshes_merge[0]
         # Check if merge armature is rotated. Because the code can handle everything except rotations
         for i in [0, 1, 2]:
             if abs(merge_armature.rotation_euler[i]) > tolerance or abs(mesh_merge.rotation_euler[i]) > tolerance:
@@ -319,11 +324,19 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     armature = Common.get_armature(armature_name=base_armature_name)
 
     # Clean up shape keys
-    Common.clean_shapekeys(mesh_base)
-    Common.clean_shapekeys(mesh_merge)
+    for mesh_base in meshes_base:
+        Common.clean_shapekeys(mesh_base)
+    for mesh_merge in meshes_merge:
+        Common.clean_shapekeys(mesh_merge)
 
     # Join the meshes
-    mesh_merged = Common.join_meshes(armature_name=base_armature_name, apply_transformations=False)
+    if bpy.context.scene.merge_armatures_join_meshes:
+        meshes_merged = [Common.join_meshes(armature_name=base_armature_name, apply_transformations=False)]
+    else:
+        meshes_merged = meshes_base + meshes_merge
+        for mesh in meshes_merged:
+            mesh.parent = base_armature
+            Common.repair_mesh(mesh, base_armature_name)
 
     # Go into edit mode
     Common.unselect_all()
@@ -367,22 +380,23 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
         Common.set_default_stage()
 
     # Merge bones into existing bones
-    Common.set_active(mesh_merged)
     if not mesh_only:
         to_delete = []
         for bone_name in bones_to_merge:
             bone_base = bone_name
             bone_merge = bone_name + '.merge'
 
-            vg_base = mesh_merged.vertex_groups.get(bone_base)
-            vg_merge = mesh_merged.vertex_groups.get(bone_merge)
+            for mesh_merged in meshes_merged:
+                Common.set_active(mesh_merged)
+                vg_base = mesh_merged.vertex_groups.get(bone_base)
+                vg_merge = mesh_merged.vertex_groups.get(bone_merge)
 
-            if not vg_base:
-                mesh_merged.vertex_groups.new(name=bone_base)
-            if not vg_merge:
-                mesh_merged.vertex_groups.new(name=bone_merge)
+                if not vg_base:
+                    mesh_merged.vertex_groups.new(name=bone_base)
+                if not vg_merge:
+                    mesh_merged.vertex_groups.new(name=bone_merge)
 
-            Common.mix_weights(mesh_merged, bone_merge, bone_base)
+                Common.mix_weights(mesh_merged, bone_merge, bone_base)
             to_delete.append(bone_merge)
 
         Common.set_active(armature)
@@ -390,7 +404,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
 
         for bone_name in to_delete:
             bone = armature.data.edit_bones.get(bone_name)
-            if bone:
+            bone_base = armature.data.edit_bones.get(bone_name.replace('.merge', ''))
+            if bone and bone_base:
                 armature.data.edit_bones.remove(bone)
 
         Common.switch('OBJECT')

@@ -143,6 +143,13 @@ def register():
         default=False
     )
 
+    Scene.merge_armatures_join_meshes = BoolProperty(
+        name='Join Meshes',
+        description='This will join all meshes.'
+                    '\nNot checking this will always apply transforms',
+        default=True
+    )
+
     # Decimation
     Scene.decimation_mode = EnumProperty(
         name="Decimation Mode",

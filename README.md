@@ -355,6 +355,9 @@ It checks for a new version automatically once every day.
   - FFXIV models are now compatible
 - **Model Options**:
   - Remove Doubles no longer effects meshes with no shapekeys
+- **Custom Model Creation**:
+  - Added "Join Meshes" option
+  - Fixed bones from the merge armature sometimes getting unintentionally deleted
 - **Optimization**:
   - Added manual download button if Material Combiner is outdated
 - **General**:

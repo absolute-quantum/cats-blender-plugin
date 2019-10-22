@@ -47,6 +47,11 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 0.95
             row.prop(context.scene, 'apply_transforms')
+            row.active = context.scene.merge_armatures_join_meshes
+
+            row = col.row(align=True)
+            row.scale_y = 0.95
+            row.prop(context.scene, 'merge_armatures_join_meshes')
 
             row = col.row(align=True)
             row.scale_y = 1.05
@@ -91,6 +96,10 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                 row.scale_y = 0.75
                 row.label(text='Make sure that the mesh has no parent.', icon='BLANK1')
                 return
+
+            row = col.row(align=True)
+            row.scale_y = 0.95
+            row.prop(context.scene, 'merge_armatures_join_meshes')
 
             row = col.row(align=True)
             row.scale_y = 1.05
