@@ -361,7 +361,8 @@ It checks for a new version automatically once every day.
 - **Optimization**:
   - Added manual download button if Material Combiner is outdated
 - **General**:
-  - Fixed armature sometimes not getting detected
+  - Armatures will no longer be forced into rest position after any action
+  - Fixed armatures sometimes not getting detected
   - Small bug fixes
   - Updated mmd_tools
 

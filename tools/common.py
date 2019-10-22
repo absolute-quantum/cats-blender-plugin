@@ -270,7 +270,8 @@ def set_default_stage():
         set_active(obj)
         switch('OBJECT')
         if obj.type == 'ARMATURE':
-            obj.data.pose_position = 'REST'
+            # obj.data.pose_position = 'REST'
+            pass
 
         select(obj, False)
 

@@ -437,10 +437,18 @@ class FixArmature(bpy.types.Operator):
         for bone in armature.data.bones:
             bone.name, translated = Translate.translate(bone.name)
 
-        # Armature should be selected and in edit mode
+        # Armature should be selected
         Common.set_default_stage()
         Common.unselect_all()
         Common.set_active(armature)
+
+        # Reset pose position
+        Common.switch('POSE')
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+
+        # Enter edit mode
         Common.switch('EDIT')
 
         # Show all hidden verts and faces
@@ -456,7 +464,7 @@ class FixArmature(bpy.types.Operator):
         Common.delete_bone_constraints()
 
         # Model should be in rest position
-        armature.data.pose_position = 'REST'
+        # armature.data.pose_position = 'REST'
 
         # Count steps for loading bar again and reset the layers
         steps += len(armature.data.edit_bones)

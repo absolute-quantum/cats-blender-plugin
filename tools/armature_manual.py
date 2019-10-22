@@ -136,7 +136,7 @@ class StopPoseMode(bpy.types.Operator):
             pb.select = False
 
         armature = Common.set_default_stage()
-        armature.data.pose_position = 'REST'
+        # armature.data.pose_position = 'REST'
 
         for mesh in Common.get_meshes_objects():
             if Common.has_shapekeys(mesh):
