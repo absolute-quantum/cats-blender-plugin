@@ -102,14 +102,14 @@ class MergeArmature(bpy.types.Operator):
                                          'After that please only move the mesh (not the armature!) to the desired position.'])
                 return {'CANCELLED'}
 
-        if len(Common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
-            saved_data.load()
-            Common.show_error(5.2, ['The armature "' + merge_armature_name + '" does not have any meshes.'])
-            return {'CANCELLED'}
-        if len(Common.get_meshes_objects(armature_name=base_armature_name)) == 0:
-            saved_data.load()
-            Common.show_error(5.2, ['The armature "' + base_armature_name + '" does not have any meshes.'])
-            return {'CANCELLED'}
+        # if len(Common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
+        #     saved_data.load()
+        #     Common.show_error(5.2, ['The armature "' + merge_armature_name + '" does not have any meshes.'])
+        #     return {'CANCELLED'}
+        # if len(Common.get_meshes_objects(armature_name=base_armature_name)) == 0:
+        #     saved_data.load()
+        #     Common.show_error(5.2, ['The armature "' + base_armature_name + '" does not have any meshes.'])
+        #     return {'CANCELLED'}
 
         # Merge armatures
         merge_armatures(base_armature_name, merge_armature_name, False, merge_same_bones=context.scene.merge_same_bones)
@@ -219,10 +219,17 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
         meshes_base = Common.get_meshes_objects(armature_name=base_armature_name)
         meshes_merge = Common.get_meshes_objects(armature_name=merge_armature_name)
 
+    # Make sure the list is really empty if it should be
+    if len(meshes_base) == 1 and not meshes_base[0]:
+        meshes_base = []
+    if len(meshes_merge) == 1 and not meshes_merge[0]:
+        meshes_merge = []
+
     # Applies transforms of the base armature and mesh
     Common.apply_transforms(armature_name=base_armature_name)
 
     # Applies the transforms to the merge armature and mesh
+    print(meshes_merge)
     if (len(meshes_merge) != 1 or not bpy.context.scene.merge_armatures_join_meshes or bpy.context.scene.apply_transforms) and not mesh_only:
         Common.apply_transforms(armature_name=merge_armature_name)
     else:
@@ -337,6 +344,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
         for mesh in meshes_merged:
             mesh.parent = base_armature
             Common.repair_mesh(mesh, base_armature_name)
+    if len(meshes_merged) == 1 and not meshes_merged[0]:
+        meshes_merged = []
 
     # Go into edit mode
     Common.unselect_all()
@@ -376,7 +385,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     if not mesh_only:
         Common.delete_bone_constraints(armature_name=base_armature_name)
         Common.remove_unused_vertex_groups(ignore_main_bones=True)
-        Common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
+        if Common.get_meshes_objects(armature_name=base_armature_name):
+            Common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
         Common.set_default_stage()
 
     # Merge bones into existing bones
@@ -448,7 +458,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     Common.set_default_stage()
     if not mesh_only:
         Common.remove_unused_vertex_groups()
-        Common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
+        if Common.get_meshes_objects(armature_name=base_armature_name):
+            Common.delete_zero_weight(armature_name=base_armature_name, ignore=root_name)
         Common.set_default_stage()
 
     # Fix armature name

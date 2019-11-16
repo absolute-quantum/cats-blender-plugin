@@ -357,6 +357,7 @@ It checks for a new version automatically once every day.
   - Remove Doubles no longer effects meshes with no shapekeys
 - **Custom Model Creation**:
   - Added "Join Meshes" option
+  - Merge Armatures and Attach Mesh no longer require a mesh on the armature
   - Fixed bones from the merge armature sometimes getting unintentionally deleted
 - **Optimization**:
   - Added manual download button if Material Combiner is outdated
