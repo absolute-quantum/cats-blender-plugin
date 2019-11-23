@@ -929,7 +929,7 @@ class ErrorDisplay(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        if not self.tris_count > 70000:
+        if self.tris_count > 70000:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Too many polygons!", icon='ERROR')
