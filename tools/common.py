@@ -122,8 +122,9 @@ def get_armature(armature_name=None):
     if not armature_name:
         armature_name = bpy.context.scene.armature
     for obj in get_objects():
-        if obj.type == 'ARMATURE' and obj.name == armature_name:
-            return obj
+        if obj.type == 'ARMATURE':
+            if (armature_name and obj.name == armature_name) or not armature_name:
+                return obj
     return None
 
 
@@ -269,7 +270,8 @@ def set_default_stage():
         set_active(obj)
         switch('OBJECT')
         if obj.type == 'ARMATURE':
-            obj.data.pose_position = 'REST'
+            # obj.data.pose_position = 'REST'
+            pass
 
         select(obj, False)
 
@@ -278,6 +280,11 @@ def set_default_stage():
         set_active(armature)
         if version_2_79_or_older():
             armature.layers[0] = True
+
+    # Fix broken armatures
+    if not bpy.context.scene.armature:
+        bpy.context.scene.armature = armature.name
+
     return armature
 
 
@@ -696,12 +703,15 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
     # 2 = All meshes
     # 3 = Selected only
 
+    if not armature_name:
+        armature = get_armature()
+        if armature:
+            armature_name = armature.name
+
     meshes = []
     for ob in get_objects():
         if ob.type == 'MESH':
             if mode == 0:
-                if not armature_name:
-                    armature_name = bpy.context.scene.armature
                 if ob.parent:
                     if ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
                         meshes.append(ob)
@@ -787,7 +797,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
             elif mod.type == 'SUBSURF':
                 mesh.modifiers.remove(mod)
             elif mod.type == 'MIRROR':
-                if has_shapekeys(mesh):
+                if not has_shapekeys(mesh):
                     bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
 
         # Standardize UV maps name
@@ -828,22 +838,7 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
             mesh.name = 'Body'
         mesh.parent_type = 'OBJECT'
 
-        # Remove duplicate armature modifiers
-        mod_count = 0
-        for mod in mesh.modifiers:
-            mod.show_expanded = False
-            if mod.type == 'ARMATURE':
-                mod_count += 1
-                if mod_count > 1:
-                    bpy.ops.object.modifier_remove(modifier=mod.name)
-                    continue
-                mod.object = get_armature(armature_name=armature_name)
-                mod.show_viewport = True
-
-        # Add armature mod if there is none
-        if mod_count == 0:
-            mod = mesh.modifiers.new("Armature", 'ARMATURE')
-            mod.object = get_armature(armature_name=armature_name)
+        repair_mesh(mesh, armature_name)
 
         if repair_shape_keys:
             repair_shapekey_order(mesh.name)
@@ -854,6 +849,27 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     update_material_list()
 
     return mesh
+
+
+def repair_mesh(mesh, armature_name):
+    mesh.parent_type = 'OBJECT'
+
+    # Remove duplicate armature modifiers
+    mod_count = 0
+    for mod in mesh.modifiers:
+        mod.show_expanded = False
+        if mod.type == 'ARMATURE':
+            mod_count += 1
+            if mod_count > 1:
+                bpy.ops.object.modifier_remove(modifier=mod.name)
+                continue
+            mod.object = get_armature(armature_name=armature_name)
+            mod.show_viewport = True
+
+    # Add armature mod if there is none
+    if mod_count == 0:
+        mod = mesh.modifiers.new("Armature", 'ARMATURE')
+        mod.object = get_armature(armature_name=armature_name)
 
 
 def apply_transforms(armature_name=None):
@@ -1583,6 +1599,10 @@ class ShowError(bpy.types.Operator):
 
 def remove_doubles(mesh, threshold, save_shapes=True):
     if not mesh:
+        return 0
+
+    # If the mesh has no shapekeys, don't remove doubles
+    if not has_shapekeys(mesh) or len(mesh.data.shape_keys.key_blocks) == 1:
         return 0
 
     pre_tris = len(mesh.data.polygons)

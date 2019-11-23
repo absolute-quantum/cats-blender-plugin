@@ -566,7 +566,7 @@ class StopTestingButton(bpy.types.Operator):
             pb.select = False
 
         armature = Common.set_default_stage()
-        armature.data.pose_position = 'REST'
+        # armature.data.pose_position = 'REST'
 
         for shape_key in Common.get_objects()[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
             shape_key.value = 0
@@ -628,7 +628,7 @@ def stop_testing(self, context):
             pb.select = False
 
         armature = Common.set_default_stage()
-        armature.data.pose_position = 'REST'
+        # armature.data.pose_position = 'REST'
 
         for shape_key in Common.get_objects()[context.scene.mesh_name_eye].data.shape_keys.key_blocks:
             shape_key.value = 0

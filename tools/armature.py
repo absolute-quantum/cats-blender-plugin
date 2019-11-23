@@ -403,11 +403,12 @@ class FixArmature(bpy.types.Operator):
                     for mat_slot in mesh.material_slots:
                         mat_slot.material.alpha = 1
             else:
-                # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
-                # Common.remove_toon_shader(mesh)
-                Common.fix_mmd_shader(mesh)
-                Common.fix_vrm_shader(mesh)
-                Common.add_principled_shader(mesh)
+                if context.scene.fix_materials:
+                    # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
+                    # Common.remove_toon_shader(mesh)
+                    Common.fix_mmd_shader(mesh)
+                    Common.fix_vrm_shader(mesh)
+                    Common.add_principled_shader(mesh)
 
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)
@@ -437,10 +438,18 @@ class FixArmature(bpy.types.Operator):
         for bone in armature.data.bones:
             bone.name, translated = Translate.translate(bone.name)
 
-        # Armature should be selected and in edit mode
+        # Armature should be selected
         Common.set_default_stage()
         Common.unselect_all()
         Common.set_active(armature)
+
+        # Reset pose position
+        Common.switch('POSE')
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+
+        # Enter edit mode
         Common.switch('EDIT')
 
         # Show all hidden verts and faces
@@ -456,7 +465,7 @@ class FixArmature(bpy.types.Operator):
         Common.delete_bone_constraints()
 
         # Model should be in rest position
-        armature.data.pose_position = 'REST'
+        # armature.data.pose_position = 'REST'
 
         # Count steps for loading bar again and reset the layers
         steps += len(armature.data.edit_bones)
@@ -491,6 +500,7 @@ class FixArmature(bpy.types.Operator):
             ('Cf_J_', ''),
             ('G_', ''),
             ('Joint_', ''),
+            ('DEF_', ''),
         ]
 
         # Standardize names
@@ -830,8 +840,8 @@ class FixArmature(bpy.types.Operator):
                             # Put Hips in the center of the leg bones
                             hips.head[x_cord] = (right_leg.head[x_cord] + left_leg.head[x_cord]) / 2
 
-                            # Put Hips at 90% between spine and legs
-                            hips.head[z_cord] = left_leg.head[z_cord] + (spine.head[z_cord] - left_leg.head[z_cord]) * 0.9
+                            # Put Hips at 33% between spine and legs
+                            hips.head[z_cord] = left_leg.head[z_cord] + (spine.head[z_cord] - left_leg.head[z_cord]) * 0.33
 
                             # If Hips are below or at the leg bones, put them above
                             if hips.head[z_cord] <= right_leg.head[z_cord]:
@@ -848,8 +858,6 @@ class FixArmature(bpy.types.Operator):
                             # Make legs bend very slightly forward
                             right_knee = armature.data.edit_bones.get('Right knee')
                             left_knee = armature.data.edit_bones.get('Left knee')
-                            print(round(left_leg.head[x_cord], 4), round(left_leg.head[y_cord], 4))
-                            print(round(left_knee.head[x_cord], 4), round(left_knee.head[y_cord], 4))
                             if left_knee:
                                 if round(left_leg.head[x_cord], 4) == round(left_knee.head[x_cord], 4) \
                                         and round(left_leg.head[y_cord], 4) == round(left_knee.head[y_cord], 4):

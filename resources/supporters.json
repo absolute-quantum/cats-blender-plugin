@@ -130,8 +130,7 @@
       "disabled": true
     },{
       "displayname": "Naranar",
-      "startdate": "2018-04-05",
-      "disabled": true
+      "startdate": "2018-10-28"
     },{
       "displayname": "liquid (retso)",
       "startdate": "2018-04-05",
@@ -255,7 +254,8 @@
       "disabled": true
     },{
       "displayname": "Nubbins",
-      "startdate": "2018-05-31"
+      "startdate": "2018-05-31",
+      "disabled": true
     },{
       "displayname": "HectikGamez",
       "startdate": "2018-06-17",
@@ -368,20 +368,24 @@
       "startdate": "2019-01-25"
     },{
       "displayname": "Sashizzl",
-      "startdate": "2019-01-29"
+      "startdate": "2019-01-29",
+      "disabled": true
     },{
       "displayname": "Sasa",
-      "startdate": "2019-02-15"
+      "startdate": "2019-02-15",
+      "disabled": true
     },{
       "displayname": "BeardyWalrus",
-      "startdate": "2019-02-15"
+      "startdate": "2019-02-15",
+      "disabled": true
     },{
       "displayname": "PKCarnage",
       "startdate": "2019-02-25"
     },{
       "displayname": "Yoraiz0r",
       "startdate": "2019-03-25",
-      "description": "Yoraiz0r is a really awesome supporter"
+      "description": "Yoraiz0r is a really awesome supporter",
+      "disabled": true
     },{
       "displayname": "honnmaguro",
       "startdate": "2019-04-05",
@@ -440,6 +444,15 @@
     },{
       "displayname": "FustyLugs",
       "startdate": "2019-08-22"
+    },{
+      "displayname": "moonwiz",
+      "startdate": "2019-09-28"
+    },{
+      "displayname": "KnightborneGaming",
+      "startdate": "2019-10-17",
+      "description": "Autistic streamer letting you know to have a great day and keep bringing in the amazing avatars!",
+      "website": "https://www.twitch.tv/knightbornegaming",
+      "tier": 1
     }
   ]
 }

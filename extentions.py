@@ -3,6 +3,7 @@ from .tools import atlas as Atlas
 from .tools import eyetracking as Eyetracking
 from .tools import rootbone as Rootbone
 from .tools import settings as Settings
+from .tools import importer as Importer
 
 from bpy.types import Scene, Material
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty
@@ -14,6 +15,12 @@ def register():
         description='Select the armature which will be used by Cats',
         items=Common.get_armature_list,
         update=Common.update_material_list
+    )
+
+    Scene.zip_content = EnumProperty(
+        name='Zip Content',
+        description='Select the model you want to import',
+        items=Importer.get_zip_content
     )
 
     Scene.keep_upper_chest = BoolProperty(
@@ -65,6 +72,12 @@ def register():
         name='Connect Bones',
         description="This connects all bones to their child bone if they have exactly one child bone.\n"
                     "This will not change how the bones function in any way, it just improves the aesthetic of the armature",
+        default=True
+    )
+
+    Scene.fix_materials = BoolProperty(
+        name='Fix Materials',
+        description="This will apply some VRChat related fixes to materials",
         default=True
     )
 
@@ -134,6 +147,13 @@ def register():
         description='Check this if both armatures and meshes are already at their correct positions.'
                     '\nThis will cause them to stay exactly like they are when merging',
         default=False
+    )
+
+    Scene.merge_armatures_join_meshes = BoolProperty(
+        name='Join Meshes',
+        description='This will join all meshes.'
+                    '\nNot checking this will always apply transforms',
+        default=True
     )
 
     # Decimation

@@ -168,24 +168,27 @@ class _MaterialMorph:
                     mmd_tex = nodes.get('mmd_%s_tex'%id_name.lower(), None)
                     if mmd_tex:
                         links.new(mmd_tex.outputs['Color'], node.inputs['%s1 RGB'%id_name])
-                    elif shader:
+                    elif shader and id_name+' Tex' in shader.inputs:
                         node.inputs['%s1 RGB'%id_name].default_value[:3] = shader.inputs[id_name+' Tex'].default_value[:3]
             return node
         # connect last node to shader
         if shader:
-            links.new(prev_node.outputs['Ambient'], shader.inputs['Ambient Color'])
-            links.new(prev_node.outputs['Diffuse'], shader.inputs['Diffuse Color'])
-            links.new(prev_node.outputs['Specular'], shader.inputs['Specular Color'])
-            links.new(prev_node.outputs['Reflect'], shader.inputs['Reflect'])
-            links.new(prev_node.outputs['Alpha'], shader.inputs['Alpha'])
-            #links.new(prev_node.outputs['Edge RGB'], shader.inputs['Edge Color'])
-            #links.new(prev_node.outputs['Edge A'], shader.inputs['Edge Alpha'])
-            links.new(prev_node.outputs['Base Tex'], shader.inputs['Base Tex'])
-            links.new(prev_node.outputs['Toon Tex'], shader.inputs['Toon Tex'])
-            if shader.inputs['Sphere Mul/Add'].default_value < 0.5:
-                links.new(prev_node.outputs['Sphere Tex'], shader.inputs['Sphere Tex'])
+            def __soft_link(socket_out, socket_in):
+                if socket_out and socket_in:
+                    links.new(socket_out, socket_in)
+            __soft_link(prev_node.outputs['Ambient'], shader.inputs.get('Ambient Color'))
+            __soft_link(prev_node.outputs['Diffuse'], shader.inputs.get('Diffuse Color'))
+            __soft_link(prev_node.outputs['Specular'], shader.inputs.get('Specular Color'))
+            __soft_link(prev_node.outputs['Reflect'], shader.inputs.get('Reflect'))
+            __soft_link(prev_node.outputs['Alpha'], shader.inputs.get('Alpha'))
+            #__soft_link(prev_node.outputs['Edge RGB'], shader.inputs.get('Edge Color'))
+            #__soft_link(prev_node.outputs['Edge A'], shader.inputs.get('Edge Alpha'))
+            __soft_link(prev_node.outputs['Base Tex'], shader.inputs.get('Base Tex'))
+            __soft_link(prev_node.outputs['Toon Tex'], shader.inputs.get('Toon Tex'))
+            if int(material.mmd_material.sphere_texture_type) != 2: # shader.inputs['Sphere Mul/Add'].default_value < 0.5
+                __soft_link(prev_node.outputs['Sphere Tex'], shader.inputs.get('Sphere Tex'))
             else:
-                links.new(prev_node.outputs['Sphere Tex Add'], shader.inputs['Sphere Tex'])
+                __soft_link(prev_node.outputs['Sphere Tex Add'], shader.inputs.get('Sphere Tex'))
         elif 'mmd_edge_preview' in nodes:
             shader = nodes['mmd_edge_preview']
             links.new(prev_node.outputs['Edge RGB'], shader.inputs['Color'])

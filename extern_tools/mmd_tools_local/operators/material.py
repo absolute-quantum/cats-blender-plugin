@@ -198,11 +198,7 @@ class EdgePreviewSetup(Operator):
         if 'mmd_edge_preview' in obj.vertex_groups:
             obj.vertex_groups.remove(obj.vertex_groups['mmd_edge_preview'])
 
-        for i, m in reversed(tuple(enumerate(obj.data.materials))):
-            if m and m.name.startswith('mmd_edge.'):
-                obj.data.materials.pop(index=i, update_data=True)
-                if m.users < 1:
-                    bpy.data.materials.remove(m)
+        FnMaterial.clean_materials(obj, can_remove=lambda m: m and m.name.startswith('mmd_edge.'))
 
     def __create_toon_edge(self, obj, scale=1.0):
         self.__clean_toon_edge(obj)

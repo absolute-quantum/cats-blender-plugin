@@ -29,6 +29,15 @@ class _FnMaterialBI:
         return None
 
     @classmethod
+    def clean_materials(cls, obj, can_remove):
+        materials = obj.data.materials
+        materials_pop = (lambda index: materials.pop(index=index, update_data=True)) if bpy.app.version < (2, 81, 0) else materials.pop
+        for i in sorted((x for x, m in enumerate(materials) if can_remove(m)), reverse=True):
+            m = materials_pop(index=i)
+            if m.users < 1:
+                bpy.data.materials.remove(m)
+
+    @classmethod
     def swap_materials(cls, meshObj, mat1_ref, mat2_ref, reverse=False,
                        swap_slots=False):
         """
@@ -369,6 +378,25 @@ class _FnMaterialBI:
     def update_edge_weight(self):
         pass
 
+    @staticmethod
+    def convert_to_mmd_material(material):
+        m, mmd_material = material, material.mmd_material
+
+        map_diffuse = next((s.blend_type for s in m.texture_slots if s and s.use_map_color_diffuse), None)
+        use_diffuse = map_diffuse in {None, 'MULTIPLY'}
+        diffuse = m.diffuse_color*min(1.0, m.diffuse_intensity/0.8) if use_diffuse else (1.0, 1.0, 1.0)
+        mmd_material.diffuse_color = diffuse
+
+        map_alpha = next((s.blend_type for s in m.texture_slots if s and s.use_map_alpha), None)
+        if m.use_transparency and map_alpha in {None, 'MULTIPLY'}:
+            mmd_material.alpha = m.alpha
+
+        mmd_material.specular_color = m.specular_color*min(1.0, m.specular_intensity/0.8)
+        mmd_material.shininess = m.specular_hardness
+        mmd_material.is_double_sided = m.game_settings.use_backface_culling
+        mmd_material.enabled_self_shadow_map = m.use_cast_buffer_shadows and m.alpha > 1e-3
+        mmd_material.enabled_self_shadow = m.use_shadows
+
 
 class _DummyTexture:
     def __init__(self, image):
@@ -525,7 +553,7 @@ class _FnMaterialCycles(_FnMaterialBI):
         mmd_mat = mat.mmd_material
         mat.roughness = 1/pow(max(mmd_mat.shininess, 1), 0.37)
         if hasattr(mat, 'metallic'):
-            mat.metallic = 1 - mat.roughness
+            mat.metallic = pow(1 - mat.roughness, 2.7)
         if hasattr(mat, 'specular_hardness'):
             mat.specular_hardness = mmd_mat.shininess
         self.__update_shader_input('Reflect', mmd_mat.shininess)
@@ -551,6 +579,36 @@ class _FnMaterialCycles(_FnMaterialBI):
         mmd_mat = mat.mmd_material
         self.__update_shader_input('Self Shadow', mmd_mat.enabled_self_shadow)
 
+    @staticmethod
+    def convert_to_mmd_material(material):
+        m, mmd_material = material, material.mmd_material
+
+        if m.use_nodes and next((n for n in m.node_tree.nodes if n.name.startswith('mmd_')), None) is None:
+            tex_node = next((n for n in m.node_tree.nodes if n.bl_idname == 'ShaderNodeTexImage'), None)
+            if tex_node:
+                tex_node.name = 'mmd_base_tex'
+
+        mmd_material.diffuse_color = m.diffuse_color[:3]
+        if hasattr(m, 'alpha'):
+            mmd_material.alpha = m.alpha
+        elif len(m.diffuse_color) > 3:
+            mmd_material.alpha = m.diffuse_color[3]
+
+        mmd_material.specular_color = m.specular_color
+        if hasattr(m, 'specular_hardness'):
+            mmd_material.shininess = m.specular_hardness
+        else:
+            mmd_material.shininess = pow(1/max(m.roughness, 0.099), 1/.37)
+
+        if hasattr(m, 'game_settings'):
+            mmd_material.is_double_sided = not m.game_settings.use_backface_culling
+        elif hasattr(m, 'use_backface_culling'):
+            mmd_material.is_double_sided = not m.use_backface_culling
+
+        if hasattr(m, 'shadow_method'):
+            mmd_material.enabled_self_shadow_map = (m.shadow_method != 'NONE') and mmd_material.alpha > 1e-3
+            mmd_material.enabled_self_shadow = (m.shadow_method != 'NONE')
+
 
     def __update_shader_input(self, name, val):
         mat = self.material
@@ -570,6 +628,7 @@ class _FnMaterialCycles(_FnMaterialBI):
         from mathutils import Vector
         nodes, links = mat.node_tree.nodes, mat.node_tree.links
 
+        class _Dummy: default_value, is_linked = None, True
         node_shader = nodes.get('mmd_shader', None)
         if node_shader is None:
             node_shader = nodes.new('ShaderNodeGroup')
@@ -579,12 +638,13 @@ class _FnMaterialCycles(_FnMaterialBI):
             node_shader.node_tree = self.__get_shader()
 
             mmd_mat = mat.mmd_material
-            node_shader.inputs['Ambient Color'].default_value = mmd_mat.ambient_color[:] + (1,)
-            node_shader.inputs['Diffuse Color'].default_value = mmd_mat.diffuse_color[:] + (1,)
-            node_shader.inputs['Specular Color'].default_value = mmd_mat.specular_color[:] + (1,)
-            node_shader.inputs['Alpha'].default_value = mmd_mat.alpha
-            node_shader.inputs['Reflect'].default_value = mmd_mat.shininess
-            node_shader.inputs['Double Sided'].default_value = mmd_mat.is_double_sided
+            node_shader.inputs.get('Ambient Color', _Dummy).default_value = mmd_mat.ambient_color[:] + (1,)
+            node_shader.inputs.get('Diffuse Color', _Dummy).default_value = mmd_mat.diffuse_color[:] + (1,)
+            node_shader.inputs.get('Specular Color', _Dummy).default_value = mmd_mat.specular_color[:] + (1,)
+            node_shader.inputs.get('Reflect', _Dummy).default_value = mmd_mat.shininess
+            node_shader.inputs.get('Alpha', _Dummy).default_value = mmd_mat.alpha
+            node_shader.inputs.get('Double Sided', _Dummy).default_value = mmd_mat.is_double_sided
+            node_shader.inputs.get('Self Shadow', _Dummy).default_value = mmd_mat.enabled_self_shadow
 
         node_uv = nodes.get('mmd_tex_uv', None)
         if node_uv is None:
@@ -604,12 +664,13 @@ class _FnMaterialCycles(_FnMaterialBI):
         for name_id in ('Base', 'Toon', 'Sphere'):
             texture = self.__get_texture_node('mmd_%s_tex'%name_id.lower())
             if texture:
-                if not texture.outputs['Color'].is_linked:
-                    links.new(texture.outputs['Color'], node_shader.inputs[name_id+' Tex'])
-                if not texture.outputs['Alpha'].is_linked:
-                    links.new(texture.outputs['Alpha'], node_shader.inputs[name_id+' Alpha'])
+                name_tex_in, name_alpha_in, name_uv_out = (name_id+x for x in (' Tex', ' Alpha', ' UV'))
+                if not node_shader.inputs.get(name_tex_in, _Dummy).is_linked:
+                    links.new(texture.outputs['Color'], node_shader.inputs[name_tex_in])
+                if not node_shader.inputs.get(name_alpha_in, _Dummy).is_linked:
+                    links.new(texture.outputs['Alpha'], node_shader.inputs[name_alpha_in])
                 if not texture.inputs['Vector'].is_linked:
-                    links.new(node_uv.outputs[name_id+' UV'], texture.inputs['Vector'])
+                    links.new(node_uv.outputs[name_uv_out], texture.inputs['Vector'])
 
     def __get_shader_uv(self):
         group_name = 'MMDTexUV'
@@ -647,8 +708,12 @@ class _FnMaterialCycles(_FnMaterialBI):
 
         node_vector = __new_node('ShaderNodeMapping', (2, -1))
         node_vector.vector_type = 'POINT'
-        node_vector.translation = (0.5, 0.5, 0.0)
-        node_vector.scale = (0.5, 0.5, 1.0)
+        if bpy.app.version < (2, 81, 0):
+            node_vector.translation = (0.5, 0.5, 0.0)
+            node_vector.scale = (0.5, 0.5, 1.0)
+        else:
+            node_vector.inputs['Location'].default_value = (0.5, 0.5, 0.0)
+            node_vector.inputs['Scale'].default_value = (0.5, 0.5, 1.0)
 
         links.new(tex_coord.outputs['Normal'], vec_trans.inputs['Vector'])
         links.new(vec_trans.outputs['Vector'], node_vector.inputs['Vector'])

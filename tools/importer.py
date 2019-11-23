@@ -25,6 +25,7 @@
 
 import os
 import bpy
+import zipfile
 import webbrowser
 import bpy_extras.io_utils
 
@@ -43,6 +44,16 @@ try:
 except:
     pass
 
+current_blender_version = str(bpy.app.version[:2])[1:-1].replace(', ', '.')
+
+# In blender 2.79 this string gets cut off after char 63, so don't go over that limit
+# Bug Report: https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
+#             <                                                               > Don't go outside these brackets
+formats_279 = '*.pm*;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.fbx;*.dae;*.vrm;*.zip'
+formats = '*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.qci;*.vta;*.dmx;*.fbx;*.dae;*.vrm;*.zip'
+format_list = formats.replace('*.', '').split(';')
+zip_files = {}
+
 
 @register_wrap
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
@@ -54,9 +65,11 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                          '\nSupported types:' \
                          '\n- MMD: .pmx/.pmd' \
                          '\n- XNALara: .xps/.mesh/.ascii' \
-                         '\n- Source: .smd/.qc/.vta' \
+                         '\n- Source: .smd/.qc' \
                          '\n- VRM: .vrm' \
-                         '\n- FBX .fbx '
+                         '\n- FBX .fbx ' \
+                         '\n- DAE: .dae ' \
+                         '\n- ZIP: .zip'
     else:
         bl_description = 'Import a model of any supported type.' \
                          '\n' \
@@ -65,23 +78,15 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                          '\n- XNALara: .xps/.mesh/.ascii' \
                          '\n- Source: .smd/.qc/.vta/.dmx' \
                          '\n- VRM: .vrm' \
-                         '\n- FBX .fbx' \
-                         '\n- DAE .dae '
+                         '\n- FBX: .fbx' \
+                         '\n- DAE: .dae ' \
+                         '\n- ZIP: .zip'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
     directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
 
-    if version_2_79_or_older():
-        filter_glob = bpy.props.StringProperty(
-            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.fbx;*.vrm;",
-            options={'HIDDEN'}
-        )
-    else:
-        filter_glob = bpy.props.StringProperty(
-            default="*.pmx;*.pmd;*.xps;*.mesh;*.ascii;*.smd;*.qc;*.vta;*.dmx;*.fbx;*.dae;*.vrm",
-            options={'HIDDEN'}
-        )
+    filter_glob = bpy.props.StringProperty(default=formats_279 if version_2_79_or_older() else formats, options={'HIDDEN'})
     text1 = bpy.props.BoolProperty(
         name='IMPORTANT INFO (hover here)',
         description='If you want to modify the import settings, use the button next to the Import button.\n\n',
@@ -89,7 +94,9 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     )
 
     def execute(self, context):
-        # print(self.directory)
+        global zip_files
+        zip_files = {}
+
         Common.remove_unused_objects()
 
         # Make sure that the first layer is visible
@@ -99,84 +106,32 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         # Save all current objects to check which armatures got added by the importer
         pre_import_objects = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE']
 
-        # Import the file using their corresponding importer
-        for f in self.files:
-            file_name = f['name']
-            file_path = os.path.join(self.directory, file_name)
-            file_ending = file_name.split('.')[-1].lower()
+        # Import the files using their corresponding importer
+        if self.directory:
+            for f in self.files:
+                file_name = f.name
+                print(file_name)
+                self.import_file(self.directory, file_name)
+        # If this operator is called with no directory but a filepath argument, import that
+        elif self.filepath:
+            print(self.filepath)
+            self.import_file(os.path.dirname(self.filepath), os.path.basename(self.filepath))
 
-            # MMD
-            if file_ending == 'pmx' or file_ending == 'pmd':
-                try:
-                    bpy.ops.mmd_tools.import_model('EXEC_DEFAULT',
-                                                   files=[{'name': file_name}],
-                                                   directory=self.directory,
-                                                   scale=0.08,
-                                                   types={'MESH', 'ARMATURE', 'MORPHS'},
-                                                   log_level='WARNING')
-                except AttributeError:
-                    bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
-                except (TypeError, ValueError):
-                    bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+        # Import all models from zip files that contain only one importable model
+        remove_keys = []
+        for zip_path, files in zip_files.items():
+            context.scene.zip_content = zip_path + ' ||| ' + files[0]
+            if len(files) == 1:
+                ImportAnyModel.extract_file()
+                remove_keys.append(zip_path)
 
-            # XNALara
-            elif file_ending == 'xps' or file_ending == 'mesh' or file_ending == 'ascii':
-                try:
-                    if version_2_79_or_older():
-                        bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
-                                                       filepath=file_path,
-                                                       colorizeMesh=False)
-                    else:
-                        bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
-                                                       filepath=file_path)
-                except AttributeError:
-                    bpy.ops.cats_importer.install_xps('INVOKE_DEFAULT')
+        # Remove the models from zip file list that got already imported
+        for key in remove_keys:
+            zip_files.pop(key)
 
-            # Source Engine
-            elif file_ending == 'smd' or file_ending == 'qc' or file_ending == 'qci' or file_ending == 'vta' or file_ending == 'dmx':
-                try:
-                    bpy.ops.import_scene.smd('EXEC_DEFAULT',
-                                             files=[{'name': file_name}],
-                                             directory=self.directory)
-                except AttributeError:
-                    bpy.ops.cats_importer.install_source('INVOKE_DEFAULT')
-
-            # FBX
-            elif file_ending == 'fbx':
-                try:
-                    bpy.ops.import_scene.fbx('EXEC_DEFAULT',
-                                             filepath=file_path,
-                                             automatic_bone_orientation=False,  # Is true better? There are issues with True
-                                             use_prepost_rot=False,
-                                             use_anim=False)
-                except (TypeError, ValueError):
-                    bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
-                except RuntimeError as e:
-                    if 'unsupported, must be 7100 or later' in str(e):
-                        Common.show_error(6.2, ['The FBX file version is unsupported!',
-                                                      'Please use a tool such as the "Autodesk FBX Converter" to make it compatible.'])
-                    print(str(e))
-
-            # DAE, VRM - not working in 2.79 because of bug:
-            # https://blender.stackexchange.com/questions/110788/file-browser-filter-not-working-correctly
-            # EDIT: VRM now works in 2.79 because I removed .dmx from the 2.79 list. It seems that .dmx is the least used format
-            elif file_ending == 'dae':
-                try:
-                    bpy.ops.wm.collada_import('EXEC_DEFAULT',
-                                              filepath=file_path,
-                                              fix_orientation=True,
-                                              auto_connect=True)
-                except (TypeError, ValueError):
-                    bpy.ops.wm.collada_import('INVOKE_DEFAULT')
-
-            elif file_ending == 'vrm':
-                try:
-                    bpy.ops.import_scene.vrm('EXEC_DEFAULT',
-                                             filepath=file_path)
-                except (TypeError, ValueError):
-                    bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
-                except AttributeError:
-                    bpy.ops.cats_importer.install_vrm('INVOKE_DEFAULT')
+        # Only if a zip contains more than one model, open the zip model selection popup
+        if zip_files.keys():
+            bpy.ops.cats_importer.zip_popup('INVOKE_DEFAULT')
 
         # Create list of armatures that got added during import, select them in cats and fix their bone orientations if necessary
         arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
@@ -187,7 +142,117 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         return {'FINISHED'}
 
-    def fix_bone_orientations(self, armature):
+    @staticmethod
+    def import_file(directory, file_name):
+        file_path = os.path.join(directory, file_name)
+        file_ending = file_name.split('.')[-1].lower()
+
+        # MMD
+        if file_ending == 'pmx' or file_ending == 'pmd':
+            try:
+                bpy.ops.mmd_tools.import_model('EXEC_DEFAULT',
+                                               files=[{'name': file_name}],
+                                               directory=directory,
+                                               scale=0.08,
+                                               types={'MESH', 'ARMATURE', 'MORPHS'},
+                                               log_level='WARNING')
+            except AttributeError:
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+            except (TypeError, ValueError):
+                bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
+
+        # XNALara
+        elif file_ending == 'xps' or file_ending == 'mesh' or file_ending == 'ascii':
+            try:
+                if version_2_79_or_older():
+                    bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
+                                                   filepath=file_path,
+                                                   colorizeMesh=False)
+                else:
+                    bpy.ops.xps_tools.import_model('EXEC_DEFAULT',
+                                                   filepath=file_path)
+            except AttributeError:
+                bpy.ops.cats_importer.install_xps('INVOKE_DEFAULT')
+
+        # Source Engine
+        elif file_ending == 'smd' or file_ending == 'qc' or file_ending == 'qci' or file_ending == 'vta' or file_ending == 'dmx':
+            try:
+                bpy.ops.import_scene.smd('EXEC_DEFAULT',
+                                         files=[{'name': file_name}],
+                                         directory=directory)
+            except AttributeError:
+                bpy.ops.cats_importer.install_source('INVOKE_DEFAULT')
+
+        # FBX
+        elif file_ending == 'fbx':
+            try:
+                bpy.ops.import_scene.fbx('EXEC_DEFAULT',
+                                         filepath=file_path,
+                                         automatic_bone_orientation=False,  # Is true better? There are issues with True
+                                         use_prepost_rot=False,
+                                         use_anim=False)
+            except (TypeError, ValueError):
+                bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
+            except RuntimeError as e:
+                if 'unsupported, must be 7100 or later' in str(e):
+                    Common.show_error(6.2, ['The FBX file version is unsupported!',
+                                            'Please use a tool such as the "Autodesk FBX Converter" to make it compatible.'])
+                print(str(e))
+
+        # VRM
+        elif file_ending == 'vrm':
+            try:
+                bpy.ops.import_scene.vrm('EXEC_DEFAULT',
+                                         filepath=file_path)
+            except (TypeError, ValueError):
+                bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
+            except AttributeError:
+                bpy.ops.cats_importer.install_vrm('INVOKE_DEFAULT')
+
+        # DAE
+        elif file_ending == 'dae':
+            try:
+                bpy.ops.wm.collada_import('EXEC_DEFAULT',
+                                          filepath=file_path,
+                                          fix_orientation=True,
+                                          auto_connect=True)
+            except (TypeError, ValueError):
+                bpy.ops.wm.collada_import('INVOKE_DEFAULT')
+
+        # ZIP
+        elif file_ending == 'zip':
+            with zipfile.ZipFile(file_path, 'r') as zipObj:
+                global zip_files
+
+                # Check content of zip for importable models
+                for content in zipObj.namelist():
+                    content_name = os.path.basename(content)
+                    content_format = content_name.split('.')[-1]
+                    if content_format.lower() in format_list:
+                        if not zip_files.get(file_path):
+                            zip_files[file_path] = []
+                        zip_files[file_path].append(content)
+
+    @staticmethod
+    def extract_file():
+        zip_id = bpy.context.scene.zip_content.split(' ||| ')
+        zip_path = zip_id[0]
+        zip_extract_path = '.'.join(zip_path.split('.')[:-1])
+        model_path = encode_str(zip_id[1])
+        model_path_full = os.path.join(zip_extract_path, model_path)
+        model_dir = os.path.dirname(model_path_full)
+        model_file_name = os.path.basename(model_path_full)
+
+        # Extract the
+        with zipfile.ZipFile(zip_path, 'r') as zipObj:
+            for member in zipObj.infolist():
+                member.filename = encode_str(member.filename)
+                zipObj.extract(member, path=zip_extract_path)
+
+        ImportAnyModel.import_file(model_dir, model_file_name)
+
+    @staticmethod
+    def fix_bone_orientations(armature):
         Common.unselect_all()
         Common.set_active(armature)
         Common.switch('EDIT')
@@ -211,6 +276,85 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         if fix_bones:
             Common.fix_bone_orientations(armature)
         Common.switch('OBJECT')
+
+
+@register_wrap
+class ZipPopup(bpy.types.Operator):
+    bl_idname = "cats_importer.zip_popup"
+    bl_label = "Zip Model Selection:"
+    bl_description = 'Shows the models contained in the zip files'
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        # Save all current objects to check which armatures got added by the importer
+        pre_import_objects = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE']
+
+        # Import the file
+        ImportAnyModel.extract_file()
+
+        # Create list of armatures that got added during import, select them in cats and fix their bone orientations if necessary
+        arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
+        for armature in arm_added_during_import:
+            print('Added: ', armature.name)
+            bpy.context.scene.armature = armature.name
+            ImportAnyModel.fix_bone_orientations(armature)
+        return {'FINISHED'}
+
+    def invoke(self, context, event):
+        dpi_value = Common.get_user_preferences().system.dpi
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6, height=-550)
+
+    def check(self, context):
+        # Important for changing options
+        return False
+
+    def draw(self, context):
+        layout = self.layout
+        col = layout.column(align=True)
+
+        row = col.row(align=True)
+        row.scale_y = 0.9
+        row.label(text='Select which model you want to import')
+        row = col.row(align=True)
+        row.scale_y = 0.9
+        row.label(text='Then confirm with OK')
+
+        col.separator()
+        row = col.row(align=True)
+        row.scale_y = 1.3
+        row.prop(context.scene, 'zip_content')
+
+
+def get_zip_content(self, context):
+    choices = []
+
+    for zip_path, files in zip_files.items():
+        for file_path in files:
+            file_id = zip_path + ' ||| ' + file_path
+            file_name = os.path.basename(file_path)
+            zip_name = os.path.basename(zip_path)
+
+            # 1. Will be returned by context.scene
+            # 2. Will be shown in lists
+            # 3. will be shown in the hover description (below description)
+            choices.append((
+                file_id,
+                encode_str(file_name),
+                'Import model "' + encode_str(file_name) + '" from the zip "' + encode_str(zip_name) + '"'))
+
+    if len(choices) == 0:
+        choices.append(('None', 'None', 'None'))
+
+    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
+    return bpy.types.Object.Enum
+
+
+def encode_str(s):
+    try:
+        s = s.encode('cp437').decode('cp932')
+    except UnicodeEncodeError:
+        pass
+    return s
 
 
 @register_wrap
@@ -404,7 +548,7 @@ class InstallXPS(bpy.types.Operator):
         col.separator()
         col.separator()
         row = col.row(align=True)
-        row.label(text="Make sure to install the version for Blender " + "2.79" if Common.version_2_79_or_older() else "2.80", icon="INFO")
+        row.label(text="Make sure to install the version for Blender " + current_blender_version, icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(XpsToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -438,6 +582,10 @@ class InstallSource(bpy.types.Operator):
         row.label(text="If it is not enabled please enable it in your User Preferences.")
         row = col.row(align=True)
         row.label(text="If it is not installed please download and install it manually.")
+        col.separator()
+        col.separator()
+        row = col.row(align=True)
+        row.label(text="Make sure to install the version for Blender " + current_blender_version, icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(SourceToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -781,7 +929,7 @@ class ErrorDisplay(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        if self.tris_count > 70000:
+        if not self.tris_count > 70000:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Too many polygons!", icon='ERROR')
@@ -789,7 +937,7 @@ class ErrorDisplay(bpy.types.Operator):
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You have " + str(self.tris_count) + " tris in this model, which isn't allowed in VRChat! (max 70,000)")
+            row.label(text="You have " + str(self.tris_count) + " tris in this model, but you shouldn't have more than 70,000!")
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="You should decimate before you export this model.")
