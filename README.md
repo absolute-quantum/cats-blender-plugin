@@ -349,9 +349,10 @@ It checks for a new version automatically once every day.
     - It will only extract the zip if importable models are found
     - If multiple models are found in the zip, you can select the one you want in a popup window
     - Japanese zip files will be extracted with the correct encoding
-  - Models can now be imported with Cats via the windows command shell
+  - Models can now be imported with Cats via the Windows command shell
 - **Fix Model**:
-  - Hips bone will now be larger than before, to comply with the adjusted VRChat recommendation
+  - Hips bone will now be larger than before, to comply with the VRChat recommendations
+    - Read through them here: https://docs.vrchat.com/docs/full-body-tracking
   - FFXIV models are now compatible
   - Added "Fix Materials" option in Blender 2.80 and higher
     - This will apply some VRChat related fixes to materials
