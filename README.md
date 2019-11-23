@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.16.0)
+# Cats Blender Plugin (0.16.1)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -298,6 +298,9 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.16.1
+- Nothing new yet
+
 #### 0.16.0
 - **Cats is now fully compatible with Blender 2.81!**
 - **Importer**:
@@ -354,39 +357,6 @@ It checks for a new version automatically once every day.
   - Improved Material Combiner detection algorithm
 - **General**:
   - Updated mmd_tools
-
-#### 0.14.0
-- **Cats is now fully compatible with Blender 2.80!**
-- **Fix Model**:
-  - Improved DAZ compatibility
-- **Model Options**:
-  - Added "Merge Weights" and "Remove Zero Weight Bones" to the spacebar search
-  - Added "Apply All Transforms" button to correctly apply the transforms of all objects
-  - Separating Meshes now deletes the Basis shape key if it is the last shape key left
-- **Custom Model Creation**:
-  - Added "Apply Transforms" option to "Merge Armatures"
-    - Use this if both armatures and meshes are already at their correct positions
-  - Merge Armature and Attach Mesh now correctly restore the initial state from before the operation
-- **Visemes**:
-  - Fixed shape keys sometimes not appearing in the viseme list
-- **Optimization**:
-  - "Combine Same Materials" and "Convert Textures to PNG" are now compatible with Blender 2.80
-  - Added loading cursor to "Convert Textures to PNG"
-  - Added support for Shotariyas Material Combiner in Blender 2.80
-    - Minimum required Material Combiner version is now v2.1.1.2
-      - It now fully supports VRM models, has a greatly improved combining logic and an updated UI
-      - It also got compression removed, so you will always get full quality images now
-- **Updater**:
-  - Made it more robust to different version naming schemes
-- **General**:
-  - Improved shading in 2.80
-  - Improved initial state restoration after an operation
-  - Backface culling is now always toggled on
-  - Removed tons of unintended functions from the spacebar search
-  - Upon startup Cats now enables "Testing" as supported addon level
-  - Updated mmd_tools
-  - Fixed a bug while loading settings during startup
-  - Fixed a bug while loading the initial state after an operation
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
