@@ -339,7 +339,6 @@ class _MorphSlider:
         self.__cleanup()
 
     def bind(self):
-        #bpy.context.user_preferences.system.use_scripts_auto_execute = True
         rig = self.__rig
         root = rig.rootObject()
         armObj = rig.armature()

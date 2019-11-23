@@ -198,7 +198,7 @@ class JoinMeshes(Operator):
         # Store the current order of the materials
         for m in meshes_list[1:]:
             for mat in m.data.materials:
-                if getattr(mat, 'name', None) not in active_mesh.data.materials[:]:
+                if mat not in active_mesh.data.materials[:]:
                     active_mesh.data.materials.append(mat)
 
         # Join selected meshes

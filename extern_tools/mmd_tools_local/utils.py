@@ -14,7 +14,7 @@ def selectAObject(obj):
         pass
     bpy.ops.object.select_all(action='DESELECT')
     SceneOp(bpy.context).active_object = obj
-    obj.select=True
+    SceneOp(bpy.context).select_object(obj)
 
 ## 現在のモードを指定したオブジェクトのEdit Modeに変更する
 def enterEditMode(obj):
@@ -86,34 +86,59 @@ def mergeVertexGroup(meshObj, src_vertex_group_name, dest_vertex_group_name):
         except ValueError:
             pass
 
+def __getCustomNormalKeeper(mesh):
+    if hasattr(mesh, 'has_custom_normals') and mesh.use_auto_smooth:
+        import bpy
+        class _CustomNormalKeeper:
+            def __init__(self, mesh):
+                mesh.calc_normals_split()
+                self.__normals = tuple(zip((l.normal.copy() for l in mesh.loops), (p.material_index for p in mesh.polygons for v in p.vertices)))
+                mesh.free_normals_split()
+                self.__material_map = {}
+                materials = mesh.materials
+                for i, m in enumerate(materials):
+                    if m is None or m.name in self.__material_map:
+                        materials[i] = bpy.data.materials.new('_mmd_tmp_')
+                    self.__material_map[materials[i].name] = (i, getattr(m, 'name', ''))
+
+            def restore_custom_normals(self, mesh):
+                materials = mesh.materials
+                for i, m in enumerate(materials):
+                    mat_id, mat_name_orig = self.__material_map[m.name]
+                    if m.name != mat_name_orig:
+                        materials[i] = bpy.data.materials.get(mat_name_orig, None)
+                        m.user_clear()
+                        bpy.data.materials.remove(m)
+                if len(materials) == 1:
+                    mesh.normals_split_custom_set([n for n, x in self.__normals if x == mat_id])
+                    mesh.update()
+        return _CustomNormalKeeper(mesh) # This fixes the issue that "SeparateByMaterials" could break custom normals
+    return None
+
 def separateByMaterials(meshObj):
+    if len(meshObj.data.materials) < 2:
+        return
     import bpy
+    custom_normal_keeper = __getCustomNormalKeeper(meshObj.data)
     matrix_parent_inverse = meshObj.matrix_parent_inverse.copy()
     prev_parent = meshObj.parent
     dummy_parent = bpy.data.objects.new(name='tmp', object_data=None)
     meshObj.parent = dummy_parent
     meshObj.active_shape_key_index = 0
-
-    enterEditMode(meshObj)
     try:
+        enterEditMode(meshObj)
         bpy.ops.mesh.select_all(action='SELECT')
         bpy.ops.mesh.separate(type='MATERIAL')
     finally:
         bpy.ops.object.mode_set(mode='OBJECT')
-
-    for i in dummy_parent.children:
-        mesh = i.data
-        materials = mesh.materials
-        if len(mesh.polygons) > 0:
-            if len(materials) > 1:
-                mat_index = mesh.polygons[0].material_index
-                for x in reversed(range(len(materials))):
-                    if x != mat_index:
-                        materials.pop(index=x, update_data=True)
-        i.name = getattr(materials[0], 'name', 'None') if len(materials) else 'None'
-        i.parent = prev_parent
-        i.matrix_parent_inverse = matrix_parent_inverse
-    bpy.data.objects.remove(dummy_parent)
+        for i in dummy_parent.children:
+            if custom_normal_keeper:
+                custom_normal_keeper.restore_custom_normals(i.data)
+            materials = i.data.materials
+            i.name = getattr(materials[0], 'name', 'None') if len(materials) else 'None'
+            i.parent = prev_parent
+            i.matrix_parent_inverse = matrix_parent_inverse
+        bpy.data.objects.remove(dummy_parent)
 
 def clearUnusedMeshes():
     import bpy

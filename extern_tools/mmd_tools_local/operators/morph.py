@@ -284,7 +284,6 @@ class ApplyMaterialOffset(Operator):
             self.report({ 'ERROR' }, "Material not found")
             return { 'CANCELLED' }
 
-        copy_idx = meshObj.data.materials.find(work_mat.name)
         base_mmd_mat = base_mat.mmd_material
         work_mmd_mat = work_mat.mmd_material
 
@@ -318,9 +317,7 @@ class ApplyMaterialOffset(Operator):
             mat_data.edge_color = list(edge_offset)
             mat_data.edge_weight = work_mmd_mat.edge_weight - base_mmd_mat.edge_weight
 
-        mat = meshObj.data.materials.pop(index=copy_idx)
-        if mat.users < 1:
-            bpy.data.materials.remove(mat)
+        FnMaterial.clean_materials(meshObj, can_remove=lambda m: m == work_mat)
         return { 'FINISHED' }
 
 @register_wrap
@@ -401,21 +398,16 @@ class ClearTempMaterials(Operator):
         root = mmd_model.Model.findRoot(obj)
         rig = mmd_model.Model(root)
         for meshObj in rig.meshes():
-            mats_to_delete = []
-            for mat in meshObj.data.materials:
-                if mat and "_temp" in mat.name:
-                    mats_to_delete.append(mat)
-            for temp_mat in reversed(mats_to_delete):
-                base_mat_name = temp_mat.name.split('_temp')[0]
-                try:
-                    FnMaterial.swap_materials(meshObj, temp_mat.name, base_mat_name)
-                except MaterialNotFoundError:
-                    self.report({ 'WARNING' } ,'Base material for %s was not found'%temp_mat.name)
-                else:
-                    temp_idx = meshObj.data.materials.find(temp_mat.name)
-                    mat = meshObj.data.materials.pop(index=temp_idx)
-                    if mat.users < 1:
-                        bpy.data.materials.remove(mat)
+            def __pre_remove(m):
+                if m and '_temp' in m.name:
+                    base_mat_name = m.name.split('_temp')[0]
+                    try:
+                        FnMaterial.swap_materials(meshObj, m.name, base_mat_name)
+                        return True
+                    except MaterialNotFoundError:
+                        self.report({ 'WARNING' } ,'Base material for %s was not found'%m.name)
+                return False
+            FnMaterial.clean_materials(meshObj, can_remove=__pre_remove)
         return { 'FINISHED' }
 
 @register_wrap

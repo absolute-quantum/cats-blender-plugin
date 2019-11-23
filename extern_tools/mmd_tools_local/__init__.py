@@ -124,10 +124,12 @@ def register():
         bpy.types.INFO_MT_file_import.append(menu_func_import)
         bpy.types.INFO_MT_file_export.append(menu_func_export)
         bpy.types.INFO_MT_armature_add.append(menu_func_armature)
+        #bpy.context.user_preferences.system.use_scripts_auto_execute = True
     else:
         bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
         bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
         bpy.types.VIEW3D_MT_armature_add.append(menu_func_armature)
+        #bpy.context.preferences.filepaths.use_scripts_auto_execute = True
 
 def unregister():
     if bpy.app.version < (2, 80, 0):

@@ -76,7 +76,7 @@ class MMDBonePanel(Panel):
         row.prop(mmd_bone, 'has_additional_rotation', text='Rotate +', toggle=True)
         row.prop(mmd_bone, 'has_additional_location', text='Move +', toggle=True)
         if mmd_bone.is_additional_transform_dirty:
-            row.operator('mmd_tools.apply_additional_transform', text='', icon='ERROR')
-        c.prop(mmd_bone, 'additional_transform_influence', text='Influence', slider=True)
+            row.label(icon='ERROR')
         c.prop_search(mmd_bone, 'additional_transform_bone', pose_bone.id_data.pose, 'bones', icon='BONE_DATA', text='')
+        c.prop(mmd_bone, 'additional_transform_influence', text='Influence', slider=True)
 
