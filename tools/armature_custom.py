@@ -75,7 +75,7 @@ class MergeArmature(bpy.types.Operator):
                     for i in [0, 1, 2]:
                         if merge_parent.scale[i] != 1 or merge_parent.location[i] != 0 or merge_parent.rotation_euler[i] != 0:
                             saved_data.load()
-                            Common.show_error(6.5,[
+                            Common.show_error(6.5, [
                                                         'Please make sure that the parent of the merge armature has the following transforms:',
                                                         ' - Location at 0',
                                                         ' - Rotation at 0',
@@ -87,7 +87,7 @@ class MergeArmature(bpy.types.Operator):
                     for i in [0, 1, 2]:
                         if base_parent.scale[i] != 1 or base_parent.location[i] != 0 or base_parent.rotation_euler[i] != 0:
                             saved_data.load()
-                            Common.show_error(6.5,[
+                            Common.show_error(6.5, [
                                                         'Please make sure that the parent of the base armature has the following transforms:',
                                                         ' - Location at 0',
                                                         ' - Rotation at 0',
@@ -250,7 +250,8 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
                     Common.set_active(mesh_merge)
 
                     Common.show_error(7.5,
-                                            ['If you want to rotate the new part, only modify the mesh instead of the armature!',
+                                            ['If you want to rotate the new part, only modify the mesh instead of the armature,',
+                                             'or select "Apply Transforms"!',
                                              '',
                                              'The transforms of the merge armature got reset and the mesh you have to modify got selected.',
                                              'Now place this selected mesh where and how you want it to be and then merge the armatures again.',

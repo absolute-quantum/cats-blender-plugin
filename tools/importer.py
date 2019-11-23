@@ -929,7 +929,7 @@ class ErrorDisplay(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        if self.tris_count > 70000:
+        if not self.tris_count > 70000:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Too many polygons!", icon='ERROR')
@@ -937,7 +937,7 @@ class ErrorDisplay(bpy.types.Operator):
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You have " + str(self.tris_count) + " tris in this model, which isn't allowed in VRChat! (max 70,000)")
+            row.label(text="You have " + str(self.tris_count) + " tris in this model, but you shouldn't have more than 70,000!")
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="You should decimate before you export this model.")

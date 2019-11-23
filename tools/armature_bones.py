@@ -624,6 +624,7 @@ bone_rename['\Left shoulder'] = [
     '\L_Clavic',
     'J_Sako_\L',
     '\L_ShoulderPad',
+    'Collarbone_\L',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',

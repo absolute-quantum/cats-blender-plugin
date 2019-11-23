@@ -8,7 +8,7 @@ from ..tools import importer as Importer
 from ..tools.register import register_wrap
 
 
-@register_wrap
+# @register_wrap
 class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_copyprotection_v3'
     bl_label = 'Copy Protection'

@@ -35,7 +35,7 @@ Join our Discord to report errors, suggestions and make comments!
 **Discord: https://discord.gg/f8yZGnv**
 
 ## Requirements
- - Blender **2.79** or **2.80** (run as administrator is recommended)
+ - Blender **2.79** or **2.80** or **2.81** (run as administrator is recommended)
    - mmd_tools is **no longer required**! Cats comes pre-installed with it!
  - If you have custom Python installed which Blender might use, you need to have Numpy installed
 
@@ -280,50 +280,6 @@ This works by checking all bones and trying to figure out if they can be grouped
 - Starts the merge process
 
 
-## Copy Protection
-
-![](https://i.imgur.com/5qP5bCT.png)
-
-**Can protect your avatars from being ripped from the game cache.**
-Game cache rips in most common cases do not include blendshapes and shaders. 
-This method will make it much harder for people that try to steal your avatar through ripping from cache.
-
-**This is NOT a 100% protection**, but it's the best what you as a creator can currently do. If you want to be 100% safe, stay in private worlds with people you trust.
-
-#### How to setup:
-
-1. Do all the modifications to your model in Blender before you follow the next steps!
-   This option should be the last one you do in Blender before exporting!
-2. You won't be able to see the mesh of your model inside the Unity bone mapping screen (it will be garbled mess, but only in there).
-   Because of that, if you need to actually see your models mesh (e.g. for straightening the fingers for VR), follow the extra steps below.
-   If you don't need to see the mesh (e.g. for unassigning the jaw bone) skip to step 2.
-     - Export your model from Blender without enabling the protection
-     - Load it up in Unity and configure it in the bone mapping screen and press "Done"
-     - In Blender: Click the "Enable Protection" button and export your model
-     - Then, except for just dragging the fbx into Unity, you need to go into the folder where this Unity project is located
-       and then replace the unprotected fbx with the protected one. 
-       That way your configurations will be kept.
-     - Skip to step 5
-3. In Blender: Click the "Enable Protection" button
-4. Export it to Unity by either using the "Export" button within Cats or set the fbx export option by yourself: 
-   Geometries > Smoothing > Set to "Face"
-5. In Unity: Set the value of the blendshape 'Basis Original' to 100 like so: 
-   https://i.imgur.com/RlrGTvV.gif
-6. To fix any lighting issues select your .fbx and then select "Import" as the Tangents option here: 
-
-   ![](https://i.imgur.com/SqynQzw.png)
-7. Because (for some odd reason) the protection increases your bounding box it could be too big to upload your model.
-   If the VRCSDK complains about your model being too large, edit your bounding box back to normal here:
-   (this option is below the blendshape list from above)
-   
-   ![](https://i.imgur.com/4NrfVOr.png)
-8. Your avatar now behaves just like a normal one.
-
-People that try to steal your avatar will then only see a box of mangled waifu trash instead of your original character.
-
-  **special thanks to @zarniwoop#6081**
-
-
 ## Shape Key
 
 ![](https://i.imgur.com/LgFK4KO.png)
@@ -365,6 +321,10 @@ It checks for a new version automatically once every day.
   - Fixed bones from the merge armature sometimes getting unintentionally deleted
 - **Optimization**:
   - Added manual download button if Material Combiner is outdated
+- **Copy Protection**:
+  - Removed Copy Protection panel
+    - It is no longer a good method for protecting against cache ripping
+      and it can cause performance and lighting issues
 - **General**:
   - Armatures will no longer be forced into rest position after any action
   - Fixed armatures sometimes not getting detected
@@ -427,18 +387,6 @@ It checks for a new version automatically once every day.
   - Updated mmd_tools
   - Fixed a bug while loading settings during startup
   - Fixed a bug while loading the initial state after an operation
-
-#### 0.13.3
-- **Importer**:
-  - Fixed imported armatures being in edit mode
-- **Custom Model Creation**:
-  - Merge Armatures now properly merges bones when the vertex group of one of the merging bones is missing
-  - Attach Mesh no longer removes zero weight bones and constraints
-- **Model Options**:
-  - Fixed error when switching to object mode during pose mode
-- **General**:
-  - Updated mmd_tools
-  - The Blender 2.80 API is stable now, so Cats should no longer break in 2.80
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
 
