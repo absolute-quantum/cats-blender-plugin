@@ -353,6 +353,9 @@ It checks for a new version automatically once every day.
 - **Fix Model**:
   - Hips bone will now be larger than before, to comply with the adjusted VRChat recommendation
   - FFXIV models are now compatible
+  - Added "Fix Materials" option in Blender 2.80 and higher
+    - This will apply some VRChat related fixes to materials
+    - This has always been done in Fix Model but now you can turn it off
 - **Model Options**:
   - Remove Doubles no longer effects meshes with no shapekeys
 - **Custom Model Creation**:

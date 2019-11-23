@@ -75,6 +75,12 @@ def register():
         default=True
     )
 
+    Scene.fix_materials = BoolProperty(
+        name='Fix Materials',
+        description="This will apply some VRChat related fixes to materials",
+        default=True
+    )
+
     Scene.use_google_only = BoolProperty(
         name='Use Old Translations (not recommended)',
         description="Ignores the internal dictionary and only uses the Google Translator for shape key translations."

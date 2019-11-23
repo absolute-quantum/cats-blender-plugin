@@ -208,6 +208,9 @@ class ModelSettings(bpy.types.Operator):
         row.prop(context.scene, 'join_meshes')
         row = col.row(align=True)
         row.prop(context.scene, 'connect_bones')
+        if not Common.version_2_79_or_older():
+            row = col.row(align=True)
+            row.prop(context.scene, 'fix_materials')
         row = col.row(align=True)
         row.prop(context.scene, 'combine_mats')
         row = col.row(align=True)
