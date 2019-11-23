@@ -754,6 +754,11 @@ _broken_shapes = []
 _textures_found = False
 _eye_meshes_not_named_body = []
 
+max_mats = 4
+max_tris = 70000
+max_meshes_light = 2
+max_meshes_hard = 8
+
 
 @register_wrap
 class ExportModel(bpy.types.Operator):
@@ -839,9 +844,9 @@ class ExportModel(bpy.types.Operator):
                                     break
 
             # Check if a warning should be shown
-            if _meshes_count > 1 \
-                    or _tris_count > 70000 \
-                    or len(_mat_list) > 4 \
+            if _meshes_count > max_meshes_light \
+                    or _tris_count > max_tris \
+                    or len(_mat_list) > max_mats \
                     or len(_broken_shapes) > 0 \
                     or not _textures_found and Settings.get_embed_textures()\
                     or len(_eye_meshes_not_named_body) > 0:
@@ -929,7 +934,7 @@ class ErrorDisplay(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        if self.tris_count > 70000:
+        if self.tris_count > max_tris:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Too many polygons!", icon='ERROR')
@@ -965,7 +970,7 @@ class ErrorDisplay(bpy.types.Operator):
         #     col.separator()
         #     col.separator()
 
-        if self.mat_count > 4:
+        if self.mat_count > max_mats:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Model not optimized!", icon='INFO')
@@ -985,7 +990,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if self.meshes_count > 2:
+        if self.meshes_count > max_meshes_light:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Meshes not joined!", icon='ERROR')
@@ -997,7 +1002,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            if self.meshes_count < 9:
+            if self.meshes_count <= max_meshes_hard:
                 row.label(text="It is not very optimized and might cause lag for you and others.")
             else:
                 row.label(text="It is extremely unoptimized and will cause lag for you and others.")
