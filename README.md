@@ -299,7 +299,7 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.16.1
-- Nothing new yet
+- Fixed export warning bug
 
 #### 0.16.0
 - **Cats is now fully compatible with Blender 2.81!**
