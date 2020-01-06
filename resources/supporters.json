@@ -21,7 +21,7 @@
       "custom_icon": "wednesday",
       "disabled": true
     },{
-      "info": "Happy 2019!",
+      "info": "Happy 2020!",
       "custom_icon": "fireworks",
       "disabled": true
     }
@@ -63,7 +63,8 @@
       "startdate": "2018-01-05"
     },{
       "displayname": "Ainrehtea Dal'Nalirtu",
-      "startdate": "2018-02-05"
+      "startdate": "2018-02-05",
+      "disabled": true
     },{
       "displayname": "Raikin",
       "startdate": "2018-03-05",
@@ -229,7 +230,8 @@
       "disabled": true
     },{
       "displayname": "BemVR",
-      "startdate": "2018-05-14"
+      "startdate": "2018-05-14",
+      "disabled": true
     },{
       "displayname": "Hizling",
       "startdate": "2018-05-14",
@@ -453,6 +455,9 @@
       "description": "Autistic streamer letting you know to have a great day and keep bringing in the amazing avatars!",
       "website": "https://www.twitch.tv/knightbornegaming",
       "tier": 1
+    },{
+      "displayname": "TheKally",
+      "startdate": "2019-12-02"
     }
   ]
 }

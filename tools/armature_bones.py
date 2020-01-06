@@ -335,7 +335,7 @@ bone_rename = OrderedDict()
 bone_rename['Hips'] = [
     'LowerBody',
     'Lower_Body',
-    'Mixamorig:Hips',
+    'Mixamorig_Hips',
     'Pelvis',
     'B_C_Pelvis',
     'Bip_Pelvis',
@@ -381,12 +381,12 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Waist_Upper_3',
 
     # Mixamo
-    'Mixamorig:Spine',
-    'Mixamorig:Spine0',
-    'Mixamorig:Spine1',
-    'Mixamorig:Spine2',
-    'Mixamorig:Spine3',
-    'Mixamorig:Spine4',
+    'Mixamorig_Spine',
+    'Mixamorig_Spine0',
+    'Mixamorig_Spine1',
+    'Mixamorig_Spine2',
+    'Mixamorig_Spine3',
+    'Mixamorig_Spine4',
 
     # 3DMax?
     'Bip_Spine',
@@ -540,7 +540,7 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Upper_Chest'  # Last entry!
 ]
 bone_rename['Neck'] = [
-    'Mixamorig:Neck',
+    'Mixamorig_Neck',
     'Head_Neck_Lower',
     'Head_Neck_Lower_1',
     'Head_Neck_Lower_2',
@@ -564,7 +564,7 @@ bone_rename['Neck'] = [
     'Neck_X',
 ]
 bone_rename['Head'] = [
-    'Mixamorig:Head',
+    'Mixamorig_Head',
     'Head_Neck_Upper',
     'Head_Neck_Upper_1',
     'Head_Neck_Upper_2',
@@ -590,7 +590,7 @@ bone_rename['\Left shoulder'] = [
     '\LShoulderN',
     'Shoulder\L',
     '\L_Shoulder',
-    'Mixamorig:\LeftShoulder',
+    'Mixamorig_\LeftShoulder',
     'Arm_\Left_Shoulder',
     'Arm_\Left_Shoulder_1',
     'ShoulderArm_\L',
@@ -634,7 +634,7 @@ bone_rename['\Left arm'] = [
     '\LArmA',
     'ArmTC_\L',
     '+_\Left_Elbow_Support',
-    'Mixamorig:\LeftArm',
+    'Mixamorig_\LeftArm',
     'Arm_\Left_Shoulder_2',
     'Bip_\L_UpperArm',
     'Bip_UpperArm_\L',
@@ -681,7 +681,7 @@ bone_rename['\Left elbow'] = [
     '\LeftElbow',
     'Elbow_\L',
     '\L_Elbow',
-    'Mixamorig:\LeftForeArm',
+    'Mixamorig_\LeftForeArm',
     'Arm_\Left_Elbow',
     'Bip_\L_ForeArm',
     'Bip_LowerArm_\L',
@@ -729,7 +729,7 @@ bone_rename['\Left wrist'] = [
     'Wrist_\L',
     'Wrist2_\L',
     'HandAux2_\L',
-    'Mixamorig:\LeftHand',
+    'Mixamorig_\LeftHand',
     'Arm_\Left_Wrist',
     'Arm_\Left_Wirst',
     'Bip_\L_Hand',
@@ -771,7 +771,7 @@ bone_rename['\Left leg'] = [
     'LegWAux_\L',
     'Leg00003333_\L',
     'Leg00004444_\L',
-    'Mixamorig:\LeftUpLeg',
+    'Mixamorig_\LeftUpLeg',
     'Leg_\Left_Thigh',
     'Bip_\L_Thigh',
     'Bip_Hip_\L',
@@ -820,7 +820,7 @@ bone_rename['\Left knee'] = [
     '\LeftKnee',
     'Knee_\L_001',
     'Knee_\L',
-    'Mixamorig:\LeftLeg',
+    'Mixamorig_\LeftLeg',
     'Leg_\Left_Knee',
     'Bip_\L_Calf',
     'Bip_Knee_\L',
@@ -867,7 +867,7 @@ bone_rename['\Left ankle'] = [
     '\LeftAnkle',
     'Ankle_\L',
     '\L_Ankle',
-    'Mixamorig:\LeftFoot',
+    'Mixamorig_\LeftFoot',
     'Leg_\Left_Ankle',
     'Eg_\Left_Ankle',
     'Bip_\L_Foot',
@@ -903,7 +903,7 @@ bone_rename['\Left toe'] = [
     'LegTip_\L',
     'LegTipEX_\L',
     'ClawTipEX_\L',
-    'Mixamorig:\LeftToeBase',
+    'Mixamorig_\LeftToeBase',
     'Leg_\Left_Toes',
     'Bip_\L_Toe0',
     'B_\L_Toe',
@@ -940,7 +940,7 @@ bone_rename['\Left toe'] = [
 ]
 bone_rename['Eye_\L'] = [
     '\Left_Eye',
-    'Mixamorig:\LeftEye',
+    'Mixamorig_\LeftEye',
     'Head_Eyeball_\Left',
     'Head_Eyeball_\Left_1',
     'FEye\L',
