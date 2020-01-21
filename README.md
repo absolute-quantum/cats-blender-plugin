@@ -300,6 +300,7 @@ It checks for a new version automatically once every day.
 
 #### 0.16.2
 - Fixed export warning being empty
+- Fixed objects getting unhidden when doing any cats operation in 2.80+
 
 #### 0.16.1
 - Fixed export warning bug

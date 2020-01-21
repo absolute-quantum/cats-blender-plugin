@@ -215,13 +215,13 @@ def hide(obj, val=True):
     if version_2_79_or_older():
         obj.hide = val
     else:
-        obj.hide_viewport = val
+        obj.hide_set(val)
 
 
 def is_hidden(obj):
     if version_2_79_or_older():
         return obj.hide
-    return obj.hide_viewport
+    return obj.hide_get()
 
 
 def set_unselectable(obj, val=True):
