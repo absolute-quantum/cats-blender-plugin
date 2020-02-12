@@ -150,6 +150,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         col.separator()
+
         split = col.row(align=True)
         row = split.row(align=True)
         row.scale_y = 1.5
@@ -158,6 +159,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row.alignment = 'RIGHT'
         row.scale_y = 1.5
         row.operator(ModelSettings.bl_idname, text="", icon='MODIFIER')
+
         col.separator()
         col.separator()
 

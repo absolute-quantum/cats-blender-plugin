@@ -25,6 +25,7 @@
 
 import os
 import bpy
+import copy
 import zipfile
 import webbrowser
 import bpy_extras.io_utils
@@ -110,16 +111,18 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         if self.directory:
             for f in self.files:
                 file_name = f.name
-                print(file_name)
                 self.import_file(self.directory, file_name)
         # If this operator is called with no directory but a filepath argument, import that
         elif self.filepath:
             print(self.filepath)
             self.import_file(os.path.dirname(self.filepath), os.path.basename(self.filepath))
 
+        if not zip_files:
+            Common.show_error(4, ['This zip file contains no importable models.'])
+
         # Import all models from zip files that contain only one importable model
         remove_keys = []
-        for zip_path, files in zip_files.items():
+        for zip_path, files in copy.deepcopy(zip_files).items():
             context.scene.zip_content = zip_path + ' ||| ' + files[0]
             if len(files) == 1:
                 ImportAnyModel.extract_file()
