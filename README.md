@@ -302,9 +302,10 @@ It checks for a new version automatically once every day.
 
 #### 0.16.2
 - **Cats is now fully compatible with Blender 2.83!**
-  - It was compatible with 2.82 all long
+  - *It was compatible with 2.82 all long*
 - Fixed export warning being empty
-- Fixed importer error when a zip file contains another zip file
+- Fixed importer error when the FBX importer was not enabled
+- Fixed importer error when a zip file contained another zip file
 - Fixed objects getting unhidden when doing any cats operation in 2.80+
 
 #### 0.16.1

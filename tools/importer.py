@@ -28,6 +28,7 @@ import bpy
 import copy
 import zipfile
 import webbrowser
+import addon_utils
 import bpy_extras.io_utils
 
 from .. import globs
@@ -192,6 +193,12 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         # FBX
         elif file_ending == 'fbx':
+
+            # Enable fbx if it isn't enabled yet
+            fbx_is_enabled = addon_utils.check('io_scene_fbx')[1]
+            if not fbx_is_enabled:
+                addon_utils.enable('io_scene_fbx')
+
             try:
                 bpy.ops.import_scene.fbx('EXEC_DEFAULT',
                                          filepath=file_path,
@@ -309,7 +316,7 @@ class ZipPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6)
 
     def check(self, context):
         # Important for changing options
@@ -376,7 +383,7 @@ class ModelsPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3)
 
     def check(self, context):
         # Important for changing options
@@ -491,6 +498,11 @@ class ImportFBX(bpy.types.Operator):
         if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
+        # Enable fbx if it isn't enabled yet
+        fbx_is_enabled = addon_utils.check('io_scene_fbx')[1]
+        if not fbx_is_enabled:
+            addon_utils.enable('io_scene_fbx')
+
         try:
             bpy.ops.import_scene.fbx('INVOKE_DEFAULT',
                                      automatic_bone_orientation=False,
@@ -535,7 +547,7 @@ class InstallXPS(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
 
     def check(self, context):
         # Important for changing options
@@ -572,7 +584,7 @@ class InstallSource(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
 
     def check(self, context):
         # Important for changing options
@@ -609,7 +621,7 @@ class InstallVRM(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
 
     def check(self, context):
         # Important for changing options
@@ -645,7 +657,7 @@ class EnableMMD(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
 
     def check(self, context):
         # Important for changing options
@@ -931,7 +943,7 @@ class ErrorDisplay(bpy.types.Operator):
         self.eye_meshes_not_named_body = _eye_meshes_not_named_body
 
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1)
 
     def check(self, context):
         # Important for changing options

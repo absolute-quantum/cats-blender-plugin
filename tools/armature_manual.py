@@ -220,7 +220,7 @@ class PoseNamePopup(bpy.types.Operator):
     def invoke(self, context, event):
         context.scene.pose_to_shapekey_name = 'Pose'
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
 
     def check(self, context):
         # Important for changing options
