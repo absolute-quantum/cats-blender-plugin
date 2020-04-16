@@ -1417,11 +1417,16 @@ def delete_zero_weight(armature_name=None, ignore=''):
 
 
 def remove_unused_objects():
+    default_scene_objects = []
     for obj in get_objects():
         if (obj.type == 'CAMERA' and obj.name == 'Camera') \
                 or (obj.type == 'LAMP' and obj.name == 'Lamp') \
                 or (obj.type == 'LIGHT' and obj.name == 'Light') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
+            default_scene_objects.append(obj)
+
+    if len(default_scene_objects) == 3:
+        for obj in default_scene_objects:
             delete_hierarchy(obj)
 
 

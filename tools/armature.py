@@ -943,6 +943,9 @@ class FixArmature(bpy.types.Operator):
                     if not bone_child or not bone_parent:
                         continue
 
+                    if context.scene.keep_twist_bones and 'twist' in bone_child.name.lower():
+                        continue
+
                     # search for next parent that is not in the "reweight to parent" list
                     parent_in_list = True
                     while parent_in_list:
@@ -1015,6 +1018,9 @@ class FixArmature(bpy.types.Operator):
                             print('BUG: ' + bone[0] + ' tried to mix weights with itself!')
                             continue
 
+                        if context.scene.keep_twist_bones and 'twist' in bone[1].lower():
+                            continue
+
                         # print(bone[1] + " to1 " + bone[0])
 
                         # If important vertex group is not there create it
@@ -1067,6 +1073,9 @@ class FixArmature(bpy.types.Operator):
 
                 # Cancel if vertex groups was not found
                 if not vg_to:
+                    continue
+
+                if context.scene.keep_twist_bones and 'twist' in vg_from.name.lower():
                     continue
 
                 bone_tmp = armature.data.bones.get(vg_from.name)

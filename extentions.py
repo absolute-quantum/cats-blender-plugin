@@ -55,6 +55,13 @@ def register():
         default=False
     )
 
+    Scene.keep_twist_bones = BoolProperty(
+        name='Keep Twist Bones (Experimental)',
+        description="Saves twist bones from deletion. Currently only works on MMD models."
+                    '\n\nVRChat can now make use of twist bones, so you can use this option to keep them',
+        default=False
+    )
+
     Scene.join_meshes = BoolProperty(
         name='Join Meshes',
         description='Joins all meshes of this model together.'

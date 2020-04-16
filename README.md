@@ -303,10 +303,16 @@ It checks for a new version automatically once every day.
 #### 0.16.2
 - **Cats is now fully compatible with Blender 2.83!**
   - *It was compatible with 2.82 all long*
-- Fixed export warning being empty
-- Fixed importer error when the FBX importer was not enabled
-- Fixed importer error when a zip file contained another zip file
-- Fixed objects getting unhidden when doing any cats operation in 2.80+
+- **Fix Model:**
+  - Added "Keep Twist Bones" option to Fix Model (experimental)
+  - Added compatibility to more models
+- **Importer:**
+  - Fixed export warning being empty
+  - Fixed importer error when the FBX importer was not enabled
+  - Fixed importer error when a zip file contained another zip file
+  - When importing a model, objects of a new scene now only get deleted if all three of them are present
+- **General:**
+  - Fixed objects getting unhidden when doing any cats operation in 2.80+
 
 #### 0.16.1
 - Fixed export warning bug
@@ -342,30 +348,6 @@ It checks for a new version automatically once every day.
   - Armatures will no longer be forced into rest position after any action
   - Fixed armatures sometimes not getting detected
   - Small bug fixes
-  - Updated mmd_tools
-
-#### 0.15.0
-- **Importer**:
-  - FBX no longer imports animations and poses by default
-- **Fix Model**:
-  - Now always applies transforms of the model
-  - Added "Keep Upper Chest" option
-    - Warning: Currently having an Upper Chest breaks Eye Tracking, so don't use this if you want Eye Tracking
-  - Removed "Fix Full Body Tracking" option
-    - It is no longer needed for VRChat
-    - The button to add/remove the fix is still available in Model Options
-  - Improved Hips placement as recommended by VRChat
-  - Legs are now getting bend forward very slightly if they are completely straight
-  - Fixed a bug which could sometimes delete bones unintentionally
-- **Model**:
-  - Fixed pose mode error in 2.80
-- **Model Options**:
-  - Added new "Delete Zero Weight Vertex Groups" button
-  - Improved layout of the "Full Body Tracking Fix" buttons
-  - Fixed visual "Merge Weights" bug in Blender 2.80
-- **Optimization**:
-  - Improved Material Combiner detection algorithm
-- **General**:
   - Updated mmd_tools
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).
