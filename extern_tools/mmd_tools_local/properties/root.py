@@ -17,6 +17,54 @@ from mmd_tools_local.properties.morph import UVMorph
 from mmd_tools_local.properties.morph import GroupMorph
 import mmd_tools_local.core.model as mmd_model
 
+def __driver_variables(id_data, path, index=-1):
+    d = id_data.driver_add(path, index)
+    variables = d.driver.variables
+    for x in variables:
+        variables.remove(x)
+    return d.driver, variables
+
+def __add_single_prop(variables, id_obj, data_path, prefix):
+    var = variables.new()
+    var.name = prefix + str(len(variables))
+    var.type = 'SINGLE_PROP'
+    target = var.targets[0]
+    target.id_type = 'OBJECT'
+    target.id = id_obj
+    target.data_path = data_path
+    return var
+
+def _toggleUsePropertyDriver(self, context):
+    root = self.id_data
+    rig = mmd_model.Model(root)
+    bones = getattr((rig.armature() or root).pose, 'bones', ())
+    ik_map = {bones[c.subtarget]:(b, c) for b in bones for c in b.constraints if c.type == 'IK' and c.is_valid and c.subtarget in bones}
+    prop_hide_viewport = 'hide_viewport' if hasattr(root, 'hide_viewport') else 'hide'
+    if self.use_property_driver:
+        for ik, (b, c) in ik_map.items():
+            driver, variables = __driver_variables(c, 'influence')
+            driver.expression = '%s' % __add_single_prop(variables, ik.id_data, ik.path_from_id('mmd_ik_toggle'), 'use_ik').name
+            b = b if c.use_tail else b.parent
+            for b in ([b]+b.parent_recursive)[:c.chain_count]:
+                c = next((c for c in b.constraints if c.type == 'LIMIT_ROTATION' and not c.mute), None)
+                if c:
+                    driver, variables = __driver_variables(c, 'influence')
+                    driver.expression = '%s' % __add_single_prop(variables, ik.id_data, ik.path_from_id('mmd_ik_toggle'), 'use_ik').name
+        for i in rig.meshes():
+            for prop_hide in (prop_hide_viewport, 'hide_render'):
+                driver, variables = __driver_variables(i, prop_hide)
+                driver.expression = 'not %s' % __add_single_prop(variables, root, 'mmd_root.show_meshes', 'show').name
+    else:
+        for ik, (b, c) in ik_map.items():
+            c.driver_remove('influence')
+            b = b if c.use_tail else b.parent
+            for b in ([b]+b.parent_recursive)[:c.chain_count]:
+                c = next((c for c in b.constraints if c.type == 'LIMIT_ROTATION' and not c.mute), None)
+                if c: c.driver_remove('influence')
+        for i in rig.meshes():
+            for prop_hide in (prop_hide_viewport, 'hide_render'):
+                i.driver_remove(prop_hide)
+
 #===========================================
 # Callback functions
 #===========================================
@@ -60,7 +108,6 @@ def _show_meshes_get(prop):
     return prop.get('show_meshes', True)
 
 def _show_meshes_set(prop, v):
-    #FIXME animation is not working well on Blender 2.8. Using driver is another way but it's troublesome.
     if v != prop.get('show_meshes', None):
         prop['show_meshes'] = v
         _toggleVisibilityOfMeshes(prop, bpy.context)
@@ -269,9 +316,9 @@ class MMDRoot(PropertyGroup):
     show_meshes = BoolProperty(
         name='Show Meshes',
         description='Show all meshes of the MMD model',
-        get=_show_meshes_get,
-        set=_show_meshes_set,
-        #update=_toggleVisibilityOfMeshes,
+        #get=_show_meshes_get,
+        #set=_show_meshes_set,
+        update=_toggleVisibilityOfMeshes,
         )
 
     show_rigid_bodies = BoolProperty(
@@ -330,6 +377,13 @@ class MMDRoot(PropertyGroup):
         description='Use SDEF',
         update=_toggleUseSDEF,
         default=True,
+        )
+
+    use_property_driver = BoolProperty(
+        name='Use Property Driver',
+        description='Setup drivers for MMD property animation (Visibility and IK toggles)',
+        update=_toggleUsePropertyDriver,
+        default=False,
         )
 
     is_built = BoolProperty(

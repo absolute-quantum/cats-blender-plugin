@@ -129,23 +129,24 @@ class SeparateByMaterials(Operator):
         obj = context.active_object
         return obj and obj.type == 'MESH'
 
-    def execute(self, context):
-        obj = context.active_object
-        root = mmd_model.Model.findRoot(obj)
-        if root:
-            bpy.ops.mmd_tools.clear_temp_materials()
-            bpy.ops.mmd_tools.clear_uv_morph_view()
-        if root:
-            # Store the current material names
-            rig = mmd_model.Model(root)
-            mat_names = [getattr(mat, 'name', None) for mat in rig.materials()]
+    def __separate_by_materials(self, obj):
         utils.separateByMaterials(obj)
         if self.clean_shape_keys:
             bpy.ops.mmd_tools.clean_shape_keys()
-        if root:
+
+    def execute(self, context):
+        obj = context.active_object
+        root = mmd_model.Model.findRoot(obj)
+        if root is None:
+            self.__separate_by_materials(obj)
+        else:
+            bpy.ops.mmd_tools.clear_temp_materials()
+            bpy.ops.mmd_tools.clear_uv_morph_view()
+
+            # Store the current material names
             rig = mmd_model.Model(root)
-            # The material morphs store the name of the mesh, not of the object.
-            # So they will not be out of sync
+            mat_names = [getattr(mat, 'name', None) for mat in rig.materials()]
+            self.__separate_by_materials(obj)
             for mesh in rig.meshes():
                 FnMorph.clean_uv_morph_vertex_groups(mesh)
                 if len(mesh.data.materials) > 0:
@@ -153,10 +154,8 @@ class SeparateByMaterials(Operator):
                     idx = mat_names.index(getattr(mat, 'name', None))
                     MoveObject.set_index(mesh, idx)
 
-        if root and len(root.mmd_root.material_morphs) > 0:
             for morph in root.mmd_root.material_morphs:
-                mo = FnMorph(morph, mmd_model.Model(root))
-                mo.update_mat_related_mesh()
+                FnMorph(morph, rig).update_mat_related_mesh()
         utils.clearUnusedMeshes()
         return {'FINISHED'}
 
@@ -180,9 +179,8 @@ class JoinMeshes(Operator):
             self.report({ 'ERROR' }, 'Select a MMD model')
             return { 'CANCELLED' }
 
-        if root:
-            bpy.ops.mmd_tools.clear_temp_materials()
-            bpy.ops.mmd_tools.clear_uv_morph_view()
+        bpy.ops.mmd_tools.clear_temp_materials()
+        bpy.ops.mmd_tools.clear_uv_morph_view()
 
         # Find all the meshes in mmd_root
         rig = mmd_model.Model(root)
@@ -207,12 +205,8 @@ class JoinMeshes(Operator):
         if self.sort_shape_keys:
             FnMorph.fixShapeKeyOrder(active_mesh, root.mmd_root.vertex_morphs.keys())
             active_mesh.active_shape_key_index = 0
-
-        if len(root.mmd_root.material_morphs) > 0:
-            for morph in root.mmd_root.material_morphs:
-                mo = FnMorph(morph, rig)
-                mo.update_mat_related_mesh(active_mesh)
-
+        for morph in root.mmd_root.material_morphs:
+            FnMorph(morph, rig).update_mat_related_mesh(active_mesh)
         utils.clearUnusedMeshes()
         return { 'FINISHED' }
 

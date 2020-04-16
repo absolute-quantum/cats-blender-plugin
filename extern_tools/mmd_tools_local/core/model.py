@@ -552,9 +552,6 @@ class Model:
         rigid_body.setRigidBodyWorldEnabled(rigidbody_world_enabled)
 
     def clean(self):
-        #FIXME rigid body cache is out of sync on Blender 2.8
-        # [Build] at frame 1 -> [Play] -> [Stop] at frame N -> [Clean] at frame N -> [Play] -> crash
-        # [Build] at frame 1 -> [Play] -> [Stop] at frame N -> [Clean] at frame N -> go to frame 1 ->[Play] -> ok
         rigidbody_world_enabled = rigid_body.setRigidBodyWorldEnabled(False)
         logging.info('****************************************')
         logging.info(' Clean rig')
@@ -573,18 +570,20 @@ class Model:
         if bpy.app.version < (2, 78, 0):
             self.__removeChildrenOfTemporaryGroupObject() # for speeding up only
             for i in self.temporaryObjects():
-                if i.mmd_type in ['NON_COLLISION_CONSTRAINT', 'SPRING_GOAL', 'SPRING_CONSTRAINT']:
-                    bpy.context.scene.objects.unlink(i)
-                    bpy.data.objects.remove(i)
-                elif i.mmd_type == 'TRACK_TARGET':
-                    bpy.context.scene.objects.unlink(i)
-                    bpy.data.objects.remove(i)
-        else:
+                bpy.context.scene.objects.unlink(i)
+                bpy.data.objects.remove(i)
+        elif bpy.app.version < (2, 80, 0):
             for i in self.temporaryObjects():
-                if i.mmd_type in ['NON_COLLISION_CONSTRAINT', 'SPRING_GOAL', 'SPRING_CONSTRAINT']:
-                    bpy.data.objects.remove(i, do_unlink=True)
-                elif i.mmd_type == 'TRACK_TARGET':
-                    bpy.data.objects.remove(i, do_unlink=True)
+                bpy.data.objects.remove(i, do_unlink=True)
+        else:
+            tmp_objs = tuple(self.temporaryObjects())
+            for i in tmp_objs:
+                for c in i.users_collection:
+                    c.objects.unlink(i)
+            bpy.ops.object.delete({'selected_objects':tmp_objs, 'active_object':self.rootObject()})
+            for i in tmp_objs:
+                #assert(i.users == 0)
+                bpy.data.objects.remove(i)
 
         rigid_track_counts = 0
         for i in self.rigidBodies():

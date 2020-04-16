@@ -313,6 +313,7 @@ It checks for a new version automatically once every day.
   - When importing a model, objects of a new scene now only get deleted if all three of them are present
 - **General:**
   - Fixed objects getting unhidden when doing any cats operation in 2.80+
+  - Updated mmd_tools
 
 #### 0.16.1
 - Fixed export warning bug

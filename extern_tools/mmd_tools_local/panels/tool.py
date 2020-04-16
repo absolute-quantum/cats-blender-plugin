@@ -313,8 +313,11 @@ class MMD_TOOLS_UL_Morphs(UIList):
 class MMD_TOOLS_UL_MaterialMorphOffsets(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if self.layout_type in {'DEFAULT'}:
-            material = item.material or 'All Materials'
-            layout.label(text=material, translate=False, icon='MATERIAL')
+            material = item.material
+            if not material and item.material_id >= 0:
+                layout.label(text='Material ID %d is missing'%item.material_id, translate=False, icon='ERROR')
+            else:
+                layout.label(text=material or 'All Materials', translate=False, icon='MATERIAL')
         elif self.layout_type in {'COMPACT'}:
             pass
         elif self.layout_type in {'GRID'}:
