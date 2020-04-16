@@ -43,7 +43,8 @@
     },{
       "displayname": "Xeverian",
       "startdate": "2018-01-05",
-      "description": "yare yare daze"
+      "description": "yare yare daze",
+      "disabled": true
     },{
       "displayname": "Tupper",
       "startdate": "2018-02-05",
@@ -74,7 +75,8 @@
       "startdate": "2018-04-05"
     },{
       "displayname": "ihatemondays",
-      "startdate": "2018-01-05"
+      "startdate": "2018-01-05",
+      "disabled": true
     },{
       "displayname": "Derpmare",
       "startdate": "2018-02-05",
@@ -172,10 +174,12 @@
       "disabled": true
     },{
       "displayname": "Dogniss",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Syntion",
-      "startdate": "2018-05-013"
+      "startdate": "2018-05-13",
+      "disabled": true
     },{
       "displayname": "Sheet_no_mana",
       "startdate": "2018-04-05",
@@ -222,7 +226,8 @@
       "disabled": true
     },{
       "displayname": "FlippantFeline",
-      "startdate": "2018-04-05"
+      "startdate": "2018-04-05",
+      "disabled": true
     },{
       "displayname": "Rayduxz",
       "startdate": "2018-04-05",
@@ -289,7 +294,8 @@
     },{
       "displayname": "Murakumo",
       "startdate": "2018-07-02",
-      "info": "Was added 4 months late."
+      "info": "Was added 4 months late.",
+      "disabled": true
     },{
       "displayname": "Tupper",
       "startdate": "2018-02-05",
@@ -306,7 +312,8 @@
       "startdate": "2018-08-07",
       "info": "Was added 1 months late.",
       "description": "Hope to see all of your avatars soon! <3\n",
-      "website": "https://www.twitch.tv/aliquem"
+      "website": "https://www.twitch.tv/aliquem",
+      "disabled": true
     },{
       "displayname": "VRCMods",
       "startdate": "2018-08-07",
@@ -338,7 +345,8 @@
       "description": "Please give me headpats! ^_^\n"
     },{
       "displayname": "Q",
-      "startdate": "2018-11-29"
+      "startdate": "2018-11-29",
+      "disabled": true
     },{
       "displayname": "Nyashks",
       "startdate": "2018-12-15"
@@ -390,9 +398,7 @@
       "disabled": true
     },{
       "displayname": "honnmaguro",
-      "startdate": "2019-04-05",
-      "tier": 1,
-      "disabled": true
+      "startdate": "2019-04-05"
     },{
       "displayname": "Subcom",
       "startdate": "2019-04-23",
@@ -439,13 +445,15 @@
       "tier": 1
     },{
       "displayname": "Ziggy_Stardust_",
-      "startdate": "2019-08-11"
+      "startdate": "2019-08-11",
+      "disabled": true
     },{
       "displayname": "Anon27",
       "startdate": "2019-08-17"
     },{
       "displayname": "FustyLugs",
-      "startdate": "2019-08-22"
+      "startdate": "2019-08-22",
+      "disabled": true
     },{
       "displayname": "moonwiz",
       "startdate": "2019-09-28"
@@ -454,16 +462,20 @@
       "startdate": "2019-10-17",
       "description": "Autistic streamer letting you know to have a great day and keep bringing in the amazing avatars!",
       "website": "https://www.twitch.tv/knightbornegaming",
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
-      "displayname": "TheKally",
+      "displayname": "Kally",
       "startdate": "2019-12-02"
     },{
       "displayname": "CreedyFox",
-      "startdate": "2019-02-01"
+      "startdate": "2020-02-01"
     },{
       "displayname": "NicoKuroKusagi",
-      "startdate": "2019-02-01"
+      "startdate": "2020-02-01"
+    },{
+      "displayname": "BertBOT",
+      "startdate": "2020-02-16"
     }
   ]
 }

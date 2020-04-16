@@ -318,8 +318,10 @@ def register():
     # Set preferred Blender options
     if hasattr(tools.common.get_user_preferences(), 'system') and hasattr(tools.common.get_user_preferences().system, 'use_international_fonts'):
         tools.common.get_user_preferences().system.use_international_fonts = True
-    else:
+    elif hasattr(tools.common.get_user_preferences(), 'view') and hasattr(tools.common.get_user_preferences().view, 'use_international_fonts'):
         tools.common.get_user_preferences().view.use_international_fonts = True
+    else:
+        pass  # From 2.83 on this is no longer needed
     tools.common.get_user_preferences().filepaths.use_file_compression = True
     bpy.context.window_manager.addon_support = {'OFFICIAL', 'COMMUNITY', 'TESTING'}
 

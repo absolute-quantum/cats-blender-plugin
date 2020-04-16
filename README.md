@@ -35,13 +35,15 @@ Join our Discord to report errors, suggestions and make comments!
 **Discord: https://discord.gg/f8yZGnv**
 
 ## Requirements
- - Blender **2.79** or **2.80** or **2.81** (run as administrator is recommended)
-   - mmd_tools is **no longer required**! Cats comes pre-installed with it!
+ - Blender **2.79** or **2.80** or above (run as administrator is recommended)
+   - mmd_tools is **not required**! Cats comes pre-installed with it!
  - If you have custom Python installed which Blender might use, you need to have Numpy installed
 
 ## Installation
  - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
- - Install the the addon in blender like so:
+   - **Important: Do NOT extract the downloaded zip!**
+ - Install the addon in blender like so:
+   - *This shows Blender 2.79. In Blender 2.80+ go to Edit > Preferences > Add-ons. Also you don't need to save the user settings there*
 
 ![](https://i.imgur.com/eZV1zrs.gif)
 
@@ -299,7 +301,10 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.16.2
+- **Cats is now fully compatible with Blender 2.83!**
+  - It was compatible with 2.82 all long
 - Fixed export warning being empty
+- Fixed importer error when a zip file contains another zip file
 - Fixed objects getting unhidden when doing any cats operation in 2.80+
 
 #### 0.16.1

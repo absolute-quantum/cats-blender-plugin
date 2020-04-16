@@ -97,6 +97,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     def execute(self, context):
         global zip_files
         zip_files = {}
+        has_zip_file = False
 
         Common.remove_unused_objects()
 
@@ -112,29 +113,32 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
             for f in self.files:
                 file_name = f.name
                 self.import_file(self.directory, file_name)
+                if file_name.lower().endswith('.zip'):
+                    has_zip_file = True
         # If this operator is called with no directory but a filepath argument, import that
         elif self.filepath:
             print(self.filepath)
             self.import_file(os.path.dirname(self.filepath), os.path.basename(self.filepath))
 
-        if not zip_files:
-            Common.show_error(4, ['This zip file contains no importable models.'])
+        if has_zip_file:
+            if not zip_files:
+                Common.show_error(4, ['The selected zip file contains no importable models.'])
 
-        # Import all models from zip files that contain only one importable model
-        remove_keys = []
-        for zip_path, files in copy.deepcopy(zip_files).items():
-            context.scene.zip_content = zip_path + ' ||| ' + files[0]
-            if len(files) == 1:
-                ImportAnyModel.extract_file()
-                remove_keys.append(zip_path)
+            # Import all models from zip files that contain only one importable model
+            remove_keys = []
+            for zip_path, files in copy.deepcopy(zip_files).items():
+                context.scene.zip_content = zip_path + ' ||| ' + files[0]
+                if len(files) == 1:
+                    ImportAnyModel.extract_file()
+                    remove_keys.append(zip_path)
 
-        # Remove the models from zip file list that got already imported
-        for key in remove_keys:
-            zip_files.pop(key)
+            # Remove the models from zip file list that got already imported
+            for key in remove_keys:
+                zip_files.pop(key)
 
-        # Only if a zip contains more than one model, open the zip model selection popup
-        if zip_files.keys():
-            bpy.ops.cats_importer.zip_popup('INVOKE_DEFAULT')
+            # Only if a zip contains more than one model, open the zip model selection popup
+            if zip_files.keys():
+                bpy.ops.cats_importer.zip_popup('INVOKE_DEFAULT')
 
         # Create list of armatures that got added during import, select them in cats and fix their bone orientations if necessary
         arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
