@@ -1000,10 +1000,19 @@ def separate_by_shape_keys(context, mesh):
     bpy.ops.mesh.select_all(action='DESELECT')
 
     switch('OBJECT')
-    for kb in mesh.data.shape_keys.key_blocks:
-        for i, (v0, v1) in enumerate(zip(kb.relative_key.data, kb.data)):
-            if v0.co != v1.co:
-                mesh.data.vertices[i].select = True
+    selected_count = 0
+    max_count = 0
+    if has_shapekeys(mesh):
+        for kb in mesh.data.shape_keys.key_blocks:
+            for i, (v0, v1) in enumerate(zip(kb.relative_key.data, kb.data)):
+                max_count += 1
+                if v0.co != v1.co:
+                    mesh.data.vertices[i].select = True
+                    selected_count += 1
+
+    if not selected_count or selected_count == max_count:
+        return False
+
     switch('EDIT')
     bpy.ops.mesh.select_all(action='INVERT')
 
@@ -1028,6 +1037,56 @@ def separate_by_shape_keys(context, mesh):
 
     # Update the material list of the Material Combiner
     update_material_list()
+    return True
+
+
+def separate_by_cats_protection(context, mesh):
+    prepare_separation(mesh)
+
+    switch('EDIT')
+    bpy.ops.mesh.select_mode(type="VERT")
+    bpy.ops.mesh.select_all(action='DESELECT')
+
+    switch('OBJECT')
+    selected_count = 0
+    max_count = 0
+    if has_shapekeys(mesh):
+        for kb in mesh.data.shape_keys.key_blocks:
+            if kb.name == 'Basis Original':
+                for i, (v0, v1) in enumerate(zip(kb.relative_key.data, kb.data)):
+                    max_count += 1
+                    if v0.co != v1.co:
+                        mesh.data.vertices[i].select = True
+                        selected_count += 1
+
+    if not selected_count or selected_count == max_count:
+        return False
+
+    switch('EDIT')
+    bpy.ops.mesh.select_all(action='INVERT')
+
+    bpy.ops.mesh.separate(type='SELECTED')
+
+    for ob in context.selected_objects:
+        if ob.type == 'MESH':
+            if ob != get_active():
+                print('not active', ob.name)
+                active_tmp = get_active()
+                ob.name = ob.name.replace('.001', '') + '.no_shapes'
+                set_active(ob)
+                bpy.ops.object.shape_key_remove(all=True)
+                set_active(active_tmp)
+                select(ob, False)
+            else:
+                print('active', ob.name)
+                clean_shapekeys(ob)
+                switch('OBJECT')
+
+    utils.clearUnusedMeshes()
+
+    # Update the material list of the Material Combiner
+    update_material_list()
+    return True
 
 
 def prepare_separation(mesh):

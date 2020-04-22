@@ -561,10 +561,60 @@ class SeparateByShapekeys(bpy.types.Operator):
             obj = meshes[0]
         obj_name = obj.name
 
-        Common.separate_by_shape_keys(context, obj)
+        done_message = 'Successfully separated by shape keys.'
+        if not Common.separate_by_shape_keys(context, obj):
+            done_message = 'No meshes had to be separated!'
 
         saved_data.load(ignore=[obj_name])
-        self.report({'INFO'}, 'Successfully separated by shape keys.')
+        self.report({'INFO'}, done_message)
+        return {'FINISHED'}
+
+
+@register_wrap
+class SeparateByCopyProtection(bpy.types.Operator):
+    bl_idname = 'cats_manual.separate_by_copy_protection'
+    bl_label = 'Separate by Copy Protection'
+    bl_description = 'Separates selected mesh into two parts,' \
+                     '\ndepending on whether it is effected by the Cats Copy Protection or not.' \
+                     '\n' \
+                     '\nUseful if you have the Copy Protection enabled on multiple selected parts of your model'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+
+        if obj and obj.type == 'MESH':
+            return True
+
+        meshes = Common.get_meshes_objects(check=False)
+        return meshes
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+        obj = context.active_object
+
+        if not obj or (obj and obj.type != 'MESH'):
+            Common.unselect_all()
+            meshes = Common.get_meshes_objects()
+            if len(meshes) == 0:
+                saved_data.load()
+                self.report({'ERROR'}, 'No meshes found!')
+                return {'FINISHED'}
+            if len(meshes) > 1:
+                saved_data.load()
+                self.report({'ERROR'}, 'Multiple meshes found!'
+                                       '\nPlease select the mesh you want to separate!')
+                return {'FINISHED'}
+            obj = meshes[0]
+        obj_name = obj.name
+
+        done_message = 'Successfully separated by copy protection.'
+        if not Common.separate_by_cats_protection(context, obj):
+            done_message = 'No meshes had to be separated!'
+
+        saved_data.load(ignore=[obj_name])
+        self.report({'INFO'}, done_message)
         return {'FINISHED'}
 
 
