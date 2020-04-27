@@ -924,6 +924,12 @@ class FixArmature(bpy.types.Operator):
                 if mod.type == 'ARMATURE':
                     bpy.ops.object.modifier_remove(modifier=mod.name)
 
+            # Fix MMD twist bones
+            print('FIX TWIST BONES')
+            print(bones_to_delete)
+            Common.fix_twist_bones(mesh, bones_to_delete)
+            print(bones_to_delete)
+
             # Add bones to parent reweight list
             for name in Bones.bone_reweigth_to_parent:
                 if '\Left' in name or '\L' in name:
@@ -944,6 +950,9 @@ class FixArmature(bpy.types.Operator):
                         continue
 
                     if context.scene.keep_twist_bones and 'twist' in bone_child.name.lower():
+                        continue
+                    if context.scene.fix_twist_bones and bone_child.name.lower() in ['handtwist_l', 'handtwist_r', 'armtwist_l', 'armtwist_r']:
+                        print('TWIST FOUND!')
                         continue
 
                     # search for next parent that is not in the "reweight to parent" list
@@ -1020,6 +1029,9 @@ class FixArmature(bpy.types.Operator):
 
                         if context.scene.keep_twist_bones and 'twist' in bone[1].lower():
                             continue
+                        if context.scene.fix_twist_bones and bone[1].lower() in ['handtwist_l', 'handtwist_r', 'armtwist_l', 'armtwist_r']:
+                            print('TWIST FOUND!')
+                            continue
 
                         # print(bone[1] + " to1 " + bone[0])
 
@@ -1077,6 +1089,9 @@ class FixArmature(bpy.types.Operator):
 
                 if context.scene.keep_twist_bones and 'twist' in vg_from.name.lower():
                     continue
+                if context.scene.fix_twist_bones and vg_from.name.lower() in ['handtwist_l', 'handtwist_r', 'armtwist_l', 'armtwist_r']:
+                    print('TWIST FOUND!')
+                    continue
 
                 bone_tmp = armature.data.bones.get(vg_from.name)
                 if bone_tmp:
@@ -1125,6 +1140,9 @@ class FixArmature(bpy.types.Operator):
 
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
+
+        # Fix MMD twist bone names
+        Common.fix_twist_bone_names(armature)
 
         # Removes unused vertex groups
         Common.remove_unused_vertex_groups()

@@ -1730,13 +1730,14 @@ def clean_material_names(mesh):
             mesh.active_material.name = mat.name[:-5]
 
 
-def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
+def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, delete_old_vg=True):
     mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
     mod.vertex_group_b = vg_from
     mod.mix_mode = 'ADD'
     mod.mix_set = 'B'
+    mod.mask_constant = mix_strength
     bpy.ops.object.modifier_apply(modifier=mod.name)
     if delete_old_vg:
         mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
@@ -2011,6 +2012,55 @@ def fix_vrm_shader(mesh):
                 #         for link in output.links:
                 #             mat_slot.material.node_tree.links.remove(link)
                 #     continue
+
+
+def fix_twist_bones(mesh, bones_to_delete):
+    # This will fix MMD twist bones
+
+    for bone_type in ['Hand', 'Arm']:
+        for suffix in ['L', 'R']:
+            prefix = 'Left' if suffix == 'L' else 'Right'
+            bone_parent_name = prefix + ' ' + ('elbow' if bone_type == 'Hand' else 'arm')
+
+            vg_twist = mesh.vertex_groups.get(bone_type + 'Twist_' + suffix)
+            vg_parent = mesh.vertex_groups.get(bone_parent_name)
+
+            if not vg_twist:
+                print('1. no ' + bone_type + 'Twist_' + suffix)
+                continue
+            if not vg_parent:
+                print('2. no ' + bone_parent_name)
+                vg_parent = mesh.vertex_groups.new(name=bone_parent_name)
+
+            vg_twist1 = mesh.vertex_groups.get(bone_type + 'Twist1_' + suffix)
+            vg_twist2 = mesh.vertex_groups.get(bone_type + 'Twist2_' + suffix)
+            vg_twist3 = mesh.vertex_groups.get(bone_type + 'Twist3_' + suffix)
+
+            if vg_twist1:
+                mix_weights(mesh, vg_twist1.name, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
+                mix_weights(mesh, vg_twist1.name, vg_parent.name, mix_strength=0.5)
+                bones_to_delete.append(vg_twist1.name)
+
+            if vg_twist2:
+                mix_weights(mesh, vg_twist2.name, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
+                mix_weights(mesh, vg_twist2.name, vg_parent.name, mix_strength=0.5)
+                bones_to_delete.append(vg_twist2.name)
+
+            if vg_twist3:
+                mix_weights(mesh, vg_twist3.name, vg_twist.name, mix_strength=1.0)
+                bones_to_delete.append(vg_twist3.name)
+
+            mix_weights(mesh, vg_twist.name, vg_parent.name, mix_strength=0.25, delete_old_vg=False)
+
+
+def fix_twist_bone_names(armature):
+    # This will fix MMD twist bone names after the vertex groups have been fixed
+
+    for bone_type in ['Hand', 'Arm']:
+        for suffix in ['L', 'R']:
+            bone_twist = armature.data.edit_bones.get(bone_type + 'Twist_' + suffix)
+            if bone_twist:
+                bone_twist.name = 'z' + bone_twist.name
 
 
 

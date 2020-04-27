@@ -304,7 +304,11 @@ It checks for a new version automatically once every day.
 - **Cats is now fully compatible with Blender 2.83!**
   - *It was compatible with 2.82 all long*
 - **Fix Model:**
-  - Added "Keep Twist Bones" option to Fix Model (experimental)
+  - Added "Keep Twist Bones" option to Fix Model
+    - This will keep any bone containing 'Twist'
+  - Added "Fix MMD Twist Bones" option to Fix Model
+    - This will apply a fix to make the MMD arm twist bones usable
+    - You do not need to enable "Keep Twist Bones" for this to work
   - Added compatibility to more models
 - **Importer:**
   - Fixed export warning being empty
