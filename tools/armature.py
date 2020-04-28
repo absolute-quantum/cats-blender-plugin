@@ -502,6 +502,10 @@ class FixArmature(bpy.types.Operator):
             ('Joint_', ''),
             ('DEF_', ''),
         ]
+        # List of chars to replace if they are at the end of a bone name
+        ends_with = [
+            ('_Bone', ''),
+        ]
 
         # Standardize names
         for bone in armature.data.edit_bones:
@@ -529,6 +533,11 @@ class FixArmature(bpy.types.Operator):
             for replacement in starts_with:
                 if name.startswith(replacement[0]):
                     name = replacement[1] + name[len(replacement[0]):]
+
+            # Replace if name ends with specified chars
+            for replacement in ends_with:
+                if name.endswith(replacement[0]):
+                    name = name[:-len(replacement[0])] + replacement[1]
 
             # Remove digits from the start
             name_split = name.split('_')

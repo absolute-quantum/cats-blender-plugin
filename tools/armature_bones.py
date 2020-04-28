@@ -319,8 +319,10 @@ bone_finger_list = [
 # Replace '-' with '_'
 # Replace ' ' with '_'
 # Replace 'ValveBiped_' with ''
-# Replace 'Bip01_' with 'Bip'
-# Replace 'Bip001_' with 'Bip'
+# Replace 'Bip1_' with 'Bip_'
+# Replace 'Bip01_' with 'Bip_'
+# Replace 'Bip001_' with 'Bip_'
+# Replace '_Bone' with ''
 #
 # Replace New Bone Patterns:
 #   Left/Right = \Left
@@ -976,8 +978,10 @@ bone_rename['Breast_\L'] = [
 # Replace '-' with '_'
 # Replace ' ' with '_'
 # Replace 'ValveBiped_' with ''
-# Replace 'Bip01_' with 'Bip'
-# Replace 'Bip001_' with 'Bip'
+# Replace 'Bip1_' with 'Bip_'
+# Replace 'Bip01_' with 'Bip_'
+# Replace 'Bip001_' with 'Bip_'
+# Replace '_Bone' with ''
 #
 # Replace New Bone Patterns:
 #   Left/Right = \Left

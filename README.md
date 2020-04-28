@@ -307,7 +307,7 @@ It checks for a new version automatically once every day.
   - Added "Keep Twist Bones" option to Fix Model
     - This will keep any bone containing 'Twist'
   - Added "Fix MMD Twist Bones" option to Fix Model
-    - This will apply a fix to make the MMD arm twist bones usable
+    - This will apply a fix to make the MMD arm twist bones usable **(Thanks Rokk!)**
     - You do not need to enable "Keep Twist Bones" for this to work
   - Added compatibility to more models
 - **Importer:**
