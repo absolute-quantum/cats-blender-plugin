@@ -505,6 +505,8 @@ class FixArmature(bpy.types.Operator):
         # List of chars to replace if they are at the end of a bone name
         ends_with = [
             ('_Bone', ''),
+            ('_Le', '_L'),
+            ('_Ri', '_R'),
         ]
 
         # Standardize names
@@ -512,14 +514,7 @@ class FixArmature(bpy.types.Operator):
             current_step += 1
             wm.progress_update(current_step)
 
-            # Make all the underscores!
-            name = bone.name.replace(' ', '_')\
-                .replace('-', '_')\
-                .replace('.', '_')\
-                .replace(':', '_')\
-                .replace('____', '_')\
-                .replace('___', '_')\
-                .replace('__', '_')\
+            name = bone.name
 
             # Always uppercase at the start and after an underscore
             upper_name = ''
@@ -528,6 +523,17 @@ class FixArmature(bpy.types.Operator):
                     upper_name += '_'
                 upper_name += s[:1].upper() + s[1:]
             name = upper_name
+
+            # Make all the underscores! And replace things!
+            name = name.replace(' ', '_')\
+                .replace('-', '_')\
+                .replace('.', '_')\
+                .replace(':', '_')\
+                .replace('____', '_')\
+                .replace('___', '_')\
+                .replace('__', '_')\
+                .replace('_Le_', '_L_')\
+                .replace('_Ri_', '_R_')\
 
             # Replace if name starts with specified chars
             for replacement in starts_with:
