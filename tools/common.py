@@ -1730,12 +1730,12 @@ def clean_material_names(mesh):
             mesh.active_material.name = mat.name[:-5]
 
 
-def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, delete_old_vg=True):
+def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, mix_mode='ADD', delete_old_vg=True):
     mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
     mod.vertex_group_b = vg_from
-    mod.mix_mode = 'ADD'
+    mod.mix_mode = mix_mode
     mod.mix_set = 'B'
     mod.mask_constant = mix_strength
     bpy.ops.object.modifier_apply(modifier=mod.name)
@@ -2037,8 +2037,8 @@ def fix_twist_bones(mesh, bones_to_delete):
             vg_twist3 = mesh.vertex_groups.get(bone_type + 'Twist3_' + suffix)
 
             if vg_twist1:
-                mix_weights(mesh, vg_twist1.name, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
-                mix_weights(mesh, vg_twist1.name, vg_parent.name, mix_strength=0.5)
+                mix_weights(mesh, vg_twist1.name, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
+                mix_weights(mesh, vg_twist1.name, vg_parent.name, mix_strength=0.75)
                 bones_to_delete.append(vg_twist1.name)
 
             if vg_twist2:
@@ -2047,10 +2047,12 @@ def fix_twist_bones(mesh, bones_to_delete):
                 bones_to_delete.append(vg_twist2.name)
 
             if vg_twist3:
-                mix_weights(mesh, vg_twist3.name, vg_twist.name, mix_strength=1.0)
+                mix_weights(mesh, vg_twist3.name, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
+                mix_weights(mesh, vg_twist3.name, vg_parent.name, mix_strength=0.25)
                 bones_to_delete.append(vg_twist3.name)
 
-            mix_weights(mesh, vg_twist.name, vg_parent.name, mix_strength=0.25, delete_old_vg=False)
+            # mix_weights(mesh, vg_twist.name, vg_parent.name, mix_strength=0.25, delete_old_vg=False)
+            # mix_weights(mesh, vg_twist.name, vg_twist.name, mix_strength=0.25, mix_mode='SUB', delete_old_vg=False)
 
 
 def fix_twist_bone_names(armature):
