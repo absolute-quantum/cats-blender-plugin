@@ -215,13 +215,29 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         # VRM
         elif file_ending == 'vrm':
+            pre_import_armatures = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE']
+            pre_import_meshes = [obj for obj in bpy.data.objects if obj.type == 'MESH']
+
             try:
                 bpy.ops.import_scene.vrm('EXEC_DEFAULT',
                                          filepath=file_path)
             except (TypeError, ValueError):
                 bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
+                return
             except AttributeError:
                 bpy.ops.cats_importer.install_vrm('INVOKE_DEFAULT')
+                return
+
+            post_import_armatures = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_armatures]
+            post_import_meshes = [obj for obj in bpy.data.objects if obj.type == 'MESH' and obj not in pre_import_meshes]
+
+            if len(post_import_armatures) != 1:
+                return
+
+            # Set imported vrm armature as the parent for the imported meshes
+            post_import_armature = post_import_armatures[0]
+            for mesh in post_import_meshes:
+                mesh.parent = post_import_armature
 
         # DAE
         elif file_ending == 'dae':

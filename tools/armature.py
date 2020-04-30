@@ -91,7 +91,9 @@ class FixArmature(bpy.types.Operator):
                 if mesh.name.endswith(('.baked', '.baked0')):
                     is_vrm = True  # TODO
             if not is_vrm:
-                self.report({'ERROR'}, 'No mesh inside the armature found!')
+                Common.show_error(3.8, ['No mesh inside the armature found!',
+                                        'If there are meshes outside of the armature,',
+                                        'set the armature as the parent of the meshes.'])
                 return {'CANCELLED'}
 
         print('\nFixing Model:\n')
