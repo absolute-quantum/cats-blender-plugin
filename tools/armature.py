@@ -503,6 +503,7 @@ class FixArmature(bpy.types.Operator):
             ('G_', ''),
             ('Joint_', ''),
             ('DEF_', ''),
+            ('Chr_', ''),
         ]
         # List of chars to replace if they are at the end of a bone name
         ends_with = [
