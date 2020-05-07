@@ -1162,11 +1162,11 @@ class FixArmature(bpy.types.Operator):
         # Fix MMD twist bone names
         Common.fix_twist_bone_names(armature)
 
-        # Removes unused vertex groups
-        Common.remove_unused_vertex_groups()
-
-        # Zero weight bones should be deleted
         if context.scene.remove_zero_weight:
+            # Removes unused vertex groups
+            Common.remove_unused_vertex_groups()
+
+            # Zero weight bones should be deleted
             Common.delete_zero_weight()
 
         # Connect all bones with their children if they have exactly one

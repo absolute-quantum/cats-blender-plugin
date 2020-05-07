@@ -54,6 +54,10 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'merge_armatures_join_meshes')
 
             row = col.row(align=True)
+            row.scale_y = 0.95
+            row.prop(context.scene, 'merge_armatures_remove_zero_weight_bones')
+
+            row = col.row(align=True)
             row.scale_y = 1.05
             row.prop(context.scene, 'merge_armature_into', text='Base', icon=globs.ICON_MOD_ARMATURE)
             row = col.row(align=True)

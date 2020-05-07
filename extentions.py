@@ -41,8 +41,8 @@ def register():
 
     Scene.remove_zero_weight = BoolProperty(
         name='Remove Zero Weight Bones',
-        description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.\n"
-                    'Uncheck this if bones you want to keep got deleted',
+        description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices."
+                    '\nUncheck this if bones or vertex groups that you want to keep got deleted',
         default=True
     )
 
@@ -172,6 +172,13 @@ def register():
         name='Join Meshes',
         description='This will join all meshes.'
                     '\nNot checking this will always apply transforms',
+        default=True
+    )
+
+    Scene.merge_armatures_remove_zero_weight_bones = BoolProperty(
+        name='Remove Zero Weight Bones',
+        description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices."
+                    '\nUncheck this if bones or vertex groups that you want to keep got deleted',
         default=True
     )
 

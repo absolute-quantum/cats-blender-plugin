@@ -310,12 +310,15 @@ It checks for a new version automatically once every day.
     - This will apply a fix to make the MMD arm twist bones usable **(Thanks Rokk!)**
     - You do not need to enable "Keep Twist Bones" for this to work
   - Added compatibility to more models
+  - Disabling the option "Remove Zero Weight Bones" now also keeps unused vertex groups
 - **Importer:**
   - Imported meshes from VRM files now get automatically parented to their armature
   - Fixed export warning being empty
   - Fixed importer error when the FBX importer was not enabled
   - Fixed importer error when a zip file contained another zip file
   - When importing a model, objects of a new scene now only get deleted if all three of them are present
+- **Custom Model Creation:**
+  - Added "Remove Zero Weight Bones" option to Merge Armatures
 - **General:**
   - Fixed objects getting unhidden when doing any cats operation in 2.80+
   - Updated mmd_tools
