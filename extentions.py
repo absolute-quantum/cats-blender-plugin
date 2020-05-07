@@ -262,6 +262,12 @@ def register():
                     "LittleFinger(1-3)_(L/R)"
     )
 
+    Scene.decimation_remove_doubles = BoolProperty(
+        name="Remove Doubles",
+        description="Uncheck this if you got issues with with this checked",
+        default=True
+    )
+
     Scene.max_tris = IntProperty(
         name='Tris',
         description="The target amount of tris after decimation",

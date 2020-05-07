@@ -319,6 +319,8 @@ It checks for a new version automatically once every day.
   - When importing a model, objects of a new scene now only get deleted if all three of them are present
 - **Custom Model Creation:**
   - Added "Remove Zero Weight Bones" option to Merge Armatures
+- **Decimation:**
+  - Added "Remove Doubles" option
 - **General:**
   - Fixed objects getting unhidden when doing any cats operation in 2.80+
   - Updated mmd_tools

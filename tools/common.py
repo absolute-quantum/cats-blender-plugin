@@ -484,7 +484,7 @@ def get_meshes_decimation(self, context):
 
     for object in bpy.context.scene.objects:
         if object.type == 'MESH':
-            if object.parent is not None and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
+            if object.parent and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
                 if object.name in Decimation.ignore_meshes:
                     continue
                 # 1. Will be returned by context.scene
