@@ -164,7 +164,7 @@ def register():
     Scene.apply_transforms = BoolProperty(
         name='Apply Transforms',
         description='Check this if both armatures and meshes are already at their correct positions.'
-                    '\nThis will cause them to stay exactly like they are when merging',
+                    '\nThis will cause them to stay exactly where they are when merging',
         default=False
     )
 
