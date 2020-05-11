@@ -150,6 +150,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         col.separator()
+
         split = col.row(align=True)
         row = split.row(align=True)
         row.scale_y = 1.5
@@ -158,6 +159,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         row.alignment = 'RIGHT'
         row.scale_y = 1.5
         row.operator(ModelSettings.bl_idname, text="", icon='MODIFIER')
+
         col.separator()
         col.separator()
 
@@ -189,7 +191,7 @@ class ModelSettings(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3.25, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3.25)
 
     def check(self, context):
         # Important for changing options
@@ -204,6 +206,10 @@ class ModelSettings(bpy.types.Operator):
         row.prop(context.scene, 'keep_end_bones')
         row = col.row(align=True)
         row.prop(context.scene, 'keep_upper_chest')
+        row = col.row(align=True)
+        row.prop(context.scene, 'keep_twist_bones')
+        row = col.row(align=True)
+        row.prop(context.scene, 'fix_twist_bones')
         row = col.row(align=True)
         row.prop(context.scene, 'join_meshes')
         row = col.row(align=True)

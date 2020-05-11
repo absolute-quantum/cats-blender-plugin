@@ -5,9 +5,10 @@ from bpy.types import Operator
 from bpy.props import StringProperty, BoolProperty
 
 from mmd_tools_local import register_wrap
+from mmd_tools_local import cycles_converter
 from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.exceptions import MaterialNotFoundError
-from mmd_tools_local import cycles_converter
+from mmd_tools_local.core.shader import _NodeGroupUtils
 
 @register_wrap
 class ConvertMaterialsForCycles(Operator):
@@ -16,14 +17,38 @@ class ConvertMaterialsForCycles(Operator):
     bl_description = 'Convert materials of selected objects for Cycles.'
     bl_options = {'REGISTER', 'UNDO'}
 
+    use_principled = bpy.props.BoolProperty(
+        name='Convert to Principled BSDF',
+        description='Convert MMD shader nodes to Principled BSDF as well if enabled',
+        default=False,
+        options={'SKIP_SAVE'},
+        )
+
+    clean_nodes = bpy.props.BoolProperty(
+        name='Clean Nodes',
+        description='Remove redundant nodes as well if enabled. Disable it to keep node data.',
+        default=False,
+        options={'SKIP_SAVE'},
+        )
+
+    @classmethod
+    def poll(cls, context):
+        return next((x for x in context.selected_objects if x.type == 'MESH'), None)
+
+    def draw(self, context):
+        layout = self.layout
+        if cycles_converter.is_principled_bsdf_supported():
+            layout.prop(self, 'use_principled')
+        layout.prop(self, 'clean_nodes')
+
     def execute(self, context):
         try:
             context.scene.render.engine = 'CYCLES'
         except:
             self.report({'ERROR'}, ' * Failed to change to Cycles render engine.')
             return {'CANCELLED'}
-        for obj in [x for x in context.selected_objects if x.type == 'MESH']:
-            cycles_converter.convertToCyclesShader(obj)
+        for obj in (x for x in context.selected_objects if x.type == 'MESH'):
+            cycles_converter.convertToCyclesShader(obj, use_principled=self.use_principled, clean_nodes=self.clean_nodes)
         return {'FINISHED'}
 
 @register_wrap
@@ -283,61 +308,45 @@ class EdgePreviewSetup(Operator):
         node_shader.inputs['Alpha'].default_value = m.mmd_material.edge_color[3]
 
     def __get_edge_preview_shader(self):
-        shader = bpy.data.node_groups.get('MMDEdgePreview', None)
-        if shader:
+        group_name = 'MMDEdgePreview'
+        shader = bpy.data.node_groups.get(group_name, None) or bpy.data.node_groups.new(name=group_name, type='ShaderNodeTree')
+        if len(shader.nodes):
             return shader
 
-        shader = bpy.data.node_groups.new(name='MMDEdgePreview', type='ShaderNodeTree')
-        nodes, links = shader.nodes, shader.links
+        ng = _NodeGroupUtils(shader)
 
-        def __new_node(idname, pos):
-            node = nodes.new(idname)
-            node.location = pos
-            return node
-
-        def __new_io(shader_io, io_sockets, io_name, socket):
-            if io_name in io_sockets:
-                links.new(io_sockets[io_name], socket)
-            else:
-                links.new(io_sockets[-1], socket)
-                shader_io[-1].name = io_name
-
-        XPOS, YPOS = 210, 110
-        node_input = __new_node('NodeGroupInput', (XPOS*-5, 0))
-        node_output = __new_node('NodeGroupOutput', (XPOS*3, 0))
+        node_input = ng.new_node('NodeGroupInput', (-5, 0))
+        node_output = ng.new_node('NodeGroupOutput', (3, 0))
 
         ############################################################################
-        node_color = __new_node('ShaderNodeMixRGB', (XPOS*-1, YPOS*-3))
+        node_color = ng.new_node('ShaderNodeMixRGB', (-1, -1.5))
         node_color.mute = True
 
-        __new_io(shader.inputs, node_input.outputs, 'Color', node_color.inputs['Color1'])
+        ng.new_input_socket('Color', node_color.inputs['Color1'])
 
         if bpy.app.version < (2, 80, 0):
-            node_geo = __new_node('ShaderNodeGeometry', (XPOS*-2, YPOS*-5))
-            node_cull = __new_node('ShaderNodeMath', (XPOS*-1, YPOS*-5))
-            node_cull.operation = 'MULTIPLY'
+            node_geo = ng.new_node('ShaderNodeGeometry', (-2, -2.5))
+            node_cull = ng.new_math_node('MULTIPLY', (-1, -2.5))
 
-            links.new(node_geo.outputs['Front/Back'], node_cull.inputs[1])
+            ng.links.new(node_geo.outputs['Front/Back'], node_cull.inputs[1])
 
-            __new_io(shader.inputs, node_input.outputs, 'Alpha', node_cull.inputs[0])
-            __new_io(shader.outputs, node_output.inputs, 'Color', node_color.outputs['Color'])
-            __new_io(shader.outputs, node_output.inputs, 'Alpha', node_cull.outputs['Value'])
+            ng.new_input_socket('Alpha', node_cull.inputs[0])
+            ng.new_output_socket('Color', node_color.outputs['Color'])
+            ng.new_output_socket('Alpha', node_cull.outputs['Value'])
 
         ############################################################################
-        node_ray = __new_node('ShaderNodeLightPath', (XPOS*-3, YPOS*3))
-        node_geo = __new_node('ShaderNodeNewGeometry', (XPOS*-3, YPOS*0))
-        node_max = __new_node('ShaderNodeMath', (XPOS*-2, YPOS*3))
-        node_max.operation = 'MAXIMUM'
+        node_ray = ng.new_node('ShaderNodeLightPath', (-3, 1.5))
+        node_geo = ng.new_node('ShaderNodeNewGeometry', (-3, 0))
+        node_max = ng.new_math_node('MAXIMUM', (-2, 1.5))
         node_max.mute = True
-        node_gt = __new_node('ShaderNodeMath', (XPOS*-1, YPOS*2))
-        node_gt.operation = 'GREATER_THAN'
-        node_alpha = __new_node('ShaderNodeMath', (XPOS*0, YPOS*2))
-        node_alpha.operation = 'MULTIPLY'
-        node_trans = __new_node('ShaderNodeBsdfTransparent', (XPOS*0, YPOS*0))
+        node_gt = ng.new_math_node('GREATER_THAN', (-1, 1))
+        node_alpha = ng.new_math_node('MULTIPLY', (0, 1))
+        node_trans = ng.new_node('ShaderNodeBsdfTransparent', (0, 0))
         EDGE_NODE_NAME = 'ShaderNodeEmission' if bpy.app.version < (2, 80, 0) else 'ShaderNodeBackground'
-        node_rgb = __new_node(EDGE_NODE_NAME, (XPOS*0, YPOS*-1)) # BsdfDiffuse/Background/Emission
-        node_mix = __new_node('ShaderNodeMixShader', (XPOS*1, YPOS*1))
+        node_rgb = ng.new_node(EDGE_NODE_NAME, (0, -0.5)) # BsdfDiffuse/Background/Emission
+        node_mix = ng.new_node('ShaderNodeMixShader', (1, 0.5))
 
+        links = ng.links
         links.new(node_ray.outputs['Is Camera Ray'], node_max.inputs[0])
         links.new(node_ray.outputs['Is Glossy Ray'], node_max.inputs[1])
         links.new(node_max.outputs['Value'], node_gt.inputs[0])
@@ -348,8 +357,8 @@ class EdgePreviewSetup(Operator):
         links.new(node_rgb.outputs[0], node_mix.inputs[2])
         links.new(node_color.outputs['Color'], node_rgb.inputs['Color'])
 
-        __new_io(shader.inputs, node_input.outputs, 'Alpha', node_alpha.inputs[1])
-        __new_io(shader.outputs, node_output.inputs, 'Shader', node_mix.outputs['Shader'])
+        ng.new_input_socket('Alpha', node_alpha.inputs[1])
+        ng.new_output_socket('Shader', node_mix.outputs['Shader'])
 
         return shader
 

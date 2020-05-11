@@ -274,8 +274,8 @@ class RigidBody:
 class Joint:
     def __init__(self):
         self.name = ''
-        self.src_rigid = 0
-        self.dest_rigid = 0
+        self.src_rigid = None
+        self.dest_rigid = None
 
         self.location = []
         self.rotation = []
@@ -289,6 +289,19 @@ class Joint:
         self.spring_rotation_constant = []
 
     def load(self, fs):
+        try: self._load(fs)
+        except struct.error: # possibly contains truncated data
+            if self.src_rigid is None or self.dest_rigid is None: raise
+            self.location = self.location or (0, 0, 0)
+            self.rotation = self.rotation or (0, 0, 0)
+            self.maximum_location = self.maximum_location or (0, 0, 0)
+            self.minimum_location = self.minimum_location or (0, 0, 0)
+            self.maximum_rotation = self.maximum_rotation or (0, 0, 0)
+            self.minimum_rotation = self.minimum_rotation or (0, 0, 0)
+            self.spring_constant = self.spring_constant or (0, 0, 0)
+            self.spring_rotation_constant = self.spring_rotation_constant or (0, 0, 0)
+
+    def _load(self, fs):
         self.name = fs.readStr(20)
 
         self.src_rigid = fs.readUnsignedInt()

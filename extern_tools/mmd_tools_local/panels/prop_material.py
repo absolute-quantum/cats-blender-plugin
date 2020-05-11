@@ -32,7 +32,13 @@ class MMDMaterialPanel(Panel):
         layout = self.layout
 
         col = layout.column()
-        col.label(text='Information:')
+
+        row = col.row(align=True)
+        row.label(text='Information:')
+        if not mmd_material.is_id_unique():
+            row.label(icon='ERROR')
+        row.prop(mmd_material, 'material_id', text='ID')
+
         col.prop(mmd_material, 'name_j')
         col.prop(mmd_material, 'name_e')
         col.prop(mmd_material, 'comment')

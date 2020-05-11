@@ -30,7 +30,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats & Hotox',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': (0, 16, 1),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
+    'version': (0, 17, 0),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -76,7 +76,7 @@ else:
     importlib.reload(extentions)
 
 
-# How to update mmd_tools:
+# How to update mmd_tools: (outdated, no longer used)
 # Delete mmd_tools_local folder
 # Paste mmd_tools folder into project
 # Refactor folder name "mmd_tools" to "mmd_tools_local"
@@ -318,8 +318,10 @@ def register():
     # Set preferred Blender options
     if hasattr(tools.common.get_user_preferences(), 'system') and hasattr(tools.common.get_user_preferences().system, 'use_international_fonts'):
         tools.common.get_user_preferences().system.use_international_fonts = True
-    else:
+    elif hasattr(tools.common.get_user_preferences(), 'view') and hasattr(tools.common.get_user_preferences().view, 'use_international_fonts'):
         tools.common.get_user_preferences().view.use_international_fonts = True
+    else:
+        pass  # From 2.83 on this is no longer needed
     tools.common.get_user_preferences().filepaths.use_file_compression = True
     bpy.context.window_manager.addon_support = {'OFFICIAL', 'COMMUNITY', 'TESTING'}
 

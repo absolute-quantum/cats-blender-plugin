@@ -130,6 +130,8 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'decimate_fingers')
         row = col.row(align=True)
+        row.prop(context.scene, 'decimation_remove_doubles')
+        row = col.row(align=True)
         row.prop(context.scene, 'max_tris')
         col.separator()
         row = col.row(align=True)

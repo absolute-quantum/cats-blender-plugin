@@ -10,6 +10,7 @@ class FnSDEF():
     g_verts = {} # global cache
     g_shapekey_data = {}
     g_bone_check = {}
+    __g_armature_check = {}
     SHAPEKEY_NAME = 'mmd_sdef_skinning'
     MASK_NAME = 'mmd_sdef_mask'
 
@@ -18,10 +19,14 @@ class FnSDEF():
 
     @classmethod
     def __init_cache(cls, obj, shapekey):
-        if hash(obj) not in cls.g_verts:
-            key = hash(obj)
+        key = hash(obj)
+        obj = getattr(obj, 'original', obj)
+        mod = obj.modifiers.get('mmd_bone_order_override')
+        key_armature = hash(mod.object.pose) if mod and mod.type == 'ARMATURE' and mod.object else None
+        if key not in cls.g_verts or cls.__g_armature_check.get(key) != key_armature:
             cls.g_verts[key] = cls.__find_vertices(obj)
             cls.g_bone_check[key] = {}
+            cls.__g_armature_check[key] = key_armature
             shapekey_co = np.zeros(len(shapekey.data) * 3, dtype=np.float32)
             shapekey.data.foreach_get('co', shapekey_co)
             shapekey_co = shapekey_co.reshape(len(shapekey.data), 3)
@@ -44,7 +49,9 @@ class FnSDEF():
         if cls.SHAPEKEY_NAME in key_blocks:
             shapekey = key_blocks[cls.SHAPEKEY_NAME]
             shapekey.mute = mute
-            cls.__sdef_muted(obj, shapekey)
+            if cls.has_sdef_data(obj):
+                cls.__init_cache(obj, shapekey)
+                cls.__sdef_muted(obj, shapekey)
 
     @classmethod
     def __sdef_muted(cls, obj, shapekey):
@@ -52,9 +59,8 @@ class FnSDEF():
         if mute != cls.g_bone_check[hash(obj)].get('sdef_mute'):
             mod = obj.modifiers.get('mmd_bone_order_override')
             if mod and mod.type == 'ARMATURE':
-                #FIXME not working well inside driver function on Blender 2.8
-                if not mute and cls.MASK_NAME not in obj.vertex_groups:
-                    mask = tuple(i[0] for v in cls.g_verts[hash(obj)].values() for i in v[2])
+                if not mute and cls.MASK_NAME not in obj.vertex_groups and obj.mode != 'EDIT':
+                    mask = tuple(i for v in cls.g_verts[hash(obj)].values() for i in v[3])
                     obj.vertex_groups.new(name=cls.MASK_NAME).add(mask, 1, 'REPLACE')
                 mod.vertex_group = '' if mute else cls.MASK_NAME
                 mod.invert_vertex_group = True
@@ -99,8 +105,9 @@ class FnSDEF():
                     r0 = c + r0 - rw
                     r1 = c + r1 - rw
 
-                    key = (hash(bone_map[bgs[0].group]), hash(bone_map[bgs[1].group]))
+                    key = (bgs[0].group, bgs[1].group)
                     if key not in vertices:
+                        #TODO basically we can not cache any bone reference
                         vertices[key] = (bone_map[bgs[0].group], bone_map[bgs[1].group], [], [])
                     vertices[key][2].append((i, w0, w1, vd[i].co-c, (c+r0)/2, (c+r1)/2))
                     vertices[key][3].append(i)
@@ -115,21 +122,28 @@ class FnSDEF():
     @classmethod
     def driver_function(cls, shapekey, obj_name, bulk_update, use_skip, use_scale):
         obj = bpy.data.objects[obj_name]
+        if getattr(shapekey.id_data, 'is_evaluated', False):
+            # For Blender 2.8x, we should use evaluated object, and the only reference is the "obj" variable of SDEF driver
+            #cls.driver_function(shapekey.id_data.original.key_blocks[shapekey.name], obj_name, bulk_update, use_skip, use_scale) # update original data
+            data_path = shapekey.path_from_id('value')
+            obj = next(i for i in shapekey.id_data.animation_data.drivers if i.data_path == data_path).driver.variables['obj'].targets[0].id
         cls.__init_cache(obj, shapekey)
         if cls.__sdef_muted(obj, shapekey):
             return 0.0
 
+        pose_bones = obj.modifiers.get('mmd_bone_order_override').object.pose.bones
         if not bulk_update:
             shapekey_data = shapekey.data
             if use_scale:
                 # with scale
                 for bone0, bone1, sdef_data, vids in cls.g_verts[hash(obj)].values():
+                    bone0, bone1 = pose_bones[bone0.name], pose_bones[bone1.name]
                     if use_skip and not cls.__check_bone_update(obj, bone0, bone1):
                         continue
                     mat0 = matmul(bone0.matrix, bone0.bone.matrix_local.inverted())
                     mat1 = matmul(bone1.matrix, bone1.bone.matrix_local.inverted())
-                    rot0 = mat0.to_quaternion()
-                    rot1 = mat1.to_quaternion()
+                    rot0 = mat0.to_euler('YXZ').to_quaternion()
+                    rot1 = mat1.to_euler('YXZ').to_quaternion()
                     if rot1.dot(rot0) < 0:
                         rot1 = -rot1
                     s0, s1 = mat0.to_scale(), mat1.to_scale()
@@ -140,12 +154,14 @@ class FnSDEF():
             else:
                 # default
                 for bone0, bone1, sdef_data, vids in cls.g_verts[hash(obj)].values():
+                    bone0, bone1 = pose_bones[bone0.name], pose_bones[bone1.name]
                     if use_skip and not cls.__check_bone_update(obj, bone0, bone1):
                         continue
                     mat0 = matmul(bone0.matrix, bone0.bone.matrix_local.inverted())
                     mat1 = matmul(bone1.matrix, bone1.bone.matrix_local.inverted())
-                    rot0 = mat0.to_quaternion()
-                    rot1 = mat1.to_quaternion()
+                    # workaround some weird result of matrix.to_quaternion() using to_euler(), but still minor issues
+                    rot0 = mat0.to_euler('YXZ').to_quaternion()
+                    rot1 = mat1.to_euler('YXZ').to_quaternion()
                     if rot1.dot(rot0) < 0:
                         rot1 = -rot1
                     for vid, w0, w1, pos_c, cr0, cr1 in sdef_data:
@@ -156,12 +172,13 @@ class FnSDEF():
             if use_scale:
                 # scale & bulk update
                 for bone0, bone1, sdef_data, vids in cls.g_verts[hash(obj)].values():
+                    bone0, bone1 = pose_bones[bone0.name], pose_bones[bone1.name]
                     if use_skip and not cls.__check_bone_update(obj, bone0, bone1):
                         continue
                     mat0 = matmul(bone0.matrix, bone0.bone.matrix_local.inverted())
                     mat1 = matmul(bone1.matrix, bone1.bone.matrix_local.inverted())
-                    rot0 = mat0.to_quaternion()
-                    rot1 = mat1.to_quaternion()
+                    rot0 = mat0.to_euler('YXZ').to_quaternion()
+                    rot1 = mat1.to_euler('YXZ').to_quaternion()
                     if rot1.dot(rot0) < 0:
                         rot1 = -rot1
                     s0, s1 = mat0.to_scale(), mat1.to_scale()
@@ -172,12 +189,13 @@ class FnSDEF():
             else:
                 # bulk update
                 for bone0, bone1, sdef_data, vids in cls.g_verts[hash(obj)].values():
+                    bone0, bone1 = pose_bones[bone0.name], pose_bones[bone1.name]
                     if use_skip and not cls.__check_bone_update(obj, bone0, bone1):
                         continue
                     mat0 = matmul(bone0.matrix, bone0.bone.matrix_local.inverted())
                     mat1 = matmul(bone1.matrix, bone1.bone.matrix_local.inverted())
-                    rot0 = mat0.to_quaternion()
-                    rot1 = mat1.to_quaternion()
+                    rot0 = mat0.to_euler('YXZ').to_quaternion()
+                    rot1 = mat1.to_euler('YXZ').to_quaternion()
                     if rot1.dot(rot0) < 0:
                         rot1 = -rot1
                     shapekey_data[vids] = [matmul((rot0*w0 + rot1*w1).normalized().to_matrix(), pos_c) + matmul(mat0, cr0)*w0 + matmul(mat1, cr1)*w1 for vid, w0, w1, pos_c, cr0, cr1 in sdef_data]
@@ -224,9 +242,6 @@ class FnSDEF():
         cls.register_driver_function()
         if bulk_update is None:
             bulk_update = cls.__get_benchmark_result(obj, shapekey, use_scale, use_skip)
-        # FIXME: force disable use_skip=True for bulk_update=False on 2.8
-        if bpy.app.version >= (2, 80, 0) and (not bulk_update and use_skip):
-            use_skip = False
         # Add the driver to the shapekey
         f = obj.data.shape_keys.driver_add('key_blocks["'+cls.SHAPEKEY_NAME+'"].value', -1)
         if hasattr(f.driver, 'show_debug_info'):
@@ -237,13 +252,16 @@ class FnSDEF():
         ov.type = 'SINGLE_PROP'
         ov.targets[0].id = obj
         ov.targets[0].data_path = 'name'
-        mod = obj.modifiers.get('mmd_bone_order_override')
-        if mod and mod.type == 'ARMATURE':
-            ov = f.driver.variables.new()
-            ov.name = 'arm'
-            ov.type = 'SINGLE_PROP'
-            ov.targets[0].id = mod.object
-            ov.targets[0].data_path = 'name'
+        if bpy.app.version >= (2, 80, 0):
+            if not bulk_update and use_skip: #FIXME: force disable use_skip=True for bulk_update=False on 2.8
+                use_skip = False
+            mod = obj.modifiers.get('mmd_bone_order_override')
+            variables = f.driver.variables
+            for name in set(data[i].name for data in cls.g_verts[hash(obj)].values() for i in range(2)): # add required bones for dependency graph
+                var = variables.new()
+                var.type = 'TRANSFORMS'
+                var.targets[0].id = mod.object
+                var.targets[0].bone_target = name
         if hasattr(f.driver, 'use_self'): # Blender 2.78+
             f.driver.use_self = True
             param = (bulk_update, use_skip, use_scale)

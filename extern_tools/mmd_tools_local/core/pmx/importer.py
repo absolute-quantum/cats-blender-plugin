@@ -57,6 +57,7 @@ class PMXImporter:
         self.__imageTable = {}
 
         self.__sdefVertices = {} # pmx vertices
+        self.__blender_ik_links = set()
         self.__vertex_map = None
 
         self.__materialFaceCountTable = None
@@ -327,31 +328,35 @@ class PMXImporter:
         # for tracking mmd ik target, simple explaination:
         # + Root
         # | + link1
-        # |   + link0 (ik_bone) <- ik constraint, chain_count=2
+        # |   + link0 (ik_constraint_bone) <- ik constraint, chain_count=2
         # |     + IK target (ik_target) <- constraint 'mmd_ik_target_override', subtarget=link0
-        # + IK bone (target_bone)
+        # + IK bone (ik_bone)
         #
         # it is possible that the link0 is the IK target,
         # so ik constraint will be on link1, chain_count=1
         # the IK target isn't affected by IK bone
 
-        target_bone = pose_bones[index]
+        ik_bone = pose_bones[index]
         ik_target = pose_bones[pmx_bone.target]
-        ik_bone = ik_target.parent
+        ik_constraint_bone = ik_target.parent
         is_valid_ik = False
         if len(pmx_bone.ik_links) > 0:
-            ik_bone_real = pose_bones[pmx_bone.ik_links[0].target]
-            if ik_bone_real == ik_target or ik_bone_real.parent == ik_target:
-                ik_bone_real = ik_target.parent
+            ik_constraint_bone_real = pose_bones[pmx_bone.ik_links[0].target]
+            if ik_constraint_bone_real == ik_target:
+                if len(pmx_bone.ik_links) > 1:
+                    ik_constraint_bone_real = pose_bones[pmx_bone.ik_links[1].target]
                 del pmx_bone.ik_links[0]
-                logging.warning(' * fix IK settings of IK bone (%s)', target_bone.name)
-            is_valid_ik = (ik_bone == ik_bone_real)
+                logging.warning(' * fix IK settings of IK bone (%s)', ik_bone.name)
+            is_valid_ik = (ik_constraint_bone == ik_constraint_bone_real)
             if not is_valid_ik:
-                ik_bone = ik_bone_real
-                logging.warning(' * IK bone (%s) error: IK target (%s) should be a child of IK link 0 (%s)',
-                                target_bone.name, ik_target.name, ik_bone.name)
-        if ik_bone is None:
-            logging.warning(' * Invalid IK bone (%s)', target_bone.name)
+                ik_constraint_bone = ik_constraint_bone_real
+                logging.warning(' * IK bone (%s) warning: IK target (%s) is not a child of IK link 0 (%s)',
+                                ik_bone.name, ik_target.name, ik_constraint_bone.name)
+            elif any(pose_bones[i.target].parent != pose_bones[j.target] for i, j in zip(pmx_bone.ik_links, pmx_bone.ik_links[1:])):
+                logging.warning(' * Invalid IK bone (%s): IK chain does not follow parent-child relationship', ik_bone.name)
+                return
+        if ik_constraint_bone is None or len(pmx_bone.ik_links) < 1:
+            logging.warning(' * Invalid IK bone (%s)', ik_bone.name)
             return
 
         c = ik_target.constraints.new(type='DAMPED_TRACK')
@@ -359,14 +364,34 @@ class PMXImporter:
         c.mute = True
         c.influence = 0
         c.target = self.__armObj
-        c.subtarget = ik_bone.name
+        c.subtarget = ik_constraint_bone.name
+        if not is_valid_ik or next((c for c in ik_constraint_bone.constraints if c.type == 'IK' and c.is_valid), None):
+            c.name = 'mmd_ik_target_custom'
+            c.subtarget = ik_bone.name # point to IK control bone
+            ik_bone.mmd_bone.ik_rotation_constraint = pmx_bone.rotationConstraint
+            use_custom_ik = True
+        else:
+            ik_constraint_bone.mmd_bone.ik_rotation_constraint = pmx_bone.rotationConstraint
+            use_custom_ik = False
 
-        ikConst = self.__rig.create_ik_constraint(ik_bone, target_bone)
+        ikConst = self.__rig.create_ik_constraint(ik_constraint_bone, ik_bone)
         ikConst.iterations = pmx_bone.loopCount
         ikConst.chain_count = len(pmx_bone.ik_links)
-        ikConst.mute = not is_valid_ik
-        ik_bone.mmd_bone.ik_rotation_constraint = pmx_bone.rotationConstraint
-        for i in pmx_bone.ik_links:
+        if not is_valid_ik:
+            ikConst.pole_target = self.__armObj # make it an incomplete/invalid setting
+        for idx, i in enumerate(pmx_bone.ik_links):
+            if use_custom_ik or i.target in self.__blender_ik_links:
+                c = ik_bone.constraints.new(type='LIMIT_ROTATION')
+                c.mute = True
+                c.influence = 0
+                c.name = 'mmd_ik_limit_custom%d'%idx
+                use_limits = c.use_limit_x = c.use_limit_y = c.use_limit_z = (i.maximumAngle is not None)
+                if use_limits:
+                    minimum, maximum = self.convertIKLimitAngles(i.minimumAngle, i.maximumAngle, pose_bones[i.target].bone.matrix_local)
+                    c.max_x, c.max_y, c.max_z = maximum
+                    c.min_x, c.min_y, c.min_z = minimum
+                continue
+            self.__blender_ik_links.add(i.target)
             if i.maximumAngle is not None:
                 bone = pose_bones[i.target]
                 minimum, maximum = self.convertIKLimitAngles(i.minimumAngle, i.maximumAngle, bone.bone.matrix_local)
@@ -402,7 +427,7 @@ class PMXImporter:
             mmd_bone.transform_order = pmx_bone.transform_order
             mmd_bone.transform_after_dynamics = pmx_bone.transAfterPhis
 
-            if pmx_bone.displayConnection == -1 or pmx_bone.displayConnection == [0.0, 0.0, 0.0]:
+            if pmx_bone.displayConnection == -1 or pmx_bone.displayConnection == (0.0, 0.0, 0.0):
                 mmd_bone.is_tip = True
             elif b_bone.name in specialTipBones:
                 mmd_bone.is_tip = True
@@ -416,7 +441,7 @@ class PMXImporter:
                 b_bone.lock_location = [True, True, True]
 
             if pmx_bone.isIK:
-                if pmx_bone.target != -1:
+                if 0 <= pmx_bone.target < len(pose_bones):
                     self.__applyIk(i, pmx_bone, pose_bones)
 
             if pmx_bone.hasAdditionalRotate or pmx_bone.hasAdditionalLocation:

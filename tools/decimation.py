@@ -74,12 +74,11 @@ class AddShapeButton(bpy.types.Operator):
     def poll(cls, context):
         if context.scene.add_shape_key == "":
             return False
-
         return True
 
     def execute(self, context):
         shape = context.scene.add_shape_key
-        shapes = Common.get_shapekeys_decimation_list(self, context)
+        shapes = [x[0] for x in Common.get_shapekeys_decimation_list(self, context)]
         count = len(shapes)
 
         if count > 1 and shapes.index(shape) == count - 1:
@@ -106,6 +105,14 @@ class AddMeshButton(bpy.types.Operator):
 
     def execute(self, context):
         ignore_meshes.append(context.scene.add_mesh)
+
+        for obj in bpy.context.scene.objects:
+            if obj.type == 'MESH':
+                if obj.parent and obj.parent.type == 'ARMATURE' and obj.parent.name == bpy.context.scene.armature:
+                    if obj.name in ignore_meshes:
+                        continue
+                    context.scene.add_mesh = obj.name
+                    break
 
         return {'FINISHED'}
 
@@ -189,7 +196,8 @@ class AutoDecimateButton(bpy.types.Operator):
             Common.switch('EDIT')
             bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
             Common.switch('OBJECT')
-            Common.remove_doubles(mesh, 0.00001, save_shapes=True)
+            if context.scene.decimation_remove_doubles:
+                Common.remove_doubles(mesh, 0.00001, save_shapes=True)
             current_tris_count += len(mesh.data.polygons)
 
         if save_fingers:

@@ -236,6 +236,14 @@ class FnBone(object):
 
     @classmethod
     def clean_additional_transformation(cls, armature):
+        # clean constraints
+        for p_bone in armature.pose.bones:
+            p_bone.mmd_bone.is_additional_transform_dirty = True
+            constraints = p_bone.constraints
+            remove_constraint(constraints, 'mmd_additional_rotation')
+            remove_constraint(constraints, 'mmd_additional_location')
+            if remove_constraint(constraints, 'mmd_additional_parent'):
+                p_bone.bone.use_inherit_rotation = True
         # clean shadow bones
         shadow_bone_types = {
             'DUMMY',
@@ -246,19 +254,9 @@ class FnBone(object):
         def __is_at_shadow_bone(b):
             return b.is_mmd_shadow_bone and b.mmd_shadow_bone_type in shadow_bone_types
         shadow_bone_names = [b.name for b in armature.pose.bones if __is_at_shadow_bone(b)]
-
         if len(shadow_bone_names) > 0:
             with bpyutils.edit_object(armature) as data:
                 remove_edit_bones(data.edit_bones, shadow_bone_names)
-
-        # clean constraints
-        for p_bone in armature.pose.bones:
-            p_bone.mmd_bone.is_additional_transform_dirty = True
-            constraints = p_bone.constraints
-            remove_constraint(constraints, 'mmd_additional_rotation')
-            remove_constraint(constraints, 'mmd_additional_location')
-            if remove_constraint(constraints, 'mmd_additional_parent'):
-                p_bone.bone.use_inherit_rotation = True
         cls.patch_rna_idprop(armature.pose.bones)
 
     @classmethod
