@@ -294,6 +294,8 @@ bone_list_conflicting_names = [
 
     # Fix some model
     (['\LKnee'], '\LLeg', '\Left leg'),
+
+    (['\L_Clav', '\L_ShoulderMid'], '\L_Shoulder', 'Arm_\L'),
 ]
 bone_finger_list = [
     'Thumb0_',
@@ -470,6 +472,12 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Spine_D',
     'Spine_E',
 
+    'SpineA',
+    'SpineB',
+    'SpineC',
+    'SpineD',
+    'SpineE',
+
     'Spina00',
     'Spina01',
     'Spina02',
@@ -634,6 +642,8 @@ bone_rename['\Left shoulder'] = [
     '\L_ShoulderPad',
     'Collarbone_\L',
     'J_Clavicle_\L',
+    '\L_Clav',
+    'Clav_\L',
 ]
 bone_rename['\Left arm'] = [
     '\Left_Arm',
@@ -1085,6 +1095,7 @@ bone_reweight['\Left shoulder'] = [
     'Bip_Armpit_\L',
     'Bip_UpperArmBase_\L',
     'ShoulderHalf_\L',
+    'ShoulderAux_\L',
 ]
 bone_reweight['\Left arm'] = [
     'Arm01_\L',
@@ -1193,6 +1204,7 @@ bone_reweight['\Left arm'] = [
     'N_Hkata_\L',
     'Arm_\Left_Shoulder_Tw_A',
     'Arm_\Left_Shoulder_Tw_B',
+    'ArmAux_\L',
 ]
 bone_reweight['Left arm'] = [  # This has apparently no side in the name
     'エプロンArm',
@@ -1332,6 +1344,7 @@ bone_reweight['\Left elbow'] = [
     'N_Hhiji_\L',
     'N_Hte_\L',
     'Arm_\Left_Wrist_Tw_E',
+    'ElbowAux_\L',
 ]
 bone_reweight['\Left wrist'] = [
     # 'Sleeve3_\L',
@@ -1501,6 +1514,7 @@ bone_reweight['\Left leg'] = [
     '\Left_Thigh_Twist',
     'ThighLow_\L',
     'ThighUp_\L',
+    'LegAux_\L',
 ]
 bone_reweight['\Left knee'] = [
     'KneeD_\L',
