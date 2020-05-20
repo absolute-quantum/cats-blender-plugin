@@ -256,17 +256,18 @@ class FixArmature(bpy.types.Operator):
             set_material_shading()
 
         # Remove Rigidbodies and joints
-        to_delete = []
-        for child in Common.get_top_parent(armature).children:
-            if 'rigidbodies' in child.name or 'joints' in child.name and child.name not in to_delete:
-                to_delete.append(child.name)
-                continue
-            for child2 in child.children:
-                if 'rigidbodies' in child2.name or 'joints' in child2.name and child2.name not in to_delete:
-                    to_delete.append(child2.name)
+        if context.scene.remove_rigidbodies_joints:
+            to_delete = []
+            for child in Common.get_top_parent(armature).children:
+                if 'rigidbodies' in child.name or 'joints' in child.name and child.name not in to_delete:
+                    to_delete.append(child.name)
                     continue
-        for obj_name in to_delete:
-            Common.delete_hierarchy(Common.get_objects()[obj_name])
+                for child2 in child.children:
+                    if 'rigidbodies' in child2.name or 'joints' in child2.name and child2.name not in to_delete:
+                        to_delete.append(child2.name)
+                        continue
+            for obj_name in to_delete:
+                Common.delete_hierarchy(Common.get_objects()[obj_name])
 
         # Remove objects from different layers and things that are not meshes
         get_current_layers = []

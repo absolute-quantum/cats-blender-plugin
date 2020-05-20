@@ -309,6 +309,8 @@ It checks for a new version automatically once every day.
   - Added "Fix MMD Twist Bones" option to Fix Model
     - This will apply a fix to make the MMD arm twist bones usable **(Thanks Rokk!)**
     - You do not need to enable "Keep Twist Bones" for this to work
+  - Added "Remove Rigidbodies and Joints" option to Fix Model
+    - This is solely intended for our non-VRChat users
   - Added compatibility to more models
   - Disabling the option "Remove Zero Weight Bones" now also keeps unused vertex groups
 - **Importer:**

@@ -253,7 +253,7 @@ def set_default_stage():
     """
 
     # Remove rigidbody collections, as they cause issues if they are not in the view_layer
-    if not version_2_79_or_older():
+    if not version_2_79_or_older() and bpy.context.scene.remove_rigidbodies_joints:
         print('Collections:')
         for collection in bpy.data.collections:
             print(' ' + collection.name, collection.name.lower())
@@ -1094,9 +1094,10 @@ def prepare_separation(mesh):
     unselect_all()
 
     # Remove Rigidbodies and joints
-    for obj in get_objects():
-        if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            delete_hierarchy(obj)
+    if bpy.context.scene.remove_rigidbodies_joints:
+        for obj in get_objects():
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                delete_hierarchy(obj)
 
     save_shapekey_order(mesh.name)
     set_active(mesh)

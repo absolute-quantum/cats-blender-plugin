@@ -221,6 +221,8 @@ class ModelSettings(bpy.types.Operator):
         row.prop(context.scene, 'combine_mats')
         row = col.row(align=True)
         row.prop(context.scene, 'remove_zero_weight')
+        row = col.row(align=True)
+        row.prop(context.scene, 'remove_rigidbodies_joints')
 
         col.separator()
         row = col.row(align=True)

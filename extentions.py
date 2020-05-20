@@ -100,6 +100,13 @@ def register():
         default=True
     )
 
+    Scene.remove_rigidbodies_joints = BoolProperty(
+        name='Remove Rigidbodies and Joints',
+        description="Rigidbodies and joints are used by MMD software to simulate physics."
+                    "\nThey are completely useless for VRChat, so removing them is recommended for VRChat users!",
+        default=True
+    )
+
     Scene.use_google_only = BoolProperty(
         name='Use Old Translations (not recommended)',
         description="Ignores the internal dictionary and only uses the Google Translator for shape key translations."
