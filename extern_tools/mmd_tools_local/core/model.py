@@ -567,24 +567,6 @@ class Model:
                 const = i.constraints['mmd_tools_rigid_track']
                 i.constraints.remove(const)
 
-        if bpy.app.version < (2, 78, 0):
-            self.__removeChildrenOfTemporaryGroupObject() # for speeding up only
-            for i in self.temporaryObjects():
-                bpy.context.scene.objects.unlink(i)
-                bpy.data.objects.remove(i)
-        elif bpy.app.version < (2, 80, 0):
-            for i in self.temporaryObjects():
-                bpy.data.objects.remove(i, do_unlink=True)
-        else:
-            tmp_objs = tuple(self.temporaryObjects())
-            for i in tmp_objs:
-                for c in i.users_collection:
-                    c.objects.unlink(i)
-            bpy.ops.object.delete({'selected_objects':tmp_objs, 'active_object':self.rootObject()})
-            for i in tmp_objs:
-                #assert(i.users == 0)
-                bpy.data.objects.remove(i)
-
         rigid_track_counts = 0
         for i in self.rigidBodies():
             rigid_type = int(i.mmd_rigid.type)
@@ -609,6 +591,8 @@ class Model:
         for i in self.joints():
             self.__restoreTransforms(i)
 
+        self.__removeTemporaryObjects()
+
         arm = self.armature()
         if arm is not None: # update armature
             arm.update_tag()
@@ -620,6 +604,25 @@ class Model:
         logging.info(' Finished cleaning in %f seconds.', time.time() - start_time)
         mmd_root.is_built = False
         rigid_body.setRigidBodyWorldEnabled(rigidbody_world_enabled)
+
+    def __removeTemporaryObjects(self):
+        if bpy.app.version < (2, 78, 0):
+            self.__removeChildrenOfTemporaryGroupObject() # for speeding up only
+            for i in self.temporaryObjects():
+                bpy.context.scene.objects.unlink(i)
+                bpy.data.objects.remove(i)
+        elif bpy.app.version < (2, 80, 0):
+            for i in self.temporaryObjects():
+                bpy.data.objects.remove(i, do_unlink=True)
+        else:
+            tmp_objs = tuple(self.temporaryObjects())
+            for i in tmp_objs:
+                for c in i.users_collection:
+                    c.objects.unlink(i)
+            bpy.ops.object.delete({'selected_objects':tmp_objs, 'active_object':self.rootObject()})
+            for i in tmp_objs:
+                if i.users < 1:
+                    bpy.data.objects.remove(i)
 
     def __removeChildrenOfTemporaryGroupObject(self):
         tmp_grp_obj = self.temporaryGroupObject()
