@@ -514,6 +514,20 @@ class FixArmature(bpy.types.Operator):
             ('_Le', '_L'),
             ('_Ri', '_R'),
         ]
+        # List of chars to replace
+        replaces = [
+            (' ', '_'),
+            ('-', '_'),
+            ('.', '_'),
+            (':', '_'),
+            ('____', '_'),
+            ('___', '_'),
+            ('__', '_'),
+            ('_Le_', '_L_'),
+            ('_Ri_', '_R_'),
+            ('LEFT', 'Left'),
+            ('RIGHT', 'Right'),
+        ]
 
         # Standardize names
         for bone in armature.data.edit_bones:
@@ -530,16 +544,9 @@ class FixArmature(bpy.types.Operator):
                 upper_name += s[:1].upper() + s[1:]
             name = upper_name
 
-            # Make all the underscores! And replace things!
-            name = name.replace(' ', '_')\
-                .replace('-', '_')\
-                .replace('.', '_')\
-                .replace(':', '_')\
-                .replace('____', '_')\
-                .replace('___', '_')\
-                .replace('__', '_')\
-                .replace('_Le_', '_L_')\
-                .replace('_Ri_', '_R_')\
+            # Replace all the things!
+            for replacement in replaces:
+                name = name.replace(replacement[0], replacement[1])
 
             # Replace if name starts with specified chars
             for replacement in starts_with:

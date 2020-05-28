@@ -315,6 +315,7 @@ It checks for a new version automatically once every day.
   - Disabling the option "Remove Zero Weight Bones" now also keeps unused vertex groups
 - **Importer:**
   - Imported meshes from VRM files now get automatically parented to their armature
+  - Imported armatures now always show their bones in front and in wire mode
   - Fixed export warning being empty
   - Fixed importer error when the FBX importer was not enabled
   - Fixed importer error when a zip file contained another zip file

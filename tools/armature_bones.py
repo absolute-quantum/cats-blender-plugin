@@ -602,6 +602,7 @@ bone_rename['\Left shoulder'] = [
     '\Left_Shoulder',
     '\LeftShoulder',
     'Shoulder_\L',
+    'Shoulder_\Left',
     '\LShoulder',
     '\LShoulderN',
     'Shoulder\L',

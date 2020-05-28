@@ -142,11 +142,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                 bpy.ops.cats_importer.zip_popup('INVOKE_DEFAULT')
 
         # Create list of armatures that got added during import, select them in cats and fix their bone orientations if necessary
-        arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
-        for armature in arm_added_during_import:
-            print('Added: ', armature.name)
-            bpy.context.scene.armature = armature.name
-            self.fix_bone_orientations(armature)
+        fix_armatures_post_import(pre_import_objects)
 
         return {'FINISHED'}
 
@@ -281,31 +277,46 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         ImportAnyModel.import_file(model_dir, model_file_name)
 
-    @staticmethod
-    def fix_bone_orientations(armature):
-        Common.unselect_all()
-        Common.set_active(armature)
-        Common.switch('EDIT')
 
-        fix_bones = True
+def fix_bone_orientations(armature):
+    Common.unselect_all()
+    Common.set_active(armature)
+    Common.switch('EDIT')
 
-        # Check if all the bones are pointing in the same direction
-        for bone in armature.data.edit_bones:
-            equal_axis_count = 0
-            if bone.head[0] == bone.tail[0]:
-                equal_axis_count += 1
-            if bone.head[1] == bone.tail[1]:
-                equal_axis_count += 1
-            if bone.head[2] == bone.tail[2]:
-                equal_axis_count += 1
+    fix_bones = True
 
-            # If the bone points to more than one direction, don't fix the armatures bones
-            if equal_axis_count < 2:
-                fix_bones = False
+    # Check if all the bones are pointing in the same direction
+    for bone in armature.data.edit_bones:
+        equal_axis_count = 0
+        if bone.head[0] == bone.tail[0]:
+            equal_axis_count += 1
+        if bone.head[1] == bone.tail[1]:
+            equal_axis_count += 1
+        if bone.head[2] == bone.tail[2]:
+            equal_axis_count += 1
 
-        if fix_bones:
-            Common.fix_bone_orientations(armature)
-        Common.switch('OBJECT')
+        # If the bone points to more than one direction, don't fix the armatures bones
+        if equal_axis_count < 2:
+            fix_bones = False
+
+    if fix_bones:
+        Common.fix_bone_orientations(armature)
+    Common.switch('OBJECT')
+
+
+def fix_armatures_post_import(pre_import_objects):
+    arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
+    for armature in arm_added_during_import:
+        print('Added: ', armature.name)
+        bpy.context.scene.armature = armature.name
+        fix_bone_orientations(armature)
+
+        # Set better bone view
+        armature.draw_type = 'WIRE'
+        if version_2_79_or_older():
+            armature.show_x_ray = True
+        else:
+            armature.show_in_front = True
 
 
 @register_wrap
@@ -323,11 +334,8 @@ class ZipPopup(bpy.types.Operator):
         ImportAnyModel.extract_file()
 
         # Create list of armatures that got added during import, select them in cats and fix their bone orientations if necessary
-        arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
-        for armature in arm_added_during_import:
-            print('Added: ', armature.name)
-            bpy.context.scene.armature = armature.name
-            ImportAnyModel.fix_bone_orientations(armature)
+        fix_armatures_post_import(pre_import_objects)
+
         return {'FINISHED'}
 
     def invoke(self, context, event):
