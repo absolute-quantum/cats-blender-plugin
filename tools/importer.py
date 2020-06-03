@@ -783,7 +783,7 @@ class VrmToolsButton(bpy.types.Operator):
         if Common.version_2_79_or_older():
             webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_79')
         else:
-            webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_8')
+            webbrowser.open('https://github.com/saturday06/VRM_IMPORTER_for_Blender2_8')
 
         self.report({'INFO'}, 'VRM Importer link opened')
         return {'FINISHED'}

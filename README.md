@@ -300,6 +300,9 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.17.1
+- Changed link to a new vrm importer since the old one dropped support
+
 #### 0.17.0
 - **Cats is now fully compatible with Blender 2.83!**
   - *It was compatible with 2.82 all long*
