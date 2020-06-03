@@ -91,7 +91,9 @@ class FixArmature(bpy.types.Operator):
                 if mesh.name.endswith(('.baked', '.baked0')):
                     is_vrm = True  # TODO
             if not is_vrm:
-                self.report({'ERROR'}, 'No mesh inside the armature found!')
+                Common.show_error(3.8, ['No mesh inside the armature found!',
+                                        'If there are meshes outside of the armature,',
+                                        'set the armature as the parent of the meshes.'])
                 return {'CANCELLED'}
 
         print('\nFixing Model:\n')
@@ -254,17 +256,18 @@ class FixArmature(bpy.types.Operator):
             set_material_shading()
 
         # Remove Rigidbodies and joints
-        to_delete = []
-        for child in Common.get_top_parent(armature).children:
-            if 'rigidbodies' in child.name or 'joints' in child.name and child.name not in to_delete:
-                to_delete.append(child.name)
-                continue
-            for child2 in child.children:
-                if 'rigidbodies' in child2.name or 'joints' in child2.name and child2.name not in to_delete:
-                    to_delete.append(child2.name)
+        if context.scene.remove_rigidbodies_joints:
+            to_delete = []
+            for child in Common.get_top_parent(armature).children:
+                if 'rigidbodies' in child.name or 'joints' in child.name and child.name not in to_delete:
+                    to_delete.append(child.name)
                     continue
-        for obj_name in to_delete:
-            Common.delete_hierarchy(Common.get_objects()[obj_name])
+                for child2 in child.children:
+                    if 'rigidbodies' in child2.name or 'joints' in child2.name and child2.name not in to_delete:
+                        to_delete.append(child2.name)
+                        continue
+            for obj_name in to_delete:
+                Common.delete_hierarchy(Common.get_objects()[obj_name])
 
         # Remove objects from different layers and things that are not meshes
         get_current_layers = []
@@ -500,7 +503,30 @@ class FixArmature(bpy.types.Operator):
             ('Cf_J_', ''),
             ('G_', ''),
             ('Joint_', ''),
+            ('Def_C_', ''),
+            ('Def_', ''),
             ('DEF_', ''),
+            ('Chr_', ''),
+        ]
+        # List of chars to replace if they are at the end of a bone name
+        ends_with = [
+            ('_Bone', ''),
+            ('_Le', '_L'),
+            ('_Ri', '_R'),
+        ]
+        # List of chars to replace
+        replaces = [
+            (' ', '_'),
+            ('-', '_'),
+            ('.', '_'),
+            (':', '_'),
+            ('____', '_'),
+            ('___', '_'),
+            ('__', '_'),
+            ('_Le_', '_L_'),
+            ('_Ri_', '_R_'),
+            ('LEFT', 'Left'),
+            ('RIGHT', 'Right'),
         ]
 
         # Standardize names
@@ -508,13 +534,7 @@ class FixArmature(bpy.types.Operator):
             current_step += 1
             wm.progress_update(current_step)
 
-            # Make all the underscores!
-            name = bone.name.replace(' ', '_')\
-                .replace('-', '_')\
-                .replace('.', '_')\
-                .replace('____', '_')\
-                .replace('___', '_')\
-                .replace('__', '_')\
+            name = bone.name
 
             # Always uppercase at the start and after an underscore
             upper_name = ''
@@ -524,10 +544,19 @@ class FixArmature(bpy.types.Operator):
                 upper_name += s[:1].upper() + s[1:]
             name = upper_name
 
+            # Replace all the things!
+            for replacement in replaces:
+                name = name.replace(replacement[0], replacement[1])
+
             # Replace if name starts with specified chars
             for replacement in starts_with:
                 if name.startswith(replacement[0]):
                     name = replacement[1] + name[len(replacement[0]):]
+
+            # Replace if name ends with specified chars
+            for replacement in ends_with:
+                if name.endswith(replacement[0]):
+                    name = name[:-len(replacement[0])] + replacement[1]
 
             # Remove digits from the start
             name_split = name.split('_')
@@ -923,6 +952,12 @@ class FixArmature(bpy.types.Operator):
                 if mod.type == 'ARMATURE':
                     bpy.ops.object.modifier_remove(modifier=mod.name)
 
+            # Fix MMD twist bones
+            print('FIX TWIST BONES')
+            print(bones_to_delete)
+            Common.fix_twist_bones(mesh, bones_to_delete)
+            print(bones_to_delete)
+
             # Add bones to parent reweight list
             for name in Bones.bone_reweigth_to_parent:
                 if '\Left' in name or '\L' in name:
@@ -940,6 +975,12 @@ class FixArmature(bpy.types.Operator):
                             bone_parent = bone.parent
 
                     if not bone_child or not bone_parent:
+                        continue
+
+                    if context.scene.keep_twist_bones and 'twist' in bone_child.name.lower():
+                        continue
+                    if context.scene.fix_twist_bones and bone_child.name.lower() in ['handtwist_l', 'handtwist_r', 'armtwist_l', 'armtwist_r']:
+                        print('TWIST FOUND!')
                         continue
 
                     # search for next parent that is not in the "reweight to parent" list
@@ -1014,6 +1055,12 @@ class FixArmature(bpy.types.Operator):
                             print('BUG: ' + bone[0] + ' tried to mix weights with itself!')
                             continue
 
+                        if context.scene.keep_twist_bones and 'twist' in bone[1].lower():
+                            continue
+                        if context.scene.fix_twist_bones and bone[1].lower() in ['handtwist_l', 'handtwist_r', 'armtwist_l', 'armtwist_r']:
+                            print('TWIST FOUND!')
+                            continue
+
                         # print(bone[1] + " to1 " + bone[0])
 
                         # If important vertex group is not there create it
@@ -1068,6 +1115,12 @@ class FixArmature(bpy.types.Operator):
                 if not vg_to:
                     continue
 
+                if context.scene.keep_twist_bones and 'twist' in vg_from.name.lower():
+                    continue
+                if context.scene.fix_twist_bones and vg_from.name.lower() in ['handtwist_l', 'handtwist_r', 'armtwist_l', 'armtwist_r']:
+                    print('TWIST FOUND!')
+                    continue
+
                 bone_tmp = armature.data.bones.get(vg_from.name)
                 if bone_tmp:
                     for child in bone_tmp.children:
@@ -1116,11 +1169,14 @@ class FixArmature(bpy.types.Operator):
             if key in armature.data.edit_bones and value in armature.data.edit_bones:
                 armature.data.edit_bones.get(key).parent = armature.data.edit_bones.get(value)
 
-        # Removes unused vertex groups
-        Common.remove_unused_vertex_groups()
+        # Fix MMD twist bone names
+        Common.fix_twist_bone_names(armature)
 
-        # Zero weight bones should be deleted
         if context.scene.remove_zero_weight:
+            # Removes unused vertex groups
+            Common.remove_unused_vertex_groups()
+
+            # Zero weight bones should be deleted
             Common.delete_zero_weight()
 
         # Connect all bones with their children if they have exactly one

@@ -41,8 +41,8 @@ def register():
 
     Scene.remove_zero_weight = BoolProperty(
         name='Remove Zero Weight Bones',
-        description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.\n"
-                    'Uncheck this if bones you want to keep got deleted',
+        description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices."
+                    '\nUncheck this if bones or vertex groups that you want to keep got deleted',
         default=True
     )
 
@@ -53,6 +53,25 @@ def register():
                     '\nThis can also fix issues with crumbled finger bones in Unity.'
                     '\nMake sure to always uncheck "Add Leaf Bones" when exporting or use the CATS export button',
         default=False
+    )
+
+    Scene.keep_twist_bones = BoolProperty(
+        name='Keep Twist Bones',
+        description='This will keep any bone with "Twist" in the name.'
+                    '\nSo if there are certain bones that you want to keep, you can add "Twist" to them and they won\'t get deleted.'
+                    '\n\nVRChat can now make use of twist bones, so you can use this option to keep them',
+        default=False
+    )
+
+    Scene.fix_twist_bones = BoolProperty(
+        name='Fix MMD Twist Bones',
+        description='This will make MMD arm twist bones usable in VRChat.'
+                    '\nWIll only work if the twist bones are properly named.'
+                    '\nRequired names:'
+                    '\n  - ArmTwist[1-3]_[L/R]'
+                    '\n  - HandTwist[1-3]_[L/R]'
+                    '\n\nYou don\'t need to enable "Keep Twist Bones" for this to work',
+        default=True
     )
 
     Scene.join_meshes = BoolProperty(
@@ -78,6 +97,13 @@ def register():
     Scene.fix_materials = BoolProperty(
         name='Fix Materials',
         description="This will apply some VRChat related fixes to materials",
+        default=True
+    )
+
+    Scene.remove_rigidbodies_joints = BoolProperty(
+        name='Remove Rigidbodies and Joints',
+        description="Rigidbodies and joints are used by MMD software to simulate physics."
+                    "\nThey are completely useless for VRChat, so removing them is recommended for VRChat users!",
         default=True
     )
 
@@ -145,7 +171,7 @@ def register():
     Scene.apply_transforms = BoolProperty(
         name='Apply Transforms',
         description='Check this if both armatures and meshes are already at their correct positions.'
-                    '\nThis will cause them to stay exactly like they are when merging',
+                    '\nThis will cause them to stay exactly where they are when merging',
         default=False
     )
 
@@ -153,6 +179,13 @@ def register():
         name='Join Meshes',
         description='This will join all meshes.'
                     '\nNot checking this will always apply transforms',
+        default=True
+    )
+
+    Scene.merge_armatures_remove_zero_weight_bones = BoolProperty(
+        name='Remove Zero Weight Bones',
+        description="Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices."
+                    '\nUncheck this if bones or vertex groups that you want to keep got deleted',
         default=True
     )
 
@@ -234,6 +267,12 @@ def register():
                     "MiddleFinger(1-3)_(L/R)\n"
                     "RingFinger(1-3)_(L/R)\n"
                     "LittleFinger(1-3)_(L/R)"
+    )
+
+    Scene.decimation_remove_doubles = BoolProperty(
+        name="Remove Doubles",
+        description="Uncheck this if you got issues with with this checked",
+        default=True
     )
 
     Scene.max_tris = IntProperty(

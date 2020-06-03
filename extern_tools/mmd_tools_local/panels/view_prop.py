@@ -45,6 +45,28 @@ class MMDModelObjectDisplayPanel(_PanelBase, Panel):
         row = layout.row(align=True)
         row.prop(root.mmd_root, 'use_sdef', text='SDEF')
 
+        layout.prop(root.mmd_root, 'use_property_driver', text='Property Drivers', icon='DRIVER')
+
+        self.__draw_IK_toggle(Model(root).armature() or root)
+
+    def __draw_IK_toggle(self, armature):
+        bones = getattr(armature.pose, 'bones', ())
+        ik_map = {bones[c.subtarget]:(b.bone, c.chain_count, not c.is_valid) for b in bones for c in b.constraints if c.type == 'IK' and c.subtarget in bones}
+        if ik_map:
+            base = sum(b.bone.length for b in ik_map.keys())/len(ik_map)*0.8
+            groups = {}
+            for ik, (b, cnt, err) in ik_map.items():
+                if any(all(x) for x in zip(ik.bone.layers, armature.data.layers)):
+                    px, py, pz = -ik.bone.head_local/base
+                    bx, by, bz = -b.head_local/base*0.15
+                    groups.setdefault((int(pz), int(bz), -cnt), set()).add(((px, -py, bx), ik)) # (px, pz, -py, bx, bz, -by)
+            layout = self.layout.box().column()
+            for _, group in sorted(groups.items()):
+                row = layout.row()
+                for _, ik in sorted(group, key=lambda x: x[0]):
+                    ic = 'ERROR' if ik_map[ik][-1] else 'NONE'
+                    row.prop(ik, 'mmd_ik_toggle', text=ik.name, toggle=True, icon=ic)
+
 @register_wrap
 class MMDViewPanel(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_view'

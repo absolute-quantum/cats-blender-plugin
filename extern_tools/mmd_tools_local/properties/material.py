@@ -92,7 +92,9 @@ class MMDMaterial(PropertyGroup):
 
     material_id = IntProperty(
         name='Material ID',
-        default=-1
+        description='Unique ID for the reference of material morph',
+        default=-1,
+        min=-1,
         )
 
     ambient_color = FloatVectorProperty(
@@ -254,4 +256,7 @@ class MMDMaterial(PropertyGroup):
         name='Comment',
         description='Comment',
         )
+
+    def is_id_unique(self):
+        return self.material_id < 0 or not next((m for m in bpy.data.materials if m.mmd_material != self and m.mmd_material.material_id == self.material_id), None)
 

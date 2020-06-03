@@ -552,9 +552,6 @@ class Model:
         rigid_body.setRigidBodyWorldEnabled(rigidbody_world_enabled)
 
     def clean(self):
-        #FIXME rigid body cache is out of sync on Blender 2.8
-        # [Build] at frame 1 -> [Play] -> [Stop] at frame N -> [Clean] at frame N -> [Play] -> crash
-        # [Build] at frame 1 -> [Play] -> [Stop] at frame N -> [Clean] at frame N -> go to frame 1 ->[Play] -> ok
         rigidbody_world_enabled = rigid_body.setRigidBodyWorldEnabled(False)
         logging.info('****************************************')
         logging.info(' Clean rig')
@@ -569,22 +566,6 @@ class Model:
             if 'mmd_tools_rigid_track' in i.constraints:
                 const = i.constraints['mmd_tools_rigid_track']
                 i.constraints.remove(const)
-
-        if bpy.app.version < (2, 78, 0):
-            self.__removeChildrenOfTemporaryGroupObject() # for speeding up only
-            for i in self.temporaryObjects():
-                if i.mmd_type in ['NON_COLLISION_CONSTRAINT', 'SPRING_GOAL', 'SPRING_CONSTRAINT']:
-                    bpy.context.scene.objects.unlink(i)
-                    bpy.data.objects.remove(i)
-                elif i.mmd_type == 'TRACK_TARGET':
-                    bpy.context.scene.objects.unlink(i)
-                    bpy.data.objects.remove(i)
-        else:
-            for i in self.temporaryObjects():
-                if i.mmd_type in ['NON_COLLISION_CONSTRAINT', 'SPRING_GOAL', 'SPRING_CONSTRAINT']:
-                    bpy.data.objects.remove(i, do_unlink=True)
-                elif i.mmd_type == 'TRACK_TARGET':
-                    bpy.data.objects.remove(i, do_unlink=True)
 
         rigid_track_counts = 0
         for i in self.rigidBodies():
@@ -610,6 +591,8 @@ class Model:
         for i in self.joints():
             self.__restoreTransforms(i)
 
+        self.__removeTemporaryObjects()
+
         arm = self.armature()
         if arm is not None: # update armature
             arm.update_tag()
@@ -621,6 +604,25 @@ class Model:
         logging.info(' Finished cleaning in %f seconds.', time.time() - start_time)
         mmd_root.is_built = False
         rigid_body.setRigidBodyWorldEnabled(rigidbody_world_enabled)
+
+    def __removeTemporaryObjects(self):
+        if bpy.app.version < (2, 78, 0):
+            self.__removeChildrenOfTemporaryGroupObject() # for speeding up only
+            for i in self.temporaryObjects():
+                bpy.context.scene.objects.unlink(i)
+                bpy.data.objects.remove(i)
+        elif bpy.app.version < (2, 80, 0):
+            for i in self.temporaryObjects():
+                bpy.data.objects.remove(i, do_unlink=True)
+        else:
+            tmp_objs = tuple(self.temporaryObjects())
+            for i in tmp_objs:
+                for c in i.users_collection:
+                    c.objects.unlink(i)
+            bpy.ops.object.delete({'selected_objects':tmp_objs, 'active_object':self.rootObject()})
+            for i in tmp_objs:
+                if i.users < 1:
+                    bpy.data.objects.remove(i)
 
     def __removeChildrenOfTemporaryGroupObject(self):
         tmp_grp_obj = self.temporaryGroupObject()
@@ -964,23 +966,12 @@ class Model:
             i.rotation_euler = r.to_euler(i.rotation_mode)
 
     def cleanAdditionalTransformConstraints(self):
-        self.__detached_call(FnBone.clean_additional_transformation)
+        arm = self.armature()
+        if arm:
+            FnBone.clean_additional_transformation(arm)
 
     def applyAdditionalTransformConstraints(self):
-        self.__detached_call(FnBone.apply_additional_transformation)
-
-    def __detached_call(self, exec_func):
         arm = self.armature()
-        # detach armature modifier for improving performance
-        detached = []
-        for mesh in self.meshes():
-            for m in mesh.modifiers:
-                if m.type == 'ARMATURE' and m.object == arm:
-                    m.object = None
-                    detached.append(m)
-        try:
-            exec_func(arm)
-        finally:
-            for m in detached: # store back
-                m.object = arm
+        if arm:
+            FnBone.apply_additional_transformation(arm)
 

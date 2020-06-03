@@ -50,6 +50,7 @@ class MMDToolsObjectPanel(_PanelBase, Panel):
         row = col.row(align=True)
         row.operator('mmd_tools.create_mmd_model_root_object', text='Create Model', icon='OUTLINER_OB_ARMATURE')
         row.operator('mmd_tools.convert_to_mmd_model', text='Convert Model', icon='OUTLINER_OB_ARMATURE')
+        row.operator('mmd_tools.rigid_body_world_update', text='', icon='PHYSICS')
 
         col = layout.column(align=True)
         col.operator('mmd_tools.convert_materials_for_cycles', text='Convert Materials For Cycles')
@@ -69,7 +70,7 @@ class MMDToolsObjectPanel(_PanelBase, Panel):
             col.operator('mmd_tools.clean_additional_transform', text='Clean')
 
             col = row.column(align=True)
-            col.active = context.scene.rigidbody_world is not None and context.scene.rigidbody_world.enabled
+            col.active = getattr(context.scene.rigidbody_world, 'enabled', False)
             sub_row = col.row(align=True)
             sub_row.label(text='Physics:', icon='PHYSICS')
             if not root.mmd_root.is_built:
@@ -313,8 +314,11 @@ class MMD_TOOLS_UL_Morphs(UIList):
 class MMD_TOOLS_UL_MaterialMorphOffsets(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if self.layout_type in {'DEFAULT'}:
-            material = item.material or 'All Materials'
-            layout.label(text=material, translate=False, icon='MATERIAL')
+            material = item.material
+            if not material and item.material_id >= 0:
+                layout.label(text='Material ID %d is missing'%item.material_id, translate=False, icon='ERROR')
+            else:
+                layout.label(text=material or 'All Materials', translate=False, icon='MATERIAL')
         elif self.layout_type in {'COMPACT'}:
             pass
         elif self.layout_type in {'GRID'}:

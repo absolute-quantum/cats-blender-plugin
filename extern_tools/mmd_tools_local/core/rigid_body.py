@@ -20,11 +20,9 @@ def collisionShape(shape_type):
 
 
 def setRigidBodyWorldEnabled(enable):
+    if bpy.ops.rigidbody.world_add.poll():
+        bpy.ops.rigidbody.world_add()
     rigidbody_world = bpy.context.scene.rigidbody_world
-    if rigidbody_world is None:
-        if enable:
-            bpy.ops.rigidbody.world_add()
-        return False
     enabled = rigidbody_world.enabled
     rigidbody_world.enabled = enable
     return enabled

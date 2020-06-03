@@ -25,8 +25,10 @@
 
 import os
 import bpy
+import copy
 import zipfile
 import webbrowser
+import addon_utils
 import bpy_extras.io_utils
 
 from .. import globs
@@ -96,6 +98,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     def execute(self, context):
         global zip_files
         zip_files = {}
+        has_zip_file = False
 
         Common.remove_unused_objects()
 
@@ -110,35 +113,36 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         if self.directory:
             for f in self.files:
                 file_name = f.name
-                print(file_name)
                 self.import_file(self.directory, file_name)
+                if file_name.lower().endswith('.zip'):
+                    has_zip_file = True
         # If this operator is called with no directory but a filepath argument, import that
         elif self.filepath:
             print(self.filepath)
             self.import_file(os.path.dirname(self.filepath), os.path.basename(self.filepath))
 
-        # Import all models from zip files that contain only one importable model
-        remove_keys = []
-        for zip_path, files in zip_files.items():
-            context.scene.zip_content = zip_path + ' ||| ' + files[0]
-            if len(files) == 1:
-                ImportAnyModel.extract_file()
-                remove_keys.append(zip_path)
+        if has_zip_file:
+            if not zip_files:
+                Common.show_error(4, ['The selected zip file contains no importable models.'])
 
-        # Remove the models from zip file list that got already imported
-        for key in remove_keys:
-            zip_files.pop(key)
+            # Import all models from zip files that contain only one importable model
+            remove_keys = []
+            for zip_path, files in copy.deepcopy(zip_files).items():
+                context.scene.zip_content = zip_path + ' ||| ' + files[0]
+                if len(files) == 1:
+                    ImportAnyModel.extract_file()
+                    remove_keys.append(zip_path)
 
-        # Only if a zip contains more than one model, open the zip model selection popup
-        if zip_files.keys():
-            bpy.ops.cats_importer.zip_popup('INVOKE_DEFAULT')
+            # Remove the models from zip file list that got already imported
+            for key in remove_keys:
+                zip_files.pop(key)
+
+            # Only if a zip contains more than one model, open the zip model selection popup
+            if zip_files.keys():
+                bpy.ops.cats_importer.zip_popup('INVOKE_DEFAULT')
 
         # Create list of armatures that got added during import, select them in cats and fix their bone orientations if necessary
-        arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
-        for armature in arm_added_during_import:
-            print('Added: ', armature.name)
-            bpy.context.scene.armature = armature.name
-            self.fix_bone_orientations(armature)
+        fix_armatures_post_import(pre_import_objects)
 
         return {'FINISHED'}
 
@@ -185,6 +189,12 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         # FBX
         elif file_ending == 'fbx':
+
+            # Enable fbx if it isn't enabled yet
+            fbx_is_enabled = addon_utils.check('io_scene_fbx')[1]
+            if not fbx_is_enabled:
+                addon_utils.enable('io_scene_fbx')
+
             try:
                 bpy.ops.import_scene.fbx('EXEC_DEFAULT',
                                          filepath=file_path,
@@ -201,13 +211,29 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         # VRM
         elif file_ending == 'vrm':
+            pre_import_armatures = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE']
+            pre_import_meshes = [obj for obj in bpy.data.objects if obj.type == 'MESH']
+
             try:
                 bpy.ops.import_scene.vrm('EXEC_DEFAULT',
                                          filepath=file_path)
             except (TypeError, ValueError):
                 bpy.ops.import_scene.vrm('INVOKE_DEFAULT')
+                return
             except AttributeError:
                 bpy.ops.cats_importer.install_vrm('INVOKE_DEFAULT')
+                return
+
+            post_import_armatures = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_armatures]
+            post_import_meshes = [obj for obj in bpy.data.objects if obj.type == 'MESH' and obj not in pre_import_meshes]
+
+            if len(post_import_armatures) != 1:
+                return
+
+            # Set imported vrm armature as the parent for the imported meshes
+            post_import_armature = post_import_armatures[0]
+            for mesh in post_import_meshes:
+                mesh.parent = post_import_armature
 
         # DAE
         elif file_ending == 'dae':
@@ -251,31 +277,46 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         ImportAnyModel.import_file(model_dir, model_file_name)
 
-    @staticmethod
-    def fix_bone_orientations(armature):
-        Common.unselect_all()
-        Common.set_active(armature)
-        Common.switch('EDIT')
 
-        fix_bones = True
+def fix_bone_orientations(armature):
+    Common.unselect_all()
+    Common.set_active(armature)
+    Common.switch('EDIT')
 
-        # Check if all the bones are pointing in the same direction
-        for bone in armature.data.edit_bones:
-            equal_axis_count = 0
-            if bone.head[0] == bone.tail[0]:
-                equal_axis_count += 1
-            if bone.head[1] == bone.tail[1]:
-                equal_axis_count += 1
-            if bone.head[2] == bone.tail[2]:
-                equal_axis_count += 1
+    fix_bones = True
 
-            # If the bone points to more than one direction, don't fix the armatures bones
-            if equal_axis_count < 2:
-                fix_bones = False
+    # Check if all the bones are pointing in the same direction
+    for bone in armature.data.edit_bones:
+        equal_axis_count = 0
+        if bone.head[0] == bone.tail[0]:
+            equal_axis_count += 1
+        if bone.head[1] == bone.tail[1]:
+            equal_axis_count += 1
+        if bone.head[2] == bone.tail[2]:
+            equal_axis_count += 1
 
-        if fix_bones:
-            Common.fix_bone_orientations(armature)
-        Common.switch('OBJECT')
+        # If the bone points to more than one direction, don't fix the armatures bones
+        if equal_axis_count < 2:
+            fix_bones = False
+
+    if fix_bones:
+        Common.fix_bone_orientations(armature)
+    Common.switch('OBJECT')
+
+
+def fix_armatures_post_import(pre_import_objects):
+    arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
+    for armature in arm_added_during_import:
+        print('Added: ', armature.name)
+        bpy.context.scene.armature = armature.name
+        fix_bone_orientations(armature)
+
+        # Set better bone view
+        armature.draw_type = 'WIRE'
+        if version_2_79_or_older():
+            armature.show_x_ray = True
+        else:
+            armature.show_in_front = True
 
 
 @register_wrap
@@ -293,16 +334,13 @@ class ZipPopup(bpy.types.Operator):
         ImportAnyModel.extract_file()
 
         # Create list of armatures that got added during import, select them in cats and fix their bone orientations if necessary
-        arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
-        for armature in arm_added_during_import:
-            print('Added: ', armature.name)
-            bpy.context.scene.armature = armature.name
-            ImportAnyModel.fix_bone_orientations(armature)
+        fix_armatures_post_import(pre_import_objects)
+
         return {'FINISHED'}
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6)
 
     def check(self, context):
         # Important for changing options
@@ -369,7 +407,7 @@ class ModelsPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3)
 
     def check(self, context):
         # Important for changing options
@@ -484,6 +522,11 @@ class ImportFBX(bpy.types.Operator):
         if hasattr(context.scene, 'layers'):
             context.scene.layers[0] = True
 
+        # Enable fbx if it isn't enabled yet
+        fbx_is_enabled = addon_utils.check('io_scene_fbx')[1]
+        if not fbx_is_enabled:
+            addon_utils.enable('io_scene_fbx')
+
         try:
             bpy.ops.import_scene.fbx('INVOKE_DEFAULT',
                                      automatic_bone_orientation=False,
@@ -528,7 +571,7 @@ class InstallXPS(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
 
     def check(self, context):
         # Important for changing options
@@ -565,7 +608,7 @@ class InstallSource(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
 
     def check(self, context):
         # Important for changing options
@@ -602,7 +645,7 @@ class InstallVRM(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
 
     def check(self, context):
         # Important for changing options
@@ -638,7 +681,7 @@ class EnableMMD(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
 
     def check(self, context):
         # Important for changing options
@@ -754,6 +797,11 @@ _broken_shapes = []
 _textures_found = False
 _eye_meshes_not_named_body = []
 
+max_mats = 4
+max_tris = 70000
+max_meshes_light = 2
+max_meshes_hard = 8
+
 
 @register_wrap
 class ExportModel(bpy.types.Operator):
@@ -839,9 +887,9 @@ class ExportModel(bpy.types.Operator):
                                     break
 
             # Check if a warning should be shown
-            if _meshes_count > 1 \
-                    or _tris_count > 70000 \
-                    or len(_mat_list) > 4 \
+            if _meshes_count > max_meshes_light \
+                    or _tris_count > max_tris \
+                    or len(_mat_list) > max_mats \
                     or len(_broken_shapes) > 0 \
                     or not _textures_found and Settings.get_embed_textures()\
                     or len(_eye_meshes_not_named_body) > 0:
@@ -919,7 +967,7 @@ class ErrorDisplay(bpy.types.Operator):
         self.eye_meshes_not_named_body = _eye_meshes_not_named_body
 
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1, height=-550)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1)
 
     def check(self, context):
         # Important for changing options
@@ -929,7 +977,7 @@ class ErrorDisplay(bpy.types.Operator):
         layout = self.layout
         col = layout.column(align=True)
 
-        if self.tris_count > 70000:
+        if self.tris_count > max_tris:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Too many polygons!", icon='ERROR')
@@ -965,7 +1013,7 @@ class ErrorDisplay(bpy.types.Operator):
         #     col.separator()
         #     col.separator()
 
-        if self.mat_count > 4:
+        if self.mat_count > max_mats:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Model not optimized!", icon='INFO')
@@ -985,7 +1033,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             col.separator()
 
-        if self.meshes_count > 2:
+        if self.meshes_count > max_meshes_light:
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text="Meshes not joined!", icon='ERROR')
@@ -997,7 +1045,7 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            if self.meshes_count < 9:
+            if self.meshes_count <= max_meshes_hard:
                 row.label(text="It is not very optimized and might cause lag for you and others.")
             else:
                 row.label(text="It is extremely unoptimized and will cause lag for you and others.")

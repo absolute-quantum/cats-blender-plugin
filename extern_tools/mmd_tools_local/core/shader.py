@@ -81,11 +81,16 @@ class _NodeGroupUtils(_NodeTreeUtils):
         self.__new_io(self.shader.outputs, self.node_output.inputs, io_name, socket, default_val, min_max)
 
     def __new_io(self, shader_io, io_sockets, io_name, socket, default_val=None, min_max=None):
-        if io_name in io_sockets:
-            self.links.new(io_sockets[io_name], socket)
-        else:
-            self.links.new(io_sockets[-1], socket)
-            shader_io[-1].name = io_name
+        if io_name not in io_sockets:
+            shader_io.new(type=socket.bl_idname, name=io_name)
+            if not min_max:
+                idname = socket.bl_idname
+                if idname.endswith('Factor') or io_name.endswith('Alpha'):
+                    shader_io[io_name].min_value, shader_io[io_name].max_value = 0, 1
+                elif idname.endswith('Float') or idname.endswith('Vector'):
+                    shader_io[io_name].min_value, shader_io[io_name].max_value = -10, 10
+
+        self.links.new(io_sockets[io_name], socket)
         if default_val is not None:
             shader_io[io_name].default_value = default_val
         if min_max is not None:
@@ -113,7 +118,7 @@ class _MaterialMorph:
                 if n.node_tree.name != node.node_tree.name:
                     n.location.x -= 100
                 if node.name.startswith('mmd_'):
-                    n.location.y += 1000
+                    n.location.y += 1500
                 node = n
         return nodes
 

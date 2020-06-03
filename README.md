@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.16.1)
+# Cats Blender Plugin (0.17.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -35,13 +35,15 @@ Join our Discord to report errors, suggestions and make comments!
 **Discord: https://discord.gg/f8yZGnv**
 
 ## Requirements
- - Blender **2.79** or **2.80** or **2.81** (run as administrator is recommended)
-   - mmd_tools is **no longer required**! Cats comes pre-installed with it!
+ - Blender **2.79** or **2.80** or above (run as administrator is recommended)
+   - mmd_tools is **not required**! Cats comes pre-installed with it!
  - If you have custom Python installed which Blender might use, you need to have Numpy installed
 
 ## Installation
- - Download the plugin: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
- - Install the the addon in blender like so:
+ - Download the plugin: **[Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)**
+   - **Important: Do NOT extract the downloaded zip! You will need the zip file during installation!**
+ - Install the addon in blender like so:
+   - *This shows Blender 2.79. In Blender 2.80+ go to Edit > Preferences > Add-ons. Also you don't need to save the user settings there.*
 
 ![](https://i.imgur.com/eZV1zrs.gif)
 
@@ -298,6 +300,35 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.17.0
+- **Cats is now fully compatible with Blender 2.83!**
+  - *It was compatible with 2.82 all long*
+- **Fix Model:**
+  - Added "Keep Twist Bones" option to Fix Model
+    - This will keep any bone containing 'Twist'
+  - Added "Fix MMD Twist Bones" option to Fix Model
+    - This will apply a fix to make the MMD arm twist bones usable **(Thanks Rokk!)**
+    - You do not need to enable "Keep Twist Bones" for this to work
+  - Added "Remove Rigidbodies and Joints" option to Fix Model
+    - This is solely intended for our non-VRChat users
+  - Added compatibility to more models
+  - Disabling the option "Remove Zero Weight Bones" now also keeps unused vertex groups
+- **Importer:**
+  - Imported meshes from VRM files now get automatically parented to their armature
+  - Imported armatures now always show their bones in front and in wire mode
+  - Fixed export warning being empty
+  - Fixed importer error when the FBX importer was not enabled
+  - Fixed importer error when a zip file contained another zip file
+  - When importing a model, objects of a new scene now only get deleted if all three of them are present
+- **Custom Model Creation:**
+  - Added "Remove Zero Weight Bones" option to Merge Armatures
+- **Decimation:**
+  - Added "Remove Doubles" option
+- **General:**
+  - Fixed some bugs
+  - Fixed objects getting unhidden when doing any cats operation in 2.80+
+  - Updated mmd_tools
+
 #### 0.16.1
 - Fixed export warning bug
 
@@ -332,30 +363,6 @@ It checks for a new version automatically once every day.
   - Armatures will no longer be forced into rest position after any action
   - Fixed armatures sometimes not getting detected
   - Small bug fixes
-  - Updated mmd_tools
-
-#### 0.15.0
-- **Importer**:
-  - FBX no longer imports animations and poses by default
-- **Fix Model**:
-  - Now always applies transforms of the model
-  - Added "Keep Upper Chest" option
-    - Warning: Currently having an Upper Chest breaks Eye Tracking, so don't use this if you want Eye Tracking
-  - Removed "Fix Full Body Tracking" option
-    - It is no longer needed for VRChat
-    - The button to add/remove the fix is still available in Model Options
-  - Improved Hips placement as recommended by VRChat
-  - Legs are now getting bend forward very slightly if they are completely straight
-  - Fixed a bug which could sometimes delete bones unintentionally
-- **Model**:
-  - Fixed pose mode error in 2.80
-- **Model Options**:
-  - Added new "Delete Zero Weight Vertex Groups" button
-  - Improved layout of the "Full Body Tracking Fix" buttons
-  - Fixed visual "Merge Weights" bug in Blender 2.80
-- **Optimization**:
-  - Improved Material Combiner detection algorithm
-- **General**:
   - Updated mmd_tools
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).

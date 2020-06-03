@@ -215,13 +215,13 @@ def hide(obj, val=True):
     if version_2_79_or_older():
         obj.hide = val
     else:
-        obj.hide_viewport = val
+        obj.hide_set(val)
 
 
 def is_hidden(obj):
     if version_2_79_or_older():
         return obj.hide
-    return obj.hide_viewport
+    return obj.hide_get()
 
 
 def set_unselectable(obj, val=True):
@@ -253,7 +253,7 @@ def set_default_stage():
     """
 
     # Remove rigidbody collections, as they cause issues if they are not in the view_layer
-    if not version_2_79_or_older():
+    if not version_2_79_or_older() and bpy.context.scene.remove_rigidbodies_joints:
         print('Collections:')
         for collection in bpy.data.collections:
             print(' ' + collection.name, collection.name.lower())
@@ -484,7 +484,7 @@ def get_meshes_decimation(self, context):
 
     for object in bpy.context.scene.objects:
         if object.type == 'MESH':
-            if object.parent is not None and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
+            if object.parent and object.parent.type == 'ARMATURE' and object.parent.name == bpy.context.scene.armature:
                 if object.name in Decimation.ignore_meshes:
                     continue
                 # 1. Will be returned by context.scene
@@ -1000,10 +1000,19 @@ def separate_by_shape_keys(context, mesh):
     bpy.ops.mesh.select_all(action='DESELECT')
 
     switch('OBJECT')
-    for kb in mesh.data.shape_keys.key_blocks:
-        for i, (v0, v1) in enumerate(zip(kb.relative_key.data, kb.data)):
-            if v0.co != v1.co:
-                mesh.data.vertices[i].select = True
+    selected_count = 0
+    max_count = 0
+    if has_shapekeys(mesh):
+        for kb in mesh.data.shape_keys.key_blocks:
+            for i, (v0, v1) in enumerate(zip(kb.relative_key.data, kb.data)):
+                max_count += 1
+                if v0.co != v1.co:
+                    mesh.data.vertices[i].select = True
+                    selected_count += 1
+
+    if not selected_count or selected_count == max_count:
+        return False
+
     switch('EDIT')
     bpy.ops.mesh.select_all(action='INVERT')
 
@@ -1028,6 +1037,56 @@ def separate_by_shape_keys(context, mesh):
 
     # Update the material list of the Material Combiner
     update_material_list()
+    return True
+
+
+def separate_by_cats_protection(context, mesh):
+    prepare_separation(mesh)
+
+    switch('EDIT')
+    bpy.ops.mesh.select_mode(type="VERT")
+    bpy.ops.mesh.select_all(action='DESELECT')
+
+    switch('OBJECT')
+    selected_count = 0
+    max_count = 0
+    if has_shapekeys(mesh):
+        for kb in mesh.data.shape_keys.key_blocks:
+            if kb.name == 'Basis Original':
+                for i, (v0, v1) in enumerate(zip(kb.relative_key.data, kb.data)):
+                    max_count += 1
+                    if v0.co != v1.co:
+                        mesh.data.vertices[i].select = True
+                        selected_count += 1
+
+    if not selected_count or selected_count == max_count:
+        return False
+
+    switch('EDIT')
+    bpy.ops.mesh.select_all(action='INVERT')
+
+    bpy.ops.mesh.separate(type='SELECTED')
+
+    for ob in context.selected_objects:
+        if ob.type == 'MESH':
+            if ob != get_active():
+                print('not active', ob.name)
+                active_tmp = get_active()
+                ob.name = ob.name.replace('.001', '') + '.no_shapes'
+                set_active(ob)
+                bpy.ops.object.shape_key_remove(all=True)
+                set_active(active_tmp)
+                select(ob, False)
+            else:
+                print('active', ob.name)
+                clean_shapekeys(ob)
+                switch('OBJECT')
+
+    utils.clearUnusedMeshes()
+
+    # Update the material list of the Material Combiner
+    update_material_list()
+    return True
 
 
 def prepare_separation(mesh):
@@ -1035,9 +1094,10 @@ def prepare_separation(mesh):
     unselect_all()
 
     # Remove Rigidbodies and joints
-    for obj in get_objects():
-        if 'rigidbodies' in obj.name or 'joints' in obj.name:
-            delete_hierarchy(obj)
+    if bpy.context.scene.remove_rigidbodies_joints:
+        for obj in get_objects():
+            if 'rigidbodies' in obj.name or 'joints' in obj.name:
+                delete_hierarchy(obj)
 
     save_shapekey_order(mesh.name)
     set_active(mesh)
@@ -1417,11 +1477,16 @@ def delete_zero_weight(armature_name=None, ignore=''):
 
 
 def remove_unused_objects():
+    default_scene_objects = []
     for obj in get_objects():
         if (obj.type == 'CAMERA' and obj.name == 'Camera') \
                 or (obj.type == 'LAMP' and obj.name == 'Lamp') \
                 or (obj.type == 'LIGHT' and obj.name == 'Light') \
                 or (obj.type == 'MESH' and obj.name == 'Cube'):
+            default_scene_objects.append(obj)
+
+    if len(default_scene_objects) == 3:
+        for obj in default_scene_objects:
             delete_hierarchy(obj)
 
 
@@ -1666,13 +1731,14 @@ def clean_material_names(mesh):
             mesh.active_material.name = mat.name[:-5]
 
 
-def mix_weights(mesh, vg_from, vg_to, delete_old_vg=True):
+def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, mix_mode='ADD', delete_old_vg=True):
     mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
     mod.vertex_group_b = vg_from
-    mod.mix_mode = 'ADD'
+    mod.mix_mode = mix_mode
     mod.mix_set = 'B'
+    mod.mask_constant = mix_strength
     bpy.ops.object.modifier_apply(modifier=mod.name)
     if delete_old_vg:
         mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
@@ -1947,6 +2013,57 @@ def fix_vrm_shader(mesh):
                 #         for link in output.links:
                 #             mat_slot.material.node_tree.links.remove(link)
                 #     continue
+
+
+def fix_twist_bones(mesh, bones_to_delete):
+    # This will fix MMD twist bones
+
+    for bone_type in ['Hand', 'Arm']:
+        for suffix in ['L', 'R']:
+            prefix = 'Left' if suffix == 'L' else 'Right'
+            bone_parent_name = prefix + ' ' + ('elbow' if bone_type == 'Hand' else 'arm')
+
+            vg_twist = mesh.vertex_groups.get(bone_type + 'Twist_' + suffix)
+            vg_parent = mesh.vertex_groups.get(bone_parent_name)
+
+            if not vg_twist:
+                print('1. no ' + bone_type + 'Twist_' + suffix)
+                continue
+            if not vg_parent:
+                print('2. no ' + bone_parent_name)
+                vg_parent = mesh.vertex_groups.new(name=bone_parent_name)
+
+            vg_twist1 = mesh.vertex_groups.get(bone_type + 'Twist1_' + suffix)
+            vg_twist2 = mesh.vertex_groups.get(bone_type + 'Twist2_' + suffix)
+            vg_twist3 = mesh.vertex_groups.get(bone_type + 'Twist3_' + suffix)
+
+            mix_weights(mesh, vg_twist.name, vg_parent.name, mix_strength=0.2, delete_old_vg=False)
+            mix_weights(mesh, vg_twist.name, vg_twist.name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
+
+            if vg_twist1:
+                mix_weights(mesh, vg_twist1.name, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
+                mix_weights(mesh, vg_twist1.name, vg_parent.name, mix_strength=0.75)
+                bones_to_delete.append(vg_twist1.name)
+
+            if vg_twist2:
+                mix_weights(mesh, vg_twist2.name, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
+                mix_weights(mesh, vg_twist2.name, vg_parent.name, mix_strength=0.5)
+                bones_to_delete.append(vg_twist2.name)
+
+            if vg_twist3:
+                mix_weights(mesh, vg_twist3.name, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
+                mix_weights(mesh, vg_twist3.name, vg_parent.name, mix_strength=0.25)
+                bones_to_delete.append(vg_twist3.name)
+
+
+def fix_twist_bone_names(armature):
+    # This will fix MMD twist bone names after the vertex groups have been fixed
+
+    for bone_type in ['Hand', 'Arm']:
+        for suffix in ['L', 'R']:
+            bone_twist = armature.data.edit_bones.get(bone_type + 'Twist_' + suffix)
+            if bone_twist:
+                bone_twist.name = 'z' + bone_twist.name
 
 
 

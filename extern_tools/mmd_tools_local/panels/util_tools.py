@@ -72,18 +72,13 @@ class MMD_TOOLS_UL_ModelMeshes(UIList):
         objects = getattr(data, propname)
         flt_flags = [~self.bitflag_filter_item] * len(objects)
         flt_neworder = list(range(len(objects)))
-        active_root = Model.findRoot(context.active_object)
-        #rig = Model(active_root)
-        #for i, obj in enumerate(objects):
-        #    if (obj.type == 'MESH' and obj.mmd_type == 'NONE'
-        #            and Model.findRoot(obj) == active_root):
-        #        flt_flags[i] = self.bitflag_filter_item
-        #        new_index = rig.getMeshIndex(obj.name)
-        #        flt_neworder[i] = new_index
+
+        armature = Model(Model.findRoot(context.active_object)).armature()
+        __is_child_of_armature = lambda x: x.parent and (x.parent == armature or __is_child_of_armature(x.parent))
+
         name_dict = {}
         for i, obj in enumerate(objects):
-            if (obj.type == 'MESH' and obj.mmd_type == 'NONE'
-                    and Model.findRoot(obj) == active_root):
+            if obj.type == 'MESH' and obj.mmd_type == 'NONE' and __is_child_of_armature(obj):
                 flt_flags[i] = self.bitflag_filter_item
                 name_dict[obj.name] = i
 

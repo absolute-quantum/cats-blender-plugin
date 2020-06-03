@@ -24,7 +24,6 @@ class Header:
         if self.signature[:len(self.VMD_SIGN)] != self.VMD_SIGN:
             raise InvalidFileError('File signature "%s" is invalid.'%self.signature)
         self.model_name = _toShiftJisString(struct.unpack('<20s', fin.read(20))[0])
-        print(self)
 
     def save(self, fin):
         fin.write(struct.pack('<30s', self.VMD_SIGN))
@@ -189,7 +188,6 @@ class PropertyFrameKey:
             ik_name = _toShiftJisString(struct.unpack('<20s', fin.read(20))[0])
             state, = struct.unpack('<b', fin.read(1))
             self.ik_states.append((ik_name, state))
-        print('    ', self)
 
     def save(self, fin):
         fin.write(struct.pack('<L', self.frame_number))
