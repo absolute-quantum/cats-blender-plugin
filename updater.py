@@ -31,6 +31,9 @@ confirm_update_to = ''
 
 show_error = ''
 
+# link_dev = 'https://github.com/michaeldegroot/cats-blender-plugin/archive/development.zip'
+link_dev = 'https://github.com/michaeldegroot/cats-blender-plugin/archive/eye-testing.zip'
+
 main_dir = os.path.dirname(__file__)
 downloads_dir = os.path.join(main_dir, "downloads")
 resources_dir = os.path.join(main_dir, "resources")
@@ -523,7 +526,7 @@ def update_now(version=None, latest=False, dev=False):
         return
     if dev:
         print('UPDATE TO DEVELOPMENT')
-        update_link = 'https://github.com/michaeldegroot/cats-blender-plugin/archive/development.zip'
+        update_link = link_dev
     elif latest or not version:
         print('UPDATE TO ' + latest_version_str)
         update_link = version_list.get(latest_version_str)[0]
@@ -891,7 +894,8 @@ def draw_updater_panel(context, layout, user_preferences=False):
 
     row = col.row(align=True)
     row.scale_y = scale_small
-    row.operator(UpdateToDevButton.bl_idname, text='Install Development Version')
+    # row.operator(UpdateToDevButton.bl_idname, text='Install Development Version')
+    row.operator(UpdateToDevButton.bl_idname, text='Install Eye Testing Version')
 
     col.separator()
     row = col.row(align=True)

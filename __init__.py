@@ -36,7 +36,7 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = True
+dev_branch = True  # TODO: Revert back dev update link and Update button on line 898
 
 import os
 import sys
