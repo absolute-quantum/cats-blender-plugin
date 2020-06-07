@@ -574,18 +574,15 @@ def get_shapekeys_eye_blink_r(self, context):
     return get_shapekeys(context, ['EYE Close R', 'Wink 2 right', 'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Basis'], False, False, False, False)
 
 
-def get_shapekeys_eye_low_l(self, context):
-    return get_shapekeys(context, ['Basis'], False, False, False, False)
-
-
-def get_shapekeys_eye_low_r(self, context):
-    return get_shapekeys(context, ['Basis'], False, False, False, False)
+def get_shapekeys_eye_upperlid(self, context):
+    return get_shapekeys(context, ['Surprised', 'I was surprised'], False, False, False, False)
 
 
 def get_shapekeys_decimation(self, context):
     return get_shapekeys(context,
                          ['MTH A', 'Ah', 'A', 'MTH U', 'Oh', 'O', 'Your', 'MTH I', 'Glue', 'Ch', 'I', 'There', 'Wink 2', 'Wink', 'Wink left', 'Wink Left', 'Blink (Left)', 'Wink 2 right',
-                          'EYE Close R', 'EYE Close L', 'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Blink'], False, True, True, False)
+                          'EYE Close R', 'EYE Close L', 'Wink 2 Right', 'Wink right 2', 'Wink Right 2', 'Wink right', 'Wink Right', 'Blink (Right)', 'Blink',
+                          'Surprised', 'I was surprised'], False, True, True, False)
 
 
 def get_shapekeys_decimation_list(self, context):
@@ -1149,7 +1146,6 @@ def separate_by_verts():
 def reset_context_scenes():
     head_bones = get_bones_head(None, bpy.context)
     if len(head_bones) > 0:
-        bpy.context.scene.head = head_bones[0][0]
         bpy.context.scene.eye_left = get_bones_eye_l(None, bpy.context)[0][0]
         bpy.context.scene.eye_right = get_bones_eye_r(None, bpy.context)[0][0]
 
@@ -1267,10 +1263,9 @@ def sort_shape_keys(mesh_name, shape_key_order=None):
 
     order = [
         'Basis',
-        'vrc.blink_left',
-        'vrc.blink_right',
-        'vrc.lowerlid_left',
-        'vrc.lowerlid_right',
+        'eyes_closed',
+        'eyes_lookup',
+        'eyes_lookdown',
         'vrc.v_aa',
         'vrc.v_ch',
         'vrc.v_dd',

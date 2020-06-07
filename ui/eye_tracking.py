@@ -38,51 +38,21 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.prop(context.scene, 'head', icon='BONE_DATA')
-            row = col.row(align=True)
-            row.scale_y = 1.1
-            if context.scene.disable_eye_movement:
-                row.active = False
             row.prop(context.scene, 'eye_left', icon='BONE_DATA')
             row = col.row(align=True)
             row.scale_y = 1.1
-            if context.scene.disable_eye_movement:
-                row.active = False
             row.prop(context.scene, 'eye_right', icon='BONE_DATA')
 
             col.separator()
             row = col.row(align=True)
             row.scale_y = 1.1
-            if context.scene.disable_eye_blinking:
-                row.active = False
             row.prop(context.scene, 'wink_left', icon='SHAPEKEY_DATA')
             row = col.row(align=True)
             row.scale_y = 1.1
-            if context.scene.disable_eye_blinking:
-                row.active = False
             row.prop(context.scene, 'wink_right', icon='SHAPEKEY_DATA')
             row = col.row(align=True)
             row.scale_y = 1.1
-            if context.scene.disable_eye_blinking:
-                row.active = False
-            row.prop(context.scene, 'lowerlid_left', icon='SHAPEKEY_DATA')
-            row = col.row(align=True)
-            row.scale_y = 1.1
-            if context.scene.disable_eye_blinking:
-                row.active = False
-            row.prop(context.scene, 'lowerlid_right', icon='SHAPEKEY_DATA')
-
-            col.separator()
-            row = col.row(align=True)
-            row.prop(context.scene, 'disable_eye_blinking')
-
-            row = col.row(align=True)
-            row.prop(context.scene, 'disable_eye_movement')
-
-            if not context.scene.disable_eye_movement:
-                col.separator()
-                row = col.row(align=True)
-                row.prop(context.scene, 'eye_distance')
+            row.prop(context.scene, 'upperlid_up', icon='SHAPEKEY_DATA')
 
             col = box.column(align=True)
             row = col.row(align=True)
@@ -117,64 +87,31 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.operator(Eyetracking.ResetRotationButton.bl_idname, icon=globs.ICON_EYE_ROTATION)
 
-                # global slider_z
-                # if context.scene.eye_blink_shape != slider_z:
-                #     slider_z = context.scene.eye_blink_shape
-                #     Eyetracking.update_bones(context, slider_z)
-
-                col.separator()
-                col.separator()
-                row = col.row(align=True)
-                row.prop(context.scene, 'eye_distance')
-                row = col.row(align=True)
-                row.operator(Eyetracking.AdjustEyesButton.bl_idname, icon='CURVE_NCIRCLE')
-
                 col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'eye_blink_shape')
                 row.operator(Eyetracking.TestBlinking.bl_idname, icon='RESTRICT_VIEW_OFF')
-                row = col.row(align=True)
-                row.prop(context.scene, 'eye_lowerlid_shape')
-                row.operator(Eyetracking.TestLowerlid.bl_idname, icon='RESTRICT_VIEW_OFF')
+                # row = col.row(align=True)
+                # row.prop(context.scene, 'eye_loop_up_shape')
+                # row.operator(Eyetracking.TestLowerlid.bl_idname, icon='RESTRICT_VIEW_OFF')
+                # row = col.row(align=True)
+                # row.prop(context.scene, 'eye_loop_down_shape')
+                # row.operator(Eyetracking.TestLowerlid.bl_idname, icon='RESTRICT_VIEW_OFF')
                 row = col.row(align=True)
                 row.operator(Eyetracking.ResetBlinkTest.bl_idname, icon='FILE_REFRESH')
 
-                if armature.name != 'Armature':
-                    col.separator()
-                    col.separator()
-                    col.separator()
-                    row = col.row(align=True)
-                    row.scale_y = 0.3
-                    row.label(text="Your armature has to be named 'Armature'", icon='ERROR')
-                    row = col.row(align=True)
-                    row.label(text="      for Eye Tracking to work!")
-                    row = col.row(align=True)
-                    row.scale_y = 0.3
-                    row.label(text="      (currently '" + armature.name + "')")
-
-                if context.scene.mesh_name_eye != 'Body':
-                    col.separator()
-                    col.separator()
-                    col.separator()
-                    row = col.row(align=True)
-                    row.scale_y = 0.3
-                    row.label(text="The mesh containing the eyes has to be", icon='ERROR')
-                    row = col.row(align=True)
-                    row.label(text="      named 'Body' for Eye Tracking to work!")
-                    row = col.row(align=True)
-                    row.scale_y = 0.3
-                    row.label(text="      (currently '" + context.scene.mesh_name_eye + "')")
+                # col.separator()
+                # col.separator()
+                # col.separator()
+                # row = col.row(align=True)
+                # row.scale_y = 0.3
+                # row.label(text="Don't forget to assign 'LeftEye' and 'RightEye'", icon='INFO')
+                # row = col.row(align=True)
+                # row.label(text="      to the eyes in Unity!")
 
                 col.separator()
                 col.separator()
-                col.separator()
-                row = col.row(align=True)
-                row.scale_y = 0.3
-                row.label(text="Don't forget to assign 'LeftEye' and 'RightEye'", icon='INFO')
-                row = col.row(align=True)
-                row.label(text="      to the eyes in Unity!")
-
                 row = col.row(align=True)
                 row.scale_y = 1.5
                 row.operator(Eyetracking.StopTestingButton.bl_idname, icon='PAUSE')

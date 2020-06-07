@@ -300,12 +300,6 @@ def register():
         items=Common.get_meshes
     )
 
-    Scene.head = EnumProperty(
-        name='Head',
-        description='The head bone containing the eye bones',
-        items=Common.get_bones_head
-    )
-
     Scene.eye_left = EnumProperty(
         name='Left Eye',
         description='The models left eye bone',
@@ -330,57 +324,18 @@ def register():
         items=Common.get_shapekeys_eye_blink_r
     )
 
-    Scene.lowerlid_left = EnumProperty(
-        name='Lowerlid Left',
-        description='The shape key containing a slightly raised left lower lid.\n'
-                    'Can be set to "Basis" to disable lower lid movement',
-        items=Common.get_shapekeys_eye_low_l
-    )
-
-    Scene.lowerlid_right = EnumProperty(
-        name='Lowerlid Right',
-        description='The shape key containing a slightly raised right lower lid.\n'
-                    'Can be set to "Basis" to disable lower lid movement',
-        items=Common.get_shapekeys_eye_low_r
-    )
-
-    Scene.disable_eye_movement = BoolProperty(
-        name='Disable Eye Movement',
-        description='IMPORTANT: Do your decimation first if you check this!\n'
-                    '\n'
-                    'Disables eye movement. Useful if you only want blinking.\n'
-                    'This creates eye bones with no movement bound to them.\n'
-                    'You still have to assign "LeftEye" and "RightEye" to the eyes in Unity',
-        subtype='DISTANCE'
-    )
-
-    Scene.disable_eye_blinking = BoolProperty(
-        name='Disable Eye Blinking',
-        description='Disables eye blinking. Useful if you only want eye movement.\n'
-                    'This will create the necessary shape keys but leaves them empty',
-        subtype='NONE'
-    )
-
-    Scene.eye_distance = FloatProperty(
-        name='Eye Movement Range',
-        description='Higher = more eye movement\n'
-                    'Lower = less eye movement\n'
-                    'Warning: Too little or too much range can glitch the eyes.\n'
-                    'Test your results in the "Eye Testing"-Tab!\n',
-        default=0.8,
-        min=0.0,
-        max=2.0,
-        step=1.0,
-        precision=2,
-        subtype='FACTOR'
+    Scene.upperlid_up = EnumProperty(
+        name='Upper Lid Up',
+        description='The shape key moving the upper lids up a bit',
+        items=Common.get_shapekeys_eye_upperlid
     )
 
     Scene.eye_rotation_x = IntProperty(
         name='Up - Down',
         description='Rotate the eye bones on the vertical axis',
         default=0,
-        min=-19,
-        max=25,
+        min=-9,
+        max=12,
         step=1,
         subtype='FACTOR',
         update=Eyetracking.set_rotation
@@ -391,21 +346,11 @@ def register():
         description='Rotate the eye bones on the horizontal axis.'
                     '\nThis is from your own point of view',
         default=0,
-        min=-19,
-        max=19,
+        min=-9,
+        max=9,
         step=1,
         subtype='FACTOR',
         update=Eyetracking.set_rotation
-    )
-
-    Scene.iris_height = IntProperty(
-        name='Iris Height',
-        description='Moves the iris away from the eye ball',
-        default=0,
-        min=0,
-        max=100,
-        step=1,
-        subtype='FACTOR'
     )
 
     Scene.eye_blink_shape = FloatProperty(
@@ -419,7 +364,18 @@ def register():
         subtype='FACTOR'
     )
 
-    Scene.eye_lowerlid_shape = FloatProperty(
+    Scene.eye_loop_up_shape = FloatProperty(
+        name='Lowerlid Strength',
+        description='Test the lowerlid blinking of the eye',
+        default=1.0,
+        min=0.0,
+        max=1.0,
+        step=1.0,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    Scene.eye_look_down_shape = FloatProperty(
         name='Lowerlid Strength',
         description='Test the lowerlid blinking of the eye',
         default=1.0,
