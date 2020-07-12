@@ -30,14 +30,14 @@ import webbrowser
 
 from . import common as Common
 from .register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class CopyProtectionEnable(bpy.types.Operator):
     bl_idname = 'cats_copyprotection.enable'
-    bl_label = 'Enable Protection'
-    bl_description = 'Protects your model from piracy. NOT a 100% protection!' \
-                     '\nRead the documentation before use'
+    bl_label = t('CopyProtectionEnable.label')
+    bl_description = t('CopyProtectionEnable.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -122,15 +122,15 @@ class CopyProtectionEnable(bpy.types.Operator):
             # Make obfuscated basis the new basis and repair shape key order
             Common.sort_shape_keys(mesh.name)
 
-        self.report({'INFO'}, 'Model secured!')
+        self.report({'INFO'}, t('CopyProtectionEnable.success'))
         return {'FINISHED'}
 
 
 @register_wrap
 class CopyProtectionDisable(bpy.types.Operator):
     bl_idname = 'cats_copyprotection.disable'
-    bl_label = 'Disable Protection'
-    bl_description = 'Removes the copy protections from this model'
+    bl_label = t('CopyProtectionDisable.label')
+    bl_description = t('CopyProtectionDisable.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -152,18 +152,18 @@ class CopyProtectionDisable(bpy.types.Operator):
 
             Common.sort_shape_keys(mesh.name)
 
-        self.report({'INFO'}, 'Model un-secured!')
+        self.report({'INFO'}, t('CopyProtectionDisable.success'))
         return {'FINISHED'}
 
 
 @register_wrap
 class ProtectionTutorialButton(bpy.types.Operator):
     bl_idname = 'cats_copyprotection.tutorial'
-    bl_label = 'Go to Documentation'
+    bl_label = t('ProtectionTutorialButton.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#copy-protection')
+        webbrowser.open(t('ProtectionTutorialButton.URL'))
 
         # mesh = Common.get_meshes_objects()[0]
         # Common.select(mesh)
@@ -173,5 +173,5 @@ class ProtectionTutorialButton(bpy.types.Operator):
         #     if i == 1:
         #         shapekey.value = 1.5
 
-        self.report({'INFO'}, 'Documentation')
+        self.report({'INFO'}, t('ProtectionTutorialButton.success'))
         return {'FINISHED'}

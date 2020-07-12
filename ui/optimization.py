@@ -13,6 +13,7 @@ from ..tools import rootbone as Rootbone
 
 from ..tools.common import version_2_79_or_older
 from ..tools.register import register_wrap
+from ..translations import t
 
 draw_smc_ui = None
 old_smc_version = False
@@ -65,7 +66,7 @@ def check_for_smc():
 @register_wrap
 class OptimizePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_optimize_v3'
-    bl_label = 'Optimization'
+    bl_label = t('OptimizePanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -90,12 +91,12 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
             col = box.column(align=True)
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='A greatly improved Atlas Generator.')
+            row.label(text=t('OptimizePanel.atlasDesc'))
 
             split = col.row(align=True)
             row = split.row(align=True)
             row.scale_y = 0.9
-            row.label(text='Made by shotaryia', icon_value=Supporter.preview_collections["custom_icons"]["heart1"].icon_id)
+            row.label(text=t('OptimizePanel.atlasAuthor'), icon_value=Supporter.preview_collections["custom_icons"]["heart1"].icon_id)
             row = split.row(align=True)
             row.alignment = 'RIGHT'
             row.scale_y = 0.9
@@ -160,10 +161,10 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Material Combiner is not enabled!")
+                row.label(text=t('OptimizePanel.matCombDisabled1'))
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Enable it in your user preferences:")
+                row.label(text=t('OptimizePanel.matCombDisabled2'))
                 col.separator()
                 row = col.row(align=True)
                 row.operator(Atlas.EnableSMC.bl_idname, icon='CHECKBOX_HLT')
@@ -179,23 +180,23 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Your Material Combiner is outdated!")
+                row.label(text=t('OptimizePanel.matCombOutdated1'))
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Please update to the latest version.")
+                row.label(text=t('OptimizePanel.matCombOutdated2'))
 
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Update via the 'Updates'' panel")
+                row.label(text=t('OptimizePanel.matCombOutdated3'))
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="in the 'MatCombiner' tab to the " + ("left." if version_2_79_or_older() else "right."))
+                row.label(text=t('OptimizePanel.matCombOutdated4', location=t('OptimizePanel.matCombOutdated5_2.8') if version_2_79_or_older() else t('OptimizePanel.matCombOutdated5_2.79')))
 
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Or download and install it manually:")
+                row.label(text=t('OptimizePanel.matCombOutdated6'))
                 col.separator()
                 row = col.row(align=True)
                 row.operator(Atlas.ShotariyaButton.bl_idname, icon=globs.ICON_URL)
@@ -211,13 +212,13 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Your Material Combiner is outdated!")
+                row.label(text=t('OptimizePanel.matCombOutdated1'))
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Please update to the latest version.")
+                row.label(text=t('OptimizePanel.matCombOutdated2'))
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Download and install it manually:")
+                row.label(text=t('OptimizePanel.matCombOutdated6_alt'))
                 col.separator()
                 row = col.row(align=True)
                 row.operator(Atlas.ShotariyaButton.bl_idname, icon=globs.ICON_URL)
@@ -233,10 +234,10 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Material Combiner is not installed!")
+                row.label(text=t('OptimizePanel.matCombNotInstalled'))
                 row = col.row(align=True)
                 row.scale_y = 0.75
-                row.label(text="Download and install it manually:")
+                row.label(text=t('OptimizePanel.matCombOutdated6_alt'))
                 col.separator()
                 row = col.row(align=True)
                 row.operator(Atlas.ShotariyaButton.bl_idname, icon=globs.ICON_URL)

@@ -3,12 +3,13 @@ import bpy
 from .main import ToolPanel
 from ..tools import rootbone as Rootbone
 from ..tools.register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class BoneRootPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_boneroot_v3'
-    bl_label = 'Bone Parenting'
+    bl_label = t('BoneRootPanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):

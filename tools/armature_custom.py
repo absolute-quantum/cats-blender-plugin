@@ -30,15 +30,14 @@ import webbrowser
 from . import common as Common
 from . import armature_bones as Bones
 from .register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class MergeArmature(bpy.types.Operator):
     bl_idname = 'cats_custom.merge_armatures'
-    bl_label = 'Merge Armatures'
-    bl_description = "Merges the selected merge armature into the base armature." \
-                     "\nYou should fix both armatures with Cats first." \
-                     "\nOnly move the mesh of the merge armature to the desired position, the bones will be moved automatically"
+    bl_label = t('MergeArmature.label')
+    bl_description = t('MergeArmature.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -60,11 +59,11 @@ class MergeArmature(bpy.types.Operator):
 
         if not merge_armature:
             saved_data.load()
-            Common.show_error(5.2, ['The armature "' + merge_armature_name + '" could not be found.'])
+            Common.show_error(5.2, [t('MergeArmature.error.notFound', name=merge_armature_name)])
             return {'CANCELLED'}
         if not base_armature:
             saved_data.load()
-            Common.show_error(5.2, ['The armature "' + base_armature_name + '" could not be found.'])
+            Common.show_error(5.2, [t('MergeArmature.error.notFound', name=base_armature_name)])
             return {'CANCELLED'}
 
         merge_parent = merge_armature.parent
@@ -75,11 +74,7 @@ class MergeArmature(bpy.types.Operator):
                     for i in [0, 1, 2]:
                         if merge_parent.scale[i] != 1 or merge_parent.location[i] != 0 or merge_parent.rotation_euler[i] != 0:
                             saved_data.load()
-                            Common.show_error(6.5, [
-                                                        'Please make sure that the parent of the merge armature has the following transforms:',
-                                                        ' - Location at 0',
-                                                        ' - Rotation at 0',
-                                                        ' - Scale at 1'])
+                            Common.show_error(6.5, t('MergeArmature.error.checkTransforms'))
                             return {'CANCELLED'}
                     Common.delete(merge_armature.parent)
 
@@ -87,19 +82,12 @@ class MergeArmature(bpy.types.Operator):
                     for i in [0, 1, 2]:
                         if base_parent.scale[i] != 1 or base_parent.location[i] != 0 or base_parent.rotation_euler[i] != 0:
                             saved_data.load()
-                            Common.show_error(6.5, [
-                                                        'Please make sure that the parent of the base armature has the following transforms:',
-                                                        ' - Location at 0',
-                                                        ' - Rotation at 0',
-                                                        ' - Scale at 1'])
+                            Common.show_error(6.5, t('MergeArmature.error.checkTransforms'))
                             return {'CANCELLED'}
                     Common.delete(base_armature.parent)
             else:
                 saved_data.load()
-                Common.show_error(6.2,
-                                        ['Please use the "Fix Model" feature on the selected armatures first!',
-                                         'Make sure to select the armature you want to fix above the "Fix Model" button!',
-                                         'After that please only move the mesh (not the armature!) to the desired position.'])
+                Common.show_error(6.2, t('MergeArmature.error.pleaseFix'))
                 return {'CANCELLED'}
 
         # if len(Common.get_meshes_objects(armature_name=merge_armature_name)) == 0:
@@ -116,18 +104,15 @@ class MergeArmature(bpy.types.Operator):
 
         saved_data.load()
 
-        self.report({'INFO'}, 'Armatures successfully joined.')
+        self.report({'INFO'}, t('MergeArmature.success'))
         return {'FINISHED'}
 
 
 @register_wrap
 class AttachMesh(bpy.types.Operator):
     bl_idname = 'cats_custom.attach_mesh'
-    bl_label = 'Attach Mesh'
-    bl_description = "Attaches the selected mesh to the selected bone of the selected armature." \
-                     "\n" \
-                     "\nINFO: The mesh will only be assigned to the selected bone." \
-                     "\nE.g.: A jacket won't work, because it requires multiple bones"
+    bl_label = t('AttachMesh.label')
+    bl_description = t('AttachMesh.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -183,20 +168,20 @@ class AttachMesh(bpy.types.Operator):
 
         saved_data.load()
 
-        self.report({'INFO'}, 'Mesh successfully attached to armature.')
+        self.report({'INFO'}, t('AttachMesh.success'))
         return {'FINISHED'}
 
 
 @register_wrap
 class CustomModelTutorialButton(bpy.types.Operator):
     bl_idname = 'cats_custom.tutorial'
-    bl_label = 'Go to Documentation'
+    bl_label = t('CustomModelTutorialButton.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation')
+        webbrowser.open(t('CustomModelTutorialButton.URL'))
 
-        self.report({'INFO'}, 'Documentation')
+        self.report({'INFO'}, t('CustomModelTutorialButton.success'))
         return {'FINISHED'}
 
 
@@ -249,13 +234,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
                     Common.unselect_all()
                     Common.set_active(mesh_merge)
 
-                    Common.show_error(7.5,
-                                            ['If you want to rotate the new part, only modify the mesh instead of the armature,',
-                                             'or select "Apply Transforms"!',
-                                             '',
-                                             'The transforms of the merge armature got reset and the mesh you have to modify got selected.',
-                                             'Now place this selected mesh where and how you want it to be and then merge the armatures again.',
-                                             "If you don't want that, undo this operation."])
+                    Common.show_error(7.5, t('merge_armatures.error.transformReset'))
                     return
 
         # Save the transforms of the merge armature
@@ -432,7 +411,7 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     elif mesh_name:
         bone = armature.pose.bones.get(mesh_only_bone_name)
         if not bone:
-            Common.show_error(5.8, ['Something went wrong! Please undo, check your selections and try again.'])
+            Common.show_error(5.8, t('merge_armatures.error.pleaseUndo'))
             return
         armature.pose.bones.get(mesh_only_bone_name).name = mesh_name
 

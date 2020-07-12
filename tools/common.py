@@ -41,6 +41,7 @@ from . import translate as Translate
 from . import armature_bones as Bones
 from .register import register_wrap
 from mmd_tools_local import utils
+from ..translations import t
 
 # TODO:
 #  - Add check if hips bone really needs to be rotated
@@ -1605,7 +1606,7 @@ def show_error(scale, error_list, override_header=False):
     dpi_scale = scale
     error = error_list
 
-    header = 'Report: Error'
+    header = t('ShowError.label')
     if override:
         header = error_list[0]
 
@@ -1627,7 +1628,7 @@ def show_error(scale, error_list, override_header=False):
 @register_wrap
 class ShowError(bpy.types.Operator):
     bl_idname = 'cats_common.show_error'
-    bl_label = 'Report: Error'
+    bl_label = t('ShowError.label')
 
     def execute(self, context):
         return {'FINISHED'}

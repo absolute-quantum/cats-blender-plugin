@@ -27,14 +27,15 @@
 import bpy
 from . import common as Common
 from .register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class ShapeKeyApplier(bpy.types.Operator):
     # Replace the 'Basis' shape key with the currently selected shape key
     bl_idname = "cats_shapekey.shape_key_to_basis"
-    bl_label = "Apply Selected Shapekey to Basis"
-    bl_description = 'Applies the selected shape key to the new Basis at it\'s current strength and creates a reverted shape key from the selected one'
+    bl_label = t('ShapeKeyApplier.label')
+    bl_description = t('ShapeKeyApplier.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -53,16 +54,10 @@ class ShapeKeyApplier(bpy.types.Operator):
         if ' - Reverted' in new_basis_shapekey_name and new_basis_shapekey.relative_key.name != 'Basis':
             for shapekey in mesh.data.shape_keys.key_blocks:
                 if ' - Reverted' in shapekey.name and shapekey.relative_key.name == 'Basis':
-                    Common.show_error(7.3, ['To revert the shape keys, please apply the "Reverted" shape keys in reverse order.',
-                                                  'Start with the shape key called "' + shapekey.name + '".',
-                                                  '',
-                                                  "If you didn't change the shape key order, you can revert the shape keys from top to bottom."])
+                    Common.show_error(t('ShapeKeyApplier.error.revert.scale'), t('ShapeKeyApplier.error.revert', name=shapekey.name))
                     return {'FINISHED'}
 
-            Common.show_error(7.3, ['To revert the shape keys, please apply the "Reverted" shape keys in reverse order.',
-                                          'Start with the reverted shape key that uses the relative key called "Basis".',
-                                          '',
-                                          "If you didn't change the shape key order, you can revert the shape keys from top to bottom."])
+            Common.show_error(t('ShapeKeyApplier.error.revert.scale'), t('ShapeKeyApplier.error.revert'))
             return {'FINISHED'}
 
         # Set up shape keys
@@ -129,12 +124,12 @@ class ShapeKeyApplier(bpy.types.Operator):
         # If a reversed shapekey was applied as basis, fix the name
         if ' - Reverted - Reverted' in old_basis_shapekey.name:
             old_basis_shapekey.name = old_basis_shapekey.name.replace(' - Reverted - Reverted', '')
-            self.report({'INFO'}, 'Successfully removed shapekey "' + old_basis_shapekey.name + '" from the Basis.')
+            self.report({'INFO'}, t('ShapeKeyApplier.successRemoved', name=old_basis_shapekey.name))
         else:
-            self.report({'INFO'}, 'Successfully set shapekey "' + new_basis_shapekey_name + '" as the new Basis.')
+            self.report({'INFO'}, t('ShapeKeyApplier.successSet', name=new_basis_shapekey_name))
         return {'FINISHED'}
 
 
 def addToShapekeyMenu(self, context):
     self.layout.separator()
-    self.layout.operator(ShapeKeyApplier.bl_idname, text="Apply Selected Shapekey to Basis", icon="KEY_HLT")
+    self.layout.operator(ShapeKeyApplier.bl_idname, text=t('addToShapekeyMenu.ShapeKeyApplier.label'), icon="KEY_HLT")

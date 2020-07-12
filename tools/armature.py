@@ -38,6 +38,7 @@ from . import armature_bones as Bones
 from .common import version_2_79_or_older
 from .register import register_wrap
 from mmd_tools_local.operators import morph as Morph
+from ..translations import t
 
 
 mmd_tools_installed = True
@@ -46,16 +47,8 @@ mmd_tools_installed = True
 @register_wrap
 class FixArmature(bpy.types.Operator):
     bl_idname = 'cats_armature.fix'
-    bl_label = 'Fix Model'
-    bl_description = 'Automatically:\n' \
-                     '- Reparents bones\n' \
-                     '- Removes unnecessary bones, objects, groups & constraints\n' \
-                     '- Translates and renames bones & objects\n' \
-                     '- Merges weight paints\n' \
-                     '- Corrects the hips\n' \
-                     '- Joins meshes\n' \
-                     '- Converts morphs into shapes\n' \
-                     '- Corrects shading'
+    bl_label = t('FixArmature.label')
+    bl_description = t('FixArmature.desc')
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -91,9 +84,7 @@ class FixArmature(bpy.types.Operator):
                 if mesh.name.endswith(('.baked', '.baked0')):
                     is_vrm = True  # TODO
             if not is_vrm:
-                Common.show_error(3.8, ['No mesh inside the armature found!',
-                                        'If there are meshes outside of the armature,',
-                                        'set the armature as the parent of the meshes.'])
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
                 return {'CANCELLED'}
 
         print('\nFixing Model:\n')
@@ -1225,14 +1216,14 @@ class FixArmature(bpy.types.Operator):
 
         if fixed_uv_coords:
             saved_data.load()
-            Common.show_error(6.2, ['The model was successfully fixed, but there were ' + str(fixed_uv_coords) + ' faulty UV coordinates.',
-                                          'This could result in broken textures and you might have to fix them manually.',
-                                          'This issue is often caused by edits in PMX editor.'])
+            Common.show_error(6.2, [t('FixArmature.error.faultyUV1', uvcoord=str(fixed_uv_coords)),
+                                          t('FixArmature.error.faultyUV2'),
+                                          t('FixArmature.error.faultyUV3')])
             return {'FINISHED'}
 
         saved_data.load()
 
-        self.report({'INFO'}, 'Model successfully fixed.')
+        self.report({'INFO'}, t('FixArmature.fixedSuccess'))
         return {'FINISHED'}
 
 
@@ -1240,7 +1231,7 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
     armature = Common.set_default_stage()
 
     missing_bones = []
-    missing2 = ['The following bones were not found:', '']
+    missing2 = [t('FixArmature.bonesNotFound'), '']
 
     for correct_hierarchy in correct_hierarchy_array:  # For each hierarchy array
         line = ' - '
@@ -1257,9 +1248,9 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
 
     if len(missing2) > 2 and not check_parenting:
         missing2.append('')
-        missing2.append('Looks like you found a model which Cats could not fix!')
-        missing2.append('If this is a non modified model we would love to make it compatible.')
-        missing2.append('Report it to us in the forum or in our discord, links can be found in the Credits panel.')
+        missing2.append(t('FixArmature.cantFix1'))
+        missing2.append(t('FixArmature.cantFix2'))
+        missing2.append(t('FixArmature.cantFix3'))
 
         Common.show_error(6.4, missing2)
         return {'result': True, 'message': ''}
@@ -1278,10 +1269,10 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                     if previous is not None:
                         # And there is no parent, then we have a problem mkay
                         if bone.parent is None:
-                            return {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
+                            return {'result': False, 'message': bone.name + t('FixArmature.notParent')}
                         # Previous needs to be the parent of the current item
                         if previous != bone.parent.name:
-                            return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
+                            return {'result': False, 'message': bone.name + t('FixArmature.notParentTo1') + previous + t('FixArmature.notParentTo2')}
 
     return {'result': True}
 

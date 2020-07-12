@@ -32,13 +32,14 @@ import bpy
 
 from . import common as Common
 from .register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class OneTexPerMatButton(bpy.types.Operator):
     bl_idname = 'cats_material.one_tex'
-    bl_label = 'One Material Texture'
-    bl_description = 'Have all material slots ignore extra texture slots as these are not used by VRChat'
+    bl_label = t('OneTexPerMatButton.label')
+    bl_description = t('OneTexPerMatButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -52,7 +53,7 @@ class OneTexPerMatButton(bpy.types.Operator):
         # Common.add_principled_shader()
         # return {'FINISHED'}
         if not Common.version_2_79_or_older():
-            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            self.report({'ERROR'}, t('ToolsMaterial.error.notCompatible'))
             return {'CANCELLED'}
             # TODO
 
@@ -68,17 +69,15 @@ class OneTexPerMatButton(bpy.types.Operator):
 
         saved_data.load()
 
-        self.report({'INFO'}, 'All materials have one texture now.')
+        self.report({'INFO'}, t('OneTexPerMatButton.success'))
         return{'FINISHED'}
 
 
 @register_wrap
 class OneTexPerMatOnlyButton(bpy.types.Operator):
     bl_idname = 'cats_material.one_tex_only'
-    bl_label = 'One Material Texture'
-    bl_description = 'Have all material slots ignore extra texture slots as these are not used by VRChat.' \
-                     '\nAlso removes the textures from the material instead of disabling it.' \
-                     '\nThis makes no difference, but cleans the list for the perfectionists'
+    bl_label = t('OneTexPerMatOnlyButton.label')
+    bl_description = t('OneTexPerMatOnlyButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -89,7 +88,7 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
 
     def execute(self, context):
         if not Common.version_2_79_or_older():
-            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            self.report({'ERROR'}, t('ToolsMaterial.error.notCompatible'))
             return {'CANCELLED'}
             # TODO
 
@@ -105,16 +104,15 @@ class OneTexPerMatOnlyButton(bpy.types.Operator):
 
         saved_data.load()
 
-        self.report({'INFO'}, 'All materials have one texture now.')
+        self.report({'INFO'}, t('OneTexPerXButton.success'))
         return{'FINISHED'}
 
 
 @register_wrap
 class StandardizeTextures(bpy.types.Operator):
     bl_idname = 'cats_material.standardize_textures'
-    bl_label = 'Standardize Textures'
-    bl_description = 'Enables Color and Alpha on every texture, sets the blend method to Multiply' \
-                     '\nand changes the materials transparency to Z-Transparency'
+    bl_label = t('StandardizeTextures.label')
+    bl_description = t('StandardizeTextures.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -125,7 +123,7 @@ class StandardizeTextures(bpy.types.Operator):
 
     def execute(self, context):
         if not Common.version_2_79_or_older():
-            self.report({'ERROR'}, 'This function is not yet compatible with Blender 2.8!')
+            self.report({'ERROR'}, t('ToolsMaterial.error.notCompatible'))
             return {'CANCELLED'}
             # TODO
 
@@ -147,18 +145,15 @@ class StandardizeTextures(bpy.types.Operator):
 
         saved_data.load()
 
-        self.report({'INFO'}, 'All textures are now standardized.')
+        self.report({'INFO'}, t('StandardizeTextures.success'))
         return{'FINISHED'}
 
 
 @register_wrap
 class CombineMaterialsButton(bpy.types.Operator):
     bl_idname = 'cats_material.combine_mats'
-    bl_label = 'Combine Same Materials'
-    bl_description = 'Combines similar materials into one, reducing draw calls.\n' \
-                     'Your avatar should visibly look the same after this operation.\n' \
-                     'This is a very important step for optimizing your avatar.\n' \
-                     'If you have problems with this, please tell us!\n'
+    bl_label = t('CombineMaterialsButton.label')
+    bl_description = t('CombineMaterialsButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     combined_tex = {}
@@ -376,9 +371,9 @@ class CombineMaterialsButton(bpy.types.Operator):
         saved_data.load()
 
         if i == 0:
-            self.report({'INFO'}, 'No materials combined.')
+            self.report({'INFO'}, t('CombineMaterialsButton.error.noChanges'))
         else:
-            self.report({'INFO'}, 'Combined ' + str(i) + ' materials!')
+            self.report({'INFO'}, t('CombineMaterialsButton.success', number=str(i)))
 
         return{'FINISHED'}
 
@@ -386,10 +381,8 @@ class CombineMaterialsButton(bpy.types.Operator):
 @register_wrap
 class ConvertAllToPngButton(bpy.types.Operator):
     bl_idname = 'cats_material.convert_all_to_png'
-    bl_label = 'Convert Textures to PNG'
-    bl_description = 'Converts all texture files into PNG files.' \
-                     '\nThis helps with transparency and compatibility issues.' \
-                     '\n\nThe converted image files will be saved next to the old ones'
+    bl_label = t('ConvertAllToPngButton.label')
+    bl_description = t('ConvertAllToPngButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     # Inspired by:
@@ -414,7 +407,7 @@ class ConvertAllToPngButton(bpy.types.Operator):
 
             wm.progress_end()
 
-        self.report({'INFO'}, 'Converted ' + str(len(images_to_convert)) + ' to PNG files.')
+        self.report({'INFO'}, t('ConvertAllToPngButton.success', number=str(len(images_to_convert))))
         return {'FINISHED'}
 
     def get_convert_list(self):

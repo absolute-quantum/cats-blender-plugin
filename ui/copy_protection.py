@@ -6,12 +6,13 @@ from ..tools import common as Common
 from ..tools import copy_protection as Copy_protection
 from ..tools import importer as Importer
 from ..tools.register import register_wrap
+from ..translations import t
 
 
 # @register_wrap
 class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_copyprotection_v3'
-    bl_label = 'Copy Protection'
+    bl_label = t('CopyProtectionPanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -22,13 +23,13 @@ class CopyProtectionPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.75
-        row.label(text='Tries to protect your avatar from Unity cache ripping.')
+        row.label(text=t('CopyProtectionPanel.desc1'))
         row = col.row(align=True)
         row.scale_y = 0.75
-        row.label(text='This protection is not 100% safe!')
+        row.label(text=t('CopyProtectionPanel.desc2'))
         col.separator()
         row = col.row(align=True)
-        row.label(text='Before use: Read the documentation!')
+        row.label(text=t('CopyProtectionPanel.desc3'))
         row = col.row(align=True)
         row.operator(Copy_protection.ProtectionTutorialButton.bl_idname, icon='FORWARD')
         col.separator()
