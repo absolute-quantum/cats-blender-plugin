@@ -167,7 +167,7 @@ dictionary = {
     'CreditsPanel.desc5': '助けが必要ですか、バグを見つけましたか?',
 
     # Tools Armature
-    'FixArmature.label': 'Fix Model',
+    'FixArmature.label': 'モデル修正',
     'FixArmature.desc': 'Automatically:\n' \
                         '- Reparents bones\n' \
                         '- Removes unnecessary bones, objects, groups & constraints\n' \
@@ -194,29 +194,29 @@ dictionary = {
     'FixArmature.notParentTo2': ', this will cause problems!',
 
     # Tools Armature Manual
-    'StartPoseMode.label': 'Start Pose Mode',
+    'StartPoseMode.label': 'ポーズモードを開始',
     'StartPoseMode.desc': 'Starts the pose mode.\n' \
                           'This lets you test how your model will move',
 
-    'StopPoseMode.label': 'Stop Pose Mode',
+    'StopPoseMode.label': 'ポーズモードを停止する',
     'StopPoseMode.desc': 'Stops the pose mode and resets the pose to normal',
 
-    'PoseToShape.label': 'Pose to Shape Key',
+    'PoseToShape.label': 'シェイプキーへのポーズ',
     'PoseToShape.desc': 'This saves your current pose as a new shape key.' \
                         '\nThe new shape key will be at the bottom of your shape key list of the mesh',
 
-    'PoseNamePopup.label': 'Give this shapekey a name:',
+    'PoseNamePopup.label': 'このシェイプキーに名前を付ける:',
     'PoseNamePopup.desc': 'Sets the shapekey name. Press anywhere outside to skip',
     'PoseNamePopup.success': 'Pose successfully saved as shape key.',
 
-    'PoseToRest.label': 'Apply as Rest Pose',
+    'PoseToRest.label': 'レストポーズとして適用する',
     'PoseToRest.desc': 'This applies the current pose position as the new rest position.' \
                        '\n' \
                        '\nIf you scale the bones equally on each axis the shape keys will be scaled correctly as well!' \
                        '\nWARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this',
     'PoseToRest.success': 'Pose successfully applied as rest pose.',
 
-    'JoinMeshes.label': 'Join Meshes',
+    'JoinMeshes.label': 'メッシュに参加する',
     'JoinMeshes.desc': 'Joins all meshes of this model together.' \
                        '\nIt also:' \
                        '\n  - Reorders all shape keys correctly' \
@@ -227,7 +227,7 @@ dictionary = {
     'JoinMeshes.failure': 'Meshes could not be joined!',
     'JoinMeshes.success': 'Meshes joined.',
 
-    'JoinMeshesSelected.label': 'Join Selected Meshes',
+    'JoinMeshesSelected.label': '選択したメッシュを結合する',
     'JoinMeshesSelected.desc': 'Joins all selected meshes of this model together.' \
                                '\nIt also:' \
                                '\n  - Reorders all shape keys correctly' \
@@ -239,25 +239,25 @@ dictionary = {
     'JoinMeshesSelected.error.cantJoin': 'Selected meshes could not be joined!',
     'JoinMeshesSelected.success': 'Selected meshes joined.',
 
-    'SeparateByMaterials.label': 'Separate by Materials',
+    'SeparateByMaterials.label': '材料別に分離する',
     'SeparateByMaterials.desc': 'Separates selected mesh by materials.\n' \
                                 '\n' \
                                 'Warning: Never decimate something where you might need the shape keys later (face, mouth, eyes..)',
     'SeparateByMaterials.success': 'Successfully separated by materials.',
 
-    'SeparateByLooseParts.label': 'Separate by Loose Parts',
+    'SeparateByLooseParts.label': 'ルーズパーツに分離する',
     'SeparateByLooseParts.desc': 'Separates selected mesh by loose parts.\n' \
                                  'This acts like separating by materials but creates more meshes for more precision',
     'SeparateByLooseParts.success': 'Successfully separated by loose parts.',
 
-    'SeparateByShapekeys.label': 'Separate by Shape Keys',
+    'SeparateByShapekeys.label': 'シェイプキーに区切る',
     'SeparateByShapekeys.desc': 'Separates selected mesh into two parts,' \
                                 '\ndepending on whether it is effected by a shape key or not.' \
                                 '\n' \
                                 '\nVery useful for manual decimation',
     'SeparateByShapekeys.success': 'Successfully separated by shape keys.',
 
-    'SeparateByCopyProtection.label': 'Separate by Copy Protection',
+    'SeparateByCopyProtection.label': 'コピープロテクションに分離する',
     'SeparateByCopyProtection.desc': 'Separates selected mesh into two parts,' \
                                      '\ndepending on whether it is effected by the Cats Copy Protection or not.' \
                                      '\n' \
@@ -269,69 +269,69 @@ dictionary = {
                                               '\nPlease select the mesh you want to separate!',
     'SeparateByX.warn.noSeparation': 'No meshes had to be separated!',
 
-    'MergeWeights.label': 'Merge Weights to Parent',
+    'MergeWeights.label': '親に重みをマージする',
     'MergeWeights.desc': 'Deletes the selected bones and adds their weight to their respective parents.' \
                          '\n' \
                          '\nOnly available in Edit or Pose Mode with bones selected',
     'MergeWeights.success': 'Deleted {number} bones and added their weights to their parents.',
 
-    'MergeWeightsToActive.label': 'Merge Weights to Active',
+    'MergeWeightsToActive.label': 'ウェイトをアクティブ にマージする',
     'MergeWeightsToActive.desc': 'Deletes the selected bones except the active one and adds their weights to the active bone.' \
                                  '\nThe active bone is the one you selected last.' \
                                  '\n' \
                                  '\nOnly available in Edit or Pose Mode with bones selected',
     'MergeWeightsToActive.success': 'Deleted {number} bones and added their weights to the active bone.',
 
-    'ApplyTransformations.label': 'Apply Transformations',
+    'ApplyTransformations.label': '変換を適用する',
     'ApplyTransformations.desc': 'Applies the position, rotation and scale to the armature and it\'s meshes',
     'ApplyTransformations.success': 'Transformations applied.',
 
-    'ApplyAllTransformations.label': 'Apply All Transformations',
+    'ApplyAllTransformations.label': 'すべての変換を適用する',
     'ApplyAllTransformations.desc': 'Applies the position, rotation and scale of all objects',
     'ApplyAllTransformations.success': 'Transformations applied.',
 
-    'RemoveZeroWeightBones.label': 'Remove Zero Weight Bones',
+    'RemoveZeroWeightBones.label': 'ゼロ ウェイト ボーンを削除する',
     'RemoveZeroWeightBones.desc': 'Cleans up the bones hierarchy, deleting all bones that don\'t directly affect any vertices\n' \
                                   'Don\'t use this if you plan to use \'Fix Model\'',
     'RemoveZeroWeightBones.success': 'Deleted {number} zero weight bones.',
 
-    'RemoveZeroWeightGroups.label': 'Remove Zero Weight Vertex Groups',
+    'RemoveZeroWeightGroups.label': 'ゼロ ウェイトの頂点グループを削除',
     'RemoveZeroWeightGroups.desc': 'Cleans up the vertex groups of all meshes, deleting all groups that don\'t directly affect any vertices',
     'RemoveZeroWeightGroups.success': 'Removed {number} zero weight vertex groups.',
 
-    'RemoveConstraints.label': 'Remove Bone Constraints',
+    'RemoveConstraints.label': 'ボーン拘束を削除',
     'RemoveConstraints.desc': 'Removes constrains between bones causing specific bone movement as these are not used by VRChat',
     'RemoveConstraints.success': 'Removed all bone constraints.',
 
-    'RecalculateNormals.label': 'Recalculate Normals',
+    'RecalculateNormals.label': '法線を再計算する',
     'RecalculateNormals.desc': 'Makes normals point inside of the selected mesh.\n\n' \
                                'Don\'t use this on good looking meshes as this can screw them up.\n' \
                                'Use this if there are random inverted or darker faces on the mesh',
     'RecalculateNormals.success': 'Recalculated all normals.',
 
-    'FlipNormals.label': 'Flip Normals',
+    'FlipNormals.label': '法線を反転',
     'FlipNormals.desc': 'Flips the direction of the faces\' normals of the selected mesh.\n' \
                         'Use this if all normals are inverted',
     'FlipNormals.success': 'Flipped all normals.',
 
-    'RemoveDoubles.label': 'Remove Doubles',
+    'RemoveDoubles.label': 'ダブルスを削除する',
     'RemoveDoubles.desc': 'Merges duplicated faces and vertices of the selected meshes.' \
                           '\nThis is more safe than doing it manually:' \
                           '\n  - leaves shape keys completely untouched' \
                           '\n  - but removes less doubles overall',
     'RemoveDoubles.success': 'Removed {number} vertices.',
 
-    'RemoveDoublesNormal.label': 'Remove Doubles Normally',
+    'RemoveDoublesNormal.label': 'ダブルを通常どおりに削除する',
     'RemoveDoublesNormal.desc': 'Merges duplicated faces and vertices of the selected meshes.' \
                                 '\nThis is exactly like doing it manually',
     'RemoveDoublesNormal.success': 'Removed {number} vertices.',
 
-    'FixVRMShapesButton.label': 'Fix Koikatsu Shapekeys',
+    'FixVRMShapesButton.label': 'コイカツシェイプキーを修正',
     'FixVRMShapesButton.desc': 'Fixes the shapekeys of Koikatsu models',
     'FixVRMShapesButton.warn.notDetected': 'No shapekeys detected!',
     'FixVRMShapesButton.success': 'Fixed VRM shapekeys.',
 
-    'FixFBTButton.label': 'Fix Full Body Tracking',
+    'FixFBTButton.label': '全身追跡を修正',
     'FixFBTButton.desc': 'WARNING: This fix is no longer needed for VRChat, you should not use it!' \
                          '\n' \
                          '\nApplies a general fix for Full Body Tracking.' \
@@ -343,7 +343,7 @@ dictionary = {
     'FixFBTButton.error.alreadyApplied': 'Full Body Tracking Fix already applied!',
     'FixFBTButton.success': 'Successfully applied the Full Body Tracking fix.',
 
-    'RemoveFBTButton.label': 'Remove Full Body Tracking Fix',
+    'RemoveFBTButton.label': '全身追跡の修正を削除',
     'RemoveFBTButton.desc': 'Removes the fix for Full Body Tracking, since it is no longer advised to use it.' \
                             '\n' \
                             '\nRequires bones:' \
@@ -355,12 +355,12 @@ dictionary = {
     'RemoveFBTButton.error.notApplied': 'The Full Body Tracking Fix is not applied!',
     'RemoveFBTButton.success': 'Successfully removed the Full Body Tracking fix.',
 
-    'DuplicateBonesButton.label': 'Duplicate Bones',
+    'DuplicateBonesButton.label': 'ボーンの複製',
     'DuplicateBonesButton.desc': 'Duplicates the selected bones including their weight and renames them to _L and _R',
     'DuplicateBonesButton.success': 'Successfully duplicated {number} bones.',
 
     # Tools Armature Custom
-    'MergeArmature.label': 'Merge Armatures',
+    'MergeArmature.label': 'マージアーマチュア',
     'MergeArmature.desc': 'Merges the selected merge armature into the base armature.' \
                           '\nYou should fix both armatures with Cats first.' \
                           '\nOnly move the mesh of the merge armature to the desired position, the bones will be moved automatically',
@@ -374,14 +374,14 @@ dictionary = {
                                        'After that please only move the mesh (not the armature!) to the desired position.'],
     'MergeArmature.success': 'Armatures successfully joined.',
 
-    'AttachMesh.label': 'Attach Mesh',
+    'AttachMesh.label': 'メッシュをアタッチ',
     'AttachMesh.desc': 'Attaches the selected mesh to the selected bone of the selected armature.' \
                        '\n' \
                        '\nINFO: The mesh will only be assigned to the selected bone.' \
                        '\nE.g.: A jacket won\'t work, because it requires multiple bones',
     'AttachMesh.success': 'Mesh successfully attached to armature.',
 
-    'CustomModelTutorialButton.label': 'Go to Documentation',
+    'CustomModelTutorialButton.label': 'ドキュメントに移動',
     'CustomModelTutorialButton.URL': 'https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation', # BOOM, now we can point at the Japanese link now ;)
     'CustomModelTutorialButton.success': 'Documentation',
 
@@ -394,16 +394,16 @@ dictionary = {
     'merge_armatures.error.pleaseUndo': ['Something went wrong! Please undo, check your selections and try again.'],
 
     # Tools Atlas
-    'EnableSMC.label': 'Enable Material Combiner',
+    'EnableSMC.label': 'マテリアルコンバイナを有効にする',
     'EnableSMC.desc': 'Enables Material Combiner',
     'EnableSMC.success': 'Enabled Material Combiner!',
 
-    'AtlasHelpButton.label': 'Generate Material List',
+    'AtlasHelpButton.label': '材料リストを生成する',
     'AtlasHelpButton.desc': 'Open useful Atlas Tips',
     'AtlasHelpButton.URL': 'https://github.com/michaeldegroot/cats-blender-plugin/#texture-atlas',
     'AtlasHelpButton.success': 'Atlas Help opened.',
 
-    'InstallShotariya.label': 'Error while loading Material Combiner:',
+    'InstallShotariya.label': 'マテリアルコンバイナ読み込み中にエラーが発生しました:',
     'InstallShotariya.error.install1': 'Material Combiner is not installed!',
     'InstallShotariya.error.install2': 'The plugin \'Material Combiner\' by Shotariya is required for this function.',
     'InstallShotariya.error.install3': 'Please download and install it manually:',
@@ -414,55 +414,55 @@ dictionary = {
     'InstallShotariya.error.version2': 'The latest version is required for this function.',
     'InstallShotariya.error.version3': 'Please download and install it manually:',
 
-    'ShotariyaButton.label': 'Download Material Combiner',
+    'ShotariyaButton.label': 'マテリアルコンバイナーをダウンロード',
     'ShotariyaButton.URL': 'https://vrcat.club/threads/material-combiner-blender-addon-1-1-3.2255/',
     'ShotariyaButton.success': 'Material Combiner link opened',
 
     # Tools Bonemerge
-    'BoneMergeButton.label': 'Merge Bones',
+    'BoneMergeButton.label': 'ボーンをマージする',
     'BoneMergeButton.desc': 'Merges the given percentage of bones together.\n' \
                             'This is useful to reduce the amount of bones used by Dynamic Bones.',
     'BoneMergeButton.success': 'Merged bones.',
 
     # Tools Common
-    'ShowError.label': 'Report: Error',
+    'ShowError.label': 'レポート: エラー',
 
     # Tools Copy protection
-    'CopyProtectionEnable.label': 'Enable Protection',
+    'CopyProtectionEnable.label': '保護を有効にする',
     'CopyProtectionEnable.desc': 'Protects your model from piracy. NOT a 100% safe protection!' \
                                  '\nRead the documentation before use',
     'CopyProtectionEnable.success': 'Model secured!',
 
-    'CopyProtectionDisable.label': 'Disable Protection',
+    'CopyProtectionDisable.label': '保護を無効にする',
     'CopyProtectionDisable.desc': 'Removes the copy protections from this model.',
     'CopyProtectionDisable.success': 'Model un-secured!',
 
-    'ProtectionTutorialButton.label': 'Go to Documentation',
+    'ProtectionTutorialButton.label': 'ドキュメントに移動',
     'ProtectionTutorialButton.URL': 'https://github.com/michaeldegroot/cats-blender-plugin#copy-protection',
     'ProtectionTutorialButton.success': 'Documentation',
 
     # Tools Credits
-    'ForumButton.label': 'Go to the Forums',
+    'ForumButton.label': 'フォーラムに移動する',
     'ForumButton.URL': 'https://vrcat.club/threads/cats-blender-plugin.6/',
     'ForumButton.success': 'Forum opened.',
 
-    'DiscordButton.label': 'Join our Discord',
+    'DiscordButton.label': 'Discordサーバーに参加する',
     'DiscordButton.URL': 'https://discord.gg/f8yZGnv',
     'DiscordButton.success': 'Discord opened.',
 
-    'PatchnotesButton.label': 'Latest Patchnotes',
+    'PatchnotesButton.label': '最新のパッチノート',
     'PatchnotesButton.URL': 'https://github.com/michaeldegroot/cats-blender-plugin/releases',
     'PatchnotesButton.success': 'Patchnotes opened.',
 
     # Tools Decimation
-    'ScanButton.label': 'Scan for decimation models',
+    'ScanButton.label': 'デシメーション モデルのスキャン',
     'ScanButton.desc': 'Separates the mesh.',
 
-    'AddShapeButton.label': 'Add',
+    'AddShapeButton.label': '追加',
     'AddShapeButton.desc': 'Adds the selected shape key to the whitelist.\n' \
                            'This means that every mesh containing that shape key will be not decimated.',
 
-    'AddMeshButton.label': 'Add',
+    'AddMeshButton.label': '追加',
     'AddMeshButton.desc': 'Adds the selected mesh to the whitelist.\n' \
                           'This means that this mesh will be not decimated.',
 
@@ -490,7 +490,7 @@ dictionary = {
     'decimate.cantDecimate2': 'It got decimated as much as possible within the limits.',
 
     # Tools Eyetracking
-    'CreateEyesButton.label': 'Create Eye Tracking',
+    'CreateEyesButton.label': 'アイトラッキングを作成する',
     'CreateEyesButton.desc': 'This will let you track someone when they come close to you and it enables blinking.\n' \
                              'You should do decimation before this operation.\n' \
                              'Test the resulting eye movement in the \'Testing\' tab.',
@@ -506,41 +506,41 @@ dictionary = {
                                         '\nFurthermore the mesh containing the eyes has to be called "Body" and the armature "Armature".',
     'CreateEyesButton.success': 'Created eye tracking!',
 
-    'StartTestingButton.label': 'Start Eye Testing',
+    'StartTestingButton.label': 'スタートアイテスト',
     'StartTestingButton.desc': 'This will let you test how the eye movement will look ingame.\n' \
                                'Don\'t forget to stop the Testing process afterwards.\n' \
                                'Bones "LeftEye" and "RightEye" are required.',
 
-    'StopTestingButton.label': 'Stop Eye Testing',
+    'StopTestingButton.label': 'ストップアイテスト',
     'StopTestingButton.desc': 'Stops the testing process.',
     'StopTestingButton.error.tryAgain': 'Something went wrong. Please try eye testing again.',
 
-    'ResetRotationButton.label': 'Reset Rotation',
+    'ResetRotationButton.label': '回転をリセットする',
     'ResetRotationButton.desc': 'This resets the eye positions.',
 
-    'AdjustEyesButton.label': 'Set Range',
+    'AdjustEyesButton.label': '目の範囲を設定',
     'AdjustEyesButton.desc': 'Lets you re-adjust the movement range of the eyes.\n' \
                              'This gets saved',
     'AdjustEyesButton.error.noVertex': 'The bone "{bone}" has no existing vertex group or no vertices assigned to it.'
                                        '\nThis might be because you selected the wrong mesh or the wrong bone.'
                                        '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.',
 
-    'StartIrisHeightButton.label': 'Start Iris Height Adjustment',
+    'StartIrisHeightButton.label': 'アイリスの高さの調整を開始',
     'StartIrisHeightButton.desc': 'Lets you readjust the distance of the iris from the eye ball.\n' \
                                   'Use this to fix clipping of the iris into the eye ball.\n' \
                                   'This gets saved.',
 
-    'TestBlinking.label': 'Test',
+    'TestBlinking.label': 'テスト',
     'TestBlinking.desc': 'This lets you see how eye blinking will look in-game.',
 
-    'TestLowerlid.label': 'Test',
+    'TestLowerlid.label': 'テスト',
     'TestLowerlid.desc': 'This lets you see how lowerlids will look in-game.',
 
-    'ResetBlinkTest.label': 'Reset Shapes',
+    'ResetBlinkTest.label': '図形をリセットする',
     'ResetBlinkTest.desc': 'This resets the blink testing.',
 
     # Tools Importer
-    'ImportAnyModel.label': 'Import Any Model',
+    'ImportAnyModel.label': '任意のモデルをインポート',
     'ImportAnyModel.desc2.79': 'Import a model of any supported type.' \
                                '\n' \
                                '\nSupported types:' \
@@ -561,20 +561,20 @@ dictionary = {
                               '\n- FBX: .fbx' \
                               '\n- DAE: .dae ' \
                               '\n- ZIP: .zip',
-    'ImportAnyModel.importantInfo.label': 'IMPORTANT INFO (hover here)',
+    'ImportAnyModel.importantInfo.label': '重要な情報(ここにホバー)',
     'ImportAnyModel.importantInfo.desc': 'If you want to modify the import settings, use the button next to the Import button.\n\n',
     'ImportAnyModel.error.emptyZip': 'The selected zip file contains no importable models.',
     'ImportAnyModel.error.unsupportedFBX': 'The FBX file version is unsupported!' \
                                            '\nPlease use a tool such as the "Autodesk FBX Converter" to make it compatible.',
 
-    'ZipPopup.label': 'Zip Model Selection:',
+    'ZipPopup.label': '圧縮モデルの選択:',
     'ZipPopup.desc': 'Shows the models contained in the zip files',
     'ZipPopup.selectModel1': 'Select which model you want to import',
     'ZipPopup.selectModel2': 'Then confirm with OK',
 
     'get_zip_content.choose': 'Import model "{model}" from the zip "{zipName}?"',
 
-    'ModelsPopup.label': 'Select which you want to import:',
+    'ModelsPopup.label': 'インポートする項目を選択します:',
     'ModelsPopup.desc': 'Show individual import options',
 
     'ImportMMD.label': 'MMD',
@@ -592,41 +592,41 @@ dictionary = {
     'ImportVRM.label': 'VRM',
     'ImportVRM.desc': 'Import a VRM model (.vrm)',
 
-    'InstallXPS.label': 'XPS Tools is not installed or enabled!',
+    'InstallXPS.label': 'XPS ツールがインストールされていないか、有効になっていない!',
 
-    'InstallSource.label': 'Source Tools is not installed or enabled!',
+    'InstallSource.label': 'ソース ツールがインストールされていないか、有効になっていません!',
 
-    'InstallVRM.label': 'VRM Importer is not installed or enabled!',
+    'InstallVRM.label': 'VRMインポーターがインストールされていないか、有効になっていません!',
 
     'InstallX.pleaseInstall1': 'If it is not enabled please enable it in your User Preferences.',
     'InstallX.pleaseInstall2': 'If it is not installed please download and install it manually.',
     'InstallX.pleaseInstall3': 'Make sure to install the version for Blender {blenderVersion}',
     'InstallX.pleaseInstallTesting': 'Currently you have to select \'Testing\' in the addons settings.',
 
-    'EnableMMD.label': 'Mmd_tools is not enabled!',
+    'EnableMMD.label': 'Mmd_toolsが有効になっていません!',
     'EnableMMD.required1': 'The plugin "mmd_tools" is required for this function.',
     'EnableMMD.required2': 'Please restart Blender.',
 
-    'XpsToolsButton.label': 'Download XPS Tools',
+    'XpsToolsButton.label': 'XPSツールをダウンロード',
     'XpsToolsButton.URL': 'https://github.com/johnzero7/XNALaraMesh',
     'XpsToolsButton.success': 'XPS Tools link opened',
 
-    'SourceToolsButton.label': 'Download Source Tools',
+    'SourceToolsButton.label': 'ソースツールをダウンロード',
     'SourceToolsButton.URL': 'https://github.com/Artfunkel/BlenderSourceTools',
     'SourceToolsButton.success': 'Source Tools link opened',
 
-    'VrmToolsButton.label': 'Download VRM Importer',
+    'VrmToolsButton.label': 'VRMインポーターをダウンロード',
     'VrmToolsButton.URL_2.79': 'https://github.com/iCyP/VRM_IMPORTER_for_Blender2_79',
     'VrmToolsButton.URL_2.8': 'https://github.com/saturday06/VRM_IMPORTER_for_Blender2_8',
     'VrmToolsButton.success': 'VRM Importer link opened',
 
-    'ExportModel.label': 'Export Model',
+    'ExportModel.label': 'モデルのエクスポート',
     'ExportModel.desc': 'Export this model as .fbx for Unity.\n' \
                         '\n' \
                         'Automatically sets the optimal export settings',
     'ExportModel.error.notEnabled': 'FBX Exporter not enabled! Please enable it in your User Preferences.',
 
-    'ErrorDisplay.label': 'Warning:',
+    'ErrorDisplay.label': '警告:',
     'ErrorDisplay.polygons1': 'Too many polygons!',
     'ErrorDisplay.polygons2': 'You have {number} tris in this model, but you shouldn\'t have more than 70,000!',
     'ErrorDisplay.polygons3': 'You should decimate before you export this model.',
@@ -639,7 +639,7 @@ dictionary = {
     'ErrorDisplay.meshes3': 'It is not very optimized and might cause lag for you and others!',
     'ErrorDisplay.meshes3_alt': "It is extremely unoptimized and will cause laugh for you and others!",
     'ErrorDisplay.meshes4': 'You should always join your meshes, it\'s very easy:',
-    'ErrorDisplay.JoinMeshes.label': 'Join Meshes',
+    'ErrorDisplay.JoinMeshes.label': 'メッシュに参加する',
     'ErrorDisplay.brokenShapekeys1': 'Broken shapekeys!',
     'ErrorDisplay.brokenShapekeys2': 'This model has {number} broken shapekey(s):',
     'ErrorDisplay.brokenShapekeys3': 'You will not be able to upload this model until you fix these shapekeys.',
@@ -657,10 +657,10 @@ dictionary = {
     'ErrorDisplay.continue': 'Continue to Export',
 
     # Tools Material
-    'OneTexPerMatButton.label': 'One Material Texture',
+    'OneTexPerMatButton.label': '1つのマテリアルテクスチャ',
     'OneTexPerMatButton.desc': 'Have all material slots ignore extra texture slots as these are not used by VRChat.',
 
-    'OneTexPerMatOnlyButton.label': 'One Material Texture',
+    'OneTexPerMatOnlyButton.label': '1つのマテリアルテクスチャ',
     'OneTexPerMatOnlyButton.desc': 'Have all material slots ignore extra texture slots as these are not used by VRChat.' \
                                    '\nAlso removes the textures from the material instead of disabling it.' \
                                    '\nThis makes no difference, but cleans the list for the perfectionists',
@@ -668,12 +668,12 @@ dictionary = {
     'ToolsMaterial.error.notCompatible': 'This function is not yet compatible with Blender 2.8!',
     'OneTexPerXButton.success': 'All materials have one texture now.',
 
-    'StandardizeTextures.label': 'Standardize Textures',
+    'StandardizeTextures.label': 'テクスチャを標準化する',
     'StandardizeTextures.desc': 'Enables Color and Alpha on every texture, sets the blend method to Multiply' \
                                 '\nand changes the materials transparency to Z-Transparency',
     'StandardizeTextures.success': 'All textures are now standardized.',
 
-    'CombineMaterialsButton.label': 'Combine Same Materials',
+    'CombineMaterialsButton.label': '同じマテリアルを組み合わせる',
     'CombineMaterialsButton.desc': 'Combines similar materials into one, reducing draw calls.\n' \
                                    'Your avatar should visibly look the same after this operation.\n' \
                                    'This is a very important step for optimizing your avatar.\n' \
@@ -681,39 +681,39 @@ dictionary = {
     'CombineMaterialsButton.error.noChanges': 'No materials combined.',
     'CombineMaterialsButton.success': 'Combined {number} materials!',
 
-    'ConvertAllToPngButton.label': 'Convert Textures to PNG',
+    'ConvertAllToPngButton.label': 'テクスチャをPNGに変換',
     'ConvertAllToPngButton.desc': 'Converts all texture files into PNG files.' \
                                   '\nThis helps with transparency and compatibility issues.' \
                                   '\n\nThe converted image files will be saved next to the old ones',
     'ConvertAllToPngButton.success': 'Converted {number} to PNG files.',
 
     # Tools Root bone
-    'RootButton.label': 'Parent Bones',
+    'RootButton.label': '親のボーンに接続する',
     'RootButton.desc': 'This will duplicate the parent of the bones and reparent them to the duplicate.\n' \
                        'Very useful for Dynamic Bones.',
     'RootButton.success': 'Bones parented!',
 
-    'RefreshRootButton.label': 'Refresh List',
+    'RefreshRootButton.label': 'リストの更新',
     'RefreshRootButton.desc': 'This will clear the group bones list cache and rebuild it, useful if bones have changed or your model.',
     'RefreshRootButton.success': 'Root bones refreshed, check the root bones list again.',
 
     # Tools Settings
-    'RevertChangesButton.label': 'Revert Settings',
+    'RevertChangesButton.label': '設定を元に戻す',
     'RevertChangesButton.desc': 'Revert the changes back to how they were on Blender start-up.',
     'RevertChangesButton.success': 'Settings reverted.',
 
-    'ResetGoogleDictButton.label': 'Clear Local Google Translations',
+    'ResetGoogleDictButton.label': 'ローカルのGoogle翻訳をクリア',
     'ResetGoogleDictButton.desc': 'Deletes all currently saved Google Translations. You can\'t undo this',
     'ResetGoogleDictButton.resetInfo': 'Local Google Dictionary cleared!',
 
-    'DebugTranslations.label': 'Debug Google Translations',  # DEV ONLY
+    'DebugTranslations.label': 'Google翻訳をデバッグ',  # DEV ONLY
     'DebugTranslations.desc': 'Tests Google translations and prints the response into a file called \'google-response.txt\' located in the cats addon folder > resources' \
                               '\nThis button is only visible in the cats development version',  # DEV ONLY
     'DebugTranslations.error': 'Errors found, response printed!!',  # DEV ONLY
     'DebugTranslations.success': 'No issues with Google Translations found, response printed!',  # DEV ONLY
 
     # Tools Shapekey
-    'ShapeKeyApplier.label': 'Apply Selected Shapekey to Basis',
+    'ShapeKeyApplier.label': '選択したシェイプキーをBasisに適用',
     'ShapeKeyApplier.desc': 'Applies the selected shape key to the new Basis at it\'s current strength and creates a reverted shape key from the selected one',
     'ShapeKeyApplier.error.revertCustomBasis': ['To revert the shape keys, please apply the "Reverted" shape keys in reverse order.',
                                                 'Start with the shape key called "{name}".',
@@ -728,45 +728,45 @@ dictionary = {
     'ShapeKeyApplier.successRemoved': 'Successfully removed shapekey "{name}" from the Basis.',
     'ShapeKeyApplier.successSet': 'Successfully set shapekey "{name}" as the new Basis.',
 
-    'addToShapekeyMenu.ShapeKeyApplier.label': 'Apply Selected Shapekey to Basis',
+    'addToShapekeyMenu.ShapeKeyApplier.label': '選択したシェイプキーをBasisに適用',
 
     # Tools Supporter
-    'PatreonButton.label': 'Become a Patron',
+    'PatreonButton.label': 'パトロンになる',
     'PatreonButton.URL': 'https://www.patreon.com/catsblenderplugin',
     'PatreonButton.success': 'Patreon page opened.',
 
-    'ReloadButton.label': 'Reload List',
+    'ReloadButton.label': 'リストを再読み込み',
     'ReloadButton.desc': 'Reloads the supporter list',
 
-    'DynamicPatronButton.label': 'Supporter Name',
+    'DynamicPatronButton.label': 'サポーター名',
     'DynamicPatronButton.desc': 'This is an awesome supporter',
 
     'register_dynamic_buttons.desc': '{name} is an awesome supporter',
 
     # Tools Translate
-    'TranslateShapekeyButton.label': 'Translate Shape Keys',
+    'TranslateShapekeyButton.label': 'シェイプキーを翻訳する',
     'TranslateShapekeyButton.desc': 'Translates all shape keys using the internal dictionary and Google Translate',
     'TranslateShapekeyButton.success': 'Translated {number} shape keys.',
 
-    'TranslateBonesButton.label': 'Translate Bones',
+    'TranslateBonesButton.label': 'ボーンを翻訳する',
     'TranslateBonesButton.desc': 'Translates all bones using the internal dictionary and Google Translate',
     'TranslateBonesButton.success': 'Translated {number} bones.',
 
-    'TranslateObjectsButton.label': 'Translate Meshes & Objects',
+    'TranslateObjectsButton.label': 'メッシュとオブジェクトを翻訳する',
     'TranslateObjectsButton.desc': 'Translates all meshes and objects using the internal dictionary and Google Translate',
     'TranslateObjectsButton.success': 'Translated {number} meshes and objects.',
 
-    'TranslateMaterialsButton.label': 'Translate Materials',
+    'TranslateMaterialsButton.label': 'マテリアルを翻訳する',
     'TranslateMaterialsButton.desc': 'Translates all materials using the internal dictionary and Google Translate',
     'TranslateMaterialsButton.success': 'Translated {number} materials.',
 
-    'TranslateTexturesButton.label': 'Translate Textures',
+    'TranslateTexturesButton.label': 'テクスチャを翻訳する',
     'TranslateTexturesButton.desc': 'Translates all textures using the internal dictionary and Google Translate',
     'TranslateTexturesButton.success_alt': 'Translated all textures',
     'TranslateTexturesButton.error.noInternet': 'Could not connect to Google. Please check your internet connection.',
     'TranslateTexturesButton.success': 'Translated {number} textures',
 
-    'TranslateAllButton.label': 'Translate Everything',
+    'TranslateAllButton.label': 'すべてを翻訳する',
     'TranslateAllButton.desc': 'Translates everything using the internal dictionary and Google Translate',
     'TranslateAllButton.success': 'Translated everything.',
 
@@ -783,7 +783,7 @@ dictionary = {
                                           '\nFor updates and dicussions please join our Discord. The link can be found in the Credits panel down below.',
 
     # Tools Viseme
-    'AutoVisemeButton.label': 'Create Visemes',
+    'AutoVisemeButton.label': 'バイセムを作成する',
     'AutoVisemeButton.desc': 'This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.\n' \
                              'It will generate 15 shape keys from the 3 shape keys you specify',
     'AutoVisemeButton.error.noShapekeys': 'This mesh has no shapekeys!',
@@ -791,38 +791,38 @@ dictionary = {
     'AutoVisemeButton.success': 'Created mouth visemes!',
 
     # Extentions
-    'Scene.armature.label': 'Armature',
+    'Scene.armature.label': 'アーマチュア',
     'Scene.armature.desc': 'Select the armature which will be used by Cats',
 
-    'Scene.zip_content.label': 'Zip Content',
+    'Scene.zip_content.label': 'コンテンツを圧縮する',
     'Scene.zip_content.desc': 'Select the model you want to import',
 
-    'Scene.keep_upper_chest.label': 'Keep Upper Chest',
+    'Scene.keep_upper_chest.label': '上部の胸の骨を保つ',
     'Scene.keep_upper_chest.desc': 'VRChat now partially supports the Upper Chest bone, so deleting it is no longer necessary.'
                                    '\n\nWARNING: Currently this breaks Eye Tracking, so don\'t check this if you want Eye Tracking',
 
-    'Scene.combine_mats.label': 'Combine Same Materials',
+    'Scene.combine_mats.label': '同じマテリアルを組み合わせる',
     'Scene.combine_mats.desc': 'Combines similar materials into one, reducing draw calls.\n\n'
                                'Your avatar should visibly look the same after this operation.\n'
                                'This is a very important step for optimizing your avatar.\n'
                                'If you have problems with this, uncheck this option and tell us!\n',
 
-    'Scene.remove_zero_weight.label': 'Remove Zero Weight Bones',
+    'Scene.remove_zero_weight.label': 'ゼロウェイトボーンを削除する',
     'Scene.remove_zero_weight.desc': 'Cleans up the bones hierarchy, deleting all bones that don\'t directly affect any vertices.'
                                      '\nUncheck this if bones or vertex groups that you want to keep got deleted',
 
-    'Scene.keep_end_bones.label': 'Keep End Bones',
+    'Scene.keep_end_bones.label': 'エンドボーンを保持',
     'Scene.keep_end_bones.desc': 'Saves end bones from deletion.'
                                  '\n\nThis can improve skirt movement for dynamic bones, but increases the bone count.'
                                  '\nThis can also fix issues with crumbled finger bones in Unity.'
                                  '\nMake sure to always uncheck "Add Leaf Bones" when exporting or use the CATS export button',
 
-    'Scene.keep_twist_bones.label': 'Keep Twist Bones',
+    'Scene.keep_twist_bones.label': 'ツイストボーンを保持',
     'Scene.keep_twist_bones.desc': 'This will keep any bone with "Twist" in the name.'
                                    '\nSo if there are certain bones that you want to keep, you can add "Twist" to them and they won\'t get deleted.'
                                    '\n\nVRChat can now make use of twist bones, so you can use this option to keep them',
 
-    'Scene.fix_twist_bones.label': 'Fix MMD Twist Bones',
+    'Scene.fix_twist_bones.label': 'MMDツイスト ボーンを修正する',
     'Scene.fix_twist_bones.desc': 'This will make MMD arm twist bones usable in VRChat.'
                                   '\nWIll only work if the twist bones are properly named.'
                                   '\nRequired names:'
@@ -830,7 +830,7 @@ dictionary = {
                                   '\n  - HandTwist[1-3]_[L/R]'
                                   '\n\nYou don\'t need to enable "Keep Twist Bones" for this to work',
 
-    'Scene.join_meshes.label': 'Join Meshes',
+    'Scene.join_meshes.label': 'メッシュを結合する',
     'Scene.join_meshes.desc': 'Joins all meshes of this model together.'
                               '\nIt also:'
                               '\n  - Applies all transformations'
@@ -840,46 +840,46 @@ dictionary = {
                               '\n'
                               '\nINFO: You should always join your meshes',
 
-    'Scene.connect_bones.label': 'Connect Bones',
+    'Scene.connect_bones.label': 'ボーンを接続する',
     'Scene.connect_bones.desc': 'This connects all bones to their child bone if they have exactly one child bone.\n'
                                 'This will not change how the bones function in any way, it just improves the aesthetic of the armature',
 
-    'Scene.fix_materials.label': 'Fix Materials',
+    'Scene.fix_materials.label': 'マテリアルを修正する',
     'Scene.fix_materials.desc': 'This will apply some VRChat related fixes to materials',
 
-    'Scene.remove_rigidbodies_joints.label': 'Remove Rigidbodies and Joints',
+    'Scene.remove_rigidbodies_joints.label': 'リジッドボディとジョイントを除去',
     'Scene.remove_rigidbodies_joints.desc': 'Rigidbodies and joints are used by MMD software to simulate physics.'
                                             '\nThey are completely useless for VRChat, so removing them is recommended for VRChat users!',
 
-    'Scene.use_google_only.label': 'Use Old Translations (not recommended)',
+    'Scene.use_google_only.label': '古い翻訳を使用する(推奨しません)',
     'Scene.use_google_only.desc': 'Ignores the internal dictionary and only uses the Google Translator for shape key translations.'
                                   '\n'
                                   '\nThis will result in slower translation speed and worse translations, but the translations will be like in CATS version 0.9.0 and older.'
                                   '\nOnly use this if you have animations which rely on the old translations and you don\'t want to convert them to the new ones',
 
-    'Scene.show_more_options.label': 'Show More Options',
+    'Scene.show_more_options.label': 'その他のオプションを表示',
     'Scene.show_more_options.desc': 'Shows more model options',
 
-    'Scene.merge_mode.label': 'Merge Mode',
+    'Scene.merge_mode.label': 'マージモード',
     'Scene.merge_mode.desc': 'Mode',
-    'Scene.merge_mode.armature.label': 'Merge Armatures',
+    'Scene.merge_mode.armature.label': 'アーマチュアをマージ',
     'Scene.merge_mode.armature.desc': 'Here you can merge two armatures together.',
-    'Scene.merge_mode.mesh.label': 'Attach Mesh',
+    'Scene.merge_mode.mesh.label': 'メッシュを取り付ける',
     'Scene.merge_mode.mesh.desc': 'Here you can attach a mesh to an armature.',
 
-    'Scene.merge_armature_into.label': 'Base Armature',
+    'Scene.merge_armature_into.label': 'ベースアーマチュア',
     'Scene.merge_armature_into.desc': 'Select the armature into which the other armature will be merged\n',
 
-    'Scene.merge_armature.label': 'Merge Armature',
+    'Scene.merge_armature.label': 'メッシュを取り付ける',
     'Scene.merge_armature.desc': 'Select the armature which will be merged into the selected armature above\n',
 
-    'Scene.attach_to_bone.label': 'Attach to Bone',
+    'Scene.attach_to_bone.label': '骨に取り付ける',
     'Scene.attach_to_bone.desc': 'Select the bone to which the armature will be attached to\n',
 
-    'Scene.attach_mesh.label': 'Attach Mesh',
+    'Scene.attach_mesh.label': 'メッシュを取り付ける',
     'Scene.attach_mesh.desc': 'Select the mesh which will be attached to the selected bone in the selected armature\n',
 
-    'Scene.merge_same_bones.label': 'Merge All Bones',
+    'Scene.merge_same_bones.label': 'すべてのボーンをマージ',
     'Scene.merge_same_bones.desc': 'Merges all bones together that have the same name instead of only the base bones (Hips, Spine, etc).'
                                    '\nYou will have to make sure that all the bones you want to merge have the same name.'
                                    '\n'
@@ -889,57 +889,57 @@ dictionary = {
                                    '\nThis can have unintended side effects, so check your model afterwards!'
                                    '\n',
 
-    'Scene.apply_transforms.label': 'Apply Transforms',
+    'Scene.apply_transforms.label': '変換を適用する',
     'Scene.apply_transforms.desc': 'Check this if both armatures and meshes are already at their correct positions.'
                                    '\nThis will cause them to stay exactly where they are when merging',
 
-    'Scene.merge_armatures_join_meshes.label': 'Join Meshes',
+    'Scene.merge_armatures_join_meshes.label': 'メッシュを結合する',
     'Scene.merge_armatures_join_meshes.desc': 'This will join all meshes.'
                                               '\nNot checking this will always apply transforms',
 
-    'Scene.merge_armatures_remove_zero_weight_bones.label': 'Remove Zero Weight Bones',
+    'Scene.merge_armatures_remove_zero_weight_bones.label': 'ゼロウェイトボーンを削除する',
     'Scene.merge_armatures_remove_zero_weight_bones.desc': 'Cleans up the bones hierarchy, deleting all bones that don\'t directly affect any vertices.'
                                                            '\nUncheck this if bones or vertex groups that you want to keep got deleted',
     # Decimation
-    'Scene.decimation_mode.label': 'Decimation Mode',
+    'Scene.decimation_mode.label': '単純化モード',
     'Scene.decimation_mode.desc': 'Decimation Mode',
-    'Scene.decimation_mode.safe.label': 'Safe',
+    'Scene.decimation_mode.safe.label': '安全',
     'Scene.decimation_mode.safe.desc': 'Decent results - no shape key loss\n'
                                        '\n'
                                        'This will only decimate meshes with no shape keys.\n'
                                        'The results are decent and you won\'t lose any shape keys.\n'
                                        'Eye Tracking and Lip Syncing will be fully preserved.',
-    'Scene.decimation_mode.half.label': 'Half',
+    'Scene.decimation_mode.half.label': 'ハーフ',
     'Scene.decimation_mode.half.desc': 'Good results - minimal shape key loss\n'
                                        '\n'
                                        'This will only decimate meshes with less than 4 shape keys as those are often not used.\n'
                                        'The results are better but you will lose the shape keys in some meshes.\n'
                                        'Eye Tracking and Lip Syncing should still work.',
-    'Scene.decimation_mode.full.label': 'Full',
+    'Scene.decimation_mode.full.label': 'フル',
     'Scene.decimation_mode.full.desc': 'Best results - full shape key loss\n'
                                        '\n'
                                        'This will decimate your whole model deleting all shape keys in the process.\n'
                                        'This will give the best results but you will lose the ability to add blinking and Lip Syncing.\n'
                                        'Eye Tracking will still work if you disable Eye Blinking.',
-    'Scene.decimation_mode.custom.label': 'Custom',
+    'Scene.decimation_mode.custom.label': 'カスタム',
     'Scene.decimation_mode.custom.desc': 'Custom results - custom shape key loss\n'
                                          '\n'
                                          'This will let you choose which meshes and shape keys should not be decimated.\n',
 
-    'Scene.selection_mode.label': 'Selection Mode',
+    'Scene.selection_mode.label': '選択モード',
     'Scene.selection_mode.desc': 'Selection Mode',
-    'Scene.selection_mode.shapekeys.label': 'Shape Keys',
+    'Scene.selection_mode.shapekeys.label': 'シェイプキー',
     'Scene.selection_mode.shapekeys.desc': 'Select all the shape keys you want to preserve here.',
-    'Scene.selection_mode.meshes.label': 'Meshes',
+    'Scene.selection_mode.meshes.label': 'メッシュ',
     'Scene.selection_mode.meshes.desc': 'Select all the meshes you don\'t want to decimate here.',
 
-    'Scene.add_shape_key.label': 'Shape',
+    'Scene.add_shape_key.label': '形状',
     'Scene.add_shape_key.desc': 'The shape key you want to keep',
 
-    'Scene.add_mesh.label': 'Mesh',
+    'Scene.add_mesh.label': 'メッシュ',
     'Scene.add_mesh.desc': 'The mesh you want to leave untouched by the decimation',
 
-    'Scene.decimate_fingers.label': 'Save Fingers',
+    'Scene.decimate_fingers.label': '指を救う',
     'Scene.decimate_fingers.desc': 'Check this if you don\'t want to decimate your fingers!\n'
                                    'Results will be worse but there will be no issues with finger movement.\n'
                                    'This is probably only useful if you have a VR headset.\n'
@@ -951,7 +951,7 @@ dictionary = {
                                    'RingFinger(1-3)_(L/R)\n'
                                    'LittleFinger(1-3)_(L/R)',
 
-    'Scene.decimate_hands.label': 'Save Hands',
+    'Scene.decimate_hands.label': '手を救う',
     'Scene.decimate_hands.desc': 'Check this if you don\'t want to decimate your full hands!\n'
                                  'Results will be worse but there will be no issues with hand movement.\n'
                                  'This is probably only useful if you have a VR headset.\n'
@@ -964,152 +964,152 @@ dictionary = {
                                  'RingFinger(1-3)_(L/R)\n'
                                  'LittleFinger(1-3)_(L/R)',
 
-    'Scene.decimation_remove_doubles.label': 'Remove Doubles',
+    'Scene.decimation_remove_doubles.label': '重複を削除',
     'Scene.decimation_remove_doubles.desc': 'Uncheck this if you got issues with with this checked',
 
-    'Scene.max_tris.label': 'Tris',
+    'Scene.max_tris.label': 'トリス',
     'Scene.max_tris.desc': 'The target amount of tris after decimation',
     # Eye Tracking
-    'Scene.eye_mode.label': 'Eye Mode',
+    'Scene.eye_mode.label': 'アイモード',
     'Scene.eye_mode.desc': 'Mode',
-    'Scene.eye_mode.creation.label': 'Creation',
+    'Scene.eye_mode.creation.label': '創作',
     'Scene.eye_mode.creation.desc': 'Here you can create eye tracking.',
-    'Scene.eye_mode.testing.label': 'Testing',
+    'Scene.eye_mode.testing.label': 'テスティング',
     'Scene.eye_mode.testing.desc': 'Here you can test how eye tracking will look in-game.',
 
-    'Scene.mesh_name_eye.label': 'Mesh',
+    'Scene.mesh_name_eye.label': 'メッシュ',
     'Scene.mesh_name_eye.desc': 'The mesh with the eyes vertex groups',
 
-    'Scene.head.label': 'Head',
+    'Scene.head.label': '頭',
     'Scene.head.desc': 'The head bone containing the eye bones',
 
-    'Scene.eye_left.label': 'Left Eye',
+    'Scene.eye_left.label': '左目',
     'Scene.eye_left.desc': 'The models left eye bone',
 
-    'Scene.eye_right.label': 'Right Eye',
+    'Scene.eye_right.label': '右目',
     'Scene.eye_right.desc': 'The models right eye bone',
 
-    'Scene.wink_left.label': 'Blink Left',
+    'Scene.wink_left.label': '左点滅',
     'Scene.wink_left.desc': 'The shape key containing a blink with the left eye',
 
-    'Scene.wink_right.label': 'Blink Right',
+    'Scene.wink_right.label': '右点滅',
     'Scene.wink_right.desc': 'The shape key containing a blink with the right eye',
 
-    'Scene.lowerlid_left.label': 'Lowerlid Left',
+    'Scene.lowerlid_left.label': '下まぶた左',
     'Scene.lowerlid_left.desc': 'The shape key containing a slightly raised left lower lid.\n'
                                 'Can be set to "Basis" to disable lower lid movement',
 
-    'Scene.lowerlid_right.label': 'Lowerlid Right',
+    'Scene.lowerlid_right.label': '下まぶた右',
     'Scene.lowerlid_right.desc': 'The shape key containing a slightly raised right lower lid.\n'
                                  'Can be set to "Basis" to disable lower lid movement',
 
-    'Scene.disable_eye_movement.label': 'Disable Eye Movement',
+    'Scene.disable_eye_movement.label': '目の動きを無効にする',
     'Scene.disable_eye_movement.desc': 'IMPORTANT: Do your decimation first if you check this!\n'
                                        '\n'
                                        'Disables eye movement. Useful if you only want blinking.\n'
                                        'This creates eye bones with no movement bound to them.\n'
                                        'You still have to assign "LeftEye" and "RightEye" to the eyes in Unity',
 
-    'Scene.disable_eye_blinking.label': 'Disable Eye Blinking',
+    'Scene.disable_eye_blinking.label': '瞬きを無効にする',
     'Scene.disable_eye_blinking.desc': 'Disables eye blinking. Useful if you only want eye movement.\n'
                                        'This will create the necessary shape keys but leaves them empty',
 
-    'Scene.eye_distance.label': 'Eye Movement Range',
+    'Scene.eye_distance.label': '眼球運動範囲',
     'Scene.eye_distance.desc': 'Higher = more eye movement\n'
                                'Lower = less eye movement\n'
                                'Warning: Too little or too much range can glitch the eyes.\n'
                                'Test your results in the "Eye Testing"-Tab!\n',
 
-    'Scene.eye_rotation_x.label': 'Up - Down',
+    'Scene.eye_rotation_x.label': '上 - 下',
     'Scene.eye_rotation_x.desc': 'Rotate the eye bones on the vertical axis',
 
-    'Scene.eye_rotation_y.label': 'Left - Right',
+    'Scene.eye_rotation_y.label': '左 - 右',
     'Scene.eye_rotation_y.desc': 'Rotate the eye bones on the horizontal axis.'
                                  '\nThis is from your own point of view',
 
-    'Scene.iris_height.label': 'Iris Height',
+    'Scene.iris_height.label': 'アイリスの高さ',
     'Scene.iris_height.desc': 'Moves the iris away from the eye ball',
 
-    'Scene.eye_blink_shape.label': 'Blink Strength',
+    'Scene.eye_blink_shape.label': 'まばたきの強さ',
     'Scene.eye_blink_shape.desc': 'Test the blinking of the eye',
 
-    'Scene.eye_lowerlid_shape.label': 'Lowerlid Strength',
+    'Scene.eye_lowerlid_shape.label': '下まぶたの強さ',
     'Scene.eye_lowerlid_shape.desc': 'Test the lowerlid blinking of the eye',
 
-    'Scene.mesh_name_viseme.label': 'Mesh',
+    'Scene.mesh_name_viseme.label': 'メッシュ',
     'Scene.mesh_name_viseme.desc': 'The mesh with the mouth shape keys',
     # Visemes
-    'Scene.mouth_a.label': 'Viseme AA',
+    'Scene.mouth_a.label': 'バイセム AA',
     'Scene.mouth_a.desc': 'Shape key containing mouth movement that looks like someone is saying "aa".\nDo not put empty shape keys like "Basis" in here',
 
-    'Scene.mouth_o.label': 'Viseme OH',
+    'Scene.mouth_o.label': 'バイセム OH',
     'Scene.mouth_o.desc': 'Shape key containing mouth movement that looks like someone is saying "oh".\nDo not put empty shape keys like "Basis" in here',
 
-    'Scene.mouth_ch.label': 'Viseme CH',
+    'Scene.mouth_ch.label': 'バイセム CH',
     'Scene.mouth_ch.desc': 'Shape key containing mouth movement that looks like someone is saying "ch". Opened lips and clenched teeth.\nDo not put empty shape keys like "Basis" in here',
 
-    'Scene.shape_intensity.label': 'Shape Key Mix Intensity',
+    'Scene.shape_intensity.label': 'シェイプキーミックスの強度',
     'Scene.shape_intensity.desc': 'Controls the strength in the creation of the shape keys. Lower for less mouth movement strength',
     # Bone Parenting
-    'Scene.root_bone.label': 'To Parent',
+    'Scene.root_bone.label': '親に',
     'Scene.root_bone.desc': 'List of bones that look like they could be parented together to a root bone',
     # Optimize
-    'Scene.optimize_mode.label': 'Optimize Mode',
+    'Scene.optimize_mode.label': '最適化モード',
     'Scene.optimize_mode.desc': 'Mode',
-    'Scene.optimize_mode.atlas.label': 'Atlas',
+    'Scene.optimize_mode.atlas.label': 'アトラス',
     'Scene.optimize_mode.atlas.desc': 'Allows you to make a texture atlas.',
-    'Scene.optimize_mode.material.label': 'Material',
+    'Scene.optimize_mode.material.label': 'マテリアル',
     'Scene.optimize_mode.material.desc': 'Some various options on material manipulation.',
-    'Scene.optimize_mode.bonemerging.label': 'Bone Merging',
+    'Scene.optimize_mode.bonemerging.label': '骨のマージ',
     'Scene.optimize_mode.bonemerging.desc': 'Allows child bones to be merged into their parents.',
     # Bone Merging
-    'Scene.merge_ratio.label': 'Merge Ratio',
+    'Scene.merge_ratio.label': 'マージ率',
     'Scene.merge_ratio.desc': 'Higher = more bones will be merged\n'
                               'Lower = less bones will be merged\n',
 
-    'Scene.merge_mesh.label': 'Mesh',
+    'Scene.merge_mesh.label': 'メッシュ',
     'Scene.merge_mesh.desc': 'The mesh with the bones vertex groups',
 
-    'Scene.merge_bone.label': 'To Merge',
+    'Scene.merge_bone.label': 'マージするには',
     'Scene.merge_bone.desc': 'List of bones that look like they could be merged together to reduce overall bones',
 
-    'Scene.embed_textures.label': 'Embed Textures on Export',
+    'Scene.embed_textures.label': 'エクスポート時にテクスチャを埋め込む',
     'Scene.embed_textures.desc': 'Enable this to embed the texture files into the FBX file upon export.'
                                  '\nUnity will automatically extract these textures and put them into a separate folder.'
                                  '\nThis might not work for everyone and it increases the file size of the exported FBX file',
 
-    'Scene.use_custom_mmd_tools.label': 'Use Custom mmd_tools',
+    'Scene.use_custom_mmd_tools.label': 'カスタムmmd_toolsを使用する',
     'Scene.use_custom_mmd_tools.desc': 'Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools',
 
-    'Scene.debug_translations.label': 'Debug Google Translations',
+    'Scene.debug_translations.label': 'Google翻訳をデバッグ',
     'Scene.debug_translations.desc': 'Tests the Google Translations and prints the Google response in case of error',
 
     # Updater
-    'CheckForUpdateButton.label': 'Check now for Update',
+    'CheckForUpdateButton.label': '今すぐアップデートを確認',
     'CheckForUpdateButton.desc': 'Checks if a new update is available for CATS',
 
-    'UpdateToLatestButton.label': 'Update Now',
+    'UpdateToLatestButton.label': '今すぐアップデート',
     'UpdateToLatestButton.desc': 'Update CATS to the latest version',
 
-    'UpdateToSelectedButton.label': 'Update to Selected version',
+    'UpdateToSelectedButton.label': '選択したバージョンに更新',
     'UpdateToSelectedButton.desc': 'Update CATS to the selected version',
 
-    'UpdateToDevButton.label': 'Update to Development version',
+    'UpdateToDevButton.label': '開発版に更新',
     'UpdateToDevButton.desc': 'Update CATS to the Development version',
 
-    'RemindMeLaterButton.label': 'Remind me later',
+    'RemindMeLaterButton.label': '後で通知する',
     'RemindMeLaterButton.desc': 'This hides the update notification \'til the next Blender restart',
     'RemindMeLaterButton.success': 'You will be reminded later',
 
-    'IgnoreThisVersionButton.label': 'Ignore this version',
+    'IgnoreThisVersionButton.label': 'このバージョンを無視',
     'IgnoreThisVersionButton.desc': 'This ignores this version. You will be reminded again when the next version releases',
     'IgnoreThisVersionButton.success': 'Version {name} will be ignored.',
 
-    'ShowPatchnotesPanel.label': 'Patchnotes',
+    'ShowPatchnotesPanel.label': 'パッチノート',
     'ShowPatchnotesPanel.desc': 'Shows the patchnotes of the selected version',
     'ShowPatchnotesPanel.releaseDate': 'Released: {date}',
 
-    'ConfirmUpdatePanel.label': 'Confirm Update',
+    'ConfirmUpdatePanel.label': 'アップデートを確認',
     'ConfirmUpdatePanel.desc': 'This shows you a panel in which you have to confirm your update choice',
     'ConfirmUpdatePanel.warn.dev1': 'Warning:',
     'ConfirmUpdatePanel.warn.dev2': ' The development version of CATS if the place where',
@@ -1119,17 +1119,17 @@ dictionary = {
     'ConfirmUpdatePanel.ShowPatchnotesPanel.label': 'Show Patchnotes',
     'ConfirmUpdatePanel.updateNow': 'Update now:',
 
-    'UpdateCompletePanel.label': 'Installation Report',
+    'UpdateCompletePanel.label': 'インストールレポート',
     'UpdateCompletePanel.desc': 'The update is now complete',
     'UpdateCompletePanel.success1': 'CATS was successfully updated.',
     'UpdateCompletePanel.success2': 'Restart Blender to complete the update.',
     'UpdateCompletePanel.failure1': 'Update failed.',
     'UpdateCompletePanel.failure2': 'See Updater Panel for more info.',
 
-    'UpdateNotificationPopup.label': 'Update available',
+    'UpdateNotificationPopup.label': 'アップデートが利用可能です',
     'UpdateNotificationPopup.desc': 'This shows you that an update is available',
     'UpdateNotificationPopup.newUpdate': 'CATS v{name} available!',
-    'UpdateNotificationPopup.ShowPatchnotesPanel.label': 'Show Patchnotes',
+    'UpdateNotificationPopup.ShowPatchnotesPanel.label': 'パッチノートを見る',
 
     'check_for_update.cantCheck': 'Could not check for updates, try again later',
 
@@ -1139,31 +1139,31 @@ dictionary = {
 
     'draw_update_notification_panel.success': 'Restart Blender to complete update!',
     'draw_update_notification_panel.newUpdate': 'CATS v{name} available!',
-    'draw_update_notification_panel.UpdateToLatestButton.label': 'Update Now',
-    'draw_update_notification_panel.RemindMeLaterButton.label': 'Remind me later',
-    'draw_update_notification_panel.IgnoreThisVersionButton.label': 'Ignore this version',
+    'draw_update_notification_panel.UpdateToLatestButton.label': '今すぐアップデート',
+    'draw_update_notification_panel.RemindMeLaterButton.label': '後で通知する',
+    'draw_update_notification_panel.IgnoreThisVersionButton.label': 'このバージョンを無視',
 
     'draw_updater_panel.updateLabel': 'Updates:',
     'draw_updater_panel.updateLabel_alt': 'CATS Updater:',
     'draw_updater_panel.success': 'Restart Blender to complete update!',
-    'draw_updater_panel.CheckForUpdateButton.label': 'Checking..',
-    'draw_updater_panel.UpdateToLatestButton.label': 'Update now to {name}',
-    'draw_updater_panel.CheckForUpdateButton.label_alt': 'Check now for Update',
-    'draw_updater_panel.UpdateToLatestButton.label_alt': 'Up to Date!',
-    'draw_updater_panel.UpdateToSelectedButton.label': 'Install version:',
-    'draw_updater_panel.UpdateToDevButton.label': 'Install Development Version',
+    'draw_updater_panel.CheckForUpdateButton.label': 'チェック中..',
+    'draw_updater_panel.UpdateToLatestButton.label': '今すぐ{name}に更新する',
+    'draw_updater_panel.CheckForUpdateButton.label_alt': '今すぐアップデートを確認',
+    'draw_updater_panel.UpdateToLatestButton.label_alt': '最新の!',
+    'draw_updater_panel.UpdateToSelectedButton.label': 'インストールバージョン:',
+    'draw_updater_panel.UpdateToDevButton.label': '開発バージョンのインストール',
     'draw_updater_panel.currentVersion': 'Current version: {name}',
 
-    'bpy.types.Scene.cats_updater_version_list.label': 'Version',
+    'bpy.types.Scene.cats_updater_version_list.label': 'バージョン',
     'bpy.types.Scene.cats_updater_version_list.desc': 'Select the version you want to install\n',
 
-    'bpy.types.Scene.cats_update_action.label': 'Choose action',
+    'bpy.types.Scene.cats_update_action.label': 'アクションを選択',
     'bpy.types.Scene.cats_update_action.desc': 'Action',
-    'bpy.types.Scene.cats_update_action.update.label': 'Update Now',
+    'bpy.types.Scene.cats_update_action.update.label': '今すぐアップデート',
     'bpy.types.Scene.cats_update_action.update.desc': 'Updates now to the latest version',
-    'bpy.types.Scene.cats_update_action.ignore.label': 'Ignore this version',
+    'bpy.types.Scene.cats_update_action.ignore.label': 'このバージョンを無視',
     'bpy.types.Scene.cats_update_action.ignore.desc': 'This ignores this version. You will be reminded again when the next version releases',
-    'bpy.types.Scene.cats_update_action.defer.label': 'Remind me later',
+    'bpy.types.Scene.cats_update_action.defer.label': '後で通知する',
     'bpy.types.Scene.cats_update_action.defer.desc': 'Hides the update notification til the next Blender restart',
 
 
