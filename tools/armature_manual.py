@@ -1108,7 +1108,7 @@ class FixVRMShapesButton(bpy.types.Operator):
                     shapekeys_to_merge_eyes[post_name].append(shapekey.name)
 
             elif post_name in shapekeys_to_merge_mouth.keys():
-                if pre_name == 'kuti_face.f' or pre_name == 'kuti_ha.ha' or pre_name == 'kuti_sita.t':
+                if pre_name == 'kuti_face.f' or (pre_name == 'kuti_ha.ha' and pre_name != 'kuti_ha.ha00_e_s_op') or (pre_name == 'kuti_sita.t' and pre_name != 'kuti_sita.t00_e_s_op'):
                     shapekeys_to_merge_mouth[post_name].append(shapekey.name)
 
         # Merge all the shape keys
