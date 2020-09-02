@@ -288,6 +288,16 @@ def set_default_stage():
     return armature
 
 
+def apply_modifier(mod, as_shapekey=False):
+    if bpy.app.version < (2, 90):
+        bpy.ops.object.modifier_apply(apply_as='SHAPE' if as_shapekey else 'DATA', modifier=mod.name)
+    else:
+        if as_shapekey:
+            bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=mod.name)
+        else:
+            bpy.ops.object.modifier_apply(modifier=mod.name)
+
+
 def remove_bone(find_bone):
     armature = get_armature()
     switch('EDIT')
@@ -793,12 +803,12 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
                 if has_shapekeys(mesh):
                     bpy.ops.object.shape_key_remove(all=True)
-                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+                apply_modifier(mod)
             elif mod.type == 'SUBSURF':
                 mesh.modifiers.remove(mod)
             elif mod.type == 'MIRROR':
                 if not has_shapekeys(mesh):
-                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+                    apply_modifier(mod)
 
         # Standardize UV maps name
         if version_2_79_or_older():
@@ -1739,7 +1749,7 @@ def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, mix_mode='ADD', delete_o
     mod.mix_mode = mix_mode
     mod.mix_set = 'B'
     mod.mask_constant = mix_strength
-    bpy.ops.object.modifier_apply(modifier=mod.name)
+    apply_modifier(mod)
     if delete_old_vg:
         mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
     mesh.active_shape_key_index = 0  # This line fixes a visual bug in 2.80 which causes random weights to be stuck after being merged

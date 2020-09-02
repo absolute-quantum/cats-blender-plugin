@@ -303,6 +303,7 @@ It checks for a new version automatically once every day.
 #### 0.17.1
 - Changed link to a new vrm importer since the old one dropped support
 - Fixed bug in "Apply as Rest Pose" and "Pose to Shape Key" in Blender 2.90
+- More fixes for Blender 2.90
 
 #### 0.17.0
 - **Cats is now fully compatible with Blender 2.83!**
