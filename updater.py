@@ -377,7 +377,7 @@ def check_for_update():
     print('Checking for Cats update...')
 
     # Get all releases from Github
-    if not get_github_releases('Darkblader24') and not get_github_releases('michaeldegroot'):
+    if not get_github_releases('Darkblader24') and not get_github_releases('GiveMeAllYourCats'):
         finish_update_checking(error='Could not check for updates, try again later')
         return
 

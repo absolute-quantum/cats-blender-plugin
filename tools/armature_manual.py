@@ -190,7 +190,11 @@ def pose_to_shapekey(name):
         # Apply armature mod
         mod = mesh.modifiers.new(name, 'ARMATURE')
         mod.object = Common.get_armature()
-        bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+
+        if bpy.app.version < (2, 90):
+            bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+        else:
+            bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=mod.name)
 
     armature = Common.set_default_stage()
     Common.switch('POSE')
