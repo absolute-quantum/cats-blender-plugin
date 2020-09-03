@@ -182,7 +182,7 @@ class FixArmature(bpy.types.Operator):
 
                     mod = mesh.modifiers.new(morph.name, 'ARMATURE')
                     mod.object = armature
-                    bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
+                    Common.apply_modifier(mod, as_shapekey=True)
                 wm.progress_end()
 
         # Perform source engine specific operations

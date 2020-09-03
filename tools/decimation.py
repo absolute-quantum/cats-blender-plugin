@@ -312,7 +312,7 @@ class AutoDecimateButton(bpy.types.Operator):
             mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
             mod.ratio = decimation
             mod.use_collapse_triangulate = True
-            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+            Common.apply_modifier(mod)
 
             tris_after = len(mesh_obj.data.polygons)
             print(tris)
@@ -349,7 +349,7 @@ class AutoDecimateButton(bpy.types.Operator):
         #         mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
         #         mod.ratio = decimation
         #         mod.use_collapse_triangulate = True
-        #         bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+        #         Common.apply_modifier(mod)
         #
         #         Common.unselect_all()
         #         break
