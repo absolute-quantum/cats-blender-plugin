@@ -1994,9 +1994,15 @@ def fix_vrm_shader(mesh):
                     node.location[0] = 200
                     node.inputs['ReceiveShadow_Texture_alpha'].default_value = -10000
                     node.inputs['ShadeTexture'].default_value = (1.0, 1.0, 1.0, 1.0)
-                    node.inputs['NomalmapTexture'].default_value = (1.0, 1.0, 1.0, 1.0)
                     node.inputs['Emission_Texture'].default_value = (0.0, 0.0, 0.0, 0.0)
                     node.inputs['SphereAddTexture'].default_value = (0.0, 0.0, 0.0, 0.0)
+
+                    # Support typo in old vrm importer
+                    node_input = node.inputs.get('NomalmapTexture')
+                    if not node_input:
+                        node_input = node.inputs.get('NormalmapTexture')
+                    node_input.default_value = (1.0, 1.0, 1.0, 1.0)
+
                     is_vrm_mat = True
                     break
             if not is_vrm_mat:
