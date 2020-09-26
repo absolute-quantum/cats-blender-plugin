@@ -4,12 +4,13 @@ from .main import ToolPanel
 from ..tools import supporter as Supporter
 from ..tools.register import register_wrap
 from ..tools.supporter import check_for_update_background
+from ..translations import t
 
 
 @register_wrap
 class SupporterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_supporter_v3'
-    bl_label = 'Supporters'
+    bl_label = t('SupporterPanel.label')
 
     def draw(self, context):
         layout = self.layout
@@ -20,7 +21,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         check_for_update_background()
 
         row = col.row(align=True)
-        row.label(text='Do you like this plugin and want to support us?')
+        row.label(text=t('SupporterPanel.desc'))
         row = col.row(align=True)
         row.scale_y = 1.2
         row.operator(Supporter.PatreonButton.bl_idname, icon_value=Supporter.preview_collections["custom_icons"]["heart1"].icon_id)
@@ -30,7 +31,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         row = col.row(align=True)
-        row.label(text='Thanks to our awesome supporters! <3')
+        row.label(text=t('SupporterPanel.thanks'))
         col.separator()
 
         supporter_count = draw_supporter_list(col, show_tier=1)
@@ -43,10 +44,10 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.scale_y = 1.2
-        row.label(text='Is your name missing?', icon="INFO")
+        row.label(text=t('SupporterPanel.missingName1'), icon="INFO")
         row = col.row(align=True)
         row.scale_y = 0.3
-        row.label(text='     Please contact us in our discord!')
+        row.label(text=t('SupporterPanel.missingName2'))
         col.separator()
         row = col.row(align=True)
         row.scale_y = 0.8

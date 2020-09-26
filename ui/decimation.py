@@ -7,12 +7,13 @@ from ..tools import common as Common
 from ..tools import decimation as Decimation
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class DecimationPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_decimation_v3'
-    bl_label = 'Decimation'
+    bl_label = t('DecimationPanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -27,31 +28,31 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         # row.label(text='It works but it might not look good. Test for yourself.')
         # col.separator()
         row = col.row(align=True)
-        row.label(text='Decimation Mode:')
+        row.label(text=t('DecimationPanel.decimationMode'))
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_mode', expand=True)
         row = col.row(align=True)
         row.scale_y = 0.7
         if context.scene.decimation_mode == 'SAFE':
-            row.label(text=' Decent results - No shape key loss')
+            row.label(text=t('DecimationPanel.safeModeDesc'))
         elif context.scene.decimation_mode == 'HALF':
-            row.label(text=' Good results - Minimal shape key loss')
+            row.label(text=t('DecimationPanel.halfModeDesc'))
         elif context.scene.decimation_mode == 'FULL':
-            row.label(text=' Best results - Full shape key loss')
+            row.label(text=t('DecimationPanel.fullModeDesc'))
 
         elif context.scene.decimation_mode == 'CUSTOM':
             col.separator()
 
             if len(Common.get_meshes_objects(check=False)) <= 1:
                 row = col.row(align=True)
-                row.label(text='Start by Separating by Materials:')
+                row.label(text=t('DecimationPanel.customSeparateMaterials'))
                 row = col.row(align=True)
                 row.scale_y = 1.2
-                row.operator(Armature_manual.SeparateByMaterials.bl_idname, text='Separate by Materials', icon='PLAY')
+                row.operator(Armature_manual.SeparateByMaterials.bl_idname, text=t('DecimationPanel.SeparateByMaterials.label'), icon='PLAY')
                 return
             else:
                 row = col.row(align=True)
-                row.label(text='Stop by Joining Meshes:')
+                row.label(text=t('DecimationPanel.customJoinMeshes'))
                 row = col.row(align=True)
                 row.scale_y = 1.2
                 row.operator(Armature_manual.JoinMeshes.bl_idname, icon='PAUSE')
@@ -59,7 +60,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
             row = col.row(align=True)
-            row.label(text='Whitelisted:')
+            row.label(text=t('DecimationPanel.customWhitelist'))
             row = col.row(align=True)
             row.prop(context.scene, 'selection_mode', expand=True)
             col.separator()
@@ -75,7 +76,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 col = box2.column(align=True)
 
                 if len(Decimation.ignore_shapes) == 0:
-                    col.label(text='No shape key selected')
+                    col.label(text=t('DecimationPanel.warn.noShapekeySelected'))
 
                 for shape in Decimation.ignore_shapes:
                     row = layout_split(col, factor=0.8, align=False)
@@ -90,13 +91,13 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
 
                 if context.scene.add_mesh == '':
                     row = col.row(align=True)
-                    col.label(text='Every mesh is selected. This equals no Decimation.', icon='ERROR')
+                    col.label(text=t('DecimationPanel.warn.noDecimation'), icon='ERROR')
 
                 box2 = col.box()
                 col = box2.column(align=True)
 
                 if len(Decimation.ignore_meshes) == 0:
-                    col.label(text='No mesh selected')
+                    col.label(text=t('DecimationPanel.warn.noMeshSelected'))
 
                 for mesh in Decimation.ignore_meshes:
                     row = layout_split(col, factor=0.8, align=False)
@@ -107,10 +108,10 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
             col = box.column(align=True)
 
             if len(Decimation.ignore_shapes) == 0 and len(Decimation.ignore_meshes) == 0:
-                col.label(text='Both lists are empty, this equals Full Decimation!', icon='ERROR')
+                col.label(text=t('DecimationPanel.warn.emptyList'), icon='ERROR')
                 row = col.row(align=True)
             else:
-                col.label(text='Both whitelists are considered during decimation', icon='INFO')
+                col.label(text=t('DecimationPanel.warn.correctWhitelist'), icon='INFO')
                 row = col.row(align=True)
 
             # # row = col.row(align=True)

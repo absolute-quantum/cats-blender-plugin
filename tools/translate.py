@@ -40,6 +40,7 @@ from .register import register_wrap
 from .. import globs
 from ..googletrans import Translator
 from mmd_tools_local import translations
+from ..translations import t
 
 dictionary = None
 dictionary_google = None
@@ -53,13 +54,13 @@ dictionary_google_file = os.path.join(resources_dir, "dictionary_google.json")
 @register_wrap
 class TranslateShapekeyButton(bpy.types.Operator):
     bl_idname = 'cats_translate.shapekeys'
-    bl_label = 'Translate Shape Keys'
-    bl_description = "Translates all shape keys using the internal dictionary and Google Translate"
+    bl_label = t('TranslateShapekeyButton.label')
+    bl_description = t('TranslateShapekeyButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         if bpy.app.version < (2, 79, 0):
-            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            self.report({'ERROR'}, t('TranslateX.error.wrongVersion'))
             return {'FINISHED'}
 
         saved_data = Common.SavedData()
@@ -89,15 +90,15 @@ class TranslateShapekeyButton(bpy.types.Operator):
 
         saved_data.load()
 
-        self.report({'INFO'}, 'Translated ' + str(i) + ' shape keys.')
+        self.report({'INFO'}, t('TranslateShapekeyButton.success', number=str(i)))
         return {'FINISHED'}
 
 
 @register_wrap
 class TranslateBonesButton(bpy.types.Operator):
     bl_idname = 'cats_translate.bones'
-    bl_label = 'Translate Bones'
-    bl_description = "Translates all bones using the internal dictionary and Google Translate"
+    bl_label = t('TranslateBonesButton.label')
+    bl_description = t('TranslateBonesButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -121,20 +122,20 @@ class TranslateBonesButton(bpy.types.Operator):
                 if translated:
                     count += 1
 
-        self.report({'INFO'}, 'Translated ' + str(count) + ' bones.')
+        self.report({'INFO'}, t('TranslateBonesButton.success', number=str(count)))
         return {'FINISHED'}
 
 
 @register_wrap
 class TranslateObjectsButton(bpy.types.Operator):
     bl_idname = 'cats_translate.objects'
-    bl_label = 'Translate Meshes & Objects'
-    bl_description = "Translates all meshes and objects using the internal dictionary and Google Translate"
+    bl_label = t('TranslateObjectsButton.label')
+    bl_description = t('TranslateObjectsButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         if bpy.app.version < (2, 79, 0):
-            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            self.report({'ERROR'}, t('TranslateX.error.wrongVersion'))
             return {'FINISHED'}
         to_translate = []
         for obj in Common.get_objects():
@@ -165,20 +166,20 @@ class TranslateObjectsButton(bpy.types.Operator):
                     if translated:
                         i += 1
 
-        self.report({'INFO'}, 'Translated ' + str(i) + ' meshes and objects.')
+        self.report({'INFO'}, t('TranslateObjectsButton.success', number=str(i)))
         return {'FINISHED'}
 
 
 @register_wrap
 class TranslateMaterialsButton(bpy.types.Operator):
     bl_idname = 'cats_translate.materials'
-    bl_label = 'Translate Materials'
-    bl_description = "Translates all materials using the internal dictionary and Google Translate"
+    bl_label = t('TranslateMaterialsButton.label')
+    bl_description = t('TranslateMaterialsButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         if bpy.app.version < (2, 79, 0):
-            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            self.report({'ERROR'}, t('TranslateX.error.wrongVersion'))
             return {'FINISHED'}
 
         saved_data = Common.SavedData()
@@ -202,20 +203,20 @@ class TranslateMaterialsButton(bpy.types.Operator):
                         i += 1
 
         saved_data.load()
-        self.report({'INFO'}, 'Translated ' + str(i) + ' materials.')
+        self.report({'INFO'}, t('TranslateMaterialsButton.success', number=str(i)))
         return {'FINISHED'}
 
 
 @register_wrap
 class TranslateTexturesButton(bpy.types.Operator):
     bl_idname = 'cats_translate.textures'
-    bl_label = 'Translate Textures'
-    bl_description = "Translates all textures using the internal dictionary and Google Translate"
+    bl_label = t('TranslateTexturesButton.label')
+    bl_description = t('TranslateTexturesButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
-        self.report({'INFO'}, 'Translated all textures')
+        self.report({'INFO'}, t('TranslateTexturesButton.success_alt'))
         return {'FINISHED'}
 
         translator = Translator()
@@ -233,7 +234,7 @@ class TranslateTexturesButton(bpy.types.Operator):
         try:
             translations = translator.translate(to_translate)
         except SSLError:
-            self.report({'ERROR'}, 'Could not connect to Google. Please check your internet connection.')
+            self.report({'ERROR'}, t('TranslateTexturesButton.error.noInternet'))
             return {'FINISHED'}
 
         for translation in translations:
@@ -250,20 +251,20 @@ class TranslateTexturesButton(bpy.types.Operator):
 
         Common.unselect_all()
 
-        self.report({'INFO'}, 'Translated ' + str(i) + 'textures.')
+        self.report({'INFO'}, t('TranslateTexturesButton.success', number=str(i)))
         return {'FINISHED'}
 
 
 @register_wrap
 class TranslateAllButton(bpy.types.Operator):
     bl_idname = 'cats_translate.all'
-    bl_label = 'Translate Everything'
-    bl_description = "Translates everything using the internal dictionary and Google Translate"
+    bl_label = t('TranslateAllButton.label')
+    bl_description = t('TranslateAllButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         if bpy.app.version < (2, 79, 0):
-            self.report({'ERROR'}, 'You need Blender 2.79 or higher for this function.')
+            self.report({'ERROR'}, t('TranslateX.error.wrongVersion'))
             return {'FINISHED'}
 
         error_shown = False
@@ -298,7 +299,7 @@ class TranslateAllButton(bpy.types.Operator):
 
         if error_shown:
             return {'CANCELLED'}
-        self.report({'INFO'}, 'Translated everything.')
+        self.report({'INFO'}, t('TranslateAllButton.success'))
         return {'FINISHED'}
 
 
@@ -432,42 +433,32 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
     except requests.exceptions.ConnectionError:
         print('CONNECTION TO GOOGLE FAILED!')
         if self:
-            self.report({'ERROR'}, 'Could not connect to Google. Some parts could not be translated.')
+            self.report({'ERROR'}, t('update_dictionary.error.cantConnect'))
         return
     except json.JSONDecodeError:
         if self:
-            self.report({'ERROR'}, 'It looks like you got banned from Google Translate temporarily!'
-                        '\nCats translated what it could with the local dictionary,'
-                        '\nbut you will have to try again later for the Google translations.')
+            self.report({'ERROR'}, t('update_dictionary.error.temporaryBan') + t('update_dictionary.error.catsTranslated'))
         print('YOU GOT BANNED BY GOOGLE!')
         return
     except RuntimeError as e:
         error = Common.html_to_text(str(e))
         if self:
             if 'Please try your request again later' in error:
-                self.report({'ERROR'}, 'It looks like you got banned from Google Translate temporarily!'
-                                       '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.')
+                self.report({'ERROR'}, t('update_dictionary.error.temporaryBan') + t('update_dictionary.error.catsTranslated'))
                 print('YOU GOT BANNED BY GOOGLE!')
                 return
 
             if 'Error 403' in error:
-                self.report({'ERROR'}, 'Cats was not able to access Google Translate!'
-                                       '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.')
+                self.report({'ERROR'}, t('update_dictionary.error.cantAccess') + t('update_dictionary.error.catsTranslated'))
                 print('NO PERMISSION TO USE GOOGLE TRANSLATE!')
                 return
 
-            self.report({'ERROR'}, 'You got an error message from Google Translate!'
-                                   '\nCats translated what it could with the local dictionary, but you will have to try again later for the Google translations.'
-                                   '\n'
-                                   '\nGoogle: ' + error)
+            self.report({'ERROR'}, t('update_dictionary.error.errorMsg') + t('update_dictionary.error.catsTranslated') + '\n' + '\nGoogle: ' + error)
         print('', 'You got an error message from Google:', error, '')
         return
     except AttributeError:
         if self:
-            self.report({'ERROR'}, 'Could not get translations from Google Translate!'
-                        '\nThis means that Google changed their API and translations will no longer work until this is fixed.'
-                        '\nPlease translate manually or wait for an CATS update.'
-                        '\nFor updates and dicussions please join our Discord. The link can be found in the Credits panel down below.')
+            self.report({'ERROR'}, t('update_dictionary.error.apiChanged'))
         print('GOOGLE API CHANGED')
         return
 

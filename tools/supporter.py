@@ -44,6 +44,7 @@ from . import common as Common
 from . import settings as Settings
 from .. import globs
 from ..tools.register import register_wrap
+from ..translations import t
 
 # global variables
 preview_collections = {}
@@ -60,21 +61,21 @@ resources_dir = os.path.join(str(main_dir), "resources")
 @register_wrap
 class PatreonButton(bpy.types.Operator):
     bl_idname = 'cats_supporter.patreon'
-    bl_label = 'Become a Patron'
+    bl_label = t('PatreonButton.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://www.patreon.com/catsblenderplugin')
+        webbrowser.open(t('PatreonButton.URL'))
 
-        self.report({'INFO'}, 'Patreon page opened')
+        self.report({'INFO'}, t('PatreonButton.success'))
         return {'FINISHED'}
 
 
 @register_wrap
 class ReloadButton(bpy.types.Operator):
     bl_idname = 'cats_supporter.reload'
-    bl_label = 'Reload List'
-    bl_description = 'Reloads the supporter list'
+    bl_label = t('ReloadButton.label')
+    bl_description = t('ReloadButton.desc')
     bl_options = {'INTERNAL'}
 
     @classmethod
@@ -89,8 +90,8 @@ class ReloadButton(bpy.types.Operator):
 @register_wrap
 class DynamicPatronButton(bpy.types.Operator):
     bl_idname = 'cats_supporter.dynamic_patron_button'
-    bl_label = 'Supporter Name'
-    bl_description = 'This is an awesome supporter'
+    bl_label = t('DynamicPatronButton.label')
+    bl_description = t('DynamicPatronButton.desc')
     bl_options = {'INTERNAL'}
 
     website = None
@@ -113,7 +114,7 @@ def register_dynamic_buttons():
         name = supporter.get('displayname')
         idname = 'support.' + ''.join(filter(str.isalpha, name.lower()))
 
-        description = name + ' is an awesome supporter'
+        description = t('register_dynamic_buttons.desc', name=name)
         if supporter.get('description'):
             # description = name + ' says:\n\n' + supporter.get('description') + '\n'
             description = supporter.get('description')

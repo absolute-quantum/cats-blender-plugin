@@ -29,6 +29,7 @@ import bpy
 from . import common as Common
 from . import armature_bones as Bones
 from .register import register_wrap
+from ..translations import t
 
 
 ignore_shapes = []
@@ -38,8 +39,8 @@ ignore_meshes = []
 @register_wrap
 class ScanButton(bpy.types.Operator):
     bl_idname = 'cats_decimation.auto_scan'
-    bl_label = 'Scan for decimation models'
-    bl_description = 'Separates the mesh.'
+    bl_label = t('ScanButton.label')
+    bl_description = t('ScanButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -65,9 +66,8 @@ class ScanButton(bpy.types.Operator):
 @register_wrap
 class AddShapeButton(bpy.types.Operator):
     bl_idname = 'cats_decimation.add_shape'
-    bl_label = 'Add'
-    bl_description = 'Adds the selected shape key to the whitelist.\n' \
-                     'This means that every mesh containing that shape key will be not decimated.'
+    bl_label = t('AddShapeButton.label')
+    bl_description = t('AddShapeButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -92,9 +92,8 @@ class AddShapeButton(bpy.types.Operator):
 @register_wrap
 class AddMeshButton(bpy.types.Operator):
     bl_idname = 'cats_decimation.add_mesh'
-    bl_label = 'Add'
-    bl_description = 'Adds the selected mesh to the whitelist.\n' \
-                     'This means that this mesh will be not decimated.'
+    bl_label = t('AddMeshButton.label')
+    bl_description = t('AddMeshButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -120,9 +119,8 @@ class AddMeshButton(bpy.types.Operator):
 @register_wrap
 class RemoveShapeButton(bpy.types.Operator):
     bl_idname = 'cats_decimation.remove_shape'
-    bl_label = ''
-    bl_description = 'Removes the selected shape key from the whitelist.\n' \
-                     'This means that this shape key is no longer decimation safe!'
+    bl_label = t('RemoveShapeButton.label')
+    bl_description = t('RemoveShapeButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     shape_name = bpy.props.StringProperty()
 
@@ -135,9 +133,8 @@ class RemoveShapeButton(bpy.types.Operator):
 @register_wrap
 class RemoveMeshButton(bpy.types.Operator):
     bl_idname = 'cats_decimation.remove_mesh'
-    bl_label = ''
-    bl_description = 'Removes the selected mesh from the whitelist.\n' \
-                     'This means that this mesh will be decimated.'
+    bl_label = t('RemoveMeshButton.label')
+    bl_description = t('RemoveMeshButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
     mesh_name = bpy.props.StringProperty()
 
@@ -150,15 +147,14 @@ class RemoveMeshButton(bpy.types.Operator):
 @register_wrap
 class AutoDecimateButton(bpy.types.Operator):
     bl_idname = 'cats_decimation.auto_decimate'
-    bl_label = 'Quick Decimation'
-    bl_description = 'This will automatically decimate your model while preserving the shape keys.\n' \
-                     'You should manually remove unimportant meshes first.'
+    bl_label = t('AutoDecimateButton.label')
+    bl_description = t('AutoDecimateButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         meshes = Common.get_meshes_objects()
         if not meshes or len(meshes) == 0:
-            self.report({'ERROR'}, 'No meshes found!')
+            self.report({'ERROR'}, t('AutoDecimateButton.error.noMesh'))
             return {'FINISHED'}
 
         saved_data = Common.SavedData()
@@ -269,19 +265,19 @@ class AutoDecimateButton(bpy.types.Operator):
         print((current_tris_count - tris_count), '>', max_tris)
 
         if (current_tris_count - tris_count) > max_tris:
-            message = ['This model can not be decimated to ' + str(max_tris) + ' tris with the specified settings.']
+            message = [t('decimate.cantDecimateWithSettings', number=str(max_tris))]
             if safe_decimation:
-                message.append('Try to use Custom, Half or Full Decimation.')
+                message.append(t('decimate.safeTryOptions'))
             elif half_decimation:
-                message.append('Try to use Custom or Full Decimation.')
+                message.append(t('decimate.halfTryOptions'))
             elif custom_decimation:
-                message.append('Select fewer shape keys and/or meshes or use Full Decimation.')
+                message.append(t('decimate.customTryOptions'))
             if save_fingers:
                 if full_decimation:
-                    message.append("Disable 'Save Fingers' or increase the Tris Count.")
+                    message.append(t('decimate.disableFingersOrIncrease'))
                 else:
                     message[1] = message[1][:-1]
-                    message.append("or disable 'Save Fingers'.")
+                    message.append(t('decimate.disableFingers'))
             Common.show_error(6, message)
             return
 
@@ -290,11 +286,11 @@ class AutoDecimateButton(bpy.types.Operator):
         except ZeroDivisionError:
             decimation = 1
         if decimation >= 1:
-            Common.show_error(6, ['The model already has less than ' + str(max_tris) + ' tris. Nothing had to be decimated.'])
+            Common.show_error(6, [t('decimate.noDecimationNeeded', number=str(max_tris))])
             return
         elif decimation <= 0:
-            Common.show_error(4.5, ['The model could not be decimated to ' + str(max_tris) + ' tris.',
-                                          'It got decimated as much as possible within the limits.'])
+            Common.show_error(4.5, [t('decimate.cantDecimate1', number=str(max_tris)),
+                                    t('decimate.cantDecimate2')])
 
         meshes.sort(key=lambda x: x[1])
 

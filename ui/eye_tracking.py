@@ -5,12 +5,12 @@ from .main import ToolPanel
 from ..tools import common as Common
 from ..tools import eyetracking as Eyetracking
 from ..tools.register import register_wrap
-
+from ..translations import t
 
 @register_wrap
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_eye_v3'
-    bl_label = 'Eye Tracking'
+    bl_label = t('EyeTrackingPanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -28,7 +28,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 1.1
-                row.label(text='No meshes found!', icon='ERROR')
+                row.label(text=t('EyeTrackingPanel.error.noMesh'), icon='ERROR')
             elif mesh_count > 1:
                 col.separator()
                 row = col.row(align=True)
@@ -95,7 +95,7 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
         else:
             armature = Common.get_armature()
             if not armature:
-                box.label(text='No model found!', icon='ERROR')
+                box.label(text=t('EyeTrackingPanel.error.noArm'), icon='ERROR')
                 return
 
             if bpy.context.active_object is not None and bpy.context.active_object.mode != 'POSE':
@@ -146,12 +146,12 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                     col.separator()
                     row = col.row(align=True)
                     row.scale_y = 0.3
-                    row.label(text="Your armature has to be named 'Armature'", icon='ERROR')
+                    row.label(text=t('EyeTrackingPanel.error.wrongNameArm1'), icon='ERROR')
                     row = col.row(align=True)
-                    row.label(text="      for Eye Tracking to work!")
+                    row.label(text=t('EyeTrackingPanel.error.wrongNameArm2'))
                     row = col.row(align=True)
                     row.scale_y = 0.3
-                    row.label(text="      (currently '" + armature.name + "')")
+                    row.label(text=t('EyeTrackingPanel.error.wrongNameArm3') + armature.name + "')")
 
                 if context.scene.mesh_name_eye != 'Body':
                     col.separator()
@@ -159,21 +159,21 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
                     col.separator()
                     row = col.row(align=True)
                     row.scale_y = 0.3
-                    row.label(text="The mesh containing the eyes has to be", icon='ERROR')
+                    row.label(text=t('EyeTrackingPanel.error.wrongNameBody1'), icon='ERROR')
                     row = col.row(align=True)
-                    row.label(text="      named 'Body' for Eye Tracking to work!")
+                    row.label(text=t('EyeTrackingPanel.error.wrongNameBody2'))
                     row = col.row(align=True)
                     row.scale_y = 0.3
-                    row.label(text="      (currently '" + context.scene.mesh_name_eye + "')")
+                    row.label(text=t('EyeTrackingPanel.error.wrongNameBody3') + context.scene.mesh_name_eye + "')")
 
                 col.separator()
                 col.separator()
                 col.separator()
                 row = col.row(align=True)
                 row.scale_y = 0.3
-                row.label(text="Don't forget to assign 'LeftEye' and 'RightEye'", icon='INFO')
+                row.label(text=t('EyeTrackingPanel.warn.assignEyes1'), icon='INFO')
                 row = col.row(align=True)
-                row.label(text="      to the eyes in Unity!")
+                row.label(text=t('EyeTrackingPanel.warn.assignEyes2'))
 
                 row = col.row(align=True)
                 row.scale_y = 1.5

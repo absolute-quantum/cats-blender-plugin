@@ -51,6 +51,7 @@ import pathlib
 import requests
 
 from . import globs
+from .translations import t
 
 # Check if cats is reloading or started fresh
 if "bpy" not in locals():
@@ -167,18 +168,12 @@ def remove_corrupted_files():
     if no_perm:
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nFaulty CATS installation found!'
-                          '\nTo fix this restart Blender as admin!     '
-                          '\n')
+        raise ImportError(t('Main.error.restartAdmin'))
 
     if os_error:
         unregister()
         sys.tracebacklimit = 0
-        message = '                                                                                                                                                                                    ' \
-                  '                     '\
-                  '\n\nFaulty CATS installation found!' \
-                  '\nTo fix this delete the following files and folders inside your addons folder:' \
-                  '\n'
+        message = t('Main.error.deleteFollowing')
 
         for folder in folders:
             if folder in to_remove:
@@ -193,16 +188,12 @@ def remove_corrupted_files():
     if wrong_path:
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nFaulty CATS installation found!'
-                          '\nPlease install CATS via User Preferences and restart Blender!'
-                          '\n')
+        raise ImportError(t('Main.error.installViaPreferences'))
 
     if faulty_installation:
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nFaulty CATS installation was found and fixed!'
-                          '\nPlease restart Blender and enable CATS again!'
-                          '\n')
+        raise ImportError(t('Main.error.restartAndEnable'))
 
 
 def check_unsupported_blender_versions():
@@ -210,17 +201,13 @@ def check_unsupported_blender_versions():
     if bpy.app.version < (2, 79):
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nBlender versions older than 2.79 are not supported by Cats. '
-                          '\nPlease use Blender 2.79 or later.'
-                          '\n')
+        raise ImportError(t('Main.error.unsupportedVersion'))
 
     # Versions 2.80.0 to 2.80.74 are beta versions, stable is 2.80.75
     if (2, 80, 0) <= bpy.app.version < (2, 80, 75):
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nYou are still on the beta version of Blender 2.80!'
-                          '\nPlease update to the release version of Blender 2.80.'
-                          '\n')
+        raise ImportError(t('Main.error.beta2.80'))
 
 
 def set_cats_version_string():
@@ -277,8 +264,7 @@ def register():
         show_error = True
     if show_error:
         sys.tracebacklimit = 0
-        raise ImportError('\n\nPlease restart Blender and enable CATS again!'
-                          '\n')
+        raise ImportError(t('Main.error.restartAndEnable_alt'))
 
     # if not tools.settings.use_custom_mmd_tools():
     #     bpy.utils.unregister_module("mmd_tools")

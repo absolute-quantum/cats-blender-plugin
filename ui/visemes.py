@@ -5,12 +5,13 @@ from ..tools import common as Common
 from ..tools import viseme as Viseme
 
 from ..tools.register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class VisemePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_viseme_v3'
-    bl_label = 'Visemes'
+    bl_label = t('VisemePanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -22,7 +23,7 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         if mesh_count == 0:
             row = col.row(align=True)
             row.scale_y = 1.1
-            row.label(text='No meshes found!', icon='ERROR')
+            row.label(text=t('VisemePanel.error.noMesh'), icon='ERROR')
             col.separator()
         elif mesh_count > 1:
             row = col.row(align=True)
