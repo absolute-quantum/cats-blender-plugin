@@ -6,14 +6,14 @@ dictionary = {
     'Main.error.restartAdmin': '\n\nFaulty CATS installation found!'
                                '\nTo fix this restart Blender as admin!     '
                                '\n',
-    'Main.error.deleteFollowing': '                                                                                                                                                                                    ' \
-                                  '                     '\
-                                  '\n\nFaulty CATS installation found!' \
-                                  '\nTo fix this delete the following files and folders inside your addons folder:' \
+    'Main.error.deleteFollowing': '                                                                                                                                                                                    '
+                                  '                     '
+                                  '\n\nFaulty CATS installation found!'
+                                  '\nTo fix this delete the following files and folders inside your addons folder:'
                                   '\n',
     'Main.error.installViaPreferences': '\n\nFaulty CATS installation found!'
-                                       '\nPlease install CATS via User Preferences and restart Blender!'
-                                       '\n',
+                                        '\nPlease install CATS via User Preferences and restart Blender!'
+                                        '\n',
     'Main.error.restartAndEnable': '\n\nFaulty CATS installation was found and fixed!'
                                    '\nPlease restart Blender and enable CATS again!'
                                    '\n',
@@ -168,20 +168,21 @@ dictionary = {
 
     # Tools Armature
     'FixArmature.label': 'Fix Model',
-    'FixArmature.desc': 'Automatically:\n' \
-                        '- Reparents bones\n' \
-                        '- Removes unnecessary bones, objects, groups & constraints\n' \
-                        '- Translates and renames bones & objects\n' \
-                        '- Merges weight paints\n' \
-                        '- Corrects the hips\n' \
-                        '- Joins meshes\n' \
-                        '- Converts morphs into shapes\n' \
+    'FixArmature.desc': 'Automatically:\n'
+                        '- Reparents bones\n'
+                        '- Removes unnecessary bones, objects, groups & constraints\n'
+                        '- Translates and renames bones & objects\n'
+                        '- Merges weight paints\n'
+                        '- Corrects the hips\n'
+                        '- Joins meshes\n'
+                        '- Converts morphs into shapes\n'
                         '- Corrects shading',
     'FixArmature.error.noMesh': ['No mesh inside the armature found!',
                                  'If there are meshes outside of the armature,',
                                  'set the armature as the parent of the meshes.'],
-        # Format strings? vvvv t(str, fixed_uv_coords) -> The model was successfully fixed, but there were {} faulty UV
-    'FixArmature.error.faultyUV1': 'The model was successfully fixed, but there were {uvcoord} faulty UV coordinates.', # 'The model was successfully fixed, but there were ' + str(fixed_uv_coords) + ' faulty UV coordinates.',
+    # Format strings? vvvv t(str, fixed_uv_coords) -> The model was successfully fixed, but there were {} faulty UV
+    'FixArmature.error.faultyUV1': 'The model was successfully fixed, but there were {uvcoord} faulty UV coordinates.',
+    # 'The model was successfully fixed, but there were ' + str(fixed_uv_coords) + ' faulty UV coordinates.',
     'FixArmature.error.faultyUV2': 'This could result in broken textures and you might have to fix them manually.',
     'FixArmature.error.faultyUV3': 'This issue is often caused by edits in PMX editor.',
     'FixArmature.fixedSuccess': 'Model successfully fixed.',
@@ -195,14 +196,14 @@ dictionary = {
 
     # Tools Armature Manual
     'StartPoseMode.label': 'Start Pose Mode',
-    'StartPoseMode.desc': 'Starts the pose mode.\n' \
+    'StartPoseMode.desc': 'Starts the pose mode.\n'
                           'This lets you test how your model will move',
 
     'StopPoseMode.label': 'Stop Pose Mode',
     'StopPoseMode.desc': 'Stops the pose mode and resets the pose to normal',
 
     'PoseToShape.label': 'Pose to Shape Key',
-    'PoseToShape.desc': 'This saves your current pose as a new shape key.' \
+    'PoseToShape.desc': 'This saves your current pose as a new shape key.'
                         '\nThe new shape key will be at the bottom of your shape key list of the mesh',
 
     'PoseNamePopup.label': 'Give this shapekey a name:',
@@ -210,75 +211,75 @@ dictionary = {
     'PoseNamePopup.success': 'Pose successfully saved as shape key.',
 
     'PoseToRest.label': 'Apply as Rest Pose',
-    'PoseToRest.desc': 'This applies the current pose position as the new rest position.' \
-                       '\n' \
-                       '\nIf you scale the bones equally on each axis the shape keys will be scaled correctly as well!' \
+    'PoseToRest.desc': 'This applies the current pose position as the new rest position.'
+                       '\n'
+                       '\nIf you scale the bones equally on each axis the shape keys will be scaled correctly as well!'
                        '\nWARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this',
     'PoseToRest.success': 'Pose successfully applied as rest pose.',
 
     'JoinMeshes.label': 'Join Meshes',
-    'JoinMeshes.desc': 'Joins all meshes of this model together.' \
-                       '\nIt also:' \
-                       '\n  - Reorders all shape keys correctly' \
-                       '\n  - Applies all transforms' \
-                       '\n  - Repairs broken armature modifiers' \
-                       '\n  - Applies all decimation and mirror modifiers' \
+    'JoinMeshes.desc': 'Joins all meshes of this model together.'
+                       '\nIt also:'
+                       '\n  - Reorders all shape keys correctly'
+                       '\n  - Applies all transforms'
+                       '\n  - Repairs broken armature modifiers'
+                       '\n  - Applies all decimation and mirror modifiers'
                        '\n  - Merges UV maps correctly',
     'JoinMeshes.failure': 'Meshes could not be joined!',
     'JoinMeshes.success': 'Meshes joined.',
 
     'JoinMeshesSelected.label': 'Join Selected Meshes',
-    'JoinMeshesSelected.desc': 'Joins all selected meshes of this model together.' \
-                               '\nIt also:' \
-                               '\n  - Reorders all shape keys correctly' \
-                               '\n  - Applies all transforms' \
-                               '\n  - Repairs broken armature modifiers' \
-                               '\n  - Applies all decimation and mirror modifiers' \
+    'JoinMeshesSelected.desc': 'Joins all selected meshes of this model together.'
+                               '\nIt also:'
+                               '\n  - Reorders all shape keys correctly'
+                               '\n  - Applies all transforms'
+                               '\n  - Repairs broken armature modifiers'
+                               '\n  - Applies all decimation and mirror modifiers'
                                '\n  - Merges UV maps correctly',
     'JoinMeshesSelected.error.noSelect': 'No meshes selected! Please select the meshes you want to join in the hierarchy!',
     'JoinMeshesSelected.error.cantJoin': 'Selected meshes could not be joined!',
     'JoinMeshesSelected.success': 'Selected meshes joined.',
 
     'SeparateByMaterials.label': 'Separate by Materials',
-    'SeparateByMaterials.desc': 'Separates selected mesh by materials.\n' \
-                                '\n' \
+    'SeparateByMaterials.desc': 'Separates selected mesh by materials.\n'
+                                '\n'
                                 'Warning: Never decimate something where you might need the shape keys later (face, mouth, eyes..)',
     'SeparateByMaterials.success': 'Successfully separated by materials.',
 
     'SeparateByLooseParts.label': 'Separate by Loose Parts',
-    'SeparateByLooseParts.desc': 'Separates selected mesh by loose parts.\n' \
+    'SeparateByLooseParts.desc': 'Separates selected mesh by loose parts.\n'
                                  'This acts like separating by materials but creates more meshes for more precision',
     'SeparateByLooseParts.success': 'Successfully separated by loose parts.',
 
     'SeparateByShapekeys.label': 'Separate by Shape Keys',
-    'SeparateByShapekeys.desc': 'Separates selected mesh into two parts,' \
-                                '\ndepending on whether it is effected by a shape key or not.' \
-                                '\n' \
+    'SeparateByShapekeys.desc': 'Separates selected mesh into two parts,'
+                                '\ndepending on whether it is effected by a shape key or not.'
+                                '\n'
                                 '\nVery useful for manual decimation',
     'SeparateByShapekeys.success': 'Successfully separated by shape keys.',
 
     'SeparateByCopyProtection.label': 'Separate by Copy Protection',
-    'SeparateByCopyProtection.desc': 'Separates selected mesh into two parts,' \
-                                     '\ndepending on whether it is effected by the Cats Copy Protection or not.' \
-                                     '\n' \
+    'SeparateByCopyProtection.desc': 'Separates selected mesh into two parts,'
+                                     '\ndepending on whether it is effected by the Cats Copy Protection or not.'
+                                     '\n'
                                      '\nUseful if you have the Copy Protection enabled on multiple selected parts of your model',
     'SeparateByCopyProtection.success': 'Successfully separated by shape keys.',
 
     'SeparateByX.error.noMesh': 'No meshes found!',
-    'SeparateByX.error.multipleMesh': 'Multiple meshes found!' \
-                                              '\nPlease select the mesh you want to separate!',
+    'SeparateByX.error.multipleMesh': 'Multiple meshes found!'
+                                      '\nPlease select the mesh you want to separate!',
     'SeparateByX.warn.noSeparation': 'No meshes had to be separated!',
 
     'MergeWeights.label': 'Merge Weights to Parent',
-    'MergeWeights.desc': 'Deletes the selected bones and adds their weight to their respective parents.' \
-                         '\n' \
+    'MergeWeights.desc': 'Deletes the selected bones and adds their weight to their respective parents.'
+                         '\n'
                          '\nOnly available in Edit or Pose Mode with bones selected',
     'MergeWeights.success': 'Deleted {number} bones and added their weights to their parents.',
 
     'MergeWeightsToActive.label': 'Merge Weights to Active',
-    'MergeWeightsToActive.desc': 'Deletes the selected bones except the active one and adds their weights to the active bone.' \
-                                 '\nThe active bone is the one you selected last.' \
-                                 '\n' \
+    'MergeWeightsToActive.desc': 'Deletes the selected bones except the active one and adds their weights to the active bone.'
+                                 '\nThe active bone is the one you selected last.'
+                                 '\n'
                                  '\nOnly available in Edit or Pose Mode with bones selected',
     'MergeWeightsToActive.success': 'Deleted {number} bones and added their weights to the active bone.',
 
@@ -291,7 +292,7 @@ dictionary = {
     'ApplyAllTransformations.success': 'Transformations applied.',
 
     'RemoveZeroWeightBones.label': 'Remove Zero Weight Bones',
-    'RemoveZeroWeightBones.desc': 'Cleans up the bones hierarchy, deleting all bones that don\'t directly affect any vertices\n' \
+    'RemoveZeroWeightBones.desc': 'Cleans up the bones hierarchy, deleting all bones that don\'t directly affect any vertices\n'
                                   'Don\'t use this if you plan to use \'Fix Model\'',
     'RemoveZeroWeightBones.success': 'Deleted {number} zero weight bones.',
 
@@ -304,25 +305,25 @@ dictionary = {
     'RemoveConstraints.success': 'Removed all bone constraints.',
 
     'RecalculateNormals.label': 'Recalculate Normals',
-    'RecalculateNormals.desc': 'Makes normals point inside of the selected mesh.\n\n' \
-                               'Don\'t use this on good looking meshes as this can screw them up.\n' \
+    'RecalculateNormals.desc': 'Makes normals point inside of the selected mesh.\n\n'
+                               'Don\'t use this on good looking meshes as this can screw them up.\n'
                                'Use this if there are random inverted or darker faces on the mesh',
     'RecalculateNormals.success': 'Recalculated all normals.',
 
     'FlipNormals.label': 'Flip Normals',
-    'FlipNormals.desc': 'Flips the direction of the faces\' normals of the selected mesh.\n' \
+    'FlipNormals.desc': 'Flips the direction of the faces\' normals of the selected mesh.\n'
                         'Use this if all normals are inverted',
     'FlipNormals.success': 'Flipped all normals.',
 
     'RemoveDoubles.label': 'Remove Doubles',
-    'RemoveDoubles.desc': 'Merges duplicated faces and vertices of the selected meshes.' \
-                          '\nThis is more safe than doing it manually:' \
-                          '\n  - leaves shape keys completely untouched' \
+    'RemoveDoubles.desc': 'Merges duplicated faces and vertices of the selected meshes.'
+                          '\nThis is more safe than doing it manually:'
+                          '\n  - leaves shape keys completely untouched'
                           '\n  - but removes less doubles overall',
     'RemoveDoubles.success': 'Removed {number} vertices.',
 
     'RemoveDoublesNormal.label': 'Remove Doubles Normally',
-    'RemoveDoublesNormal.desc': 'Merges duplicated faces and vertices of the selected meshes.' \
+    'RemoveDoublesNormal.desc': 'Merges duplicated faces and vertices of the selected meshes.'
                                 '\nThis is exactly like doing it manually',
     'RemoveDoublesNormal.success': 'Removed {number} vertices.',
 
@@ -332,9 +333,9 @@ dictionary = {
     'FixVRMShapesButton.success': 'Fixed VRM shapekeys.',
 
     'FixFBTButton.label': 'Fix Full Body Tracking',
-    'FixFBTButton.desc': 'WARNING: This fix is no longer needed for VRChat, you should not use it!' \
-                         '\n' \
-                         '\nApplies a general fix for Full Body Tracking.' \
+    'FixFBTButton.desc': 'WARNING: This fix is no longer needed for VRChat, you should not use it!'
+                         '\n'
+                         '\nApplies a general fix for Full Body Tracking.'
                          '\nIgnore the \"Spine length zero\" warning in Unity',
     'FixFBTButton.error.bonesNotFound': 'Required bones could not be found!'
                                         '\nPlease make sure that your armature contains the following bones:'
@@ -344,9 +345,9 @@ dictionary = {
     'FixFBTButton.success': 'Successfully applied the Full Body Tracking fix.',
 
     'RemoveFBTButton.label': 'Remove Full Body Tracking Fix',
-    'RemoveFBTButton.desc': 'Removes the fix for Full Body Tracking, since it is no longer advised to use it.' \
-                            '\n' \
-                            '\nRequires bones:' \
+    'RemoveFBTButton.desc': 'Removes the fix for Full Body Tracking, since it is no longer advised to use it.'
+                            '\n'
+                            '\nRequires bones:'
                             '\n - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2',
     'RemoveFBTButton.error.bonesNotFound': 'Required bones could not be found!'
                                            '\nPlease make sure that your armature contains the following bones:'
@@ -361,28 +362,28 @@ dictionary = {
 
     # Tools Armature Custom
     'MergeArmature.label': 'Merge Armatures',
-    'MergeArmature.desc': 'Merges the selected merge armature into the base armature.' \
-                          '\nYou should fix both armatures with Cats first.' \
+    'MergeArmature.desc': 'Merges the selected merge armature into the base armature.'
+                          '\nYou should fix both armatures with Cats first.'
                           '\nOnly move the mesh of the merge armature to the desired position, the bones will be moved automatically',
     'MergeArmature.error.notFound': 'The armature "{name}" could not be found.',
-    'MergeArmature.error.checkTransforms': [ 'Please make sure that the parent of the merge armature has the following transforms:',
-                                             ' - Location at 0',
-                                             ' - Rotation at 0',
-                                             ' - Scale at 1'],
-    'MergeArmature.error.pleaseFix': [ 'Please use the "Fix Model" feature on the selected armatures first!',
-                                       'Make sure to select the armature you want to fix above the "Fix Model" button!',
-                                       'After that please only move the mesh (not the armature!) to the desired position.'],
+    'MergeArmature.error.checkTransforms': ['Please make sure that the parent of the merge armature has the following transforms:',
+                                            ' - Location at 0',
+                                            ' - Rotation at 0',
+                                            ' - Scale at 1'],
+    'MergeArmature.error.pleaseFix': ['Please use the "Fix Model" feature on the selected armatures first!',
+                                      'Make sure to select the armature you want to fix above the "Fix Model" button!',
+                                      'After that please only move the mesh (not the armature!) to the desired position.'],
     'MergeArmature.success': 'Armatures successfully joined.',
 
     'AttachMesh.label': 'Attach Mesh',
-    'AttachMesh.desc': 'Attaches the selected mesh to the selected bone of the selected armature.' \
-                       '\n' \
-                       '\nINFO: The mesh will only be assigned to the selected bone.' \
+    'AttachMesh.desc': 'Attaches the selected mesh to the selected bone of the selected armature.'
+                       '\n'
+                       '\nINFO: The mesh will only be assigned to the selected bone.'
                        '\nE.g.: A jacket won\'t work, because it requires multiple bones',
     'AttachMesh.success': 'Mesh successfully attached to armature.',
 
     'CustomModelTutorialButton.label': 'Go to Documentation',
-    'CustomModelTutorialButton.URL': 'https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation', # BOOM, now we can point at the Japanese link now ;)
+    'CustomModelTutorialButton.URL': 'https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation',  # BOOM, now we can point at the Japanese link now ;)
     'CustomModelTutorialButton.success': 'Documentation',
 
     'merge_armatures.error.transformReset': ['If you want to rotate the new part, only modify the mesh instead of the armature,',
@@ -420,7 +421,7 @@ dictionary = {
 
     # Tools Bonemerge
     'BoneMergeButton.label': 'Merge Bones',
-    'BoneMergeButton.desc': 'Merges the given percentage of bones together.\n' \
+    'BoneMergeButton.desc': 'Merges the given percentage of bones together.\n'
                             'This is useful to reduce the amount of bones used by Dynamic Bones.',
     'BoneMergeButton.success': 'Merged bones.',
 
@@ -429,7 +430,7 @@ dictionary = {
 
     # Tools Copy protection
     'CopyProtectionEnable.label': 'Enable Protection',
-    'CopyProtectionEnable.desc': 'Protects your model from piracy. NOT a 100% safe protection!' \
+    'CopyProtectionEnable.desc': 'Protects your model from piracy. NOT a 100% safe protection!'
                                  '\nRead the documentation before use',
     'CopyProtectionEnable.success': 'Model secured!',
 
@@ -459,40 +460,40 @@ dictionary = {
     'ScanButton.desc': 'Separates the mesh.',
 
     'AddShapeButton.label': 'Add',
-    'AddShapeButton.desc': 'Adds the selected shape key to the whitelist.\n' \
+    'AddShapeButton.desc': 'Adds the selected shape key to the whitelist.\n'
                            'This means that every mesh containing that shape key will be not decimated.',
 
     'AddMeshButton.label': 'Add',
-    'AddMeshButton.desc': 'Adds the selected mesh to the whitelist.\n' \
+    'AddMeshButton.desc': 'Adds the selected mesh to the whitelist.\n'
                           'This means that this mesh will be not decimated.',
 
     'RemoveShapeButton.label': '',
-    'RemoveShapeButton.desc': 'Removes the selected shape key from the whitelist.\n' \
+    'RemoveShapeButton.desc': 'Removes the selected shape key from the whitelist.\n'
                               'This means that this shape key is no longer decimation safe!',
 
     'RemoveMeshButton.label': '',
-    'RemoveMeshButton.desc': 'Removes the selected mesh from the whitelist.\n' \
+    'RemoveMeshButton.desc': 'Removes the selected mesh from the whitelist.\n'
                              'This means that this mesh will be decimated.',
 
     'AutoDecimateButton.label': 'Quick Decimation',
-    'AutoDecimateButton.desc': 'This will automatically decimate your model while preserving the shape keys.\n' \
+    'AutoDecimateButton.desc': 'This will automatically decimate your model while preserving the shape keys.\n'
                                'You should manually remove unimportant meshes first.',
     'AutoDecimateButton.error.noMesh': 'No meshes found!',
 
-    'decimate.cantDecimateWithSettings':  'This model can not be decimated to {number} tris with the specified settings.',
+    'decimate.cantDecimateWithSettings': 'This model can not be decimated to {number} tris with the specified settings.',
     'decimate.safeTryOptions': 'Try to use Custom, Half or Full Decimation.',
     'decimate.halfTryOptions': 'Try to use Custom or Full Decimation.',
     'decimate.customTryOptions': 'Select fewer shape keys and/or meshes or use Full Decimation.',
     'decimate.disableFingersOrIncrease': 'Disable \'Save Fingers\' or increase the Tris Count.',
-    'decimate.disableFingers': 'or disable \'Save Fingers\'.', # This comes after one of the previous xTryOptions
+    'decimate.disableFingers': 'or disable \'Save Fingers\'.',  # This comes after one of the previous xTryOptions
     'decimate.noDecimationNeeded': 'The model already has less than {number} tris. Nothing had to be decimated.',
     'decimate.cantDecimate1': 'The model could not be decimated to {number} tris.',
     'decimate.cantDecimate2': 'It got decimated as much as possible within the limits.',
 
     # Tools Eyetracking
     'CreateEyesButton.label': 'Create Eye Tracking',
-    'CreateEyesButton.desc': 'This will let you track someone when they come close to you and it enables blinking.\n' \
-                             'You should do decimation before this operation.\n' \
+    'CreateEyesButton.desc': 'This will let you track someone when they come close to you and it enables blinking.\n'
+                             'You should do decimation before this operation.\n'
                              'Test the resulting eye movement in the \'Testing\' tab.',
     'CreateEyesButton.error.noShapeSelected': 'You have no shape keys selected.'
                                               '\nPlease choose a mesh containing shape keys or check "Disable Eye Blinking".',
@@ -507,8 +508,8 @@ dictionary = {
     'CreateEyesButton.success': 'Created eye tracking!',
 
     'StartTestingButton.label': 'Start Eye Testing',
-    'StartTestingButton.desc': 'This will let you test how the eye movement will look ingame.\n' \
-                               'Don\'t forget to stop the Testing process afterwards.\n' \
+    'StartTestingButton.desc': 'This will let you test how the eye movement will look ingame.\n'
+                               'Don\'t forget to stop the Testing process afterwards.\n'
                                'Bones "LeftEye" and "RightEye" are required.',
 
     'StopTestingButton.label': 'Stop Eye Testing',
@@ -519,15 +520,15 @@ dictionary = {
     'ResetRotationButton.desc': 'This resets the eye positions.',
 
     'AdjustEyesButton.label': 'Set Range',
-    'AdjustEyesButton.desc': 'Lets you re-adjust the movement range of the eyes.\n' \
+    'AdjustEyesButton.desc': 'Lets you re-adjust the movement range of the eyes.\n'
                              'This gets saved',
     'AdjustEyesButton.error.noVertex': 'The bone "{bone}" has no existing vertex group or no vertices assigned to it.'
                                        '\nThis might be because you selected the wrong mesh or the wrong bone.'
                                        '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.',
 
     'StartIrisHeightButton.label': 'Start Iris Height Adjustment',
-    'StartIrisHeightButton.desc': 'Lets you readjust the distance of the iris from the eye ball.\n' \
-                                  'Use this to fix clipping of the iris into the eye ball.\n' \
+    'StartIrisHeightButton.desc': 'Lets you readjust the distance of the iris from the eye ball.\n'
+                                  'Use this to fix clipping of the iris into the eye ball.\n'
                                   'This gets saved.',
 
     'TestBlinking.label': 'Test',
@@ -541,30 +542,30 @@ dictionary = {
 
     # Tools Importer
     'ImportAnyModel.label': 'Import Any Model',
-    'ImportAnyModel.desc2.79': 'Import a model of any supported type.' \
-                               '\n' \
-                               '\nSupported types:' \
-                               '\n- MMD: .pmx/.pmd' \
-                               '\n- XNALara: .xps/.mesh/.ascii' \
-                               '\n- Source: .smd/.qc' \
-                               '\n- VRM: .vrm' \
-                               '\n- FBX .fbx ' \
-                               '\n- DAE: .dae ' \
+    'ImportAnyModel.desc2.79': 'Import a model of any supported type.'
+                               '\n'
+                               '\nSupported types:'
+                               '\n- MMD: .pmx/.pmd'
+                               '\n- XNALara: .xps/.mesh/.ascii'
+                               '\n- Source: .smd/.qc'
+                               '\n- VRM: .vrm'
+                               '\n- FBX .fbx '
+                               '\n- DAE: .dae '
                                '\n- ZIP: .zip',
-    'ImportAnyModel.desc2.8': 'Import a model of any supported type.' \
-                              '\n' \
-                              '\nSupported types:' \
-                              '\n- MMD: .pmx/.pmd' \
-                              '\n- XNALara: .xps/.mesh/.ascii' \
-                              '\n- Source: .smd/.qc/.vta/.dmx' \
-                              '\n- VRM: .vrm' \
-                              '\n- FBX: .fbx' \
-                              '\n- DAE: .dae ' \
+    'ImportAnyModel.desc2.8': 'Import a model of any supported type.'
+                              '\n'
+                              '\nSupported types:'
+                              '\n- MMD: .pmx/.pmd'
+                              '\n- XNALara: .xps/.mesh/.ascii'
+                              '\n- Source: .smd/.qc/.vta/.dmx'
+                              '\n- VRM: .vrm'
+                              '\n- FBX: .fbx'
+                              '\n- DAE: .dae '
                               '\n- ZIP: .zip',
     'ImportAnyModel.importantInfo.label': 'IMPORTANT INFO (hover here)',
     'ImportAnyModel.importantInfo.desc': 'If you want to modify the import settings, use the button next to the Import button.\n\n',
     'ImportAnyModel.error.emptyZip': 'The selected zip file contains no importable models.',
-    'ImportAnyModel.error.unsupportedFBX': 'The FBX file version is unsupported!' \
+    'ImportAnyModel.error.unsupportedFBX': 'The FBX file version is unsupported!'
                                            '\nPlease use a tool such as the "Autodesk FBX Converter" to make it compatible.',
 
     'ZipPopup.label': 'Zip Model Selection:',
@@ -621,8 +622,8 @@ dictionary = {
     'VrmToolsButton.success': 'VRM Importer link opened',
 
     'ExportModel.label': 'Export Model',
-    'ExportModel.desc': 'Export this model as .fbx for Unity.\n' \
-                        '\n' \
+    'ExportModel.desc': 'Export this model as .fbx for Unity.\n'
+                        '\n'
                         'Automatically sets the optimal export settings',
     'ExportModel.error.notEnabled': 'FBX Exporter not enabled! Please enable it in your User Preferences.',
 
@@ -661,35 +662,35 @@ dictionary = {
     'OneTexPerMatButton.desc': 'Have all material slots ignore extra texture slots as these are not used by VRChat.',
 
     'OneTexPerMatOnlyButton.label': 'One Material Texture',
-    'OneTexPerMatOnlyButton.desc': 'Have all material slots ignore extra texture slots as these are not used by VRChat.' \
-                                   '\nAlso removes the textures from the material instead of disabling it.' \
+    'OneTexPerMatOnlyButton.desc': 'Have all material slots ignore extra texture slots as these are not used by VRChat.'
+                                   '\nAlso removes the textures from the material instead of disabling it.'
                                    '\nThis makes no difference, but cleans the list for the perfectionists',
 
     'ToolsMaterial.error.notCompatible': 'This function is not yet compatible with Blender 2.8!',
     'OneTexPerXButton.success': 'All materials have one texture now.',
 
     'StandardizeTextures.label': 'Standardize Textures',
-    'StandardizeTextures.desc': 'Enables Color and Alpha on every texture, sets the blend method to Multiply' \
+    'StandardizeTextures.desc': 'Enables Color and Alpha on every texture, sets the blend method to Multiply'
                                 '\nand changes the materials transparency to Z-Transparency',
     'StandardizeTextures.success': 'All textures are now standardized.',
 
     'CombineMaterialsButton.label': 'Combine Same Materials',
-    'CombineMaterialsButton.desc': 'Combines similar materials into one, reducing draw calls.\n' \
-                                   'Your avatar should visibly look the same after this operation.\n' \
-                                   'This is a very important step for optimizing your avatar.\n' \
+    'CombineMaterialsButton.desc': 'Combines similar materials into one, reducing draw calls.\n'
+                                   'Your avatar should visibly look the same after this operation.\n'
+                                   'This is a very important step for optimizing your avatar.\n'
                                    'If you have problems with this, please tell us!\n',
     'CombineMaterialsButton.error.noChanges': 'No materials combined.',
     'CombineMaterialsButton.success': 'Combined {number} materials!',
 
     'ConvertAllToPngButton.label': 'Convert Textures to PNG',
-    'ConvertAllToPngButton.desc': 'Converts all texture files into PNG files.' \
-                                  '\nThis helps with transparency and compatibility issues.' \
+    'ConvertAllToPngButton.desc': 'Converts all texture files into PNG files.'
+                                  '\nThis helps with transparency and compatibility issues.'
                                   '\n\nThe converted image files will be saved next to the old ones',
     'ConvertAllToPngButton.success': 'Converted {number} to PNG files.',
 
     # Tools Root bone
     'RootButton.label': 'Parent Bones',
-    'RootButton.desc': 'This will duplicate the parent of the bones and reparent them to the duplicate.\n' \
+    'RootButton.desc': 'This will duplicate the parent of the bones and reparent them to the duplicate.\n'
                        'Very useful for Dynamic Bones.',
     'RootButton.success': 'Bones parented!',
 
@@ -707,7 +708,7 @@ dictionary = {
     'ResetGoogleDictButton.resetInfo': 'Local Google Dictionary cleared!',
 
     'DebugTranslations.label': 'Debug Google Translations',  # DEV ONLY
-    'DebugTranslations.desc': 'Tests Google translations and prints the response into a file called \'google-response.txt\' located in the cats addon folder > resources' \
+    'DebugTranslations.desc': 'Tests Google translations and prints the response into a file called \'google-response.txt\' located in the cats addon folder > resources'
                               '\nThis button is only visible in the cats development version',  # DEV ONLY
     'DebugTranslations.error': 'Errors found, response printed!!',  # DEV ONLY
     'DebugTranslations.success': 'No issues with Google Translations found, response printed!',  # DEV ONLY
@@ -721,9 +722,9 @@ dictionary = {
                                                 'If you didn\'t change the shape key order, you can revert the shape keys from top to bottom.'],
     'ShapeKeyApplier.error.revertCustomBasis.scale': 7.3,
     'ShapeKeyApplier.error.revert': ['To revert the shape keys, please apply the "Reverted" shape keys in reverse order.',
-                                          'Start with the reverted shape key that uses the relative key called "Basis".',
-                                          '',
-                                          "If you didn't change the shape key order, you can revert the shape keys from top to bottom."],
+                                     'Start with the reverted shape key that uses the relative key called "Basis".',
+                                     '',
+                                     "If you didn't change the shape key order, you can revert the shape keys from top to bottom."],
     'ShapeKeyApplier.error.revert.scale': 7.3,
     'ShapeKeyApplier.successRemoved': 'Successfully removed shapekey "{name}" from the Basis.',
     'ShapeKeyApplier.successSet': 'Successfully set shapekey "{name}" as the new Basis.',
@@ -784,7 +785,7 @@ dictionary = {
 
     # Tools Viseme
     'AutoVisemeButton.label': 'Create Visemes',
-    'AutoVisemeButton.desc': 'This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.\n' \
+    'AutoVisemeButton.desc': 'This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.\n'
                              'It will generate 15 shape keys from the 3 shape keys you specify',
     'AutoVisemeButton.error.noShapekeys': 'This mesh has no shapekeys!',
     'AutoVisemeButton.error.selectShapekeys': 'Please select the correct mouth shapekeys instead of "Basis"!',
@@ -1165,6 +1166,5 @@ dictionary = {
     'bpy.types.Scene.cats_update_action.ignore.desc': 'This ignores this version. You will be reminded again when the next version releases',
     'bpy.types.Scene.cats_update_action.defer.label': 'Remind me later',
     'bpy.types.Scene.cats_update_action.defer.desc': 'Hides the update notification til the next Blender restart',
-
 
 }

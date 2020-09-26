@@ -7,6 +7,7 @@ if locale in ['ja_JP']:
 else:
     from .en_US import dictionary
 
+
 def t(phrase: str, *args, **kwargs):
     # Translate the given phrase into Blender's current language.
     try:

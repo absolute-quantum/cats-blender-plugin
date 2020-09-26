@@ -51,7 +51,6 @@ import pathlib
 import requests
 
 from . import globs
-from .translations import t
 
 # Check if cats is reloading or started fresh
 if "bpy" not in locals():
@@ -65,6 +64,7 @@ if not is_reloading:
     # This order is important
     import mmd_tools_local
     from . import updater
+    from . import translations
     from . import tools
     from . import ui
     from . import extentions
@@ -72,9 +72,12 @@ else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
+    importlib.reload(translations)
     importlib.reload(tools)
     importlib.reload(ui)
     importlib.reload(extentions)
+
+from .translations import t
 
 
 # How to update mmd_tools: (outdated, no longer used)
