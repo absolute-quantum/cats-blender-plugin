@@ -209,14 +209,18 @@ def register():
             ("FULL", "Full", 'Best results - full shape key loss\n'
                              '\n'
                              "This will decimate your whole model deleting all shape keys in the process.\n"
-                             'This will give the best results but you will lose the ability to add blinking and Lip Syncing.\n'
+                             'This will give consistent results but you will lose the ability to add blinking and Lip Syncing.\n'
                              'Eye Tracking will still work if you disable Eye Blinking.'),
+            ("SMART", "Smart", 'Best results - repair shape keys after decimation\n'
+                               '\n'
+                               "This will decimate your whole model and attempt to undo the warping caused by Blender's decimation.\n"
+                               "This will give the best results and keep blinking and lip syncing, but may have issues on some models."),
 
             ("CUSTOM", "Custom", 'Custom results - custom shape key loss\n'
                                  '\n'
                                  "This will let you choose which meshes and shape keys should not be decimated.\n")
         ],
-        default='HALF'
+        default='SMART'
     )
 
     Scene.selection_mode = EnumProperty(

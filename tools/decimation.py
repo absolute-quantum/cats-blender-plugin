@@ -183,6 +183,7 @@ class AutoDecimateButton(bpy.types.Operator):
         full_decimation = context.scene.decimation_mode == 'FULL'
         half_decimation = context.scene.decimation_mode == 'HALF'
         safe_decimation = context.scene.decimation_mode == 'SAFE'
+        smart_decimation = context.scene.decimation_mode == 'SMART'
         save_fingers = context.scene.decimate_fingers
         max_tris = context.scene.max_tris
         meshes = []
@@ -237,6 +238,17 @@ class AutoDecimateButton(bpy.types.Operator):
                     bpy.ops.object.shape_key_remove(all=True)
                     meshes.append((mesh, tris))
                     tris_count += tris
+                elif smart_decimation:
+                    if len(mesh.data.shape_keys.key_blocks) == 1:
+                        bpy.ops.object.shape_key_remove(all=True)
+                    else:
+                        # Add a duplicate basis key which we un-apply to fix shape keys
+                        mesh.active_shape_key_index = 0
+                        bpy.ops.object.shape_key_add(from_mix=False)
+                        mesh.active_shape_key.name = "CATS Basis"
+                        mesh.active_shape_key_index = 0
+                    meshes.append((mesh, tris))
+                    tris_count += tris
                 elif custom_decimation:
                     found = False
                     for shape in ignore_shapes:
@@ -277,7 +289,7 @@ class AutoDecimateButton(bpy.types.Operator):
             elif custom_decimation:
                 message.append('Select fewer shape keys and/or meshes or use Full Decimation.')
             if save_fingers:
-                if full_decimation:
+                if full_decimation or smart_decimation:
                     message.append("Disable 'Save Fingers' or increase the Tris Count.")
                 else:
                     message[1] = message[1][:-1]
@@ -313,10 +325,23 @@ class AutoDecimateButton(bpy.types.Operator):
             print(decimation)
 
             # Apply decimation mod
-            mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
-            mod.ratio = decimation
-            mod.use_collapse_triangulate = True
-            bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+            if not smart_decimation:
+                mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
+                mod.ratio = decimation
+                mod.use_collapse_triangulate = True
+                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+            else:
+                Common.switch('EDIT')
+                bpy.ops.mesh.select_mode(type="VERT")
+                bpy.ops.mesh.select_all(action="SELECT")
+                bpy.ops.mesh.decimate(ratio=decimation,
+                                      use_vertex_group=False,
+                                      vertex_group_factor=1.0,
+                                      invert_vertex_group=False,
+                                      use_symmetry=True,
+                                      symmetry_axis='X')
+                Common.switch('OBJECT')
+
 
             tris_after = len(mesh_obj.data.polygons)
             print(tris)
@@ -324,6 +349,19 @@ class AutoDecimateButton(bpy.types.Operator):
 
             current_tris_count = current_tris_count - tris + tris_after
             tris_count = tris_count - tris
+            # Repair shape keys if SMART mode is enabled
+            if smart_decimation and len(mesh_obj.data.shape_keys.key_blocks) > 0:
+                for idx in range(1, len(mesh_obj.data.shape_keys.key_blocks) - 2):
+                    print("Key: " + mesh_obj.data.shape_keys.key_blocks[idx].name)
+                    mesh_obj.active_shape_key_index = idx
+                    Common.switch('EDIT')
+                    bpy.ops.mesh.blend_from_shape(shape="CATS Basis", blend=-1.0, add=True)
+                    Common.switch('OBJECT')
+                mesh_obj.shape_key_remove(key=mesh_obj.data.shape_keys.key_blocks["CATS Basis"])
+                mesh_obj.active_shape_key_index = 0
+
+
+
 
             Common.unselect_all()
 

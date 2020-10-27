@@ -8,6 +8,39 @@ from ..tools import decimation as Decimation
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
 
+@register_wrap
+class AutoDecimatePresetGood(bpy.types.Operator):
+    bl_idname = 'cats_decimation.preset_good'
+    bl_label = 'Good'
+    bl_description = 'The maximum number of tris you can have for a Good rating.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bpy.context.scene.max_tris = 70000
+        return {'FINISHED'}
+
+@register_wrap
+class AutoDecimatePresetExcellent(bpy.types.Operator):
+    bl_idname = 'cats_decimation.preset_excellent'
+    bl_label = 'Excellent'
+    bl_description = 'The maximum number of tris you can have for an Excellent rating.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bpy.context.scene.max_tris = 32000
+        return {'FINISHED'}
+
+@register_wrap
+class AutoDecimatePresetQuest(bpy.types.Operator):
+    bl_idname = 'cats_decimation.preset_quest'
+    bl_label = 'Quest'
+    bl_description = 'The reccomended number of tris for Quest avatars.\n' \
+                     'A hard limit will be established in the future that will not be much more than this.'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bpy.context.scene.max_tris = 5000
+        return {'FINISHED'}
 
 @register_wrap
 class DecimationPanel(ToolPanel, bpy.types.Panel):
@@ -37,7 +70,9 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         elif context.scene.decimation_mode == 'HALF':
             row.label(text=' Good results - Minimal shape key loss')
         elif context.scene.decimation_mode == 'FULL':
-            row.label(text=' Best results - Full shape key loss')
+            row.label(text=' Consistent results - Full shape key loss')
+        elif context.scene.decimation_mode == 'SMART':
+            row.label(text=' Best results - Preserve shape keys')
 
         elif context.scene.decimation_mode == 'CUSTOM':
             col.separator()
@@ -131,6 +166,10 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'decimate_fingers')
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_remove_doubles')
+        row = col.row(align=True)
+        row.operator(AutoDecimatePresetGood.bl_idname)
+        row.operator(AutoDecimatePresetExcellent.bl_idname)
+        row.operator(AutoDecimatePresetQuest.bl_idname)
         row = col.row(align=True)
         row.prop(context.scene, 'max_tris')
         col.separator()
