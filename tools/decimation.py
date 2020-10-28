@@ -345,7 +345,7 @@ class AutoDecimateButton(bpy.types.Operator):
             current_tris_count = current_tris_count - tris + tris_after
             tris_count = tris_count - tris
             # Repair shape keys if SMART mode is enabled
-            if smart_decimation and len(mesh_obj.data.shape_keys.key_blocks) > 0:
+            if smart_decimation and Common.has_shapekeys(mesh_obj):
                 for idx in range(1, len(mesh_obj.data.shape_keys.key_blocks) - 2):
                     print("Key: " + mesh_obj.data.shape_keys.key_blocks[idx].name)
                     mesh_obj.active_shape_key_index = idx
@@ -392,7 +392,37 @@ class AutoDecimateButton(bpy.types.Operator):
         #         break
 
 
+@register_wrap
+class AutoDecimatePresetGood(bpy.types.Operator):
+    bl_idname = 'cats_decimation.preset_good'
+    bl_label = t('DecimationPanel.preset.good.label')
+    bl_description = t('DecimationPanel.preset.good.description')
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bpy.context.scene.max_tris = 70000
+        return {'FINISHED'}
 
 
+@register_wrap
+class AutoDecimatePresetExcellent(bpy.types.Operator):
+    bl_idname = 'cats_decimation.preset_excellent'
+    bl_label = t('DecimationPanel.preset.excellent.label')
+    bl_description = t('DecimationPanel.preset.excellent.description')
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bpy.context.scene.max_tris = 32000
+        return {'FINISHED'}
 
 
+@register_wrap
+class AutoDecimatePresetQuest(bpy.types.Operator):
+    bl_idname = 'cats_decimation.preset_quest'
+    bl_label = t('DecimationPanel.preset.quest.label')
+    bl_description = t('DecimationPanel.preset.quest.description')
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bpy.context.scene.max_tris = 5000
+        return {'FINISHED'}

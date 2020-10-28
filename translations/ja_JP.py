@@ -2,6 +2,9 @@ dictionary = {
     # Class.label / Class.desc (tooltip)
     # Class.property
 
+    # Language name
+    'name': 'ja_JP',
+
     # Main file
     'Main.error.restartAdmin': '\n\nFaulty CATS installation found!'
                                '\nTo fix this restart Blender as admin!     '
@@ -92,7 +95,8 @@ dictionary = {
     'DecimationPanel.decimationMode': 'デシメーションモード:',
     'DecimationPanel.safeModeDesc': ' まともな結果 - シェイプキーの損失はありません',
     'DecimationPanel.halfModeDesc': ' 良好な結果 - 最小のシェープキー損失',
-    'DecimationPanel_fullModeDesc': ' 最良の結果 - フルシェイプキー損失',
+    'DecimationPanel.fullModeDesc': ' 一貫した結果 - フルシェイプキー損失',
+    'DecimationPanel.smartModeDesc': ' 最良の結果 - 形状キーの保存',
     'DecimationPanel.customSeparateMaterials': '材料別に分離して開始:',
     'DecimationPanel.SeparateByMaterials.label': '材料別に分離',
     'DecimationPanel.customJoinMeshes': 'メッシュに参加して停止:',
@@ -102,6 +106,13 @@ dictionary = {
     'DecimationPanel.warn.noMeshSelected': 'メッシュが選択されていません',
     'DecimationPanel.warn.emptyList': '両方のリストが空で、これは完全なデシメーションに等しい!',
     'DecimationPanel.warn.correctWhitelist': '両方のホワイトリストはデシメーション中に考慮されます',
+    'DecimationPanel.preset.excellent.label': '優れた',
+    'DecimationPanel.preset.excellent.description': '優れた評価を得るために持つことができるトリスの最大数',
+    'DecimationPanel.preset.good.label': '良い',
+    'DecimationPanel.preset.good.description': 'あなたが良い評価のために持つことができるトリスの最大数',
+    'DecimationPanel.preset.quest.label': 'Quest',
+    'DecimationPanel.preset.quest.description': 'Questアバターの推奨トリス数.\n'
+                                                '将来的には、これをはるかに超えることのない厳しい制限が設定されます。',
 
     # UI Eye tracking
     'EyeTrackingPanel.label': 'アイトラッキング',
@@ -903,6 +914,11 @@ dictionary = {
     # Decimation
     'Scene.decimation_mode.label': '単純化モード',
     'Scene.decimation_mode.desc': 'Decimation Mode',
+    'Scene.decimation_mode.smart.label': "スマート",
+    'Scene.decimation_mode.smart.desc': 'Best results - repair shape keys after decimation\n'
+                                        '\n'
+                                        "This will decimate your whole model and attempt to undo the warping caused by Blender's decimation.\n"
+                                        "This will give the best results and keep blinking and lip syncing, but may have issues on some models.",
     'Scene.decimation_mode.safe.label': '安全',
     'Scene.decimation_mode.safe.desc': 'Decent results - no shape key loss\n'
                                        '\n'
@@ -916,10 +932,10 @@ dictionary = {
                                        'The results are better but you will lose the shape keys in some meshes.\n'
                                        'Eye Tracking and Lip Syncing should still work.',
     'Scene.decimation_mode.full.label': 'フル',
-    'Scene.decimation_mode.full.desc': 'Best results - full shape key loss\n'
+    'Scene.decimation_mode.full.desc': 'Consistent results - full shape key loss\n'
                                        '\n'
                                        'This will decimate your whole model deleting all shape keys in the process.\n'
-                                       'This will give the best results but you will lose the ability to add blinking and Lip Syncing.\n'
+                                       'This will give consistent results but you will lose the ability to add blinking and Lip Syncing.\n'
                                        'Eye Tracking will still work if you disable Eye Blinking.',
     'Scene.decimation_mode.custom.label': 'カスタム',
     'Scene.decimation_mode.custom.desc': 'Custom results - custom shape key loss\n'

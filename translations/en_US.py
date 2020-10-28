@@ -2,6 +2,9 @@ dictionary = {
     # Class.label / Class.desc (tooltip)
     # Class.property
 
+    # Language name
+    'name': 'en_US',
+
     # Main file
     'Main.error.restartAdmin': '\n\nFaulty CATS installation found!'
                                '\nTo fix this restart Blender as admin!     '
@@ -108,9 +111,8 @@ dictionary = {
     'DecimationPanel.preset.good.label': 'Good',
     'DecimationPanel.preset.good.description': 'The maximum number of tris you can have for a Good rating.',
     'DecimationPanel.preset.quest.label': 'Quest',
-    'DecimationPanel.preset.quest.description': 'The reccomended number of tris for Quest avatars.\n' \
+    'DecimationPanel.preset.quest.description': 'The recommended number of tris for Quest avatars.\n'
                                                 'A hard limit will be established in the future that will not be much more than this.',
-
 
     # UI Eye tracking
     'EyeTrackingPanel.label': 'Eye Tracking',
@@ -800,7 +802,7 @@ dictionary = {
     'AutoVisemeButton.error.selectShapekeys': 'Please select the correct mouth shapekeys instead of "Basis"!',
     'AutoVisemeButton.success': 'Created mouth visemes!',
 
-    # Extentions
+    # Extensions
     'Scene.armature.label': 'Armature',
     'Scene.armature.desc': 'Select the armature which will be used by Cats',
 
@@ -910,9 +912,15 @@ dictionary = {
     'Scene.merge_armatures_remove_zero_weight_bones.label': 'Remove Zero Weight Bones',
     'Scene.merge_armatures_remove_zero_weight_bones.desc': 'Cleans up the bones hierarchy, deleting all bones that don\'t directly affect any vertices.'
                                                            '\nUncheck this if bones or vertex groups that you want to keep got deleted',
+
     # Decimation
     'Scene.decimation_mode.label': 'Decimation Mode',
     'Scene.decimation_mode.desc': 'Decimation Mode',
+    'Scene.decimation_mode.smart.label': "Smart",
+    'Scene.decimation_mode.smart.desc': 'Best results - repair shape keys after decimation\n'
+                                        '\n'
+                                        "This will decimate your whole model and attempt to undo the warping caused by Blender's decimation.\n"
+                                        "This will give the best results and keep blinking and lip syncing, but may have issues on some models.",
     'Scene.decimation_mode.safe.label': 'Safe',
     'Scene.decimation_mode.safe.desc': 'Decent results - no shape key loss\n'
                                        '\n'
@@ -931,11 +939,6 @@ dictionary = {
                                        'This will decimate your whole model deleting all shape keys in the process.\n'
                                        'This will give consistent results but you will lose the ability to add blinking and Lip Syncing.\n'
                                        'Eye Tracking will still work if you disable Eye Blinking.',
-    'Scene.decimation_mode.smart.label': "Smart",
-    'Scene.decimation_mode.smart.desc': 'Best results - repair shape keys after decimation\n'
-                                        '\n'
-                                        "This will decimate your whole model and attempt to undo the warping caused by Blender's decimation.\n"
-                                        "This will give the best results and keep blinking and lip syncing, but may have issues on some models.",
     'Scene.decimation_mode.custom.label': 'Custom',
     'Scene.decimation_mode.custom.desc': 'Custom results - custom shape key loss\n'
                                          '\n'
@@ -984,6 +987,7 @@ dictionary = {
 
     'Scene.max_tris.label': 'Tris',
     'Scene.max_tris.desc': 'The target amount of tris after decimation',
+
     # Eye Tracking
     'Scene.eye_mode.label': 'Eye Mode',
     'Scene.eye_mode.desc': 'Mode',
@@ -1053,6 +1057,7 @@ dictionary = {
 
     'Scene.mesh_name_viseme.label': 'Mesh',
     'Scene.mesh_name_viseme.desc': 'The mesh with the mouth shape keys',
+
     # Visemes
     'Scene.mouth_a.label': 'Viseme AA',
     'Scene.mouth_a.desc': 'Shape key containing mouth movement that looks like someone is saying "aa".\nDo not put empty shape keys like "Basis" in here',
@@ -1065,9 +1070,11 @@ dictionary = {
 
     'Scene.shape_intensity.label': 'Shape Key Mix Intensity',
     'Scene.shape_intensity.desc': 'Controls the strength in the creation of the shape keys. Lower for less mouth movement strength',
+
     # Bone Parenting
     'Scene.root_bone.label': 'To Parent',
     'Scene.root_bone.desc': 'List of bones that look like they could be parented together to a root bone',
+
     # Optimize
     'Scene.optimize_mode.label': 'Optimize Mode',
     'Scene.optimize_mode.desc': 'Mode',
@@ -1077,6 +1084,7 @@ dictionary = {
     'Scene.optimize_mode.material.desc': 'Some various options on material manipulation.',
     'Scene.optimize_mode.bonemerging.label': 'Bone Merging',
     'Scene.optimize_mode.bonemerging.desc': 'Allows child bones to be merged into their parents.',
+
     # Bone Merging
     'Scene.merge_ratio.label': 'Merge Ratio',
     'Scene.merge_ratio.desc': 'Higher = more bones will be merged\n'

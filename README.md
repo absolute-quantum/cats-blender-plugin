@@ -301,8 +301,14 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.18.0
-- **Added japanese translation!**
+- **Added Japanese translation!**
+  - Cats is now almost fully translated into Japanese
+  - To use it simply change your Blender language to Japanese and then restart Blender
   - Full credit goes to **Jordo** and **Ruuubick**! Thank you so much <3
+  - If you want to help translating Cats into any language, please us know!
+- **Added Smart Decimation!**
+  - This lets you decimate without loosing any shapekeys!
+  - Full credit goes to **feilen**! Tons of thanks for this awesome feature <3
 - Cats is now fully compatible with Blender 2.90
 - Changed link to a new vrm importer since the old one dropped support
 - Fixed bug in "Apply as Rest Pose" and "Pose to Shape Key" in Blender 2.90

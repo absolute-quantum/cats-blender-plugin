@@ -255,6 +255,9 @@ def register():
     # Register Updater and check for CATS update
     updater.register(bl_info, dev_branch, version_str)
 
+    # Check for missing translations
+    translations.check_missing_translations()
+
     # Set some global settings, first allowed use of globs
     globs.dev_branch = dev_branch
     globs.version_str = version_str
