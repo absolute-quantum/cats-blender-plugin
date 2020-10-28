@@ -92,7 +92,8 @@ dictionary = {
     'DecimationPanel.decimationMode': 'Decimation Mode:',
     'DecimationPanel.safeModeDesc': ' Decent results - No shape key loss',
     'DecimationPanel.halfModeDesc': ' Good results - Minimal shape key loss',
-    'DecimationPanel.fullModeDesc': ' Best results - Full shape key loss',
+    'DecimationPanel.fullModeDesc': ' Consistent results - Full shape key loss',
+    'DecimationPanel.smartModeDesc': ' Best results - Preserve shape keys',
     'DecimationPanel.customSeparateMaterials': 'Start by Separating by Materials:',
     'DecimationPanel.SeparateByMaterials.label': 'Separate by Materials',
     'DecimationPanel.customJoinMeshes': 'Stop by Joining Meshes:',
@@ -102,6 +103,14 @@ dictionary = {
     'DecimationPanel.warn.noMeshSelected': 'No mesh selected',
     'DecimationPanel.warn.emptyList': 'Both lists are empty, this equals Full Decimation!',
     'DecimationPanel.warn.correctWhitelist': 'Both whitelists are considered during decimation',
+    'DecimationPanel.preset.excellent.label': 'Excellent',
+    'DecimationPanel.preset.excellent.description': 'The maximum number of tris you can have for an Excellent rating.',
+    'DecimationPanel.preset.good.label': 'Good',
+    'DecimationPanel.preset.good.description': 'The maximum number of tris you can have for a Good rating.',
+    'DecimationPanel.preset.quest.label': 'Quest',
+    'DecimationPanel.preset.quest.description': 'The reccomended number of tris for Quest avatars.\n' \
+                                                'A hard limit will be established in the future that will not be much more than this.',
+
 
     # UI Eye tracking
     'EyeTrackingPanel.label': 'Eye Tracking',
@@ -917,11 +926,16 @@ dictionary = {
                                        'The results are better but you will lose the shape keys in some meshes.\n'
                                        'Eye Tracking and Lip Syncing should still work.',
     'Scene.decimation_mode.full.label': 'Full',
-    'Scene.decimation_mode.full.desc': 'Best results - full shape key loss\n'
+    'Scene.decimation_mode.full.desc': 'Consistent results - full shape key loss\n'
                                        '\n'
                                        'This will decimate your whole model deleting all shape keys in the process.\n'
-                                       'This will give the best results but you will lose the ability to add blinking and Lip Syncing.\n'
+                                       'This will give consistent results but you will lose the ability to add blinking and Lip Syncing.\n'
                                        'Eye Tracking will still work if you disable Eye Blinking.',
+    'Scene.decimation_mode.smart.label': "Smart",
+    'Scene.decimation_mode.smart.desc': 'Best results - repair shape keys after decimation\n'
+                                        '\n'
+                                        "This will decimate your whole model and attempt to undo the warping caused by Blender's decimation.\n"
+                                        "This will give the best results and keep blinking and lip syncing, but may have issues on some models.",
     'Scene.decimation_mode.custom.label': 'Custom',
     'Scene.decimation_mode.custom.desc': 'Custom results - custom shape key loss\n'
                                          '\n'
