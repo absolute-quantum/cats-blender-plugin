@@ -17,7 +17,7 @@ There are a lot of perks like having your name inside the plugin!
  - Optimizing model with one click!
  - Creating lip syncing
  - Creating eye tracking
- - Automatic decimation
+ - Automatic decimation (while keeping shapekeys)
  - Creating custom models easily
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
@@ -52,11 +52,11 @@ Join our Discord to report errors, suggestions and make comments!
 
 ![](https://i.imgur.com/pJfVsho.png)
 
- - If you need help figuring out how to use the tool:
+ - If you need help figuring out how to use the tool (very outdated):
 
 [![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
-Skip the step where he installs "mmd_tools" in the video below, it's not needed anymore!
+Skip the step where he installs "mmd_tools" in the video below, it's not needed anymore! (also very outdated)
 
 [![VRChat - Importing an MMD to VRChat Megatutorial!](https://img.youtube.com/vi/7P0ljQ6hU0A/0.jpg)](https://www.youtube.com/watch?v=7P0ljQ6hU0A)
 
@@ -65,6 +65,9 @@ Skip the step where he installs "mmd_tools" in the video below, it's not needed 
  - Shotariya
  - Neitri
  - Kiraver
+ - Jordo
+ - Ruubick
+ - feilen
 
 
 ## Model
@@ -190,9 +193,12 @@ This uses an internal dictionary and Google Translate.
 
 ## Decimation
 
-![](https://i.imgur.com/vozxKy9.png)
+![](https://i.imgur.com/5u3teLp.png)
 
 **Decimate your model automatically.**
+
+##### Smart Decimation
+- This will decimate all meshes while keeping every shapekey.
 
 ##### Save Decimation
 - This will only decimate meshes with no shape keys.
@@ -204,7 +210,7 @@ This uses an internal dictionary and Google Translate.
 - This will decimate your whole model deleting all shape keys in the process.
 
 ##### Custom Decimation
-- This will let you choose which meshes and shape keys should not be decimated.
+- This lets you choose the meshes and shape keys that should not be decimated.
 
 
 ## Eye Tracking
@@ -297,6 +303,7 @@ This works by checking all bones and trying to figure out if they can be grouped
 **This plugin has an auto updater.**
 It checks for a new version automatically once every day.
 
+---
 
 ## Changelog
 
