@@ -164,7 +164,7 @@ def register():
 
             ("FULL", t('Scene.decimation_mode.full.label'), t('Scene.decimation_mode.full.desc')),
 
-            ("SMART", t('Scene.decimation_mode.smart.label'), t('Scene.decimation_mode.smart.desc'))
+            ("SMART", t('Scene.decimation_mode.smart.label'), t('Scene.decimation_mode.smart.desc')),
 
             ("CUSTOM", t('Scene.decimation_mode.custom.label'), t('Scene.decimation_mode.custom.desc'))
         ],
