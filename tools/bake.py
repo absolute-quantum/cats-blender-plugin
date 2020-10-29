@@ -52,7 +52,7 @@ class BakeButton(bpy.types.Operator):
             bake_active.select_set(True)
             context.view_layer.objects.active = bake_active
 
-        print("Baking objects: " + ",".join([obj.name for obj in objects]))
+        print("Baking " + bake_name + " for objects: " + ",".join([obj.name for obj in objects]))
 
         if "SCRIPT_" + bake_name + ".png" not in bpy.data.images:
             bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_size[0], height=bake_size[1], color=background_color,
@@ -241,14 +241,15 @@ class BakeButton(bpy.types.Operator):
         # TODO: ensure render engine is set to Cycles
 
         # Bake diffuse
+        Common.switch('OBJECT')
         if pass_diffuse:
             self.bake_pass(context, "diffuse", "DIFFUSE", {"COLOR"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                SCRIPT_BAKE_SIZE, 1, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
+                (resolution, resolution), 1, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
 
         # Bake roughness, invert
         if pass_smoothness:
             self.bake_pass(context, "smoothness", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                SCRIPT_BAKE_SIZE, 1, 0, [0.0,0.0,0.0,1.0], True, int(margin * resolution / 2))
+                (resolution, resolution), 1, 0, [0.0,0.0,0.0,1.0], True, int(margin * resolution / 2))
             image = bpy.data.images["SCRIPT_smoothness.png"]
             for idx, pixel in enumerate(image.pixels):
                 # invert r, g, b, but not a
@@ -257,11 +258,15 @@ class BakeButton(bpy.types.Operator):
 
         # Pack smoothness to diffuse alpha (if selected)
         if smoothness_diffusepack and pass_diffuse and pass_smoothness:
+            print("Packing smoothness to diffuse alpha")
             diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
             smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
-            for idx, pixel in enumerate(diffuse_image.pixels):
-                if (idx % 4) == 3:
-                    pixel = smoothness_image.pixels[idx - 3]
+            pixel_buffer = list(diffuse_image.pixels)
+            smoothness_buffer = smoothness_image.pixels[:]
+            for idx in range(3, len(pixel_buffer), 4):
+                print(idx)
+                pixel_buffer[idx] = smoothness_buffer[idx - 1]
+            diffuse_image.pixels[:] = pixel_buffer
 
 
         # TODO: bake emit
@@ -275,8 +280,8 @@ class BakeButton(bpy.types.Operator):
         # Bake AO
         if pass_ao:
             # TODO: Disable rendering of all objects in the scene except these ones.
-            bake_pass("ao", "AO", {"AO"}, [obj for obj in collection.all_objects if and obj.type == "MESH"],
-                SCRIPT_BAKE_SIZE, 512, 0, [1.0,1.0,1.0,1.0], True, int(margin * resolution / 2))
+            self.bake_pass(context, "ao", "AO", {"AO"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
+                (resolution, resolution), 512, 0, [1.0,1.0,1.0,1.0], True, int(margin * resolution / 2))
             # TODO: Re-enable rendering
 
         # Bake eyes AO to full brightness if selected
@@ -304,14 +309,14 @@ class BakeButton(bpy.types.Operator):
             # Just bake the traditional way
             if pass_normal:
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                    SCRIPT_BAKE_SIZE, 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
+                    (resolution, resolution), 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
         else:
             # Join meshes
             Common.join_meshes(armature=arm_copy.name, repair_shape_keys=False)
 
             # Bake normals in object coordinates
-            bake_pass("world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                      SCRIPT_BAKE_SIZE, 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2), normal_space="OBJECT")
+            self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+                      (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2), normal_space="OBJECT")
 
             # Decimate
             bpy.ops.cats_decimate.auto_decimate()
@@ -332,7 +337,7 @@ class BakeButton(bpy.types.Operator):
         # Bake tangent normals
         if use_decimate and pass_normal:
             self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                 SCRIPT_BAKE_SIZE, 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
+                 (resolution, resolution), 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
 
 
         # Update generated material to show tangents
