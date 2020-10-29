@@ -39,9 +39,14 @@ from . import supporter as Supporter
 from . import decimation as Decimation
 from . import translate as Translate
 from . import armature_bones as Bones
+from . import settings as Settings
 from .register import register_wrap
-from mmd_tools_local import utils
 from ..translations import t
+
+from mmd_tools_local import utils
+from mmd_tools_local.panels import tool as mmd_tool
+from mmd_tools_local.panels import util_tools as mmd_util_tools
+from mmd_tools_local.panels import view_prop as mmd_view_prop
 
 # TODO:
 #  - Add check if hips bone really needs to be rotated
@@ -2081,6 +2086,36 @@ def fix_twist_bone_names(armature):
             bone_twist = armature.data.edit_bones.get(bone_type + 'Twist_' + suffix)
             if bone_twist:
                 bone_twist.name = 'z' + bone_twist.name
+
+
+def toggle_mmd_tabs(self, context):
+    mmd_cls = [
+        mmd_tool.MMDToolsObjectPanel,
+        mmd_tool.MMDDisplayItemsPanel,
+        mmd_tool.MMDMorphToolsPanel,
+        mmd_tool.MMDRigidbodySelectorPanel,
+        mmd_tool.MMDJointSelectorPanel,
+        mmd_util_tools.MMDMaterialSorter,
+        mmd_util_tools.MMDMeshSorter,
+        mmd_view_prop.MMDViewPanel,
+        mmd_view_prop.MMDSDEFPanel,
+    ]
+
+    print('Toggling mmd tabs')
+    if context.scene.show_mmd_tabs:
+        for cls in mmd_cls:
+            try:
+                bpy.utils.register_class(cls)
+            except:
+                pass
+    else:
+        for cls in reversed(mmd_cls):
+            try:
+                bpy.utils.unregister_class(cls)
+            except:
+                pass
+
+    Settings.update_settings(None, None)
 
 
 

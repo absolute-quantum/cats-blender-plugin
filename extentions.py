@@ -446,6 +446,12 @@ def register():
     )
 
     # Settings
+    Scene.show_mmd_tabs = BoolProperty(
+        name=t('Scene.show_mmd_tabs.label'),
+        description=t('Scene.show_mmd_tabs.desc'),
+        default=True,
+        update=Common.toggle_mmd_tabs
+    )
     Scene.embed_textures = BoolProperty(
         name=t('Scene.embed_textures.label'),
         description=t('Scene.embed_textures.desc'),

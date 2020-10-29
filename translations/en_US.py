@@ -1096,6 +1096,10 @@ dictionary = {
     'Scene.merge_bone.label': 'To Merge',
     'Scene.merge_bone.desc': 'List of bones that look like they could be merged together to reduce overall bones',
 
+    # Settings
+    'Scene.show_mmd_tabs.label': 'Show mmd_tools tabs',
+    'Scene.show_mmd_tabs.desc': 'Allows you to hide/show the mmd_tools tabs "MMD" and "Misc"',
+
     'Scene.embed_textures.label': 'Embed Textures on Export',
     'Scene.embed_textures.desc': 'Enable this to embed the texture files into the FBX file upon export.'
                                  '\nUnity will automatically extract these textures and put them into a separate folder.'

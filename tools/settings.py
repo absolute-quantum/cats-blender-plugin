@@ -49,8 +49,9 @@ settings_data_unchanged = None
 
 # Settings name = [Default Value, Require Blender Restart]
 settings_default = OrderedDict()
-# settings_default['use_custom_mmd_tools'] = [False, True]
+settings_default['show_mmd_tabs'] = [True, False]
 settings_default['embed_textures'] = [False, False]
+# settings_default['use_custom_mmd_tools'] = [False, True]
 
 lock_settings = False
 

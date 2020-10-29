@@ -24,7 +24,6 @@ There are a lot of perks like having your name inside the plugin!
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
  - Merging bone groups to reduce overall bone count
- - Protecting your avatars from game cache ripping
  - Auto updater
 
 *More to come!*
@@ -317,6 +316,8 @@ It checks for a new version automatically once every day.
   - This lets you decimate without loosing any shapekeys!
   - Full credit goes to **feilen**! Tons of thanks for this awesome feature <3
 - Cats is now fully compatible with Blender 2.90
+- Added "Show mmd_tools tabs" option to Settings
+  - This allows you show and hide the "MMD" and "Misc" tabs added by the mmd_tools plugin
 - Changed link to a new vrm importer since the old one dropped support
 - Fixed bug in "Apply as Rest Pose" and "Pose to Shape Key" in Blender 2.90
 - More fixes for Blender 2.90

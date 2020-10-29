@@ -985,6 +985,7 @@ dictionary = {
 
     'Scene.max_tris.label': 'トリス',
     'Scene.max_tris.desc': 'The target amount of tris after decimation',
+
     # Eye Tracking
     'Scene.eye_mode.label': 'アイモード',
     'Scene.eye_mode.desc': 'Mode',
@@ -1054,6 +1055,7 @@ dictionary = {
 
     'Scene.mesh_name_viseme.label': 'メッシュ',
     'Scene.mesh_name_viseme.desc': 'The mesh with the mouth shape keys',
+
     # Visemes
     'Scene.mouth_a.label': 'バイセム AA',
     'Scene.mouth_a.desc': 'Shape key containing mouth movement that looks like someone is saying "aa".\nDo not put empty shape keys like "Basis" in here',
@@ -1066,9 +1068,11 @@ dictionary = {
 
     'Scene.shape_intensity.label': 'シェイプキーミックスの強度',
     'Scene.shape_intensity.desc': 'Controls the strength in the creation of the shape keys. Lower for less mouth movement strength',
+
     # Bone Parenting
     'Scene.root_bone.label': '親に',
     'Scene.root_bone.desc': 'List of bones that look like they could be parented together to a root bone',
+
     # Optimize
     'Scene.optimize_mode.label': '最適化モード',
     'Scene.optimize_mode.desc': 'Mode',
@@ -1078,6 +1082,7 @@ dictionary = {
     'Scene.optimize_mode.material.desc': 'Some various options on material manipulation.',
     'Scene.optimize_mode.bonemerging.label': '骨のマージ',
     'Scene.optimize_mode.bonemerging.desc': 'Allows child bones to be merged into their parents.',
+
     # Bone Merging
     'Scene.merge_ratio.label': 'マージ率',
     'Scene.merge_ratio.desc': 'Higher = more bones will be merged\n'
@@ -1088,6 +1093,10 @@ dictionary = {
 
     'Scene.merge_bone.label': 'マージするには',
     'Scene.merge_bone.desc': 'List of bones that look like they could be merged together to reduce overall bones',
+
+    # Settings
+    'Scene.show_mmd_tabs.label': 'Show mmd_tools tabs',
+    'Scene.show_mmd_tabs.desc': 'Allows you to hide/show the mmd_tools tabs "MMD" and "Misc"',
 
     'Scene.embed_textures.label': 'エクスポート時にテクスチャを埋め込む',
     'Scene.embed_textures.desc': 'Enable this to embed the texture files into the FBX file upon export.'
