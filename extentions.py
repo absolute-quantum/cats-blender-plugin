@@ -167,6 +167,99 @@ def register():
         default='SMART'
     )
 
+    # Bake
+    Scene.bake_resolution = IntProperty(
+        name="Resolution",
+        description="Output resolution for the textures.\n" \
+                    "- 2048 is typical for desktop use.\n" \
+                    "- 1024 is reccomended for the Quest",
+        default=2048,
+        min=128,
+        max=4096
+    )
+
+    Scene.bake_use_decimation = BoolProperty(
+        name='Decimate',
+        description='Reduce polycount before baking using decimation settings',
+        default=True
+    )
+
+    Scene.bake_generate_uvmap = BoolProperty(
+        name='Generate single UVMap',
+        description="Re-pack islands for your mesh to a new non-overlapping UVMap.\n" \
+                    "Only disable if your UVs are non-overlapping already.\n" \
+                    "This will leave any map named \"Detail Map\" alone.",
+
+        default=True
+    )
+
+    Scene.bake_prioritize_face = BoolProperty(
+        name='Prioritize Face/Eyes',
+        description='Scale any UV islands attached to the head/children by a factor of 2',
+        default=True
+    )
+
+    Scene.bake_illuminate_eyes = BoolProperty(
+        name='Set eyes to full brightness',
+        description='Relight LeftEye and RightEye to be full brightness.\n' \
+                    "Without this, the eyes will have the shadow of the surrounding socket baked in,\n"
+                    "which doesn't animate well",
+        default=True
+    )
+
+    Scene.bake_pass_smoothness = BoolProperty(
+        name='Smoothness',
+        description='Bakes Roughness and then inverts the values.\n' \
+                    'To use this, it needs to be packed to the Alpha channel of either Diffuse or Metallic.',
+        default=True
+    )
+
+    Scene.bake_smoothness_diffusepack = BoolProperty(
+        name='Pack to diffuse alpha',
+        description='Copies the smoothness map to the alpha channel of the diffuse map.\n' \
+                    "Make sure to set Smoothness > Source to 'Albedo Alpha' in your Unity material",
+        default=True
+    )
+
+    Scene.bake_pass_diffuse = BoolProperty(
+        name='Diffuse (Color)',
+        description='Bakes diffuse, un-lighted color. Usually you will want this.',
+        default=True
+    )
+
+    Scene.bake_pass_normal = BoolProperty(
+        name='Normal (Bump)',
+        description="Bakes a normal (bump) map. Allows you to keep the shading of a complex object with\n" \
+                    "the geometry of a simple object. If you have selected 'Decimate', it will create a map\n" \
+                    "that makes the low res output look like the high res input.",
+        default=True
+    )
+
+    Scene.bake_pass_ao = BoolProperty(
+        name='Ambient Occlusion',
+        description='Bakes Ambient Occlusion, non-projected shadows. Adds a good amount of detail to your model.',
+        default=True
+    )
+
+    Scene.bake_pass_questdiffuse = BoolProperty(
+        name='Quest Diffuse (Color+AO)',
+        description='Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.',
+        default=True
+    )
+
+    Scene.bake_questdiffuse_opacity = FloatProperty(
+        name="AO Opacity",
+        description="The opacity of the shadows to blend onto the Diffuse map.\n" \
+                    "This should match the unity slider for AO on the Desktop version.",
+        default=0.75,
+        min=0.0,
+        max=1.0,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+
     Scene.selection_mode = EnumProperty(
         name=t('Scene.selection_mode.label'),
         description=t('Scene.selection_mode.desc'),
