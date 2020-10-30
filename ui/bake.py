@@ -23,6 +23,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
 
         # TODO: Quest (decimate) and Desktop (nodecimate) presets
 
+        col.label(text="Presets:")
+
         col.label(text="General options:")
         row = col.row(align=True)
         row.prop(context.scene, 'bake_resolution', expand=True)
@@ -68,11 +70,13 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         if context.scene.bake_pass_diffuse and context.scene.bake_pass_ao:
             row = col.row(align=True)
             row.prop(context.scene, 'bake_pass_questdiffuse', expand=True)
-            col.separator()
             if context.scene.bake_pass_questdiffuse:
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_questdiffuse_opacity', expand=True)
+            col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_pass_emit', expand=True)
         row = col.row(align=True)
         col.separator()
         col.separator()

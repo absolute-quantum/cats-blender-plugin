@@ -189,7 +189,7 @@ def register():
         description="Re-pack islands for your mesh to a new non-overlapping UVMap.\n" \
                     "Only disable if your UVs are non-overlapping already.\n" \
                     "This will leave any map named \"Detail Map\" alone.\n" \
-                    "Uses UVPackMaster where available for more efficient UVs",
+                    "Uses UVPackMaster where available for more efficient UVs, make sure the window is showing",
 
         default=True
     )
@@ -252,7 +252,8 @@ def register():
         name='Normal (Bump)',
         description="Bakes a normal (bump) map. Allows you to keep the shading of a complex object with\n" \
                     "the geometry of a simple object. If you have selected 'Decimate', it will create a map\n" \
-                    "that makes the low res output look like the high res input.",
+                    "that makes the low res output look like the high res input.\n" \
+                    "Will not work well if you have self-intersecting islands",
         default=True
     )
 
@@ -267,6 +268,40 @@ def register():
         name='Quest Diffuse (Color+AO)',
         description='Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.',
         default=True
+    )
+
+    Scene.bake_pass_emit = BoolProperty(
+        name='Emit',
+        description='Bakes Emit, glowyness',
+        default=False
+    )
+
+    Scene.bake_show_advanced = BoolProperty(
+        name='Advanced',
+        description='Show advanced passes. These are not natively bakeable in Blender,\n' \
+                    'so they may not work as well',
+        default=False
+    )
+
+    Scene.bake_pass_alpha = BoolProperty(
+        name='Transparency',
+        description='Bakes transparency by connecting the last Principled BSDF Alpha input\n' \
+                    'to the Base Color input and baking Diffuse',
+        default=False
+    )
+
+    Scene.bake_alpha_diffusepack = BoolProperty(
+        name='Pack to diffuse alpha',
+        description='Copies the alpha map to the alpha channel of the diffuse map.\n' \
+                    "This will override any existing alpha map",
+        default=True
+    )
+
+    Scene.bake_pass_metallic = BoolProperty(
+        name='Metallic',
+        description='Bakes metallic by connecting the last Principled BSDF Metallic input\n' \
+                    'to the Base Color input and baking Diffuse',
+        default=False
     )
 
     Scene.bake_questdiffuse_opacity = FloatProperty(

@@ -178,6 +178,7 @@ class BakeButton(bpy.types.Operator):
         pass_smoothness = context.scene.bake_pass_smoothness
         pass_ao = context.scene.bake_pass_ao
         pass_questdiffuse = context.scene.bake_pass_questdiffuse
+        pass_emit = context.scene.bake_pass_emit
 
         # Pass options
         illuminate_eyes = context.scene.bake_illuminate_eyes
@@ -247,20 +248,34 @@ class BakeButton(bpy.types.Operator):
                                         uv_layer[loop].uv.x *= prioritize_factor
                                         uv_layer[loop].uv.y *= prioritize_factor
 
+
+            # UVPackmaster doesn't seem to like huge islands.
+            bpy.ops.object.mode_set(mode='OBJECT')
+            for obj in bpy.context.selected_objects:
+                uv_layer = obj.data.uv_layers["CATS UV"].data
+                for poly in obj.data.polygons:
+                    for loop in poly.loop_indices:
+                        uv_layer[loop].uv.x *= 0.05
+                        uv_layer[loop].uv.y *= 0.05
+
             # Pack islands. Optionally use UVPackMaster if it's available
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.uv.select_all(action='SELECT')
-            try: # detect if UVPackMaster installed and configured
+
+            # detect if UVPackMaster installed and configured
+            try: # TODO: UVP doesn't respect margins when called like this, find out why
                 context.scene.uvp2_props.normalize_islands = False
                 context.scene.uvp2_props.lock_overlapping_mode = '0' if use_decimation else '2'
                 context.scene.uvp2_props.pack_to_others = False
                 context.scene.uvp2_props.margin = margin
                 context.scene.uvp2_props.similarity_threshold = 3
-                context.scene.uvp2_props.precision = 500
+                context.scene.uvp2_props.precision = 1000
                 bpy.ops.uvpackmaster2.uv_pack()
             except AttributeError:
                 bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+
+        # TODO: Bake selected to active option. Seperate by materials, then bake selected to active for each part
 
         # Bake diffuse
         Common.switch('OBJECT')
@@ -293,7 +308,10 @@ class BakeButton(bpy.types.Operator):
             diffuse_image.pixels[:] = pixel_buffer
 
 
-        # TODO: bake emit
+        # bake emit TODO: test
+        if pass_emit:
+            self.bake_pass(context, "emit", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+                (resolution, resolution), 1, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
 
         # TODO: advanced: bake alpha from last bsdf output
 
@@ -366,6 +384,7 @@ class BakeButton(bpy.types.Operator):
                       (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2), normal_space="OBJECT")
 
             # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
+            # TODO: We need to use our own settings: own tri count, and always use Smart decimation mode
             bpy.ops.cats_decimation.auto_decimate(armature_name=arm_copy.name, preserve_seams=preserve_seams, seperate_materials=False)
 
         # Remove all other materials
