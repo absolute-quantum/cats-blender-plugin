@@ -185,18 +185,30 @@ def register():
     )
 
     Scene.bake_generate_uvmap = BoolProperty(
-        name='Generate single UVMap',
+        name='Generate UVMap',
         description="Re-pack islands for your mesh to a new non-overlapping UVMap.\n" \
                     "Only disable if your UVs are non-overlapping already.\n" \
-                    "This will leave any map named \"Detail Map\" alone.",
+                    "This will leave any map named \"Detail Map\" alone.\n" \
+                    "Uses UVPackMaster where available for more efficient UVs",
 
         default=True
     )
 
     Scene.bake_prioritize_face = BoolProperty(
         name='Prioritize Face/Eyes',
-        description='Scale any UV islands attached to the head/children by a factor of 2',
+        description='Scale any UV islands attached to the head/eyes by a given factor.',
         default=True
+    )
+
+    Scene.bake_face_scale = FloatProperty(
+        name="Face/Eyes Scale",
+        description="How much to scale up the face/eyes textures.",
+        default=3.0,
+        min=0.5,
+        max=4.0,
+        step=0.25,
+        precision=2,
+        subtype='FACTOR'
     )
 
     Scene.bake_illuminate_eyes = BoolProperty(
@@ -210,7 +222,8 @@ def register():
     Scene.bake_pass_smoothness = BoolProperty(
         name='Smoothness',
         description='Bakes Roughness and then inverts the values.\n' \
-                    'To use this, it needs to be packed to the Alpha channel of either Diffuse or Metallic.',
+                    'To use this, it needs to be packed to the Alpha channel of either Diffuse or Metallic.\n' \
+                    'Not neccesary if your mesh has a global roughness value',
         default=True
     )
 
@@ -245,8 +258,9 @@ def register():
 
     Scene.bake_pass_ao = BoolProperty(
         name='Ambient Occlusion',
-        description='Bakes Ambient Occlusion, non-projected shadows. Adds a good amount of detail to your model.',
-        default=True
+        description='Bakes Ambient Occlusion, non-projected shadows. Adds a good amount of detail to your model.\n' \
+                    'Takes a fairly long time to bake',
+        default=False
     )
 
     Scene.bake_pass_questdiffuse = BoolProperty(

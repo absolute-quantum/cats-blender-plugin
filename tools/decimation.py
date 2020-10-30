@@ -343,6 +343,7 @@ class AutoDecimateButton(bpy.types.Operator):
                 Common.switch('EDIT')
                 bpy.ops.mesh.select_mode(type="VERT")
                 bpy.ops.mesh.select_all(action="SELECT")
+                # TODO: Fix decimation calculation when pinning seams
                 if self.preserve_seams:
                     bpy.ops.mesh.select_all(action="DESELECT")
                     bpy.ops.uv.seams_from_islands()

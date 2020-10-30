@@ -29,6 +29,8 @@ from . import common as Common
 from .register import register_wrap
 from ..translations import t
 
+# TODO: Button to auto-detect bake passes from nodes
+
 @register_wrap
 class BakeButton(bpy.types.Operator):
     bl_idname = 'cats_bake.bake'
@@ -38,14 +40,7 @@ class BakeButton(bpy.types.Operator):
                      "Depending on your machine, this could take an hour or more."
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    @classmethod
-    def poll(cls, context):
-        #if not meshes or len(meshes) == 0:
-        #    return False
-        return True
-
     # "Bake pass" function. Run a single bake to "<bake_name>.png" against all selected objects.
-    # When baking selected to active, only bake two objects at a time.
     def bake_pass(self, context, bake_name, bake_type, bake_pass_filter, objects, bake_size, bake_samples, bake_ray_distance, background_color, clear, bake_margin, bake_active=None, bake_multires=False, normal_space='TANGENT'):
         bpy.ops.object.select_all(action='DESELECT')
         if bake_active is not None:
@@ -63,8 +58,6 @@ class BakeButton(bpy.types.Operator):
             image.generated_color = background_color
             image.generated_width=bake_size[0]
             image.generated_height=bake_size[1]
-            image.pixels[:] = background_color * bake_size[0] * bake_size[1]
-            image.scale(bake_size[0], bake_size[1])
             if bake_type == 'NORMAL' or bake_type == 'ROUGHNESS':
                 image.colorspace_settings.name = 'Non-Color'
             if bake_type == 'DIFFUSE': # For packing smoothness to alpha
@@ -174,7 +167,7 @@ class BakeButton(bpy.types.Operator):
         preserve_seams = context.scene.bake_preserve_seams
         generate_uvmap = context.scene.bake_generate_uvmap
         prioritize_face = context.scene.bake_prioritize_face
-        prioritize_factor = 2.0
+        prioritize_factor = context.scene.bake_face_scale
         margin = 0.01
 
         # TODO: Option to seperate by loose parts and bake selected to active
@@ -225,33 +218,34 @@ class BakeButton(bpy.types.Operator):
 
             # Select all islands belonging to 'Head', 'LeftEye' and 'RightEye', separate islands, enlarge by 200% if selected
             # TODO: Look at all bones hierarchically from 'Head' and select those
-            for obj in collection.all_objects:
-                if obj.type != "MESH":
-                    continue
-                context.view_layer.objects.active = obj
-                for group in ["Head", "LeftEye", "RightEye"]:
-                    if group in obj.vertex_groups:
-                        print("{} found in {}".format(group, obj.name))
-                        bpy.ops.object.mode_set(mode='EDIT')
-                        bpy.ops.uv.select_all(action='DESELECT')
-                        bpy.ops.mesh.select_all(action='DESELECT')
-                        # Select all vertices in it
-                        obj.vertex_groups.active = obj.vertex_groups[group]
-                        bpy.ops.object.vertex_group_select()
-                        # Synchronize
-                        bpy.ops.object.mode_set(mode='OBJECT')
-                        bpy.ops.object.mode_set(mode='EDIT')
-                        # Then select all UVs
-                        bpy.ops.uv.select_all(action='SELECT')
-                        bpy.ops.object.mode_set(mode='OBJECT')
+            if prioritize_face:
+                for obj in collection.all_objects:
+                    if obj.type != "MESH":
+                        continue
+                    context.view_layer.objects.active = obj
+                    for group in ["Head", "LeftEye", "RightEye"]:
+                        if group in obj.vertex_groups:
+                            print("{} found in {}".format(group, obj.name))
+                            bpy.ops.object.mode_set(mode='EDIT')
+                            bpy.ops.uv.select_all(action='DESELECT')
+                            bpy.ops.mesh.select_all(action='DESELECT')
+                            # Select all vertices in it
+                            obj.vertex_groups.active = obj.vertex_groups[group]
+                            bpy.ops.object.vertex_group_select()
+                            # Synchronize
+                            bpy.ops.object.mode_set(mode='OBJECT')
+                            bpy.ops.object.mode_set(mode='EDIT')
+                            # Then select all UVs
+                            bpy.ops.uv.select_all(action='SELECT')
+                            bpy.ops.object.mode_set(mode='OBJECT')
 
-                        # Then for each UV (cause of the viewport thing) scale up by the selected factor
-                        uv_layer = obj.data.uv_layers["CATS UV"].data
-                        for poly in obj.data.polygons:
-                            for loop in poly.loop_indices:
-                                if uv_layer[loop].select:
-                                    uv_layer[loop].uv.x *= prioritize_factor
-                                    uv_layer[loop].uv.y *= prioritize_factor
+                            # Then for each UV (cause of the viewport thing) scale up by the selected factor
+                            uv_layer = obj.data.uv_layers["CATS UV"].data
+                            for poly in obj.data.polygons:
+                                for loop in poly.loop_indices:
+                                    if uv_layer[loop].select:
+                                        uv_layer[loop].uv.x *= prioritize_factor
+                                        uv_layer[loop].uv.y *= prioritize_factor
 
             # Pack islands. Optionally use UVPackMaster if it's available
             bpy.ops.object.mode_set(mode='EDIT')
@@ -301,18 +295,35 @@ class BakeButton(bpy.types.Operator):
 
         # TODO: bake emit
 
-        # TODO: advanced: bake alpha from diffuse node setup
+        # TODO: advanced: bake alpha from last bsdf output
 
-        # TODO: advanced: bake metallic from diffuse node setup
+        # TODO: advanced: bake metallic from last bsdf output
 
         # TODO: advanced: bake detail mask from diffuse node setup
 
         # Bake AO
         if pass_ao:
-            # TODO: Add modifiers that prevent LeftEye and RightEye being baked
+            if illuminate_eyes:
+                # Add modifiers that prevent LeftEye and RightEye being baked
+                for obj in collection.all_objects:
+                    if obj.type == "MESH" and "LeftEye" in obj.vertex_groups:
+                        leyemask = obj.modifiers.new(type='MASK', name="leyemask")
+                        leyemask.mode = "VERTEX_GROUP"
+                        leyemask.vertex_group = "LeftEye"
+                        leyemask.invert_vertex_group = True
+                    if obj.type == "MESH" and "RightEye" in obj.vertex_groups:
+                        reyemask = obj.modifiers.new(type='MASK', name="reyemask")
+                        reyemask.mode = "VERTEX_GROUP"
+                        reyemask.vertex_group = "RightEye"
+                        reyemask.invert_vertex_group = True
             # TODO: Disable rendering of all objects in the scene except these ones.
             self.bake_pass(context, "ao", "AO", {"AO"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
                 (resolution, resolution), 512, 0, [1.0,1.0,1.0,1.0], True, int(margin * resolution / 2))
+            if illuminate_eyes:
+                if "leyemask" in obj.modifiers:
+                    obj.modifiers.remove(leyemask)
+                if "reyemask" in obj.modifiers:
+                    obj.modifiers.remove(reyemask)
             # TODO: Re-enable rendering
 
         # Blend diffuse and AO to create Quest Diffuse (if selected)
@@ -373,6 +384,7 @@ class BakeButton(bpy.types.Operator):
         # add a normal map and image texture to connect the world texture, if it exists
         tree = mat.node_tree
         bsdfnode = next(node for node in tree.nodes if node.type == "BSDF_PRINCIPLED")
+        # TODO: Copy BSDF default properties from the largest origin mesh which has BSDF
         bsdfnode.inputs["Specular"].default_value = 0
         if pass_normal:
             normaltexnode = tree.nodes.new("ShaderNodeTexImage")
@@ -412,6 +424,7 @@ class BakeButton(bpy.types.Operator):
             diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
             diffusetexnode.image = bpy.data.images["SCRIPT_diffuse.png"]
             tree.links.new(bsdfnode.inputs["Base Color"], diffusetexnode.outputs["Color"])
+            # TODO: If AO, blend in AO. If questdiffuse, just use that
         if pass_smoothness:
             if smoothness_diffusepack and pass_diffuse:
                 invertnode = tree.nodes.new("ShaderNodeInvert")
@@ -426,3 +439,7 @@ class BakeButton(bpy.types.Operator):
 
         # Move armature so we can see it
         arm_copy.location.x += arm_copy.dimensions.x
+
+        # TODO: Optionally cleanup bones as a last step
+
+        print("BAKE COMPLETE!")
