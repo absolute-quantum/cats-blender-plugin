@@ -12,6 +12,7 @@ if "bpy" not in locals():
     from . import copy_protection
     from . import credits
     from . import decimation
+    from . import bake
     from . import eyetracking
     from . import fbx_patch
     from . import importer
@@ -36,6 +37,7 @@ else:
     importlib.reload(copy_protection)
     importlib.reload(credits)
     importlib.reload(decimation)
+    importlib.reload(bake)
     importlib.reload(eyetracking)
     importlib.reload(fbx_patch)
     importlib.reload(importer)

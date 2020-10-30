@@ -227,6 +227,14 @@ def register():
         default=True
     )
 
+    Scene.bake_preserve_seams = BoolProperty(
+        name="Preserve seams",
+        description='Forces the Decimate operation to preserve vertices making up seams, preventing hard edges along seams.\n' \
+                    'May result in less ideal geometry.\n' \
+                    "Use if you notice ugly edges along your texture seams.",
+        default=False
+    )
+
     Scene.bake_pass_normal = BoolProperty(
         name='Normal (Bump)',
         description="Bakes a normal (bump) map. Allows you to keep the shading of a complex object with\n" \

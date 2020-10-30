@@ -151,6 +151,18 @@ class AutoDecimateButton(bpy.types.Operator):
     bl_description = t('AutoDecimateButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    armature_name: bpy.props.StringProperty(
+        name = 'armature_name',
+    )
+
+    preserve_seams: bpy.props.BoolProperty(
+        name = 'preserve_seams',
+    )
+
+    seperate_materials: bpy.props.BoolProperty(
+        name = 'seperate_materials'
+    )
+
     def execute(self, context):
         meshes = Common.get_meshes_objects()
         if not meshes or len(meshes) == 0:
@@ -160,12 +172,13 @@ class AutoDecimateButton(bpy.types.Operator):
         saved_data = Common.SavedData()
 
         if context.scene.decimation_mode != 'CUSTOM':
-            mesh = Common.join_meshes(repair_shape_keys=False)
-            Common.separate_by_materials(context, mesh)
+            mesh = Common.join_meshes(repair_shape_keys=False, armature_name=self.armature_name)
+            if self.seperate_materials:
+                Common.separate_by_materials(context, mesh)
 
         self.decimate(context)
 
-        Common.join_meshes()
+        Common.join_meshes(armature_name=self.armature_name)
 
         saved_data.load()
 
@@ -186,7 +199,7 @@ class AutoDecimateButton(bpy.types.Operator):
         current_tris_count = 0
         tris_count = 0
 
-        meshes_obj = Common.get_meshes_objects()
+        meshes_obj = Common.get_meshes_objects(armature_name=self.armature_name)
 
         for mesh in meshes_obj:
             Common.set_active(mesh)
@@ -330,6 +343,20 @@ class AutoDecimateButton(bpy.types.Operator):
                 Common.switch('EDIT')
                 bpy.ops.mesh.select_mode(type="VERT")
                 bpy.ops.mesh.select_all(action="SELECT")
+                if self.preserve_seams:
+                    bpy.ops.mesh.select_all(action="DESELECT")
+                    bpy.ops.uv.seams_from_islands()
+
+                    # select all seams
+                    Common.switch('OBJECT')
+                    me = mesh_obj.data
+                    for edge in me.edges:
+                        if edge.use_seam:
+                            edge.select = True
+
+                    Common.switch('EDIT')
+                    bpy.ops.mesh.select_all(action="INVERT")
+
                 bpy.ops.mesh.decimate(ratio=decimation,
                                       use_vertex_group=False,
                                       vertex_group_factor=1.0,
@@ -346,8 +373,9 @@ class AutoDecimateButton(bpy.types.Operator):
             tris_count = tris_count - tris
             # Repair shape keys if SMART mode is enabled
             if smart_decimation and Common.has_shapekeys(mesh_obj):
-                for idx in range(1, len(mesh_obj.data.shape_keys.key_blocks) - 2):
-                    print("Key: " + mesh_obj.data.shape_keys.key_blocks[idx].name)
+                for idx in range(1, len(mesh_obj.data.shape_keys.key_blocks) - 1):
+                    if "Reverted" in mesh_obj.data.shape_keys.key_blocks[idx].name:
+                        continue
                     mesh_obj.active_shape_key_index = idx
                     Common.switch('EDIT')
                     bpy.ops.mesh.blend_from_shape(shape="CATS Basis", blend=-1.0, add=True)

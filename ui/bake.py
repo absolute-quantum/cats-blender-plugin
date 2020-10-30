@@ -21,11 +21,17 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
+        # TODO: Quest (decimate) and Desktop (nodecimate) presets
+
         col.label(text="General options:")
         row = col.row(align=True)
         row.prop(context.scene, 'bake_resolution', expand=True)
         row = col.row(align=True)
         row.prop(context.scene, 'bake_use_decimation', expand=True)
+        if context.scene.bake_use_decimation:
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_preserve_seams', expand=True)
         row = col.row(align=True)
         row.prop(context.scene, 'bake_generate_uvmap', expand=True)
         if context.scene.bake_generate_uvmap:
