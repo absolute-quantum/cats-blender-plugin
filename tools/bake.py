@@ -57,7 +57,7 @@ class BakeButton(bpy.types.Operator):
 
         if "SCRIPT_" + bake_name + ".png" not in bpy.data.images:
             bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_size[0], height=bake_size[1], color=background_color,
-                generated_type="BLANK", alpha=True, float_buffer=normal_space=='OBJECT')
+                generated_type="BLANK", alpha=True)
         image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
         if clear:
             image.alpha_mode = "NONE"
@@ -79,6 +79,7 @@ class BakeButton(bpy.types.Operator):
                 if slot.material:
                     for node in obj.active_material.node_tree.nodes:
                         if node.label == "bake_" + bake_name:
+                            # TODO: restrict to 'Value' type nodes
                             node.outputs["Value"].default_value = 1
 
         # For all materials in all objects, add or repurpose an image texture node named "SCRIPT_BAKE"
@@ -127,6 +128,7 @@ class BakeButton(bpy.types.Operator):
                 if slot.material:
                     for node in obj.active_material.node_tree.nodes:
                         if node.label == "bake_" + bake_name:
+                            # TODO: restrict to 'Value' type nodes
                             node.outputs["Value"].default_value = 0
 
     def copy_ob(self, ob, parent, collection):
@@ -321,7 +323,7 @@ class BakeButton(bpy.types.Operator):
             diffuse_image.pixels[:] = pixel_buffer
 
 
-        # bake emit TODO: test
+        # bake emit
         if pass_emit:
             self.bake_pass(context, "emit", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                 (resolution, resolution), 1, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
@@ -398,8 +400,6 @@ class BakeButton(bpy.types.Operator):
                         context.view_layer.objects.active = obj
                         bpy.ops.object.transform_apply(location = True, scale = True, rotation = True)
 
-
-
             # Bake normals in object coordinates
             if pass_normal:
                 self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
@@ -425,7 +425,6 @@ class BakeButton(bpy.types.Operator):
         # add a normal map and image texture to connect the world texture, if it exists
         tree = mat.node_tree
         bsdfnode = next(node for node in tree.nodes if node.type == "BSDF_PRINCIPLED")
-        # TODO: Copy BSDF default properties from the largest origin mesh which has BSDF
         bsdfnode.inputs["Specular"].default_value = 0
         if pass_normal:
             normaltexnode = tree.nodes.new("ShaderNodeTexImage")
@@ -460,16 +459,6 @@ class BakeButton(bpy.types.Operator):
         if use_decimation and pass_normal:
             self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                  (resolution, resolution), 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
-
-            # Blend in original tangent normals
-            #print("Adding highres tangent normals to lowpoly tangent")
-            #normal_image = bpy.data.images["SCRIPT_normal.png"]
-            #origin_image = bpy.data.images["SCRIPT_origin_tangent.png"]
-            #pixel_buffer = list(normal_image.pixels)
-            #origin_buffer = origin_image.pixels[:]
-            #for idx in range(3, len(pixel_buffer), 4):
-            #    pixel_buffer[idx] = max(-1, min(1, pixel_buffer[idx] + origin_buffer[idx]))
-            #normal_image.pixels[:] = pixel_buffer
 
         # Update generated material to preview all of our passes
         if pass_normal:
