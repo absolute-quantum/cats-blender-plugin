@@ -358,6 +358,8 @@ class AutoDecimateButton(bpy.types.Operator):
                     Common.switch('EDIT')
                     bpy.ops.mesh.select_all(action="INVERT")
 
+                #TODO: If we can create a vertex group with weights roughly equal to 'how likely is this to be animated',
+                #      we can create much better topology by inverse-weighting against it.
                 bpy.ops.mesh.decimate(ratio=decimation,
                                       use_vertex_group=False,
                                       vertex_group_factor=1.0,

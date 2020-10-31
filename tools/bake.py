@@ -31,8 +31,9 @@ from ..translations import t
 
 # TODO: Button to auto-detect bake passes from nodes
 # Diffuse: on if >1 material has different color inputs or if any has non-default base color input on bsdf
-# Normal: on if any normals connected or if decimating
 # Smoothness: similar to diffuse
+# Emit: similar to diffuse
+# Normal: on if any normals connected or if decimating
 # Pack to alpha: on unless alpha bake
 # AO: on unless a toon bsdf shader node is detected anywhere
 # diffuse ao: on if AO on
@@ -179,6 +180,7 @@ class BakeButton(bpy.types.Operator):
         # TODO: Option to smart UV project as a last ditch effort
         prioritize_face = context.scene.bake_prioritize_face
         prioritize_factor = context.scene.bake_face_scale
+        smart_uvmap = context.scene.bake_smart_uvmap
         margin = 0.01
 
         # TODO: Option to seperate by loose parts and bake selected to active
@@ -223,6 +225,18 @@ class BakeButton(bpy.types.Operator):
                     context.view_layer.objects.active = child
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
+                    if smart_uvmap:
+                        idx = child.data.uv_layers.active_index
+                        child.data.uv_layers.active_index = len(child.data.uv_layers) - 1
+                        bpy.ops.object.editmode_toggle()
+                        bpy.ops.mesh.select_all(action='SELECT')
+                        bpy.ops.uv.select_all(action='SELECT')
+                        bpy.ops.uv.smart_project(angle_limit=90.0, island_margin=0.0, user_area_weight=0.0,
+                                                 use_aspect=True, stretch_to_bounds=True)
+                        bpy.ops.object.editmode_toggle()
+                        child.data.uv_layers.active_index = idx
+
+            # TODO: cleanup, all editmode_toggle -> common.etc
 
             # Select all meshes. Select all UVs. Average islands scale
             context.view_layer.objects.active = next(child for child in arm_copy.children if child.type == "MESH")
@@ -232,7 +246,7 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.uv.average_islands_scale() # Use blender average so we can make our own tweaks.
             bpy.ops.object.mode_set(mode='OBJECT')
 
-            # Select all islands belonging to 'Head', 'LeftEye' and 'RightEye', separate islands, enlarge by 200% if selected
+            # Select all islands belonging to 'Head', 'LeftEye' and 'RightEye', separate islands, enlarge by factor if selected
             # TODO: Look at all bones hierarchically from 'Head' and select those
             if prioritize_face:
                 for obj in collection.all_objects:
@@ -264,20 +278,11 @@ class BakeButton(bpy.types.Operator):
                                         uv_layer[loop].uv.y *= prioritize_factor
 
 
-            # UVPackmaster doesn't seem to like huge islands.
-            bpy.ops.object.mode_set(mode='OBJECT')
-            for obj in bpy.context.selected_objects:
-                uv_layer = obj.data.uv_layers["CATS UV"].data
-                for poly in obj.data.polygons:
-                    for loop in poly.loop_indices:
-                        uv_layer[loop].uv.x *= 0.05
-                        uv_layer[loop].uv.y *= 0.05
-
             # Pack islands. Optionally use UVPackMaster if it's available
             bpy.ops.object.mode_set(mode='EDIT')
             bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.uv.select_all(action='SELECT')
-
+            bpy.ops.uv.pack_islands(rotate=True, margin=margin)
             # detect if UVPackMaster installed and configured
             try: # UVP doesn't respect margins when called like this, find out why
                 context.scene.uvp2_props.normalize_islands = False
@@ -288,7 +293,7 @@ class BakeButton(bpy.types.Operator):
                 context.scene.uvp2_props.precision = 1000
                 bpy.ops.uvpackmaster2.uv_pack()
             except AttributeError:
-                bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+                pass
 
         # TODO: Bake selected to active option. Seperate by materials, then bake selected to active for each part
 
@@ -401,6 +406,7 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.object.transform_apply(location = True, scale = True, rotation = True)
 
             # Bake normals in object coordinates
+            # TODO: 32-bit floats so we don't lose detail
             if pass_normal:
                 self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                       (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2), normal_space="OBJECT")

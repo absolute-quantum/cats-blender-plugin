@@ -44,6 +44,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_face_scale', expand=True)
+            if context.scene.bake_prioritize_face:
+                row = col.row(align=True)
+                row.separator()
+                row.prop(context.scene, 'bake_smart_uvmap', expand=True)
         col.separator()
         row = col.row(align=True)
         col.label(text="Bake passes:")

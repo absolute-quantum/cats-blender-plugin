@@ -194,6 +194,14 @@ def register():
         default=True
     )
 
+    Scene.bake_smart_uvmap = BoolProperty(
+        name='Smart UV Project',
+        description="Generate a new UVMap with Blender's Smart UV Project option.\n" \
+                    "Will avoid overlaps but doesn't give the best results.\n" \
+                    "Use if overlaps are hard to avoid",
+        default=False
+    )
+
     Scene.bake_prioritize_face = BoolProperty(
         name='Prioritize Face/Eyes',
         description='Scale any UV islands attached to the head/eyes by a given factor.',
@@ -259,13 +267,15 @@ def register():
 
     Scene.bake_normal_apply_trans = BoolProperty(
         name='Apply transforms',
-        description="Applies offsets while baking normals. Neccesary if your model has many materials with different normal maps",
+        description="Applies offsets while baking normals. Neccesary if your model has many materials with different normal maps\n" \
+                    "Turn this off if applying location causes problems with your model",
         default=True
     )
 
     Scene.bake_pass_ao = BoolProperty(
         name='Ambient Occlusion',
-        description='Bakes Ambient Occlusion, non-projected shadows. Adds a good amount of detail to your model.\n' \
+        description='Bakes Ambient Occlusion, non-projected shadows. Adds a significant amount of detail to your model.\n' \
+                    'Reccomended for non-toon style avatars.\n' \
                     'Takes a fairly long time to bake',
         default=False
     )
