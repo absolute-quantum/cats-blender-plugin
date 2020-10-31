@@ -12,12 +12,12 @@ if "bpy" not in locals():
     from . import copy_protection
     from . import credits
     from . import decimation
-    from . import bake
     from . import eyetracking
     from . import fbx_patch
     from . import importer
     from . import material
     from . import rootbone
+    from . import bake
     from . import settings
     from . import shapekey
     from . import supporter
@@ -37,12 +37,12 @@ else:
     importlib.reload(copy_protection)
     importlib.reload(credits)
     importlib.reload(decimation)
-    importlib.reload(bake)
     importlib.reload(eyetracking)
     importlib.reload(fbx_patch)
     importlib.reload(importer)
     importlib.reload(material)
     importlib.reload(rootbone)
+    importlib.reload(bake)
     importlib.reload(settings)
     importlib.reload(shapekey)
     importlib.reload(supporter)

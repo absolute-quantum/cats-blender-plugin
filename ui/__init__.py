@@ -6,11 +6,11 @@ if "bpy" not in locals():
     from . import manual
     from . import custom
     from . import decimation
-    from . import bake
     from . import eye_tracking
     from . import visemes
     from . import bone_root
     from . import optimization
+    from . import bake
     from . import copy_protection
     from . import settings_updates
     from . import supporter
@@ -23,11 +23,11 @@ else:
     importlib.reload(manual)
     importlib.reload(custom)
     importlib.reload(decimation)
-    importlib.reload(bake)
     importlib.reload(eye_tracking)
     importlib.reload(visemes)
     importlib.reload(bone_root)
     importlib.reload(optimization)
+    importlib.reload(bake)
     importlib.reload(copy_protection)
     importlib.reload(settings_updates)
     importlib.reload(supporter)

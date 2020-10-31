@@ -141,6 +141,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'max_tris')
         col.separator()
+        col.label(text="Not reccomended if baking!", icon='INFO')
         row = col.row(align=True)
         row.scale_y = 1.2
         row.operator(Decimation.AutoDecimateButton.bl_idname, icon='MOD_DECIM')

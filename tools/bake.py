@@ -30,6 +30,12 @@ from .register import register_wrap
 from ..translations import t
 
 # TODO: Button to auto-detect bake passes from nodes
+# Diffuse: on if >1 material has different color inputs or if any has non-default base color input on bsdf
+# Normal: on if any normals connected or if decimating
+# Smoothness: similar to diffuse
+# Pack to alpha: on unless alpha bake
+# AO: on unless a toon bsdf shader node is detected anywhere
+# diffuse ao: on if AO on
 
 @register_wrap
 class BakeButton(bpy.types.Operator):
@@ -51,7 +57,7 @@ class BakeButton(bpy.types.Operator):
 
         if "SCRIPT_" + bake_name + ".png" not in bpy.data.images:
             bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_size[0], height=bake_size[1], color=background_color,
-                generated_type="BLANK", alpha=True)
+                generated_type="BLANK", alpha=True, float_buffer=normal_space=='OBJECT')
         image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
         if clear:
             image.alpha_mode = "NONE"
@@ -92,6 +98,8 @@ class BakeButton(bpy.types.Operator):
                         node.select = True
                         node.image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
                         tree.nodes.active = node
+                        node.location.x += 500
+                        node.location.y -= 500
 
         # Run bake.
         context.scene.cycles.bake_type = bake_type
@@ -166,6 +174,7 @@ class BakeButton(bpy.types.Operator):
         use_decimation = context.scene.bake_use_decimation
         preserve_seams = context.scene.bake_preserve_seams
         generate_uvmap = context.scene.bake_generate_uvmap
+        # TODO: Option to smart UV project as a last ditch effort
         prioritize_face = context.scene.bake_prioritize_face
         prioritize_factor = context.scene.bake_face_scale
         margin = 0.01
@@ -184,6 +193,7 @@ class BakeButton(bpy.types.Operator):
         illuminate_eyes = context.scene.bake_illuminate_eyes
         questdiffuse_opacity = context.scene.bake_questdiffuse_opacity
         smoothness_diffusepack = context.scene.bake_smoothness_diffusepack
+        normal_apply_trans = context.scene.bake_normal_apply_trans
 
          # Create an output collection
         collection = bpy.data.collections.new("CATS Bake")
@@ -192,6 +202,9 @@ class BakeButton(bpy.types.Operator):
         # Tree-copy all meshes
         armature = Common.get_armature()
         arm_copy = self.tree_copy(armature, None, collection)
+
+        # Move armature so we can see it
+        arm_copy.location.x += arm_copy.dimensions.x
 
         # Make sure all armature modifiers target the new armature
         for child in collection.all_objects:
@@ -264,7 +277,7 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.uv.select_all(action='SELECT')
 
             # detect if UVPackMaster installed and configured
-            try: # TODO: UVP doesn't respect margins when called like this, find out why
+            try: # UVP doesn't respect margins when called like this, find out why
                 context.scene.uvp2_props.normalize_islands = False
                 context.scene.uvp2_props.lock_overlapping_mode = '0' if use_decimation else '2'
                 context.scene.uvp2_props.pack_to_others = False
@@ -334,7 +347,6 @@ class BakeButton(bpy.types.Operator):
                         reyemask.mode = "VERTEX_GROUP"
                         reyemask.vertex_group = "RightEye"
                         reyemask.invert_vertex_group = True
-            # TODO: Disable rendering of all objects in the scene except these ones.
             self.bake_pass(context, "ao", "AO", {"AO"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
                 (resolution, resolution), 512, 0, [1.0,1.0,1.0,1.0], True, int(margin * resolution / 2))
             if illuminate_eyes:
@@ -342,7 +354,6 @@ class BakeButton(bpy.types.Operator):
                     obj.modifiers.remove(leyemask)
                 if "reyemask" in obj.modifiers:
                     obj.modifiers.remove(reyemask)
-            # TODO: Re-enable rendering
 
         # Blend diffuse and AO to create Quest Diffuse (if selected)
         if pass_diffuse and pass_ao and pass_questdiffuse:
@@ -375,8 +386,19 @@ class BakeButton(bpy.types.Operator):
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                     (resolution, resolution), 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
         else:
-            # Join meshes
-            Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
+            if not normal_apply_trans:
+                # Join meshes
+                Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
+            else:
+                for obj in collection.all_objects:
+                    # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
+                    if obj.type == "MESH":
+                        bpy.ops.object.select_all(action='DESELECT')
+                        obj.select_set(True)
+                        context.view_layer.objects.active = obj
+                        bpy.ops.object.transform_apply(location = True, scale = True, rotation = True)
+
+
 
             # Bake normals in object coordinates
             if pass_normal:
@@ -409,9 +431,13 @@ class BakeButton(bpy.types.Operator):
             normaltexnode = tree.nodes.new("ShaderNodeTexImage")
             if use_decimation:
                normaltexnode.image = bpy.data.images["SCRIPT_world.png"]
+            normaltexnode.location.x -= 500
+            normaltexnode.location.y -= 200
 
             normalmapnode = tree.nodes.new("ShaderNodeNormalMap")
             normalmapnode.space = "OBJECT"
+            normalmapnode.location.x -= 200
+            normalmapnode.location.y -= 200
 
             tree.links.new(normalmapnode.inputs["Color"], normaltexnode.outputs["Color"])
             tree.links.new(bsdfnode.inputs["Normal"], normalmapnode.outputs["Normal"])
@@ -435,6 +461,16 @@ class BakeButton(bpy.types.Operator):
             self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                  (resolution, resolution), 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
 
+            # Blend in original tangent normals
+            #print("Adding highres tangent normals to lowpoly tangent")
+            #normal_image = bpy.data.images["SCRIPT_normal.png"]
+            #origin_image = bpy.data.images["SCRIPT_origin_tangent.png"]
+            #pixel_buffer = list(normal_image.pixels)
+            #origin_buffer = origin_image.pixels[:]
+            #for idx in range(3, len(pixel_buffer), 4):
+            #    pixel_buffer[idx] = max(-1, min(1, pixel_buffer[idx] + origin_buffer[idx]))
+            #normal_image.pixels[:] = pixel_buffer
+
         # Update generated material to preview all of our passes
         if pass_normal:
             normaltexnode.image = bpy.data.images["SCRIPT_normal.png"]
@@ -442,11 +478,41 @@ class BakeButton(bpy.types.Operator):
         if pass_diffuse:
             diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
             diffusetexnode.image = bpy.data.images["SCRIPT_diffuse.png"]
-            tree.links.new(bsdfnode.inputs["Base Color"], diffusetexnode.outputs["Color"])
-            # TODO: If AO, blend in AO. If questdiffuse, just use that
+            diffusetexnode.location.x -= 300
+            diffusetexnode.location.y += 500
+            # If AO, blend in AO.
+            if pass_ao:
+                # AO -> Math (* ao_opacity + (1-ao_opacity)) -> Mix (Math, diffuse) -> Color
+                aotexnode = tree.nodes.new("ShaderNodeTexImage")
+                aotexnode.image = bpy.data.images["SCRIPT_ao.png"]
+                aotexnode.location.x -= 700
+                aotexnode.location.y += 800
+
+                multiplytexnode = tree.nodes.new("ShaderNodeMath")
+                multiplytexnode.operation = "MULTIPLY_ADD"
+                multiplytexnode.inputs[1].default_value = questdiffuse_opacity
+                multiplytexnode.inputs[2].default_value = 1.0 - questdiffuse_opacity
+                multiplytexnode.location.x -= 400
+                multiplytexnode.location.y += 700
+                tree.links.new(multiplytexnode.inputs[0], aotexnode.outputs["Color"])
+
+                mixnode = tree.nodes.new("ShaderNodeMixRGB")
+                mixnode.blend_type = "MULTIPLY"
+                mixnode.inputs["Fac"].default_value = 1.0
+                mixnode.location.x -= 200
+                mixnode.location.y += 700
+                tree.links.new(mixnode.inputs["Color1"], multiplytexnode.outputs["Value"])
+                tree.links.new(mixnode.inputs["Color2"], diffusetexnode.outputs["Color"])
+
+                tree.links.new(bsdfnode.inputs["Base Color"], mixnode.outputs["Color"])
+            else:
+                tree.links.new(bsdfnode.inputs["Base Color"], diffusetexnode.outputs["Color"])
         if pass_smoothness:
             if smoothness_diffusepack and pass_diffuse:
                 invertnode = tree.nodes.new("ShaderNodeInvert")
+                diffusetexnode.location.x -= 200
+                invertnode.location.x -= 200
+                invertnode.location.y += 200
                 tree.links.new(invertnode.inputs["Color"], diffusetexnode.outputs["Alpha"])
                 tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
             else:
@@ -455,9 +521,12 @@ class BakeButton(bpy.types.Operator):
                 invertnode = tree.nodes.new("ShaderNodeInvert")
                 tree.links.new(invertnode.inputs["Color"], smoothnesstexnode.outputs["Color"])
                 tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
-
-        # Move armature so we can see it
-        arm_copy.location.x += arm_copy.dimensions.x
+        if pass_emit:
+            emittexnode = tree.nodes.new("ShaderNodeTexImage")
+            emittexnode.image = bpy.data.images["SCRIPT_emit.png"]
+            emittexnode.location.x -= 800
+            emittexnode.location.y -= 150
+            tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
 
         # TODO: Optionally cleanup bones as a last step
 

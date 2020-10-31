@@ -52,6 +52,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_normal', expand=True)
+        if context.scene.bake_pass_normal:
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_normal_apply_trans', expand=True)
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_smoothness', expand=True)

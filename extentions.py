@@ -257,6 +257,12 @@ def register():
         default=True
     )
 
+    Scene.bake_normal_apply_trans = BoolProperty(
+        name='Apply transforms',
+        description="Applies offsets while baking normals. Neccesary if your model has many materials with different normal maps",
+        default=True
+    )
+
     Scene.bake_pass_ao = BoolProperty(
         name='Ambient Occlusion',
         description='Bakes Ambient Occlusion, non-projected shadows. Adds a good amount of detail to your model.\n' \
