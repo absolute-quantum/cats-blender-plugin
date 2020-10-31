@@ -25,8 +25,9 @@
 # Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
-import bmesh
+import copy
 import math
+import bmesh
 
 from collections import OrderedDict
 from random import random
@@ -475,6 +476,8 @@ eye_left = None
 eye_right = None
 eye_left_data = None
 eye_right_data = None
+eye_left_rot = []
+eye_right_rot = []
 
 
 @register_wrap
@@ -498,11 +501,17 @@ class StartTestingButton(bpy.types.Operator):
         Common.switch('POSE')
         armature.data.pose_position = 'POSE'
 
-        global eye_left, eye_right, eye_left_data, eye_right_data
+        global eye_left, eye_right, eye_left_data, eye_right_data, eye_left_rot, eye_right_rot
         eye_left = armature.pose.bones.get('LeftEye')
         eye_right = armature.pose.bones.get('RightEye')
         eye_left_data = armature.data.bones.get('LeftEye')
         eye_right_data = armature.data.bones.get('RightEye')
+
+        # Save initial eye rotations
+        eye_left.rotation_mode = 'XYZ'
+        eye_left_rot = copy.deepcopy(eye_left.rotation_euler)
+        eye_right.rotation_mode = 'XYZ'
+        eye_right_rot = copy.deepcopy(eye_right.rotation_euler)
 
         if eye_left is None or eye_right is None or eye_left_data is None or eye_right_data is None:
             return {'FINISHED'}
@@ -538,7 +547,7 @@ class StopTestingButton(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        global eye_left, eye_right, eye_left_data, eye_right_data
+        global eye_left, eye_right, eye_left_data, eye_right_data, eye_left_rot, eye_right_rot
         if eye_left:
             context.scene.eye_rotation_x = 0
             context.scene.eye_rotation_y = 0
@@ -566,40 +575,34 @@ class StopTestingButton(bpy.types.Operator):
         eye_right = None
         eye_left_data = None
         eye_right_data = None
+        eye_left_rot = []
+        eye_right_rot = []
 
         return {'FINISHED'}
 
 
 # This gets called by the eye testing sliders
 def set_rotation(self, context):
-    global eye_left, eye_right, eye_left_data, eye_right_data
+    global eye_left, eye_right
 
     if not eye_left:
         StopTestingButton.execute(self, context)
         self.report({'ERROR'}, t('StopTestingButton.error.tryAgain'))
         return None
 
-    eye_left_data.select = True
-    eye_right_data.select = True
-
-    bpy.ops.pose.rot_clear()
-
-    eye_left_data.select = False
-    eye_right_data.select = False
-
     eye_left.rotation_mode = 'XYZ'
-    eye_left.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
-    eye_left.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+    eye_left.rotation_euler[0] = eye_left_rot[0] + math.radians(context.scene.eye_rotation_x)
+    eye_left.rotation_euler[1] = eye_left_rot[1] + math.radians(context.scene.eye_rotation_y)
 
     eye_right.rotation_mode = 'XYZ'
-    eye_right.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
-    eye_right.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+    eye_right.rotation_euler[0] = eye_right_rot[0] + math.radians(context.scene.eye_rotation_x)
+    eye_right.rotation_euler[1] = eye_right_rot[1] + math.radians(context.scene.eye_rotation_y)
     return None
 
 
 def stop_testing(self, context):
-        global eye_left, eye_right, eye_left_data, eye_right_data
-        if not eye_left or not eye_right or not eye_left_data or not eye_right_data:
+        global eye_left, eye_right, eye_left_data, eye_right_data, eye_left_rot, eye_right_rot
+        if not eye_left or not eye_right or not eye_left_data or not eye_right_data or not eye_left_rot or not eye_right_rot:
             return None
 
         armature = Common.set_default_stage()
@@ -628,6 +631,8 @@ def stop_testing(self, context):
         eye_right = None
         eye_left_data = None
         eye_right_data = None
+        eye_left_rot = []
+        eye_right_rot = []
         return None
 
 

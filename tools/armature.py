@@ -241,7 +241,10 @@ class FixArmature(bpy.types.Operator):
             context.space_data.shading.show_backface_culling = True
 
             # Set the Color Management View Transform to "Standard" instead of the Blender default "Filmic"
-            context.scene.view_settings.view_transform = 'Standard'
+            try:
+                context.scene.view_settings.view_transform = 'Standard'
+            except TypeError:
+                print('Color Management View Transform "Standard" not found!')
 
             # Set shading to 3D view
             set_material_shading()
