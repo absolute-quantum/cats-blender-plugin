@@ -294,7 +294,8 @@ def fix_armatures_post_import(pre_import_objects):
         fix_bone_orientations(armature)
 
         # Set better bone view
-        armature.draw_type = 'WIRE'
+        if hasattr(armature, 'draw_type'):
+            armature.draw_type = 'WIRE'
         if version_2_79_or_older():
             armature.show_x_ray = True
         else:

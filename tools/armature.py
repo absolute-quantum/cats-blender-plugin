@@ -234,7 +234,8 @@ class FixArmature(bpy.types.Operator):
             space.show_backface_culling = True  # set the viewport shading
         else:
             armature.data.display_type = 'OCTAHEDRAL'
-            armature.draw_type = 'WIRE'
+            if hasattr(armature, 'draw_type'):
+                armature.draw_type = 'WIRE'
             armature.show_in_front = True
             armature.data.show_bone_custom_shapes = False
             # context.space_data.overlay.show_transparent_bones = True
