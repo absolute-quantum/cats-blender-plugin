@@ -21,16 +21,19 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        # TODO: Quest (decimate) and Desktop (nodecimate) presets
-
-        col.label(text="Presets:")
-
+        col.label(text="Autodetect:")
+        row = col.row(align=True)
+        row.operator(Bake.BakePresetDesktop.bl_idname, icon="ANTIALIASED")
+        row.operator(Bake.BakePresetQuest.bl_idname, icon="ALIASED")
         col.label(text="General options:")
         row = col.row(align=True)
         row.prop(context.scene, 'bake_resolution', expand=True)
         row = col.row(align=True)
         row.prop(context.scene, 'bake_use_decimation', expand=True)
         if context.scene.bake_use_decimation:
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_max_tris', expand=True)
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'bake_preserve_seams', expand=True)
@@ -48,11 +51,24 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_smart_uvmap', expand=True)
+        #row = col.row(align=True)
+        #row.prop(context.scene, 'bake_simplify_armature', expand=True)
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_quick_compare', expand=True)
         col.separator()
         row = col.row(align=True)
         col.label(text="Bake passes:")
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_diffuse', expand=True)
+        if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha):
+            row = col.row(align=True)
+            row.separator()
+            row.label(text="Alpha:")
+            row.prop(context.scene, 'bake_diffuse_alpha_pack', expand=True)
+            if (context.scene.bake_diffuse_alpha_pack == "TRANSPARENCY") and not context.scene.bake_pass_alpha:
+                col.label(text="Transparency isn't currently selected!", icon="INFO")
+            elif (context.scene.bake_diffuse_alpha_pack == "SMOOTHNESS") and not context.scene.bake_pass_smoothness:
+                col.label(text="Smoothness isn't currently selected!", icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_normal', expand=True)
@@ -63,10 +79,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_smoothness', expand=True)
-        if context.scene.bake_pass_diffuse and context.scene.bake_pass_smoothness:
-            row = col.row(align=True)
-            row.separator()
-            row.prop(context.scene, 'bake_smoothness_diffusepack', expand=True)
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_ao', expand=True)
@@ -83,6 +95,20 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row.separator()
                 row.prop(context.scene, 'bake_questdiffuse_opacity', expand=True)
             col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_pass_alpha', expand=True)
+        col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_pass_metallic', expand=True)
+        if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
+            row = col.row(align=True)
+            row.separator()
+            row.label(text="Alpha:")
+            row.prop(context.scene, 'bake_metallic_alpha_pack', expand=True)
+            if context.scene.bake_diffuse_alpha_pack == "SMOOTHNESS" and context.scene.bake_metallic_alpha_pack == "SMOOTHNESS":
+                col.label(text="Smoothness packed in two places!", icon="INFO")
+        col.separator()
+
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_emit', expand=True)
         row = col.row(align=True)

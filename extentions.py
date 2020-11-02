@@ -167,6 +167,14 @@ def register():
         default='SMART'
     )
 
+    Scene.bake_max_tris = IntProperty(
+        name=t('Scene.max_tris.label'),
+        description=t('Scene.max_tris.desc'),
+        default=5000,
+        min=1,
+        max=70000
+    )
+
     # Bake
     Scene.bake_resolution = IntProperty(
         name="Resolution",
@@ -180,7 +188,7 @@ def register():
 
     Scene.bake_use_decimation = BoolProperty(
         name='Decimate',
-        description='Reduce polycount before baking using decimation settings',
+        description='Reduce polycount before baking, then use Normal maps to restore detail',
         default=True
     )
 
@@ -203,20 +211,33 @@ def register():
     )
 
     Scene.bake_prioritize_face = BoolProperty(
-        name='Prioritize Face/Eyes',
+        name='Prioritize Head/Eyes',
         description='Scale any UV islands attached to the head/eyes by a given factor.',
         default=True
     )
 
     Scene.bake_face_scale = FloatProperty(
-        name="Face/Eyes Scale",
-        description="How much to scale up the face/eyes textures.",
+        name="Head/Eyes Scale",
+        description="How much to scale up the face/eyes portion of the textures.",
         default=3.0,
         min=0.5,
         max=4.0,
         step=0.25,
         precision=2,
         subtype='FACTOR'
+    )
+
+    Scene.bake_quick_compare = BoolProperty(
+        name='Quick compare',
+        description='Move output avatar next to existing one to quickly compare',
+        default=True
+    )
+
+    Scene.bake_simplify_armature = BoolProperty(
+        name='Simplify armature',
+        description='Merge weights for all non-humanoid bones into their parents.\n' \
+                    'Reccomended for Quest avatars with no special AV3 animations',
+        default=False
     )
 
     Scene.bake_illuminate_eyes = BoolProperty(
@@ -235,16 +256,10 @@ def register():
         default=True
     )
 
-    Scene.bake_smoothness_diffusepack = BoolProperty(
-        name='Pack to diffuse alpha',
-        description='Copies the smoothness map to the alpha channel of the diffuse map.\n' \
-                    "Make sure to set Smoothness > Source to 'Albedo Alpha' in your Unity material",
-        default=True
-    )
-
     Scene.bake_pass_diffuse = BoolProperty(
         name='Diffuse (Color)',
-        description='Bakes diffuse, un-lighted color. Usually you will want this.',
+        description='Bakes diffuse, un-lighted color. Usually you will want this.\n' \
+                    'While baking, this temporarily links "Metallic" to "Anisotropic Rotation" as metallic can cause issues.',
         default=True
     )
 
@@ -292,17 +307,33 @@ def register():
         default=False
     )
 
-    Scene.bake_show_advanced = BoolProperty(
-        name='Advanced',
-        description='Show advanced passes. These are not natively bakeable in Blender,\n' \
-                    'so they may not work as well',
-        default=False
+    Scene.bake_diffuse_alpha_pack = EnumProperty(
+        name="Alpha Channel",
+        description="What to pack to the Diffuse Alpha channel",
+        items=[
+            ("NONE", "None", "No alpha channel"),
+            ("TRANSPARENCY", "Transparency", "Pack Transparency"),
+            ("SMOOTHNESS", "Smoothness", "Pack Smoothness. Most efficient if you don't have transparency or metallic textures."),
+        ],
+        default="NONE"
+    )
+
+    Scene.bake_metallic_alpha_pack = EnumProperty(
+        name="Metallic Alpha Channel",
+        description="What to pack to the Metallic Alpha channel",
+        items=[
+            ("NONE", "None", "No alpha channel"),
+            ("SMOOTHNESS", "Smoothness", "Pack Smoothness. Use this if your Diffuse alpha channel is already populated with Transparency")
+        ],
+        default="NONE"
     )
 
     Scene.bake_pass_alpha = BoolProperty(
         name='Transparency',
         description='Bakes transparency by connecting the last Principled BSDF Alpha input\n' \
-                    'to the Base Color input and baking Diffuse',
+                    'to the Base Color input and baking Diffuse.\n' \
+                    'Not a native pass in Blender, results may vary\n' \
+                    'Unused if you are baking to Quest',
         default=False
     )
 
@@ -316,7 +347,8 @@ def register():
     Scene.bake_pass_metallic = BoolProperty(
         name='Metallic',
         description='Bakes metallic by connecting the last Principled BSDF Metallic input\n' \
-                    'to the Base Color input and baking Diffuse',
+                    'to the Base Color input and baking Diffuse.\n' \
+                    'Not a native pass in Blender, results may vary',
         default=False
     )
 
