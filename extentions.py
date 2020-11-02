@@ -205,8 +205,7 @@ def register():
     Scene.bake_smart_uvmap = BoolProperty(
         name='Smart UV Project',
         description="Generate a new UVMap with Blender's Smart UV Project option.\n" \
-                    "Will avoid overlaps but doesn't give the best results.\n" \
-                    "Use if overlaps are hard to avoid",
+                    "Use if your result has weird shading issues",
         default=False
     )
 

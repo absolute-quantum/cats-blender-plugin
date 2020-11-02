@@ -145,8 +145,8 @@ class BakePresetQuest(bpy.types.Operator):
         context.scene.bake_normal_apply_trans = len(objects) > 1
 
         # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
-        # diffuse ao: on if AO is on
-        context.scene.bake_pass_questdiffuse = context.scene.bake_pass_ao
+        # diffuse ao: on, won't do anything unless ao gets checked
+        context.scene.bake_pass_questdiffuse = True
 
         # alpha packs: arrange for maximum efficiency.
         # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
@@ -411,7 +411,7 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.object.editmode_toggle()
                         bpy.ops.mesh.select_all(action='SELECT')
                         bpy.ops.uv.select_all(action='SELECT')
-                        bpy.ops.uv.smart_project(angle_limit=90.0, island_margin=0.0, user_area_weight=0.0,
+                        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01, user_area_weight=0.0,
                                                  use_aspect=True, stretch_to_bounds=True)
                         bpy.ops.object.editmode_toggle()
                         child.data.uv_layers.active_index = idx
@@ -517,7 +517,7 @@ class BakeButton(bpy.types.Operator):
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
-            originals = self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
+            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
 
             # Run the bake pass (bake roughness)
             self.bake_pass(context, "alpha", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
@@ -529,7 +529,7 @@ class BakeButton(bpy.types.Operator):
         # advanced: bake metallic from last bsdf output
         if pass_metallic:
             # Find all Principled BSDF nodes. Flip Roughness and Metallic (default_value and connection)
-            originals = self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Roughness")
+            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Roughness")
 
             # Run the bake pass
             self.bake_pass(context, "metallic", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
@@ -765,6 +765,7 @@ class BakeButton(bpy.types.Operator):
                 alphatexnode = tree.nodes.new("ShaderNodeTexImage")
                 alphatexnode.image = bpy.data.images["SCRIPT_alpha.png"]
                 tree.links.new(bsdfnode.inputs["Alpha"], alphatexnode.outputs["Color"])
+            mat.blend_method = 'CLIP'
         if pass_emit:
             emittexnode = tree.nodes.new("ShaderNodeTexImage")
             emittexnode.image = bpy.data.images["SCRIPT_emit.png"]
