@@ -428,43 +428,35 @@ class BakeButton(bpy.types.Operator):
 
             # Select all islands belonging to 'Head' and children and enlarge them
             if prioritize_face:
-                def recursive_name_get(bone):
-                    ret = set([bone.name])
-                    if bone.children:
-                        for child in bone.children:
-                            ret.union(recursive_name_get(child))
-                    return ret
-
-                selected_group_names = recursive_name_get(arm_copy.data.bones["Head"])
+                selected_group_names = ["Head"]
+                selected_group_names.extend([bone.name for bone in arm_copy.data.bones["Head"].children_recursive])
                 print("Prioritizing vertex groups: " + (", ".join(selected_group_names)))
 
                 for obj in collection.all_objects:
                     if obj.type != "MESH":
                         continue
                     context.view_layer.objects.active = obj
+                    Common.switch('EDIT')
+                    bpy.ops.uv.select_all(action='DESELECT')
+                    bpy.ops.mesh.select_all(action='DESELECT')
                     for group in selected_group_names:
                         if group in obj.vertex_groups:
-                            Common.switch('EDIT')
-                            bpy.ops.uv.select_all(action='DESELECT')
-                            bpy.ops.mesh.select_all(action='DESELECT')
                             # Select all vertices in it
                             obj.vertex_groups.active = obj.vertex_groups[group]
                             bpy.ops.object.vertex_group_select()
-                            # Synchronize
-                            Common.switch('OBJECT')
-                            Common.switch('EDIT')
-                            # Then select all UVs
-                            bpy.ops.uv.select_all(action='SELECT')
-                            Common.switch('OBJECT')
-
-                            # Then for each UV (cause of the viewport thing) scale up by the selected factor
-                            uv_layer = obj.data.uv_layers["CATS UV"].data
-                            for poly in obj.data.polygons:
-                                for loop in poly.loop_indices:
-                                    if uv_layer[loop].select:
-                                        uv_layer[loop].uv.x *= prioritize_factor
-                                        uv_layer[loop].uv.y *= prioritize_factor
-
+                    # Synchronize
+                    Common.switch('OBJECT')
+                    Common.switch('EDIT')
+                    # Then select all UVs
+                    bpy.ops.uv.select_all(action='SELECT')
+                    # Then for each UV (cause of the viewport thing) scale up by the selected factor
+                    Common.switch('OBJECT')
+                    uv_layer = obj.data.uv_layers["CATS UV"].data
+                    for poly in obj.data.polygons:
+                        for loop in poly.loop_indices:
+                            if uv_layer[loop].select:
+                                uv_layer[loop].uv.x *= prioritize_factor
+                                uv_layer[loop].uv.y *= prioritize_factor
 
             # Pack islands. Optionally use UVPackMaster if it's available
             Common.switch('EDIT')
