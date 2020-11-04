@@ -102,9 +102,7 @@ class BakePresetQuest(bpy.types.Operator):
     bl_idname = 'cats_bake.preset_quest'
     bl_label = "Quest"
     bl_description = "Preset for producing an Excellent-rated Quest avatar, not accounting for bones.\n" \
-                     "This will try to automatically detect which bake passes are relevant to your model\n" \
-                     "If you are not using any special AV3 features, you should manually select non-humanoid bones\n" \
-                     "and then use Merge Weights in the Model Options panel"
+                     "This will try to automatically detect which bake passes are relevant to your model"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -354,7 +352,7 @@ class BakeButton(bpy.types.Operator):
         generate_uvmap = context.scene.bake_generate_uvmap
         prioritize_face = context.scene.bake_prioritize_face
         prioritize_factor = context.scene.bake_face_scale
-        smart_uvmap = context.scene.bake_smart_uvmap
+        uv_overlap_correction = context.scene.bake_uv_overlap_correction
         margin = 0.01
         quick_compare = context.scene.bake_quick_compare
 
@@ -405,7 +403,7 @@ class BakeButton(bpy.types.Operator):
                     context.view_layer.objects.active = child
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
-                    if smart_uvmap:
+                    if uv_overlap_correction == "REPROJECT":
                         idx = child.data.uv_layers.active_index
                         child.data.uv_layers.active_index = len(child.data.uv_layers) - 1
                         bpy.ops.object.editmode_toggle()
@@ -415,6 +413,15 @@ class BakeButton(bpy.types.Operator):
                                                  use_aspect=True, stretch_to_bounds=True)
                         bpy.ops.object.editmode_toggle()
                         child.data.uv_layers.active_index = idx
+                    elif uv_overlap_correction == "UNMIRROR":
+                        # TODO: issue a warning if any source images don't use 'wrap'
+                        # Select all faces in +X
+                        uv_layer = child.data.uv_layers["CATS UV"].data
+                        for poly in child.data.polygons:
+                            if poly.center[0] > 0:
+                                for loop in poly.loop_indices:
+                                    if uv_layer[loop].select:
+                                        uv_layer[loop].uv.x += 1
 
             # TODO: cleanup, all editmode_toggle -> common.switch
 

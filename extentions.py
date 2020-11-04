@@ -202,11 +202,15 @@ def register():
         default=True
     )
 
-    Scene.bake_smart_uvmap = BoolProperty(
-        name='Smart UV Project',
-        description="Generate a new UVMap with Blender's Smart UV Project option.\n" \
-                    "Use if your result has weird shading issues",
-        default=False
+    Scene.bake_uv_overlap_correction = EnumProperty(
+        name="Overlap correction",
+        description="Method used to prevent overlaps in UVMap",
+        items=[
+            ("NONE", "None", "Leave islands as they are. Use if islands don't self-intersect at all"),
+            ("UNMIRROR", "Unmirror", "Move all face islands with positive X values over one to un-pin mirrored UVs. Solves most UV pinning issues."),
+            ("REPROJECT", "Reproject", "Use blender's Smart UV Project to come up with an entirely new island layout. Tends to reduce quality."),
+        ],
+        default="UNMIRROR"
     )
 
     Scene.bake_prioritize_face = BoolProperty(
@@ -334,13 +338,6 @@ def register():
                     'Not a native pass in Blender, results may vary\n' \
                     'Unused if you are baking to Quest',
         default=False
-    )
-
-    Scene.bake_alpha_diffusepack = BoolProperty(
-        name='Pack to diffuse alpha',
-        description='Copies the alpha map to the alpha channel of the diffuse map.\n' \
-                    "This will override any existing alpha map",
-        default=True
     )
 
     Scene.bake_pass_metallic = BoolProperty(
