@@ -47,10 +47,14 @@ class BakePresetDesktop(bpy.types.Operator):
         for obj in objects:
             for slot in obj.material_slots:
                 if slot.material:
+                    if not slot.material.use_nodes or not slot.material.node_tree:
+                        self.report({'ERROR'}, "A material in use isn't using Nodes, fix this in the Shading tab.")
+                        return {'FINISHED'}
                     tree = slot.material.node_tree
                     for node in tree.nodes:
                         if node.type == "BSDF_PRINCIPLED":
                             bsdf_nodes.append(node)
+
         # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
         context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
                                           or len(set([node.inputs["Base Color"].default_value for node in bsdf_nodes])) > 1)
@@ -115,6 +119,9 @@ class BakePresetQuest(bpy.types.Operator):
         for obj in objects:
             for slot in obj.material_slots:
                 if slot.material:
+                    if not slot.material.use_nodes or not slot.material.node_tree:
+                        self.report({'ERROR'}, "A material in use isn't using Nodes, fix this in the Shading tab.")
+                        return {'FINISHED'}
                     tree = slot.material.node_tree
                     for node in tree.nodes:
                         if node.type == "BSDF_PRINCIPLED":
@@ -320,6 +327,9 @@ class BakeButton(bpy.types.Operator):
         if context.scene.render.engine != 'CYCLES':
             self.report({'ERROR'}, "You need to set your render engine to Cycles first!")
             return {'FINISHED'}
+        if any([obj.hide_render for obj in Common.get_armature().children]):
+            self.report({'ERROR'}, "One or more of your armature's meshes have rendering disabled!")
+            return {'FINISHED'}
         # TODO: Check if any UV islands are self-overlapping, emit an error
 
         # Change decimate settings, run bake, change them back
@@ -422,6 +432,7 @@ class BakeButton(bpy.types.Operator):
                                 for loop in poly.loop_indices:
                                     if uv_layer[loop].select:
                                         uv_layer[loop].uv.x += 1
+
 
             # TODO: cleanup, all editmode_toggle -> common.switch
 
