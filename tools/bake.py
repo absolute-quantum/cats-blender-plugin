@@ -434,7 +434,7 @@ class BakeButton(bpy.types.Operator):
             Common.switch('OBJECT')
 
             # Select all islands belonging to 'Head' and children and enlarge them
-            if prioritize_face:
+            if prioritize_face and "Head" in arm_copy.data.bones:
                 selected_group_names = ["Head"]
                 selected_group_names.extend([bone.name for bone in arm_copy.data.bones["Head"].children_recursive])
                 print("Prioritizing vertex groups: " + (", ".join(selected_group_names)))

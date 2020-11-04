@@ -44,9 +44,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.separator()
             row.prop(context.scene, 'bake_prioritize_face', expand=True)
             if context.scene.bake_prioritize_face:
+                armature = Common.get_armature()
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_face_scale', expand=True)
+                if armature is None or "Head" not in armature.data.bones:
+                    row = col.row(align=True)
+                    row.separator()
+                    row.label(text="No \"Head\" bone found!", icon="INFO")
             row = col.row(align=True)
             row.separator()
             row.label(text="Overlap fix:")
