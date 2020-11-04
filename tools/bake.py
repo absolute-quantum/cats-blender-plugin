@@ -330,7 +330,7 @@ class BakeButton(bpy.types.Operator):
         if any([obj.hide_render for obj in Common.get_armature().children]):
             self.report({'ERROR'}, "One or more of your armature's meshes have rendering disabled!")
             return {'FINISHED'}
-        # TODO: Check if any UV islands are self-overlapping, emit an error
+        # TODO: Check if any UV islands are self-overlapping, emit a warning
 
         # Change decimate settings, run bake, change them back
         decimation_mode = context.scene.decimation_mode
@@ -403,6 +403,20 @@ class BakeButton(bpy.types.Operator):
             for modifier in child.modifiers:
                 if modifier.type == "ARMATURE":
                     modifier.object = arm_copy
+
+        # Copy default values from the largest diffuse BSDF
+        objs_size_descending = sorted([obj for obj in collection.all_objects if obj.type == "MESH"],
+                                      key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
+                                      reverse=True)
+        def first_bsdf(objs):
+            for obj in objs_size_descending:
+                for slot in obj.material_slots:
+                    if slot.material:
+                        tree = slot.material.node_tree
+                        for node in tree.nodes:
+                            if node.type == "BSDF_PRINCIPLED":
+                                return node
+        bsdf_original = first_bsdf(objs_size_descending)
 
         if generate_uvmap:
             bpy.ops.object.select_all(action='DESELECT')
@@ -670,7 +684,8 @@ class BakeButton(bpy.types.Operator):
         # add a normal map and image texture to connect the world texture, if it exists
         tree = mat.node_tree
         bsdfnode = next(node for node in tree.nodes if node.type == "BSDF_PRINCIPLED")
-        bsdfnode.inputs["Specular"].default_value = 0
+        for bsdfinput in bsdfnode.inputs:
+            bsdfinput.default_value = bsdf_original.inputs[bsdfinput.identifier].default_value
         if pass_normal:
             normaltexnode = tree.nodes.new("ShaderNodeTexImage")
             if use_decimation:
