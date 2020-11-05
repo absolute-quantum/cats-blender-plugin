@@ -37,6 +37,13 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'bake_preserve_seams', expand=True)
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_animation_weighting', expand=True)
+            if context.scene.bake_animation_weighting:
+                row = col.row(align=True)
+                row.separator()
+                row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)
         row = col.row(align=True)
         row.prop(context.scene, 'bake_generate_uvmap', expand=True)
         if context.scene.bake_generate_uvmap:

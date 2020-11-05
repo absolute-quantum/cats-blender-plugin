@@ -25,6 +25,7 @@
 # Edits by:
 
 import bpy
+import math
 
 from . import common as Common
 from . import armature_bones as Bones
@@ -194,6 +195,8 @@ class AutoDecimateButton(bpy.types.Operator):
         safe_decimation = context.scene.decimation_mode == 'SAFE'
         smart_decimation = context.scene.decimation_mode == 'SMART'
         save_fingers = context.scene.decimate_fingers
+        animation_weighting = context.scene.decimation_animation_weighting
+        animation_weighting_factor = context.scene.decimation_animation_weighting_factor
         max_tris = context.scene.max_tris
         meshes = []
         current_tris_count = 0
@@ -209,6 +212,93 @@ class AutoDecimateButton(bpy.types.Operator):
             if context.scene.decimation_remove_doubles:
                 Common.remove_doubles(mesh, 0.00001, save_shapes=True)
             current_tris_count += len(mesh.data.polygons)
+
+        if animation_weighting:
+            for mesh in meshes_obj:
+                # Weight by multiplied bone weights for every pair of bones.
+                # This is O(n*m^2) for n verts and m bones, generally runs relatively quickly.
+                weights = dict()
+                for vertex in mesh.data.vertices:
+                    v_weights = [group.weight for group in vertex.groups]
+                    v_mults = []
+                    for idx1, w1 in enumerate(vertex.groups):
+                        for idx2, w2 in enumerate(vertex.groups):
+                            if idx1 != idx2:
+                                # Weight [vgroup * vgroup] for index = <mult>
+                                if (w1.group, w2.group) not in weights:
+                                    weights[(w1.group, w2.group)] = dict()
+                                weights[(w1.group, w2.group)][vertex.index] = w1.weight * w2.weight
+
+                # Normalize per vertex group pair
+                normalizedweights = dict()
+                for pair, weighting in weights.items():
+                    m_min = 1
+                    m_max = 0
+                    for _, weight in weighting.items():
+                        m_min = min(m_min, weight)
+                        m_max = max(m_max, weight)
+
+                    if pair not in normalizedweights:
+                        normalizedweights[pair] = dict()
+                    for v_index, weight in weighting.items():
+                        try:
+                            normalizedweights[pair][v_index] = (weight - m_min) / (m_max - m_min)
+                        except ZeroDivisionError:
+                            normalizedweights[pair][v_index] = weight
+
+                newweights = dict()
+                for pair, weighting in normalizedweights.items():
+                    for v_index, weight in weighting.items():
+                        try:
+                            newweights[v_index] = max(newweights[v_index], weight)
+                        except KeyError:
+                            newweights[v_index] = weight
+
+                s_weights = dict()
+
+                # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
+                # but shape keys contain every vert (not just the ones they impact)
+                # For shape key in shape keys:
+                for key_block in mesh.data.shape_keys.key_blocks[1:]:
+                    basis = mesh.data.shape_keys.key_blocks[0]
+                    s_weights[key_block.name] = dict()
+
+                    for idx, vert in enumerate(key_block.data):
+                        s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
+                                                                        math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
+                                                                        math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
+
+                # normalize min/max vert movement
+                s_normalizedweights = dict()
+                for keyname, weighting in s_weights.items():
+                    m_min = math.inf
+                    m_max = 0
+                    for _, weight in weighting.items():
+                        m_min = min(m_min, weight)
+                        m_max = max(m_max, weight)
+
+                    if keyname not in s_normalizedweights:
+                        s_normalizedweights[keyname] = dict()
+                    for v_index, weight in weighting.items():
+                        try:
+                            s_normalizedweights[keyname][v_index] = (weight - m_min) / (m_max - m_min)
+                        except ZeroDivisionError:
+                            s_normalizedweights[keyname][v_index] = weight
+
+                # find max normalized movement over all shape keys
+                for pair, weighting in s_normalizedweights.items():
+                    for v_index, weight in weighting.items():
+                        try:
+                            newweights[v_index] = max(newweights[v_index], weight)
+                        except KeyError:
+                            newweights[v_index] = weight
+
+                # TODO: ignore shape keys which move very little?
+                context.view_layer.objects.active = mesh
+                bpy.ops.object.vertex_group_add()
+                mesh.vertex_groups[-1].name = "CATS Animation"
+                for idx, weight in newweights.items():
+                    mesh.vertex_groups[-1].add([idx], weight, "REPLACE")
 
         if save_fingers:
             for mesh in meshes_obj:
@@ -338,6 +428,10 @@ class AutoDecimateButton(bpy.types.Operator):
                 mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
                 mod.ratio = decimation
                 mod.use_collapse_triangulate = True
+                if animation_weighting:
+                    mod.vertex_group = "CATS Animation"
+                    mod.vertex_group_factor = animation_weighting_factor
+                    mod.invert_vertex_group = True
                 Common.apply_modifier(mod)
             else:
                 Common.switch('EDIT')
@@ -358,14 +452,12 @@ class AutoDecimateButton(bpy.types.Operator):
                     Common.switch('EDIT')
                     bpy.ops.mesh.select_all(action="INVERT")
 
-                #TODO: If we can create a vertex group with weights roughly equal to 'how likely is this to be animated',
-                #      we can create much better topology by inverse-weighting against it.
                 #TODO: On many meshes, un-subdividing until it's near the target verts and then decimating the rest of the way
                 #      results in MUCH better topology. Something to figure out against 2.93
                 bpy.ops.mesh.decimate(ratio=decimation,
-                                      use_vertex_group=False,
-                                      vertex_group_factor=1.0,
-                                      invert_vertex_group=False,
+                                      use_vertex_group=animation_weighting,
+                                      vertex_group_factor=animation_weighting_factor,
+                                      invert_vertex_group=True,
                                       use_symmetry=True,
                                       symmetry_axis='X')
                 Common.switch('OBJECT')

@@ -167,6 +167,25 @@ def register():
         default='SMART'
     )
 
+    Scene.decimation_animation_weighting = BoolProperty(
+        name="Animation weighting",
+        description="Weight decimation based on shape keys and vertex group overlap\n" \
+                    "Results in better animating topology by trading off overall shape accuracy\n" \
+                    "Appears to mess with Blender's ability to keep things symmetrical, so YMMV",
+        default=False
+    )
+
+    Scene.decimation_animation_weighting_factor = FloatProperty(
+        name="Factor",
+        description="How much influence the animation weighting has on the overall shape",
+        default=0.1,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
     Scene.bake_max_tris = IntProperty(
         name=t('Scene.max_tris.label'),
         description=t('Scene.max_tris.desc'),
@@ -190,6 +209,25 @@ def register():
         name='Decimate',
         description='Reduce polycount before baking, then use Normal maps to restore detail',
         default=True
+    )
+
+    Scene.bake_animation_weighting = BoolProperty(
+        name="Animation weighting",
+        description="Weight decimation based on shape keys and vertex group overlap\n" \
+                    "Results in better animating topology by trading off overall shape accuracy\n" \
+                    "Appears to mess with Blender's ability to keep things symmetrical, so YMMV",
+        default=False
+    )
+
+    Scene.bake_animation_weighting_factor = FloatProperty(
+        name="Factor",
+        description="How much influence the animation weighting has on the overall shape",
+        default=0.1,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
     )
 
     Scene.bake_generate_uvmap = BoolProperty(

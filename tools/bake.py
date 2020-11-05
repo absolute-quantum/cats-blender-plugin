@@ -337,17 +337,23 @@ class BakeButton(bpy.types.Operator):
         max_tris = context.scene.max_tris
         decimate_fingers = context.scene.decimate_fingers
         decimation_remove_doubles = context.scene.decimation_remove_doubles
+        decimation_animation_weighting = context.scene.decimation_animation_weighting
+        decimation_animation_weighting_factor = context.scene.decimation_animation_weighting_factor
 
         context.scene.decimation_mode = "SMART"
         context.scene.max_tris = context.scene.bake_max_tris
         context.scene.decimate_fingers = False
         context.scene.decimation_remove_doubles = True
+        context.scene.decimation_animation_weighting = context.scene.bake_animation_weighting
+        context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
         self.perform_bake(context)
 
         context.scene.decimation_mode = decimation_mode
         context.scene.max_tris = max_tris
         context.scene.decimate_fingers = decimate_fingers
         context.scene.decimation_remove_doubles = decimation_remove_doubles
+        context.scene.decimation_animation_weighting = decimation_animation_weighting
+        context.scene.decimation_animation_weighting_factor = decimation_animation_weighting_factor
 
         return {'FINISHED'}
 
@@ -394,10 +400,6 @@ class BakeButton(bpy.types.Operator):
         armature = Common.get_armature()
         arm_copy = self.tree_copy(armature, None, collection)
 
-        # Move armature so we can see it
-        if quick_compare:
-            arm_copy.location.x += arm_copy.dimensions.x
-
         # Make sure all armature modifiers target the new armature
         for child in collection.all_objects:
             for modifier in child.modifiers:
@@ -440,12 +442,12 @@ class BakeButton(bpy.types.Operator):
                     elif uv_overlap_correction == "UNMIRROR":
                         # TODO: issue a warning if any source images don't use 'wrap'
                         # Select all faces in +X
+                        print("Un-mirroring source CATS UV data")
                         uv_layer = child.data.uv_layers["CATS UV"].data
                         for poly in child.data.polygons:
                             if poly.center[0] > 0:
                                 for loop in poly.loop_indices:
-                                    if uv_layer[loop].select:
-                                        uv_layer[loop].uv.x += 1
+                                    uv_layer[loop].uv.x += 1
 
 
             # TODO: cleanup, all editmode_toggle -> common.switch
@@ -508,6 +510,10 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.uvpackmaster2.uv_pack()
             except AttributeError:
                 pass
+
+        # Move armature so we can see it
+        if quick_compare:
+            arm_copy.location.x += arm_copy.dimensions.x
 
         # Bake diffuse
         Common.switch('OBJECT')
