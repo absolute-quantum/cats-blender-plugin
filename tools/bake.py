@@ -511,10 +511,6 @@ class BakeButton(bpy.types.Operator):
             except AttributeError:
                 pass
 
-        # Move armature so we can see it
-        if quick_compare:
-            arm_copy.location.x += arm_copy.dimensions.x
-
         # Bake diffuse
         Common.switch('OBJECT')
         if pass_diffuse:
@@ -803,6 +799,10 @@ class BakeButton(bpy.types.Operator):
             emittexnode.location.x -= 800
             emittexnode.location.y -= 150
             tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
+
+        # Move armature so we can see it
+        if quick_compare:
+            arm_copy.location.x += arm_copy.dimensions.x
 
         # TODO: Optionally cleanup bones as a last step
         # Select all bones which don't fuzzy match a whitelist (Chest, Head, etc) and do Merge Weights to parent on them
