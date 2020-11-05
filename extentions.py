@@ -171,7 +171,7 @@ def register():
         name="Animation weighting",
         description="Weight decimation based on shape keys and vertex group overlap\n" \
                     "Results in better animating topology by trading off overall shape accuracy\n" \
-                    "Appears to mess with Blender's ability to keep things symmetrical, so YMMV",
+                    "Use if your elbows/joints end up with bad topology"
         default=False
     )
 
@@ -214,8 +214,8 @@ def register():
     Scene.bake_animation_weighting = BoolProperty(
         name="Animation weighting",
         description="Weight decimation based on shape keys and vertex group overlap\n" \
-                    "Results in better animating topology by trading off overall shape accuracy\n" \
-                    "Appears to mess with Blender's ability to keep things symmetrical, so YMMV",
+                    "Results in better animating topology by trading off overall shape accuracy.\n" \
+                    "Use if your elbows/joints end up with bad topology"
         default=False
     )
 
