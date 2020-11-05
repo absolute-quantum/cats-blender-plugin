@@ -178,7 +178,7 @@ def register():
     Scene.decimation_animation_weighting_factor = FloatProperty(
         name="Factor",
         description="How much influence the animation weighting has on the overall shape",
-        default=0.1,
+        default=0.25,
         min=0,
         max=1,
         step=0.05,
@@ -222,7 +222,7 @@ def register():
     Scene.bake_animation_weighting_factor = FloatProperty(
         name="Factor",
         description="How much influence the animation weighting has on the overall shape",
-        default=0.1,
+        default=0.25,
         min=0,
         max=1,
         step=0.05,
