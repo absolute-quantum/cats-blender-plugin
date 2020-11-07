@@ -228,7 +228,7 @@ class BakeButton(bpy.types.Operator):
             image.generated_width=bake_size[0]
             image.generated_height=bake_size[1]
             image.scale(bake_size[0], bake_size[1])
-            if bake_type == 'NORMAL':
+            if bake_type == 'NORMAL' or bake_type == 'ROUGHNESS':
                 image.colorspace_settings.name = 'Non-Color'
             if bake_name == 'diffuse' or bake_name == 'metallic': # For packing smoothness to alpha
                 image.alpha_mode = 'CHANNEL_PACKED'
@@ -421,6 +421,8 @@ class BakeButton(bpy.types.Operator):
         bsdf_original = first_bsdf(objs_size_descending)
 
         if generate_uvmap:
+            # TODO: automagically detect if meshes even have a uv map, smart UV project them if not
+
             bpy.ops.object.select_all(action='DESELECT')
             # Make copies of the currently render-active UV layer, name "CATS UV"
             for child in collection.all_objects:
@@ -511,6 +513,8 @@ class BakeButton(bpy.types.Operator):
             except AttributeError:
                 pass
 
+        # TODO: many things don't bake well with alpha != 1, turn it to that before starting?
+
         # Bake diffuse
         Common.switch('OBJECT')
         if pass_diffuse:
@@ -539,7 +543,7 @@ class BakeButton(bpy.types.Operator):
         # bake emit
         if pass_emit:
             self.bake_pass(context, "emit", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                (resolution, resolution), 32, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
+                (resolution, resolution), 32, 0, [0,0,0,1.0], True, int(margin * resolution / 2))
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
