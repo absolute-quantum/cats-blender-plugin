@@ -80,6 +80,7 @@ class BakePresetDesktop(bpy.types.Operator):
         context.scene.bake_normal_apply_trans = len(objects) > 1
 
         # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
+        # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
         # diffuse ao: off if desktop
         context.scene.bake_pass_questdiffuse = False
 
@@ -177,10 +178,15 @@ class BakeButton(bpy.types.Operator):
 
     # Only works between equal data types.
     def swap_links(self, objects, input1, input2):
+        already_swapped = set()
         # Find all Principled BSDF. Flip values for input1 and input2 (default_value and connection)
         for obj in objects:
             for slot in obj.material_slots:
                 if slot.material:
+                    if slot.material.name in already_swapped:
+                        continue
+                    else:
+                        already_swapped.add(slot.material.name)
                     tree = slot.material.node_tree
                     for node in tree.nodes:
                         if node.type == "BSDF_PRINCIPLED":
@@ -515,6 +521,8 @@ class BakeButton(bpy.types.Operator):
 
         # TODO: many things don't bake well with alpha != 1, turn it to that before starting?
 
+        # TODO: Option to apply current shape keys, otherwise normals bake weird
+
         # Bake diffuse
         Common.switch('OBJECT')
         if pass_diffuse:
@@ -563,7 +571,7 @@ class BakeButton(bpy.types.Operator):
 
             # Run the bake pass
             self.bake_pass(context, "metallic", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                (resolution, resolution), 32, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
+                (resolution, resolution), 32, 0, [0,0,0,1.0], True, int(margin * resolution / 2))
 
             # Revert the changes (re-flip)
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Roughness")
