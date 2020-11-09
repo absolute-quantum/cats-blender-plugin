@@ -211,6 +211,21 @@ class BakeButton(bpy.types.Operator):
                             if alpha_input:
                                 tree.links.new(node.inputs[input2], alpha_input)
 
+    def set_values(self, objects, input_name, input_value):
+        already_set = set()
+        # Find all Principled BSDF. Flip values for input1 and input2 (default_value and connection)
+        for obj in objects:
+            for slot in obj.material_slots:
+                if slot.material:
+                    if slot.material.name in already_set:
+                        continue
+                    else:
+                        already_set.add(slot.material.name)
+                    tree = slot.material.node_tree
+                    for node in tree.nodes:
+                        if node.type == "BSDF_PRINCIPLED":
+                           node.inputs[input_name].default_value = input_value
+
     # "Bake pass" function. Run a single bake to "<bake_name>.png" against all selected objects.
     def bake_pass(self, context, bake_name, bake_type, bake_pass_filter, objects, bake_size, bake_samples, bake_ray_distance, background_color, clear, bake_margin, bake_active=None, bake_multires=False, normal_space='TANGENT'):
         bpy.ops.object.select_all(action='DESELECT')
@@ -528,6 +543,7 @@ class BakeButton(bpy.types.Operator):
         if pass_diffuse:
             # Metallic can cause issues baking diffuse, so we put it somewhere typically unused
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
+            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
 
             self.bake_pass(context, "diffuse", "DIFFUSE", {"COLOR"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
                 (resolution, resolution), 32, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
@@ -555,13 +571,18 @@ class BakeButton(bpy.types.Operator):
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
+            # when baking alpha as roughness, the -real- alpha needs to be set to 1 to avoid issues
+            # this will clobber whatever's in Anisotropic Rotation!
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
+            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Anisotropic Rotation")
+            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", 1.0)
 
             # Run the bake pass (bake roughness)
             self.bake_pass(context, "alpha", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                 (resolution, resolution), 32, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
 
             # Revert the changes (re-flip)
+            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Anisotropic Rotation")
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
 
         # advanced: bake metallic from last bsdf output
