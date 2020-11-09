@@ -571,17 +571,21 @@ class BakeButton(bpy.types.Operator):
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
+            #TODO: still causes issues on chakdal
             # when baking alpha as roughness, the -real- alpha needs to be set to 1 to avoid issues
             # this will clobber whatever's in Anisotropic Rotation!
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Anisotropic Rotation")
             self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", 1.0)
+            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic")
+            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0)
 
             # Run the bake pass (bake roughness)
             self.bake_pass(context, "alpha", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                (resolution, resolution), 32, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
+                           (resolution, resolution), 32, 0, [1,1,1,1.0], True, int(margin * resolution / 2))
 
             # Revert the changes (re-flip)
+            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic")
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Anisotropic Rotation")
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
 
@@ -702,6 +706,10 @@ class BakeButton(bpy.types.Operator):
 
             # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
             bpy.ops.cats_decimation.auto_decimate(armature_name=arm_copy.name, preserve_seams=preserve_seams, seperate_materials=False)
+
+        # join meshes here if we didn't decimate
+        if not use_decimation:
+            Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
 
         # Remove all other materials
         while len(context.object.material_slots) > 0:
