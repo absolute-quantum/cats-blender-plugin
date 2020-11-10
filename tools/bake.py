@@ -39,7 +39,6 @@ class BakePresetDesktop(bpy.types.Operator):
 
     def execute(self, context):
         context.scene.bake_max_tris = 32000
-        context.scene.bake_use_decimation = True
         context.scene.bake_resolution = 2048
         # Autodetect passes based on BSDF node inputs
         bsdf_nodes = []
@@ -54,6 +53,11 @@ class BakePresetDesktop(bpy.types.Operator):
                     for node in tree.nodes:
                         if node.type == "BSDF_PRINCIPLED":
                             bsdf_nodes.append(node)
+
+        # Decimate if we're over the limit
+        total_tricount = sum([Common.get_tricount(obj) for obj in objects])
+        context.scene.bake_use_decimation = total_tricount > 32000
+        context.scene.bake_uv_overlap_correction = 'UNMIRROR' if context.scene.bake_use_decimation else "NONE"
 
         # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
         context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
@@ -74,7 +78,8 @@ class BakePresetDesktop(bpy.types.Operator):
                                           or len(set([node.inputs["Metallic"].default_value for node in bsdf_nodes])) > 1)
 
         # Normal: on if any normals connected or if decimating... so, always on for this preset
-        context.scene.bake_pass_normal = True
+        context.scene.bake_pass_normal = (context.scene.bake_use_decimation
+                                          or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
 
         # Apply transforms: on if more than one mesh TODO: with different materials?
         context.scene.bake_normal_apply_trans = len(objects) > 1
@@ -112,7 +117,6 @@ class BakePresetQuest(bpy.types.Operator):
 
     def execute(self, context):
         context.scene.bake_max_tris = 5000
-        context.scene.bake_use_decimation = True
         context.scene.bake_resolution = 1024
         # Autodetect passes based on BSDF node inputs
         bsdf_nodes = []
@@ -127,6 +131,12 @@ class BakePresetQuest(bpy.types.Operator):
                     for node in tree.nodes:
                         if node.type == "BSDF_PRINCIPLED":
                             bsdf_nodes.append(node)
+
+        # Decimate if we're over the limit
+        total_tricount = sum([Common.get_tricount(obj) for obj in objects])
+        context.scene.bake_use_decimation = total_tricount > 5000
+        context.scene.bake_uv_overlap_correction = 'UNMIRROR' if context.scene.bake_use_decimation else "NONE"
+
         # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
         context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
                                           or len(set([node.inputs["Base Color"].default_value for node in bsdf_nodes])) > 1)
@@ -144,8 +154,9 @@ class BakePresetQuest(bpy.types.Operator):
         context.scene.bake_pass_metallic = (any([node.inputs["Metallic"].is_linked for node in bsdf_nodes])
                                           or len(set([node.inputs["Metallic"].default_value for node in bsdf_nodes])) > 1)
 
-        # Normal: on if any normals connected or if decimating... so, always on for this preset
-        context.scene.bake_pass_normal = True
+        # Normal: on if any normals connected or if decimating
+        context.scene.bake_pass_normal = (context.scene.bake_use_decimation
+                                          or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
 
         # Apply transforms: on if more than one mesh TODO: with different materials?
         context.scene.bake_normal_apply_trans = len(objects) > 1
@@ -533,8 +544,6 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.uvpackmaster2.uv_pack()
             except AttributeError:
                 pass
-
-        # TODO: many things don't bake well with alpha != 1, turn it to that before starting?
 
         # TODO: Option to apply current shape keys, otherwise normals bake weird
 

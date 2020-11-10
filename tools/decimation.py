@@ -211,7 +211,7 @@ class AutoDecimateButton(bpy.types.Operator):
             Common.switch('OBJECT')
             if context.scene.decimation_remove_doubles:
                 Common.remove_doubles(mesh, 0.00001, save_shapes=True)
-            current_tris_count += len(mesh.data.polygons)
+            current_tris_count += Common.get_tricount(mesh.data.polygons)
 
         if animation_weighting:
             for mesh in meshes_obj:
@@ -326,7 +326,7 @@ class AutoDecimateButton(bpy.types.Operator):
 
         for mesh in meshes_obj:
             Common.set_active(mesh)
-            tris = len(mesh.data.polygons)
+            tris = Common.get_tricount(mesh)
 
             if custom_decimation and mesh.name in ignore_meshes:
                 Common.unselect_all()
