@@ -616,10 +616,14 @@ class BakeButton(bpy.types.Operator):
 
         # Blend diffuse and AO to create Quest Diffuse (if selected)
         if pass_diffuse and pass_ao and pass_questdiffuse:
-            if "SCRIPT_questdiffuse.png" not in bpy.data.images:
-                bpy.ops.image.new(name="SCRIPT_questdiffuse.png", width=resolution, height=resolution,
-                    generated_type="BLANK", alpha=False)
+            if "SCRIPT_questdiffuse.png" in bpy.data.images:
+                image = bpy.data.images["SCRIPT_questdiffuse.png"]
+                image.user_clear()
+                bpy.data.images.remove(image)
+            bpy.ops.image.new(name="SCRIPT_questdiffuse.png", width=resolution, height=resolution,
+                generated_type="BLANK", alpha=False)
             image = bpy.data.images["SCRIPT_questdiffuse.png"]
+            image.filepath = bpy.path.abspath("//CATS Bake/" + "SCRIPT_questdiffuse.png")
             diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
             ao_image = bpy.data.images["SCRIPT_ao.png"]
             image.generated_width=resolution
