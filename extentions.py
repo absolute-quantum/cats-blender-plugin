@@ -168,16 +168,14 @@ def register():
     )
 
     Scene.decimation_animation_weighting = BoolProperty(
-        name="Animation weighting",
-        description="Weight decimation based on shape keys and vertex group overlap\n" \
-                    "Results in better animating topology by trading off overall shape accuracy\n" \
-                    "Use if your elbows/joints end up with bad topology",
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
         default=False
     )
 
     Scene.decimation_animation_weighting_factor = FloatProperty(
-        name="Factor",
-        description="How much influence the animation weighting has on the overall shape",
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
         default=0.25,
         min=0,
         max=1,
@@ -196,70 +194,45 @@ def register():
 
     # Bake
     Scene.bake_resolution = IntProperty(
-        name="Resolution",
-        description="Output resolution for the textures.\n" \
-                    "- 2048 is typical for desktop use.\n" \
-                    "- 1024 is reccomended for the Quest",
+        name=t('Scene.bake_resolution.label'),
+        description=t('Scene.bake_resolution.desc'),
         default=2048,
         min=128,
         max=4096
     )
 
     Scene.bake_use_decimation = BoolProperty(
-        name='Decimate',
-        description='Reduce polycount before baking, then use Normal maps to restore detail',
+        name=t('Scene.bake_use_decimation.label'),
+        description=t('Scene.bake_use_decimation.desc'),
         default=True
     )
 
-    Scene.bake_animation_weighting = BoolProperty(
-        name="Animation weighting",
-        description="Weight decimation based on shape keys and vertex group overlap\n" \
-                    "Results in better animating topology by trading off overall shape accuracy.\n" \
-                    "Use if your elbows/joints end up with bad topology",
-        default=False
-    )
-
-    Scene.bake_animation_weighting_factor = FloatProperty(
-        name="Factor",
-        description="How much influence the animation weighting has on the overall shape",
-        default=0.25,
-        min=0,
-        max=1,
-        step=0.05,
-        precision=2,
-        subtype='FACTOR'
-    )
-
     Scene.bake_generate_uvmap = BoolProperty(
-        name='Generate UVMap',
-        description="Re-pack islands for your mesh to a new non-overlapping UVMap.\n" \
-                    "Only disable if your UVs are non-overlapping already.\n" \
-                    "This will leave any map named \"Detail Map\" alone.\n" \
-                    "Uses UVPackMaster where available for more efficient UVs, make sure the window is showing",
-
+        name=t('Scene.bake_generate_uvmap.label'),
+        description=t('Scene.bake_generate_uvmap.desc'),
         default=True
     )
 
     Scene.bake_uv_overlap_correction = EnumProperty(
-        name="Overlap correction",
-        description="Method used to prevent overlaps in UVMap",
+        name=t('Scene.bake_uv_overlap_correction.label'),
+        description=t('Scene.bake_uv_overlap_correction.desc'),
         items=[
-            ("NONE", "None", "Leave islands as they are. Use if islands don't self-intersect at all"),
-            ("UNMIRROR", "Unmirror", "Move all face islands with positive X values over one to un-pin mirrored UVs. Solves most UV pinning issues."),
-            ("REPROJECT", "Reproject", "Use blender's Smart UV Project to come up with an entirely new island layout. Tends to reduce quality."),
+            ("NONE", t("Scene.bake_uv_overlap_correction.none.label"), t("Scene.bake_uv_overlap_correction.none.desc")),
+            ("UNMIRROR", t("Scene.bake_uv_overlap_correction.unmirror.label"), t("Scene.bake_uv_overlap_correction.unmirror.desc")),
+            ("REPROJECT", t("Scene.bake_uv_overlap_correction.reproject.label"), t("Scene.bake_uv_overlap_correction.reproject.desc")),
         ],
         default="UNMIRROR"
     )
 
     Scene.bake_prioritize_face = BoolProperty(
-        name='Prioritize Head/Eyes',
-        description='Scale any UV islands attached to the head/eyes by a given factor.',
+        name=t('Scene.bake_prioritize_face.label'),
+        description=t('Scene.bake_prioritize_face.desc'),
         default=True
     )
 
     Scene.bake_face_scale = FloatProperty(
-        name="Head/Eyes Scale",
-        description="How much to scale up the face/eyes portion of the textures.",
+        name=t('Scene.bake_face_scale.label'),
+        description=t('Scene.bake_face_scale.desc'),
         default=3.0,
         min=0.5,
         max=4.0,
@@ -269,127 +242,101 @@ def register():
     )
 
     Scene.bake_quick_compare = BoolProperty(
-        name='Quick compare',
-        description='Move output avatar next to existing one to quickly compare',
+        name=t('Scene.bake_quick_compare.label'),
+        description=t('Scene.bake_quick_compare.desc'),
         default=True
     )
 
-    Scene.bake_simplify_armature = BoolProperty(
-        name='Simplify armature',
-        description='Merge weights for all non-humanoid bones into their parents.\n' \
-                    'Reccomended for Quest avatars with no special AV3 animations',
-        default=False
-    )
-
     Scene.bake_illuminate_eyes = BoolProperty(
-        name='Set eyes to full brightness',
-        description='Relight LeftEye and RightEye to be full brightness.\n' \
-                    "Without this, the eyes will have the shadow of the surrounding socket baked in,\n"
-                    "which doesn't animate well",
+        name=t('Scene.bake_illuminate_eyes.label'),
+        description=t('Scene.bake_illuminate_eyes.desc'),
         default=True
     )
 
     Scene.bake_pass_smoothness = BoolProperty(
-        name='Smoothness',
-        description='Bakes Roughness and then inverts the values.\n' \
-                    'To use this, it needs to be packed to the Alpha channel of either Diffuse or Metallic.\n' \
-                    'Not neccesary if your mesh has a global roughness value',
+        name=t('Scene.bake_pass_smoothness.label'),
+        description=t('Scene.bake_pass_smoothness.desc'),
         default=True
     )
 
     Scene.bake_pass_diffuse = BoolProperty(
-        name='Diffuse (Color)',
-        description='Bakes diffuse, un-lighted color. Usually you will want this.\n' \
-                    'While baking, this temporarily links "Metallic" to "Anisotropic Rotation" as metallic can cause issues.',
+        name=t('Scene.bake_pass_diffuse.label'),
+        description=t('Scene.bake_pass_diffuse.desc'),
         default=True
     )
 
     Scene.bake_preserve_seams = BoolProperty(
-        name="Preserve seams",
-        description='Forces the Decimate operation to preserve vertices making up seams, preventing hard edges along seams.\n' \
-                    'May result in less ideal geometry.\n' \
-                    "Use if you notice ugly edges along your texture seams.",
+        name=t('Scene.bake_preserve_seams.label'),
+        description=t('Scene.bake_preserve_seams.desc'),
         default=False
     )
 
     Scene.bake_pass_normal = BoolProperty(
-        name='Normal (Bump)',
-        description="Bakes a normal (bump) map. Allows you to keep the shading of a complex object with\n" \
-                    "the geometry of a simple object. If you have selected 'Decimate', it will create a map\n" \
-                    "that makes the low res output look like the high res input.\n" \
-                    "Will not work well if you have self-intersecting islands",
+        name=t('Scene.bake_pass_normal.label'),
+        description=t('Scene.bake_pass_normal.desc'),
         default=True
     )
 
     Scene.bake_normal_apply_trans = BoolProperty(
-        name='Apply transforms',
-        description="Applies offsets while baking normals. Neccesary if your model has many materials with different normal maps\n" \
-                    "Turn this off if applying location causes problems with your model",
+        name=t('Scene.bake_normal_apply_trans.label'),
+        description=t('Scene.bake_normal_apply_trans.desc'),
         default=True
     )
 
     Scene.bake_pass_ao = BoolProperty(
-        name='Ambient Occlusion',
-        description='Bakes Ambient Occlusion, non-projected shadows. Adds a significant amount of detail to your model.\n' \
-                    'Reccomended for non-toon style avatars.\n' \
-                    'Takes a fairly long time to bake',
+        name=t('Scene.bake_pass_ao.label'),
+        description=t('Scene.bake_pass_ao.desc'),
         default=False
     )
 
     Scene.bake_pass_questdiffuse = BoolProperty(
-        name='Quest Diffuse (Color+AO)',
-        description='Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.',
+        name=t('Scene.bake_pass_questdiffuse.label'),
+        description=t('Scene.bake_pass_questdiffuse.desc'),
         default=True
     )
 
     Scene.bake_pass_emit = BoolProperty(
-        name='Emit',
-        description='Bakes Emit, glowyness',
+        name=t('Scene.bake_pass_emit.label'),
+        description=t('Scene.bake_pass_emit.desc'),
         default=False
     )
 
     Scene.bake_diffuse_alpha_pack = EnumProperty(
-        name="Alpha Channel",
-        description="What to pack to the Diffuse Alpha channel",
+        name=t('Scene.bake_diffuse_alpha_pack.label'),
+        description=t('Scene.bake_diffuse_alpha_pack.desc'),
         items=[
-            ("NONE", "None", "No alpha channel"),
-            ("TRANSPARENCY", "Transparency", "Pack Transparency"),
-            ("SMOOTHNESS", "Smoothness", "Pack Smoothness. Most efficient if you don't have transparency or metallic textures."),
+            ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
+            ("TRANSPARENCY", t("Scene.bake_diffuse_alpha_pack.transparency.label"), t("Scene.bake_diffuse_alpha_pack.transparency.desc")),
+            ("SMOOTHNESS", t("Scene.bake_diffuse_alpha_pack.smoothness.label"), t("Scene.bake_diffuse_alpha_pack.smoothness.desc")),
         ],
         default="NONE"
     )
 
     Scene.bake_metallic_alpha_pack = EnumProperty(
-        name="Metallic Alpha Channel",
-        description="What to pack to the Metallic Alpha channel",
+        name=t('Scene.bake_metallic_alpha_pack.label'),
+        description=t('Scene.bake_metallic_alpha_pack.desc'),
         items=[
-            ("NONE", "None", "No alpha channel"),
-            ("SMOOTHNESS", "Smoothness", "Pack Smoothness. Use this if your Diffuse alpha channel is already populated with Transparency")
+            ("NONE", t("Scene.bake_metallic_alpha_pack.none.label"), t("Scene.bake_metallic_alpha_pack.none.desc")),
+            ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), t("Scene.bake_metallic_alpha_pack.smoothness.desc"))
         ],
         default="NONE"
     )
 
     Scene.bake_pass_alpha = BoolProperty(
-        name='Transparency',
-        description='Bakes transparency by connecting the last Principled BSDF Alpha input\n' \
-                    'to the Base Color input and baking Diffuse.\n' \
-                    'Not a native pass in Blender, results may vary\n' \
-                    'Unused if you are baking to Quest',
+        name=t('Scene.bake_pass_alpha.label'),
+        description=t('Scene.bake_pass_alpha.desc'),
         default=False
     )
 
     Scene.bake_pass_metallic = BoolProperty(
-        name='Metallic',
-        description='Bakes metallic by connecting the last Principled BSDF Metallic input\n' \
-                    'to the Base Color input and baking Diffuse.\n' \
-                    'Not a native pass in Blender, results may vary',
+        name=t('Scene.bake_pass_metallic.label'),
+        description=t('Scene.bake_pass_metallic.desc'),
         default=False
     )
 
     Scene.bake_questdiffuse_opacity = FloatProperty(
-        name="AO Opacity",
-        description="The opacity of the shadows to blend onto the Diffuse map.\n" \
-                    "This should match the unity slider for AO on the Desktop version.",
+        name=t('Scene.bake_questdiffuse_opacity.label'),
+        description=t('Scene.bake_questdiffuse_opacity.desc'),
         default=0.75,
         min=0.0,
         max=1.0,
@@ -636,7 +583,7 @@ def register():
 
     # Atlas
     # Material.add_to_atlas = BoolProperty(
-    #     description='Add this material to the atlas',
+    #     description=t('Add this material to the atlas')
     #     default=False
     # )
 
@@ -649,7 +596,7 @@ def register():
     # )
 
     # Scene.clear_materials = BoolProperty(
-    #     description='Clear materials checkbox',
+    #     description=t('Clear materials checkbox')
     #     default=True
     # )
 
@@ -704,7 +651,7 @@ def register():
     )
 
     # Scene.disable_vrchat_features = BoolProperty(
-    #     name='Disable VRChat Only Features',
+    #     name=t('Disable VRChat Only Features')
     #     description='This will disable features which are solely used for VRChat.'
     #                 '\nThe following will be disabled:'
     #                 '\n- Eye Tracking'
@@ -715,8 +662,8 @@ def register():
 
     # Copy Protection - obsolete
     # Scene.protection_mode = EnumProperty(
-    #     name="Randomization Level",
-    #     description="Randomization Level",
+    #     name=t("Randomization Level")
+    #     description=t("Randomization Level")
     #     items=[
     #         ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
     #                          'However this method might cause problems with the Outline option from Cubed shader.\n'

@@ -30,162 +30,101 @@ from . import common as Common
 from .register import register_wrap
 from ..translations import t
 
+def autodetect_passes(context, tricount, is_desktop):
+    context.scene.bake_max_tris = tricount
+    context.scene.bake_resolution = 2048 if is_desktop else 1024
+    # Autodetect passes based on BSDF node inputs
+    bsdf_nodes = []
+    objects = Common.get_meshes_objects()
+    for obj in objects:
+        for slot in obj.material_slots:
+            if slot.material:
+                if not slot.material.use_nodes or not slot.material.node_tree:
+                    self.report({'ERROR'}, t('cats_bake.warn_missing_nodes'))
+                    return {'FINISHED'}
+                tree = slot.material.node_tree
+                for node in tree.nodes:
+                    if node.type == "BSDF_PRINCIPLED":
+                        bsdf_nodes.append(node)
+
+    # Decimate if we're over the limit
+    total_tricount = sum([Common.get_tricount(obj) for obj in objects])
+    context.scene.bake_use_decimation = total_tricount > tricount
+    context.scene.bake_uv_overlap_correction = 'UNMIRROR' if context.scene.bake_use_decimation else "NONE"
+
+    # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
+    context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
+                                       or len(set([node.inputs["Base Color"].default_value for node in bsdf_nodes])) > 1)
+    # Smoothness: similar to diffuse
+    context.scene.bake_pass_smoothness = (any([node.inputs["Roughness"].is_linked for node in bsdf_nodes])
+                                          or len(set([node.inputs["Roughness"].default_value for node in bsdf_nodes])) > 1)
+    # Emit: similar to diffuse
+    context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
+                                    or len(set([node.inputs["Emission"].default_value for node in bsdf_nodes])) > 1)
+
+    # Transparency: similar to diffuse
+    context.scene.bake_pass_alpha = is_desktop and (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
+                                     or len(set([node.inputs["Alpha"].default_value for node in bsdf_nodes])) > 1)
+
+    # Metallic: similar to diffuse
+    context.scene.bake_pass_metallic = (any([node.inputs["Metallic"].is_linked for node in bsdf_nodes])
+                                        or len(set([node.inputs["Metallic"].default_value for node in bsdf_nodes])) > 1)
+
+    # Normal: on if any normals connected or if decimating... so, always on for this preset
+    context.scene.bake_pass_normal = (context.scene.bake_use_decimation
+                                      or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
+
+    # Apply transforms: on if more than one mesh TODO: with different materials?
+    context.scene.bake_normal_apply_trans = len(objects) > 1
+
+    # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
+    # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
+    # diffuse ao: off if desktop
+    context.scene.bake_pass_questdiffuse = not is_desktop
+
+    # alpha packs: arrange for maximum efficiency.
+    # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
+    context.scene.bake_diffuse_alpha_pack = "NONE"
+    context.scene.bake_metallic_alpha_pack = "NONE"
+    # If 'smoothness' and 'transparency', we need to force metallic to bake so we can pack to it.
+    if context.scene.bake_pass_smoothness and context.scene.bake_pass_alpha:
+        context.scene.bake_pass_metallic = True
+    # If we have transparency, it needs to go in diffuse alpha
+    if context.scene.bake_pass_alpha:
+        context.scene.bake_diffuse_alpha_pack = "TRANSPARENCY"
+    # Smoothness to diffuse is only the most efficient when we don't have metallic or alpha
+    if context.scene.bake_pass_smoothness and not context.scene.bake_pass_metallic and not context.scene.bake_pass_alpha:
+        context.scene.bake_diffuse_alpha_pack = "SMOOTHNESS"
+    if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
+        context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
+
 @register_wrap
 class BakePresetDesktop(bpy.types.Operator):
     bl_idname = 'cats_bake.preset_desktop'
-    bl_label = "Desktop"
-    bl_description = "Preset for producing an Excellent-rated Desktop avatar, not accounting for bones.\n" \
-                     "This will try to automatically detect which bake passes are relevant to your model"
+    bl_label = t('cats_bake.preset_desktop.label')
+    bl_description = t('cats_bake.preset_desktop.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        context.scene.bake_max_tris = 32000
-        context.scene.bake_resolution = 2048
-        # Autodetect passes based on BSDF node inputs
-        bsdf_nodes = []
-        objects = Common.get_meshes_objects()
-        for obj in objects:
-            for slot in obj.material_slots:
-                if slot.material:
-                    if not slot.material.use_nodes or not slot.material.node_tree:
-                        self.report({'ERROR'}, "A material in use isn't using Nodes, fix this in the Shading tab.")
-                        return {'FINISHED'}
-                    tree = slot.material.node_tree
-                    for node in tree.nodes:
-                        if node.type == "BSDF_PRINCIPLED":
-                            bsdf_nodes.append(node)
-
-        # Decimate if we're over the limit
-        total_tricount = sum([Common.get_tricount(obj) for obj in objects])
-        context.scene.bake_use_decimation = total_tricount > 32000
-        context.scene.bake_uv_overlap_correction = 'UNMIRROR' if context.scene.bake_use_decimation else "NONE"
-
-        # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
-        context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Base Color"].default_value for node in bsdf_nodes])) > 1)
-        # Smoothness: similar to diffuse
-        context.scene.bake_pass_smoothness = (any([node.inputs["Roughness"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Roughness"].default_value for node in bsdf_nodes])) > 1)
-        # Emit: similar to diffuse
-        context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Emission"].default_value for node in bsdf_nodes])) > 1)
-
-        # Transparency: similar to diffuse
-        context.scene.bake_pass_alpha = (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Alpha"].default_value for node in bsdf_nodes])) > 1)
-
-        # Metallic: similar to diffuse
-        context.scene.bake_pass_metallic = (any([node.inputs["Metallic"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Metallic"].default_value for node in bsdf_nodes])) > 1)
-
-        # Normal: on if any normals connected or if decimating... so, always on for this preset
-        context.scene.bake_pass_normal = (context.scene.bake_use_decimation
-                                          or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
-
-        # Apply transforms: on if more than one mesh TODO: with different materials?
-        context.scene.bake_normal_apply_trans = len(objects) > 1
-
-        # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
-        # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
-        # diffuse ao: off if desktop
-        context.scene.bake_pass_questdiffuse = False
-
-        # alpha packs: arrange for maximum efficiency.
-        # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
-        context.scene.bake_diffuse_alpha_pack = "NONE"
-        context.scene.bake_metallic_alpha_pack = "NONE"
-        # If 'smoothness' and 'transparency', we need to force metallic to bake so we can pack to it.
-        if context.scene.bake_pass_smoothness and context.scene.bake_pass_alpha:
-            context.scene.bake_pass_metallic = True
-        # If we have transparency, it needs to go in diffuse alpha
-        if context.scene.bake_pass_alpha:
-            context.scene.bake_diffuse_alpha_pack = "TRANSPARENCY"
-        # Smoothness to diffuse is only the most efficient when we don't have metallic or alpha
-        if context.scene.bake_pass_smoothness and not context.scene.bake_pass_metallic and not context.scene.bake_pass_alpha:
-            context.scene.bake_diffuse_alpha_pack = "SMOOTHNESS"
-        if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
-            context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
-
+        autodetect_passes(context, 32000, True)
         return {'FINISHED'}
 
 @register_wrap
 class BakePresetQuest(bpy.types.Operator):
     bl_idname = 'cats_bake.preset_quest'
-    bl_label = "Quest"
-    bl_description = "Preset for producing an Excellent-rated Quest avatar, not accounting for bones.\n" \
-                     "This will try to automatically detect which bake passes are relevant to your model"
+    bl_label = t('cats_bake.preset_quest.label')
+    bl_description = t('cats_bake.preset_quest.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        context.scene.bake_max_tris = 5000
-        context.scene.bake_resolution = 1024
-        # Autodetect passes based on BSDF node inputs
-        bsdf_nodes = []
-        objects = Common.get_meshes_objects()
-        for obj in objects:
-            for slot in obj.material_slots:
-                if slot.material:
-                    if not slot.material.use_nodes or not slot.material.node_tree:
-                        self.report({'ERROR'}, "A material in use isn't using Nodes, fix this in the Shading tab.")
-                        return {'FINISHED'}
-                    tree = slot.material.node_tree
-                    for node in tree.nodes:
-                        if node.type == "BSDF_PRINCIPLED":
-                            bsdf_nodes.append(node)
-
-        # Decimate if we're over the limit
-        total_tricount = sum([Common.get_tricount(obj) for obj in objects])
-        context.scene.bake_use_decimation = total_tricount > 5000
-        context.scene.bake_uv_overlap_correction = 'UNMIRROR' if context.scene.bake_use_decimation else "NONE"
-
-        # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
-        context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Base Color"].default_value for node in bsdf_nodes])) > 1)
-        # Smoothness: similar to diffuse
-        context.scene.bake_pass_smoothness = (any([node.inputs["Roughness"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Roughness"].default_value for node in bsdf_nodes])) > 1)
-        # Emit: similar to diffuse
-        context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Emission"].default_value for node in bsdf_nodes])) > 1)
-
-        # Transparency: unsupported on quest. Possibly would make better mip maps if manually configured in Unity to have alpha: None
-        context.scene.bake_pass_alpha = False
-
-        # Metallic: similar to diffuse
-        context.scene.bake_pass_metallic = (any([node.inputs["Metallic"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Metallic"].default_value for node in bsdf_nodes])) > 1)
-
-        # Normal: on if any normals connected or if decimating
-        context.scene.bake_pass_normal = (context.scene.bake_use_decimation
-                                          or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
-
-        # Apply transforms: on if more than one mesh TODO: with different materials?
-        context.scene.bake_normal_apply_trans = len(objects) > 1
-
-        # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
-        # diffuse ao: on, won't do anything unless ao gets checked
-        context.scene.bake_pass_questdiffuse = True
-
-        # alpha packs: arrange for maximum efficiency.
-        # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
-        context.scene.bake_diffuse_alpha_pack = "NONE"
-        context.scene.bake_metallic_alpha_pack = "NONE"
-        # If 'smoothness', we need to force metallic to bake so we can pack to it. (smoothness source is not configurable)
-        if context.scene.bake_pass_smoothness:
-            context.scene.bake_pass_metallic = True
-        if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
-            context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
+        autodetect_passes(context, 5000, False)
         return {'FINISHED'}
 
 @register_wrap
 class BakeButton(bpy.types.Operator):
     bl_idname = 'cats_bake.bake'
-    bl_label = 'Copy and Bake (SLOW!)'
-    bl_description = "Perform the bake. Warning, this performs an actual render!\n" \
-                     "This will create a copy of your avatar to leave the original alone.\n" \
-                     "Depending on your machine and model, this could take an hour or more.\n" \
-                     "For each pass, any Value node in your materials labeled bake_<bakename> will be\n" \
-                     "set to 1.0, for more granular customization."
+    bl_label = t('cats_bake.bake.label')
+    bl_description = t('cats_bake.bake.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     # Only works between equal data types.
@@ -356,13 +295,13 @@ class BakeButton(bpy.types.Operator):
     def execute(self, context):
         meshes = Common.get_meshes_objects()
         if not meshes or len(meshes) == 0:
-            self.report({'ERROR'}, "No meshes found!")
+            self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
             return {'FINISHED'}
         if context.scene.render.engine != 'CYCLES':
-            self.report({'ERROR'}, "You need to set your render engine to Cycles first!")
+            self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
             return {'FINISHED'}
         if any([obj.hide_render for obj in Common.get_armature().children]):
-            self.report({'ERROR'}, "One or more of your armature's meshes have rendering disabled!")
+            self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
             return {'FINISHED'}
         # TODO: Check if any UV islands are self-overlapping, emit a warning
 
@@ -893,7 +832,7 @@ class BakeButton(bpy.types.Operator):
         if pass_metallic:
             bpy.data.images["SCRIPT_metallic.png"].save()
 
-        self.report({'INFO'}, "Success! Textures and model saved to \'CATS Bake\' folder next to your .blend file.")
+        self.report({'INFO'}, t('cats_bake.info.success'))
 
         # Move armature so we can see it
         if quick_compare:

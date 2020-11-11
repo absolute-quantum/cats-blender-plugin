@@ -113,6 +113,7 @@ dictionary = {
     'DecimationPanel.preset.quest.label': 'Quest',
     'DecimationPanel.preset.quest.description': 'The recommended number of tris for Quest avatars.\n'
                                                 'A hard limit will be established in the future that will not be much more than this.',
+    'DecimationPanel.warn.notIfBaking': "Not reccomended if baking!",
 
     # UI Eye tracking
     'EyeTrackingPanel.label': 'Eye Tracking',
@@ -155,6 +156,17 @@ dictionary = {
     'CopyProtectionPanel.desc1': 'Tries to protect your avatar from Unity cache ripping.',
     'CopyProtectionPanel.desc2': 'This protection is not 100% safe!',
     'CopyProtectionPanel.desc3': 'Before use: Read the documentation!',
+
+    # UI Bake
+    'BakePanel.autodetectlabel': 'Autodetect:',
+    'BakePanel.generaloptionslabel': "General options:",
+    'BakePanel.noheadfound': "No \"Head\" bone found!",
+    'BakePanel.overlapfixlabel': "Overlap fix:",
+    'BakePanel.bakepasseslabel': "Bake passes:",
+    'BakePanel.alphalabel': "Alpha:",
+    'BakePanel.transparencywarning': "Transparency isn't currently selected!",
+    'BakePanel.smoothnesswarning': "Smoothness isn't currently selected!",
+    'BakePanel.doublepackwarning': "Smoothness packed in two places!",
 
     # UI Settings & Updates
     'UpdaterPanel.label': 'Settings & Updates',
@@ -984,6 +996,12 @@ dictionary = {
 
     'Scene.decimation_remove_doubles.label': 'Remove Doubles',
     'Scene.decimation_remove_doubles.desc': 'Uncheck this if you got issues with with this checked',
+    'Scene.decimation_animation_weighting.label': "Animation weighting",
+    'Scene.decimation_animation_weighting.desc': "Weight decimation based on shape keys and vertex group overlap\n" \
+                            "Results in better animating topology by trading off overall shape accuracy\n" \
+                            "Use if your elbows/joints end up with bad topology",
+    'Scene.decimation_animation_weighting_factor.label': "Factor",
+    'Scene.decimation_animation_weighting_factor.desc': "How much influence the animation weighting has on the overall shape",
 
     'Scene.max_tris.label': 'Tris',
     'Scene.max_tris.desc': 'The target amount of tris after decimation',
@@ -1110,6 +1128,106 @@ dictionary = {
 
     'Scene.debug_translations.label': 'Debug Google Translations',
     'Scene.debug_translations.desc': 'Tests the Google Translations and prints the Google response in case of error',
+
+    # Bake
+    'Scene.bake_resolution.label': "Resolution",
+    'Scene.bake_resolution.desc': "Output resolution for the textures.\n" \
+                            "- 2048 is typical for desktop use.\n" \
+                            "- 1024 is reccomended for the Quest",
+    'Scene.bake_use_decimation.label': 'Decimate',
+    'Scene.bake_use_decimation.desc': 'Reduce polycount before baking, then use Normal maps to restore detail',
+    'Scene.bake_generate_uvmap.label': 'Generate UVMap',
+    'Scene.bake_generate_uvmap.desc': "Re-pack islands for your mesh to a new non-overlapping UVMap.\n" \
+                            "Only disable if your UVs are non-overlapping already.\n" \
+                            "This will leave any map named \"Detail Map\" alone.\n" \
+                            "Uses UVPackMaster where available for more efficient UVs, make sure the window is showing",
+    'Scene.bake_uv_overlap_correction.label': "Overlap correction",
+    'Scene.bake_uv_overlap_correction.desc': "Method used to prevent overlaps in UVMap",
+    'Scene.bake_prioritize_face.label':'Prioritize Head/Eyes',
+    'Scene.bake_prioritize_face.desc': 'Scale any UV islands attached to the head/eyes by a given factor.',
+    'Scene.bake_face_scale.label': "Head/Eyes Scale",
+    'Scene.bake_face_scale.desc': "How much to scale up the face/eyes portion of the textures.",
+    'Scene.bake_quick_compare.label': 'Quick compare',
+    'Scene.bake_quick_compare.desc': 'Move output avatar next to existing one to quickly compare',
+    'Scene.bake_illuminate_eyes.label': 'Set eyes to full brightness',
+    'Scene.bake_illuminate_eyes.desc': 'Relight LeftEye and RightEye to be full brightness.\n' \
+                    "Without this, the eyes will have the shadow of the surrounding socket baked in,\n"
+                    "which doesn't animate well",
+    'Scene.bake_pass_smoothness.label': 'Smoothness',
+    'Scene.bake_pass_smoothness.desc': 'Bakes Roughness and then inverts the values.\n' \
+                    'To use this, it needs to be packed to the Alpha channel of either Diffuse or Metallic.\n' \
+                    'Not neccesary if your mesh has a global roughness value',
+    'Scene.bake_pass_diffuse.label': 'Diffuse (Color)',
+    'Scene.bake_pass_diffuse.desc': 'Bakes diffuse, un-lighted color. Usually you will want this.\n' \
+                    'While baking, this temporarily links "Metallic" to "Anisotropic Rotation" as metallic can cause issues.',
+    'Scene.bake_preserve_seams.label': "Preserve seams",
+    'Scene.bake_preserve_seams.desc': 'Forces the Decimate operation to preserve vertices making up seams, preventing hard edges along seams.\n' \
+                    'May result in less ideal geometry.\n' \
+                    "Use if you notice ugly edges along your texture seams.",
+    'Scene.bake_pass_normal.label': 'Normal (Bump)',
+    'Scene.bake_pass_normal.desc': "Bakes a normal (bump) map. Allows you to keep the shading of a complex object with\n" \
+                    "the geometry of a simple object. If you have selected 'Decimate', it will create a map\n" \
+                    "that makes the low res output look like the high res input.\n" \
+                    "Will not work well if you have self-intersecting islands",
+    'Scene.bake_normal_apply_trans.label': 'Apply transforms',
+    'Scene.bake_normal_apply_trans.desc': "Applies offsets while baking normals. Neccesary if your model has many materials with different normal maps\n" \
+                    "Turn this off if applying location causes problems with your model",
+    'Scene.bake_pass_ao.label': 'Ambient Occlusion',
+    'Scene.bake_pass_ao.desc': 'Bakes Ambient Occlusion, non-projected shadows. Adds a significant amount of detail to your model.\n' \
+                    'Reccomended for non-toon style avatars.\n' \
+                    'Takes a fairly long time to bake',
+    'Scene.bake_pass_questdiffuse.label': 'Quest Diffuse (Color+AO)',
+    'Scene.bake_pass_questdiffuse.desc': 'Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.',
+    'Scene.bake_pass_emit.label': 'Emit',
+    'Scene.bake_pass_emit.desc': 'Bakes Emit, glowyness',
+    'Scene.bake_diffuse_alpha_pack.label': "Alpha Channel",
+    'Scene.bake_diffuse_alpha_pack.desc': "What to pack to the Diffuse Alpha channel",
+    'Scene.bake_metallic_alpha_pack.label': "Metallic Alpha Channel",
+    'Scene.bake_metallic_alpha_pack.desc': "What to pack to the Metallic Alpha channel",
+    'Scene.bake_pass_alpha.label': 'Transparency',
+    'Scene.bake_pass_alpha.desc': 'Bakes transparency by connecting the last Principled BSDF Alpha input\n' \
+                    'to the Base Color input and baking Diffuse.\n' \
+                    'Not a native pass in Blender, results may vary\n' \
+                    'Unused if you are baking to Quest',
+    'Scene.bake_pass_metallic.label': 'Metallic',
+    'Scene.bake_pass_metallic.desc': 'Bakes metallic by connecting the last Principled BSDF Metallic input\n' \
+                    'to the Base Color input and baking Diffuse.\n' \
+                    'Not a native pass in Blender, results may vary',
+    'Scene.bake_questdiffuse_opacity.label': "AO Opacity",
+    'Scene.bake_questdiffuse_opacity.desc': "The opacity of the shadows to blend onto the Diffuse map.\n" \
+                    "This should match the unity slider for AO on the Desktop version.",
+
+    "Scene.bake_uv_overlap_correction.none.label": "None",
+    "Scene.bake_uv_overlap_correction.none.desc": "Leave islands as they are. Use if islands don't self-intersect at all",
+    "Scene.bake_uv_overlap_correction.unmirror.label": "Unmirror",
+    "Scene.bake_uv_overlap_correction.unmirror.desc": "Move all face islands with positive X values over one to un-pin mirrored UVs. Solves most UV pinning issues.",
+    "Scene.bake_uv_overlap_correction.reproject.label": "Reproject",
+    "Scene.bake_uv_overlap_correction.reproject.desc": "Use blender's Smart UV Project to come up with an entirely new island layout. Tends to reduce quality.",
+
+    "Scene.bake_diffuse_alpha_pack.none.label": "None",
+    "Scene.bake_diffuse_alpha_pack.none.desc": "No alpha channel",
+    "Scene.bake_diffuse_alpha_pack.transparency.label": "Transparency",
+    "Scene.bake_diffuse_alpha_pack.transparency.desc": "Pack Transparency",
+    "Scene.bake_diffuse_alpha_pack.smoothness.label": "Smoothness",
+    "Scene.bake_diffuse_alpha_pack.smoothness.desc": "Pack Smoothness. Most efficient if you don't have transparency or metallic textures.",
+
+    "cats_bake.warn_missing_nodes": "A material in use isn't using Nodes, fix this in the Shading tab.",
+    "cats_bake.preset_desktop.label": "Desktop",
+    "cats_bake.preset_desktop.desc": "Preset for producing an Excellent-rated Desktop avatar, not accounting for bones.\n" \
+                             "This will try to automatically detect which bake passes are relevant to your model",
+    "cats_bake.preset_quest.label": 'Quest',
+    "cats_bake.preset_quest.desc": "Preset for producing an Excellent-rated Quest avatar, not accounting for bones.\n" \
+                     "This will try to automatically detect which bake passes are relevant to your model",
+    'cats_bake.bake.label': 'Copy and Bake (SLOW!)',
+    'cats_bake.bake.desc':  "Perform the bake. Warning, this performs an actual render!\n" \
+                     "This will create a copy of your avatar to leave the original alone.\n" \
+                     "Depending on your machine and model, this could take an hour or more.\n" \
+                     "For each pass, any Value node in your materials labeled bake_<bakename> will be\n" \
+                     "set to 1.0, for more granular customization.",
+    'cats_bake.error.no_meshes': "No meshes found!",
+    'cats_bake.error.render_engine': "You need to set your render engine to Cycles first!",
+    'cats_bake.error.render_disabled': "One or more of your armature's meshes have rendering disabled!",
+    'cats_bake.info.success': "Success! Textures and model saved to \'CATS Bake\' folder next to your .blend file.",
 
     # Updater
     'CheckForUpdateButton.label': 'Check now for Update',

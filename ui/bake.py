@@ -21,11 +21,11 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        col.label(text="Autodetect:")
+        col.label(text=t('BakePanel.autodetectlabel'))
         row = col.row(align=True)
         row.operator(Bake.BakePresetDesktop.bl_idname, icon="ANTIALIASED")
         row.operator(Bake.BakePresetQuest.bl_idname, icon="ALIASED")
-        col.label(text="General options:")
+        col.label(text=t('BakePanel.generaloptionslabel'))
         row = col.row(align=True)
         row.prop(context.scene, 'bake_resolution', expand=True)
         row = col.row(align=True)
@@ -58,10 +58,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 if armature is None or "Head" not in armature.data.bones:
                     row = col.row(align=True)
                     row.separator()
-                    row.label(text="No \"Head\" bone found!", icon="INFO")
+                    row.label(text=t('BakePanel.noheadfound'), icon="INFO")
             row = col.row(align=True)
             row.separator()
-            row.label(text="Overlap fix:")
+            row.label(text=t('BakePanel.overlapfixlabel'))
             row.prop(context.scene, 'bake_uv_overlap_correction', expand=True)
         #row = col.row(align=True)
         #row.prop(context.scene, 'bake_simplify_armature', expand=True)
@@ -69,18 +69,18 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'bake_quick_compare', expand=True)
         col.separator()
         row = col.row(align=True)
-        col.label(text="Bake passes:")
+        col.label(text=t('BakePanel.bakepasseslabel'))
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_diffuse', expand=True)
         if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha):
             row = col.row(align=True)
             row.separator()
-            row.label(text="Alpha:")
+            row.label(text=t('BakePanel.alphalabel'))
             row.prop(context.scene, 'bake_diffuse_alpha_pack', expand=True)
             if (context.scene.bake_diffuse_alpha_pack == "TRANSPARENCY") and not context.scene.bake_pass_alpha:
-                col.label(text="Transparency isn't currently selected!", icon="INFO")
+                col.label(text=t('BakePanel.transparencywarning'), icon="INFO")
             elif (context.scene.bake_diffuse_alpha_pack == "SMOOTHNESS") and not context.scene.bake_pass_smoothness:
-                col.label(text="Smoothness isn't currently selected!", icon="INFO")
+                col.label(text=t('BakePanel.smoothnesswarning'), icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_normal', expand=True)
@@ -115,10 +115,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
             row = col.row(align=True)
             row.separator()
-            row.label(text="Alpha:")
+            row.label(text=t('BakePanel.alphalabel'))
             row.prop(context.scene, 'bake_metallic_alpha_pack', expand=True)
             if context.scene.bake_diffuse_alpha_pack == "SMOOTHNESS" and context.scene.bake_metallic_alpha_pack == "SMOOTHNESS":
-                col.label(text="Smoothness packed in two places!", icon="INFO")
+                col.label(text=t('BakePanel.doublepackwarning'), icon="INFO")
         col.separator()
 
         row = col.row(align=True)
