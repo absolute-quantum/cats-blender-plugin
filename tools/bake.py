@@ -24,6 +24,7 @@
 # Edits by: Feilen
 
 import bpy
+import os
 
 from . import common as Common
 from .register import register_wrap
@@ -255,7 +256,8 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_size[0], height=bake_size[1], color=background_color,
                 generated_type="BLANK", alpha=True)
             image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
-            image.alpha_mode = "NONE"
+            image.filepath = bpy.path.abspath("//CATS Bake/" + "SCRIPT_" + bake_name + ".png")
+            image.alpha_mode = "STRAIGHT"
             image.generated_color = background_color
             image.generated_width=bake_size[0]
             image.generated_height=bake_size[1]
@@ -580,7 +582,6 @@ class BakeButton(bpy.types.Operator):
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
-            #TODO: still causes issues on chakdal
             # when baking alpha as roughness, the -real- alpha needs to be set to 1 to avoid issues
             # this will clobber whatever's in Anisotropic Rotation!
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
@@ -850,12 +851,52 @@ class BakeButton(bpy.types.Operator):
             emittexnode.location.y -= 150
             tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
 
-        # Move armature so we can see it
-        if quick_compare:
-            arm_copy.location.x += arm_copy.dimensions.x
-
         # TODO: Optionally cleanup bones as a last step
         # Select all bones which don't fuzzy match a whitelist (Chest, Head, etc) and do Merge Weights to parent on them
         # For now, just add a note saying you should merge bones manually
+
+        # Export the model to the bake dir
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj in collection.all_objects:
+            obj.select_set(True)
+            if obj.type == "MESH":
+                obj.name = "Body"
+            elif obj.type == "ARMATURE":
+                obj.name = "Armature"
+        bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
+                                 use_selection=True,
+                                 use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_NONE',
+                                 bake_space_transform=False, object_types={'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'},
+                                 use_mesh_modifiers=True, use_mesh_modifiers_render=True, mesh_smooth_type='OFF', use_subsurf=False,
+                                 use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=True, primary_bone_axis='Y',
+                                 secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=True,
+                                 bake_anim_use_all_bones=True, bake_anim_use_nla_strips=True, bake_anim_use_all_actions=True,
+                                 bake_anim_force_startend_keying=True, bake_anim_step=1.0, bake_anim_simplify_factor=1.0, path_mode='AUTO',
+                                 embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
+                                 axis_forward='-Z', axis_up='Y')
+
+        # Try to only output what you'll end up importing into unity.
+        if pass_diffuse:
+            bpy.data.images["SCRIPT_diffuse.png"].save()
+        if pass_normal:
+            bpy.data.images["SCRIPT_normal.png"].save()
+        if pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS"):
+            bpy.data.images["SCRIPT_smoothness.png"].save()
+        if pass_ao:
+            bpy.data.images["SCRIPT_ao.png"].save()
+        if pass_diffuse and pass_ao and pass_questdiffuse:
+            bpy.data.images["SCRIPT_questdiffuse.png"].save()
+        if pass_emit:
+            bpy.data.images["SCRIPT_emit.png"].save()
+        if pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY"):
+            bpy.data.images["SCRIPT_alpha.png"].save()
+        if pass_metallic:
+            bpy.data.images["SCRIPT_metallic.png"].save()
+
+        self.report({'INFO'}, "Success! Textures and model saved to \'CATS Bake\' folder next to your .blend file.")
+
+        # Move armature so we can see it
+        if quick_compare:
+            arm_copy.location.x += arm_copy.dimensions.x
 
         print("BAKE COMPLETE!")
