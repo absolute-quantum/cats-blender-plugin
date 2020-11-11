@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2020 GiveMeAllYourCats
+# Copyright (c) 2020 Feilen
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the 'Software'), to deal
@@ -21,7 +21,6 @@
 # SOFTWARE.
 
 # Code author: Feilen
-# Edits by: Feilen
 
 import bpy
 import os
