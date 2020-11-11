@@ -86,17 +86,27 @@ def autodetect_passes(context, tricount, is_desktop):
     # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
     context.scene.bake_diffuse_alpha_pack = "NONE"
     context.scene.bake_metallic_alpha_pack = "NONE"
-    # If 'smoothness' and 'transparency', we need to force metallic to bake so we can pack to it.
-    if context.scene.bake_pass_smoothness and context.scene.bake_pass_alpha:
-        context.scene.bake_pass_metallic = True
-    # If we have transparency, it needs to go in diffuse alpha
-    if context.scene.bake_pass_alpha:
-        context.scene.bake_diffuse_alpha_pack = "TRANSPARENCY"
-    # Smoothness to diffuse is only the most efficient when we don't have metallic or alpha
-    if context.scene.bake_pass_smoothness and not context.scene.bake_pass_metallic and not context.scene.bake_pass_alpha:
-        context.scene.bake_diffuse_alpha_pack = "SMOOTHNESS"
-    if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
-        context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
+    if is_desktop:
+        # If 'smoothness' and 'transparency', we need to force metallic to bake so we can pack to it.
+        if context.scene.bake_pass_smoothness and context.scene.bake_pass_alpha:
+            context.scene.bake_pass_metallic = True
+        # If we have transparency, it needs to go in diffuse alpha
+        if context.scene.bake_pass_alpha:
+            context.scene.bake_diffuse_alpha_pack = "TRANSPARENCY"
+        # Smoothness to diffuse is only the most efficient when we don't have metallic or alpha
+        if context.scene.bake_pass_smoothness and not context.scene.bake_pass_metallic and not context.scene.bake_pass_alpha:
+            context.scene.bake_diffuse_alpha_pack = "SMOOTHNESS"
+        if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
+            context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
+    else:
+        # alpha packs: arrange for maximum efficiency.
+        # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
+        context.scene.bake_diffuse_alpha_pack = "NONE"
+        context.scene.bake_metallic_alpha_pack = "NONE"
+        # If 'smoothness', we need to force metallic to bake so we can pack to it. (smoothness source is not configurable)
+        if context.scene.bake_pass_smoothness:
+            context.scene.bake_pass_metallic = True
+            context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
 
 @register_wrap
 class BakePresetDesktop(bpy.types.Operator):
@@ -802,6 +812,8 @@ class BakeButton(bpy.types.Operator):
                 obj.name = "Body"
             elif obj.type == "ARMATURE":
                 obj.name = "Armature"
+        if not os.path.exists(bpy.path.abspath("//CATS Bake/")):
+            os.mkdir(bpy.path.abspath("//CATS Bake/"))
         bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
                                  use_selection=True,
                                  use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_NONE',
