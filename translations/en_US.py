@@ -1211,6 +1211,11 @@ dictionary = {
     "Scene.bake_diffuse_alpha_pack.smoothness.label": "Smoothness",
     "Scene.bake_diffuse_alpha_pack.smoothness.desc": "Pack Smoothness. Most efficient if you don't have transparency or metallic textures.",
 
+    "Scene.bake_metallic_alpha_pack.none.label": "None",
+    "Scene.bake_metallic_alpha_pack.none.desc": "No alpha channel",
+    "Scene.bake_metallic_alpha_pack.smoothness.label": "Smoothness",
+    "Scene.bake_metallic_alpha_pack.smoothness.desc": "Pack Smoothness. Use this if your Diffuse alpha channel is already populated with Transparency",
+
     "cats_bake.warn_missing_nodes": "A material in use isn't using Nodes, fix this in the Shading tab.",
     "cats_bake.preset_desktop.label": "Desktop",
     "cats_bake.preset_desktop.desc": "Preset for producing an Excellent-rated Desktop avatar, not accounting for bones.\n" \

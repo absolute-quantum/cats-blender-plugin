@@ -184,6 +184,23 @@ def register():
         subtype='FACTOR'
     )
 
+    Scene.bake_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=False
+    )
+
+    Scene.bake_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
     Scene.bake_max_tris = IntProperty(
         name=t('Scene.max_tris.label'),
         description=t('Scene.max_tris.desc'),
