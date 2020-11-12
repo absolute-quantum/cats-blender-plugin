@@ -307,7 +307,7 @@ class BakeButton(bpy.types.Operator):
             self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
             return {'FINISHED'}
         if context.scene.render.engine != 'CYCLES':
-            self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
+            self.report({'ERROR'}, t('cats_bake.error.render_engine'))
             return {'FINISHED'}
         if any([obj.hide_render for obj in Common.get_armature().children]):
             self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
@@ -689,8 +689,9 @@ class BakeButton(bpy.types.Operator):
         # add a normal map and image texture to connect the world texture, if it exists
         tree = mat.node_tree
         bsdfnode = next(node for node in tree.nodes if node.type == "BSDF_PRINCIPLED")
-        for bsdfinput in bsdfnode.inputs:
-            bsdfinput.default_value = bsdf_original.inputs[bsdfinput.identifier].default_value
+        if bsdf_original is not None:
+            for bsdfinput in bsdfnode.inputs:
+                bsdfinput.default_value = bsdf_original.inputs[bsdfinput.identifier].default_value
         if pass_normal:
             normaltexnode = tree.nodes.new("ShaderNodeTexImage")
             if use_decimation:
