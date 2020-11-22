@@ -26,6 +26,7 @@
 import re
 import os
 import bpy
+import bmesh
 import time
 
 from math import degrees
@@ -1711,6 +1712,15 @@ def remove_doubles(mesh, threshold, save_shapes=True):
     switch('OBJECT')
 
     return pre_tris - len(mesh.data.polygons)
+
+
+def get_tricount(obj):
+    # Triangulates with Bmesh to avoid messing with the original geometry
+    bmesh_mesh = bmesh.new()
+    bmesh_mesh.from_mesh(obj.data)
+
+    bmesh.ops.triangulate(bmesh_mesh, faces=bmesh_mesh.faces[:])
+    return len(bmesh_mesh.faces)
 
 
 def get_bone_orientations(armature):

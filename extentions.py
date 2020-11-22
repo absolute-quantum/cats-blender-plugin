@@ -167,6 +167,202 @@ def register():
         default='SMART'
     )
 
+    Scene.decimation_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=False
+    )
+
+    Scene.decimation_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    Scene.bake_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=False
+    )
+
+    Scene.bake_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    Scene.bake_max_tris = IntProperty(
+        name=t('Scene.max_tris.label'),
+        description=t('Scene.max_tris.desc'),
+        default=5000,
+        min=1,
+        max=70000
+    )
+
+    # Bake
+    Scene.bake_resolution = IntProperty(
+        name=t('Scene.bake_resolution.label'),
+        description=t('Scene.bake_resolution.desc'),
+        default=2048,
+        min=128,
+        max=4096
+    )
+
+    Scene.bake_use_decimation = BoolProperty(
+        name=t('Scene.bake_use_decimation.label'),
+        description=t('Scene.bake_use_decimation.desc'),
+        default=True
+    )
+
+    Scene.bake_generate_uvmap = BoolProperty(
+        name=t('Scene.bake_generate_uvmap.label'),
+        description=t('Scene.bake_generate_uvmap.desc'),
+        default=True
+    )
+
+    Scene.bake_uv_overlap_correction = EnumProperty(
+        name=t('Scene.bake_uv_overlap_correction.label'),
+        description=t('Scene.bake_uv_overlap_correction.desc'),
+        items=[
+            ("NONE", t("Scene.bake_uv_overlap_correction.none.label"), t("Scene.bake_uv_overlap_correction.none.desc")),
+            ("UNMIRROR", t("Scene.bake_uv_overlap_correction.unmirror.label"), t("Scene.bake_uv_overlap_correction.unmirror.desc")),
+            ("REPROJECT", t("Scene.bake_uv_overlap_correction.reproject.label"), t("Scene.bake_uv_overlap_correction.reproject.desc")),
+        ],
+        default="UNMIRROR"
+    )
+
+    Scene.bake_prioritize_face = BoolProperty(
+        name=t('Scene.bake_prioritize_face.label'),
+        description=t('Scene.bake_prioritize_face.desc'),
+        default=True
+    )
+
+    Scene.bake_face_scale = FloatProperty(
+        name=t('Scene.bake_face_scale.label'),
+        description=t('Scene.bake_face_scale.desc'),
+        default=3.0,
+        min=0.5,
+        max=4.0,
+        step=0.25,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    Scene.bake_quick_compare = BoolProperty(
+        name=t('Scene.bake_quick_compare.label'),
+        description=t('Scene.bake_quick_compare.desc'),
+        default=True
+    )
+
+    Scene.bake_illuminate_eyes = BoolProperty(
+        name=t('Scene.bake_illuminate_eyes.label'),
+        description=t('Scene.bake_illuminate_eyes.desc'),
+        default=True
+    )
+
+    Scene.bake_pass_smoothness = BoolProperty(
+        name=t('Scene.bake_pass_smoothness.label'),
+        description=t('Scene.bake_pass_smoothness.desc'),
+        default=True
+    )
+
+    Scene.bake_pass_diffuse = BoolProperty(
+        name=t('Scene.bake_pass_diffuse.label'),
+        description=t('Scene.bake_pass_diffuse.desc'),
+        default=True
+    )
+
+    Scene.bake_preserve_seams = BoolProperty(
+        name=t('Scene.bake_preserve_seams.label'),
+        description=t('Scene.bake_preserve_seams.desc'),
+        default=False
+    )
+
+    Scene.bake_pass_normal = BoolProperty(
+        name=t('Scene.bake_pass_normal.label'),
+        description=t('Scene.bake_pass_normal.desc'),
+        default=True
+    )
+
+    Scene.bake_normal_apply_trans = BoolProperty(
+        name=t('Scene.bake_normal_apply_trans.label'),
+        description=t('Scene.bake_normal_apply_trans.desc'),
+        default=True
+    )
+
+    Scene.bake_pass_ao = BoolProperty(
+        name=t('Scene.bake_pass_ao.label'),
+        description=t('Scene.bake_pass_ao.desc'),
+        default=False
+    )
+
+    Scene.bake_pass_questdiffuse = BoolProperty(
+        name=t('Scene.bake_pass_questdiffuse.label'),
+        description=t('Scene.bake_pass_questdiffuse.desc'),
+        default=True
+    )
+
+    Scene.bake_pass_emit = BoolProperty(
+        name=t('Scene.bake_pass_emit.label'),
+        description=t('Scene.bake_pass_emit.desc'),
+        default=False
+    )
+
+    Scene.bake_diffuse_alpha_pack = EnumProperty(
+        name=t('Scene.bake_diffuse_alpha_pack.label'),
+        description=t('Scene.bake_diffuse_alpha_pack.desc'),
+        items=[
+            ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
+            ("TRANSPARENCY", t("Scene.bake_diffuse_alpha_pack.transparency.label"), t("Scene.bake_diffuse_alpha_pack.transparency.desc")),
+            ("SMOOTHNESS", t("Scene.bake_diffuse_alpha_pack.smoothness.label"), t("Scene.bake_diffuse_alpha_pack.smoothness.desc")),
+        ],
+        default="NONE"
+    )
+
+    Scene.bake_metallic_alpha_pack = EnumProperty(
+        name=t('Scene.bake_metallic_alpha_pack.label'),
+        description=t('Scene.bake_metallic_alpha_pack.desc'),
+        items=[
+            ("NONE", t("Scene.bake_metallic_alpha_pack.none.label"), t("Scene.bake_metallic_alpha_pack.none.desc")),
+            ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), t("Scene.bake_metallic_alpha_pack.smoothness.desc"))
+        ],
+        default="NONE"
+    )
+
+    Scene.bake_pass_alpha = BoolProperty(
+        name=t('Scene.bake_pass_alpha.label'),
+        description=t('Scene.bake_pass_alpha.desc'),
+        default=False
+    )
+
+    Scene.bake_pass_metallic = BoolProperty(
+        name=t('Scene.bake_pass_metallic.label'),
+        description=t('Scene.bake_pass_metallic.desc'),
+        default=False
+    )
+
+    Scene.bake_questdiffuse_opacity = FloatProperty(
+        name=t('Scene.bake_questdiffuse_opacity.label'),
+        description=t('Scene.bake_questdiffuse_opacity.desc'),
+        default=0.75,
+        min=0.0,
+        max=1.0,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+
     Scene.selection_mode = EnumProperty(
         name=t('Scene.selection_mode.label'),
         description=t('Scene.selection_mode.desc'),
@@ -404,7 +600,7 @@ def register():
 
     # Atlas
     # Material.add_to_atlas = BoolProperty(
-    #     description='Add this material to the atlas',
+    #     description=t('Add this material to the atlas')
     #     default=False
     # )
 
@@ -417,7 +613,7 @@ def register():
     # )
 
     # Scene.clear_materials = BoolProperty(
-    #     description='Clear materials checkbox',
+    #     description=t('Clear materials checkbox')
     #     default=True
     # )
 
@@ -472,7 +668,7 @@ def register():
     )
 
     # Scene.disable_vrchat_features = BoolProperty(
-    #     name='Disable VRChat Only Features',
+    #     name=t('Disable VRChat Only Features')
     #     description='This will disable features which are solely used for VRChat.'
     #                 '\nThe following will be disabled:'
     #                 '\n- Eye Tracking'
@@ -483,8 +679,8 @@ def register():
 
     # Copy Protection - obsolete
     # Scene.protection_mode = EnumProperty(
-    #     name="Randomization Level",
-    #     description="Randomization Level",
+    #     name=t("Randomization Level")
+    #     description=t("Randomization Level")
     #     items=[
     #         ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
     #                          'However this method might cause problems with the Outline option from Cubed shader.\n'
