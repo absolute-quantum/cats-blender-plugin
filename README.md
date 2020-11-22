@@ -319,6 +319,7 @@ It checks for a new version automatically once every day.
 - Added "Show mmd_tools tabs" option to Settings
   - This allows you show and hide the "MMD" and "Misc" tabs added by the mmd_tools plugin
 - Changed link to a new vrm importer since the old one dropped support
+- Fixed Google Translations randomly not working
 - Fixed bug in "Apply as Rest Pose" and "Pose to Shape Key" in Blender 2.90
 - More fixes for Blender 2.90
 

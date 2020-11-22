@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
-import ast
-import math
 import re
-import time
-
-import requests
-
-import bpy
 import os
+import ast
+import bpy
+import math
+import time
 import pathlib
-
-
+import requests
 from .compat import PY3
-from .compat import unicode
 from .utils import rshift
+from .compat import unicode
+from html.parser import HTMLParser
+from html.entities import name2codepoint
 
 
 class TokenAcquirer(object):
@@ -63,6 +61,7 @@ class TokenAcquirer(object):
         r = self.session.get(self.host, verify=False)
 
         # This prints the google response if the button in the cats settings is pressed
+        # Prints the response from google into a text file inside cats/resources/google-response.txt
         print_response(r.text)
 
         rawtkk = self.RE_RAWTKK.search(r.text)
@@ -76,10 +75,14 @@ class TokenAcquirer(object):
             return
 
         # this will be the same as python code after stripping out a reserved word 'var'
-        if self.RE_TKK.search(r.text):
-            code = unicode(self.RE_TKK.search(r.text).group(1)).replace('var ', '')
-        else:
-            code = unicode(self.RE_TKK2.search(r.text).group(1)).replace('var ', '')
+        try:
+            if self.RE_TKK.search(r.text):
+                code = unicode(self.RE_TKK.search(r.text).group(1)).replace('var ', '')
+            else:
+                code = unicode(self.RE_TKK2.search(r.text).group(1)).replace('var ', '')
+        except AttributeError as e:
+            print_response(r.text, force_print=True)
+            raise AttributeError(e)
 
         # unescape special ascii characters such like a \x3d(=)
         if PY3:  # pragma: no cover
@@ -206,12 +209,75 @@ class TokenAcquirer(object):
         return tk
 
 
-def print_response(text):
-    if not bpy.context.scene.debug_translations:
+def print_response(text, force_print=False):
+    if not force_print and not bpy.context.scene.debug_translations:
         return
     # Prints the response from google into a textfile inside cats/resources/google-response.txt
     main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
     resources_dir = os.path.join(str(main_dir), "resources")
     output_file = os.path.join(resources_dir, "google-response.txt")
+    output_file_readable = os.path.join(resources_dir, "google-response-readable.txt")
     with open(output_file, 'w', encoding="utf8") as outfile:
         outfile.write(text)
+    with open(output_file_readable, 'w', encoding="utf8") as outfile:
+        outfile.write(html_to_text(text))
+
+
+"""
+HTML <-> text conversions.
+http://stackoverflow.com/questions/328356/extracting-text-from-html-file-using-python
+"""
+
+
+class _HTMLToText(HTMLParser):
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self._buf = []
+        self.hide_output = False
+
+    def handle_starttag(self, tag, attrs):
+        if tag in ('p', 'br') and not self.hide_output:
+            self._buf.append('\n')
+        elif tag in ('script', 'style'):
+            self.hide_output = True
+
+    def handle_startendtag(self, tag, attrs):
+        if tag == 'br':
+            self._buf.append('\n')
+
+    def handle_endtag(self, tag):
+        if tag == 'p':
+            self._buf.append('\n')
+        elif tag in ('script', 'style'):
+            self.hide_output = False
+
+    def handle_data(self, text):
+        if text and not self.hide_output:
+            self._buf.append(re.sub(r'\s+', ' ', text))
+
+    def handle_entityref(self, name):
+        if name in name2codepoint and not self.hide_output:
+            c = chr(name2codepoint[name])
+            self._buf.append(c)
+
+    def handle_charref(self, name):
+        if not self.hide_output:
+            n = int(name[1:], 16) if name.startswith('x') else int(name)
+            self._buf.append(chr(n))
+
+    def get_text(self):
+        return re.sub(r' +', ' ', ''.join(self._buf))
+
+
+def html_to_text(html):
+    """
+    Given a piece of HTML, return the plain text it contains.
+    This handles entities and char refs, but not javascript and stylesheets.
+    """
+    parser = _HTMLToText()
+    try:
+        parser.feed(html)
+        parser.close()
+    except:  # HTMLParseError: No good replacement?
+        pass
+    return parser.get_text()

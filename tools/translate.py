@@ -29,6 +29,7 @@ import bpy
 import copy
 import json
 import pathlib
+import traceback
 import collections
 import requests.exceptions
 
@@ -428,39 +429,53 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
     # Translate the rest with google translate
     print('GOOGLE DICT UPDATE!')
     translator = Translator()
-    try:
-        translations = translator.translate(google_input)
-    except requests.exceptions.ConnectionError:
-        print('CONNECTION TO GOOGLE FAILED!')
-        if self:
-            self.report({'ERROR'}, t('update_dictionary.error.cantConnect'))
-        return
-    except json.JSONDecodeError:
-        if self:
-            self.report({'ERROR'}, t('update_dictionary.error.temporaryBan') + t('update_dictionary.error.catsTranslated'))
-        print('YOU GOT BANNED BY GOOGLE!')
-        return
-    except RuntimeError as e:
-        error = Common.html_to_text(str(e))
-        if self:
-            if 'Please try your request again later' in error:
+    token_tries = 0
+    while True:
+        try:
+            translations = translator.translate(google_input)
+            break
+        except requests.exceptions.ConnectionError:
+            print('CONNECTION TO GOOGLE FAILED!')
+            if self:
+                self.report({'ERROR'}, t('update_dictionary.error.cantConnect'))
+            return
+        except json.JSONDecodeError:
+            if self:
                 self.report({'ERROR'}, t('update_dictionary.error.temporaryBan') + t('update_dictionary.error.catsTranslated'))
-                print('YOU GOT BANNED BY GOOGLE!')
-                return
+            print('YOU GOT BANNED BY GOOGLE!')
+            return
+        except RuntimeError as e:
+            error = Common.html_to_text(str(e))
+            if self:
+                if 'Please try your request again later' in error:
+                    self.report({'ERROR'}, t('update_dictionary.error.temporaryBan') + t('update_dictionary.error.catsTranslated'))
+                    print('YOU GOT BANNED BY GOOGLE!')
+                    return
 
-            if 'Error 403' in error:
-                self.report({'ERROR'}, t('update_dictionary.error.cantAccess') + t('update_dictionary.error.catsTranslated'))
-                print('NO PERMISSION TO USE GOOGLE TRANSLATE!')
-                return
+                if 'Error 403' in error:
+                    self.report({'ERROR'}, t('update_dictionary.error.cantAccess') + t('update_dictionary.error.catsTranslated'))
+                    print('NO PERMISSION TO USE GOOGLE TRANSLATE!')
+                    return
 
-            self.report({'ERROR'}, t('update_dictionary.error.errorMsg') + t('update_dictionary.error.catsTranslated') + '\n' + '\nGoogle: ' + error)
-        print('', 'You got an error message from Google:', error, '')
-        return
-    except AttributeError:
-        if self:
-            self.report({'ERROR'}, t('update_dictionary.error.apiChanged'))
-        print('GOOGLE API CHANGED')
-        return
+                self.report({'ERROR'}, t('update_dictionary.error.errorMsg') + t('update_dictionary.error.catsTranslated') + '\n' + '\nGoogle: ' + error)
+            print('', 'You got an error message from Google:', error, '')
+            return
+        except AttributeError as e:
+            # If the translator wasn't able to create a stable connection to Google, just retry it again
+            # This is an issue with Google since Nov 2020: https://github.com/ssut/py-googletrans/issues/234
+            token_tries += 1
+            if token_tries < 20:
+                print('RETRY', token_tries)
+                translator = Translator()
+                continue
+
+            # If if didn't work after 20 tries, just quit
+            # The response from Google was printed into "cats/resources/google-response.txt"
+            if self:
+                self.report({'ERROR'}, t('update_dictionary.error.apiChanged'))
+            print('ERROR: GOOGLE API CHANGED!')
+            print(traceback.format_exc())
+            return
 
     # Update the dictionaries
     for i, translation in enumerate(translations):
