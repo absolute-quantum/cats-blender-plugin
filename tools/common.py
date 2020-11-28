@@ -2114,18 +2114,19 @@ def toggle_mmd_tabs(self, context):
     ]
 
     print('Toggling mmd tabs')
-    if context.scene.show_mmd_tabs:
-        for cls in mmd_cls:
-            try:
-                bpy.utils.register_class(cls)
-            except:
-                pass
-    else:
-        for cls in reversed(mmd_cls):
-            try:
-                bpy.utils.unregister_class(cls)
-            except:
-                pass
+    if platform.system() != "Linux" or bpy.app.version < (2, 90):
+        if context.scene.show_mmd_tabs:
+            for cls in mmd_cls:
+                try:
+                    bpy.utils.register_class(cls)
+                except:
+                    pass
+        else:
+            for cls in reversed(mmd_cls):
+                try:
+                    bpy.utils.unregister_class(cls)
+                except:
+                    pass
 
     Settings.update_settings(None, None)
 
