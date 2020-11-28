@@ -301,6 +301,12 @@ def register():
         default=True
     )
 
+    Scene.bake_normal_apply_keys = BoolProperty(
+        name=t('Scene.bake_normal_apply_keys.label'),
+        description=t('Scene.bake_normal_apply_keys.desc'),
+        default=True
+    )
+
     Scene.bake_pass_ao = BoolProperty(
         name=t('Scene.bake_pass_ao.label'),
         description=t('Scene.bake_pass_ao.desc'),

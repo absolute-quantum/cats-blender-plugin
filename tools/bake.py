@@ -67,6 +67,8 @@ def autodetect_passes(self, context, tricount, is_desktop):
     context.scene.bake_use_decimation = total_tricount > tricount
     context.scene.bake_uv_overlap_correction = 'UNMIRROR' if context.scene.bake_use_decimation else "NONE"
 
+    # TODO: some kinda workaround for terminator artifacts?
+
     # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
     context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
                                        or len(set([node.inputs["Base Color"].default_value for node in bsdf_nodes])) > 1)
@@ -399,6 +401,7 @@ class BakeButton(bpy.types.Operator):
         illuminate_eyes = context.scene.bake_illuminate_eyes
         questdiffuse_opacity = context.scene.bake_questdiffuse_opacity
         normal_apply_trans = context.scene.bake_normal_apply_trans
+        normal_apply_keys = context.scene.bake_normal_apply_keys
         diffuse_alpha_pack = context.scene.bake_diffuse_alpha_pack
         metallic_alpha_pack = context.scene.bake_metallic_alpha_pack
 
@@ -525,10 +528,18 @@ class BakeButton(bpy.types.Operator):
             except AttributeError:
                 pass
 
-        # TODO: Option to apply current shape keys, otherwise normals bake weird
+        # Option to apply current shape keys, otherwise normals bake weird
+        Common.switch('OBJECT')
+        if normal_apply_keys:
+            for obj in collection.all_objects:
+                if obj.type == "MESH" and Common.has_shapekeys(obj):
+                    obj.select_set(True)
+                    context.view_layer.objects.active = obj
+                    bpy.ops.object.shape_key_add(from_mix=True)
+                    bpy.ops.cats_shapekey.shape_key_to_basis()
+                    obj.active_shape_key_index = 0
 
         # Bake diffuse
-        Common.switch('OBJECT')
         if pass_diffuse:
             # Metallic can cause issues baking diffuse, so we put it somewhere typically unused
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
@@ -640,6 +651,8 @@ class BakeButton(bpy.types.Operator):
                     obj.modifiers.remove(leyemask)
                 if "reyemask" in obj.modifiers:
                     obj.modifiers.remove(reyemask)
+
+        # TODO: warn if any source meshes have auto-smooth and normal-baking
 
         # Blend diffuse and AO to create Quest Diffuse (if selected)
         if pass_diffuse and pass_ao and pass_questdiffuse:
