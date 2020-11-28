@@ -27,6 +27,7 @@ import os
 import bpy
 import copy
 import zipfile
+import platform
 import webbrowser
 import addon_utils
 import bpy_extras.io_utils
@@ -41,11 +42,12 @@ from .register import register_wrap
 from ..translations import t
 
 mmd_tools_installed = False
-try:
-    import mmd_tools_local
-    mmd_tools_installed = True
-except:
-    pass
+if platform.system() != "Linux" or bpy.app.version < (2, 90):
+    try:
+        import mmd_tools_local
+        mmd_tools_installed = True
+    except:
+        pass
 
 current_blender_version = str(bpy.app.version[:2])[1:-1].replace(', ', '.')
 

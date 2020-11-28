@@ -29,6 +29,7 @@ import bpy
 import copy
 import json
 import pathlib
+import platform
 import traceback
 import collections
 import requests.exceptions
@@ -40,8 +41,10 @@ from . import common as Common
 from .register import register_wrap
 from .. import globs
 from ..googletrans import Translator
-from mmd_tools_local import translations
 from ..translations import t
+
+if platform.system() != "Linux" or bpy.app.version < (2, 90):
+    from mmd_tools_local import translations as mmd_translations
 
 dictionary = None
 dictionary_google = None
@@ -552,9 +555,10 @@ def translate(to_translate, add_space=False, translating_shapes=False):
 
 
 def fix_jp_chars(name):
-    for values in translations.jp_half_to_full_tuples:
-        if values[0] in name:
-            name = name.replace(values[0], values[1])
+    if platform.system() != "Linux" or bpy.app.version < (2, 90):
+        for values in mmd_translations.jp_half_to_full_tuples:
+            if values[0] in name:
+                name = name.replace(values[0], values[1])
     return name
 
 

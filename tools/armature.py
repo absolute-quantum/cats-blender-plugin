@@ -29,19 +29,21 @@
 import bpy
 import copy
 import math
+import platform
 from mathutils import Matrix
 
 from . import common as Common
 from . import translate as Translate
-from . import supporter as Supporter
 from . import armature_bones as Bones
 from .common import version_2_79_or_older
 from .register import register_wrap
-from mmd_tools_local.operators import morph as Morph
 from ..translations import t
 
-
-mmd_tools_installed = True
+# Only load mmd_tools if it's not on linux and 2.90 or higher since it causes Blender to crash
+mmd_tools_installed = False
+if platform.system() != "Linux" or bpy.app.version < (2, 90):
+    from mmd_tools_local.operators import morph as Morph
+    mmd_tools_installed = True
 
 
 @register_wrap
@@ -150,40 +152,41 @@ class FixArmature(bpy.types.Operator):
         print('DOUBLES END')
 
         # Check if model is mmd model
-        mmd_root = None
-        try:
-            mmd_root = armature.parent.mmd_root
-        except AttributeError:
-            pass
+        if mmd_tools_installed:
+            mmd_root = None
+            try:
+                mmd_root = armature.parent.mmd_root
+            except AttributeError:
+                pass
 
-        # Perform mmd specific operations
-        if mmd_root:
+            # Perform mmd specific operations
+            if mmd_root:
 
-            # Set correct mmd shading
-            mmd_root.use_toon_texture = False
-            mmd_root.use_sphere_texture = False
+                # Set correct mmd shading
+                mmd_root.use_toon_texture = False
+                mmd_root.use_sphere_texture = False
 
-            # Convert mmd bone morphs into shape keys
-            if len(mmd_root.bone_morphs) > 0:
+                # Convert mmd bone morphs into shape keys
+                if len(mmd_root.bone_morphs) > 0:
 
-                current_step = 0
-                wm.progress_begin(current_step, len(mmd_root.bone_morphs))
+                    current_step = 0
+                    wm.progress_begin(current_step, len(mmd_root.bone_morphs))
 
-                armature.data.pose_position = 'POSE'
-                for index, morph in enumerate(mmd_root.bone_morphs):
-                    current_step += 1
-                    wm.progress_update(current_step)
+                    armature.data.pose_position = 'POSE'
+                    for index, morph in enumerate(mmd_root.bone_morphs):
+                        current_step += 1
+                        wm.progress_update(current_step)
 
-                    armature.parent.mmd_root.active_morph = index
-                    Morph.ViewBoneMorph.execute(None, context)
+                        armature.parent.mmd_root.active_morph = index
+                        Morph.ViewBoneMorph.execute(None, context)
 
-                    mesh = Common.get_meshes_objects()[0]
-                    Common.set_active(mesh)
+                        mesh = Common.get_meshes_objects()[0]
+                        Common.set_active(mesh)
 
-                    mod = mesh.modifiers.new(morph.name, 'ARMATURE')
-                    mod.object = armature
-                    Common.apply_modifier(mod, as_shapekey=True)
-                wm.progress_end()
+                        mod = mesh.modifiers.new(morph.name, 'ARMATURE')
+                        mod.object = armature
+                        Common.apply_modifier(mod, as_shapekey=True)
+                    wm.progress_end()
 
         # Perform source engine specific operations
         # Check if model is source engine model
@@ -404,7 +407,8 @@ class FixArmature(bpy.types.Operator):
                 if context.scene.fix_materials:
                     # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
                     # Common.remove_toon_shader(mesh)
-                    Common.fix_mmd_shader(mesh)
+                    if mmd_tools_installed:
+                        Common.fix_mmd_shader(mesh)
                     Common.fix_vrm_shader(mesh)
                     Common.add_principled_shader(mesh)
 

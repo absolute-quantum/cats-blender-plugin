@@ -32,13 +32,6 @@ from .common import version_2_79_or_older
 from .register import register_wrap
 from ..translations import t
 
-mmd_tools_installed = False
-try:
-    import mmd_tools_local
-    mmd_tools_installed = True
-except:
-    pass
-
 
 @register_wrap
 class StartPoseMode(bpy.types.Operator):

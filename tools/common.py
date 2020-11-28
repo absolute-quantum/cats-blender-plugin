@@ -23,11 +23,12 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
+
 import re
-import os
 import bpy
-import bmesh
 import time
+import bmesh
+import platform
 
 from math import degrees
 from mathutils import Vector
@@ -44,10 +45,11 @@ from . import settings as Settings
 from .register import register_wrap
 from ..translations import t
 
-from mmd_tools_local import utils
-from mmd_tools_local.panels import tool as mmd_tool
-from mmd_tools_local.panels import util_tools as mmd_util_tools
-from mmd_tools_local.panels import view_prop as mmd_view_prop
+if platform.system() != "Linux" or bpy.app.version < (2, 90):
+    from mmd_tools_local import utils
+    from mmd_tools_local.panels import tool as mmd_tool
+    from mmd_tools_local.panels import util_tools as mmd_util_tools
+    from mmd_tools_local.panels import view_prop as mmd_view_prop
 
 # TODO:
 #  - Add check if hips bone really needs to be rotated

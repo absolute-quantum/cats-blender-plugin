@@ -49,6 +49,7 @@ if file_dir not in sys.path:
 import shutil
 import pathlib
 import requests
+import platform
 
 from . import globs
 
@@ -59,10 +60,14 @@ if "bpy" not in locals():
 else:
     is_reloading = True
 
+# Only load mmd_tools if it's not on linux and 2.90 or higher since it causes Blender to crash
+if platform.system() != "Linux" or bpy.app.version < (2, 90):
+    import mmd_tools_local
+
 # Load or reload all cats modules
 if not is_reloading:
     # This order is important
-    import mmd_tools_local
+    # import mmd_tools_local
     from . import updater
     from . import translations
     from . import tools
@@ -71,7 +76,7 @@ if not is_reloading:
 else:
     import importlib
     importlib.reload(updater)
-    importlib.reload(mmd_tools_local)
+    # importlib.reload(mmd_tools_local)
     importlib.reload(translations)
     importlib.reload(tools)
     importlib.reload(ui)
@@ -255,7 +260,7 @@ def register():
     # Register Updater and check for CATS update
     updater.register(bl_info, dev_branch, version_str)
 
-    # Check for missing translations
+    # Load translations and check for missing translations
     translations.check_missing_translations()
 
     # Set some global settings, first allowed use of globs

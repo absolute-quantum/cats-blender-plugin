@@ -29,7 +29,8 @@ from . import common as Common
 from .register import register_wrap
 from ..translations import t
 
-def autodetect_passes(context, tricount, is_desktop):
+
+def autodetect_passes(self, context, tricount, is_desktop):
     context.scene.bake_max_tris = tricount
     context.scene.bake_resolution = 2048 if is_desktop else 1024
     # Autodetect passes based on BSDF node inputs
@@ -54,16 +55,18 @@ def autodetect_passes(context, tricount, is_desktop):
     # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
     context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
                                        or len(set([node.inputs["Base Color"].default_value for node in bsdf_nodes])) > 1)
+
     # Smoothness: similar to diffuse
     context.scene.bake_pass_smoothness = (any([node.inputs["Roughness"].is_linked for node in bsdf_nodes])
                                           or len(set([node.inputs["Roughness"].default_value for node in bsdf_nodes])) > 1)
+    
     # Emit: similar to diffuse
     context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
                                     or len(set([node.inputs["Emission"].default_value for node in bsdf_nodes])) > 1)
 
     # Transparency: similar to diffuse
     context.scene.bake_pass_alpha = is_desktop and (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
-                                     or len(set([node.inputs["Alpha"].default_value for node in bsdf_nodes])) > 1)
+                                                    or len(set([node.inputs["Alpha"].default_value for node in bsdf_nodes])) > 1)
 
     # Metallic: similar to diffuse
     context.scene.bake_pass_metallic = (any([node.inputs["Metallic"].is_linked for node in bsdf_nodes])
@@ -107,6 +110,7 @@ def autodetect_passes(context, tricount, is_desktop):
             context.scene.bake_pass_metallic = True
             context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
 
+
 @register_wrap
 class BakePresetDesktop(bpy.types.Operator):
     bl_idname = 'cats_bake.preset_desktop'
@@ -115,8 +119,9 @@ class BakePresetDesktop(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        autodetect_passes(context, 32000, True)
+        autodetect_passes(self, context, 32000, True)
         return {'FINISHED'}
+
 
 @register_wrap
 class BakePresetQuest(bpy.types.Operator):
@@ -126,8 +131,9 @@ class BakePresetQuest(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        autodetect_passes(context, 5000, False)
+        autodetect_passes(self, context, 5000, False)
         return {'FINISHED'}
+
 
 @register_wrap
 class BakeButton(bpy.types.Operator):
@@ -184,10 +190,11 @@ class BakeButton(bpy.types.Operator):
                     tree = slot.material.node_tree
                     for node in tree.nodes:
                         if node.type == "BSDF_PRINCIPLED":
-                           node.inputs[input_name].default_value = input_value
+                            node.inputs[input_name].default_value = input_value
 
     # "Bake pass" function. Run a single bake to "<bake_name>.png" against all selected objects.
-    def bake_pass(self, context, bake_name, bake_type, bake_pass_filter, objects, bake_size, bake_samples, bake_ray_distance, background_color, clear, bake_margin, bake_active=None, bake_multires=False, normal_space='TANGENT'):
+    def bake_pass(self, context, bake_name, bake_type, bake_pass_filter, objects, bake_size, bake_samples, bake_ray_distance, background_color, clear, bake_margin, bake_active=None, bake_multires=False,
+                  normal_space='TANGENT'):
         bpy.ops.object.select_all(action='DESELECT')
         if bake_active is not None:
             bake_active.select_set(True)
@@ -202,17 +209,17 @@ class BakeButton(bpy.types.Operator):
                 bpy.data.images.remove(image)
 
             bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_size[0], height=bake_size[1], color=background_color,
-                generated_type="BLANK", alpha=True)
+                              generated_type="BLANK", alpha=True)
             image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
             image.filepath = bpy.path.abspath("//CATS Bake/" + "SCRIPT_" + bake_name + ".png")
             image.alpha_mode = "STRAIGHT"
             image.generated_color = background_color
-            image.generated_width=bake_size[0]
-            image.generated_height=bake_size[1]
+            image.generated_width = bake_size[0]
+            image.generated_height = bake_size[1]
             image.scale(bake_size[0], bake_size[1])
             if bake_type == 'NORMAL' or bake_type == 'ROUGHNESS':
                 image.colorspace_settings.name = 'Non-Color'
-            if bake_name == 'diffuse' or bake_name == 'metallic': # For packing smoothness to alpha
+            if bake_name == 'diffuse' or bake_name == 'metallic':  # For packing smoothness to alpha
                 image.alpha_mode = 'CHANNEL_PACKED'
             image.pixels[:] = background_color * bake_size[0] * bake_size[1]
         image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
@@ -262,13 +269,13 @@ class BakeButton(bpy.types.Operator):
         context.scene.render.use_bake_multires = bake_multires
         context.scene.render.bake.normal_space = normal_space
         bpy.ops.object.bake(type=bake_type,
-            #pass_filter=bake_pass_filter,
-            use_clear= clear and bake_type == 'NORMAL',
-            #uv_layer="SCRIPT",
-            use_selected_to_active=(bake_active != None),
-            cage_extrusion=bake_ray_distance,
-            normal_space=normal_space
-        )
+                            # pass_filter=bake_pass_filter,
+                            use_clear=clear and bake_type == 'NORMAL',
+                            # uv_layer="SCRIPT",
+                            use_selected_to_active=(bake_active != None),
+                            cage_extrusion=bake_ray_distance,
+                            normal_space=normal_space
+                            )
         # For all materials in use, change any value node labeled "bake_<bake_name>" to 1.0, then back to 0.0.
         for obj in objects:
             for slot in obj.material_slots:
@@ -299,6 +306,7 @@ class BakeButton(bpy.types.Operator):
                 recurse(child, copy, depth + 1)
 
             return copy
+
         return recurse(ob, ob.parent, 0)
 
     def execute(self, context):
@@ -354,7 +362,6 @@ class BakeButton(bpy.types.Operator):
         margin = 0.01
         quick_compare = context.scene.bake_quick_compare
 
-
         # TODO: Option to seperate by loose parts and bake selected to active
 
         # Passes
@@ -374,7 +381,7 @@ class BakeButton(bpy.types.Operator):
         diffuse_alpha_pack = context.scene.bake_diffuse_alpha_pack
         metallic_alpha_pack = context.scene.bake_metallic_alpha_pack
 
-         # Create an output collection
+        # Create an output collection
         collection = bpy.data.collections.new("CATS Bake")
         context.scene.collection.children.link(collection)
 
@@ -392,6 +399,7 @@ class BakeButton(bpy.types.Operator):
         objs_size_descending = sorted([obj for obj in collection.all_objects if obj.type == "MESH"],
                                       key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
                                       reverse=True)
+
         def first_bsdf(objs):
             for obj in objs_size_descending:
                 for slot in obj.material_slots:
@@ -400,6 +408,7 @@ class BakeButton(bpy.types.Operator):
                         for node in tree.nodes:
                             if node.type == "BSDF_PRINCIPLED":
                                 return node
+
         bsdf_original = first_bsdf(objs_size_descending)
 
         if generate_uvmap:
@@ -433,7 +442,6 @@ class BakeButton(bpy.types.Operator):
                                 for loop in poly.loop_indices:
                                     uv_layer[loop].uv.x += 1
 
-
             # TODO: cleanup, all editmode_toggle -> common.switch
 
             # Select all meshes. Select all UVs. Average islands scale
@@ -441,7 +449,7 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.object.editmode_toggle()
             bpy.ops.mesh.select_all(action='SELECT')
             bpy.ops.uv.select_all(action='SELECT')
-            bpy.ops.uv.average_islands_scale() # Use blender average so we can make our own tweaks.
+            bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
             Common.switch('OBJECT')
 
             # Select all islands belonging to 'Head' and children and enlarge them
@@ -482,7 +490,7 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.uv.select_all(action='SELECT')
             bpy.ops.uv.pack_islands(rotate=True, margin=margin)
             # detect if UVPackMaster installed and configured
-            try: # UVP doesn't respect margins when called like this, find out why
+            try:  # UVP doesn't respect margins when called like this, find out why
                 context.scene.uvp2_props.normalize_islands = False
                 context.scene.uvp2_props.lock_overlapping_mode = '0' if use_decimation else '2'
                 context.scene.uvp2_props.pack_to_others = False
@@ -505,14 +513,14 @@ class BakeButton(bpy.types.Operator):
             self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
 
             self.bake_pass(context, "diffuse", "DIFFUSE", {"COLOR"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                (resolution, resolution), 32, 0, [0.5,0.5,0.5,1.0], True, int(margin * resolution / 2))
+                           (resolution, resolution), 32, 0, [0.5, 0.5, 0.5, 1.0], True, int(margin * resolution / 2))
 
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
 
         # Bake roughness, invert
         if pass_smoothness:
             self.bake_pass(context, "smoothness", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                (resolution, resolution), 32, 0, [1.0,1.0,1.0,1.0], True, int(margin * resolution / 2))
+                           (resolution, resolution), 32, 0, [1.0, 1.0, 1.0, 1.0], True, int(margin * resolution / 2))
             image = bpy.data.images["SCRIPT_smoothness.png"]
             pixel_buffer = list(image.pixels)
             for idx in range(0, len(image.pixels)):
@@ -521,12 +529,10 @@ class BakeButton(bpy.types.Operator):
                     pixel_buffer[idx] = 1.0 - pixel_buffer[idx]
             image.pixels[:] = pixel_buffer
 
-
-
         # bake emit
         if pass_emit:
             self.bake_pass(context, "emit", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                (resolution, resolution), 32, 0, [0,0,0,1.0], True, int(margin * resolution / 2))
+                           (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, int(margin * resolution / 2))
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
@@ -540,7 +546,7 @@ class BakeButton(bpy.types.Operator):
 
             # Run the bake pass (bake roughness)
             self.bake_pass(context, "alpha", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [1,1,1,1.0], True, int(margin * resolution / 2))
+                           (resolution, resolution), 32, 0, [1, 1, 1, 1.0], True, int(margin * resolution / 2))
 
             # Revert the changes (re-flip)
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic")
@@ -554,7 +560,7 @@ class BakeButton(bpy.types.Operator):
 
             # Run the bake pass
             self.bake_pass(context, "metallic", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                (resolution, resolution), 32, 0, [0,0,0,1.0], True, int(margin * resolution / 2))
+                           (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, int(margin * resolution / 2))
 
             # Revert the changes (re-flip)
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Roughness")
@@ -606,7 +612,7 @@ class BakeButton(bpy.types.Operator):
                         reyemask.vertex_group = "RightEye"
                         reyemask.invert_vertex_group = True
             self.bake_pass(context, "ao", "AO", {"AO"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                (resolution, resolution), 512, 0, [1.0,1.0,1.0,1.0], True, int(margin * resolution / 2))
+                           (resolution, resolution), 512, 0, [1.0, 1.0, 1.0, 1.0], True, int(margin * resolution / 2))
             if illuminate_eyes:
                 if "leyemask" in obj.modifiers:
                     obj.modifiers.remove(leyemask)
@@ -620,13 +626,13 @@ class BakeButton(bpy.types.Operator):
                 image.user_clear()
                 bpy.data.images.remove(image)
             bpy.ops.image.new(name="SCRIPT_questdiffuse.png", width=resolution, height=resolution,
-                generated_type="BLANK", alpha=False)
+                              generated_type="BLANK", alpha=False)
             image = bpy.data.images["SCRIPT_questdiffuse.png"]
             image.filepath = bpy.path.abspath("//CATS Bake/" + "SCRIPT_questdiffuse.png")
             diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
             ao_image = bpy.data.images["SCRIPT_ao.png"]
-            image.generated_width=resolution
-            image.generated_height=resolution
+            image.generated_width = resolution
+            image.generated_height = resolution
             image.scale(resolution, resolution)
             pixel_buffer = list(image.pixels)
             diffuse_buffer = diffuse_image.pixels[:]
@@ -640,13 +646,12 @@ class BakeButton(bpy.types.Operator):
                     pixel_buffer[idx] = 1.0
             image.pixels[:] = pixel_buffer
 
-
         # Bake highres normals
         if not use_decimation:
             # Just bake the traditional way
             if pass_normal:
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                    (resolution, resolution), 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
+                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
         else:
             if not normal_apply_trans:
                 # Join meshes
@@ -658,13 +663,13 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.object.select_all(action='DESELECT')
                         obj.select_set(True)
                         context.view_layer.objects.active = obj
-                        bpy.ops.object.transform_apply(location = True, scale = True, rotation = True)
+                        bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
 
             # Bake normals in object coordinates
             # TODO: 32-bit floats so we don't lose detail
             if pass_normal:
                 self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                      (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2), normal_space="OBJECT")
+                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2), normal_space="OBJECT")
 
             # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
             bpy.ops.cats_decimation.auto_decimate(armature_name=arm_copy.name, preserve_seams=preserve_seams, seperate_materials=False)
@@ -675,7 +680,7 @@ class BakeButton(bpy.types.Operator):
 
         # Remove all other materials
         while len(context.object.material_slots) > 0:
-            context.object.active_material_index = 0 #select the top material
+            context.object.active_material_index = 0  # select the top material
             bpy.ops.object.material_slot_remove()
 
         # Apply generated material (object normals -> normal map -> BSDF normal and other textures)
@@ -695,7 +700,7 @@ class BakeButton(bpy.types.Operator):
         if pass_normal:
             normaltexnode = tree.nodes.new("ShaderNodeTexImage")
             if use_decimation:
-               normaltexnode.image = bpy.data.images["SCRIPT_world.png"]
+                normaltexnode.image = bpy.data.images["SCRIPT_world.png"]
             normaltexnode.location.x -= 500
             normaltexnode.location.y -= 200
 
@@ -724,7 +729,7 @@ class BakeButton(bpy.types.Operator):
         # Bake tangent normals
         if use_decimation and pass_normal:
             self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                 (resolution, resolution), 128, 0, [0.5,0.5,1.0,1.0], True, int(margin * resolution / 2))
+                           (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
 
         # Update generated material to preview all of our passes
         if pass_normal:

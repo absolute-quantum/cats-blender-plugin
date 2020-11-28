@@ -24,11 +24,14 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.label(text=t('CreditsPanel.desc2'))
         row = col.row(align=True)
-        row.label(text=t('CreditsPanel.desc3'))
         row.scale_y = 0.5
+        row.label(text=t('CreditsPanel.desc3'))
         col.separator()
         row = col.row(align=True)
         row.label(text=t('CreditsPanel.desc4'))
+        row = col.row(align=True)
+        row.scale_y = 0.5
+        row.label(text=t('CreditsPanel.descContributors'))
         col.separator()
         row = col.row(align=True)
         row.label(text=t('CreditsPanel.desc5'))

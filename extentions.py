@@ -600,7 +600,7 @@ def register():
 
     # Atlas
     # Material.add_to_atlas = BoolProperty(
-    #     description=t('Add this material to the atlas')
+    #     description=t('Add this material to the atlas'),
     #     default=False
     # )
 
@@ -613,7 +613,7 @@ def register():
     # )
 
     # Scene.clear_materials = BoolProperty(
-    #     description=t('Clear materials checkbox')
+    #     description=t('Clear materials checkbox'),
     #     default=True
     # )
 
@@ -668,7 +668,7 @@ def register():
     )
 
     # Scene.disable_vrchat_features = BoolProperty(
-    #     name=t('Disable VRChat Only Features')
+    #     name=t('Disable VRChat Only Features'),
     #     description='This will disable features which are solely used for VRChat.'
     #                 '\nThe following will be disabled:'
     #                 '\n- Eye Tracking'
@@ -679,8 +679,8 @@ def register():
 
     # Copy Protection - obsolete
     # Scene.protection_mode = EnumProperty(
-    #     name=t("Randomization Level")
-    #     description=t("Randomization Level")
+    #     name=t("Randomization Level"),
+    #     description=t("Randomization Level"),
     #     items=[
     #         ("FULL", "Full", "This will randomize every vertex of your model and it will be completely unusable for thieves.\n"
     #                          'However this method might cause problems with the Outline option from Cubed shader.\n'

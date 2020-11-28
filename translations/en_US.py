@@ -186,7 +186,8 @@ dictionary = {
     'CreditsPanel.desc1': 'Cats Blender Plugin (',
     'CreditsPanel.desc2': 'Created by Hotox and GiveMeAllYourCats',
     'CreditsPanel.desc3': 'For the awesome VRChat community <3',
-    'CreditsPanel.desc4': 'Special thanks to: Shotariya and Neitri',
+    'CreditsPanel.desc4': 'Special thanks to:',
+    'CreditsPanel.descContributors': 'Feilen, Jordo, Ruubick, Shotariya and Neitri',
     'CreditsPanel.desc5': 'Do you need help or found a bug?',
 
     # Tools Armature
