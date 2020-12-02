@@ -47,54 +47,77 @@ class StartPoseMode(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        saved_data = Common.SavedData()
+        start_pose_mode(reset_pose=True)
+        return {'FINISHED'}
 
-        current = ""
-        if bpy.context.active_object and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
-                bpy.context.selected_editable_bones) > 0:
-            current = bpy.context.selected_editable_bones[0].name
 
-        if version_2_79_or_older():
-            bpy.context.space_data.use_pivot_point_align = False
-            bpy.context.space_data.show_manipulator = True
-        else:
-            pass
-            # TODO
+@register_wrap
+class StartPoseModeNoReset(bpy.types.Operator):
+    bl_idname = 'cats_manual.start_pose_mode_no_reset'
+    bl_label = t('StartPoseMode.label')
+    bl_description = t('StartPoseModeNoReset.desc')
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-        armature = Common.set_default_stage()
-        Common.switch('POSE')
-        armature.data.pose_position = 'POSE'
+    @classmethod
+    def poll(cls, context):
+        if Common.get_armature() is None:
+            return False
+        return True
 
-        for mesh in Common.get_meshes_objects():
-            if Common.has_shapekeys(mesh):
-                for shape_key in mesh.data.shape_keys.key_blocks:
-                    shape_key.value = 0
+    def execute(self, context):
+        start_pose_mode(reset_pose=False)
+        return {'FINISHED'}
 
-        for pb in armature.data.bones:
-            pb.select = True
+
+def start_pose_mode(reset_pose=True):
+    saved_data = Common.SavedData()
+
+    current = ""
+    if bpy.context.active_object and bpy.context.active_object.mode == 'EDIT' and bpy.context.active_object.type == 'ARMATURE' and len(
+            bpy.context.selected_editable_bones) > 0:
+        current = bpy.context.selected_editable_bones[0].name
+
+    if version_2_79_or_older():
+        bpy.context.space_data.use_pivot_point_align = False
+        bpy.context.space_data.show_manipulator = True
+    else:
+        pass
+        # TODO
+
+    armature = Common.set_default_stage()
+    Common.switch('POSE')
+    armature.data.pose_position = 'POSE'
+
+    for mesh in Common.get_meshes_objects():
+        if Common.has_shapekeys(mesh):
+            for shape_key in mesh.data.shape_keys.key_blocks:
+                shape_key.value = 0
+
+    for pb in armature.data.bones:
+        pb.select = True
+
+    if reset_pose:
         bpy.ops.pose.rot_clear()
         bpy.ops.pose.scale_clear()
         bpy.ops.pose.transforms_clear()
 
-        bone = armature.data.bones.get(current)
-        if bone is not None:
-            for pb in armature.data.bones:
-                if bone.name != pb.name:
-                    pb.select = False
-        else:
-            for index, pb in enumerate(armature.data.bones):
-                if index != 0:
-                    pb.select = False
+    bone = armature.data.bones.get(current)
+    if bone is not None:
+        for pb in armature.data.bones:
+            if bone.name != pb.name:
+                pb.select = False
+    else:
+        for index, pb in enumerate(armature.data.bones):
+            if index != 0:
+                pb.select = False
 
-        if version_2_79_or_older():
-            bpy.context.space_data.transform_manipulators = {'ROTATE'}
-        else:
-            bpy.ops.wm.tool_set_by_id(name="builtin.rotate")
+    if version_2_79_or_older():
+        bpy.context.space_data.transform_manipulators = {'ROTATE'}
+    else:
+        bpy.ops.wm.tool_set_by_id(name="builtin.rotate")
 
-        saved_data.load(hide_only=True)
-        Common.hide(armature, False)
-
-        return {'FINISHED'}
+    saved_data.load(hide_only=True)
+    Common.hide(armature, False)
 
 
 @register_wrap
@@ -111,41 +134,64 @@ class StopPoseMode(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        saved_data = Common.SavedData()
-        armature = Common.get_armature()
-        Common.set_active(armature)
+        stop_pose_mode(reset_pose=True)
+        return {'FINISHED'}
 
-        # Make all objects visible
-        bpy.ops.object.hide_view_clear()
 
-        for pb in armature.data.bones:
-            pb.hide = False
-            pb.select = True
+@register_wrap
+class StopPoseModeNoReset(bpy.types.Operator):
+    bl_idname = 'cats_manual.stop_pose_mode_no_reset'
+    bl_label = t('StopPoseMode.label')
+    bl_description = t('StopPoseModeNoReset.desc')
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    @classmethod
+    def poll(cls, context):
+        if Common.get_armature() is None:
+            return False
+        return True
+
+    def execute(self, context):
+        stop_pose_mode(reset_pose=False)
+        return {'FINISHED'}
+
+
+def stop_pose_mode(reset_pose=True):
+    saved_data = Common.SavedData()
+    armature = Common.get_armature()
+    Common.set_active(armature)
+
+    # Make all objects visible
+    bpy.ops.object.hide_view_clear()
+
+    for pb in armature.data.bones:
+        pb.hide = False
+        pb.select = True
+
+    if reset_pose:
         bpy.ops.pose.rot_clear()
         bpy.ops.pose.scale_clear()
         bpy.ops.pose.transforms_clear()
-        for pb in armature.data.bones:
-            pb.select = False
 
-        armature = Common.set_default_stage()
-        # armature.data.pose_position = 'REST'
+    for pb in armature.data.bones:
+        pb.select = False
 
-        for mesh in Common.get_meshes_objects():
-            if Common.has_shapekeys(mesh):
-                for shape_key in mesh.data.shape_keys.key_blocks:
-                    shape_key.value = 0
+    armature = Common.set_default_stage()
+    # armature.data.pose_position = 'REST'
 
-        if version_2_79_or_older():
-            bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
-        else:
-            bpy.ops.wm.tool_set_by_id(name="builtin.select_box")
+    for mesh in Common.get_meshes_objects():
+        if Common.has_shapekeys(mesh):
+            for shape_key in mesh.data.shape_keys.key_blocks:
+                shape_key.value = 0
 
-        Eyetracking.eye_left = None
+    if version_2_79_or_older():
+        bpy.context.space_data.transform_manipulators = {'TRANSLATE'}
+    else:
+        bpy.ops.wm.tool_set_by_id(name="builtin.select_box")
 
-        saved_data.load(hide_only=True)
+    Eyetracking.eye_left = None
 
-        return {'FINISHED'}
+    saved_data.load(hide_only=True)
 
 
 @register_wrap

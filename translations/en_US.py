@@ -222,9 +222,12 @@ dictionary = {
     'StartPoseMode.label': 'Start Pose Mode',
     'StartPoseMode.desc': 'Starts the pose mode.\n'
                           'This lets you test how your model will move',
+    'StartPoseModeNoReset.desc': 'Starts the pose mode without resetting the pose.\n'
+                                 'This lets you test how your model will move',
 
     'StopPoseMode.label': 'Stop Pose Mode',
     'StopPoseMode.desc': 'Stops the pose mode and resets the pose to normal',
+    'StopPoseModeNoReset.desc': 'Stops the pose mode and keeps the current pose',
 
     'PoseToShape.label': 'Pose to Shape Key',
     'PoseToShape.desc': 'This saves your current pose as a new shape key.'

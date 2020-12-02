@@ -167,7 +167,7 @@ class FixArmature(bpy.types.Operator):
                 mmd_root.use_sphere_texture = False
 
                 # Convert mmd bone morphs into shape keys
-                if len(mmd_root.bone_morphs) > 0:
+                if hasattr(mmd_root, 'bone_morphs') and len(mmd_root.bone_morphs) > 0:
 
                     current_step = 0
                     wm.progress_begin(current_step, len(mmd_root.bone_morphs))

@@ -331,6 +331,7 @@ It checks for a new version automatically once every day.
   - Cats is now fully compatible with Blender 2.90 and 2.91
   - Added "Show mmd_tools tabs" option to Settings
     - This allows you show and hide the "MMD" and "Misc" tabs added by the mmd_tools plugin
+  - Added button to "Start/Stop Pose Mode" which starts/stops pose mode without resetting the current pose
   - Changed link to a new vrm importer since the old one dropped support
   - Fixed Google Translations randomly not working
   - Fixed bug in "Apply as Rest Pose" and "Pose to Shape Key" in Blender 2.90

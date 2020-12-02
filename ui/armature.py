@@ -166,13 +166,23 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         armature_obj = Common.get_armature()
         if not armature_obj or armature_obj.mode != 'POSE':
-            row = col.row(align=True)
+            split = col.row(align=True)
+            row = split.row(align=True)
             row.scale_y = 1.1
             row.operator(Armature_manual.StartPoseMode.bl_idname, icon='POSE_HLT')
+            row = split.row(align=True)
+            row.alignment = 'RIGHT'
+            row.scale_y = 1.1
+            row.operator(Armature_manual.StartPoseModeNoReset.bl_idname, text="", icon='POSE_HLT')
         else:
-            row = col.row(align=True)
+            split = col.row(align=True)
+            row = split.row(align=True)
             row.scale_y = 1.1
             row.operator(Armature_manual.StopPoseMode.bl_idname, icon=globs.ICON_POSE_MODE)
+            row = split.row(align=True)
+            row.alignment = 'RIGHT'
+            row.scale_y = 1.1
+            row.operator(Armature_manual.StopPoseModeNoReset.bl_idname, text='', icon=globs.ICON_POSE_MODE)
             if not Eyetracking.eye_left:
                 row = col.row(align=True)
                 row.scale_y = 0.9

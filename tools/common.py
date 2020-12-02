@@ -2092,7 +2092,6 @@ def fix_twist_bones(mesh, bones_to_delete):
 
 def fix_twist_bone_names(armature):
     # This will fix MMD twist bone names after the vertex groups have been fixed
-
     for bone_type in ['Hand', 'Arm']:
         for suffix in ['L', 'R']:
             bone_twist = armature.data.edit_bones.get(bone_type + 'Twist_' + suffix)
