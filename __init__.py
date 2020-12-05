@@ -76,7 +76,7 @@ if not is_reloading:
 else:
     import importlib
     importlib.reload(updater)
-    # importlib.reload(mmd_tools_local)
+    importlib.reload(mmd_tools_local)
     importlib.reload(translations)
     importlib.reload(tools)
     importlib.reload(ui)
@@ -93,7 +93,13 @@ from .translations import t
 # Search for "show_backface_culling" and set it to False in view.py
 # Done
 
-# How to update googletrans:
+# How to update google_trans_new:
+# In google_trans.py comment out everything that has to do with urllib3
+# This is done because 3.5 doesn't have urllib3 by default and it is only used
+# to suppress debug logs in the console
+# Done
+
+# How to update googletrans:  (outdated since a new googletrans is used Todo remove this)
 # in the gtoken.py on line 57 update this line to include "verify=False":
 # r = self.session.get(self.host, verify=False)
 # In client.py on line 42 remove the Hyper part, it's not faster at all!

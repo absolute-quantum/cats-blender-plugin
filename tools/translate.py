@@ -40,14 +40,15 @@ from collections import OrderedDict
 from . import common as Common
 from .register import register_wrap
 from .. import globs
-from ..googletrans import Translator
+# from ..googletrans import Translator  # TODO Remove this
+from ..extern_tools.google_trans_new.google_trans_new import google_translator
 from ..translations import t
 
 if platform.system() != "Linux" or bpy.app.version < (2, 90):
     from mmd_tools_local import translations as mmd_translations
 
-dictionary = None
-dictionary_google = None
+dictionary = {}
+dictionary_google = {}
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -211,52 +212,52 @@ class TranslateMaterialsButton(bpy.types.Operator):
         return {'FINISHED'}
 
 
-@register_wrap
-class TranslateTexturesButton(bpy.types.Operator):
-    bl_idname = 'cats_translate.textures'
-    bl_label = t('TranslateTexturesButton.label')
-    bl_description = t('TranslateTexturesButton.desc')
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    def execute(self, context):
-        # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
-        self.report({'INFO'}, t('TranslateTexturesButton.success_alt'))
-        return {'FINISHED'}
-
-        translator = Translator()
-
-        to_translate = []
-        for ob in Common.get_objects():
-            if ob.type == 'MESH':
-                for matslot in ob.material_slots:
-                    for texslot in bpy.data.materials[matslot.name].texture_slots:
-                        if texslot:
-                            print(texslot.name)
-                            to_translate.append(texslot.name)
-
-        translated = []
-        try:
-            translations = translator.translate(to_translate)
-        except SSLError:
-            self.report({'ERROR'}, t('TranslateTexturesButton.error.noInternet'))
-            return {'FINISHED'}
-
-        for translation in translations:
-            translated.append(translation.text)
-
-        i = 0
-        for ob in Common.get_objects():
-            if ob.type == 'MESH':
-                for matslot in ob.material_slots:
-                    for texslot in bpy.data.materials[matslot.name].texture_slots:
-                        if texslot:
-                            bpy.data.textures[texslot.name].name = translated[i]
-                            i += 1
-
-        Common.unselect_all()
-
-        self.report({'INFO'}, t('TranslateTexturesButton.success', number=str(i)))
-        return {'FINISHED'}
+# @register_wrap
+# class TranslateTexturesButton(bpy.types.Operator):
+#     bl_idname = 'cats_translate.textures'
+#     bl_label = t('TranslateTexturesButton.label')
+#     bl_description = t('TranslateTexturesButton.desc')
+#     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+#
+#     def execute(self, context):
+#         # It currently seems to do nothing. This should probably only added when the folder textures really get translated. Currently only the materials are important
+#         self.report({'INFO'}, t('TranslateTexturesButton.success_alt'))
+#         return {'FINISHED'}
+#
+#         translator = google_translator()
+#
+#         to_translate = []
+#         for ob in Common.get_objects():
+#             if ob.type == 'MESH':
+#                 for matslot in ob.material_slots:
+#                     for texslot in bpy.data.materials[matslot.name].texture_slots:
+#                         if texslot:
+#                             print(texslot.name)
+#                             to_translate.append(texslot.name)
+#
+#         translated = []
+#         try:
+#             translations = translator.translate(to_translate, lang_tgt='en')
+#         except SSLError:
+#             self.report({'ERROR'}, t('TranslateTexturesButton.error.noInternet'))
+#             return {'FINISHED'}
+#
+#         for translation in translations:
+#             translated.append(translation)
+#
+#         i = 0
+#         for ob in Common.get_objects():
+#             if ob.type == 'MESH':
+#                 for matslot in ob.material_slots:
+#                     for texslot in bpy.data.materials[matslot.name].texture_slots:
+#                         if texslot:
+#                             bpy.data.textures[texslot.name].name = translated[i]
+#                             i += 1
+#
+#         Common.unselect_all()
+#
+#         self.report({'INFO'}, t('TranslateTexturesButton.success', number=str(i)))
+#         return {'FINISHED'}
 
 
 @register_wrap
@@ -431,11 +432,11 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
 
     # Translate the rest with google translate
     print('GOOGLE DICT UPDATE!')
-    translator = Translator()
+    translator = google_translator(url_suffix='com')
     token_tries = 0
     while True:
         try:
-            translations = translator.translate(google_input)
+            translations = [translator.translate(text, lang_src='ja', lang_tgt='en').strip() for text in google_input]
             break
         except requests.exceptions.ConnectionError:
             print('CONNECTION TO GOOGLE FAILED!')
@@ -463,13 +464,13 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
                 self.report({'ERROR'}, t('update_dictionary.error.errorMsg') + t('update_dictionary.error.catsTranslated') + '\n' + '\nGoogle: ' + error)
             print('', 'You got an error message from Google:', error, '')
             return
-        except AttributeError as e:
+        except AttributeError:
             # If the translator wasn't able to create a stable connection to Google, just retry it again
             # This is an issue with Google since Nov 2020: https://github.com/ssut/py-googletrans/issues/234
             token_tries += 1
-            if token_tries < 20:
+            if token_tries < 10:
                 print('RETRY', token_tries)
-                translator = Translator()
+                translator = google_translator(url_suffix='com')
                 continue
 
             # If if didn't work after 20 tries, just quit
@@ -485,13 +486,17 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
         name = google_input[i]
 
         if use_google_only:
-            dictionary_google['translations_full'][name] = translation.text
+            dictionary_google['translations_full'][name] = translation
         else:
-            translated_name = translation.text.capitalize()
-            dictionary[name] = translated_name
-            dictionary_google['translations'][name] = translated_name
+            # Capitalize words
+            translation_words = translation.split(' ')
+            translation_words = [word.capitalize() for word in translation_words]
+            translation = ' '.join(translation_words)
 
-        print(google_input[i], translation.text.capitalize())
+            dictionary[name] = translation
+            dictionary_google['translations'][name] = translation
+
+        print(google_input[i], '->', translation)
 
     # Sort dictionary
     temp_dict = copy.deepcopy(dictionary)
@@ -549,7 +554,8 @@ def translate(to_translate, add_space=False, translating_shapes=False):
 
     to_translate = to_translate.replace('.L', '_L').replace('.R', '_R').replace('  ', ' ').replace('し', '').replace('っ', '').strip()
 
-    # print(to_translate)
+    # print('"' + pre_translation + '"')
+    # print('"' + to_translate + '"')
 
     return to_translate, pre_translation != to_translate
 

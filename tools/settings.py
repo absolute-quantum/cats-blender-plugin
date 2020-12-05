@@ -36,7 +36,8 @@ from collections import OrderedDict
 
 from .. import globs
 from ..tools.register import register_wrap
-from ..googletrans import Translator
+# from ..googletrans import Translator  # Todo Remove this
+from ..extern_tools.google_trans_new.google_trans_new import google_translator
 from . import translate as Translate
 from ..translations import t
 
@@ -94,7 +95,7 @@ class DebugTranslations(bpy.types.Operator):
 
     def execute(self, context):
         bpy.context.scene.debug_translations = True
-        translator = Translator()
+        translator = google_translator()
         try:
             translator.translate('猫')
         except:

@@ -333,7 +333,7 @@ It checks for a new version automatically once every day.
     - This allows you show and hide the "MMD" and "Misc" tabs added by the mmd_tools plugin
   - Added button to "Start/Stop Pose Mode" which starts/stops pose mode without resetting the current pose
   - Changed link to a new vrm importer since the old one dropped support
-  - Fixed Google Translations randomly not working
+  - Fixed Google Translations no longer working
   - Fixed bug in "Apply as Rest Pose" and "Pose to Shape Key" in Blender 2.90
   - More fixes for Blender 2.90
 
