@@ -2099,7 +2099,11 @@ def fix_twist_bone_names(armature):
                 bone_twist.name = 'z' + bone_twist.name
 
 
-def toggle_mmd_tabs(self, context):
+def toggle_mmd_tabs_update(self, context):
+    toggle_mmd_tabs()
+
+
+def toggle_mmd_tabs(shutdown_plugin=False):
     mmd_cls = [
         mmd_tool.MMDToolsObjectPanel,
         mmd_tool.MMDDisplayItemsPanel,
@@ -2108,13 +2112,18 @@ def toggle_mmd_tabs(self, context):
         mmd_tool.MMDJointSelectorPanel,
         mmd_util_tools.MMDMaterialSorter,
         mmd_util_tools.MMDMeshSorter,
+    ]
+    mmd_cls_shading = [
         mmd_view_prop.MMDViewPanel,
         mmd_view_prop.MMDSDEFPanel,
     ]
 
-    print('Toggling mmd tabs')
+    if not version_2_79_or_older():
+        mmd_cls = mmd_cls + mmd_cls_shading
+
+    # If the plugin is shutting down, load the mmd_tools tabs before that, to avoid issues when unregistering mmd_tools
     if platform.system() != "Linux" or bpy.app.version < (2, 90):
-        if context.scene.show_mmd_tabs:
+        if bpy.context.scene.show_mmd_tabs or shutdown_plugin:
             for cls in mmd_cls:
                 try:
                     bpy.utils.register_class(cls)
@@ -2127,7 +2136,8 @@ def toggle_mmd_tabs(self, context):
                 except:
                     pass
 
-    Settings.update_settings(None, None)
+    if not shutdown_plugin:
+        Settings.update_settings(None, None)
 
 
 

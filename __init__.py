@@ -352,6 +352,10 @@ def unregister():
     # Unregister updater
     updater.unregister()
 
+    # Register unloaded mmd_tools tabs if they are hidden to avoid issues when unloading mmd_tools
+    if not bpy.context.scene.show_mmd_tabs:
+        tools.common.toggle_mmd_tabs(shutdown_plugin=True)
+
     # Unload mmd_tools
     try:
         mmd_tools_local.unregister()
