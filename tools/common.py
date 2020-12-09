@@ -221,9 +221,8 @@ def is_selected(obj):
 
 
 def hide(obj, val=True):
-    if version_2_79_or_older():
-        obj.hide = val
-    else:
+    obj.hide = val
+    if not version_2_79_or_older():
         obj.hide_set(val)
 
 
