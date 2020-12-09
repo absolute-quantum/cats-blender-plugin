@@ -133,7 +133,7 @@ def _update_bone_morph_data(prop, context):
         bone = arm.pose.bones.get(prop.name, None)
         if bone:
             bone.location = prop.location
-            bone.rotation_quaternion = prop.rotation
+            bone.rotation_quaternion = prop.rotation.__class__(*prop.rotation.to_axis_angle()) # Fix for consistency
 
 @register_wrap
 class BoneMorphData(PropertyGroup):

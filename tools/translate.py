@@ -468,7 +468,7 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
             # If the translator wasn't able to create a stable connection to Google, just retry it again
             # This is an issue with Google since Nov 2020: https://github.com/ssut/py-googletrans/issues/234
             token_tries += 1
-            if token_tries < 10:
+            if token_tries < 3:
                 print('RETRY', token_tries)
                 translator = google_translator(url_suffix='com')
                 continue

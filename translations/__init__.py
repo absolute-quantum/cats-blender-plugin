@@ -41,8 +41,8 @@ def load_translations():
         importlib.reload(lang_en_module)
     lang_en_module = importlib.import_module(package_name + '.translations.en_US')
     dictionary_en = lang_en_module.dictionary
-    print('LOADED TRANSLATIONS')
-    print(dictionary_en.get('CreditsPanel.descContributors2'))
+    # print('LOADED TRANSLATIONS')
+    # print(dictionary_en.get('CreditsPanel.descContributors2'))
 
 
 def t(phrase: str, *args, **kwargs):

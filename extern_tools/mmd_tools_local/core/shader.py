@@ -123,6 +123,43 @@ class _MaterialMorph:
         return nodes
 
     @classmethod
+    def reset_morph_links(cls, node):
+        cls.__update_morph_links(node, reset=True)
+
+    @classmethod
+    def __update_morph_links(cls, node, reset=False):
+        nodes, links = node.id_data.nodes, node.id_data.links
+        if reset:
+            if any(l.from_node.name.startswith('mmd_bind') for i in node.inputs for l in i.links):
+                return
+            def __init_link(socket_morph, socket_shader):
+                if socket_shader and socket_morph.is_linked:
+                    links.new(socket_morph.links[0].from_socket, socket_shader)
+        else:
+            def __init_link(socket_morph, socket_shader):
+                if socket_shader:
+                    if socket_shader.is_linked:
+                        links.new(socket_shader.links[0].from_socket, socket_morph)
+                    if socket_morph.type == 'VALUE':
+                        socket_morph.default_value = socket_shader.default_value
+                    else:
+                        socket_morph.default_value[:3] = socket_shader.default_value[:3]
+        shader = nodes.get('mmd_shader', None)
+        if shader:
+            __init_link(node.inputs['Ambient1'], shader.inputs.get('Ambient Color'))
+            __init_link(node.inputs['Diffuse1'], shader.inputs.get('Diffuse Color'))
+            __init_link(node.inputs['Specular1'], shader.inputs.get('Specular Color'))
+            __init_link(node.inputs['Reflect1'], shader.inputs.get('Reflect'))
+            __init_link(node.inputs['Alpha1'], shader.inputs.get('Alpha'))
+            __init_link(node.inputs['Base1 RGB'], shader.inputs.get('Base Tex'))
+            __init_link(node.inputs['Toon1 RGB'], shader.inputs.get('Toon Tex')) #FIXME toon only affect shadow color
+            __init_link(node.inputs['Sphere1 RGB'], shader.inputs.get('Sphere Tex'))
+        elif 'mmd_edge_preview' in nodes:
+            shader = nodes['mmd_edge_preview']
+            __init_link(node.inputs['Edge1 RGB'], shader.inputs['Color'])
+            __init_link(node.inputs['Edge1 A'], shader.inputs['Alpha'])
+
+    @classmethod
     def __update_node_inputs(cls, node, morph):
         node.inputs['Ambient2'].default_value[:3] = morph.ambient_color[:3]
         node.inputs['Diffuse2'].default_value[:3] = morph.diffuse_color[:3]
@@ -147,6 +184,7 @@ class _MaterialMorph:
         shader = nodes.get('mmd_shader', None)
         if morph:
             node = nodes.new('ShaderNodeGroup')
+            node.parent = getattr(shader, 'parent', None)
             node.location = (-250, 0)
             node.node_tree = cls.__get_shader('Add' if morph.offset_type == 'ADD' else 'Mul')
             cls.__update_node_inputs(node, morph)
@@ -157,24 +195,11 @@ class _MaterialMorph:
                     links.new(prev_node.outputs[id_name+' RGB'], node.inputs[id_name+'1 RGB'])
                     links.new(prev_node.outputs[id_name+' A'], node.inputs[id_name+'1 A'])
             else: # initial first node
-                mmd_mat = material.mmd_material
-                node.inputs['Ambient1'].default_value[:3] = mmd_mat.ambient_color[:3]
-                node.inputs['Diffuse1'].default_value[:3] = mmd_mat.diffuse_color[:3]
-                node.inputs['Specular1'].default_value[:3] = mmd_mat.specular_color[:3]
-                node.inputs['Reflect1'].default_value = mmd_mat.shininess
-                node.inputs['Alpha1'].default_value = mmd_mat.alpha
-                node.inputs['Edge1 RGB'].default_value[:3] = mmd_mat.edge_color[:3]
-                node.inputs['Edge1 A'].default_value = mmd_mat.edge_color[3]
                 if node.node_tree.name.endswith('Add'):
                     node.inputs['Base1 A'].default_value = 1
                     node.inputs['Toon1 A'].default_value = 1
                     node.inputs['Sphere1 A'].default_value = 1
-                for id_name in ('Base', 'Toon', 'Sphere'): #FIXME toon only affect shadow color
-                    mmd_tex = nodes.get('mmd_%s_tex'%id_name.lower(), None)
-                    if mmd_tex:
-                        links.new(mmd_tex.outputs['Color'], node.inputs['%s1 RGB'%id_name])
-                    elif shader and id_name+' Tex' in shader.inputs:
-                        node.inputs['%s1 RGB'%id_name].default_value[:3] = shader.inputs[id_name+' Tex'].default_value[:3]
+                cls.__update_morph_links(node)
             return node
         # connect last node to shader
         if shader:
@@ -186,8 +211,6 @@ class _MaterialMorph:
             __soft_link(prev_node.outputs['Specular'], shader.inputs.get('Specular Color'))
             __soft_link(prev_node.outputs['Reflect'], shader.inputs.get('Reflect'))
             __soft_link(prev_node.outputs['Alpha'], shader.inputs.get('Alpha'))
-            #__soft_link(prev_node.outputs['Edge RGB'], shader.inputs.get('Edge Color'))
-            #__soft_link(prev_node.outputs['Edge A'], shader.inputs.get('Edge Alpha'))
             __soft_link(prev_node.outputs['Base Tex'], shader.inputs.get('Base Tex'))
             __soft_link(prev_node.outputs['Toon Tex'], shader.inputs.get('Toon Tex'))
             if int(material.mmd_material.sphere_texture_type) != 2: # shader.inputs['Sphere Mul/Add'].default_value < 0.5

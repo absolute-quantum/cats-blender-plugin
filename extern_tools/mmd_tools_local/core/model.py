@@ -545,7 +545,7 @@ class Model:
         logging.info('****************************************')
         start_time = time.time()
         self.__preBuild()
-        self.buildRigids()
+        self.buildRigids(bpyutils.addon_preferences('non_collision_threshold', 1.5))
         self.buildJoints()
         self.__postBuild()
         logging.info(' Finished building in %f seconds.', time.time() - start_time)

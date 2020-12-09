@@ -3,7 +3,7 @@
 bl_info = {
     "name": "mmd_tools",
     "author": "sugiany",
-    "version": (0, 7, 0),
+    "version": (0, 7, 1),
     "blender": (2, 80, 0),
     "location": "View3D > Tool Shelf > MMD Tools Panel",
     "description": "Utility tools for MMD model editing. (powroupi's forked version)",
@@ -43,8 +43,6 @@ if "bpy" in locals():
 else:
     import bpy
     import logging
-    from bpy.types import AddonPreferences
-    from bpy.props import StringProperty
     from bpy.app.handlers import persistent
 
     __make_annotations = (bpy.app.version >= (2, 80, 0))
@@ -59,27 +57,34 @@ logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
 
 @register_wrap
-class MMDToolsAddonPreferences(AddonPreferences):
+class MMDToolsAddonPreferences(bpy.types.AddonPreferences):
     # this must match the addon name, use '__package__'
     # when defining this in a submodule of a python package.
     bl_idname = __name__
 
-    shared_toon_folder = StringProperty(
+    shared_toon_folder = bpy.props.StringProperty(
             name="Shared Toon Texture Folder",
             description=('Directory path to toon textures. This is normally the ' +
                          '"Data" directory within of your MikuMikuDance directory'),
             subtype='DIR_PATH',
             )
-    base_texture_folder = StringProperty(
+    base_texture_folder = bpy.props.StringProperty(
             name='Base Texture Folder',
             description='Path for textures shared between models',
             subtype='DIR_PATH',
             )
-    dictionary_folder = StringProperty(
+    dictionary_folder = bpy.props.StringProperty(
             name='Dictionary Folder',
             description='Path for searching csv dictionaries',
             subtype='DIR_PATH',
             default=__file__[:-11],
+            )
+    non_collision_threshold = bpy.props.FloatProperty(
+            name='Non-Collision Threshold',
+            description='The distance threshold for creating extra non-collision constraints while building physics',
+            min=0,
+            soft_max=10,
+            default=1.5,
             )
 
     def draw(self, context):
@@ -87,6 +92,7 @@ class MMDToolsAddonPreferences(AddonPreferences):
         layout.prop(self, "shared_toon_folder")
         layout.prop(self, "base_texture_folder")
         layout.prop(self, "dictionary_folder")
+        layout.prop(self, "non_collision_threshold")
 
 
 def menu_func_import(self, context):

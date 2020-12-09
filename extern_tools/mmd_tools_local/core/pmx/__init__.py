@@ -1265,6 +1265,8 @@ class BoneMorphOffset:
         self.index = fs.readBoneIndex()
         self.location_offset = fs.readVector(3)
         self.rotation_offset = fs.readVector(4)
+        if not any(self.rotation_offset):
+            self.rotation_offset = (0, 0, 0, 1)
 
     def save(self, fs):
         fs.writeBoneIndex(self.index)

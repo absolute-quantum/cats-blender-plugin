@@ -59,7 +59,7 @@ class MMDModelObjectDisplayPanel(_PanelBase, Panel):
                 if any(all(x) for x in zip(ik.bone.layers, armature.data.layers)):
                     px, py, pz = -ik.bone.head_local/base
                     bx, by, bz = -b.head_local/base*0.15
-                    groups.setdefault((int(pz), int(bz), -cnt), set()).add(((px, -py, bx), ik)) # (px, pz, -py, bx, bz, -by)
+                    groups.setdefault((int(pz), int(bz), int(px**2), -cnt), set()).add(((px, -py, bx), ik)) # (px, pz, -py, bx, bz, -by)
             layout = self.layout.box().column()
             for _, group in sorted(groups.items()):
                 row = layout.row()
