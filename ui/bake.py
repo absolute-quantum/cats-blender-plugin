@@ -1,14 +1,11 @@
 import bpy
 
-from .. import globs
 from .main import ToolPanel
-from .main import layout_split
 from ..tools import common as Common
-from ..tools import decimation as Decimation
 from ..tools import bake as Bake
-from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
 from ..translations import t
+
 
 @register_wrap
 class BakePanel(ToolPanel, bpy.types.Panel):
@@ -20,6 +17,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.operator(Bake.BakeTutorialButton.bl_idname, icon='FORWARD')
+        col.separator()
 
         col.label(text=t('BakePanel.autodetectlabel'))
         row = col.row(align=True)

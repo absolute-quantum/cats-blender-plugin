@@ -22,7 +22,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
 
         row = col.row(align=True)
-        row.operator(Armature_custom.CustomModelTutorialButton.bl_idname, text=t('CustomPanel.CustomModelTutorialButton'), icon='FORWARD')
+        row.operator(Armature_custom.CustomModelTutorialButton.bl_idname, icon='FORWARD')
         col.separator()
 
         row = col.row(align=True)

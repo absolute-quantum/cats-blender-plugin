@@ -409,7 +409,7 @@ dictionary = {
                        '\nE.g.: A jacket won\'t work, because it requires multiple bones',
     'AttachMesh.success': 'Mesh successfully attached to armature.',
 
-    'CustomModelTutorialButton.label': 'ドキュメントに移動',
+    'CustomModelTutorialButton.label': '使用方法',
     'CustomModelTutorialButton.URL': 'https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation',  # BOOM, now we can point at the Japanese link now ;)
     'CustomModelTutorialButton.success': 'Documentation',
 
@@ -1236,6 +1236,11 @@ dictionary = {
     'cats_bake.error.render_engine': "You need to set your render engine to Cycles first!",
     'cats_bake.error.render_disabled': "One or more of your armature's meshes have rendering disabled!",
     'cats_bake.info.success': "Success! Textures and model saved to \'CATS Bake\' folder next to your .blend file.",
+
+    'cats_bake.tutorial_button.label': "How to use",
+    'cats_bake.tutorial_button.desc': "This will open the Cats wiki page for the Bake panel",
+    'cats_bake.tutorial_button.URL': "https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake",
+    'cats_bake.tutorial_button.success': "Bake Tutorial opened.",
 
     # Updater
     'CheckForUpdateButton.label': '今すぐアップデートを確認',

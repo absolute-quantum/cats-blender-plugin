@@ -22,12 +22,27 @@
 
 # Code author: Feilen
 
-import bpy
 import os
+import bpy
+import webbrowser
 
 from . import common as Common
 from .register import register_wrap
 from ..translations import t
+
+
+@register_wrap
+class BakeTutorialButton(bpy.types.Operator):
+    bl_idname = 'cats_bake.tutorial'
+    bl_label = t('cats_bake.tutorial_button.label')
+    bl_description = t('cats_bake.tutorial_button.desc')
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        webbrowser.open(t('cats_bake.tutorial_button.URL'))
+
+        self.report({'INFO'}, t('cats_bake.tutorial_button.success'))
+        return {'FINISHED'}
 
 
 def autodetect_passes(self, context, tricount, is_desktop):

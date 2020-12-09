@@ -78,7 +78,6 @@ dictionary = {
 
     # UI Custom
     'CustomPanel.label': 'Custom Model Creation',
-    'CustomPanel.CustomModelTutorialButton': 'How to use',
     'CustomPanel.mergeArmatures': 'Merge Armatures:',
     'CustomPanel.warn.twoArmatures': 'Two armatures are required!',
     'CustomPanel.mergeInto': 'Base',
@@ -409,9 +408,9 @@ dictionary = {
                        '\nE.g.: A jacket won\'t work, because it requires multiple bones',
     'AttachMesh.success': 'Mesh successfully attached to armature.',
 
-    'CustomModelTutorialButton.label': 'Go to Documentation',
+    'CustomModelTutorialButton.label': 'How to use',
     'CustomModelTutorialButton.URL': 'https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation',  # BOOM, now we can point at the Japanese link now ;)
-    'CustomModelTutorialButton.success': 'Documentation',
+    'CustomModelTutorialButton.success': 'Documentation opened.',
 
     'merge_armatures.error.transformReset': ['If you want to rotate the new part, only modify the mesh instead of the armature,',
                                              'or select "Apply Transforms"!',
@@ -1237,6 +1236,11 @@ dictionary = {
     'cats_bake.error.render_engine': "You need to set your render engine to Cycles first!",
     'cats_bake.error.render_disabled': "One or more of your armature's meshes have rendering disabled!",
     'cats_bake.info.success': "Success! Textures and model saved to \'CATS Bake\' folder next to your .blend file.",
+
+    'cats_bake.tutorial_button.label': "How to use",
+    'cats_bake.tutorial_button.desc': "This will open the Cats wiki page for the Bake panel",
+    'cats_bake.tutorial_button.URL': "https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake",
+    'cats_bake.tutorial_button.success': "Bake Tutorial opened.",
 
     # Updater
     'CheckForUpdateButton.label': 'Check now for Update',
