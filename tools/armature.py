@@ -491,6 +491,7 @@ class FixArmature(bpy.types.Operator):
             ('Bip1_', 'Bip_'),
             ('Bip01_', 'Bip_'),
             ('Bip001_', 'Bip_'),
+            ('Bip01', ''),
             ('Character1_', ''),
             ('HLP_', ''),
             ('JD_', ''),
