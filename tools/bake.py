@@ -443,8 +443,7 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.object.editmode_toggle()
                         bpy.ops.mesh.select_all(action='SELECT')
                         bpy.ops.uv.select_all(action='SELECT')
-                        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01, user_area_weight=0.0,
-                                                 use_aspect=True, stretch_to_bounds=True)
+                        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01)
                         bpy.ops.object.editmode_toggle()
                         child.data.uv_layers.active_index = idx
                     elif uv_overlap_correction == "UNMIRROR":
