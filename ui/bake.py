@@ -18,6 +18,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
+        if Common.version_2_79_or_older():
+            col.label(text=t('BakePanel.versionTooOld'), icon='ERROR')
+            return
+
         row = col.row(align=True)
         row.operator(Bake.BakeTutorialButton.bl_idname, icon='FORWARD')
         col.separator()

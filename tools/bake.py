@@ -325,17 +325,20 @@ class BakeButton(bpy.types.Operator):
         return recurse(ob, ob.parent, 0)
 
     def execute(self, context):
-        meshes = Common.get_meshes_objects()
-        if not meshes or len(meshes) == 0:
+        if not Common.get_meshes_objects():
             self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
             return {'FINISHED'}
-        if context.scene.render.engine != 'CYCLES':
-            self.report({'ERROR'}, t('cats_bake.error.render_engine'))
-            return {'FINISHED'}
+        # if context.scene.render.engine != 'CYCLES':
+        #     self.report({'ERROR'}, t('cats_bake.error.render_engine'))
+        #     return {'FINISHED'}
         if any([obj.hide_render for obj in Common.get_armature().children]):
             self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
             return {'FINISHED'}
         # TODO: Check if any UV islands are self-overlapping, emit a warning
+
+        # Change render engine to cycles and save the current one
+        render_engine_tmp = context.scene.render.engine
+        context.scene.render.engine = 'CYCLES'
 
         # Change decimate settings, run bake, change them back
         decimation_mode = context.scene.decimation_mode
@@ -359,6 +362,9 @@ class BakeButton(bpy.types.Operator):
         context.scene.decimation_remove_doubles = decimation_remove_doubles
         context.scene.decimation_animation_weighting = decimation_animation_weighting
         context.scene.decimation_animation_weighting_factor = decimation_animation_weighting_factor
+
+        # Change render engine back to original
+        context.scene.render.engine = render_engine_tmp
 
         return {'FINISHED'}
 
@@ -401,7 +407,7 @@ class BakeButton(bpy.types.Operator):
         context.scene.collection.children.link(collection)
 
         # Tree-copy all meshes
-        armature = Common.get_armature()
+        armature = Common.set_default_stage()
         arm_copy = self.tree_copy(armature, None, collection)
 
         # Make sure all armature modifiers target the new armature
