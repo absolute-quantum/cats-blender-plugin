@@ -289,6 +289,8 @@ def register():
     # Load mmd_tools
     try:
         mmd_tools_local.register()
+    except NameError:
+        print('Could not register local mmd_tools')
     except AttributeError:
         print('Could not register local mmd_tools')
     except ValueError:
@@ -359,6 +361,9 @@ def unregister():
     # Unload mmd_tools
     try:
         mmd_tools_local.unregister()
+    except NameError:
+        print('mmd_tools was not registered')
+        pass
     except AttributeError:
         print('Could not unregister local mmd_tools')
         pass

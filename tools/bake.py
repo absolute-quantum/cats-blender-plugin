@@ -74,7 +74,7 @@ def autodetect_passes(self, context, tricount, is_desktop):
     # Smoothness: similar to diffuse
     context.scene.bake_pass_smoothness = (any([node.inputs["Roughness"].is_linked for node in bsdf_nodes])
                                           or len(set([node.inputs["Roughness"].default_value for node in bsdf_nodes])) > 1)
-    
+
     # Emit: similar to diffuse
     context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
                                     or len(set([node.inputs["Emission"].default_value for node in bsdf_nodes])) > 1)
@@ -443,8 +443,7 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.object.editmode_toggle()
                         bpy.ops.mesh.select_all(action='SELECT')
                         bpy.ops.uv.select_all(action='SELECT')
-                        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01, user_area_weight=0.0,
-                                                 use_aspect=True, stretch_to_bounds=True)
+                        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01)
                         bpy.ops.object.editmode_toggle()
                         child.data.uv_layers.active_index = idx
                     elif uv_overlap_correction == "UNMIRROR":
@@ -546,7 +545,7 @@ class BakeButton(bpy.types.Operator):
 
         # bake emit
         if pass_emit:
-            self.bake_pass(context, "emit", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+            self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                            (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, int(margin * resolution / 2))
 
         # advanced: bake alpha from bsdf output
@@ -819,7 +818,7 @@ class BakeButton(bpy.types.Operator):
             mat.blend_method = 'CLIP'
         if pass_emit:
             emittexnode = tree.nodes.new("ShaderNodeTexImage")
-            emittexnode.image = bpy.data.images["SCRIPT_emit.png"]
+            emittexnode.image = bpy.data.images["SCRIPT_emission.png"]
             emittexnode.location.x -= 800
             emittexnode.location.y -= 150
             tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
@@ -862,7 +861,7 @@ class BakeButton(bpy.types.Operator):
         if pass_diffuse and pass_ao and pass_questdiffuse:
             bpy.data.images["SCRIPT_questdiffuse.png"].save()
         if pass_emit:
-            bpy.data.images["SCRIPT_emit.png"].save()
+            bpy.data.images["SCRIPT_emission.png"].save()
         if pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY"):
             bpy.data.images["SCRIPT_alpha.png"].save()
         if pass_metallic:
