@@ -44,8 +44,7 @@ from .. import globs
 from ..extern_tools.google_trans_new.google_trans_new import google_translator
 from ..translations import t
 
-if platform.system() != "Linux" or bpy.app.version < (2, 90):
-    from mmd_tools_local import translations as mmd_translations
+from mmd_tools_local import translations as mmd_translations
 
 dictionary = {}
 dictionary_google = {}
@@ -561,10 +560,9 @@ def translate(to_translate, add_space=False, translating_shapes=False):
 
 
 def fix_jp_chars(name):
-    if platform.system() != "Linux" or bpy.app.version < (2, 90):
-        for values in mmd_translations.jp_half_to_full_tuples:
-            if values[0] in name:
-                name = name.replace(values[0], values[1])
+    for values in mmd_translations.jp_half_to_full_tuples:
+        if values[0] in name:
+            name = name.replace(values[0], values[1])
     return name
 
 

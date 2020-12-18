@@ -40,10 +40,8 @@ from .register import register_wrap
 from ..translations import t
 
 # Only load mmd_tools if it's not on linux and 2.90 or higher since it causes Blender to crash
-mmd_tools_installed = False
-if platform.system() != "Linux" or bpy.app.version < (2, 90):
-    from mmd_tools_local.operators import morph as Morph
-    mmd_tools_installed = True
+from mmd_tools_local.operators import morph as Morph
+mmd_tools_installed = True
 
 
 @register_wrap

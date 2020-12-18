@@ -45,11 +45,10 @@ from . import settings as Settings
 from .register import register_wrap
 from ..translations import t
 
-if platform.system() != "Linux" or bpy.app.version < (2, 90):
-    from mmd_tools_local import utils
-    from mmd_tools_local.panels import tool as mmd_tool
-    from mmd_tools_local.panels import util_tools as mmd_util_tools
-    from mmd_tools_local.panels import view_prop as mmd_view_prop
+from mmd_tools_local import utils
+from mmd_tools_local.panels import tool as mmd_tool
+from mmd_tools_local.panels import util_tools as mmd_util_tools
+from mmd_tools_local.panels import view_prop as mmd_view_prop
 
 # TODO:
 #  - Add check if hips bone really needs to be rotated
@@ -2075,19 +2074,19 @@ def fix_twist_bones(mesh, bones_to_delete):
             mix_weights(mesh, vg_twist.name, vg_twist.name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
 
             if vg_twist1:
+                bones_to_delete.append(vg_twist1.name)
                 mix_weights(mesh, vg_twist1.name, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
                 mix_weights(mesh, vg_twist1.name, vg_parent.name, mix_strength=0.75)
-                bones_to_delete.append(vg_twist1.name)
 
             if vg_twist2:
+                bones_to_delete.append(vg_twist2.name)
                 mix_weights(mesh, vg_twist2.name, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
                 mix_weights(mesh, vg_twist2.name, vg_parent.name, mix_strength=0.5)
-                bones_to_delete.append(vg_twist2.name)
 
             if vg_twist3:
+                bones_to_delete.append(vg_twist3.name)
                 mix_weights(mesh, vg_twist3.name, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
                 mix_weights(mesh, vg_twist3.name, vg_parent.name, mix_strength=0.25)
-                bones_to_delete.append(vg_twist3.name)
 
 
 def fix_twist_bone_names(armature):
@@ -2122,19 +2121,18 @@ def toggle_mmd_tabs(shutdown_plugin=False):
         mmd_cls = mmd_cls + mmd_cls_shading
 
     # If the plugin is shutting down, load the mmd_tools tabs before that, to avoid issues when unregistering mmd_tools
-    if platform.system() != "Linux" or bpy.app.version < (2, 90):
-        if bpy.context.scene.show_mmd_tabs or shutdown_plugin:
-            for cls in mmd_cls:
-                try:
-                    bpy.utils.register_class(cls)
-                except:
-                    pass
-        else:
-            for cls in reversed(mmd_cls):
-                try:
-                    bpy.utils.unregister_class(cls)
-                except:
-                    pass
+    if bpy.context.scene.show_mmd_tabs or shutdown_plugin:
+        for cls in mmd_cls:
+            try:
+                bpy.utils.register_class(cls)
+            except:
+                pass
+    else:
+        for cls in reversed(mmd_cls):
+            try:
+                bpy.utils.unregister_class(cls)
+            except:
+                pass
 
     if not shutdown_plugin:
         Settings.update_settings(None, None)

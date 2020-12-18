@@ -746,6 +746,7 @@ bone_rename['\Left elbow'] = [
     'Forearm_Stretch_\L',
     'J_Ude_B_\L',
     'J_Elbow_\L',
+    '\L_LowerArm',
 ]
 bone_rename['\Left wrist'] = [
     '\Left_Wrist',
@@ -841,6 +842,7 @@ bone_rename['\Left leg'] = [
     'J_Asi_A_\L',
     'J_Hip_\L',
     '\LUpLeg',
+    '\L_UpperLeg',
 ]
 bone_rename['\Left knee'] = [
     '\Left_Knee',
@@ -889,6 +891,7 @@ bone_rename['\Left knee'] = [
     'J_Asi_B_\L',
     'J_Knee_\L',
     '\LCalf',
+    '\L_LowerLeg',
 ]
 bone_rename['\Left ankle'] = [
     '\Left_Ankle',

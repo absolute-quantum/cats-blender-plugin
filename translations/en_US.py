@@ -157,6 +157,7 @@ dictionary = {
     'CopyProtectionPanel.desc3': 'Before use: Read the documentation!',
 
     # UI Bake
+    'BakePanel.label': 'Bake',
     'BakePanel.versionTooOld': 'Only for Blender 2.80+',
     'BakePanel.autodetectlabel': 'Autodetect:',
     'BakePanel.generaloptionslabel': "General options:",

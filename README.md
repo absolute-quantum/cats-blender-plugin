@@ -336,6 +336,8 @@ It checks for a new version automatically once every day.
   - Fixed Google Translations no longer working
   - Fixed bug in "Apply as Rest Pose" and "Pose to Shape Key" in Blender 2.90
   - More fixes for Blender 2.90
+  - NOTE: Using Cats in Blender 2.90+ on Ubuntu might cause Blender to crash on load (caused by mmd_tools)
+    - To fix this use a Blender version prior to 2.90 or try updating your drivers
 
 #### 0.17.0
 - **Cats is now fully compatible with Blender 2.83!**

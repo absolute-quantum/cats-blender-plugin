@@ -60,9 +60,7 @@ if "bpy" not in locals():
 else:
     is_reloading = True
 
-# Only load mmd_tools if it's not on linux and 2.90 or higher since it causes Blender to crash
-if platform.system() != "Linux" or bpy.app.version < (2, 90):
-    import mmd_tools_local
+import mmd_tools_local
 
 # Load or reload all cats modules
 if not is_reloading:

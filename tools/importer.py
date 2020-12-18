@@ -42,12 +42,11 @@ from .register import register_wrap
 from ..translations import t
 
 mmd_tools_installed = False
-if platform.system() != "Linux" or bpy.app.version < (2, 90):
-    try:
-        import mmd_tools_local
-        mmd_tools_installed = True
-    except:
-        pass
+try:
+    import mmd_tools_local
+    mmd_tools_installed = True
+except:
+    pass
 
 current_blender_version = str(bpy.app.version[:2])[1:-1].replace(', ', '.')
 
