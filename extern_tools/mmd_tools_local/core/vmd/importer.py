@@ -128,10 +128,20 @@ class BoneConverterPoseMode:
 
 
 class _FnBezier:
+
+    __BLENDER_2_91_OR_NEWER = not (bpy.app.version < (2, 91, 0))
+
     @classmethod
     def from_fcurve(cls, kp0, kp1):
         p0, p1, p2, p3 = kp0.co, kp0.handle_right, kp1.handle_left, kp1.co
-        if p1.x > p2.x: # F-Curve correction
+        if cls.__BLENDER_2_91_OR_NEWER: # the F-Curve can become near-vertical
+            if p1.x > p3.x:
+                t = (p3.x - p0.x) / (p1.x - p0.x)
+                p1 = (1-t)*p0 + p1*t
+            if p0.x > p2.x:
+                t = (p3.x - p0.x) / (p3.x - p2.x)
+                p2 = (1-t)*p3 + p2*t
+        elif p1.x > p2.x: # legacy F-Curve correction
             t = (p3.x - p0.x) / (p1.x - p0.x + p3.x - p2.x)
             p1 = (1-t)*p0 + p1*t
             p2 = (1-t)*p3 + p2*t
@@ -259,16 +269,11 @@ class VMDImporter:
 
     @staticmethod
     def __minRotationDiff(prev_q, curr_q):
-        pq, q = prev_q, curr_q
-        nq = q.copy()
-        nq.negate()
-        t1 = (pq.w-q.w)**2+(pq.x-q.x)**2+(pq.y-q.y)**2+(pq.z-q.z)**2
-        t2 = (pq.w-nq.w)**2+(pq.x-nq.x)**2+(pq.y-nq.y)**2+(pq.z-nq.z)**2
-        #t1 = pq.rotation_difference(q).angle
-        #t2 = pq.rotation_difference(nq).angle
-        if t2 < t1:
-            return nq
-        return q
+        t1 = (prev_q.w - curr_q.w)**2 + (prev_q.x - curr_q.x)**2 + (prev_q.y - curr_q.y)**2 + (prev_q.z - curr_q.z)**2
+        t2 = (prev_q.w + curr_q.w)**2 + (prev_q.x + curr_q.x)**2 + (prev_q.y + curr_q.y)**2 + (prev_q.z + curr_q.z)**2
+        #t1 = prev_q.rotation_difference(curr_q).angle
+        #t2 = prev_q.rotation_difference(-curr_q).angle
+        return -curr_q if t2 < t1 else curr_q
 
     @staticmethod
     def __setInterpolation(bezier, kp0, kp1):
@@ -291,6 +296,36 @@ class VMDImporter:
         kp.handle_right_type = 'FREE'
         kp.handle_right = kp.co + Vector((1, 0))
 
+    def __getBoneConverter(self, bone):
+        converter = self.__bone_util_cls(bone, self.__scale)
+        mode = bone.rotation_mode
+        compatible_quaternion = self.__minRotationDiff
+        class _ConverterWrap:
+            convert_location = converter.convert_location
+            convert_interpolation = converter.convert_interpolation
+            if mode == 'QUATERNION':
+                convert_rotation = converter.convert_rotation
+                compatible_rotation = compatible_quaternion
+            elif mode == 'AXIS_ANGLE':
+                @staticmethod
+                def convert_rotation(rot):
+                    (x, y, z), angle = converter.convert_rotation(rot).to_axis_angle()
+                    return (angle, x, y, z)
+                @staticmethod
+                def compatible_rotation(prev, curr):
+                    angle, x, y, z = curr
+                    if prev[1]*x + prev[2]*y + prev[3]*z < 0:
+                        angle, x, y, z = -angle, -x, -y, -z
+                    angle_diff = prev[0] - angle
+                    if abs(angle_diff) > math.pi:
+                        pi_2 = math.pi * 2
+                        bias = -0.5 if angle_diff < 0 else 0.5
+                        angle += int(bias + angle_diff/pi_2) * pi_2
+                    return (angle, x, y, z)
+            else:
+                convert_rotation = lambda rot: converter.convert_rotation(rot).to_euler(mode)
+                compatible_rotation = lambda prev, curr: curr.make_compatible(prev) or curr
+        return _ConverterWrap
 
     def __assignToArmature(self, armObj, action_name=None):
         boneAnim = self.__vmdFile.boneAnimation
@@ -313,6 +348,10 @@ class VMDImporter:
             pose_bones = _MirrorMapper(pose_bones)
             _loc, _rot = _MirrorMapper.get_location, _MirrorMapper.get_rotation
 
+        class _Dummy: pass
+        dummy_keyframe_points = iter(lambda: _Dummy, None)
+        prop_rot_map = {'QUATERNION':'rotation_quaternion', 'AXIS_ANGLE':'rotation_axis_angle'}
+
         bone_name_table = {}
         for name, keyFrames in boneAnim.items():
             num_frame = len(keyFrames)
@@ -326,16 +365,19 @@ class VMDImporter:
             assert(bone_name_table.get(bone.name, name) == name)
             bone_name_table[bone.name] = name
 
-            fcurves = [None]*7 # x, y, z, rw, rx, ry, rz
-            default_values = list(bone.location) + list(bone.rotation_quaternion)
+            fcurves = [dummy_keyframe_points]*7 # x, y, z, r0, r1, r2, (r3)
+            data_path_rot = prop_rot_map.get(bone.rotation_mode, 'rotation_euler')
+            bone_rotation = getattr(bone, data_path_rot)
+            default_values = list(bone.location) + list(bone_rotation)
             data_path = 'pose.bones["%s"].location'%bone.name
             for axis_i in range(3):
                 fcurves[axis_i] = action.fcurves.new(data_path=data_path, index=axis_i, action_group=bone.name)
-            data_path = 'pose.bones["%s"].rotation_quaternion'%bone.name
-            for axis_i in range(4):
+            data_path = 'pose.bones["%s"].%s'%(bone.name, data_path_rot)
+            for axis_i in range(len(bone_rotation)):
                 fcurves[3+axis_i] = action.fcurves.new(data_path=data_path, index=axis_i, action_group=bone.name)
 
-            for i, c in enumerate(fcurves):
+            for i in range(len(default_values)):
+                c = fcurves[i]
                 c.keyframe_points.add(extra_frame+num_frame)
                 kp_iter = iter(c.keyframe_points)
                 if extra_frame:
@@ -344,16 +386,16 @@ class VMDImporter:
                     kp.interpolation = 'LINEAR'
                 fcurves[i] = kp_iter
 
-            converter = self.__bone_util_cls(bone, self.__scale)
-            prev_rot = bone.rotation_quaternion if extra_frame else None
-            prev_kps, indices = None, tuple(converter.convert_interpolation((0, 16, 32)))+(48,)*4
+            converter = self.__getBoneConverter(bone)
+            prev_rot = bone_rotation if extra_frame else None
+            prev_kps, indices = None, tuple(converter.convert_interpolation((0, 16, 32)))+(48,)*len(bone_rotation)
             keyFrames.sort(key=lambda x:x.frame_number)
-            for k, x, y, z, rw, rx, ry, rz in zip(keyFrames, *fcurves):
+            for k, x, y, z, r0, r1, r2, r3 in zip(keyFrames, *fcurves):
                 frame = k.frame_number + self.__frame_margin
                 loc = converter.convert_location(_loc(k.location))
                 curr_rot = converter.convert_rotation(_rot(k.rotation))
                 if prev_rot is not None:
-                    curr_rot = self.__minRotationDiff(prev_rot, curr_rot)
+                    curr_rot = converter.compatible_rotation(prev_rot, curr_rot)
                     #FIXME the rotation interpolation has slightly different result
                     #   Blender: rot(x) = prev_rot*(1 - bezier(t)) + curr_rot*bezier(t)
                     #       MMD: rot(x) = prev_rot.slerp(curr_rot, factor=bezier(t))
@@ -362,12 +404,12 @@ class VMDImporter:
                 x.co = (frame, loc[0])
                 y.co = (frame, loc[1])
                 z.co = (frame, loc[2])
-                rw.co = (frame, curr_rot[0])
-                rx.co = (frame, curr_rot[1])
-                ry.co = (frame, curr_rot[2])
-                rz.co = (frame, curr_rot[3])
+                r0.co = (frame, curr_rot[0])
+                r1.co = (frame, curr_rot[1])
+                r2.co = (frame, curr_rot[2])
+                r3.co = (frame, curr_rot[-1])
 
-                curr_kps = (x, y, z, rw, rx, ry, rz)
+                curr_kps = (x, y, z, r0, r1, r2, r3)
                 if prev_kps is not None:
                     interp = k.interp
                     for idx, prev_kp, kp in zip(indices, prev_kps, curr_kps):

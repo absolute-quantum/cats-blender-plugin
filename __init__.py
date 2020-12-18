@@ -30,7 +30,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats & Hotox',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': (0, 17, 0),  # Has to be (x, x, x) not [x, x, x]!! # Only change this version and the dev branch var right before publishing the new update!
+    'version': (0, 18, 0),  # Has to be (x, x, x) not [x, x, x]!! Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -49,6 +49,7 @@ if file_dir not in sys.path:
 import shutil
 import pathlib
 import requests
+import platform
 
 from . import globs
 
@@ -59,11 +60,14 @@ if "bpy" not in locals():
 else:
     is_reloading = True
 
+import mmd_tools_local
+
 # Load or reload all cats modules
 if not is_reloading:
     # This order is important
-    import mmd_tools_local
+    # import mmd_tools_local
     from . import updater
+    from . import translations
     from . import tools
     from . import ui
     from . import extentions
@@ -71,9 +75,12 @@ else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
+    importlib.reload(translations)
     importlib.reload(tools)
     importlib.reload(ui)
     importlib.reload(extentions)
+
+from .translations import t
 
 
 # How to update mmd_tools: (outdated, no longer used)
@@ -84,7 +91,13 @@ else:
 # Search for "show_backface_culling" and set it to False in view.py
 # Done
 
-# How to update googletrans:
+# How to update google_trans_new:
+# In google_trans.py comment out everything that has to do with urllib3
+# This is done because 3.5 doesn't have urllib3 by default and it is only used
+# to suppress debug logs in the console
+# Done
+
+# How to update googletrans:  (outdated since a new googletrans is used Todo remove this)
 # in the gtoken.py on line 57 update this line to include "verify=False":
 # r = self.session.get(self.host, verify=False)
 # In client.py on line 42 remove the Hyper part, it's not faster at all!
@@ -167,18 +180,12 @@ def remove_corrupted_files():
     if no_perm:
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nFaulty CATS installation found!'
-                          '\nTo fix this restart Blender as admin!     '
-                          '\n')
+        raise ImportError(t('Main.error.restartAdmin'))
 
     if os_error:
         unregister()
         sys.tracebacklimit = 0
-        message = '                                                                                                                                                                                    ' \
-                  '                     '\
-                  '\n\nFaulty CATS installation found!' \
-                  '\nTo fix this delete the following files and folders inside your addons folder:' \
-                  '\n'
+        message = t('Main.error.deleteFollowing')
 
         for folder in folders:
             if folder in to_remove:
@@ -193,16 +200,12 @@ def remove_corrupted_files():
     if wrong_path:
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nFaulty CATS installation found!'
-                          '\nPlease install CATS via User Preferences and restart Blender!'
-                          '\n')
+        raise ImportError(t('Main.error.installViaPreferences'))
 
     if faulty_installation:
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nFaulty CATS installation was found and fixed!'
-                          '\nPlease restart Blender and enable CATS again!'
-                          '\n')
+        raise ImportError(t('Main.error.restartAndEnable'))
 
 
 def check_unsupported_blender_versions():
@@ -210,17 +213,13 @@ def check_unsupported_blender_versions():
     if bpy.app.version < (2, 79):
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nBlender versions older than 2.79 are not supported by Cats. '
-                          '\nPlease use Blender 2.79 or later.'
-                          '\n')
+        raise ImportError(t('Main.error.unsupportedVersion'))
 
     # Versions 2.80.0 to 2.80.74 are beta versions, stable is 2.80.75
     if (2, 80, 0) <= bpy.app.version < (2, 80, 75):
         unregister()
         sys.tracebacklimit = 0
-        raise ImportError('\n\nYou are still on the beta version of Blender 2.80!'
-                          '\nPlease update to the release version of Blender 2.80.'
-                          '\n')
+        raise ImportError(t('Main.error.beta2.80'))
 
 
 def set_cats_version_string():
@@ -265,6 +264,9 @@ def register():
     # Register Updater and check for CATS update
     updater.register(bl_info, dev_branch, version_str)
 
+    # Load translations and check for missing translations
+    translations.check_missing_translations()
+
     # Set some global settings, first allowed use of globs
     globs.dev_branch = dev_branch
     globs.version_str = version_str
@@ -277,8 +279,7 @@ def register():
         show_error = True
     if show_error:
         sys.tracebacklimit = 0
-        raise ImportError('\n\nPlease restart Blender and enable CATS again!'
-                          '\n')
+        raise ImportError(t('Main.error.restartAndEnable_alt'))
 
     # if not tools.settings.use_custom_mmd_tools():
     #     bpy.utils.unregister_module("mmd_tools")
@@ -286,6 +287,8 @@ def register():
     # Load mmd_tools
     try:
         mmd_tools_local.register()
+    except NameError:
+        print('Could not register local mmd_tools')
     except AttributeError:
         print('Could not register local mmd_tools')
     except ValueError:
@@ -349,9 +352,16 @@ def unregister():
     # Unregister updater
     updater.unregister()
 
+    # Register unloaded mmd_tools tabs if they are hidden to avoid issues when unloading mmd_tools
+    if not bpy.context.scene.show_mmd_tabs:
+        tools.common.toggle_mmd_tabs(shutdown_plugin=True)
+
     # Unload mmd_tools
     try:
         mmd_tools_local.unregister()
+    except NameError:
+        print('mmd_tools was not registered')
+        pass
     except AttributeError:
         print('Could not unregister local mmd_tools')
         pass

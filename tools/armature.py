@@ -29,33 +29,26 @@
 import bpy
 import copy
 import math
+import platform
 from mathutils import Matrix
 
 from . import common as Common
 from . import translate as Translate
-from . import supporter as Supporter
 from . import armature_bones as Bones
 from .common import version_2_79_or_older
 from .register import register_wrap
+from ..translations import t
+
+# Only load mmd_tools if it's not on linux and 2.90 or higher since it causes Blender to crash
 from mmd_tools_local.operators import morph as Morph
-
-
 mmd_tools_installed = True
 
 
 @register_wrap
 class FixArmature(bpy.types.Operator):
     bl_idname = 'cats_armature.fix'
-    bl_label = 'Fix Model'
-    bl_description = 'Automatically:\n' \
-                     '- Reparents bones\n' \
-                     '- Removes unnecessary bones, objects, groups & constraints\n' \
-                     '- Translates and renames bones & objects\n' \
-                     '- Merges weight paints\n' \
-                     '- Corrects the hips\n' \
-                     '- Joins meshes\n' \
-                     '- Converts morphs into shapes\n' \
-                     '- Corrects shading'
+    bl_label = t('FixArmature.label')
+    bl_description = t('FixArmature.desc')
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -91,9 +84,7 @@ class FixArmature(bpy.types.Operator):
                 if mesh.name.endswith(('.baked', '.baked0')):
                     is_vrm = True  # TODO
             if not is_vrm:
-                Common.show_error(3.8, ['No mesh inside the armature found!',
-                                        'If there are meshes outside of the armature,',
-                                        'set the armature as the parent of the meshes.'])
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
                 return {'CANCELLED'}
 
         print('\nFixing Model:\n')
@@ -159,40 +150,41 @@ class FixArmature(bpy.types.Operator):
         print('DOUBLES END')
 
         # Check if model is mmd model
-        mmd_root = None
-        try:
-            mmd_root = armature.parent.mmd_root
-        except AttributeError:
-            pass
+        if mmd_tools_installed:
+            mmd_root = None
+            try:
+                mmd_root = armature.parent.mmd_root
+            except AttributeError:
+                pass
 
-        # Perform mmd specific operations
-        if mmd_root:
+            # Perform mmd specific operations
+            if mmd_root:
 
-            # Set correct mmd shading
-            mmd_root.use_toon_texture = False
-            mmd_root.use_sphere_texture = False
+                # Set correct mmd shading
+                mmd_root.use_toon_texture = False
+                mmd_root.use_sphere_texture = False
 
-            # Convert mmd bone morphs into shape keys
-            if len(mmd_root.bone_morphs) > 0:
+                # Convert mmd bone morphs into shape keys
+                if hasattr(mmd_root, 'bone_morphs') and len(mmd_root.bone_morphs) > 0:
 
-                current_step = 0
-                wm.progress_begin(current_step, len(mmd_root.bone_morphs))
+                    current_step = 0
+                    wm.progress_begin(current_step, len(mmd_root.bone_morphs))
 
-                armature.data.pose_position = 'POSE'
-                for index, morph in enumerate(mmd_root.bone_morphs):
-                    current_step += 1
-                    wm.progress_update(current_step)
+                    armature.data.pose_position = 'POSE'
+                    for index, morph in enumerate(mmd_root.bone_morphs):
+                        current_step += 1
+                        wm.progress_update(current_step)
 
-                    armature.parent.mmd_root.active_morph = index
-                    Morph.ViewBoneMorph.execute(None, context)
+                        armature.parent.mmd_root.active_morph = index
+                        Morph.ViewBoneMorph.execute(None, context)
 
-                    mesh = Common.get_meshes_objects()[0]
-                    Common.set_active(mesh)
+                        mesh = Common.get_meshes_objects()[0]
+                        Common.set_active(mesh)
 
-                    mod = mesh.modifiers.new(morph.name, 'ARMATURE')
-                    mod.object = armature
-                    bpy.ops.object.modifier_apply(apply_as='SHAPE', modifier=mod.name)
-                wm.progress_end()
+                        mod = mesh.modifiers.new(morph.name, 'ARMATURE')
+                        mod.object = armature
+                        Common.apply_modifier(mod, as_shapekey=True)
+                    wm.progress_end()
 
         # Perform source engine specific operations
         # Check if model is source engine model
@@ -243,14 +235,18 @@ class FixArmature(bpy.types.Operator):
             space.show_backface_culling = True  # set the viewport shading
         else:
             armature.data.display_type = 'OCTAHEDRAL'
-            armature.draw_type = 'WIRE'
+            if hasattr(armature, 'draw_type'):
+                armature.draw_type = 'WIRE'
             armature.show_in_front = True
             armature.data.show_bone_custom_shapes = False
             # context.space_data.overlay.show_transparent_bones = True
             context.space_data.shading.show_backface_culling = True
 
             # Set the Color Management View Transform to "Standard" instead of the Blender default "Filmic"
-            context.scene.view_settings.view_transform = 'Standard'
+            try:
+                context.scene.view_settings.view_transform = 'Standard'
+            except TypeError:
+                print('Color Management View Transform "Standard" not found!')
 
             # Set shading to 3D view
             set_material_shading()
@@ -409,7 +405,8 @@ class FixArmature(bpy.types.Operator):
                 if context.scene.fix_materials:
                     # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
                     # Common.remove_toon_shader(mesh)
-                    Common.fix_mmd_shader(mesh)
+                    if mmd_tools_installed:
+                        Common.fix_mmd_shader(mesh)
                     Common.fix_vrm_shader(mesh)
                     Common.add_principled_shader(mesh)
 
@@ -492,6 +489,8 @@ class FixArmature(bpy.types.Operator):
             ('Bip1_', 'Bip_'),
             ('Bip01_', 'Bip_'),
             ('Bip001_', 'Bip_'),
+            ('Bip01', ''),
+            ('Bip02_', 'Bip_'),
             ('Character1_', ''),
             ('HLP_', ''),
             ('JD_', ''),
@@ -507,12 +506,16 @@ class FixArmature(bpy.types.Operator):
             ('Def_', ''),
             ('DEF_', ''),
             ('Chr_', ''),
+            ('Chr_', ''),
+            ('B_', ''),
         ]
         # List of chars to replace if they are at the end of a bone name
         ends_with = [
             ('_Bone', ''),
+            ('_Bn', ''),
             ('_Le', '_L'),
             ('_Ri', '_R'),
+            ('_', ''),
         ]
         # List of chars to replace
         replaces = [
@@ -1225,14 +1228,14 @@ class FixArmature(bpy.types.Operator):
 
         if fixed_uv_coords:
             saved_data.load()
-            Common.show_error(6.2, ['The model was successfully fixed, but there were ' + str(fixed_uv_coords) + ' faulty UV coordinates.',
-                                          'This could result in broken textures and you might have to fix them manually.',
-                                          'This issue is often caused by edits in PMX editor.'])
+            Common.show_error(6.2, [t('FixArmature.error.faultyUV1', uvcoord=str(fixed_uv_coords)),
+                                          t('FixArmature.error.faultyUV2'),
+                                          t('FixArmature.error.faultyUV3')])
             return {'FINISHED'}
 
         saved_data.load()
 
-        self.report({'INFO'}, 'Model successfully fixed.')
+        self.report({'INFO'}, t('FixArmature.fixedSuccess'))
         return {'FINISHED'}
 
 
@@ -1240,7 +1243,7 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
     armature = Common.set_default_stage()
 
     missing_bones = []
-    missing2 = ['The following bones were not found:', '']
+    missing2 = [t('FixArmature.bonesNotFound'), '']
 
     for correct_hierarchy in correct_hierarchy_array:  # For each hierarchy array
         line = ' - '
@@ -1257,9 +1260,9 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
 
     if len(missing2) > 2 and not check_parenting:
         missing2.append('')
-        missing2.append('Looks like you found a model which Cats could not fix!')
-        missing2.append('If this is a non modified model we would love to make it compatible.')
-        missing2.append('Report it to us in the forum or in our discord, links can be found in the Credits panel.')
+        missing2.append(t('FixArmature.cantFix1'))
+        missing2.append(t('FixArmature.cantFix2'))
+        missing2.append(t('FixArmature.cantFix3'))
 
         Common.show_error(6.4, missing2)
         return {'result': True, 'message': ''}
@@ -1278,10 +1281,10 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
                     if previous is not None:
                         # And there is no parent, then we have a problem mkay
                         if bone.parent is None:
-                            return {'result': False, 'message': bone.name + ' is not parented at all, this will cause problems!'}
+                            return {'result': False, 'message': bone.name + t('FixArmature.notParent')}
                         # Previous needs to be the parent of the current item
                         if previous != bone.parent.name:
-                            return {'result': False, 'message': bone.name + ' is not parented to ' + previous + ', this will cause problems!'}
+                            return {'result': False, 'message': bone.name + t('FixArmature.notParentTo1') + previous + t('FixArmature.notParentTo2')}
 
     return {'result': True}
 

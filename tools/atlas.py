@@ -31,6 +31,7 @@ import addon_utils
 from . import common as Common
 from .register import register_wrap
 from .. import globs
+from ..translations import t
 
 
 # addon_name = "Shotariya-don"
@@ -40,8 +41,8 @@ from .. import globs
 @register_wrap
 class EnableSMC(bpy.types.Operator):
     bl_idname = 'cats_atlas.enable_smc'
-    bl_label = 'Enable Material Combiner'
-    bl_description = 'Enables Material Combiner'
+    bl_label = t('EnableSMC.label')
+    bl_description = t('EnableSMC.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -70,7 +71,7 @@ class EnableSMC(bpy.types.Operator):
                 if not addon_utils.check(mod.__name__)[0]:
                     bpy.ops.wm.addon_enable(module=mod.__name__)
                     break
-        self.report({'INFO'}, 'Enabled Material Combiner!')
+        self.report({'INFO'}, t('EnableSMC.success'))
         return {'FINISHED'}
 
 
@@ -354,13 +355,13 @@ class EnableSMC(bpy.types.Operator):
 @register_wrap
 class AtlasHelpButton(bpy.types.Operator):
     bl_idname = 'cats_atlas.help'
-    bl_label = 'Generate Material List'
-    bl_description = 'Open Useful Atlas Tips'
+    bl_label = t('AtlasHelpButton.label')
+    bl_description = t('AtlasHelpButton.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://github.com/michaeldegroot/cats-blender-plugin/#texture-atlas')
-        self.report({'INFO'}, 'Atlas Help opened.')
+        webbrowser.open(t('AtlasHelpButton.URL'))
+        self.report({'INFO'}, t('AtlasHelpButton.success'))
         return {'FINISHED'}
 
 
@@ -386,7 +387,7 @@ class AtlasHelpButton(bpy.types.Operator):
 @register_wrap
 class InstallShotariya(bpy.types.Operator):
     bl_idname = "cats_atlas.install_shotariya_popup"
-    bl_label = 'Error while loading Material Combiner:'
+    bl_label = t('InstallShotariya.label')
     bl_options = {'INTERNAL'}
 
     action = bpy.props.EnumProperty(
@@ -411,14 +412,14 @@ class InstallShotariya(bpy.types.Operator):
 
         if self.action == 'INSTALL':
             row = col.row(align=True)
-            row.label(text="Material Combiner is not installed!")
+            row.label(text=t('InstallShotariya.error.install1'))
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="The plugin 'Material Combiner' by shotariya is required for this function.")
+            row.label(text=t('InstallShotariya.error.install2'))
             col.separator()
             row = col.row(align=True)
-            row.label(text="Please download and install it manually:")
+            row.label(text=t('InstallShotariya.error.install3'))
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
@@ -427,27 +428,27 @@ class InstallShotariya(bpy.types.Operator):
 
         elif self.action == 'ENABLE':
             row = col.row(align=True)
-            row.label(text="Material Combiner is not enabled!")
+            row.label(text=t('InstallShotariya.error.enable1'))
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="The plugin 'Material Combiner' by shotariya is required for this function.")
+            row.label(text=t('InstallShotariya.error.enable2'))
             col.separator()
             row = col.row(align=True)
-            row.label(text="Please enable it in your User Preferences.")
+            row.label(text=t('InstallShotariya.error.enable3'))
             row.scale_y = 0.75
             col.separator()
 
         elif self.action == 'VERSION':
             row = col.row(align=True)
-            row.label(text="Material Combiner is outdated!")
+            row.label(text=t('InstallShotariya.error.version1'))
             row.scale_y = 0.75
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="The latest version is required for this function.")
+            row.label(text=t('InstallShotariya.error.version2'))
             col.separator()
             row = col.row(align=True)
-            row.label(text="Please download and install it manually:")
+            row.label(text=t('InstallShotariya.error.version3'))
             row.scale_y = 0.75
             col.separator()
             row = col.row(align=True)
@@ -458,13 +459,13 @@ class InstallShotariya(bpy.types.Operator):
 @register_wrap
 class ShotariyaButton(bpy.types.Operator):
     bl_idname = 'cats_atlas.download_shotariya'
-    bl_label = 'Download Material Combiner'
+    bl_label = t('ShotariyaButton.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://vrcat.club/threads/material-combiner-blender-addon-1-1-3.2255/')
+        webbrowser.open(t('ShotariyaButton.URL'))
 
-        self.report({'INFO'}, 'Material Combiner link opened')
+        self.report({'INFO'}, 'ShotariyaButton.success')
         return {'FINISHED'}
 
 

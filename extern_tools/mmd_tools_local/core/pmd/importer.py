@@ -113,6 +113,7 @@ def import_pmd_to_pmx(filepath):
         elif bone.type == 4:
             pmx_bone.isMovable = False
         elif bone.type == 5:
+            pmx_bone.transform_order = 2
             pmx_bone.isMovable = False
             pmx_bone.hasAdditionalRotate = True
             pmx_bone.additionalTransform = (bone.ik_bone, 1.0)
@@ -124,7 +125,7 @@ def import_pmd_to_pmx(filepath):
             pmx_bone.isMovable = False
         elif bone.type == 8:
             pmx_bone.isMovable = False
-            tail_loc=mathutils.Vector(pmd_model.bones[bone.tail_bone].position)
+            tail_loc = mathutils.Vector(pmd_model.bones[bone.tail_bone].position)
             loc = mathutils.Vector(bone.position)
             vec = tail_loc - loc
             vec.normalize()
@@ -135,17 +136,14 @@ def import_pmd_to_pmx(filepath):
             pmx_bone.hasAdditionalRotate = True
             pmx_bone.additionalTransform = (bone.tail_bone, float(bone.ik_bone)/100.0)
 
-        #if bone.type >= 4:
-        #    pmx_bone.transform_order = 2
-
         pmx_model.bones.append(pmx_bone)
 
         if re.search(u'ひざ$', pmx_bone.name):
             knee_bones.append(i)
 
-    #for i in pmx_model.bones:
-    #    if i.parent != -1 and pmd_model.bones[i.parent].type == 2:
-    #        i.transform_order = 1
+    for i in pmx_model.bones:
+        if 0 <= i.parent < len(pmx_model.bones) and i.transform_order < pmx_model.bones[i.parent].transform_order:
+            i.transform_order = pmx_model.bones[i.parent].transform_order
     logging.info('----- Converted %d boness', len(pmx_model.bones))
 
     logging.info('')

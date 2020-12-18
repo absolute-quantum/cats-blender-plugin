@@ -30,14 +30,14 @@ from difflib import SequenceMatcher
 from . import common as Common
 from .register import register_wrap
 from .. import globs
+from ..translations import t
 
 
 @register_wrap
 class RootButton(bpy.types.Operator):
     bl_idname = 'cats_root.create_root'
-    bl_label = 'Parent Bones'
-    bl_description = 'This will duplicate the parent of the bones and reparent them to the duplicate.\n' \
-                     'Very useful for Dynamic Bones.'
+    bl_label = t('RootButton.label')
+    bl_description = t('RootButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -74,7 +74,7 @@ class RootButton(bpy.types.Operator):
 
         saved_data.load()
 
-        self.report({'INFO'}, 'Bones parented!')
+        self.report({'INFO'}, t('RootButton.success'))
 
         return{'FINISHED'}
 
@@ -168,8 +168,8 @@ def get_parent_root_bones(self, context):
 @register_wrap
 class RefreshRootButton(bpy.types.Operator):
     bl_idname = 'cats_root.refresh_root_list'
-    bl_label = 'Refresh List'
-    bl_description = 'This will clear the group bones list cache and rebuild it, useful if bones have changed or your model.'
+    bl_label = t('RefreshRootButton.label')
+    bl_description = t('RefreshRootButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
@@ -178,6 +178,6 @@ class RefreshRootButton(bpy.types.Operator):
         print(globs.root_bones)
         globs.root_bones_choices = {}
 
-        self.report({'INFO'}, 'Root bones refreshed, check the root bones list again.')
+        self.report({'INFO'}, t('RefreshRootButton.success'))
 
         return{'FINISHED'}

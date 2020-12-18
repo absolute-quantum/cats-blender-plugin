@@ -36,8 +36,10 @@ from collections import OrderedDict
 
 from .. import globs
 from ..tools.register import register_wrap
-from ..googletrans import Translator
+# from ..googletrans import Translator  # Todo Remove this
+from ..extern_tools.google_trans_new.google_trans_new import google_translator
 from . import translate as Translate
+from ..translations import t
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -48,8 +50,9 @@ settings_data_unchanged = None
 
 # Settings name = [Default Value, Require Blender Restart]
 settings_default = OrderedDict()
-# settings_default['use_custom_mmd_tools'] = [False, True]
+settings_default['show_mmd_tabs'] = [True, False]
 settings_default['embed_textures'] = [False, False]
+# settings_default['use_custom_mmd_tools'] = [False, True]
 
 lock_settings = False
 
@@ -57,50 +60,49 @@ lock_settings = False
 @register_wrap
 class RevertChangesButton(bpy.types.Operator):
     bl_idname = 'cats_settings.revert'
-    bl_label = 'Revert Settings'
-    bl_description = 'Revert the changes back to how they were on Blender start-up'
+    bl_label = t('RevertChangesButton.label')
+    bl_description = t('RevertChangesButton.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
         for setting in settings_default.keys():
             setattr(bpy.context.scene, setting, settings_data_unchanged.get(setting))
         save_settings()
-        self.report({'INFO'}, 'Settings reverted.')
+        self.report({'INFO'}, t('RevertChangesButton.success'))
         return {'FINISHED'}
 
 
 @register_wrap
 class ResetGoogleDictButton(bpy.types.Operator):
     bl_idname = 'cats_settings.reset_google_dict'
-    bl_label = 'Clear Local Google Translations'
-    bl_description = "Deletes all currently saved Google Translations. You can't undo this"
+    bl_label = t('ResetGoogleDictButton.label')
+    bl_description = t('ResetGoogleDictButton.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
         Translate.reset_google_dict()
         Translate.load_translations()
-        self.report({'INFO'}, 'Local Google Dictionary cleared!')
+        self.report({'INFO'}, t('ResetGoogleDictButton.resetInfo'))
         return {'FINISHED'}
 
 
 @register_wrap
 class DebugTranslations(bpy.types.Operator):
     bl_idname = 'cats_settings.debug_translations'
-    bl_label = 'Debug Google Translations'
-    bl_description = "Tests Google transaltions and prints the response into a file called 'google-response.txt' located in the cats addon folder > resources" \
-                     "\nThis button is only visible in the cats development version"
+    bl_label = t('DebugTranslations.label')
+    bl_description = t('DebugTranslations.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
         bpy.context.scene.debug_translations = True
-        translator = Translator()
+        translator = google_translator()
         try:
             translator.translate('猫')
         except:
-            self.report({'INFO'}, 'Errors found, response printed!!')
+            self.report({'INFO'}, t('DebugTranslations.error'))
 
         bpy.context.scene.debug_translations = False
-        self.report({'INFO'}, 'No issues with Google Translations found, response printed!')
+        self.report({'INFO'}, t('DebugTranslations.success'))
         return {'FINISHED'}
 
 

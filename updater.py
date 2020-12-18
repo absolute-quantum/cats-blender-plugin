@@ -10,6 +10,7 @@ import addon_utils
 from threading import Thread
 from collections import OrderedDict
 from bpy.app.handlers import persistent
+from .translations import t
 
 no_ver_check = False
 fake_update = False
@@ -51,8 +52,8 @@ if bpy.app.version < (2, 79, 9):
 
 class CheckForUpdateButton(bpy.types.Operator):
     bl_idname = 'cats_updater.check_for_update'
-    bl_label = 'Check now for Update'
-    bl_description = 'Checks if a new update is available for CATS'
+    bl_label = t('CheckForUpdateButton.label')
+    bl_description = t('CheckForUpdateButton.desc')
     bl_options = {'INTERNAL'}
 
     @classmethod
@@ -68,8 +69,8 @@ class CheckForUpdateButton(bpy.types.Operator):
 
 class UpdateToLatestButton(bpy.types.Operator):
     bl_idname = 'cats_updater.update_latest'
-    bl_label = 'Update Now'
-    bl_description = 'Updates CATS to the latest version'
+    bl_label = t('UpdateToLatestButton.label')
+    bl_description = t('UpdateToLatestButton.desc')
     bl_options = {'INTERNAL'}
 
     @classmethod
@@ -108,8 +109,8 @@ class UpdateToSelectedButton(bpy.types.Operator):
 
 class UpdateToDevButton(bpy.types.Operator):
     bl_idname = 'cats_updater.update_dev'
-    bl_label = 'Update to Development version'
-    bl_description = 'Updates CATS to the Development version'
+    bl_label = t('UpdateToDevButton.label')
+    bl_description = t('UpdateToDevButton.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -123,33 +124,33 @@ class UpdateToDevButton(bpy.types.Operator):
 
 class RemindMeLaterButton(bpy.types.Operator):
     bl_idname = 'cats_updater.remind_me_later'
-    bl_label = 'Remind me later'
-    bl_description = 'This hides the update notification til the next Blender restart'
+    bl_label = t('RemindMeLaterButton.label')
+    bl_description = t('RemindMeLaterButton.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
         global remind_me_later
         remind_me_later = True
-        self.report({'INFO'}, 'You will be reminded later')
+        self.report({'INFO'}, t('RemindMeLaterButton.success'))
         return {'FINISHED'}
 
 
 class IgnoreThisVersionButton(bpy.types.Operator):
     bl_idname = 'cats_updater.ignore_this_version'
-    bl_label = 'Ignore this version'
-    bl_description = 'This ignores this version. You will be reminded again when the next version releases'
+    bl_label = t('IgnoreThisVersionButton.label')
+    bl_description = t('IgnoreThisVersionButton.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
         set_ignored_version()
-        self.report({'INFO'}, 'Version ' + latest_version_str + ' will be ignored.')
+        self.report({'INFO'}, t('IgnoreThisVersionButton.success', name=latest_version_str))
         return {'FINISHED'}
 
 
 class ShowPatchnotesPanel(bpy.types.Operator):
     bl_idname = 'cats_updater.show_patchnotes'
-    bl_label = 'Patchnotes'
-    bl_description = 'Shows the patchnotes of the selected version'
+    bl_label = t('ShowPatchnotesPanel.label')
+    bl_description = t('ShowPatchnotesPanel.desc')
     bl_options = {'INTERNAL'}
 
     @classmethod
@@ -183,7 +184,7 @@ class ShowPatchnotesPanel(bpy.types.Operator):
 
             col.separator()
             row = col.row(align=True)
-            row.label(text='Released: ' + version[2])
+            row.label(text=t('ShowPatchnotesPanel.releaseDate', date=version[2]))
 
             col.separator()
             for line in version[1].replace('**', '').split('\r\n'):
@@ -196,8 +197,8 @@ class ShowPatchnotesPanel(bpy.types.Operator):
 
 class ConfirmUpdatePanel(bpy.types.Operator):
     bl_idname = 'cats_updater.confirm_update_panel'
-    bl_label = 'Confirm Update'
-    bl_description = 'This shows you a panel in which you have to confirm your update choice'
+    bl_label = t('ConfirmUpdatePanel.label')
+    bl_description = t('ConfirmUpdatePanel.desc')
     bl_options = {'INTERNAL'}
 
     show_patchnotes = False
@@ -239,22 +240,22 @@ class ConfirmUpdatePanel(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Warning:')
+            row.label(text=t('ConfirmUpdatePanel.warn.dev1'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text=' The development version of CATS is the place where')
+            row.label(text=t('ConfirmUpdatePanel.warn.dev2'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text=' we test new features and bug fixes.')
+            row.label(text=t('ConfirmUpdatePanel.warn.dev3'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text=' This version might be very unstable and some features')
+            row.label(text=t('ConfirmUpdatePanel.warn.dev4'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text=' might not work correctly.')
+            row.label(text='ConfirmUpdatePanel.warn.dev5')
 
         else:
-            row.operator(ShowPatchnotesPanel.bl_idname, text='Show Patchnotes')
+            row.operator(ShowPatchnotesPanel.bl_idname, text=t('ConfirmUpdatePanel.ShowPatchnotesPanel.label'))
 
         col.separator()
         col.separator()
@@ -262,13 +263,13 @@ class ConfirmUpdatePanel(bpy.types.Operator):
         row = col.row(align=True)
         row.scale_y = 0.65
         # row.label(text='Update now to ' + version_str + ':', icon=ICON_URL)
-        row.label(text='Update now:', icon=ICON_URL)
+        row.label(text=t('ConfirmUpdatePanel.updateNow'), icon=ICON_URL)
 
 
 class UpdateCompletePanel(bpy.types.Operator):
     bl_idname = 'cats_updater.update_complete_panel'
-    bl_label = 'Installation Report'
-    bl_description = 'The update if now complete'
+    bl_label = t('UpdateCompletePanel.label')
+    bl_description = t('UpdateCompletePanel.desc')
     bl_options = {'INTERNAL'}
 
     show_patchnotes = False
@@ -291,25 +292,25 @@ class UpdateCompletePanel(bpy.types.Operator):
         if update_finished:
             row = col.row(align=True)
             row.scale_y = 0.9
-            row.label(text='CATS was successfully updated.', icon='FILE_TICK')
+            row.label(text=t('UpdateCompletePanel.success1'), icon='FILE_TICK')
 
             row = col.row(align=True)
             row.scale_y = 0.9
-            row.label(text='Restart Blender to complete the update.', icon='BLANK1')
+            row.label(text=t('UpdateCompletePanel.success2'), icon='BLANK1')
         else:
             row = col.row(align=True)
             row.scale_y = 0.9
-            row.label(text='Update failed.', icon='CANCEL')
+            row.label(text=t('UpdateCompletePanel.failure1'), icon='CANCEL')
 
             row = col.row(align=True)
             row.scale_y = 0.9
-            row.label(text='See Updater Panel for more info.', icon='BLANK1')
+            row.label(text=t('UpdateCompletePanel.failure2'), icon='BLANK1')
 
 
 class UpdateNotificationPopup(bpy.types.Operator):
     bl_idname = 'cats_updater.update_notification_popup'
-    bl_label = 'Update available'
-    bl_description = 'This shows you that an update is available'
+    bl_label = t('UpdateNotificationPopup.label')
+    bl_description = t('UpdateNotificationPopup.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -342,8 +343,8 @@ class UpdateNotificationPopup(bpy.types.Operator):
 
         row = layout_split(col, factor=0.55, align=True)
         row.scale_y = 1.05
-        row.label(text='Cats v' + latest_version_str + ' available!', icon='SOLO_ON')
-        row.operator(ShowPatchnotesPanel.bl_idname, text='Show Patchnotes')
+        row.label(text=t('UpdateNotificationPopup.newUpdate', name=latest_version_str), icon='SOLO_ON')
+        row.operator(ShowPatchnotesPanel.bl_idname, text=t('UpdateNotificationPopup.ShowPatchnotesPanel.label'))
 
         col.separator()
         col.separator()
@@ -377,8 +378,8 @@ def check_for_update():
     print('Checking for Cats update...')
 
     # Get all releases from Github
-    if not get_github_releases('Darkblader24') and not get_github_releases('michaeldegroot'):
-        finish_update_checking(error='Could not check for updates, try again later')
+    if not get_github_releases('Darkblader24') and not get_github_releases('GiveMeAllYourCats'):
+        finish_update_checking(error=t('check_for_update.cantCheck'))
         return
 
     # Check if an update is needed
@@ -554,7 +555,7 @@ def download_file(update_url):
     except urllib.error.URLError:
         print("FILE COULD NOT BE DOWNLOADED")
         shutil.rmtree(downloads_dir)
-        finish_update(error='Could not connect to Github')
+        finish_update(error=t('download_file.cantConnect'))
         return
     print('DOWNLOAD FINISHED')
 
@@ -562,7 +563,7 @@ def download_file(update_url):
     if not os.path.isfile(update_zip_file):
         print("ZIP NOT FOUND!")
         shutil.rmtree(downloads_dir)
-        finish_update(error='Could not find the downloaded zip')
+        finish_update(error=t('download_file.cantFindZip'))
         return
 
     # Extract the downloaded zip
@@ -597,7 +598,7 @@ def download_file(update_url):
         print("INIT NOT FOUND!")
         shutil.rmtree(downloads_dir)
         # finish_reloading()
-        finish_update(error='Could not find CATS in the downloaded zip')
+        finish_update(error=t('download_file.cantFindCATS'))
         return
 
     # Remove old addon files
@@ -764,23 +765,23 @@ def draw_update_notification_panel(layout):
     if update_finished:
         col.separator()
         row = col.row(align=True)
-        row.label(text='Restart Blender to complete update!', icon='ERROR')
+        row.label(text=t('draw_update_notification_panel.success'), icon='ERROR')
         col.separator()
         return
 
     row = col.row(align=True)
     row.scale_y = 0.75
-    row.label(text='Cats v' + latest_version_str + ' available!', icon='SOLO_ON')
+    row.label(text=t('draw_update_notification_panel.newUpdate', name=latest_version_str), icon='SOLO_ON')
 
     col.separator()
     row = col.row(align=True)
     row.scale_y = 1.3
-    row.operator(UpdateToLatestButton.bl_idname, text='Update Now')
+    row.operator(UpdateToLatestButton.bl_idname, text=t('draw_update_notification_panel.UpdateToLatestButton.label'))
 
     row = col.row(align=True)
     row.scale_y = 1
-    row.operator(RemindMeLaterButton.bl_idname, text='Remind me later')
-    row.operator(IgnoreThisVersionButton.bl_idname, text='Ignore this version')
+    row.operator(RemindMeLaterButton.bl_idname, text=t('draw_update_notification_panel.RemindMeLaterButton.label'))
+    row.operator(IgnoreThisVersionButton.bl_idname, text=t('draw_update_notification_panel.IgnoreThisVersionButton.label'))
 
 
 def draw_updater_panel(context, layout, user_preferences=False):
@@ -791,13 +792,13 @@ def draw_updater_panel(context, layout, user_preferences=False):
 
     row = col.row(align=True)
     row.scale_y = 0.8
-    row.label(text='Updates:' if not user_preferences else 'Cats Updater:', icon=ICON_URL)
+    row.label(text=t('draw_updater_panel.updateLabel') if not user_preferences else t('draw_updater_panel.updateLabel_alt'), icon=ICON_URL)
     col.separator()
 
     if update_finished:
         col.separator()
         row = col.row(align=True)
-        row.label(text='Restart Blender to complete update!', icon='ERROR')
+        row.label(text=t('draw_updater_panel.success'), icon='ERROR')
         col.separator()
         return
 
@@ -810,12 +811,12 @@ def draw_updater_panel(context, layout, user_preferences=False):
         if not used_updater_panel:
             row = col.row(align=True)
             row.scale_y = scale_big
-            row.operator(CheckForUpdateButton.bl_idname, text='Checking..')
+            row.operator(CheckForUpdateButton.bl_idname, text=t('draw_updater_panel.CheckForUpdateButton.label'))
         else:
             split = col.row(align=True)
             row = split.row(align=True)
             row.scale_y = scale_big
-            row.operator(CheckForUpdateButton.bl_idname, text='Checking..')
+            row.operator(CheckForUpdateButton.bl_idname, text=t('draw_updater_panel.CheckForUpdateButton.label'))
             row = split.row(align=True)
             row.alignment = 'RIGHT'
             row.scale_y = scale_big
@@ -825,7 +826,7 @@ def draw_updater_panel(context, layout, user_preferences=False):
         split = col.row(align=True)
         row = split.row(align=True)
         row.scale_y = scale_big
-        row.operator(UpdateToLatestButton.bl_idname, text='Update now to ' + latest_version_str)
+        row.operator(UpdateToLatestButton.bl_idname, text=t('draw_updater_panel.UpdateToLatestButton.label', name=latest_version_str))
         row = split.row(align=True)
         row.alignment = 'RIGHT'
         row.scale_y = scale_big
@@ -834,13 +835,13 @@ def draw_updater_panel(context, layout, user_preferences=False):
     elif not used_updater_panel or not version_list:
         row = col.row(align=True)
         row.scale_y = scale_big
-        row.operator(CheckForUpdateButton.bl_idname, text='Check now for Update')
+        row.operator(CheckForUpdateButton.bl_idname, text=t('draw_updater_panel.CheckForUpdateButton.label_alt'))
 
     else:
         split = col.row(align=True)
         row = split.row(align=True)
         row.scale_y = scale_big
-        row.operator(UpdateToLatestButton.bl_idname, text='Up to Date!')
+        row.operator(UpdateToLatestButton.bl_idname, text=t('draw_updater_panel.UpdateToLatestButton.label_alt'))
         row = split.row(align=True)
         row.alignment = 'RIGHT'
         row.scale_y = scale_big
@@ -866,7 +867,7 @@ def draw_updater_panel(context, layout, user_preferences=False):
     row = layout_split(split, factor=0.55, align=True)
     row.scale_y = scale_small
     row.active = True if not is_checking_for_update and version_list else False
-    row.operator(UpdateToSelectedButton.bl_idname, text='Install Version:')
+    row.operator(UpdateToSelectedButton.bl_idname, text=t('draw_updater_panel.UpdateToSelectedButton.label'))
     row.prop(context.scene, 'cats_updater_version_list', text='')
     row = split.row(align=True)
     row.scale_y = scale_small
@@ -891,12 +892,12 @@ def draw_updater_panel(context, layout, user_preferences=False):
 
     row = col.row(align=True)
     row.scale_y = scale_small
-    row.operator(UpdateToDevButton.bl_idname, text='Install Development Version')
+    row.operator(UpdateToDevButton.bl_idname, text=t('draw_updater_panel.UpdateToDevButton.label'))
 
     col.separator()
     row = col.row(align=True)
     row.scale_y = 0.65
-    row.label(text='Current version: ' + current_version_str)
+    row.label(text=t('draw_updater_panel.currentVersion', name=current_version_str))
 
 
 # demo bare-bones preferences
@@ -938,17 +939,17 @@ def register(bl_info, dev_branch, version_str):
         current_version.append(i)
 
     bpy.types.Scene.cats_updater_version_list = bpy.props.EnumProperty(
-        name='Version',
-        description='Select the version you want to install\n',
+        name=t('bpy.types.Scene.cats_updater_version_list.label'),
+        description=t('bpy.types.Scene.cats_updater_version_list.desc'),
         items=get_version_list
     )
     bpy.types.Scene.cats_update_action = bpy.props.EnumProperty(
-        name="Choose action",
-        description="Action",
+        name=t('bpy.types.Scene.cats_update_action.label'),
+        description=t('bpy.types.Scene.cats_update_action.desc'),
         items=[
-            ("UPDATE", "Update Now", "Updates now to the latest version"),
-            ("IGNORE", "Ignore this version", "This ignores this version. You will be reminded again when the next version releases"),
-            ("DEFER", "Remind me later", "Hides the update notification til the next Blender restart")
+            ("UPDATE", t('bpy.types.Scene.cats_update_action.update.label'), t('bpy.types.Scene.cats_update_action.update.desc')),
+            ("IGNORE", t('bpy.types.Scene.cats_update_action.ignore.label'), t( 'bpy.types.Scene.cats_update_action.ignore.desc')),
+            ("DEFER", t('bpy.types.Scene.cats_update_action.defer.label'), t( 'bpy.types.Scene.cats_update_action.defer.desc'))
         ]
     )
 

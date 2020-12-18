@@ -27,6 +27,7 @@ import os
 import bpy
 import copy
 import zipfile
+import platform
 import webbrowser
 import addon_utils
 import bpy_extras.io_utils
@@ -38,6 +39,7 @@ from . import settings as Settings
 from . import fbx_patch as Fbx_patch
 from .common import version_2_79_or_older
 from .register import register_wrap
+from ..translations import t
 
 mmd_tools_installed = False
 try:
@@ -60,29 +62,11 @@ zip_files = {}
 @register_wrap
 class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     bl_idname = 'cats_importer.import_any_model'
-    bl_label = 'Import Any Model'
+    bl_label = t('ImportAnyModel.label')
     if version_2_79_or_older():
-        bl_description = 'Import a model of any supported type.' \
-                         '\n' \
-                         '\nSupported types:' \
-                         '\n- MMD: .pmx/.pmd' \
-                         '\n- XNALara: .xps/.mesh/.ascii' \
-                         '\n- Source: .smd/.qc' \
-                         '\n- VRM: .vrm' \
-                         '\n- FBX .fbx ' \
-                         '\n- DAE: .dae ' \
-                         '\n- ZIP: .zip'
+        bl_description = t('ImportAnyModel.desc2.79')
     else:
-        bl_description = 'Import a model of any supported type.' \
-                         '\n' \
-                         '\nSupported types:' \
-                         '\n- MMD: .pmx/.pmd' \
-                         '\n- XNALara: .xps/.mesh/.ascii' \
-                         '\n- Source: .smd/.qc/.vta/.dmx' \
-                         '\n- VRM: .vrm' \
-                         '\n- FBX: .fbx' \
-                         '\n- DAE: .dae ' \
-                         '\n- ZIP: .zip'
+        bl_description = t('ImportAnyModel.desc2.8')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
@@ -90,8 +74,8 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
     filter_glob = bpy.props.StringProperty(default=formats_279 if version_2_79_or_older() else formats, options={'HIDDEN'})
     text1 = bpy.props.BoolProperty(
-        name='IMPORTANT INFO (hover here)',
-        description='If you want to modify the import settings, use the button next to the Import button.\n\n',
+        name=t('ImportAnyModel.importantInfo.label'),
+        description=t('ImportAnyModel.importantInfo.desc'),
         default=False
     )
 
@@ -123,7 +107,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         if has_zip_file:
             if not zip_files:
-                Common.show_error(4, ['The selected zip file contains no importable models.'])
+                Common.show_error(4, [t('ImportAnyModel.error.emptyZip')])
 
             # Import all models from zip files that contain only one importable model
             remove_keys = []
@@ -205,8 +189,7 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                 bpy.ops.import_scene.fbx('INVOKE_DEFAULT')
             except RuntimeError as e:
                 if 'unsupported, must be 7100 or later' in str(e):
-                    Common.show_error(6.2, ['The FBX file version is unsupported!',
-                                            'Please use a tool such as the "Autodesk FBX Converter" to make it compatible.'])
+                    Common.show_error(6.2, [t('ImportAnyModel.error.unsupportedFBX')])
                 print(str(e))
 
         # VRM
@@ -312,7 +295,8 @@ def fix_armatures_post_import(pre_import_objects):
         fix_bone_orientations(armature)
 
         # Set better bone view
-        armature.draw_type = 'WIRE'
+        if hasattr(armature, 'draw_type'):
+            armature.draw_type = 'WIRE'
         if version_2_79_or_older():
             armature.show_x_ray = True
         else:
@@ -322,8 +306,8 @@ def fix_armatures_post_import(pre_import_objects):
 @register_wrap
 class ZipPopup(bpy.types.Operator):
     bl_idname = "cats_importer.zip_popup"
-    bl_label = "Zip Model Selection:"
-    bl_description = 'Shows the models contained in the zip files'
+    bl_label = t('ZipPopup.label')
+    bl_description = t('ZipPopup.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -352,10 +336,10 @@ class ZipPopup(bpy.types.Operator):
 
         row = col.row(align=True)
         row.scale_y = 0.9
-        row.label(text='Select which model you want to import')
+        row.label(text=t('ZipPopup.selectModel1'))
         row = col.row(align=True)
         row.scale_y = 0.9
-        row.label(text='Then confirm with OK')
+        row.label(text=t('ZipPopup.selectModel2'))
 
         col.separator()
         row = col.row(align=True)
@@ -378,7 +362,7 @@ def get_zip_content(self, context):
             choices.append((
                 file_id,
                 encode_str(file_name),
-                'Import model "' + encode_str(file_name) + '" from the zip "' + encode_str(zip_name) + '"'))
+                t('get_zip_content.choose', model=encode_str(file_name), zipName=encode_str(zip_name))))
 
     if len(choices) == 0:
         choices.append(('None', 'None', 'None'))
@@ -398,8 +382,8 @@ def encode_str(s):
 @register_wrap
 class ModelsPopup(bpy.types.Operator):
     bl_idname = "cats_importer.model_popup"
-    bl_label = "Select which you want to import:"
-    bl_description = 'Show individual import options'
+    bl_label = t('ModelsPopup.label')
+    bl_description = t('ModelsPopup.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -433,8 +417,8 @@ class ModelsPopup(bpy.types.Operator):
 @register_wrap
 class ImportMMD(bpy.types.Operator):
     bl_idname = 'cats_importer.import_mmd'
-    bl_label = 'MMD'
-    bl_description = 'Import a MMD model (.pmx/.pmd)'
+    bl_label = t('ImportMMD.label')
+    bl_description = t('ImportMMD.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -464,8 +448,8 @@ class ImportMMD(bpy.types.Operator):
 @register_wrap
 class ImportXPS(bpy.types.Operator):
     bl_idname = 'cats_importer.import_xps'
-    bl_label = 'XNALara'
-    bl_description = 'Import a XNALara model (.xps/.mesh/.ascii)'
+    bl_label = t('ImportXPS.label')
+    bl_description = t('ImportXPS.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -489,8 +473,8 @@ class ImportXPS(bpy.types.Operator):
 @register_wrap
 class ImportSource(bpy.types.Operator):
     bl_idname = 'cats_importer.import_source'
-    bl_label = 'Source'
-    bl_description = 'Import a Source model (.smd/.qc/.vta/.dmx)'
+    bl_label = t('ImportSource.label')
+    bl_description = t('ImportSource.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -511,8 +495,8 @@ class ImportSource(bpy.types.Operator):
 @register_wrap
 class ImportFBX(bpy.types.Operator):
     bl_idname = 'cats_importer.import_fbx'
-    bl_label = 'FBX'
-    bl_description = 'Import a FBX model (.fbx)'
+    bl_label = t('ImportFBX.label')
+    bl_description = t('ImportFBX.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -541,8 +525,8 @@ class ImportFBX(bpy.types.Operator):
 @register_wrap
 class ImportVRM(bpy.types.Operator):
     bl_idname = 'cats_importer.import_vrm'
-    bl_label = 'VRM'
-    bl_description = 'Import a VRM model (.vrm)'
+    bl_label = t('ImportVRM.label')
+    bl_description = t('ImportVRM.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -563,7 +547,7 @@ class ImportVRM(bpy.types.Operator):
 @register_wrap
 class InstallXPS(bpy.types.Operator):
     bl_idname = "cats_importer.install_xps"
-    bl_label = "XPS Tools is not installed or enabled!"
+    bl_label = t('InstallXPS.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -585,13 +569,13 @@ class InstallXPS(bpy.types.Operator):
         # row.label(text="The plugin 'XPS Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
-        row.label(text="If it is not enabled please enable it in your User Preferences.")
+        row.label(text=t('InstallX.pleaseInstall1'))
         row = col.row(align=True)
-        row.label(text="If it is not installed please download and install it manually.")
+        row.label(text=t('InstallX.pleaseInstall2'))
         col.separator()
         col.separator()
         row = col.row(align=True)
-        row.label(text="Make sure to install the version for Blender " + current_blender_version, icon="INFO")
+        row.label(text=t('InstallX.pleaseInstall3', blenderVersion=current_blender_version), icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(XpsToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -600,7 +584,7 @@ class InstallXPS(bpy.types.Operator):
 @register_wrap
 class InstallSource(bpy.types.Operator):
     bl_idname = "cats_importer.install_source"
-    bl_label = "Source Tools is not installed or enabled!"
+    bl_label = t('InstallSource.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -622,13 +606,13 @@ class InstallSource(bpy.types.Operator):
         # row.label(text="The plugin 'Source Tools' is required for this function.")
         col.separator()
         row = col.row(align=True)
-        row.label(text="If it is not enabled please enable it in your User Preferences.")
+        row.label(text=t('InstallX.pleaseInstall1'))
         row = col.row(align=True)
-        row.label(text="If it is not installed please download and install it manually.")
+        row.label(text=t('InstallX.pleaseInstall2'))
         col.separator()
         col.separator()
         row = col.row(align=True)
-        row.label(text="Make sure to install the version for Blender " + current_blender_version, icon="INFO")
+        row.label(text=t('InstallX.pleaseInstall3', blenderVersion=current_blender_version), icon="INFO")
         col.separator()
         row = col.row(align=True)
         row.operator(SourceToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -637,7 +621,7 @@ class InstallSource(bpy.types.Operator):
 @register_wrap
 class InstallVRM(bpy.types.Operator):
     bl_idname = "cats_importer.install_vrm"
-    bl_label = "VRM Importer is not installed or enabled!"
+    bl_label = t('InstallVRM.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -659,12 +643,12 @@ class InstallVRM(bpy.types.Operator):
         # row.label(text="The plugin 'VRM Importer' is required for this function.")
         col.separator()
         row = col.row(align=True)
-        row.label(text="If it is not enabled please enable it in your User Preferences.")
+        row.label(text=t('InstallX.pleaseInstall1'))
         row = col.row(align=True)
-        row.label(text="Currently you have to select 'Testing' in the addons settings.")
+        row.label(text=t('InstallX.pleaseInstallTesting'))
         col.separator()
         row = col.row(align=True)
-        row.label(text="If it is not installed please download and install it manually.")
+        row.label(text=t('InstallX.pleaseInstall2'))
         col.separator()
         row = col.row(align=True)
         row.operator(VrmToolsButton.bl_idname, icon=globs.ICON_URL)
@@ -673,7 +657,7 @@ class InstallVRM(bpy.types.Operator):
 @register_wrap
 class EnableMMD(bpy.types.Operator):
     bl_idname = "cats_importer.enable_mmd"
-    bl_label = "Mmd_tools is not enabled!"
+    bl_label = t('EnableMMD.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -692,9 +676,9 @@ class EnableMMD(bpy.types.Operator):
         col = layout.column(align=True)
 
         row = col.row(align=True)
-        row.label(text="The plugin 'mmd_tools' is required for this function.")
+        row.label(text=t('EnableMMD.required1'))
         row = col.row(align=True)
-        row.label(text="Please restart Blender.")
+        row.label(text=t('EnableMMD.required2'))
 
 
 # def popup_install_xps(self, context):
@@ -750,42 +734,42 @@ class EnableMMD(bpy.types.Operator):
 @register_wrap
 class XpsToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_xps_tools'
-    bl_label = 'Download XPS Tools'
+    bl_label = t('XpsToolsButton.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://github.com/johnzero7/XNALaraMesh')
+        webbrowser.open(t('XpsToolsButton.URL'))
 
-        self.report({'INFO'}, 'XPS Tools link opened')
+        self.report({'INFO'}, t('XpsToolsButton.success'))
         return {'FINISHED'}
 
 
 @register_wrap
 class SourceToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_source_tools'
-    bl_label = 'Download Source Tools'
+    bl_label = t('SourceToolsButton.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open('https://github.com/Artfunkel/BlenderSourceTools')
+        webbrowser.open(t('SourceToolsButton.URL'))
 
-        self.report({'INFO'}, 'Source Tools link opened')
+        self.report({'INFO'}, t('SourceToolsButton.success'))
         return {'FINISHED'}
 
 
 @register_wrap
 class VrmToolsButton(bpy.types.Operator):
     bl_idname = 'cats_importer.download_vrm'
-    bl_label = 'Download VRM Importer'
+    bl_label = t('VrmToolsButton.label')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
         if Common.version_2_79_or_older():
-            webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_79')
+            webbrowser.open(t('VrmToolsButton.URL_2.79'))
         else:
-            webbrowser.open('https://github.com/iCyP/VRM_IMPORTER_for_Blender2_8')
+            webbrowser.open(t('VrmToolsButton.URL_2.8'))
 
-        self.report({'INFO'}, 'VRM Importer link opened')
+        self.report({'INFO'}, t('VrmToolsButton.success'))
         return {'FINISHED'}
 
 
@@ -806,10 +790,8 @@ max_meshes_hard = 8
 @register_wrap
 class ExportModel(bpy.types.Operator):
     bl_idname = 'cats_importer.export_model'
-    bl_label = 'Export Model'
-    bl_description = 'Export this model as .fbx for Unity.\n' \
-                     '\n' \
-                     'Automatically sets the optimal export settings'
+    bl_label = t('ExportModel.label')
+    bl_description = t('ExportModel.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     action = bpy.props.EnumProperty(
@@ -934,7 +916,7 @@ class ExportModel(bpy.types.Operator):
         except (TypeError, ValueError):
             bpy.ops.export_scene.fbx('INVOKE_DEFAULT')
         except AttributeError:
-            self.report({'ERROR'}, 'FBX Exporter not enabled! Please enable it in your User Preferences.')
+            self.report({'ERROR'}, t('ExportModel.error.notEnabled'))
 
         return {'FINISHED'}
 
@@ -942,7 +924,7 @@ class ExportModel(bpy.types.Operator):
 @register_wrap
 class ErrorDisplay(bpy.types.Operator):
     bl_idname = "cats_importer.display_error"
-    bl_label = "Warning:"
+    bl_label = t('ErrorDisplay.label')
     bl_options = {'INTERNAL'}
 
     tris_count = 0
@@ -980,15 +962,15 @@ class ErrorDisplay(bpy.types.Operator):
         if self.tris_count > max_tris:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Too many polygons!", icon='ERROR')
+            row.label(text=t('ErrorDisplay.polygons1'), icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You have " + str(self.tris_count) + " tris in this model, but you shouldn't have more than 70,000!")
+            row.label(text=t('ErrorDisplay.polygons2', number=str(self.tris_count)))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You should decimate before you export this model.")
+            row.label(text=t('ErrorDisplay.polygons3'))
             col.separator()
             col.separator()
             col.separator()
@@ -1016,19 +998,19 @@ class ErrorDisplay(bpy.types.Operator):
         if self.mat_count > max_mats:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Model not optimized!", icon='INFO')
+            row.label(text=t('ErrorDisplay.materials1'), icon='INFO')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="This model has " + str(self.mat_count) + " materials!")
+            row.label(text=t('ErrorDisplay.materials2', number=str(self.mat_count)))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You should try to have a maximum of 4 materials on your model.")
+            row.label(text=t('ErrorDisplay.materials3'))
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Creating a texture atlas in CATS is very easy, so please make use of it.")
+            row.label(text=t('ErrorDisplay.materials4'))
             col.separator()
             col.separator()
             col.separator()
@@ -1036,26 +1018,26 @@ class ErrorDisplay(bpy.types.Operator):
         if self.meshes_count > max_meshes_light:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Meshes not joined!", icon='ERROR')
+            row.label(text=t('ErrorDisplay.meshes1'), icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="This model has " + str(self.meshes_count) + " meshes!")
+            row.label(text=t('ErrorDisplay.meshes2', number=str(self.meshes_count)))
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
             if self.meshes_count <= max_meshes_hard:
-                row.label(text="It is not very optimized and might cause lag for you and others.")
+                row.label(text=t('ErrorDisplay.meshes3'))
             else:
-                row.label(text="It is extremely unoptimized and will cause lag for you and others.")
+                row.label(text=t('ErrorDisplay.meshes3_alt'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You should always join your meshes, it's very easy:")
+            row.label(text=t('ErrorDisplay.meshes4'))
             col.separator()
             row = col.row(align=True)
             row.scale_y = 1
-            row.operator(armature_manual.JoinMeshes.bl_idname, text='Join Meshes', icon='AUTOMERGE_ON')
+            row.operator(armature_manual.JoinMeshes.bl_idname, text=t('ErrorDisplay.JoinMeshes.label'), icon='AUTOMERGE_ON')
             col.separator()
             col.separator()
             col.separator()
@@ -1063,12 +1045,12 @@ class ErrorDisplay(bpy.types.Operator):
         if self.broken_shapes:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Broken shapekeys!", icon='ERROR')
+            row.label(text=t('ErrorDisplay.brokenShapekeys1'), icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="This model has " + str(len(self.broken_shapes)) + " broken shapekey(s):")
+            row.label(text=t('ErrorDisplay.brokenShapekeys2', number=str(len(self.broken_shapes))))
             col.separator()
 
             for shapekey in self.broken_shapes:
@@ -1079,10 +1061,10 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="You will not be able to upload this model until you fix these shapekeys.")
+            row.label(text=t('ErrorDisplay.brokenShapekeys3'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Either delete or repair them before export.")
+            row.label(text=t('ErrorDisplay.brokenShapekeys4'))
             col.separator()
             col.separator()
             col.separator()
@@ -1090,18 +1072,18 @@ class ErrorDisplay(bpy.types.Operator):
         if not self.textures_found and Settings.get_embed_textures():
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="No textures found!", icon='ERROR')
+            row.label(text=t('ErrorDisplay.textures1'), icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="This model has no textures assigned but you have 'Embed Textures' enabled.")
+            row.label(text=t('ErrorDisplay.textures2'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Therefore, no textures will embedded into the FBX.")
+            row.label(text=t('ErrorDisplay.textures3'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="This is not an issue, but you will have to import the textures manually into Unity.")
+            row.label(text=t('ErrorDisplay.textures4'))
             col.separator()
             col.separator()
             col.separator()
@@ -1109,15 +1091,15 @@ class ErrorDisplay(bpy.types.Operator):
         if len(self.eye_meshes_not_named_body) == 1:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Eyes not named 'Body'!", icon='ERROR')
+            row.label(text=t('ErrorDisplay.eyes1'), icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="The mesh '" + self.eye_meshes_not_named_body[0] + "' has Eye Tracking shapekeys but is not named 'Body'.")
+            row.label(text=t('ErrorDisplay.eyes2', naéme=self.eye_meshes_not_named_body[0]))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="If you want Eye Tracking to work, rename this mesh to 'Body'.")
+            row.label(text=t( 'ErrorDisplay.eyes3'))
             col.separator()
             col.separator()
             col.separator()
@@ -1125,21 +1107,21 @@ class ErrorDisplay(bpy.types.Operator):
         elif len(self.eye_meshes_not_named_body) > 1:
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Eyes not named 'Body'!", icon='ERROR')
+            row.label(text=t('ErrorDisplay.eyes1'), icon='ERROR')
             col.separator()
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Multiple meshes have Eye Tracking shapekeys but are not named 'Body'.")
+            row.label(text=t('ErrorDisplay.eyes2_alt'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="Make sure that the mesh containing the eyes is named 'Body' in order")
+            row.label(text=t('ErrorDisplay.eyes3_alt'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text="to get Eye Tracking to work.")
+            row.label(text=t('ErrorDisplay.eyes4_alt'))
             col.separator()
             col.separator()
             col.separator()
 
         row = col.row(align=True)
-        row.operator(ExportModel.bl_idname, text='Continue to Export', icon=globs.ICON_EXPORT).action = 'NO_CHECK'
+        row.operator(ExportModel.bl_idname, text=t('ErrorDisplay.continue'), icon=globs.ICON_EXPORT).action = 'NO_CHECK'

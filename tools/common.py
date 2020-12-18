@@ -23,10 +23,12 @@
 # Code author: GiveMeAllYourCats
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by: GiveMeAllYourCats, Hotox
+
 import re
-import os
 import bpy
 import time
+import bmesh
+import platform
 
 from math import degrees
 from mathutils import Vector
@@ -39,8 +41,14 @@ from . import supporter as Supporter
 from . import decimation as Decimation
 from . import translate as Translate
 from . import armature_bones as Bones
+from . import settings as Settings
 from .register import register_wrap
+from ..translations import t
+
 from mmd_tools_local import utils
+from mmd_tools_local.panels import tool as mmd_tool
+from mmd_tools_local.panels import util_tools as mmd_util_tools
+from mmd_tools_local.panels import view_prop as mmd_view_prop
 
 # TODO:
 #  - Add check if hips bone really needs to be rotated
@@ -212,9 +220,9 @@ def is_selected(obj):
 
 
 def hide(obj, val=True):
-    if version_2_79_or_older():
+    if hasattr(obj, 'hide'):
         obj.hide = val
-    else:
+    if not version_2_79_or_older():
         obj.hide_set(val)
 
 
@@ -286,6 +294,16 @@ def set_default_stage():
         bpy.context.scene.armature = armature.name
 
     return armature
+
+
+def apply_modifier(mod, as_shapekey=False):
+    if bpy.app.version < (2, 90):
+        bpy.ops.object.modifier_apply(apply_as='SHAPE' if as_shapekey else 'DATA', modifier=mod.name)
+    else:
+        if as_shapekey:
+            bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=mod.name)
+        else:
+            bpy.ops.object.modifier_apply(modifier=mod.name)
 
 
 def remove_bone(find_bone):
@@ -793,12 +811,12 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
                 if has_shapekeys(mesh):
                     bpy.ops.object.shape_key_remove(all=True)
-                bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+                apply_modifier(mod)
             elif mod.type == 'SUBSURF':
                 mesh.modifiers.remove(mod)
             elif mod.type == 'MIRROR':
                 if not has_shapekeys(mesh):
-                    bpy.ops.object.modifier_apply(apply_as='DATA', modifier=mod.name)
+                    apply_modifier(mod)
 
         # Standardize UV maps name
         if version_2_79_or_older():
@@ -1605,7 +1623,7 @@ def show_error(scale, error_list, override_header=False):
     dpi_scale = scale
     error = error_list
 
-    header = 'Report: Error'
+    header = t('ShowError.label')
     if override:
         header = error_list[0]
 
@@ -1627,7 +1645,7 @@ def show_error(scale, error_list, override_header=False):
 @register_wrap
 class ShowError(bpy.types.Operator):
     bl_idname = 'cats_common.show_error'
-    bl_label = 'Report: Error'
+    bl_label = t('ShowError.label')
 
     def execute(self, context):
         return {'FINISHED'}
@@ -1697,6 +1715,15 @@ def remove_doubles(mesh, threshold, save_shapes=True):
     return pre_tris - len(mesh.data.polygons)
 
 
+def get_tricount(obj):
+    # Triangulates with Bmesh to avoid messing with the original geometry
+    bmesh_mesh = bmesh.new()
+    bmesh_mesh.from_mesh(obj.data)
+
+    bmesh.ops.triangulate(bmesh_mesh, faces=bmesh_mesh.faces[:])
+    return len(bmesh_mesh.faces)
+
+
 def get_bone_orientations(armature):
     x_cord = 0
     y_cord = 1
@@ -1739,7 +1766,7 @@ def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, mix_mode='ADD', delete_o
     mod.mix_mode = mix_mode
     mod.mix_set = 'B'
     mod.mask_constant = mix_strength
-    bpy.ops.object.modifier_apply(modifier=mod.name)
+    apply_modifier(mod)
     if delete_old_vg:
         mesh.vertex_groups.remove(mesh.vertex_groups.get(vg_from))
     mesh.active_shape_key_index = 0  # This line fixes a visual bug in 2.80 which causes random weights to be stuck after being merged
@@ -1983,9 +2010,15 @@ def fix_vrm_shader(mesh):
                     node.location[0] = 200
                     node.inputs['ReceiveShadow_Texture_alpha'].default_value = -10000
                     node.inputs['ShadeTexture'].default_value = (1.0, 1.0, 1.0, 1.0)
-                    node.inputs['NomalmapTexture'].default_value = (1.0, 1.0, 1.0, 1.0)
                     node.inputs['Emission_Texture'].default_value = (0.0, 0.0, 0.0, 0.0)
                     node.inputs['SphereAddTexture'].default_value = (0.0, 0.0, 0.0, 0.0)
+
+                    # Support typo in old vrm importer
+                    node_input = node.inputs.get('NomalmapTexture')
+                    if not node_input:
+                        node_input = node.inputs.get('NormalmapTexture')
+                    node_input.default_value = (1.0, 1.0, 1.0, 1.0)
+
                     is_vrm_mat = True
                     break
             if not is_vrm_mat:
@@ -2041,29 +2074,68 @@ def fix_twist_bones(mesh, bones_to_delete):
             mix_weights(mesh, vg_twist.name, vg_twist.name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
 
             if vg_twist1:
+                bones_to_delete.append(vg_twist1.name)
                 mix_weights(mesh, vg_twist1.name, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
                 mix_weights(mesh, vg_twist1.name, vg_parent.name, mix_strength=0.75)
-                bones_to_delete.append(vg_twist1.name)
 
             if vg_twist2:
+                bones_to_delete.append(vg_twist2.name)
                 mix_weights(mesh, vg_twist2.name, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
                 mix_weights(mesh, vg_twist2.name, vg_parent.name, mix_strength=0.5)
-                bones_to_delete.append(vg_twist2.name)
 
             if vg_twist3:
+                bones_to_delete.append(vg_twist3.name)
                 mix_weights(mesh, vg_twist3.name, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
                 mix_weights(mesh, vg_twist3.name, vg_parent.name, mix_strength=0.25)
-                bones_to_delete.append(vg_twist3.name)
 
 
 def fix_twist_bone_names(armature):
     # This will fix MMD twist bone names after the vertex groups have been fixed
-
     for bone_type in ['Hand', 'Arm']:
         for suffix in ['L', 'R']:
             bone_twist = armature.data.edit_bones.get(bone_type + 'Twist_' + suffix)
             if bone_twist:
                 bone_twist.name = 'z' + bone_twist.name
+
+
+def toggle_mmd_tabs_update(self, context):
+    toggle_mmd_tabs()
+
+
+def toggle_mmd_tabs(shutdown_plugin=False):
+    mmd_cls = [
+        mmd_tool.MMDToolsObjectPanel,
+        mmd_tool.MMDDisplayItemsPanel,
+        mmd_tool.MMDMorphToolsPanel,
+        mmd_tool.MMDRigidbodySelectorPanel,
+        mmd_tool.MMDJointSelectorPanel,
+        mmd_util_tools.MMDMaterialSorter,
+        mmd_util_tools.MMDMeshSorter,
+    ]
+    mmd_cls_shading = [
+        mmd_view_prop.MMDViewPanel,
+        mmd_view_prop.MMDSDEFPanel,
+    ]
+
+    if not version_2_79_or_older():
+        mmd_cls = mmd_cls + mmd_cls_shading
+
+    # If the plugin is shutting down, load the mmd_tools tabs before that, to avoid issues when unregistering mmd_tools
+    if bpy.context.scene.show_mmd_tabs or shutdown_plugin:
+        for cls in mmd_cls:
+            try:
+                bpy.utils.register_class(cls)
+            except:
+                pass
+    else:
+        for cls in reversed(mmd_cls):
+            try:
+                bpy.utils.unregister_class(cls)
+            except:
+                pass
+
+    if not shutdown_plugin:
+        Settings.update_settings(None, None)
 
 
 

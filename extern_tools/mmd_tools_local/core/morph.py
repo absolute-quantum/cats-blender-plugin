@@ -303,15 +303,13 @@ class _MorphSlider:
             for m in mesh.modifiers: # uv morph
                 if m.name.startswith('mmd_bind') and m.name not in names_in_use:
                     mesh.modifiers.remove(m)
-            for m in mesh.data.materials:
-                if m and m.node_tree:
-                    for n in m.node_tree.nodes:
-                        if n.name.startswith('mmd_bind'):
-                            m.node_tree.nodes.remove(n)
-                    if 'mmd_shader' in m.node_tree.nodes:
-                        m.mmd_material.is_double_sided = m.mmd_material.is_double_sided # update mmd shader
-                    else:
-                        m.update_tag()
+
+        from mmd_tools_local.core.shader import _MaterialMorph
+        for m in rig.materials():
+            if m and m.node_tree:
+                for n in sorted((x for x in m.node_tree.nodes if x.name.startswith('mmd_bind')), key=lambda x: -x.location[0]):
+                    _MaterialMorph.reset_morph_links(n)
+                    m.node_tree.nodes.remove(n)
 
         attributes = set(TransformConstraintOp.min_max_attributes('LOCATION', 'to'))
         attributes |= set(TransformConstraintOp.min_max_attributes('ROTATION', 'to'))
@@ -504,7 +502,7 @@ class _MorphSlider:
         for morph_name, data, bname, morph_data_path, groups in bone_offset_map.values():
             b = arm.pose.bones[bname]
             b.location = data.location
-            b.rotation_quaternion = data.rotation
+            b.rotation_quaternion = data.rotation.__class__(*data.rotation.to_axis_angle()) # Fix for consistency
             b.is_mmd_shadow_bone = True
             b.mmd_shadow_bone_type = 'BIND'
             pb = armObj.pose.bones[data.bone]

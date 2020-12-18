@@ -29,14 +29,14 @@ from . import common as Common
 from .register import register_wrap
 
 from collections import OrderedDict
+from ..translations import t
 
 
 @register_wrap
 class AutoVisemeButton(bpy.types.Operator):
     bl_idname = 'cats_viseme.create'
-    bl_label = 'Create Visemes'
-    bl_description = 'This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.\n' \
-                     'It will generate 15 shape keys from the 3 shape keys you specify'
+    bl_label = t('AutoVisemeButton.label')
+    bl_description = t('AutoVisemeButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -49,13 +49,13 @@ class AutoVisemeButton(bpy.types.Operator):
         mesh = Common.get_objects()[context.scene.mesh_name_viseme]
 
         if not Common.has_shapekeys(mesh):
-            self.report({'ERROR'}, 'This mesh has no shapekeys!')
+            self.report({'ERROR'}, t('AutoVisemeButton.error.noShapekeys'))
             return {'CANCELLED'}
 
         if context.scene.mouth_a == "Basis" \
                 or context.scene.mouth_o == "Basis" \
                 or context.scene.mouth_ch == "Basis":
-            self.report({'ERROR'}, 'Please select the correct mouth shapekeys instead of "Basis"!')
+            self.report({'ERROR'}, t('AutoVisemeButton.error.selectShapekeys'))
             return {'CANCELLED'}
 
         saved_data = Common.SavedData()
@@ -251,7 +251,7 @@ class AutoVisemeButton(bpy.types.Operator):
 
         wm.progress_end()
 
-        self.report({'INFO'}, 'Created mouth visemes!')
+        self.report({'INFO'}, t('AutoVisemeButton.success'))
 
         return {'FINISHED'}
 

@@ -1,10 +1,10 @@
 from ..tools.common import version_2_79_or_older
-
+from ..translations import t
 
 class ToolPanel(object):
-    bl_label = 'Cats Blender Plugin'
+    bl_label = t('ToolPanel.label')
     bl_idname = '3D_VIEW_TS_vrc'
-    bl_category = 'CATS'
+    bl_category = t('ToolPanel.category')
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS' if version_2_79_or_older() else 'UI'
 

@@ -29,6 +29,7 @@ import bpy
 from . import common as Common
 from .register import register_wrap
 from .. import globs
+from ..translations import t
 
 # wm = bpy.context.window_manager
 # wm.progress_begin(0, len(bone_merge))
@@ -39,9 +40,8 @@ from .. import globs
 @register_wrap
 class BoneMergeButton(bpy.types.Operator):
     bl_idname = 'cats_bonemerge.merge_bones'
-    bl_label = 'Merge Bones'
-    bl_description = 'Merges the given percentage of bones together.\n' \
-                     'This is useful to reduce the amount of bones used by Dynamic Bones.'
+    bl_label = t('BoneMergeButton.label')
+    bl_description = t('BoneMergeButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -94,7 +94,7 @@ class BoneMergeButton(bpy.types.Operator):
         saved_data.load()
 
         wm.progress_end()
-        self.report({'INFO'}, 'Merged bones.')
+        self.report({'INFO'}, t('BoneMergeButton.success'))
         return {'FINISHED'}
 
     # Go through this until the last child is reached

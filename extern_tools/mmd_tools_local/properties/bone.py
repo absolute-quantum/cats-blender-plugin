@@ -65,6 +65,7 @@ class MMDBone(PropertyGroup):
         description='Deformation tier',
         min=0,
         max=100,
+        soft_max=7,
         )
 
     is_controllable = BoolProperty(

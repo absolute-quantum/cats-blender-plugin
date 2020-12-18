@@ -25,8 +25,9 @@
 # Edits by: GiveMeAllYourCats, Hotox
 
 import bpy
-import bmesh
+import copy
 import math
+import bmesh
 
 from collections import OrderedDict
 from random import random
@@ -34,6 +35,7 @@ from random import random
 from . import common as Common
 from . import armature as Armature
 from .register import register_wrap
+from ..translations import t
 
 
 iris_heights = None
@@ -42,10 +44,8 @@ iris_heights = None
 @register_wrap
 class CreateEyesButton(bpy.types.Operator):
     bl_idname = 'cats_eyes.create_eye_tracking'
-    bl_label = 'Create Eye Tracking'
-    bl_description = 'This will let you track someone when they come close to you and it enables blinking.\n' \
-                     "You should do decimation before this operation.\n" \
-                     "Test the resulting eye movement in the 'Testing' tab"
+    bl_label = t('CreateEyesButton.label')
+    bl_description = t('CreateEyesButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     mesh = None
@@ -92,23 +92,22 @@ class CreateEyesButton(bpy.types.Operator):
                                                        or context.scene.lowerlid_left == ""
                                                        or context.scene.lowerlid_right == ""):
             saved_data.load()
-            self.report({'ERROR'}, 'You have no shape keys selected.'
-                                   '\nPlease choose a mesh containing shape keys or check "Disable Eye Blinking".')
+            self.report({'ERROR'}, t('CreateEyesButton.error.noShapeSelected'))
             return {'CANCELLED'}
 
         if head is None:
             saved_data.load()
-            self.report({'ERROR'}, 'The bone "' + context.scene.head + '" does not exist.')
+            self.report({'ERROR'}, t('CreateEyesButton.error.missingBone', bone=context.scene.head))
             return {'CANCELLED'}
 
         if not old_eye_left:
             saved_data.load()
-            self.report({'ERROR'}, 'The bone "' + context.scene.eye_left + '" does not exist.')
+            self.report({'ERROR'}, t('CreateEyesButton.error.missingBone', bone=context.scene.eye_left))
             return {'CANCELLED'}
 
         if not old_eye_right:
             saved_data.load()
-            self.report({'ERROR'}, 'The bone "' + context.scene.eye_right + '" does not exist.')
+            self.report({'ERROR'}, t('CreateEyesButton.error.missingBone', bone=context.scene.eye_right))
             return {'CANCELLED'}
 
         if not context.scene.disable_eye_movement:
@@ -121,17 +120,14 @@ class CreateEyesButton(bpy.types.Operator):
 
             if eye_name:
                 saved_data.load()
-                self.report({'ERROR'}, 'The bone "' + eye_name + '" has no existing vertex group or no vertices assigned to it.'
-                                       '\nThis might be because you selected the wrong mesh or the wrong bone.'
-                                       '\nAlso make sure that the selected eye bones actually move the eyes in pose mode.')
+                self.report({'ERROR'}, t('CreateEyesButton.error.noVertex', bone=eye_name))
                 return {'CANCELLED'}
 
         # Find existing LeftEye/RightEye and rename or delete
         if 'LeftEye' in armature.data.edit_bones:
             if old_eye_left.name == 'LeftEye':
                 saved_data.load()
-                self.report({'ERROR'}, 'Please do not use "LeftEye" as the input bone.'
-                                       '\nIf you are sure that you want to use that bone please rename it to "Eye_L".')
+                self.report({'ERROR'}, t('CreateEyesButton.error.dontUse', eyeName='LeftEye', eyeNameShort='Eye_L'))
                 return {'CANCELLED'}
             else:
                 armature.data.edit_bones.remove(armature.data.edit_bones.get('LeftEye'))
@@ -139,8 +135,7 @@ class CreateEyesButton(bpy.types.Operator):
         if 'RightEye' in armature.data.edit_bones:
             if old_eye_right.name == 'RightEye':
                 saved_data.load()
-                self.report({'ERROR'}, 'Please do not use "RightEye" as the input bone.'
-                                       '\nIf you are sure that you want to use that bone please rename it to "Eye_R".')
+                self.report({'ERROR'}, t('CreateEyesButton.error.dontUse', eyeName='RightEye', eyeNameShort='Eye_R'))
                 return {'CANCELLED'}
             else:
                 armature.data.edit_bones.remove(armature.data.edit_bones.get('RightEye'))
@@ -257,11 +252,10 @@ class CreateEyesButton(bpy.types.Operator):
 
         if not is_correct['result']:
             self.report({'ERROR'}, is_correct['message'])
-            self.report({'ERROR'}, 'Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head'
-                                   '\nFurthermore the mesh containing the eyes has to be called "Body" and the armature "Armature".')
+            self.report({'ERROR'}, t('CreateEyesButton.error.hierarchy'))
         else:
             context.scene.eye_mode = 'TESTING'
-            self.report({'INFO'}, 'Created eye tracking!')
+            self.report({'INFO'}, t('CreateEyesButton.success'))
 
         return {'FINISHED'}
 
@@ -482,15 +476,15 @@ eye_left = None
 eye_right = None
 eye_left_data = None
 eye_right_data = None
+eye_left_rot = []
+eye_right_rot = []
 
 
 @register_wrap
 class StartTestingButton(bpy.types.Operator):
     bl_idname = 'cats_eyes.start_testing'
-    bl_label = 'Start Eye Testing'
-    bl_description = 'This will let you test how the eye movement will look ingame.\n' \
-                     "Don't forget to stop the Testing process afterwards.\n" \
-                     'Bones "LeftEye" and "RightEye" are required'
+    bl_label = t('StartTestingButton.label')
+    bl_description = t('StartTestingButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -507,11 +501,17 @@ class StartTestingButton(bpy.types.Operator):
         Common.switch('POSE')
         armature.data.pose_position = 'POSE'
 
-        global eye_left, eye_right, eye_left_data, eye_right_data
+        global eye_left, eye_right, eye_left_data, eye_right_data, eye_left_rot, eye_right_rot
         eye_left = armature.pose.bones.get('LeftEye')
         eye_right = armature.pose.bones.get('RightEye')
         eye_left_data = armature.data.bones.get('LeftEye')
         eye_right_data = armature.data.bones.get('RightEye')
+
+        # Save initial eye rotations
+        eye_left.rotation_mode = 'XYZ'
+        eye_left_rot = copy.deepcopy(eye_left.rotation_euler)
+        eye_right.rotation_mode = 'XYZ'
+        eye_right_rot = copy.deepcopy(eye_right.rotation_euler)
 
         if eye_left is None or eye_right is None or eye_left_data is None or eye_right_data is None:
             return {'FINISHED'}
@@ -542,12 +542,12 @@ class StartTestingButton(bpy.types.Operator):
 @register_wrap
 class StopTestingButton(bpy.types.Operator):
     bl_idname = 'cats_eyes.stop_testing'
-    bl_label = 'Stop Eye Testing'
-    bl_description = 'Stops the testing process'
+    bl_label = t('StopTestingButton.label')
+    bl_description = t('StopTestingButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        global eye_left, eye_right, eye_left_data, eye_right_data
+        global eye_left, eye_right, eye_left_data, eye_right_data, eye_left_rot, eye_right_rot
         if eye_left:
             context.scene.eye_rotation_x = 0
             context.scene.eye_rotation_y = 0
@@ -575,40 +575,34 @@ class StopTestingButton(bpy.types.Operator):
         eye_right = None
         eye_left_data = None
         eye_right_data = None
+        eye_left_rot = []
+        eye_right_rot = []
 
         return {'FINISHED'}
 
 
 # This gets called by the eye testing sliders
 def set_rotation(self, context):
-    global eye_left, eye_right, eye_left_data, eye_right_data
+    global eye_left, eye_right
 
     if not eye_left:
         StopTestingButton.execute(self, context)
-        self.report({'ERROR'}, "Something went wrong. Please try eye testing again.")
+        self.report({'ERROR'}, t('StopTestingButton.error.tryAgain'))
         return None
 
-    eye_left_data.select = True
-    eye_right_data.select = True
-
-    bpy.ops.pose.rot_clear()
-
-    eye_left_data.select = False
-    eye_right_data.select = False
-
     eye_left.rotation_mode = 'XYZ'
-    eye_left.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
-    eye_left.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+    eye_left.rotation_euler[0] = eye_left_rot[0] + math.radians(context.scene.eye_rotation_x)
+    eye_left.rotation_euler[1] = eye_left_rot[1] + math.radians(context.scene.eye_rotation_y)
 
     eye_right.rotation_mode = 'XYZ'
-    eye_right.rotation_euler.rotate_axis('X', math.radians(context.scene.eye_rotation_x))
-    eye_right.rotation_euler.rotate_axis('Y', math.radians(context.scene.eye_rotation_y))
+    eye_right.rotation_euler[0] = eye_right_rot[0] + math.radians(context.scene.eye_rotation_x)
+    eye_right.rotation_euler[1] = eye_right_rot[1] + math.radians(context.scene.eye_rotation_y)
     return None
 
 
 def stop_testing(self, context):
-        global eye_left, eye_right, eye_left_data, eye_right_data
-        if not eye_left or not eye_right or not eye_left_data or not eye_right_data:
+        global eye_left, eye_right, eye_left_data, eye_right_data, eye_left_rot, eye_right_rot
+        if not eye_left or not eye_right or not eye_left_data or not eye_right_data or not eye_left_rot or not eye_right_rot:
             return None
 
         armature = Common.set_default_stage()
@@ -637,14 +631,16 @@ def stop_testing(self, context):
         eye_right = None
         eye_left_data = None
         eye_right_data = None
+        eye_left_rot = []
+        eye_right_rot = []
         return None
 
 
 @register_wrap
 class ResetRotationButton(bpy.types.Operator):
     bl_idname = 'cats_eyes.reset_rotation'
-    bl_label = 'Reset Rotation'
-    bl_description = "This resets the eye positions"
+    bl_label = t('ResetRotationButton.label')
+    bl_description = t('ResetRotationButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -683,9 +679,8 @@ class ResetRotationButton(bpy.types.Operator):
 @register_wrap
 class AdjustEyesButton(bpy.types.Operator):
     bl_idname = 'cats_eyes.adjust_eyes'
-    bl_label = 'Set Range'
-    bl_description = "Lets you readjust the movement range of the eyes.\n" \
-                     "This gets saved"
+    bl_label = t('AdjustEyesButton.label')
+    bl_description = t('AdjustEyesButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -703,16 +698,12 @@ class AdjustEyesButton(bpy.types.Operator):
         mesh_name = context.scene.mesh_name_eye
 
         if not Common.vertex_group_exists(mesh_name, 'LeftEye'):
-            self.report({'ERROR'}, 'The bone "' + 'LeftEye' + '" has no existing vertex group or no vertices assigned to it.'
-                                                                           '\nThis might be because you selected the wrong mesh or the wrong bone.'
-                                                                           '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
+            self.report({'ERROR'}, t('AdjustEyesButton.error.noVertex', bone='LeftEye'))
             return {'CANCELLED'}
 
         # Find the existing vertex group of the right eye bone
         if not Common.vertex_group_exists(mesh_name, 'RightEye'):
-            self.report({'ERROR'}, 'The bone "' + 'RightEye' + '" has no existing vertex group or no vertices assigned to it.'
-                                                                            '\nThis might be because you selected the wrong mesh or the wrong bone.'
-                                                                            '\nAlso make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.')
+            self.report({'ERROR'}, t('AdjustEyesButton.error.noVertex', bone='RightEye'))
             return {'CANCELLED'}
 
         armature = Common.set_default_stage()
@@ -742,10 +733,8 @@ class AdjustEyesButton(bpy.types.Operator):
 @register_wrap
 class StartIrisHeightButton(bpy.types.Operator):
     bl_idname = 'cats_eyes.adjust_iris_height_start'
-    bl_label = 'Start Iris Height Adjustment'
-    bl_description = "Lets you readjust the distance of the iris from the eye ball.\n" \
-                     "Use this to fix clipping of the iris into the eye ball.\n" \
-                     "This gets saved"
+    bl_label = t('StartIrisHeightButton.label')
+    bl_description = t('StartIrisHeightButton.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -793,8 +782,8 @@ class StartIrisHeightButton(bpy.types.Operator):
 @register_wrap
 class TestBlinking(bpy.types.Operator):
     bl_idname = 'cats_eyes.test_blinking'
-    bl_label = 'Test'
-    bl_description = "This lets you see how eye blinking will look ingame"
+    bl_label = t('TestBlinking.label')
+    bl_description = t('TestBlinking.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -822,8 +811,8 @@ class TestBlinking(bpy.types.Operator):
 @register_wrap
 class TestLowerlid(bpy.types.Operator):
     bl_idname = 'cats_eyes.test_lowerlid'
-    bl_label = 'Test'
-    bl_description = "This lets you see how lowerlids will look ingame"
+    bl_label = t('TestLowerlid.label')
+    bl_description = t('TestLowerlid.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -853,8 +842,8 @@ class TestLowerlid(bpy.types.Operator):
 @register_wrap
 class ResetBlinkTest(bpy.types.Operator):
     bl_idname = 'cats_eyes.reset_blink_test'
-    bl_label = 'Reset Shapes'
-    bl_description = "This resets the blink testing"
+    bl_label = t('ResetBlinkTest.label')
+    bl_description = t('ResetBlinkTest.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):

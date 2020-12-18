@@ -10,12 +10,13 @@ from ..tools import supporter as Supporter
 from ..tools import eyetracking as Eyetracking
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class ArmaturePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_armature_v3'
-    bl_label = 'Model'
+    bl_label = t('ArmaturePanel.label')
 
     def draw(self, context):
         layout = self.layout
@@ -30,13 +31,13 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Old Blender version detected!', icon='ERROR')
+            row.label(text=t('ArmaturePanel.warn.oldBlender1'), icon='ERROR')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Some features might not work!', icon='BLANK1')
+            row.label(text=t('ArmaturePanel.warn.oldBlender2'), icon='BLANK1')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Please update to Blender 2.79!', icon='BLANK1')
+            row.label(text=t('ArmaturePanel.warn.oldBlender3'), icon='BLANK1')
             col.separator()
             col.separator()
 
@@ -55,13 +56,13 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Dictionary not found!', icon='INFO')
+            row.label(text=t('ArmaturePanel.warn.noDict1'), icon='INFO')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Translations will work, but are not optimized.', icon='BLANK1')
+            row.label(text=t('ArmaturePanel.warn.noDict2'), icon='BLANK1')
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text='Reinstall Cats to fix this.', icon='BLANK1')
+            row.label(text=t('ArmaturePanel.warn.noDict3'), icon='BLANK1')
             col.separator()
             col.separator()
 
@@ -104,7 +105,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             split = col.row(align=True)
             row = split.row(align=True)
             row.scale_y = 1.7
-            row.operator(Importer.ImportAnyModel.bl_idname, text='Import Model', icon='ARMATURE_DATA')
+            row.operator(Importer.ImportAnyModel.bl_idname, text=t('ArmaturePanel.ImportAnyModel.label'), icon='ARMATURE_DATA')
             row = split.row(align=True)
             row.alignment = 'RIGHT'
             row.scale_y = 1.7
@@ -114,7 +115,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             split = col.row(align=True)
             row = split.row(align=True)
             row.scale_y = 1.4
-            row.operator(Importer.ImportAnyModel.bl_idname, text='Import Model', icon='ARMATURE_DATA')
+            row.operator(Importer.ImportAnyModel.bl_idname, text=t('ArmaturePanel.ImportAnyModel.label'), icon='ARMATURE_DATA')
             row.operator(Importer.ExportModel.bl_idname, icon='ARMATURE_DATA').action = 'CHECK'
             row = split.row(align=True)
             row.scale_y = 1.4
@@ -165,13 +166,23 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 
         armature_obj = Common.get_armature()
         if not armature_obj or armature_obj.mode != 'POSE':
-            row = col.row(align=True)
+            split = col.row(align=True)
+            row = split.row(align=True)
             row.scale_y = 1.1
             row.operator(Armature_manual.StartPoseMode.bl_idname, icon='POSE_HLT')
+            row = split.row(align=True)
+            row.alignment = 'RIGHT'
+            row.scale_y = 1.1
+            row.operator(Armature_manual.StartPoseModeNoReset.bl_idname, text="", icon='POSE_HLT')
         else:
-            row = col.row(align=True)
+            split = col.row(align=True)
+            row = split.row(align=True)
             row.scale_y = 1.1
             row.operator(Armature_manual.StopPoseMode.bl_idname, icon=globs.ICON_POSE_MODE)
+            row = split.row(align=True)
+            row.alignment = 'RIGHT'
+            row.scale_y = 1.1
+            row.operator(Armature_manual.StopPoseModeNoReset.bl_idname, text='', icon=globs.ICON_POSE_MODE)
             if not Eyetracking.eye_left:
                 row = col.row(align=True)
                 row.scale_y = 0.9
@@ -184,7 +195,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 @register_wrap
 class ModelSettings(bpy.types.Operator):
     bl_idname = "cats_armature.settings"
-    bl_label = "Fix Model Settings"
+    bl_label = t('ModelSettings.label')
 
     def execute(self, context):
         return {'FINISHED'}
@@ -227,11 +238,11 @@ class ModelSettings(bpy.types.Operator):
         col.separator()
         row = col.row(align=True)
         row.scale_y = 0.7
-        row.label(text='The Full Body Tracking Fix', icon='INFO')
+        row.label(text=t('ModelSettings.warn.fbtFix1'), icon='INFO')
         row = col.row(align=True)
         row.scale_y = 0.7
-        row.label(text='is no longer needed for VrChat.', icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
+        row.label(text=t('ModelSettings.warn.fbtFix2'), icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
         row = col.row(align=True)
         row.scale_y = 0.7
-        row.label(text='It\'s still available in Model Options.', icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
+        row.label(text=t('ModelSettings.warn.fbtFix3'), icon_value=Supporter.preview_collections["custom_icons"]["empty"].icon_id)
         col.separator()

@@ -450,7 +450,7 @@ class _FnMaterialCycles(_FnMaterialBI):
             self.__update_shader_input('Sphere Tex', (0, 0, 0, 1) if is_sph_add else (1, 1, 1, 1))
 
             texture = self.__get_texture_node('mmd_sphere_tex')
-            if texture:
+            if texture and (not texture.inputs['Vector'].is_linked or texture.inputs['Vector'].links[0].from_node.name == 'mmd_tex_uv'):
                 if hasattr(texture, 'color_space'):
                     texture.color_space = 'NONE' if is_sph_add else 'COLOR'
                 elif hasattr(texture.image, 'colorspace_settings'):

@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.17.0)
+# Cats Blender Plugin (0.18.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -17,14 +17,13 @@ There are a lot of perks like having your name inside the plugin!
  - Optimizing model with one click!
  - Creating lip syncing
  - Creating eye tracking
- - Automatic decimation
+ - Automatic decimation (while keeping shapekeys)
  - Creating custom models easily
  - Creating texture atlas
  - Creating root bones for Dynamic Bones
  - Optimizing materials
  - Translating shape keys, bones, materials and meshes
  - Merging bone groups to reduce overall bone count
- - Protecting your avatars from game cache ripping
  - Auto updater
 
 *More to come!*
@@ -52,11 +51,11 @@ Join our Discord to report errors, suggestions and make comments!
 
 ![](https://i.imgur.com/pJfVsho.png)
 
- - If you need help figuring out how to use the tool:
+ - If you need help figuring out how to use the tool (very outdated):
 
 [![VRChat - Cat's Blender Plugin Overview](https://img.youtube.com/vi/0gu0kEj2xwA/0.jpg)](https://www.youtube.com/watch?v=0gu0kEj2xwA)
 
-Skip the step where he installs "mmd_tools" in the video below, it's not needed anymore!
+Skip the step where he installs "mmd_tools" in the video below, it's not needed anymore! (also very outdated)
 
 [![VRChat - Importing an MMD to VRChat Megatutorial!](https://img.youtube.com/vi/7P0ljQ6hU0A/0.jpg)](https://www.youtube.com/watch?v=7P0ljQ6hU0A)
 
@@ -65,6 +64,9 @@ Skip the step where he installs "mmd_tools" in the video below, it's not needed 
  - Shotariya
  - Neitri
  - Kiraver
+ - Jordo
+ - Ruubick
+ - feilen
 
 
 ## Model
@@ -190,9 +192,12 @@ This uses an internal dictionary and Google Translate.
 
 ## Decimation
 
-![](https://i.imgur.com/vozxKy9.png)
+![](https://i.imgur.com/5u3teLp.png)
 
 **Decimate your model automatically.**
+
+##### Smart Decimation
+- This will decimate all meshes while keeping every shapekey.
 
 ##### Save Decimation
 - This will only decimate meshes with no shape keys.
@@ -204,7 +209,7 @@ This uses an internal dictionary and Google Translate.
 - This will decimate your whole model deleting all shape keys in the process.
 
 ##### Custom Decimation
-- This will let you choose which meshes and shape keys should not be decimated.
+- This lets you choose the meshes and shape keys that should not be decimated.
 
 
 ## Eye Tracking
@@ -282,6 +287,15 @@ This works by checking all bones and trying to figure out if they can be grouped
 - Starts the merge process
 
 
+## Bake
+
+![](https://user-images.githubusercontent.com/1109288/97830517-147d1500-1c82-11eb-8b20-feba732ad672.png)
+
+**This is a non-destructive way to produce an optimized variant of (almost) any avatar!**
+
+For more information please visit the **[Bake Panel Wiki Page](https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake)**.
+
+
 ## Shape Key
 
 ![](https://i.imgur.com/LgFK4KO.png)
@@ -297,8 +311,34 @@ This works by checking all bones and trying to figure out if they can be grouped
 **This plugin has an auto updater.**
 It checks for a new version automatically once every day.
 
+---
 
 ## Changelog
+
+#### 0.18.0
+- **Added Bake Panel!**
+  - This is a non-destructive way to produce an optimized variant of (almost) any avatar!
+  - Full credit goes to **feilen**! Thanks so much for this awesome feature <3
+  - Check out the wiki for more information: https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake
+- **Added Smart Decimation!**
+  - This lets you decimate without loosing any shapekeys!
+  - Full credit goes to **feilen**! Tons of thanks for this awesome feature as well <3
+- **Added Japanese translation!**
+  - Cats is now almost fully translated into Japanese
+  - To use it simply change your Blender language to Japanese and then restart Blender
+  - Full credit goes to **Jordo** and **Ruuubick**! Thank you so much <3
+  - If you want to help translating Cats into any language, please us know!
+- **General:**
+  - Cats is now fully compatible with Blender 2.90 and 2.91
+  - Added "Show mmd_tools tabs" option to Settings
+    - This allows you show and hide the "MMD" and "Misc" tabs added by the mmd_tools plugin
+  - Added button to "Start/Stop Pose Mode" which starts/stops pose mode without resetting the current pose
+  - Changed link to a new vrm importer since the old one dropped support
+  - Fixed Google Translations no longer working
+  - Fixed bug in "Apply as Rest Pose" and "Pose to Shape Key" in Blender 2.90
+  - More fixes for Blender 2.90
+  - NOTE: Using Cats in Blender 2.90+ on Ubuntu might cause Blender to crash on load (caused by mmd_tools)
+    - To fix this use a Blender version prior to 2.90 or try updating your drivers
 
 #### 0.17.0
 - **Cats is now fully compatible with Blender 2.83!**
@@ -327,42 +367,6 @@ It checks for a new version automatically once every day.
 - **General:**
   - Fixed some bugs
   - Fixed objects getting unhidden when doing any cats operation in 2.80+
-  - Updated mmd_tools
-
-#### 0.16.1
-- Fixed export warning bug
-
-#### 0.16.0
-- **Cats is now fully compatible with Blender 2.81!**
-- **Importer**:
-  - Added support for ZIP files
-    - It will only extract the zip if importable models are found
-    - If multiple models are found in the zip, you can select the one you want in a popup window
-    - Japanese zip files will be extracted with the correct encoding
-  - Models can now be imported with Cats via the Windows command shell
-- **Fix Model**:
-  - Hips bone will now be larger than before, to comply with the VRChat recommendations
-    - Read through them here: https://docs.vrchat.com/docs/full-body-tracking
-  - FFXIV models are now compatible
-  - Added "Fix Materials" option in Blender 2.80 and higher
-    - This will apply some VRChat related fixes to materials
-    - This has always been done in Fix Model but now you can turn it off
-- **Model Options**:
-  - Remove Doubles no longer effects meshes with no shapekeys
-- **Custom Model Creation**:
-  - Added "Join Meshes" option
-  - Merge Armatures and Attach Mesh no longer require a mesh on the armature
-  - Fixed bones from the merge armature sometimes getting unintentionally deleted
-- **Optimization**:
-  - Added manual download button if Material Combiner is outdated
-- **Copy Protection**:
-  - Removed Copy Protection panel
-    - It is no longer a good method for protecting against cache ripping
-      and it can cause performance and lighting issues
-- **General**:
-  - Armatures will no longer be forced into rest position after any action
-  - Fixed armatures sometimes not getting detected
-  - Small bug fixes
   - Updated mmd_tools
 
 Read the full changelog [here](https://github.com/michaeldegroot/cats-blender-plugin/releases).

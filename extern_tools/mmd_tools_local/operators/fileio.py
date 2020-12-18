@@ -517,6 +517,9 @@ class ExportPmx(Operator, ExportHelper):
 
         rig = mmd_model.Model(root)
         arm = rig.armature()
+        if arm is None:
+            self.report({'ERROR'}, '[Skipped] The armature object of MMD model "%s" can\'t be found'%root.name)
+            return {'CANCELLED'}
         orig_pose_position = None
         if not root.mmd_root.is_built: # use 'REST' pose when the model is not built
             orig_pose_position = arm.data.pose_position

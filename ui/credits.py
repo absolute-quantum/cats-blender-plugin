@@ -5,12 +5,13 @@ from .main import ToolPanel
 from ..tools import supporter as Supporter
 from ..tools import credits as Credits
 from ..tools.register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class CreditsPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_credits_v3'
-    bl_label = 'Credits'
+    bl_label = t('CreditsPanel.label')
 
     def draw(self, context):
         layout = self.layout
@@ -18,19 +19,22 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         col = box.column(align=True)
         row = col.row(align=True)
 
-        row.label(text='Cats Blender Plugin (' + globs.version_str + ')', icon_value=Supporter.preview_collections["custom_icons"]["cats1"].icon_id)
+        row.label(text=t('CreditsPanel.desc1') + globs.version_str + ')', icon_value=Supporter.preview_collections["custom_icons"]["cats1"].icon_id)
         col.separator()
         row = col.row(align=True)
-        row.label(text='Created by Hotox and GiveMeAllYourCats')
+        row.label(text=t('CreditsPanel.desc2'))
         row = col.row(align=True)
-        row.label(text='For the awesome VRChat community <3')
         row.scale_y = 0.5
+        row.label(text=t('CreditsPanel.desc3'))
         col.separator()
         row = col.row(align=True)
-        row.label(text='Special thanks to: Shotariya and Neitri')
+        row.label(text=t('CreditsPanel.desc4'))
+        row = col.row(align=True)
+        row.scale_y = 0.5
+        row.label(text=t('CreditsPanel.descContributors'))
         col.separator()
         row = col.row(align=True)
-        row.label(text='Do you need help or found a bug?')
+        row.label(text=t('CreditsPanel.desc5'))
 
         row = col.row(align=True)
         row.scale_y = 1.4

@@ -44,6 +44,8 @@ class BoneFrameKey:
         self.frame_number, = struct.unpack('<L', fin.read(4))
         self.location = list(struct.unpack('<fff', fin.read(4*3)))
         self.rotation = list(struct.unpack('<ffff', fin.read(4*4)))
+        if not any(self.rotation):
+            self.rotation = (0, 0, 0, 1)
         self.interp = list(struct.unpack('<64b', fin.read(64)))
 
     def save(self, fin):

@@ -43,6 +43,12 @@ class MMDRigidPanel(_PanelBase, Panel):
     bl_idname = 'RIGID_PT_mmd_tools_bone'
     bl_label = 'MMD Rigid Body'
 
+    __RIGID_SIZE_MAP = {
+        'SPHERE':('Radius',),
+        'BOX':('X', 'Y', 'Z'),
+        'CAPSULE':('Radius', 'Height'),
+        }
+
     @classmethod
     def poll(cls, context):
         obj = context.active_object
@@ -73,7 +79,10 @@ class MMDRigidPanel(_PanelBase, Panel):
         c = layout.column(align=True)
         c.enabled = obj.mode == 'OBJECT'
         c.row(align=True).prop(obj.mmd_rigid, 'shape', expand=True)
-        c.column(align=True).prop(obj.mmd_rigid, 'size', text='')
+        #c.column(align=True).prop(obj.mmd_rigid, 'size', text='')
+        col = c.column(align=True)
+        for i, name in enumerate(self.__RIGID_SIZE_MAP[obj.mmd_rigid.shape]):
+            col.prop(obj.mmd_rigid, 'size', text=name, index=i)
 
         row = layout.row()
         if obj.rigid_body is None:
@@ -108,9 +117,6 @@ class MMDRigidPanel(_PanelBase, Panel):
 class MMDJointPanel(_PanelBase, Panel):
     bl_idname = 'JOINT_PT_mmd_tools_bone'
     bl_label = 'MMD Joint'
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_context = 'object'
 
     @classmethod
     def poll(cls, context):

@@ -5,12 +5,13 @@ from .. import updater
 from .main import ToolPanel
 from ..tools import settings as Settings
 from ..tools.register import register_wrap
+from ..translations import t
 
 
 @register_wrap
 class UpdaterPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_updater_v3'
-    bl_label = 'Settings & Updates'
+    bl_label = t('UpdaterPanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
@@ -20,9 +21,11 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.scale_y = 0.8
-        row.label(text='Settings:', icon=globs.ICON_SETTINGS)
+        row.label(text=t('UpdaterPanel.name'), icon=globs.ICON_SETTINGS)
         col.separator()
 
+        row = col.row(align=True)
+        row.prop(context.scene, 'show_mmd_tabs')
         row = col.row(align=True)
         row.prop(context.scene, 'embed_textures')
         # row = col.row(align=True)
@@ -41,10 +44,10 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.8
-            row.label(text='Restart required.', icon='ERROR')
+            row.label(text=t('UpdaterPanel.requireRestart1'), icon='ERROR')
             row = col.row(align=True)
             row.scale_y = 0.8
-            row.label(text='Some changes require a Blender restart.', icon='BLANK1')
+            row.label(text=t('UpdaterPanel.requireRestart2'), icon='BLANK1')
             row = col.row(align=True)
             row.operator(Settings.RevertChangesButton.bl_idname, icon='RECOVER_LAST')
 
