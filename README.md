@@ -316,17 +316,18 @@ It checks for a new version automatically once every day.
 ## Changelog
 
 #### 0.18.0
+- **Added Bake Panel!**
+  - This is a non-destructive way to produce an optimized variant of (almost) any avatar!
+  - Full credit goes to **feilen**! Thanks so much for this awesome feature <3
+  - Check out the wiki for more information: https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake
+- **Added Smart Decimation!**
+  - This lets you decimate without loosing any shapekeys!
+  - Full credit goes to **feilen**! Tons of thanks for this awesome feature as well <3
 - **Added Japanese translation!**
   - Cats is now almost fully translated into Japanese
   - To use it simply change your Blender language to Japanese and then restart Blender
   - Full credit goes to **Jordo** and **Ruuubick**! Thank you so much <3
   - If you want to help translating Cats into any language, please us know!
-- **Added Smart Decimation!**
-  - This lets you decimate without loosing any shapekeys!
-  - Full credit goes to **feilen**! Tons of thanks for this awesome feature <3
-- **Added Bake Panel!**
-  - This is a non-destructive way to produce an optimized variant of (almost) any avatar!
-  - Full credit goes to **feilen**! Thanks so much for this awesome feature as well <3
 - **General:**
   - Cats is now fully compatible with Blender 2.90 and 2.91
   - Added "Show mmd_tools tabs" option to Settings
