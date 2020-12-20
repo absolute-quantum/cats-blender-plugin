@@ -315,6 +315,13 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
+#### 0.18.1
+- **Added Korean translation!**
+  - Cats is now translated into Korean by a lorge portion
+  - To use it, simply change your Blender language to Korean and then restart Blender
+  - Thanks to **Siromori** for contributing the translation! <3
+  - If you want to help translating Cats into any language, please us know!
+
 #### 0.18.0
 - **Added Bake Panel!**
   - This is a non-destructive way to produce an optimized variant of (almost) any avatar!
