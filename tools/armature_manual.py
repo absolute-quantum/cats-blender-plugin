@@ -30,7 +30,7 @@ from . import common as Common
 from . import eyetracking as Eyetracking
 from .common import version_2_79_or_older
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 
 @register_wrap

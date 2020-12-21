@@ -30,7 +30,7 @@ from difflib import SequenceMatcher
 from . import common as Common
 from .register import register_wrap
 from .. import globs
-from ..translations import t
+from .translations import t
 
 
 @register_wrap

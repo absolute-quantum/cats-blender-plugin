@@ -4,7 +4,7 @@ from .tools import eyetracking as Eyetracking
 from .tools import rootbone as Rootbone
 from .tools import settings as Settings
 from .tools import importer as Importer
-from .translations import t
+from .tools.translations import t
 
 from bpy.types import Scene, Material
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty

@@ -5,7 +5,7 @@ from .. import updater
 from .main import ToolPanel
 from ..tools import settings as Settings
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 
 @register_wrap

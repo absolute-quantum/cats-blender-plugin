@@ -29,7 +29,7 @@ from . import common as Common
 from .register import register_wrap
 
 from collections import OrderedDict
-from ..translations import t
+from .translations import t
 
 
 @register_wrap

@@ -27,7 +27,7 @@
 import bpy
 from . import common as Common
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 
 @register_wrap

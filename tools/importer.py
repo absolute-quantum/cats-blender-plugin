@@ -39,7 +39,7 @@ from . import settings as Settings
 from . import fbx_patch as Fbx_patch
 from .common import version_2_79_or_older
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 mmd_tools_installed = False
 try:

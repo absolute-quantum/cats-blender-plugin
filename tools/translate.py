@@ -42,7 +42,7 @@ from .register import register_wrap
 from .. import globs
 # from ..googletrans import Translator  # TODO Remove this
 from ..extern_tools.google_trans_new.google_trans_new import google_translator
-from ..translations import t
+from .translations import t
 
 from mmd_tools_local import translations as mmd_translations
 

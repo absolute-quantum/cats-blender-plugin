@@ -6,7 +6,7 @@ from ..tools import common as Common
 from ..tools import copy_protection as Copy_protection
 from ..tools import importer as Importer
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 
 # @register_wrap

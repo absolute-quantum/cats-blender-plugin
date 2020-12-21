@@ -5,7 +5,7 @@ from .main import ToolPanel
 from ..tools import common as Common
 from ..tools import eyetracking as Eyetracking
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 @register_wrap
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):

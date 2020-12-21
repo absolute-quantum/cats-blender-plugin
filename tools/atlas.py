@@ -31,7 +31,7 @@ import addon_utils
 from . import common as Common
 from .register import register_wrap
 from .. import globs
-from ..translations import t
+from .translations import t
 
 
 # addon_name = "Shotariya-don"

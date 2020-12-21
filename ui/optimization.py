@@ -13,7 +13,7 @@ from ..tools import rootbone as Rootbone
 
 from ..tools.common import version_2_79_or_older
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 draw_smc_ui = None
 old_smc_version = False

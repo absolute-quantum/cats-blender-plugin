@@ -39,7 +39,7 @@ from ..tools.register import register_wrap
 # from ..googletrans import Translator  # Todo Remove this
 from ..extern_tools.google_trans_new.google_trans_new import google_translator
 from . import translate as Translate
-from ..translations import t
+from .translations import t
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")

@@ -4,7 +4,7 @@ from .main import ToolPanel
 from ..tools import supporter as Supporter
 from ..tools.register import register_wrap
 from ..tools.supporter import check_for_update_background
-from ..translations import t
+from ..tools.translations import t
 
 
 @register_wrap

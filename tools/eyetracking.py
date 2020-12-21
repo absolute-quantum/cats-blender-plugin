@@ -35,7 +35,7 @@ from random import random
 from . import common as Common
 from . import armature as Armature
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 
 iris_heights = None

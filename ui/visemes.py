@@ -5,7 +5,7 @@ from ..tools import common as Common
 from ..tools import viseme as Viseme
 
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 
 @register_wrap

@@ -8,8 +8,8 @@ import addon_utils
 from bpy.app.translations import locale
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
-translations_dir = os.path.join(str(main_dir), "translations")
-translations_file = os.path.join(translations_dir, "translations.csv")
+resources_dir = os.path.join(str(main_dir), "resources")
+translations_file = os.path.join(resources_dir, "translations.csv")
 
 # Get package name, important for relative imports
 package_name = ''
@@ -24,7 +24,7 @@ lang_module = None
 lang_en_module = None
 
 
-def load_translations():
+def load_translations_old2():
     global dictionary
     dictionary = {}
 
@@ -38,7 +38,7 @@ def load_translations():
             dictionary[row['name']] = text
 
 
-def t(phrase: str, *args, **kwargs):
+def t_old2(phrase: str, *args, **kwargs):
     # Translate the given phrase into Blender's current language.
     output = dictionary.get(phrase)
     if output is None:
@@ -153,4 +153,4 @@ def output_translations():
 
 # output_translations()
 # load_translations_old()
-load_translations()
+# load_translations()

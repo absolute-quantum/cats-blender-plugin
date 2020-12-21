@@ -10,7 +10,7 @@ import addon_utils
 from threading import Thread
 from collections import OrderedDict
 from bpy.app.handlers import persistent
-from .translations import t
+from .tools.translations import t
 
 no_ver_check = False
 fake_update = False

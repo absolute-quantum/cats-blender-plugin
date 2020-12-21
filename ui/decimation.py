@@ -7,7 +7,7 @@ from ..tools import common as Common
 from ..tools import decimation as Decimation
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 @register_wrap
 class AutoDecimatePresetGood(bpy.types.Operator):

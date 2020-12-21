@@ -44,7 +44,7 @@ from . import common as Common
 from . import settings as Settings
 from .. import globs
 from ..tools.register import register_wrap
-from ..translations import t
+from .translations import t
 
 # global variables
 preview_collections = {}

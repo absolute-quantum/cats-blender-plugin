@@ -43,7 +43,7 @@ from . import translate as Translate
 from . import armature_bones as Bones
 from . import settings as Settings
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 from mmd_tools_local import utils
 from mmd_tools_local.panels import tool as mmd_tool

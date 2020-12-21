@@ -37,7 +37,7 @@ from . import translate as Translate
 from . import armature_bones as Bones
 from .common import version_2_79_or_older
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 # Only load mmd_tools if it's not on linux and 2.90 or higher since it causes Blender to crash
 from mmd_tools_local.operators import morph as Morph

@@ -49,7 +49,6 @@ if file_dir not in sys.path:
 import shutil
 import pathlib
 import requests
-import platform
 
 from . import globs
 
@@ -67,7 +66,7 @@ if not is_reloading:
     # This order is important
     # import mmd_tools_local
     from . import updater
-    from . import translations
+    # from . import translations
     from . import tools
     from . import ui
     from . import extentions
@@ -75,12 +74,13 @@ else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
-    importlib.reload(translations)
+    # importlib.reload(translations)
     importlib.reload(tools)
     importlib.reload(ui)
     importlib.reload(extentions)
 
-from .translations import t
+from .tools import translations
+from .tools.translations import t
 
 
 # How to update mmd_tools: (outdated, no longer used)
@@ -266,6 +266,7 @@ def register():
 
     # Load translations and check for missing translations
     translations.check_missing_translations()
+    translations.load_translations()
 
     # Set some global settings, first allowed use of globs
     globs.dev_branch = dev_branch

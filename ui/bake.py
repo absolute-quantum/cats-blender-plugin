@@ -4,7 +4,7 @@ from .main import ToolPanel
 from ..tools import common as Common
 from ..tools import bake as Bake
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 
 @register_wrap
