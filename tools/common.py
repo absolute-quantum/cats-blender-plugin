@@ -1621,6 +1621,10 @@ def show_error(scale, error_list, override_header=False):
     global override, dpi_scale, error
     override = override_header
     dpi_scale = scale
+
+    if type(error_list) is str:
+        error_list = error_list.split('\n')
+
     error = error_list
 
     header = t('ShowError.label')

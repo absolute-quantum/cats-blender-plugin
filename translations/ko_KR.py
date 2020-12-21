@@ -6,19 +6,19 @@ dictionary = {
     'name': 'ko_KR',
 
     # Main file
-    'Main.error.restartAdmin': '\n\n잘못된 CATS 설치가 발견되었습니다!'
+    'Main.error.restartAdmin': '\n\n잘못 설치된 Cats Plugin이 발견되었습니다!'
                                '\n이 문제를 해결하려면 Blender를 관리자로 다시 시작하세요!     '
                                '\n',
     'Main.error.deleteFollowing': '                                                                                                                                                                                    '
                                   '                     '
-                                  '\n\n잘못된 CATS 설치가 발견되었습니다!'
+                                  '\n\n잘못 설치된 Cats Plugin이 발견되었습니다!'
                                   '\n이 문제를 해결하려면 addons 폴더에서 다음 파일과 폴더를 삭제하세요.:'
                                   '\n',
-    'Main.error.installViaPreferences': '\n\n잘못된 CATS 설치 발견되었습니다!'
+    'Main.error.installViaPreferences': '\n\n잘못 설치된 Cats Plugin이 발견되었습니다!'
                                         '\n사용자 환경 설정(User Preferences)을 통해 CATS를 설치하고 블렌더를 다시 시작하세요!'
                                         '\n',
-    'Main.error.restartAndEnable': '\n\n잘못된 CATS 설치가 발견되고 수정되었습니다!'
-                                   '\nBlender를 다시 시작하고 CATS를 다시 활성화하세요!'
+    'Main.error.restartAndEnable': '\n\n잘못된 설치된 Cats Plugin 발견됐고 수정되었습니다!'
+                                   '\nBlender를 다시 시작하고 Cats Plugin를 다시 활성화하세요!'
                                    '\n',
     'Main.error.unsupportedVersion': '\n\n2.79 이전의 블렌더 버전은 Cats에서 지원하지 않습니다. '
                                      '\nBlender 2.79 버전 이상을 사용하세요.'
@@ -26,7 +26,7 @@ dictionary = {
     'Main.error.beta2.80': '\n\n아직 Blender 2.80 베타 버전을 사용 중입니다!'
                            '\nBlender를 2.80 정식 버전으로 업데이트하세요.'
                            '\n',
-    'Main.error.restartAndEnable_alt': '\n\nBlender를 다시 시작하고 CATS를 다시 활성화하세요!'
+    'Main.error.restartAndEnable_alt': '\n\nBlender를 다시 시작하고 Cats Plugin를 다시 활성화하세요!'
                                        '\n',
 
     # UI Main
@@ -59,7 +59,7 @@ dictionary = {
     'ManualPanel.mergeWeights': '웨이트 통합:',
     'ManualPanel.MergeWeights.label': '부모 본으로',
     'ManualPanel.MergeWeightsToActive.label': '활성화된 본으로',
-    'ManualPanel.translate': '번역:',
+    'ManualPanel.translate': '일본어를 영어로 번역:',
     'ManualPanel.TranslateAllButton.label': '모두',
     'ManualPanel.TranslateShapekeyButton.label': '쉐이프키',
     'ManualPanel.TranslateObjectsButton.label': '오브젝트',
@@ -72,7 +72,7 @@ dictionary = {
     'ManualPanel.normals': '노말:',
     'ManualPanel.RecalculateNormals.label': '재계산',
     'ManualPanel.FlipNormals.label': '뒤집기',
-    'ManualPanel.fbtFix': '풀바디 트레킹 수정:',
+    'ManualPanel.fbtFix': '풀바디 트래킹 수정:',
     'ManualPanel.FixFBTButton.label': '추가',
     'ManualPanel.RemoveFBTButton.label': '제거',
 
@@ -112,7 +112,7 @@ dictionary = {
     'DecimationPanel.preset.quest.label': 'Quest',
     'DecimationPanel.preset.quest.description': '퀘스트용 아바타들을 위해 권장되는 삼각폴리곤(Tris)의 개수입니다.\n'
                                                 '앞으로는 이보다 심하지는 않을 엄격한 제한이 설정될 것입니다.',
-    'DecimationPanel.warn.notIfBaking': "베이킹 할 시 추천되지 않습니다!",
+    'DecimationPanel.warn.notIfBaking': "베이킹 할 시 권장되지 않습니다!",
 
     # UI Eye tracking
     'EyeTrackingPanel.label': '눈 추적(Eye Tracking)',
@@ -137,7 +137,7 @@ dictionary = {
     # UI Optimization
     'OptimizePanel.label': '최적화',
     'OptimizePanel.atlasDesc': '텍스처들을 결합시켜주는 더욱 향상된 아틀라스 생성기입니다.',
-    'OptimizePanel.atlasAuthor': 'Made by Shotariya',
+    'OptimizePanel.atlasAuthor': '제작자: Shotariya',
     'OptimizePanel.matCombDisabled1': '매테리얼 통합기가 활성화되지 않았습니다!',
     'OptimizePanel.matCombDisabled2': 'User preferences에서 이것을 활성화하세요:',
     'OptimizePanel.matCombOutdated1': '당신의 매테리얼 통합기의 버전이 낮습니다!',
@@ -177,17 +177,17 @@ dictionary = {
 
     # UI Supporter
     'SupporterPanel.label': '후원자들',
-    'SupporterPanel.desc': '이 플러그인을 마음에 드시고 우리를 후원하고 싶으신가요?',
-    'SupporterPanel.thanks': '저희 멋진 후원자분들께 정말 감사합니다! <3',
+    'SupporterPanel.desc': '이 플로그인이 도움 되었나요? 저희를 후원해주신다면 정말 기쁠 것입니다!',
+    'SupporterPanel.thanks': '저희 멋진 후원자분들께 정말로 감사드립니다! <3',
     'SupporterPanel.missingName1': '당신의 이름이 빠졌나요?',
-    'SupporterPanel.missingName2': '     부디 우리 디스코드 서버에서 연락해주시기 바랍니다!',
+    'SupporterPanel.missingName2': '     부디 우리 디스코드 서버에 연락주시기 바랍니다!',
 
     # UI Credits
     'CreditsPanel.label': 'Credits',
     'CreditsPanel.desc1': 'Cats Blender Plugin (',
     'CreditsPanel.desc2': '멋진 VRChat 커뮤니티를 위해서',
     'CreditsPanel.desc3': 'Hotox와 GiveMeAllYourCats에 의해 제작됨 <3',
-    'CreditsPanel.desc4': 'Special thanks to:',
+    'CreditsPanel.desc4': '다음 분들께 특별한 감사를 전합니다:',
     'CreditsPanel.descContributors': 'Feilen, Jordo, Ruubick, Shotariya와 Neitri',
     'CreditsPanel.desc5': '도움이 필요하시거나 혹시 버그를 찾으셨나요?',
 
@@ -286,7 +286,7 @@ dictionary = {
                                 '\n수동으로 데시메이션을 할 시 매우 유용합니다',
     'SeparateByShapekeys.success': '성공적으로 쉐이프키별로 분리됐습니다.',
 
-    'SeparateByCopyProtection.label': '복사핵 방지별로 분리하기 Separate by Copy Protection',
+    'SeparateByCopyProtection.label': '복사핵 방지로 분리하기',
     'SeparateByCopyProtection.desc': '선택된 메쉬를 두 부분으로 나누는데,'
                                      '\nCats의 복사핵 방지의 영향을 받는지 여부에 따라 결정됩니다.'
                                      '\n'
@@ -319,12 +319,12 @@ dictionary = {
     'ApplyAllTransformations.desc': 'Applies the position, rotation and scale of all objects',
     'ApplyAllTransformations.success': 'Transformations applied.',
 
-    'RemoveZeroWeightBones.label': '제로웨이트 본들 제거',
+    'RemoveZeroWeightBones.label': '제로 웨이트 본 제거',
     'RemoveZeroWeightBones.desc': 'Cleans up the bones hierarchy, deleting all bones that don\'t directly affect any vertices\n'
                                   'Don\'t use this if you plan to use \'Fix Model\'',
     'RemoveZeroWeightBones.success': 'Deleted {number} zero weight bones.',
 
-    'RemoveZeroWeightGroups.label': '제로웨이트 버텍스 그룹들 제거',
+    'RemoveZeroWeightGroups.label': '제로 웨이트 버텍스 그룹들 제거',
     'RemoveZeroWeightGroups.desc': 'Cleans up the vertex groups of all meshes, deleting all groups that don\'t directly affect any vertices',
     'RemoveZeroWeightGroups.success': 'Removed {number} zero weight vertex groups.',
 
@@ -503,7 +503,7 @@ dictionary = {
     'RemoveMeshButton.desc': 'Removes the selected mesh from the whitelist.\n'
                              'This means that this mesh will be decimated.',
 
-    'AutoDecimateButton.label': '빠른 축소(Decimation)',
+    'AutoDecimateButton.label': '축소(Decimation)',
     'AutoDecimateButton.desc': 'This will automatically decimate your model while preserving the shape keys.\n'
                                'You should manually remove unimportant meshes first.',
     'AutoDecimateButton.error.noMesh': '메쉬가 발견되지 않음!',
@@ -535,12 +535,12 @@ dictionary = {
                                         '\nFurthermore the mesh containing the eyes has to be called "Body" and the armature "Armature".',
     'CreateEyesButton.success': 'Created eye tracking!',
 
-    'StartTestingButton.label': '아이테스트 시작',
+    'StartTestingButton.label': '눈 움직임 테스트 시작',
     'StartTestingButton.desc': 'This will let you test how the eye movement will look ingame.\n'
                                'Don\'t forget to stop the Testing process afterwards.\n'
                                'Bones "LeftEye" and "RightEye" are required.',
 
-    'StopTestingButton.label': '아이테스트 중지',
+    'StopTestingButton.label': '눈 움직임 테스트 중지',
     'StopTestingButton.desc': 'Stops the testing process.',
     'StopTestingButton.error.tryAgain': 'Something went wrong. Please try eye testing again.',
 
@@ -603,7 +603,7 @@ dictionary = {
 
     'get_zip_content.choose': 'Import model "{model}" from the zip "{zipName}?"',
 
-    'ModelsPopup.label': '불러올 것을 선택:',
+    'ModelsPopup.label': '불러올 형식을 선택:',
     'ModelsPopup.desc': 'Show individual import options',
 
     'ImportMMD.label': 'MMD',
@@ -760,7 +760,7 @@ dictionary = {
     'addToShapekeyMenu.ShapeKeyApplier.label': '선택된 쉐이프키를 Basis에 적용',
 
     # Tools Supporter
-    'PatreonButton.label': '후원자 되기',
+    'PatreonButton.label': '후원하기',
     'PatreonButton.URL': 'https://www.patreon.com/catsblenderplugin',
     'PatreonButton.success': 'Patreon page opened.',
 
@@ -836,7 +836,7 @@ dictionary = {
                                '이것은 아바타를 최적화하는 데 매우 중요한 단계입니다.\n'
                                '이것에 문제가 있으면이 옵션을 선택 취소하고 우리에게 알려주세요!\n',
 
-    'Scene.remove_zero_weight.label': '제로 웨이트 본들 제거',
+    'Scene.remove_zero_weight.label': '제로 웨이트 본 제거',
     'Scene.remove_zero_weight.desc': '본 구조를 정리하고 어느 Vertex에도 영향을 주지 않는 모든 본들을 지웁니다.'
                                      '\n유지하려는 본들이나 버텍스 그룹이 지워질 경우 체크해제하세요',
 
@@ -891,7 +891,7 @@ dictionary = {
     'Scene.merge_mode.desc': 'Mode',
     'Scene.merge_mode.armature.label': '뼈대(Armatures) 통합',
     'Scene.merge_mode.armature.desc': 'Here you can merge two armatures together.',
-    'Scene.merge_mode.mesh.label': 'Mesh 붙이기',
+    'Scene.merge_mode.mesh.label': '메쉬 붙이기',
     'Scene.merge_mode.mesh.desc': 'Here you can attach a mesh to an armature.',
 
     'Scene.merge_armature_into.label': '기본 뼈대(Armature)',
@@ -924,7 +924,7 @@ dictionary = {
     'Scene.merge_armatures_join_meshes.desc': 'This will join all meshes.'
                                               '\nNot checking this will always apply transforms',
 
-    'Scene.merge_armatures_remove_zero_weight_bones.label': '제로웨이트 본 제거',
+    'Scene.merge_armatures_remove_zero_weight_bones.label': '제로 웨이트 본 제거',
     'Scene.merge_armatures_remove_zero_weight_bones.desc': 'Cleans up the bones hierarchy, deleting all bones that don\'t directly affect any vertices.'
                                                            '\nUncheck this if bones or vertex groups that you want to keep got deleted',
 
@@ -955,7 +955,7 @@ dictionary = {
                                        'This will give consistent results but you will lose the ability to add blinking and Lip Syncing.\n'
                                        'Eye Tracking will still work if you disable Eye Blinking.',
     'Scene.decimation_mode.custom.label': '커스텀',
-    'Scene.decimation_mode.custom.desc': 'Custom results - custom shape key loss\n'
+    'Scene.decimation_mode.custom.desc': '커스텀 결과 - 커스텀 쉐이프키 손실\n'
                                          '\n'
                                          'This will let you choose which meshes and shape keys should not be decimated.\n',
 
@@ -998,7 +998,7 @@ dictionary = {
                                  'LittleFinger(1-3)_(L/R)',
 
     'Scene.decimation_remove_doubles.label': '이중 제거',
-    'Scene.decimation_remove_doubles.desc': 'Uncheck this if you got issues with with this checked',
+    'Scene.decimation_remove_doubles.desc': '문제가 될 시 체크를 해제하세요',
     'Scene.decimation_animation_weighting.label': "Animation weighting",
     'Scene.decimation_animation_weighting.desc': "Weight decimation based on shape keys and vertex group overlap\n"
                                                  "Results in better animating topology by trading off overall shape accuracy\n"
@@ -1306,11 +1306,11 @@ dictionary = {
     'draw_updater_panel.success': 'Restart Blender to complete update!',
     'draw_updater_panel.CheckForUpdateButton.label': '확인 중..',
     'draw_updater_panel.UpdateToLatestButton.label': '{name}로 업데이트',
-    'draw_updater_panel.CheckForUpdateButton.label_alt': 'Check now for Update',
-    'draw_updater_panel.UpdateToLatestButton.label_alt': 'Up to Date!',
+    'draw_updater_panel.CheckForUpdateButton.label_alt': '업데이트 확인하기',
+    'draw_updater_panel.UpdateToLatestButton.label_alt': '현재 최신 버전입니다!',
     'draw_updater_panel.UpdateToSelectedButton.label': '설치버전:',
     'draw_updater_panel.UpdateToDevButton.label': '개발버전 설치',
-    'draw_updater_panel.currentVersion': 'Current version: {name}',
+    'draw_updater_panel.currentVersion': '현재 버전: {name}',
 
     'bpy.types.Scene.cats_updater_version_list.label': '버전',
     'bpy.types.Scene.cats_updater_version_list.desc': 'Select the version you want to install\n',
