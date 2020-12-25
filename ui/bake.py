@@ -60,7 +60,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_face_scale', expand=True)
-                if armature is None or "Head" not in armature.data.bones:
+
+                if armature is None or len(Common.get_bones(names=['Head', 'head'], armature_name=armature.name, check_list=True)) == 0:
                     row = col.row(align=True)
                     row.separator()
                     row.label(text=t('BakePanel.noheadfound'), icon="INFO")

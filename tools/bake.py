@@ -472,10 +472,12 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
             Common.switch('OBJECT')
 
+            head_selection = Common.get_bones(names=['Head', 'head'], armature_name=arm_copy.name, check_list=True)
+
             # Select all islands belonging to 'Head' and children and enlarge them
-            if prioritize_face and "Head" in arm_copy.data.bones:
-                selected_group_names = ["Head"]
-                selected_group_names.extend([bone.name for bone in arm_copy.data.bones["Head"].children_recursive])
+            if prioritize_face and len(head_selection) > 0:
+                selected_group_names = [head_selection[0][0]]
+                selected_group_names.extend([bone.name for bone in arm_copy.data.bones[head_selection[0][0]].children_recursive])
                 print("Prioritizing vertex groups: " + (", ".join(selected_group_names)))
 
                 for obj in collection.all_objects:
