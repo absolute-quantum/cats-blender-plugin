@@ -261,14 +261,15 @@ class AutoDecimateButton(bpy.types.Operator):
                 # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
                 # but shape keys contain every vert (not just the ones they impact)
                 # For shape key in shape keys:
-                for key_block in mesh.data.shape_keys.key_blocks[1:]:
-                    basis = mesh.data.shape_keys.key_blocks[0]
-                    s_weights[key_block.name] = dict()
+                if mesh.data.shape_keys is not None:
+                    for key_block in mesh.data.shape_keys.key_blocks[1:]:
+                        basis = mesh.data.shape_keys.key_blocks[0]
+                        s_weights[key_block.name] = dict()
 
-                    for idx, vert in enumerate(key_block.data):
-                        s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
-                                                                        math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
-                                                                        math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
+                        for idx, vert in enumerate(key_block.data):
+                            s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
+                                                                            math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
+                                                                            math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
 
                 # normalize min/max vert movement
                 s_normalizedweights = dict()
