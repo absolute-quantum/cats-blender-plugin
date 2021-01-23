@@ -2,10 +2,10 @@ import bpy
 
 from .. import globs
 from .. import updater
-from .main import ToolPanel
+from .main import ToolPanel, layout_split
 from ..tools import settings as Settings
 from ..tools.register import register_wrap
-from ..tools.translations import t
+from ..tools.translations import t, DownloadTranslations
 
 
 @register_wrap
@@ -28,6 +28,21 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'show_mmd_tabs')
         row = col.row(align=True)
         row.prop(context.scene, 'embed_textures')
+
+        col.separator()
+
+        row = col.row(align=True)
+        row = layout_split(row, factor=0.56)
+        row.label(text=t('Scene.ui_lang.label') + ':')
+        row.prop(context.scene, 'ui_lang', text='')
+
+        col.separator()
+
+        row = col.row(align=True)
+        row.operator(DownloadTranslations.bl_idname)
+
+        col.separator()
+
         # row = col.row(align=True)
         # row.prop(context.scene, 'use_custom_mmd_tools')
         # row = col.row(align=True)

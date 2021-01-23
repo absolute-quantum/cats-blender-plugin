@@ -4,6 +4,7 @@ from .tools import eyetracking as Eyetracking
 from .tools import rootbone as Rootbone
 from .tools import settings as Settings
 from .tools import importer as Importer
+from .tools import translations as Translations
 from .tools.translations import t
 
 from bpy.types import Scene, Material
@@ -660,7 +661,12 @@ def register():
         default=False,
         update=Settings.update_settings
     )
-
+    Scene.ui_lang = EnumProperty(
+        name=t('Scene.ui_lang.label'),
+        description=t('Scene.ui_lang.desc'),
+        items=Translations.get_languages_list,
+        update=Translations.update_ui
+    )
     Scene.debug_translations = BoolProperty(
         name=t('Scene.debug_translations.label'),
         description=t('Scene.debug_translations.desc'),

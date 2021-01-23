@@ -59,14 +59,11 @@ if "bpy" not in locals():
 else:
     is_reloading = True
 
-import mmd_tools_local
-
 # Load or reload all cats modules
 if not is_reloading:
     # This order is important
-    # import mmd_tools_local
+    import mmd_tools_local
     from . import updater
-    # from . import translations
     from . import tools
     from . import ui
     from . import extentions
@@ -74,7 +71,6 @@ else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
-    # importlib.reload(translations)
     importlib.reload(tools)
     importlib.reload(ui)
     importlib.reload(extentions)
@@ -264,21 +260,14 @@ def register():
     # Register Updater and check for CATS update
     updater.register(bl_info, dev_branch, version_str)
 
-    # Load translations and check for missing translations
-    translations.check_missing_translations()
-    translations.load_translations()
-
     # Set some global settings, first allowed use of globs
     globs.dev_branch = dev_branch
     globs.version_str = version_str
 
     # Load settings and show error if a faulty installation was deleted recently
-    show_error = False
     try:
         tools.settings.load_settings()
     except FileNotFoundError:
-        show_error = True
-    if show_error:
         sys.tracebacklimit = 0
         raise ImportError(t('Main.error.restartAndEnable_alt'))
 
