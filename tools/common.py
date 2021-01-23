@@ -531,7 +531,7 @@ def get_bones_merge(self, context):
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
-def get_bones(names=None, armature_name=None):
+def get_bones(names=None, armature_name=None, check_list=False):
     if not names:
         names = []
     if not armature_name:
@@ -564,8 +564,9 @@ def get_bones(names=None, armature_name=None):
         if name in armature.data.bones and choices[0][0] != name:
             choices2.append((name, name, name))
 
-    for choice in choices:
-        choices2.append(choice)
+    if not check_list:
+        for choice in choices:
+            choices2.append(choice)
 
     bpy.types.Object.Enum = choices2
 
