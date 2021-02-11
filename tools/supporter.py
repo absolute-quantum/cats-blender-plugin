@@ -387,6 +387,7 @@ def check_for_update(force_update):
 def update_needed():
     # print('CHECK UPDATE')
     try:
+        ssl._create_default_https_context = ssl._create_unverified_context
         with urllib.request.urlopen("https://api.github.com/repos/Darkblader24/cats_supporter_list/commits/master") as url:
             data = json.loads(url.read().decode())
     except urllib.error.URLError:
