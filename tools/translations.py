@@ -2,6 +2,7 @@
 
 import os
 import csv
+import ssl
 import bpy
 import json
 import urllib
@@ -132,6 +133,7 @@ class DownloadTranslations(bpy.types.Operator):
         # Download csv
         print('DOWNLOAD FILE')
         try:
+            ssl._create_default_https_context = ssl._create_unverified_context
             urllib.request.urlretrieve(translation_download_link, translations_file)
         except urllib.error.URLError:
             print("TRANSLATIONS FILE COULD NOT BE DOWNLOADED")

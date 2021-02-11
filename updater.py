@@ -1,4 +1,5 @@
 import os
+import ssl
 import bpy
 import time
 import json
@@ -551,6 +552,7 @@ def download_file(update_url):
     # Download zip
     print('DOWNLOAD FILE')
     try:
+        ssl._create_default_https_context = ssl._create_unverified_context
         urllib.request.urlretrieve(update_url, update_zip_file)
     except urllib.error.URLError:
         print("FILE COULD NOT BE DOWNLOADED")
