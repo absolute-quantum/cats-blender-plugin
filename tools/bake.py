@@ -404,6 +404,8 @@ class BakeButton(bpy.types.Operator):
         normal_apply_keys = context.scene.bake_normal_apply_keys
         diffuse_alpha_pack = context.scene.bake_diffuse_alpha_pack
         metallic_alpha_pack = context.scene.bake_metallic_alpha_pack
+        supersample_normals = True # Bake the intermediate step at 2x resolution.
+        overlap_aware = False # Unreliable until UVP doesn't care about the island scale.
 
         # Create an output collection
         collection = bpy.data.collections.new("CATS Bake")
@@ -434,6 +436,7 @@ class BakeButton(bpy.types.Operator):
                                 return node
 
         bsdf_original = first_bsdf(objs_size_descending)
+        cats_uv_layers = []
 
         if generate_uvmap:
             # TODO: automagically detect if meshes even have a uv map, smart UV project them if not
@@ -444,8 +447,15 @@ class BakeButton(bpy.types.Operator):
                 if child.type == "MESH":
                     child.select_set(True)
                     context.view_layer.objects.active = child
+                    # TODO: make sure to copy the render-active UV only
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
+                    cats_uv_layers.append('CATS UV')
+                    if supersample_normals:
+                        bpy.ops.mesh.uv_texture_add()
+                        child.data.uv_layers[-1].name = 'CATS UV Super'
+                        cats_uv_layers.append('CATS UV Super')
+                    # TODO: reproj supersample
                     if uv_overlap_correction == "REPROJECT":
                         idx = child.data.uv_layers.active_index
                         child.data.uv_layers.active_index = len(child.data.uv_layers) - 1
@@ -459,21 +469,26 @@ class BakeButton(bpy.types.Operator):
                         # TODO: issue a warning if any source images don't use 'wrap'
                         # Select all faces in +X
                         print("Un-mirroring source CATS UV data")
-                        uv_layer = child.data.uv_layers["CATS UV"].data
+                        uv_layer = (child.data.uv_layers["CATS UV Super"].data if
+                                   supersample_normals else
+                                   child.data.uv_layers["CATS UV"].data)
                         for poly in child.data.polygons:
                             if poly.center[0] > 0:
                                 for loop in poly.loop_indices:
                                     uv_layer[loop].uv.x += 1
 
-            # TODO: cleanup, all editmode_toggle -> common.switch
-
             # Select all meshes. Select all UVs. Average islands scale
-            context.view_layer.objects.active = next(child for child in arm_copy.children if child.type == "MESH")
-            bpy.ops.object.editmode_toggle()
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.uv.select_all(action='SELECT')
-            bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
-            Common.switch('OBJECT')
+            for layer in cats_uv_layers:
+                for obj in collection.all_objects:
+                    if obj.type == 'MESH':
+                        obj.data.uv_layers.active = obj.data.uv_layers[layer]
+                context.view_layer.objects.active = next(child for child in arm_copy.children if child.type == "MESH")
+                bpy.ops.object.editmode_toggle()
+                Common.switch('EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.uv.select_all(action='SELECT')
+                bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
+                Common.switch('OBJECT')
 
             head_selection = Common.get_bones(names=['Head', 'head'], armature_name=arm_copy.name, check_list=True)
 
@@ -502,31 +517,46 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.uv.select_all(action='SELECT')
                     # Then for each UV (cause of the viewport thing) scale up by the selected factor
                     Common.switch('OBJECT')
-                    uv_layer = obj.data.uv_layers["CATS UV"].data
-                    for poly in obj.data.polygons:
-                        for loop in poly.loop_indices:
-                            if uv_layer[loop].select:
-                                uv_layer[loop].uv.x *= prioritize_factor
-                                uv_layer[loop].uv.y *= prioritize_factor
+                    for layer in cats_uv_layers:
+                        if layer in obj.data.uv_layers:
+                            uv_layer = obj.data.uv_layers[layer].data
+                            for poly in obj.data.polygons:
+                                for loop in poly.loop_indices:
+                                    if uv_layer[loop].select:
+                                        uv_layer[loop].uv.x *= prioritize_factor
+                                        uv_layer[loop].uv.y *= prioritize_factor
+
 
             # Pack islands. Optionally use UVPackMaster if it's available
-            Common.switch('EDIT')
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.uv.select_all(action='SELECT')
-            bpy.ops.uv.pack_islands(rotate=True, margin=margin)
-            # detect if UVPackMaster installed and configured
-            try:  # UVP doesn't respect margins when called like this, find out why
-                context.scene.uvp2_props.normalize_islands = False
-                context.scene.uvp2_props.lock_overlapping_mode = '0' if use_decimation else '2'
-                context.scene.uvp2_props.pack_to_others = False
-                context.scene.uvp2_props.margin = margin
-                context.scene.uvp2_props.similarity_threshold = 3
-                context.scene.uvp2_props.precision = 1000
-                # Give UVP a static number of iterations to do TODO: make this configurable?
-                for _ in range(1, 10):
-                    bpy.ops.uvpackmaster2.uv_pack()
-            except AttributeError:
-                pass
+            for layer in cats_uv_layers:
+                for obj in collection.all_objects:
+                    if obj.type == 'MESH':
+                        obj.data.uv_layers.active = obj.data.uv_layers[layer]
+                Common.switch('EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.uv.select_all(action='SELECT')
+                # detect if UVPackMaster installed and configured
+                if not overlap_aware:
+                    bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+                try:  # UVP doesn't respect margins when called like this, find out why
+                    context.scene.uvp2_props.normalize_islands = False
+                    context.scene.uvp2_props.lock_overlapping_mode = ('0' if
+                                                                      layer == 'CATS UV Super' else
+                                                                      '2')
+                    context.scene.uvp2_props.pack_to_others = False
+                    context.scene.uvp2_props.margin = margin
+                    context.scene.uvp2_props.similarity_threshold = 3
+                    context.scene.uvp2_props.precision = 1000
+                    # Give UVP a static number of iterations to do TODO: make this configurable?
+                    for _ in range(1, 10):
+                        bpy.ops.uvpackmaster2.uv_pack()
+                except AttributeError:
+                    bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+                    pass
+                Common.switch('OBJECT')
+            for obj in collection.all_objects:
+                if obj.type == 'MESH':
+                    obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
         # Option to apply current shape keys, otherwise normals bake weird
         Common.switch('OBJECT')
@@ -653,6 +683,7 @@ class BakeButton(bpy.types.Operator):
                     obj.modifiers.remove(reyemask)
 
         # TODO: warn if any source meshes have auto-smooth and normal-baking
+        # TODO: or remove auto-smooth after original bake
 
         # Blend diffuse and AO to create Quest Diffuse (if selected)
         if pass_diffuse and pass_ao and pass_questdiffuse:
@@ -701,10 +732,15 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
 
             # Bake normals in object coordinates
-            # TODO: 32-bit floats so we don't lose detail
             if pass_normal:
+                for obj in collection.all_objects:
+                    if obj.type == 'MESH':
+                        obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
+                bake_size = ((resolution * 2, resolution * 2) if
+                             supersample_normals else
+                             (resolution, resolution))
                 self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2), normal_space="OBJECT")
+                               bake_size, 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * bake_size[0]/ 2), normal_space="OBJECT")
 
             # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
             bpy.ops.cats_decimation.auto_decimate(armature_name=arm_copy.name, preserve_seams=preserve_seams, seperate_materials=False)
@@ -746,6 +782,11 @@ class BakeButton(bpy.types.Operator):
 
             tree.links.new(normalmapnode.inputs["Color"], normaltexnode.outputs["Color"])
             tree.links.new(bsdfnode.inputs["Normal"], normalmapnode.outputs["Normal"])
+
+            if supersample_normals:
+                for obj in collection.all_objects:
+                    if obj.type == "MESH":
+                        context.object.data.uv_layers["CATS UV Super"].active_render = True
         for child in collection.all_objects:
             if child.type == "MESH":
                 child.data.materials.append(mat)
@@ -757,14 +798,28 @@ class BakeButton(bpy.types.Operator):
                     uv_layers = child.data.uv_layers[:]
                     while uv_layers:
                         layer = uv_layers.pop()
-                        if layer.name != "CATS UV" and layer.name != "Detail Map":
+                        if layer.name != "CATS UV Super" and layer.name != "CATS UV" and layer.name != "Detail Map":
                             print("Removing UV {}".format(layer.name))
                             child.data.uv_layers.remove(layer)
+            for obj in collection.all_objects:
+                if obj.type == 'MESH':
+                    obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
         # Bake tangent normals
         if use_decimation and pass_normal:
             self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                            (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
+
+        # Remove CATS UV Super
+        #if generate_uvmap and supersample_normals:
+        #    for child in collection.all_objects:
+        #        if child.type == "MESH":
+        #            uv_layers = child.data.uv_layers[:]
+        #            while uv_layers:
+        #                layer = uv_layers.pop()
+        #                if layer.name == "CATS UV Super":
+        #                    print("Removing UV {}".format(layer.name))
+        #                    child.data.uv_layers.remove(layer)
 
         # Update generated material to preview all of our passes
         if pass_normal:
