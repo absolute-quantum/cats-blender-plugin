@@ -24,6 +24,7 @@
 
 import os
 import bpy
+import math
 import webbrowser
 
 from . import common as Common
@@ -384,6 +385,7 @@ class BakeButton(bpy.types.Operator):
         uv_overlap_correction = context.scene.bake_uv_overlap_correction
         margin = 0.01
         quick_compare = context.scene.bake_quick_compare
+        optimize_static = True # Separate blendshape geometry into its own mesh, improves performance
 
         # TODO: Option to seperate by loose parts and bake selected to active
 
@@ -712,6 +714,8 @@ class BakeButton(bpy.types.Operator):
                     pixel_buffer[idx] = 1.0
             image.pixels[:] = pixel_buffer
 
+        # TODO: Create 'disable' shape keys, each of which shrinks their relevant mesh down to a single point
+
         # Bake highres normals
         if not use_decimation:
             # Just bake the traditional way
@@ -750,9 +754,12 @@ class BakeButton(bpy.types.Operator):
             Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
 
         # Remove all other materials
-        while len(context.object.material_slots) > 0:
-            context.object.active_material_index = 0  # select the top material
-            bpy.ops.object.material_slot_remove()
+        for obj in collection.all_objects:
+            if obj.type == 'MESH':
+                context.view_layer.objects.active = obj
+                while len(obj.material_slots) > 0:
+                    obj.active_material_index = 0  # select the top material
+                    bpy.ops.object.material_slot_remove()
 
         # Apply generated material (object normals -> normal map -> BSDF normal and other textures)
         mat = bpy.data.materials.get("CATS Baked")
@@ -786,7 +793,7 @@ class BakeButton(bpy.types.Operator):
             if supersample_normals:
                 for obj in collection.all_objects:
                     if obj.type == "MESH":
-                        context.object.data.uv_layers["CATS UV Super"].active_render = True
+                        obj.data.uv_layers["CATS UV Super"].active_render = True
         for child in collection.all_objects:
             if child.type == "MESH":
                 child.data.materials.append(mat)
@@ -811,15 +818,15 @@ class BakeButton(bpy.types.Operator):
                            (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
 
         # Remove CATS UV Super
-        #if generate_uvmap and supersample_normals:
-        #    for child in collection.all_objects:
-        #        if child.type == "MESH":
-        #            uv_layers = child.data.uv_layers[:]
-        #            while uv_layers:
-        #                layer = uv_layers.pop()
-        #                if layer.name == "CATS UV Super":
-        #                    print("Removing UV {}".format(layer.name))
-        #                    child.data.uv_layers.remove(layer)
+        if generate_uvmap and supersample_normals:
+            for child in collection.all_objects:
+                if child.type == "MESH":
+                    uv_layers = child.data.uv_layers[:]
+                    while uv_layers:
+                        layer = uv_layers.pop()
+                        if layer.name == "CATS UV Super":
+                            print("Removing UV {}".format(layer.name))
+                            child.data.uv_layers.remove(layer)
 
         # Update generated material to preview all of our passes
         if pass_normal:
@@ -903,11 +910,52 @@ class BakeButton(bpy.types.Operator):
         # Select all bones which don't fuzzy match a whitelist (Chest, Head, etc) and do Merge Weights to parent on them
         # For now, just add a note saying you should merge bones manually
 
+        if optimize_static:
+            # TODO: optionally clean shape keys?
+            for mesh in collection.all_objects:
+                if mesh.type == 'MESH':
+                    context.view_layer.objects.active = mesh
+
+                    # Ensure auto-smooth is enabled, set custom normals from faces
+                    if not mesh.data.use_auto_smooth:
+                        mesh.data.use_auto_smooth = True
+                        mesh.data.auto_smooth_angle = 3.1416
+
+                    bpy.ops.object.mode_set(mode = 'EDIT')
+                    bpy.ops.mesh.select_mode(type="VERT")
+                    bpy.ops.mesh.select_all(action = 'SELECT')
+                    bpy.ops.mesh.set_normals_from_faces()
+
+                    # Separate non-animating
+                    bpy.ops.object.mode_set(mode = 'EDIT')
+                    bpy.ops.mesh.select_mode(type="VERT")
+                    bpy.ops.mesh.select_all(action = 'DESELECT')
+                    bpy.ops.object.mode_set(mode = 'OBJECT')
+                    for key_block in mesh.data.shape_keys.key_blocks[1:]:
+                        basis = mesh.data.shape_keys.key_blocks[0]
+
+                        for idx, vert in enumerate(key_block.data):
+                            if (math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
+                            math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
+                            math.pow(basis.data[idx].co[2] - vert.co[2], 2.0)) > 0.0001):
+                                mesh.data.vertices[idx].select = True
+
+                    bpy.ops.object.mode_set(mode = 'EDIT')
+                    bpy.ops.mesh.select_more()
+                    bpy.ops.mesh.separate(type='SELECTED')
+                    bpy.ops.object.mode_set(mode = 'OBJECT')
+                    mesh.name = "Static"
+
+                    # remove all shape keys for 'Static'
+                    bpy.ops.object.shape_key_remove(all=True)
+
+        # TODO: for now, always remove vertex colors
+
         # Export the model to the bake dir
         bpy.ops.object.select_all(action='DESELECT')
         for obj in collection.all_objects:
             obj.select_set(True)
-            if obj.type == "MESH":
+            if obj.type == "MESH" and obj.name != "Static":
                 obj.name = "Body"
             elif obj.type == "ARMATURE":
                 obj.name = "Armature"

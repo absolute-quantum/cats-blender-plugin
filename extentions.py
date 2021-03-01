@@ -245,13 +245,13 @@ def register():
     Scene.bake_prioritize_face = BoolProperty(
         name=t('Scene.bake_prioritize_face.label'),
         description=t('Scene.bake_prioritize_face.desc'),
-        default=True
+        default=False
     )
 
     Scene.bake_face_scale = FloatProperty(
         name=t('Scene.bake_face_scale.label'),
         description=t('Scene.bake_face_scale.desc'),
-        default=3.0,
+        default=2.0,
         min=0.5,
         max=4.0,
         step=0.25,

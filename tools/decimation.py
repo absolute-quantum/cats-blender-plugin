@@ -344,8 +344,10 @@ class AutoDecimateButton(bpy.types.Operator):
                     if len(mesh.data.shape_keys.key_blocks) == 1:
                         bpy.ops.object.shape_key_remove(all=True)
                     else:
-                        # Add a duplicate basis key which we un-apply to fix shape keys
                         mesh.active_shape_key_index = 0
+                        # Sanity check, make sure basis isn't against something weird
+                        mesh.active_shape_key.relative_key = mesh.active_shape_key
+                        # Add a duplicate basis key which we un-apply to fix shape keys
                         bpy.ops.object.shape_key_add(from_mix=False)
                         mesh.active_shape_key.name = "CATS Basis"
                         mesh.active_shape_key_index = 0
@@ -474,8 +476,6 @@ class AutoDecimateButton(bpy.types.Operator):
             # Repair shape keys if SMART mode is enabled
             if smart_decimation and Common.has_shapekeys(mesh_obj):
                 for idx in range(1, len(mesh_obj.data.shape_keys.key_blocks) - 1):
-                    if "Reverted" in mesh_obj.data.shape_keys.key_blocks[idx].name:
-                        continue
                     mesh_obj.active_shape_key_index = idx
                     Common.switch('EDIT')
                     bpy.ops.mesh.blend_from_shape(shape="CATS Basis", blend=-1.0, add=True)
