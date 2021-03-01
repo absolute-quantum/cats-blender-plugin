@@ -738,7 +738,7 @@ class BakeButton(bpy.types.Operator):
             # Bake normals in object coordinates
             if pass_normal:
                 for obj in collection.all_objects:
-                    if obj.type == 'MESH':
+                    if obj.type == 'MESH' and generate_uvmap:
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
                 bake_size = ((resolution * 2, resolution * 2) if
                              supersample_normals else
@@ -790,7 +790,7 @@ class BakeButton(bpy.types.Operator):
             tree.links.new(normalmapnode.inputs["Color"], normaltexnode.outputs["Color"])
             tree.links.new(bsdfnode.inputs["Normal"], normalmapnode.outputs["Normal"])
 
-            if supersample_normals:
+            if supersample_normals and generate_uvmap:
                 for obj in collection.all_objects:
                     if obj.type == "MESH":
                         obj.data.uv_layers["CATS UV Super"].active_render = True
