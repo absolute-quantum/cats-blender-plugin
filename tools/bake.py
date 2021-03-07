@@ -68,11 +68,9 @@ def autodetect_passes(self, context, tricount, is_desktop):
     context.scene.bake_use_decimation = total_tricount > tricount
     context.scene.bake_uv_overlap_correction = 'UNMIRROR' if context.scene.bake_use_decimation else "NONE"
 
-    # TODO: some kinda workaround for terminator artifacts?
-
     # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
     context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
-                                       or len(set([node.inputs["Base Color"].default_value for node in bsdf_nodes])) > 1)
+                                       or len(set([node.inputs["Base Color"].default_value[:] for node in bsdf_nodes])) > 1)
 
     # Smoothness: similar to diffuse
     context.scene.bake_pass_smoothness = (any([node.inputs["Roughness"].is_linked for node in bsdf_nodes])
@@ -80,7 +78,7 @@ def autodetect_passes(self, context, tricount, is_desktop):
 
     # Emit: similar to diffuse
     context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
-                                    or len(set([node.inputs["Emission"].default_value for node in bsdf_nodes])) > 1)
+                                    or len(set([node.inputs["Emission"].default_value[:] for node in bsdf_nodes])) > 1)
 
     # Transparency: similar to diffuse
     context.scene.bake_pass_alpha = is_desktop and (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
@@ -93,6 +91,8 @@ def autodetect_passes(self, context, tricount, is_desktop):
     # Normal: on if any normals connected or if decimating... so, always on for this preset
     context.scene.bake_pass_normal = (context.scene.bake_use_decimation
                                       or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
+
+    # TODO: Optimize shapekey split only if no sharp edges, it doesn't like that yet
 
     # Apply transforms: on if more than one mesh TODO: with different materials?
     context.scene.bake_normal_apply_trans = len(objects) > 1
@@ -119,6 +119,10 @@ def autodetect_passes(self, context, tricount, is_desktop):
         if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
             context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
     else:
+        # Diffuse vertex color bake? Only if there's already no texture inputs!
+        if not any([node.inputs["Base Color"].is_linked for node in bsdf_nodes]):
+            diffuse_vertex_colors = True
+
         # alpha packs: arrange for maximum efficiency.
         # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
         context.scene.bake_diffuse_alpha_pack = "NONE"
@@ -276,10 +280,13 @@ class BakeButton(bpy.types.Operator):
 
         # Run bake.
         context.scene.cycles.bake_type = bake_type
-        if bake_type == 'DIFFUSE':
-            context.scene.render.bake.use_pass_direct = False
-            context.scene.render.bake.use_pass_indirect = False
-            context.scene.render.bake.use_pass_color = True
+        context.scene.render.bake.use_pass_direct = "DIRECT" in bake_pass_filter
+        context.scene.render.bake.use_pass_indirect = "INDIRECT" in bake_pass_filter
+        context.scene.render.bake.use_pass_color = "COLOR" in bake_pass_filter
+        context.scene.render.bake.use_pass_diffuse = "DIFFUSE" in bake_pass_filter
+        context.scene.render.bake.use_pass_emit = "EMIT" in bake_pass_filter
+        context.scene.render.bake.use_pass_ambient_occlusion = "AO" in bake_pass_filter
+        context.scene.render.bake.target = "VERTEX_COLORS" if "VERTEX_COLORS" in bake_pass_filter else "IMAGE_TEXTURES"
         context.scene.cycles.samples = bake_samples
         context.scene.render.bake.use_clear = clear and bake_type == 'NORMAL'
         context.scene.render.bake.use_selected_to_active = (bake_active != None)
@@ -408,6 +415,8 @@ class BakeButton(bpy.types.Operator):
         metallic_alpha_pack = context.scene.bake_metallic_alpha_pack
         supersample_normals = True # Bake the intermediate step at 2x resolution.
         overlap_aware = False # Unreliable until UVP doesn't care about the island scale.
+        emit_indirect = True
+        diffuse_vertex_colors = False
 
         # Create an output collection
         collection = bpy.data.collections.new("CATS Bake")
@@ -453,11 +462,6 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
                     cats_uv_layers.append('CATS UV')
-                    if supersample_normals:
-                        bpy.ops.mesh.uv_texture_add()
-                        child.data.uv_layers[-1].name = 'CATS UV Super'
-                        cats_uv_layers.append('CATS UV Super')
-                    # TODO: reproj supersample
                     if uv_overlap_correction == "REPROJECT":
                         idx = child.data.uv_layers.active_index
                         child.data.uv_layers.active_index = len(child.data.uv_layers) - 1
@@ -467,7 +471,21 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01)
                         bpy.ops.object.editmode_toggle()
                         child.data.uv_layers.active_index = idx
-                    elif uv_overlap_correction == "UNMIRROR":
+                    # Supersampled maps are only affected by reproject
+                    if supersample_normals:
+                        bpy.ops.mesh.uv_texture_add()
+                        child.data.uv_layers[-1].name = 'CATS UV Super'
+                        cats_uv_layers.append('CATS UV Super')
+                        if uv_overlap_correction == "REPROJECT":
+                            idx = child.data.uv_layers.active_index
+                            child.data.uv_layers.active_index = len(child.data.uv_layers) - 1
+                            bpy.ops.object.editmode_toggle()
+                            bpy.ops.mesh.select_all(action='SELECT')
+                            bpy.ops.uv.select_all(action='SELECT')
+                            bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01)
+                            bpy.ops.object.editmode_toggle()
+                            child.data.uv_layers.active_index = idx
+                    if uv_overlap_correction == "UNMIRROR":
                         # TODO: issue a warning if any source images don't use 'wrap'
                         # Select all faces in +X
                         print("Un-mirroring source CATS UV data")
@@ -577,8 +595,17 @@ class BakeButton(bpy.types.Operator):
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
             self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
 
-            self.bake_pass(context, "diffuse", "DIFFUSE", {"COLOR"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [0.5, 0.5, 0.5, 1.0], True, int(margin * resolution / 2))
+            if diffuse_vertex_colors:
+                for obj in collection.all_objects:
+                    if obj.type == "MESH":
+                        if obj.data.vertex_colors is None or len(obj.data.vertex_colors) == 0:
+                            context.view_layer.objects.active = obj
+                            bpy.ops.mesh.vertex_color_add()
+                self.bake_pass(context, "diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
+                               (resolution, resolution), 32, 0, [0.5, 0.5, 0.5, 1.0], True, int(margin * resolution / 2))
+            else:
+                self.bake_pass(context, "diffuse", "DIFFUSE", {"COLOR"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
+                               (resolution, resolution), 32, 0, [0.5, 0.5, 0.5, 1.0], True, int(margin * resolution / 2))
 
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
 
@@ -596,8 +623,18 @@ class BakeButton(bpy.types.Operator):
 
         # bake emit
         if pass_emit:
-            self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, int(margin * resolution / 2))
+            if not emit_indirect:
+                self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, int(margin * resolution / 2))
+            else:
+                # Bake indirect lighting contributions: Turn off the lights and bake all diffuse passes
+                # TODO: disable scene lights?
+                original_color = bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value
+                bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0,0,0,1)
+                self.bake_pass(context, "emission", "COMBINED", {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
+                               (resolution, resolution), 512, 0, [0.0, 0.0, 0.0, 1.0], True, int(margin * resolution / 2))
+                bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = original_color
+
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
@@ -833,10 +870,15 @@ class BakeButton(bpy.types.Operator):
             normaltexnode.image = bpy.data.images["SCRIPT_normal.png"]
             normalmapnode.space = "TANGENT"
         if pass_diffuse:
-            diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
-            diffusetexnode.image = bpy.data.images["SCRIPT_diffuse.png"]
+            if not diffuse_vertex_colors:
+                diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
+                diffusetexnode.image = bpy.data.images["SCRIPT_diffuse.png"]
+            else:
+                diffusetexnode = tree.nodes.new("ShaderNodeVertexColor")
+                diffusetexnode.layer_name = "Col"
             diffusetexnode.location.x -= 300
             diffusetexnode.location.y += 500
+
             # If AO, blend in AO.
             if pass_ao:
                 # AO -> Math (* ao_opacity + (1-ao_opacity)) -> Mix (Math, diffuse) -> Color
@@ -913,7 +955,7 @@ class BakeButton(bpy.types.Operator):
         if optimize_static:
             # TODO: optionally clean shape keys?
             for mesh in collection.all_objects:
-                if mesh.type == 'MESH':
+                if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
                     context.view_layer.objects.active = mesh
 
                     # Ensure auto-smooth is enabled, set custom normals from faces
@@ -921,10 +963,12 @@ class BakeButton(bpy.types.Operator):
                         mesh.data.use_auto_smooth = True
                         mesh.data.auto_smooth_angle = 3.1416
 
+                    # TODO: this doesn't like sharp edges, even though in theory keep_sharp should deal with that
+
                     bpy.ops.object.mode_set(mode = 'EDIT')
                     bpy.ops.mesh.select_mode(type="VERT")
                     bpy.ops.mesh.select_all(action = 'SELECT')
-                    bpy.ops.mesh.set_normals_from_faces()
+                    bpy.ops.mesh.set_normals_from_faces(keep_sharp=True)
 
                     # Separate non-animating
                     bpy.ops.object.mode_set(mode = 'EDIT')
