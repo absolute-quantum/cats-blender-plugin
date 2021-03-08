@@ -839,12 +839,12 @@ class BakeButton(bpy.types.Operator):
         if generate_uvmap:
             for child in collection.all_objects:
                 if child.type == "MESH":
-                    uv_layers = child.data.uv_layers[:]
+                    uv_layers = [layer.name for layer in child.data.uv_layers]
                     while uv_layers:
                         layer = uv_layers.pop()
-                        if layer.name != "CATS UV Super" and layer.name != "CATS UV" and layer.name != "Detail Map":
-                            print("Removing UV {}".format(layer.name))
-                            child.data.uv_layers.remove(layer)
+                        if layer != "CATS UV Super" and layer != "CATS UV" and layer != "Detail Map":
+                            print("Removing UV {}".format(layer))
+                            child.data.uv_layers.remove(child.data.uv_layers[layer])
             for obj in collection.all_objects:
                 if obj.type == 'MESH':
                     obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
@@ -858,12 +858,12 @@ class BakeButton(bpy.types.Operator):
         if generate_uvmap and supersample_normals:
             for child in collection.all_objects:
                 if child.type == "MESH":
-                    uv_layers = child.data.uv_layers[:]
+                    uv_layers = [layer.name for layer in child.data.uv_layers]
                     while uv_layers:
                         layer = uv_layers.pop()
-                        if layer.name == "CATS UV Super":
-                            print("Removing UV {}".format(layer.name))
-                            child.data.uv_layers.remove(layer)
+                        if layer == "CATS UV Super":
+                            print("Removing UV {}".format(layer))
+                            child.data.uv_layers.remove(child.data.uv_layers[layer])
 
         # Update generated material to preview all of our passes
         if pass_normal:
