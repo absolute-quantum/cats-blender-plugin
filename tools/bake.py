@@ -287,7 +287,8 @@ class BakeButton(bpy.types.Operator):
         context.scene.render.bake.use_pass_diffuse = "DIFFUSE" in bake_pass_filter
         context.scene.render.bake.use_pass_emit = "EMIT" in bake_pass_filter
         context.scene.render.bake.use_pass_ambient_occlusion = "AO" in bake_pass_filter
-        context.scene.render.bake.target = "VERTEX_COLORS" if "VERTEX_COLORS" in bake_pass_filter else "IMAGE_TEXTURES"
+        if bpy.app.version >= (2, 92, 0):
+            context.scene.render.bake.target = "VERTEX_COLORS" if "VERTEX_COLORS" in bake_pass_filter else "IMAGE_TEXTURES"
         context.scene.cycles.samples = bake_samples
         context.scene.render.bake.use_clear = clear and bake_type == 'NORMAL'
         context.scene.render.bake.use_selected_to_active = (bake_active != None)
