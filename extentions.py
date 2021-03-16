@@ -210,6 +210,14 @@ def register():
         max=70000
     )
 
+    Scene.bake_optimize_static = BoolProperty(
+        name="Optimize Static Shapekeys",
+        description="Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",
+        default=True
+    )
+
+
+
     # Bake
     Scene.bake_resolution = IntProperty(
         name=t('Scene.bake_resolution.label'),
@@ -283,6 +291,12 @@ def register():
         default=True
     )
 
+    Scene.bake_diffuse_vertex_colors = BoolProperty(
+        name="Bake to vertex colors",
+        description="Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO.",
+        default=False
+    )
+
     Scene.bake_preserve_seams = BoolProperty(
         name=t('Scene.bake_preserve_seams.label'),
         description=t('Scene.bake_preserve_seams.desc'),
@@ -323,6 +337,18 @@ def register():
         name=t('Scene.bake_pass_emit.label'),
         description=t('Scene.bake_pass_emit.desc'),
         default=False
+    )
+
+    Scene.bake_emit_indirect = BoolProperty(
+        name="Bake projected light",
+        description="Bake the effect of emission on nearby surfaces. Results in much more realistic lighting effects, but can animate less well.",
+        default=False
+    )
+
+    Scene.bake_emit_exclude_eyes = BoolProperty(
+        name="Exclude eyes",
+        description="Bakes the effect of any eye glow onto surrounding objects, but not vice-versa. Improves animation when eyes are moving around..",
+        default=True
     )
 
     Scene.bake_diffuse_alpha_pack = EnumProperty(

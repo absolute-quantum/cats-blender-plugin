@@ -69,6 +69,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.separator()
             row.label(text=t('BakePanel.overlapfixlabel'))
             row.prop(context.scene, 'bake_uv_overlap_correction', expand=True)
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_optimize_static', expand=True)
         #row = col.row(align=True)
         #row.prop(context.scene, 'bake_simplify_armature', expand=True)
         row = col.row(align=True)
@@ -78,7 +80,11 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.label(text=t('BakePanel.bakepasseslabel'))
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_diffuse', expand=True)
-        if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha):
+        if context.scene.bake_pass_diffuse:
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_diffuse_vertex_colors', expand=True)
+        if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha) and not context.scene.bake_diffuse_vertex_colors:
             row = col.row(align=True)
             row.separator()
             row.label(text=t('BakePanel.alphalabel'))
@@ -132,6 +138,16 @@ class BakePanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_emit', expand=True)
+        if context.scene.bake_pass_emit:
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_emit_indirect', expand=True)
+            if context.scene.bake_emit_indirect:
+                row = col.row(align=True)
+                row.separator()
+                row.separator()
+                row.prop(context.scene, 'bake_emit_exclude_eyes', expand=True)
+
         row = col.row(align=True)
         col.separator()
         col.separator()
