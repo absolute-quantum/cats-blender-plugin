@@ -96,7 +96,7 @@ def autodetect_passes(self, context, tricount, is_desktop):
     context.scene.bake_normal_apply_trans = len(objects) > 1
 
     # TODO: Decimating doesn't guarentee hard edges anyway, so do full split if needed
-    context.scene.bake_optimize_static = True
+    #context.scene.bake_optimize_static = True
 
     # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
     # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
@@ -1081,6 +1081,11 @@ class BakeButton(bpy.types.Operator):
             bpy.data.images["SCRIPT_alpha.png"].save()
         if pass_metallic:
             bpy.data.images["SCRIPT_metallic.png"].save()
+        if optimize_static:
+            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/BakeFixer.cs", 'r') as infile:
+                with open(bpy.path.abspath("//CATS Bake/") + "BakeFixer.cs", 'w') as outfile:
+                    for line in infile:
+                        outfile.write(line)
 
         self.report({'INFO'}, t('cats_bake.info.success'))
 

@@ -26,12 +26,19 @@ public class BakeFixer : MonoBehaviour
     			var body = obj.transform.Find("Body");
     			var stat = obj.transform.Find("Static");
     			var arm = obj.transform.Find("Armature");
-    			var smr_body = (SkinnedMeshRenderer)body.GetComponent(typeof(SkinnedMeshRenderer));
-    			var smr_stat = (SkinnedMeshRenderer)body.GetComponent(typeof(SkinnedMeshRenderer));
+                if (arm.childCount > 0 && arm.Find("Hips") != null)
+                {
+    			    Debug.Log("Altering anchor point for: " + obj.name);
+                    var hips = arm.Find("Hips");
+    			    var smr_body = (SkinnedMeshRenderer)body.GetComponent(typeof(SkinnedMeshRenderer));
+    			    var smr_stat = (SkinnedMeshRenderer)body.GetComponent(typeof(SkinnedMeshRenderer));
                 
-                // TODO: Anchor
-
-    			Debug.Log("Altering anchor point for: " + obj.name);
+                    // Set lightprobe anchor
+                    smr_body.probeAnchor = hips;
+                    smr_stat.probeAnchor = hips;
+                } else {
+                    Debug.Log("Couldn't find Hips for: " + obj.name);
+                }
 	    	}	
     	}
    }
