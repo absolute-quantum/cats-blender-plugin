@@ -216,7 +216,17 @@ def register():
         default=True
     )
 
+    Scene.bake_cleanup_shapekeys = BoolProperty(
+        name="Cleanup Shapekeys",
+        description="Remove backup shapekeys in the final result, e.g. 'Key1 - Reverted' or 'blink_old'",
+        default=True
+    )
 
+    Scene.bake_create_disable_shapekeys = BoolProperty(
+        name="Create 'Disable' Shapekeys",
+        description="Create 'Disable' shapekeys for all but the largest mesh, that cause it to shrink to nothing. Lets you keep toggleable props, without the need for additional meshes.",
+        default=False
+    )
 
     # Bake
     Scene.bake_resolution = IntProperty(
@@ -312,12 +322,6 @@ def register():
     Scene.bake_normal_apply_trans = BoolProperty(
         name=t('Scene.bake_normal_apply_trans.label'),
         description=t('Scene.bake_normal_apply_trans.desc'),
-        default=True
-    )
-
-    Scene.bake_normal_apply_keys = BoolProperty(
-        name=t('Scene.bake_normal_apply_keys.label'),
-        description=t('Scene.bake_normal_apply_keys.desc'),
         default=True
     )
 

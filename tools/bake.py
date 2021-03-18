@@ -412,7 +412,6 @@ class BakeButton(bpy.types.Operator):
         illuminate_eyes = context.scene.bake_illuminate_eyes
         questdiffuse_opacity = context.scene.bake_questdiffuse_opacity
         normal_apply_trans = context.scene.bake_normal_apply_trans
-        normal_apply_keys = context.scene.bake_normal_apply_keys
         diffuse_alpha_pack = context.scene.bake_diffuse_alpha_pack
         metallic_alpha_pack = context.scene.bake_metallic_alpha_pack
         supersample_normals = True # Bake the intermediate step at 2x resolution. Probably best to leave this on.
@@ -420,6 +419,8 @@ class BakeButton(bpy.types.Operator):
         emit_indirect = context.scene.bake_emit_indirect
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
         diffuse_vertex_colors = context.scene.bake_diffuse_vertex_colors
+        cleanup_shapekeys = context.scene.bake_cleanup_shapekeys # Reverted and _old shapekeys
+        create_disable_shapekeys = context.scene.bake_create_disable_shapekeys
 
         # Create an output collection
         collection = bpy.data.collections.new("CATS Bake")
@@ -584,17 +585,6 @@ class BakeButton(bpy.types.Operator):
             for obj in collection.all_objects:
                 if obj.type == 'MESH':
                     obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
-
-        # Option to apply current shape keys, otherwise normals bake weird
-        Common.switch('OBJECT')
-        if normal_apply_keys:
-            for obj in collection.all_objects:
-                if obj.type == "MESH" and Common.has_shapekeys(obj):
-                    obj.select_set(True)
-                    context.view_layer.objects.active = obj
-                    bpy.ops.object.shape_key_add(from_mix=True)
-                    bpy.ops.cats_shapekey.shape_key_to_basis()
-                    obj.active_shape_key_index = 0
 
         # Bake diffuse
         if pass_diffuse:
@@ -772,7 +762,22 @@ class BakeButton(bpy.types.Operator):
                     pixel_buffer[idx] = 1.0
             image.pixels[:] = pixel_buffer
 
-        # TODO: Create 'disable' shape keys, each of which shrinks their relevant mesh down to a single point
+        # Create 'disable' shape keys, each of which shrinks their relevant mesh down to a single point
+        if create_disable_shapekeys:
+            for obj in sorted(filter(lambda o: o.type == "MESH", collection.all_objects),
+                              key=lambda o: len(o.data.vertices))[:-1]:
+                print(obj.name)
+                bpy.ops.object.select_all(action='DESELECT')
+                obj.select_set(True)
+                context.view_layer.objects.active = obj
+                if obj.data.shape_keys is None or len(obj.data.shape_keys.key_blocks) == 0:
+                    bpy.ops.object.shape_key_add(from_mix=True)
+                    obj.data.shape_keys.key_blocks[-1].name = "Basis"
+                bpy.ops.object.shape_key_add(from_mix=True)
+                obj.data.shape_keys.key_blocks[-1].name = "Disable " + obj.name[:-4]
+                Common.switch("EDIT")
+                bpy.ops.transform.resize(value=(0,0,0))
+                Common.switch("OBJECT")
 
         # Bake highres normals
         if not use_decimation:
@@ -1001,6 +1006,14 @@ class BakeButton(bpy.types.Operator):
         # Select all bones which don't fuzzy match a whitelist (Chest, Head, etc) and do Merge Weights to parent on them
         # For now, just add a note saying you should merge bones manually
 
+        if cleanup_shapekeys:
+            for mesh in collection.all_objects:
+                if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
+                    names = [key.name for key in mesh.data.shape_keys.key_blocks]
+                    for name in names:
+                        if name[-4:] == "_old" or name[-11:] == " - Reverted":
+                            mesh.shape_key_remove(key=mesh.data.shape_keys.key_blocks[name])
+
         if optimize_static:
             for mesh in collection.all_objects:
                 if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
@@ -1032,17 +1045,17 @@ class BakeButton(bpy.types.Operator):
                             math.pow(basis.data[idx].co[2] - vert.co[2], 2.0)) > 0.0001):
                                 mesh.data.vertices[idx].select = True
 
-                    bpy.ops.object.mode_set(mode = 'EDIT')
-                    bpy.ops.mesh.select_more()
-                    bpy.ops.mesh.separate(type='SELECTED')
-                    bpy.ops.object.mode_set(mode = 'OBJECT')
-                    bpy.context.object.active_shape_key_index = 0
-                    mesh.name = "Static"
-
-                    # TODO: Remove either if they're empty
-
-                    # remove all shape keys for 'Static'
-                    bpy.ops.object.shape_key_remove(all=True)
+                    if not all(v.select for v in mesh.data.vertices):
+                        if any(v.select for v in mesh.data.vertices):
+                            # Some affected, separate
+                            bpy.ops.object.mode_set(mode = 'EDIT')
+                            bpy.ops.mesh.select_more()
+                            bpy.ops.mesh.separate(type='SELECTED')
+                            bpy.ops.object.mode_set(mode = 'OBJECT')
+                        bpy.context.object.active_shape_key_index = 0
+                        mesh.name = "Static"
+                        # remove all shape keys for 'Static'
+                        bpy.ops.object.shape_key_remove(all=True)
 
         # Export the model to the bake dir
         bpy.ops.object.select_all(action='DESELECT')
