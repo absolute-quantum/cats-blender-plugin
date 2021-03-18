@@ -80,7 +80,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.label(text=t('BakePanel.bakepasseslabel'))
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_diffuse', expand=True)
-        if context.scene.bake_pass_diffuse:
+        if context.scene.bake_pass_diffuse and bpy.app.version >= (2, 92, 0):
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'bake_diffuse_vertex_colors', expand=True)
