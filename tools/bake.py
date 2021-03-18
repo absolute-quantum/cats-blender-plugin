@@ -1036,6 +1036,7 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.mesh.select_more()
                     bpy.ops.mesh.separate(type='SELECTED')
                     bpy.ops.object.mode_set(mode = 'OBJECT')
+                    bpy.context.object.active_shape_key_index = 0
                     mesh.name = "Static"
 
                     # TODO: Remove either if they're empty
