@@ -154,7 +154,7 @@ class BakePresetQuest(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        autodetect_passes(self, context, 5000, False)
+        autodetect_passes(self, context, 7500, False)
         return {'FINISHED'}
 
 
@@ -250,6 +250,7 @@ class BakeButton(bpy.types.Operator):
         # Select only objects we're baking
         for obj in objects:
             obj.select_set(True)
+            context.view_layer.objects.active = obj
 
         # For all materials in use, change any value node labeled "bake_<bake_name>" to 1.0, then back to 0.0.
         for obj in objects:

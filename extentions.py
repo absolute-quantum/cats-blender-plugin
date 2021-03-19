@@ -205,7 +205,7 @@ def register():
     Scene.bake_max_tris = IntProperty(
         name=t('Scene.max_tris.label'),
         description=t('Scene.max_tris.desc'),
-        default=5000,
+        default=7500,
         min=1,
         max=70000
     )
