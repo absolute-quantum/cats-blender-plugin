@@ -634,7 +634,7 @@ class BakeButton(bpy.types.Operator):
                                (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, int(margin * resolution / 2))
                     for obj in collection.all_objects:
                         if "leyemask" in obj.modifiers:
-                            obj.modifiers.remove(leyemask)
+                            obj.modifiers.remove(obj.modifiers["leyemask"])
 
                     for obj in collection.all_objects:
                         if obj.type == "MESH":
@@ -646,7 +646,7 @@ class BakeButton(bpy.types.Operator):
                                (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, int(margin * resolution / 2))
                     for obj in collection.all_objects:
                         if "reyemask" in obj.modifiers:
-                            obj.modifiers.remove(reyemask)
+                            obj.modifiers.remove(obj.modifiers["reyemask"])
 
                 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = original_color
 
