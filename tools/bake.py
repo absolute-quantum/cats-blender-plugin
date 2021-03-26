@@ -780,6 +780,18 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.transform.resize(value=(0,0,0))
                 Common.switch("OBJECT")
 
+        # Save and disable shape keys
+        shapekey_values = dict()
+        if pass_normal:
+            #TODO: Apply special 'bakeme' shape keys here
+            for obj in collection.all_objects:
+                if Common.has_shapekeys(obj):
+                    # This doesn't work for keys which have different starting
+                    # values... but generally that's not what you should do anyway
+                    for key in obj.data.shape_keys.key_blocks:
+                        shapekey_values[key.name] = key.value
+                        key.value = 0.0
+
         # Bake highres normals
         if not use_decimation:
             # Just bake the traditional way
@@ -817,7 +829,7 @@ class BakeButton(bpy.types.Operator):
         if not use_decimation:
             Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
 
-        # Remove all other materials
+        # Remove all other materials if we've done at least one bake pass
         for obj in collection.all_objects:
             if obj.type == 'MESH':
                 context.view_layer.objects.active = obj
@@ -876,10 +888,18 @@ class BakeButton(bpy.types.Operator):
                 if obj.type == 'MESH':
                     obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
-        # Bake tangent normals
-        if use_decimation and pass_normal:
-            self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
+        if pass_normal:
+            # Bake tangent normals
+            if use_decimation:
+                self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
+
+            # Reapply keys
+            for obj in collection.all_objects:
+                if Common.has_shapekeys(obj):
+                    for key in obj.data.shape_keys.key_blocks:
+                        key.value = shapekey_values[key.name]
+
 
         # Remove CATS UV Super
         if generate_uvmap and supersample_normals:
