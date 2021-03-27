@@ -331,6 +331,12 @@ def register():
         default=False
     )
 
+    Scene.bake_ignore_hidden = BoolProperty(
+        name="Ignore hidden objects",
+        description="Ignore currently hidden objects when copying",
+        default=True
+    )
+
     Scene.bake_pass_ao = BoolProperty(
         name=t('Scene.bake_pass_ao.label'),
         description=t('Scene.bake_pass_ao.desc'),

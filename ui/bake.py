@@ -70,6 +70,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.label(text=t('BakePanel.overlapfixlabel'))
             row.prop(context.scene, 'bake_uv_overlap_correction', expand=True)
         row = col.row(align=True)
+        row.prop(context.scene, 'bake_ignore_hidden', expand=True)
+        row = col.row(align=True)
         row.prop(context.scene, 'bake_optimize_static', expand=True)
         row = col.row(align=True)
         row.prop(context.scene, 'bake_cleanup_shapekeys', expand=True)

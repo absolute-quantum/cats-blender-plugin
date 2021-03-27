@@ -51,7 +51,7 @@ def autodetect_passes(self, context, tricount, is_desktop):
     context.scene.bake_resolution = 2048 if is_desktop else 1024
     # Autodetect passes based on BSDF node inputs
     bsdf_nodes = []
-    objects = Common.get_meshes_objects()
+    objects = [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]
     for obj in objects:
         for slot in obj.material_slots:
             if slot.material:
@@ -324,21 +324,23 @@ class BakeButton(bpy.types.Operator):
         collection.objects.link(copy)
         return copy
 
-    def tree_copy(self, ob, parent, collection, levels=3):
-        def recurse(ob, parent, depth):
+    def tree_copy(self, ob, parent, collection, ignore_hidden, levels=3):
+        def recurse(ob, parent, depth, ignore_hidden):
             if depth > levels:
+                return
+            if Common.is_hidden(ob) and ignore_hidden:
                 return
             copy = self.copy_ob(ob, parent, collection)
 
             for child in ob.children:
-                recurse(child, copy, depth + 1)
+                recurse(child, copy, depth + 1, ignore_hidden)
 
             return copy
 
-        return recurse(ob, ob.parent, 0)
+        return recurse(ob, ob.parent, 0, ignore_hidden)
 
     def execute(self, context):
-        if not Common.get_meshes_objects():
+        if not [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]:
             self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
             return {'FINISHED'}
         # if context.scene.render.engine != 'CYCLES':
@@ -426,14 +428,25 @@ class BakeButton(bpy.types.Operator):
         diffuse_vertex_colors = context.scene.bake_diffuse_vertex_colors
         cleanup_shapekeys = context.scene.bake_cleanup_shapekeys # Reverted and _old shapekeys
         create_disable_shapekeys = context.scene.bake_create_disable_shapekeys
+        ignore_hidden = context.scene.bake_ignore_hidden
+
+        # Save reference to original armature
+        armature = Common.get_armature()
 
         # Create an output collection
         collection = bpy.data.collections.new("CATS Bake")
         context.scene.collection.children.link(collection)
 
         # Tree-copy all meshes
-        armature = Common.set_default_stage()
-        arm_copy = self.tree_copy(armature, None, collection)
+        arm_copy = self.tree_copy(armature, None, collection, ignore_hidden)
+
+        # Create an extra scene to render in
+        orig_scene_name = context.scene.name
+        bpy.ops.scene.new(type="EMPTY") # copy keeps existing settings
+        context.scene.name = "CATS Scene"
+        orig_scene = bpy.data.scenes[orig_scene_name]
+        context.scene.collection.children.link(collection)
+
 
         # Make sure all armature modifiers target the new armature
         for child in collection.all_objects:
@@ -1151,6 +1164,9 @@ class BakeButton(bpy.types.Operator):
                 with open(bpy.path.abspath("//CATS Bake/") + "BakeFixer.cs", 'w') as outfile:
                     for line in infile:
                         outfile.write(line)
+
+        # Delete our duplicate scene
+        bpy.ops.scene.delete()
 
         self.report({'INFO'}, t('cats_bake.info.success'))
 
