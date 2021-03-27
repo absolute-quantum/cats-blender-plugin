@@ -210,6 +210,12 @@ def register():
         max=70000
     )
 
+    Scene.bake_remove_doubles = BoolProperty(
+        name=t('Scene.decimation_remove_doubles.label'),
+        description=t('Scene.decimation_remove_doubles.desc'),
+        default=True
+    )
+
     Scene.bake_optimize_static = BoolProperty(
         name="Optimize Static Shapekeys",
         description="Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",
