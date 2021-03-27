@@ -347,6 +347,9 @@ class BakeButton(bpy.types.Operator):
         if any([obj.hide_render for obj in Common.get_armature().children]):
             self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
             return {'FINISHED'}
+        if not bpy.data.is_saved:
+            self.report({'ERROR'}, "You need to save your .blend somewhere first!")
+            return {'FINISHED'}
         # TODO: Check if any UV islands are self-overlapping, emit a warning
 
         # Change render engine to cycles and save the current one
@@ -396,6 +399,7 @@ class BakeButton(bpy.types.Operator):
         margin = 0.01
         quick_compare = context.scene.bake_quick_compare
         optimize_static = context.scene.bake_optimize_static # Separate blendshape geometry into its own mesh, improves performance
+        apply_keys = context.scene.bake_apply_keys
 
         # TODO: Option to seperate by loose parts and bake selected to active
 
@@ -780,17 +784,31 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.transform.resize(value=(0,0,0))
                 Common.switch("OBJECT")
 
+        Common.switch('OBJECT')
+
         # Save and disable shape keys
         shapekey_values = dict()
-        if pass_normal:
-            #TODO: Apply special 'bakeme' shape keys here
+        if not apply_keys:
             for obj in collection.all_objects:
                 if Common.has_shapekeys(obj):
                     # This doesn't work for keys which have different starting
                     # values... but generally that's not what you should do anyway
                     for key in obj.data.shape_keys.key_blocks:
-                        shapekey_values[key.name] = key.value
-                        key.value = 0.0
+                        # Always ignore '_bake' keys so they're baked in
+                        if key.name[-5:] != '_bake':
+                            shapekey_values[key.name] = key.value
+                            key.value = 0.0
+
+        # Option to apply current shape keys, otherwise normals bake weird
+        # If true, apply all shapekeys and remove '_bakeme' keys
+        # Otherwise, only apply '_bakeme' keys
+        for obj in collection.all_objects:
+            if obj.type == "MESH" and Common.has_shapekeys(obj):
+                obj.select_set(True)
+                context.view_layer.objects.active = obj
+                bpy.ops.object.shape_key_add(from_mix=True)
+                bpy.ops.cats_shapekey.shape_key_to_basis()
+                obj.active_shape_key_index = 0
 
         # Bake highres normals
         if not use_decimation:
@@ -894,11 +912,14 @@ class BakeButton(bpy.types.Operator):
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                                (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
 
-            # Reapply keys
+
+        # Reapply keys
+        if not apply_keys:
             for obj in collection.all_objects:
                 if Common.has_shapekeys(obj):
                     for key in obj.data.shape_keys.key_blocks:
-                        key.value = shapekey_values[key.name]
+                        if key.name in shapekey_values:
+                            key.value = shapekey_values[key.name]
 
 
         # Remove CATS UV Super
@@ -1035,6 +1056,15 @@ class BakeButton(bpy.types.Operator):
                         if name[-4:] == "_old" or name[-11:] == " - Reverted":
                             mesh.shape_key_remove(key=mesh.data.shape_keys.key_blocks[name])
 
+        # '_bake' shapekeys are always applied and removed.
+        for mesh in collection.all_objects:
+            if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
+                names = [key.name for key in mesh.data.shape_keys.key_blocks]
+                for name in names:
+                    if name[-5:] == "_bake":
+                        mesh.shape_key_remove(key=mesh.data.shape_keys.key_blocks[name])
+
+
         if optimize_static:
             for mesh in collection.all_objects:
                 if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
@@ -1090,13 +1120,12 @@ class BakeButton(bpy.types.Operator):
             os.mkdir(bpy.path.abspath("//CATS Bake/"))
         bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
                                  use_selection=True,
-                                 use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_NONE',
+                                 use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
                                  bake_space_transform=False, object_types={'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'},
-                                 use_mesh_modifiers=True, use_mesh_modifiers_render=True, mesh_smooth_type='OFF', use_subsurf=False,
-                                 use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=True, primary_bone_axis='Y',
-                                 secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=True,
-                                 bake_anim_use_all_bones=True, bake_anim_use_nla_strips=True, bake_anim_use_all_actions=True,
-                                 bake_anim_force_startend_keying=True, bake_anim_step=1.0, bake_anim_simplify_factor=1.0, path_mode='AUTO',
+                                 use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
+                                 use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
+                                 secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,
+                                 path_mode='AUTO',
                                  embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
                                  axis_forward='-Z', axis_up='Y')
 

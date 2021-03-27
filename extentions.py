@@ -325,6 +325,12 @@ def register():
         default=True
     )
 
+    Scene.bake_apply_keys = BoolProperty(
+        name="Apply current shapekey mix",
+        description="When selected, currently active shape keys will be applied to the basis. This is extremely beneficial to performance if your avatar is intended to 'default' to one shapekey mix, as having active shapekeys all the time is expensive. Keys ending in '_bake' are always applied to the basis and removed completely, regardless of this option.",
+        default=False
+    )
+
     Scene.bake_pass_ao = BoolProperty(
         name=t('Scene.bake_pass_ao.label'),
         description=t('Scene.bake_pass_ao.desc'),
