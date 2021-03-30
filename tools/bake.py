@@ -1087,11 +1087,9 @@ class BakeButton(bpy.types.Operator):
                         mesh.data.use_auto_smooth = True
                         mesh.data.auto_smooth_angle = 3.1416
 
-                    # TODO: this doesn't like sharp edges, even though in theory keep_sharp should deal with that
-
                     bpy.ops.object.mode_set(mode = 'EDIT')
                     bpy.ops.mesh.select_mode(type="VERT")
-                    bpy.ops.mesh.select_all(action = 'SELECT')
+                    bpy.ops.mesh.select_all(action = 'DESELECT')
                     bpy.ops.mesh.set_normals_from_faces(keep_sharp=True)
 
                     # Separate non-animating
