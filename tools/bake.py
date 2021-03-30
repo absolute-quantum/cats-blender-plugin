@@ -638,24 +638,24 @@ class BakeButton(bpy.types.Operator):
                 if emit_exclude_eyes:
                     # Bake each eye on top individually
                     for obj in collection.all_objects:
-                        if obj.type == "MESH":
+                        if obj.type == "MESH" and "LeftEye" in obj.vertex_groups:
                             leyemask = obj.modifiers.new(type='MASK', name="leyemask")
                             leyemask.mode = "VERTEX_GROUP"
                             leyemask.vertex_group = "LeftEye"
                             leyemask.invert_vertex_group = False
-                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH" and "LeftEye" in obj.vertex_groups],
                                (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, int(margin * resolution / 2))
                     for obj in collection.all_objects:
                         if "leyemask" in obj.modifiers:
                             obj.modifiers.remove(obj.modifiers["leyemask"])
 
                     for obj in collection.all_objects:
-                        if obj.type == "MESH":
+                        if obj.type == "MESH" and "RightEye" in obj.vertex_groups:
                             reyemask = obj.modifiers.new(type='MASK', name="reyemask")
                             reyemask.mode = "VERTEX_GROUP"
                             reyemask.vertex_group = "RightEye"
                             reyemask.invert_vertex_group = False
-                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH" and "RightEye" in obj.vertex_groups],
                                (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, int(margin * resolution / 2))
                     for obj in collection.all_objects:
                         if "reyemask" in obj.modifiers:
@@ -811,7 +811,10 @@ class BakeButton(bpy.types.Operator):
         # Option to apply current shape keys, otherwise normals bake weird
         # If true, apply all shapekeys and remove '_bakeme' keys
         # Otherwise, only apply '_bakeme' keys
-        for obj in collection.all_objects:
+        Common.switch('EDIT')
+        Common.switch('OBJECT')
+        for name in [ob.name for ob in collection.all_objects]:
+            obj = collection.all_objects[name]
             if obj.type == "MESH" and Common.has_shapekeys(obj):
                 obj.select_set(True)
                 context.view_layer.objects.active = obj
