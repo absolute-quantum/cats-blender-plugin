@@ -488,30 +488,21 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
                     cats_uv_layers.append('CATS UV')
-                    if uv_overlap_correction == "REPROJECT" or reproject_anyway:
-                        idx = child.data.uv_layers.active_index
-                        child.data.uv_layers.active_index = len(child.data.uv_layers) - 1
-                        bpy.ops.object.editmode_toggle()
-                        bpy.ops.mesh.select_all(action='SELECT')
-                        bpy.ops.uv.select_all(action='SELECT')
-                        bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01)
-                        bpy.ops.object.editmode_toggle()
-                        child.data.uv_layers.active_index = idx
-                    # Supersampled maps are only affected by reproject
                     if supersample_normals:
                         bpy.ops.mesh.uv_texture_add()
                         child.data.uv_layers[-1].name = 'CATS UV Super'
                         cats_uv_layers.append('CATS UV Super')
-                        if uv_overlap_correction == "REPROJECT":
+                    if uv_overlap_correction == "REPROJECT" or reproject_anyway:
+                        for layer in cats_uv_layers:
                             idx = child.data.uv_layers.active_index
-                            child.data.uv_layers.active_index = len(child.data.uv_layers) - 1
-                            bpy.ops.object.editmode_toggle()
+                            child.data.uv_layers[layer].active = True
+                            Common.switch('EDIT')
                             bpy.ops.mesh.select_all(action='SELECT')
                             bpy.ops.uv.select_all(action='SELECT')
                             bpy.ops.uv.smart_project(angle_limit=66.0, island_margin=0.01)
-                            bpy.ops.object.editmode_toggle()
+                            Common.switch('OBJECT')
                             child.data.uv_layers.active_index = idx
-                    if uv_overlap_correction == "UNMIRROR":
+                    elif uv_overlap_correction == "UNMIRROR":
                         # TODO: issue a warning if any source images don't use 'wrap'
                         # Select all faces in +X
                         print("Un-mirroring source CATS UV data")
@@ -522,6 +513,11 @@ class BakeButton(bpy.types.Operator):
                             if poly.center[0] > 0:
                                 for loop in poly.loop_indices:
                                     uv_layer[loop].uv.x += 1
+                    elif uv_overlap_correction == "MANUAL":
+                        if "Target" in child.data.uv_layers:
+                            for idx, loop in enumerate(child.data.uv_layers["Target"].data):
+                                child.data.uv_layers["CATS UV"].data[idx].uv = loop.uv
+                                child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
 
             # Select all meshes. Select all UVs. Average islands scale
             for layer in cats_uv_layers:
