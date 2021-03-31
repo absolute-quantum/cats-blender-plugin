@@ -481,10 +481,13 @@ class BakeButton(bpy.types.Operator):
                     child.select_set(True)
                     context.view_layer.objects.active = child
                     # make sure to copy the render-active UV only
+                    active_uv = None
                     for uvmap in child.data.uv_layers:
                         if uvmap.active_render:
                             child.data.uv_layers.active = uvmap
-                    reproject_anyway = len(child.data.uv_layers) == 0
+                            active_uv = uvmap
+                    reproject_anyway = (len(child.data.uv_layers) == 0 or
+                                        all(set(loop.uv[:]).issubset({0,1}) for loop in active_uv.data))
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
                     cats_uv_layers.append('CATS UV')
@@ -638,7 +641,7 @@ class BakeButton(bpy.types.Operator):
                 if emit_exclude_eyes:
                     # Bake each eye on top individually
                     for obj in collection.all_objects:
-                        if obj.type == "MESH" and "LeftEye" in obj.vertex_groups:
+                        if obj.type == "MESH":
                             leyemask = obj.modifiers.new(type='MASK', name="leyemask")
                             leyemask.mode = "VERTEX_GROUP"
                             leyemask.vertex_group = "LeftEye"
@@ -650,7 +653,7 @@ class BakeButton(bpy.types.Operator):
                             obj.modifiers.remove(obj.modifiers["leyemask"])
 
                     for obj in collection.all_objects:
-                        if obj.type == "MESH" and "RightEye" in obj.vertex_groups:
+                        if obj.type == "MESH":
                             reyemask = obj.modifiers.new(type='MASK', name="reyemask")
                             reyemask.mode = "VERTEX_GROUP"
                             reyemask.vertex_group = "RightEye"
