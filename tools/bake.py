@@ -360,7 +360,9 @@ class BakeButton(bpy.types.Operator):
 
         # Change render engine to cycles and save the current one
         render_engine_tmp = context.scene.render.engine
+        render_device_tmp = context.scene.cycles.device
         context.scene.render.engine = 'CYCLES'
+        context.scene.cycles.device = 'CPU'
 
         # Change decimate settings, run bake, change them back
         decimation_mode = context.scene.decimation_mode
@@ -387,6 +389,7 @@ class BakeButton(bpy.types.Operator):
 
         # Change render engine back to original
         context.scene.render.engine = render_engine_tmp
+        context.scene.cycles.device = render_device_tmp
 
         return {'FINISHED'}
 

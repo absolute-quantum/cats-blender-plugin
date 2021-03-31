@@ -1,4 +1,5 @@
 import bpy
+import addon_utils
 
 from .main import ToolPanel
 from ..tools import common as Common
@@ -160,3 +161,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         col.separator()
         row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
+        if not addon_utils.check("render_auto_tile_size")[1]:
+            row = col.row(align=True)
+            row.label(text="Enabling \"Auto Tile Size\" reccomended!", icon="INFO")
