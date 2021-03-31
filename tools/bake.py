@@ -646,26 +646,32 @@ class BakeButton(bpy.types.Operator):
                 self.bake_pass(context, "emission", "COMBINED", {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
                                (resolution, resolution), 512, 0, [0.0, 0.0, 0.0, 1.0], True, int(margin * resolution / 2))
                 if emit_exclude_eyes:
+                    def group_relevant(obj, groupname):
+                        if obj.type == "MESH" and groupname in obj.vertex_groups:
+                            idx = obj.vertex_groups[groupname].index
+                            return any( any(group.group == idx and group.weight > 0.0 for group in vert.groups)
+                                    for vert in obj.data.vertices)
+
                     # Bake each eye on top individually
                     for obj in collection.all_objects:
-                        if obj.type == "MESH":
+                        if group_relevant(obj, "LeftEye"):
                             leyemask = obj.modifiers.new(type='MASK', name="leyemask")
                             leyemask.mode = "VERTEX_GROUP"
                             leyemask.vertex_group = "LeftEye"
                             leyemask.invert_vertex_group = False
-                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH" and "LeftEye" in obj.vertex_groups],
+                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if group_relevant(obj, "LeftEye")],
                                (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, int(margin * resolution / 2))
                     for obj in collection.all_objects:
                         if "leyemask" in obj.modifiers:
                             obj.modifiers.remove(obj.modifiers["leyemask"])
 
                     for obj in collection.all_objects:
-                        if obj.type == "MESH":
+                        if group_relevant(obj, "RightEye"):
                             reyemask = obj.modifiers.new(type='MASK', name="reyemask")
                             reyemask.mode = "VERTEX_GROUP"
                             reyemask.vertex_group = "RightEye"
                             reyemask.invert_vertex_group = False
-                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH" and "RightEye" in obj.vertex_groups],
+                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if group_relevant(obj, "RightEye")],
                                (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, int(margin * resolution / 2))
                     for obj in collection.all_objects:
                         if "reyemask" in obj.modifiers:
