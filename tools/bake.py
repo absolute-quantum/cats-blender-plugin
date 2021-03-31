@@ -96,7 +96,7 @@ def autodetect_passes(self, context, tricount, is_desktop):
 
     if any("Target" in obj.data.uv_layers for obj in Common.get_meshes_objects(check=False)):
         context.scene.bake_uv_overlap_correction = 'MANUAL'
-    else if context.scene.bake_use_decimation and context.scene.bake_pass_normal:
+    elif context.scene.bake_use_decimation and context.scene.bake_pass_normal:
         context.scene.bake_uv_overlap_correction = 'UNMIRROR'
 
     # TODO: Decimating doesn't guarentee hard edges anyway, so do full split if needed
