@@ -66,7 +66,6 @@ def autodetect_passes(self, context, tricount, is_desktop):
     # Decimate if we're over the limit
     total_tricount = sum([Common.get_tricount(obj) for obj in objects])
     context.scene.bake_use_decimation = total_tricount > tricount
-    context.scene.bake_uv_overlap_correction = 'UNMIRROR' if context.scene.bake_use_decimation else "NONE"
 
     # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
     context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
@@ -94,6 +93,11 @@ def autodetect_passes(self, context, tricount, is_desktop):
 
     # Apply transforms: on if more than one mesh TODO: with different materials?
     context.scene.bake_normal_apply_trans = len(objects) > 1
+
+    if any("Target" in obj.data.uv_layers for obj in Common.get_meshes_objects(check=False)):
+        context.scene.bake_uv_overlap_correction = 'MANUAL'
+    else if context.scene.bake_use_decimation and context.scene.bake_pass_normal:
+        context.scene.bake_uv_overlap_correction = 'UNMIRROR'
 
     # TODO: Decimating doesn't guarentee hard edges anyway, so do full split if needed
     #context.scene.bake_optimize_static = True
@@ -421,7 +425,7 @@ class BakeButton(bpy.types.Operator):
         normal_apply_trans = context.scene.bake_normal_apply_trans
         diffuse_alpha_pack = context.scene.bake_diffuse_alpha_pack
         metallic_alpha_pack = context.scene.bake_metallic_alpha_pack
-        supersample_normals = True # Bake the intermediate step at 2x resolution. Probably best to leave this on.
+        supersample_normals = context.scene.bake_pass_normal and context.scene.bake_use_decimation # Bake the intermediate step at 2x resolution. Probably best to leave this on.
         overlap_aware = False # Unreliable until UVP doesn't care about the island scale.
         emit_indirect = context.scene.bake_emit_indirect
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
