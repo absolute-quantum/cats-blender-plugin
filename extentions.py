@@ -85,9 +85,22 @@ def register():
         default=True
     )
 
+    # Manual
     Scene.use_google_only = BoolProperty(
         name=t('Scene.use_google_only.label'),
         description=t('Scene.use_google_only.desc'),
+        default=False
+    )
+
+    Scene.keep_merged_bones = BoolProperty(
+        name='Keep Merged Bones',
+        description='Select this to keep the bones after merging them to their parents or to the active bone',
+        default=False
+    )
+
+    Scene.merge_visible_meshes_only = BoolProperty(
+        name='Merge Visible Meshes Only',
+        description='Select this to only merge the weights of the visible meshes',
         default=False
     )
 
@@ -97,6 +110,7 @@ def register():
         default=False
     )
 
+    # Custom Avatar Creation
     Scene.merge_mode = EnumProperty(
         name=t('Scene.merge_mode.label'),
         description=t('Scene.merge_mode.desc'),
@@ -461,7 +475,7 @@ def register():
         description=t('Scene.max_tris.desc'),
         default=70000,
         min=1,
-        max=200000
+        max=500000
     )
 
     # Eye Tracking

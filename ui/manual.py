@@ -41,6 +41,13 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.operator(Armature_manual.MergeWeights.bl_idname, text=t('ManualPanel.MergeWeights.label'))
         row.operator(Armature_manual.MergeWeightsToActive.bl_idname, text=t('ManualPanel.MergeWeightsToActive.label'))
 
+        row = col.row(align=True)
+        row.scale_y = 0.75
+        row.prop(context.scene, 'keep_merged_bones')
+        row = col.row(align=True)
+        row.scale_y = 0.75
+        row.prop(context.scene, 'merge_visible_meshes_only')
+
         # Translate
         col.separator()
         row = col.row(align=True)
@@ -90,6 +97,9 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.DuplicateBonesButton.bl_idname, icon='GROUP_BONE')
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.operator(Armature_manual.ConnectBonesButton.bl_idname, icon='CONSTRAINT_BONE')
 
             col.separator()
             row = layout_split(col, factor=0.27, align=True)

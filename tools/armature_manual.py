@@ -722,7 +722,7 @@ class MergeWeightsToActive(bpy.types.Operator):
 def merge_weights(armature, parenting_list):
     Common.switch('OBJECT')
     # Merge the weights on the meshes
-    for mesh in Common.get_meshes_objects(armature_name=armature.name):
+    for mesh in Common.get_meshes_objects(armature_name=armature.name, visible_only=bpy.context.scene.merge_visible_meshes_only):
         Common.set_active(mesh)
 
         for bone, parent in parenting_list.items():
@@ -738,8 +738,9 @@ def merge_weights(armature, parenting_list):
     Common.switch('EDIT')
 
     # Delete merged bones
-    for bone in parenting_list.keys():
-        armature.data.edit_bones.remove(armature.data.edit_bones.get(bone))
+    if not bpy.context.scene.keep_merged_bones:
+        for bone in parenting_list.keys():
+            armature.data.edit_bones.remove(armature.data.edit_bones.get(bone))
 
 
 @register_wrap
@@ -1396,3 +1397,93 @@ class DuplicateBonesButton(bpy.types.Operator):
 
         self.report({'INFO'}, t('DuplicateBonesButton.success', number=str(bone_count)))
         return {'FINISHED'}
+
+
+@register_wrap
+class ConnectBonesButton(bpy.types.Operator):
+    bl_idname = 'cats_manual.connect_bones'
+    bl_label = 'Connect Bones'
+    bl_description = 'Connects all bones with their respective children'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        active_obj = bpy.context.active_object
+        return active_obj and active_obj.type == 'ARMATURE'
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+
+        armature = bpy.context.object
+
+        Common.switch('EDIT')
+
+        Common.fix_bone_orientations(armature)
+
+        saved_data.load()
+
+        self.report({'INFO'}, 'Connected all bones!')
+        return {'FINISHED'}
+
+
+@register_wrap
+class TestButton(bpy.types.Operator):
+    bl_idname = 'cats_manual.test'
+    bl_label = 'Testing Stuff'
+    bl_description = 'This is for tests by the devs only'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        self.copy_weights(context)
+
+        self.report({'INFO'}, 'Test complete!')
+        return {'FINISHED'}
+
+    def copy_weights(self, context):
+        # mesh_source = Common.get_objects()['ClothesCombined']
+        # mesh_target = Common.get_objects()['ClothesW']
+        #
+        # mesh_source = Common.get_objects()['ClothesCombined']
+        # mesh_target = Common.get_objects()['ClothesW']
+
+        mesh_source = Common.get_objects()['Legs']
+        mesh_target = Common.get_objects()['_LegsW']
+
+        def group_source(vg):
+            return mesh_source.vertex_groups[vg.group]
+
+        def group_target(vg):
+            return mesh_target.vertex_groups[vg.group]
+
+        # Copy all vertex groups
+        for vg in mesh_source.vertex_groups:
+            if not mesh_target.vertex_groups.get(vg.name):
+                mesh_target.vertex_groups.new(name=vg.name)
+
+        # Copy vertex group weights
+        i = 0
+        for v in mesh_target.data.vertices:
+            # print(i)
+
+            # Find closest vert in source
+            v_source = None
+            v_dist = 100
+
+            for v2 in mesh_source.data.vertices:
+                if (v.co - v2.co).length < v_dist:
+                    v_dist = (v.co - v2.co).length
+                    v_source = v2
+                    if v_dist < 0.0001:
+                        break
+
+            print(i, v_dist)
+
+            for vg in v_source.groups:
+                vg_target = group_target(vg)
+                # print(vg_target.name, vg.weight)
+
+                vg_target.add([v.index], vg.weight, 'REPLACE')
+
+            i += 1
+            # if i == 1000:
+            #     break

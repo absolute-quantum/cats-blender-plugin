@@ -719,7 +719,7 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-def get_meshes_objects(armature_name=None, mode=0, check=True):
+def get_meshes_objects(armature_name=None, mode=0, check=True, visible_only=False):
     # Modes:
     # 0 = With armatures only
     # 1 = Top level only
@@ -734,7 +734,7 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
     meshes = []
     for ob in get_objects():
         if ob.type == 'MESH':
-            if mode == 0:
+            if mode == 0 or mode == 5:
                 if ob.parent:
                     if ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
                         meshes.append(ob)
@@ -751,6 +751,11 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
             elif mode == 3:
                 if is_selected(ob):
                     meshes.append(ob)
+
+    if visible_only:
+        for mesh in meshes:
+            if is_hidden(mesh):
+                meshes.remove(mesh)
 
     # Check for broken meshes and delete them
     if check:

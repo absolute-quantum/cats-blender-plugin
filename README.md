@@ -326,9 +326,14 @@ It checks for a new version automatically once every day.
 - Added button to download the latest Cats Translations
   - This feature is for translators to test their translations in the plugin
   - If you want to help to translate Cats into any language, please let me (Hotox) know in our Discord
-- **General:**
+- **Model Options:**
+  - Added "Connect Bones" button
+  - Added options to keep merged bones and to merge the bones of visible meshes only
+- **Custom Model Creation:**
   - Reworked "Attach Mesh" feature, it is much more reliable now
+- **General:**
   - Fixed translation errors
+  - Added "Conntect Bones" button
 
 
 #### 0.18.0
