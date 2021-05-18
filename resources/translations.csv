@@ -1213,7 +1213,7 @@ ShowPatchnotesPanel.releaseDate,Released: {date},,
 ConfirmUpdatePanel.label,Confirm Update,アップデートを確認,업데이트 확인
 ConfirmUpdatePanel.desc,This shows you a panel in which you have to confirm your update choice,,
 ConfirmUpdatePanel.warn.dev1,Warning:,,
-ConfirmUpdatePanel.warn.dev2, The development version of CATS if the place where,,
+ConfirmUpdatePanel.warn.dev2, The development version of CATS is the place where,,
 ConfirmUpdatePanel.warn.dev3, we test new features and bug fixes.,,
 ConfirmUpdatePanel.warn.dev4, This version might be very unstable and some features,,
 ConfirmUpdatePanel.warn.dev5, might not work correctly.,,

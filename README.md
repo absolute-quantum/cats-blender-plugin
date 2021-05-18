@@ -327,6 +327,7 @@ It checks for a new version automatically once every day.
   - This feature is for translators to test their translations in the plugin
   - If you want to help to translate Cats into any language, please let me (Hotox) know in our Discord
 - **General:**
+  - Reworked "Attach Mesh" feature, it is much more reliable now
   - Fixed translation errors
 
 
