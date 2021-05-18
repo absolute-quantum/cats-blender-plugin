@@ -320,12 +320,15 @@ It checks for a new version automatically once every day.
   - Cats is now translated into Korean by a large portion
   - To use it, simply change your Blender language to Korean and then restart Blender or select it in the Cats Settings
   - Thanks to **Siromori** for contributing the translation! <3
-- Added Cats UiI Language setting
+- Added Cats Ui Language setting
   - This lets you choose in which language Cats should be displayed
   - Setting it to "auto" will choose the current Blender language
 - Added button to download the latest Cats Translations
   - This feature is for translators to test their translations in the plugin
   - If you want to help to translate Cats into any language, please let me (Hotox) know in our Discord
+- **General:**
+  - Fixed translation errors
+
 
 #### 0.18.0
 - **Added Bake Panel!**
