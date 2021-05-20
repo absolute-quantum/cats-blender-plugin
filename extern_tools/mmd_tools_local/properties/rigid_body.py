@@ -70,6 +70,8 @@ def _set_bone(prop, value):
 
 
 def _get_size(prop):
+    if prop.id_data.mmd_type != 'RIGID_BODY':
+        return (0, 0, 0)
     return getRigidBodySize(prop.id_data)
 
 def _set_size(prop, value):

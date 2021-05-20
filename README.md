@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.18.0)
+# Cats Blender Plugin (0.19.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -315,7 +315,8 @@ It checks for a new version automatically once every day.
 
 ## Changelog
 
-#### 0.18.1
+#### 0.19.0
+- **Fully compatible with Blender 2.93**
 - **Added Korean translation!**
   - Cats is now translated into Korean by a large portion
   - To use it, simply change your Blender language to Korean and then restart Blender or select it in the Cats Settings
@@ -333,7 +334,7 @@ It checks for a new version automatically once every day.
   - Reworked "Attach Mesh" feature, it is much more reliable now
 - **General:**
   - Fixed translation errors
-  - Added "Conntect Bones" button
+  - Updated mmd_tools
 
 
 #### 0.18.0

@@ -162,6 +162,8 @@ def _setVisibilityOfMMDRigArmature(prop, v):
     arm.hide = not v
 
 def _getVisibilityOfMMDRigArmature(prop):
+    if prop.id_data.mmd_type != 'ROOT':
+        return False
     rig = mmd_model.Model(prop.id_data)
     arm = rig.armature()
     return not (arm is None or arm.hide)
