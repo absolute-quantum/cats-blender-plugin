@@ -1844,9 +1844,6 @@ def fix_bone_orientations(armature):
                 bone.tail = bone.children[0].head
                 if(len(bone.parent.children) == 1): #if the bone's parent bone only has one child, connect the bones (Don't connect them all because that would mess up hand/finger bones)
                     bone.use_connect = True
-        elif(len(bone.children) == 0) and bone.name not in ['LeftEye', 'RightEye', 'Head', 'Hips']: #If the bone has zero children it is an end bone. So Let's fix it's pointing direction.
-            difference = bone.parent.tail-bone.parent.head #find the difference in 3D cordinate distance between the head and tail of the parent bone
-            bone.tail = (difference+bone.parent.head)+difference #make the end bone's tail point in the same direction and length as the parent bone
 
 
 def update_material_list(self=None, context=None):
