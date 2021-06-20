@@ -614,7 +614,7 @@ class Model:
         elif bpy.app.version < (2, 80, 0):
             for i in self.temporaryObjects():
                 bpy.data.objects.remove(i, do_unlink=True)
-        else:
+        elif bpy.app.version < (2, 81, 0):
             tmp_objs = tuple(self.temporaryObjects())
             for i in tmp_objs:
                 for c in i.users_collection:
@@ -623,6 +623,8 @@ class Model:
             for i in tmp_objs:
                 if i.users < 1:
                     bpy.data.objects.remove(i)
+        else:
+            bpy.ops.object.delete({'selected_objects':tuple(self.temporaryObjects()), 'active_object':self.rootObject()})
 
     def __removeChildrenOfTemporaryGroupObject(self):
         tmp_grp_obj = self.temporaryGroupObject()

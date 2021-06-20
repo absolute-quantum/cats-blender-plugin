@@ -430,8 +430,9 @@ class ViewBoneMorph(Operator):
             p_bone = armature.pose.bones.get(morph_data.bone, None)
             if p_bone:
                 p_bone.bone.select = True
-                p_bone.location += morph_data.location
-                p_bone.rotation_quaternion = matmul(p_bone.rotation_quaternion, morph_data.rotation)
+                mtx = matmul(p_bone.matrix_basis.to_3x3(), Quaternion(*morph_data.rotation.to_axis_angle()).to_matrix()).to_4x4()
+                mtx.translation = p_bone.location + morph_data.location
+                p_bone.matrix_basis = mtx
         return { 'FINISHED' }
 
 @register_wrap
@@ -466,14 +467,12 @@ class ApplyBoneMorph(Operator):
         morph = mmd_root.bone_morphs[mmd_root.active_morph]
         morph.data.clear()
         morph.active_data = 0
-        def_loc = Vector((0,0,0))
-        def_rot = Quaternion((1,0,0,0))
         for p_bone in armature.pose.bones:
-            if p_bone.location != def_loc or p_bone.rotation_quaternion != def_rot:
+            if p_bone.location.length > 0 or p_bone.matrix_basis.decompose()[1].angle > 0:
                 item = morph.data.add()
                 item.bone = p_bone.name
                 item.location = p_bone.location
-                item.rotation = p_bone.rotation_quaternion
+                item.rotation = p_bone.rotation_quaternion if p_bone.rotation_mode == 'QUATERNION' else p_bone.matrix_basis.to_quaternion()
                 p_bone.bone.select = True
             else:
                 p_bone.bone.select = False
@@ -489,7 +488,7 @@ class SelectRelatedBone(Operator):
     def execute(self, context):
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
-        mmd_root=root.mmd_root
+        mmd_root = root.mmd_root
         rig = mmd_model.Model(root)
         armature = rig.armature()
         morph = mmd_root.bone_morphs[mmd_root.active_morph]
@@ -507,16 +506,17 @@ class EditBoneOffset(Operator):
     def execute(self, context):
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
-        mmd_root=root.mmd_root  
+        mmd_root = root.mmd_root
         rig = mmd_model.Model(root)
-        armature = rig.armature()  
+        armature = rig.armature()
         morph = mmd_root.bone_morphs[mmd_root.active_morph]
         morph_data = morph.data[morph.active_data]
         p_bone = armature.pose.bones[morph_data.bone]
-        p_bone.location = morph_data.location
-        p_bone.rotation_quaternion = morph_data.rotation
+        mtx = Quaternion(*morph_data.rotation.to_axis_angle()).to_matrix().to_4x4()
+        mtx.translation = morph_data.location
+        p_bone.matrix_basis = mtx
         utils.selectSingleBone(context, armature, p_bone.name)
-        return { 'FINISHED' }   
+        return { 'FINISHED' }
 
 @register_wrap
 class ApplyBoneOffset(Operator):
@@ -528,15 +528,15 @@ class ApplyBoneOffset(Operator):
     def execute(self, context):
         obj = context.active_object
         root = mmd_model.Model.findRoot(obj)
-        mmd_root=root.mmd_root  
+        mmd_root = root.mmd_root
         rig = mmd_model.Model(root)
-        armature = rig.armature()        
+        armature = rig.armature()
         morph = mmd_root.bone_morphs[mmd_root.active_morph]
         morph_data = morph.data[morph.active_data]
         p_bone = armature.pose.bones[morph_data.bone]
         morph_data.location = p_bone.location
-        morph_data.rotation = p_bone.rotation_quaternion
-        return { 'FINISHED' }  
+        morph_data.rotation = p_bone.rotation_quaternion if p_bone.rotation_mode == 'QUATERNION' else p_bone.matrix_basis.to_quaternion()
+        return { 'FINISHED' }
 
 @register_wrap
 class ViewUVMorph(Operator):

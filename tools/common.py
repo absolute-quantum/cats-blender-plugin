@@ -303,11 +303,12 @@ def set_default_stage():
 def apply_modifier(mod, as_shapekey=False):
     if bpy.app.version < (2, 90):
         bpy.ops.object.modifier_apply(apply_as='SHAPE' if as_shapekey else 'DATA', modifier=mod.name)
+        return
+
+    if as_shapekey:
+        bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=mod.name)
     else:
-        if as_shapekey:
-            bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=mod.name)
-        else:
-            bpy.ops.object.modifier_apply(modifier=mod.name)
+        bpy.ops.object.modifier_apply(modifier=mod.name)
 
 
 def remove_bone(find_bone):

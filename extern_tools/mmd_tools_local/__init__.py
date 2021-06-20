@@ -3,11 +3,12 @@
 bl_info = {
     "name": "mmd_tools",
     "author": "sugiany",
-    "version": (0, 7, 1),
+    "version": (0, 7, 2),
     "blender": (2, 80, 0),
     "location": "View3D > Tool Shelf > MMD Tools Panel",
     "description": "Utility tools for MMD model editing. (powroupi's forked version)",
     "warning": "",
+    "doc_url": "https://github.com/powroupi/blender_mmd_tools/wiki",
     "wiki_url": "https://github.com/powroupi/blender_mmd_tools/wiki",
     "tracker_url": "https://github.com/powroupi/blender_mmd_tools/issues",
     "category": "Object",
@@ -18,18 +19,14 @@ def register_wrap(cls):
     #print('%3d'%len(__bl_classes), cls)
     #assert(cls not in __bl_classes)
     if __make_annotations:
-        import bpy
-        if bpy.app.version < (2, 93, 0):
-            bl_props = {k:v for k, v in cls.__dict__.items() if isinstance(v, tuple)}
-        else:
-            bl_props = {k:v for k, v in cls.__dict__.items() if isinstance(v, bpy.props._PropertyDeferred)}
+        bl_props = {k:v for k, v in cls.__dict__.items() if isinstance(v, __bpy_property)}
         if bl_props:
             if '__annotations__' not in cls.__dict__:
                 setattr(cls, '__annotations__', {})
             annotations = cls.__dict__['__annotations__']
             for k, v in bl_props.items():
-                #print('   -', k, v[0])
-                #assert(getattr(v[0], '__module__', None) == 'bpy.props' and isinstance(v[1], dict))
+                #print('   -', k, v)
+                #assert(v.__class__.__name__ == '_PropertyDeferred' or getattr(v[0], '__module__', None) == 'bpy.props' and isinstance(v[1], dict))
                 annotations[k] = v
                 delattr(cls, k)
     if hasattr(cls, 'bl_rna'):
@@ -50,6 +47,7 @@ else:
     from bpy.app.handlers import persistent
 
     __make_annotations = (bpy.app.version >= (2, 80, 0))
+    __bpy_property = (bpy.props._PropertyDeferred if hasattr(bpy.props, '_PropertyDeferred') else tuple)
     from . import properties
     from . import operators
     from . import panels

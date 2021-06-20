@@ -47,7 +47,7 @@ class SupporterPanel(ToolPanel, bpy.types.Panel):
         row.label(text=t('SupporterPanel.missingName1'), icon="INFO")
         row = col.row(align=True)
         row.scale_y = 0.3
-        row.label(text=t('SupporterPanel.missingName2'))
+        row.label(text=t('SupporterPanel.missingName2'), icon='BLANK1')
         col.separator()
         row = col.row(align=True)
         row.scale_y = 0.8

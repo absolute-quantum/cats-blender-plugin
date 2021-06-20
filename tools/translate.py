@@ -437,7 +437,7 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
         try:
             translations = [translator.translate(text, lang_src='ja', lang_tgt='en').strip() for text in google_input]
             break
-        except requests.exceptions.ConnectionError:
+        except (requests.exceptions.ConnectionError, ConnectionRefusedError):
             print('CONNECTION TO GOOGLE FAILED!')
             if self:
                 self.report({'ERROR'}, t('update_dictionary.error.cantConnect'))

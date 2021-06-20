@@ -78,6 +78,8 @@ class VPDExporter:
             matrix_basis_map = {b:bak[0] for b, bak in backup.items()}
 
         def __export_index(index, filepath):
+            for b in pose_bones:
+                b.matrix_basis = matrix_basis_map.get(b, None) or Matrix.Identity(4)
             bpy.ops.poselib.apply_pose(pose_index=index)
             vpd_bones = self.__exportBones(armObj, converters, matrix_basis_map)
             self.__exportVPDFile(filepath, vpd_bones)

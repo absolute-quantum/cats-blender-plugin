@@ -555,6 +555,27 @@
       "description": "So CATS, much DOGE, wow",
       "tier": 1,
       "other info": "stays on this list"
+    },{
+      "displayname": "Evendora",
+      "startdate": "2021-05-30",
+      "description": "Eves Motion Empire - Convert MMD Dance Animation for VRChat Avatars",
+      "website": "https://discord.com/invite/3xHgUSN",
+      "tier": 1
+    },{
+      "displayname": "Wolfost",
+      "startdate": "2021-06-03"
+    },{
+      "displayname": "Blue-kun",
+      "startdate": "2021-06-03"
+    },{
+      "displayname": "Furtrap",
+      "startdate": "2021-06-20",
+      "description": "We're CATS, not CAN'Ts. ZING!!!",
+      "website": "https://linktr.ee/furtrap",
+      "tier": 1
+    },{
+      "displayname": "Yawn.",
+      "startdate": "2021-06-20"
     }
   ]
 }
