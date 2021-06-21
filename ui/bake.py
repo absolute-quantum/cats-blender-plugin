@@ -160,6 +160,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         col.separator()
         col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_device', expand=True)
+        row = col.row(align=True)
         row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
         if not addon_utils.check("render_auto_tile_size")[1]:
             row = col.row(align=True)

@@ -362,7 +362,10 @@ class BakeButton(bpy.types.Operator):
         render_engine_tmp = context.scene.render.engine
         render_device_tmp = context.scene.cycles.device
         context.scene.render.engine = 'CYCLES'
-        context.scene.cycles.device = 'CPU'
+        if context.scene.bake_device == 'GPU':
+            context.scene.cycles.device = 'GPU'
+        else:
+            context.scene.cycles.device = 'CPU'
 
         # Change decimate settings, run bake, change them back
         decimation_mode = context.scene.decimation_mode

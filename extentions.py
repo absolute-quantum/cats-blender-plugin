@@ -281,6 +281,16 @@ def register():
         default="UNMIRROR"
     )
 
+    Scene.bake_device = EnumProperty(
+        name='Bake Device',
+        description='Device to bake on. GPU gives a significant speedup, but can cause issues depending on your graphics drivers.',
+        default='GPU',
+        items=[
+            ('CPU', 'CPU', 'Perform bakes on CPU (Safe)'),
+            ('GPU', 'GPU', 'Perform bakes on GPU (Fast)')
+        ]
+    )
+
     Scene.bake_prioritize_face = BoolProperty(
         name=t('Scene.bake_prioritize_face.label'),
         description=t('Scene.bake_prioritize_face.desc'),
