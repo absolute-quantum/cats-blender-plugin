@@ -1,17 +1,15 @@
+#if UNITY_EDITOR
 using System.Text;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-#if UNITY_EDITOR
 using UnityEditor;
-#endif
 using System;
 using System.IO;
 
 [InitializeOnLoad]
 public class BakeFixer : ScriptableObject
 {
-#if UNITY_EDITOR
     static BakeFixer()
     {
         EditorApplication.hierarchyChanged += Update;
@@ -35,7 +33,7 @@ public class BakeFixer : ScriptableObject
                 var stat = obj.transform.Find("Static");
                 var arm = obj.transform.Find("Armature");
                 var smr_body = (SkinnedMeshRenderer)body.GetComponent(typeof(SkinnedMeshRenderer));
-                var smr_stat = (SkinnedMeshRenderer)body.GetComponent(typeof(SkinnedMeshRenderer));
+                var smr_stat = (SkinnedMeshRenderer)stat.GetComponent(typeof(SkinnedMeshRenderer));
 
                 if (arm.childCount > 0) {
                     Debug.Log("Altering anchor point for: " + obj.name);
@@ -48,5 +46,5 @@ public class BakeFixer : ScriptableObject
             }	
         }
     }
-#endif
 }
+#endif
