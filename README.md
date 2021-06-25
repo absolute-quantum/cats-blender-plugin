@@ -349,7 +349,7 @@ It checks for a new version automatically once every day.
     - Sets your basis to whatever current mix of shapekeys you have. Always-on shapekeys are terrible for performance, 
       so if you have some that are only intended to customize the character without updates, this will help with that.
   - '_bake' shapekeys: any shapekey with '_bake' at the end will be applied and completely removed, allowing the static shapekeys option to work better. 
-    If you're an avatar creator distributing bases, this is reccomended for character customization keys!
+    If you're an avatar creator distributing bases, this is recommended for character customization keys!
   - Misc: Updated defaults to be in line with updated Quest limits.
 
 
