@@ -317,16 +317,17 @@ It checks for a new version automatically once every day.
 
 #### 0.19.0
 - **Fully compatible with Blender 2.93**
-- **Added Korean translation!**
-  - Cats is now translated into Korean by a large portion
-  - To use it, simply change your Blender language to Korean and then restart Blender or select it in the Cats Settings
-  - Thanks to **Siromori** for contributing the translation! <3
-- Added Cats Ui Language setting
-  - This lets you choose in which language Cats should be displayed
-  - Setting it to "auto" will choose the current Blender language
-- Added button to download the latest Cats Translations
-  - This feature is for translators to test their translations in the plugin
-  - If you want to help to translate Cats into any language, please let me (Hotox) know in our Discord
+- **Translations:**
+  - **Added Korean translation!**
+    - Cats is now translated into Korean by a large portion
+    - To use it, simply change your Blender language to Korean and then restart Blender or select it in the Cats Settings
+    - Thanks to **Siromori** for contributing the translation! <3
+  - Added Cats Ui Language setting
+    - This lets you choose in which language Cats should be displayed
+    - Setting it to "auto" will choose the current Blender language
+  - Added button to download the latest Cats Translations
+    - This feature is for translators to test their translations in the plugin
+    - If you want to help to translate Cats into any language, please let me (Hotox) know in our Discord
 - **Model Options:**
   - Added "Connect Bones" button
   - Added options to keep merged bones and to merge the bones of visible meshes only
