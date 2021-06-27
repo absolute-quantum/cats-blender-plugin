@@ -36,10 +36,11 @@ class UpdaterPanel(ToolPanel, bpy.types.Panel):
         row.label(text=t('Scene.ui_lang.label') + ':')
         row.prop(context.scene, 'ui_lang', text='')
 
-        col.separator()
-
-        row = col.row(align=True)
-        row.operator(DownloadTranslations.bl_idname)
+        # Only show this in the dev branch
+        if globs.dev_branch:
+            col.separator()
+            row = col.row(align=True)
+            row.operator(DownloadTranslations.bl_idname)
 
         col.separator()
 
