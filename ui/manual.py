@@ -133,6 +133,11 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = button_height
             row.operator(Armature_manual.FixVRMShapesButton.bl_idname, icon='SHAPEKEY_DATA')
 
+            if globs.dev_branch:
+                row = col.row(align=True)
+                row.scale_y = button_height
+                row.operator(Armature_manual.TestButton.bl_idname)
+
             # row = col.row(align=True)
             # row.scale_y = button_height
             # row.operator(Armature_manual.SeparateByCopyProtection.bl_idname, icon='SHAPEKEY_DATA')
