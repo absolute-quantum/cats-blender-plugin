@@ -341,7 +341,7 @@ It checks for a new version automatically once every day.
   - 'Optimize static shapekeys' option
     - Splits your mesh into two skinned meshes, one with all shapekey-influenced geometry, 
       one with the rest (and fixes the normals in place). Significantly improves GPU performance, especially when a lot of shapekeys are in effect. 
-      Needs the lighting anchor point in Unity to be set to the armature Hips on both or you'll get lighting artifacts.
+      Needs the lighting anchor point in Unity to be set to the armature Hips on both, or you'll get lighting artifacts.
   - Introduce 'BakeFixer.cs', which is a run-time unity script that hopefully should do the lighting work for you.
   - 'Ignore hidden objects' option
     - When baking, this will ignore any objects you currently have hidden, making it easier to create different versions of your avatar.
