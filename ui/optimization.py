@@ -39,6 +39,10 @@ def check_for_smc():
                 old_smc_version = True
                 # print('TOO OLD!')
                 continue
+            if bpy.app.version >= (2, 93) and mod.bl_info['version'] < (2, 1, 1, 8):
+                old_smc_version = True
+                # print('TOO OLD!')
+                continue
             if not addon_utils.check(mod.__name__)[0]:
                 smc_is_disabled = True
                 # print('DISABLED!')

@@ -336,7 +336,7 @@ It checks for a new version automatically once every day.
   - Fixed translation errors
   - Updated mmd_tools
 - **Bake: (by feilen)**
-  - Emission influence baking: fake realtime lighting based on your emissive channel, quest-compatible! (pictured above)
+  - Emission influence baking: fake realtime lighting based on your emissive channel, quest-compatible!
   - 'Manual' reprojection mode for Bake: creating new UV maps called 'Target' will allow you to re-bake to a specific layout.
   - 'Optimize static shapekeys' option
     - Splits your mesh into two skinned meshes, one with all shapekey-influenced geometry, 
