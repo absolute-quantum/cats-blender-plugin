@@ -29,7 +29,7 @@ import bpy
 from . import common as Common
 from .register import register_wrap
 from .. import globs
-from ..translations import t
+from .translations import t
 
 # wm = bpy.context.window_manager
 # wm.progress_begin(0, len(bone_merge))

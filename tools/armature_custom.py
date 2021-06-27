@@ -30,7 +30,7 @@ import webbrowser
 from . import common as Common
 from . import armature_bones as Bones
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 
 @register_wrap
@@ -131,17 +131,14 @@ class AttachMesh(bpy.types.Operator):
         base_armature_name = bpy.context.scene.merge_armature_into
         attach_bone_name = bpy.context.scene.attach_to_bone
         mesh = Common.get_objects()[mesh_name]
+        armature = Common.get_objects()[base_armature_name]
 
-        # Create new armature
-        bpy.ops.object.armature_add(location=(0, 0, 0))
-        new_armature = bpy.context.active_object
-
-        # Reparent mesh to new armature
-        mesh.parent = new_armature
+        # Reparent mesh to target armature
+        mesh.parent = armature
         mesh.parent_type = 'OBJECT'
 
-        # Rename bone in new armature
-        new_armature.data.bones.get('Bone').name = attach_bone_name
+        # Applies transforms of the armature and new mesh
+        Common.apply_transforms(armature_name=base_armature_name)
 
         # Switch mesh to edit mode
         Common.unselect_all()
@@ -154,17 +151,40 @@ class AttachMesh(bpy.types.Operator):
 
         # Select and assign all vertices to new vertex group
         bpy.ops.mesh.select_all(action='SELECT')
-        mesh.vertex_groups.new(name=attach_bone_name)
+        mesh.vertex_groups.new(name=mesh_name)
         bpy.ops.object.vertex_group_assign()
 
         Common.switch('OBJECT')
 
+        # Switch armature to edit mode
+        Common.unselect_all()
+        Common.set_active(armature)
+        Common.switch('EDIT')
+
+        # Create bone in target armature and reparent it to the target bone
+        attach_to_bone = armature.data.edit_bones.get(attach_bone_name)
+        mesh_bone = armature.data.edit_bones.new(mesh_name)
+        mesh_bone.parent = attach_to_bone
+
+        # Put new bone in center of mesh
+        mesh_bone.head = Common.find_center_vector_of_vertex_group(mesh, mesh_name)
+        mesh_bone.tail = mesh_bone.head
+        mesh_bone.tail[2] += 0.1
+
+        # Switch armature back to object mode
+        Common.switch('OBJECT')
+
+        # Remove previous armature modifiers
+        for mod in mesh.modifiers:
+            if mod.type == 'ARMATURE':
+                mesh.modifiers.remove(mod)
+
         # Create new armature modifier
         mod = mesh.modifiers.new('Armature', 'ARMATURE')
-        mod.object = new_armature
+        mod.object = armature
 
-        # Merge armatures
-        merge_armatures(base_armature_name, new_armature.name, True, mesh_name=mesh_name)
+        # Put the attach bone field back to it's original state
+        bpy.context.scene.attach_to_bone = attach_bone_name
 
         saved_data.load()
 

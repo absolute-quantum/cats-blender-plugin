@@ -748,6 +748,7 @@ class _FnMaterialCycles(_FnMaterialBI):
         node_invert = ng.new_math_node('LESS_THAN', (7, 3))
         node_cull = ng.new_math_node('MAXIMUM', (8, 2.5))
         node_alpha = ng.new_math_node('MINIMUM', (9, 2))
+        node_alpha.use_clamp = True
         node_alpha_tex = ng.new_math_node('MULTIPLY', (-1, -2))
         node_alpha_toon = ng.new_math_node('MULTIPLY', (0, -2.5))
         node_alpha_sph = ng.new_math_node('MULTIPLY', (1, -3))

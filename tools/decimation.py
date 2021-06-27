@@ -30,7 +30,7 @@ import math
 from . import common as Common
 from . import armature_bones as Bones
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 
 ignore_shapes = []
@@ -261,14 +261,15 @@ class AutoDecimateButton(bpy.types.Operator):
                 # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
                 # but shape keys contain every vert (not just the ones they impact)
                 # For shape key in shape keys:
-                for key_block in mesh.data.shape_keys.key_blocks[1:]:
-                    basis = mesh.data.shape_keys.key_blocks[0]
-                    s_weights[key_block.name] = dict()
+                if mesh.data.shape_keys is not None:
+                    for key_block in mesh.data.shape_keys.key_blocks[1:]:
+                        basis = mesh.data.shape_keys.key_blocks[0]
+                        s_weights[key_block.name] = dict()
 
-                    for idx, vert in enumerate(key_block.data):
-                        s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
-                                                                        math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
-                                                                        math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
+                        for idx, vert in enumerate(key_block.data):
+                            s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
+                                                                            math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
+                                                                            math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
 
                 # normalize min/max vert movement
                 s_normalizedweights = dict()
@@ -343,8 +344,10 @@ class AutoDecimateButton(bpy.types.Operator):
                     if len(mesh.data.shape_keys.key_blocks) == 1:
                         bpy.ops.object.shape_key_remove(all=True)
                     else:
-                        # Add a duplicate basis key which we un-apply to fix shape keys
                         mesh.active_shape_key_index = 0
+                        # Sanity check, make sure basis isn't against something weird
+                        mesh.active_shape_key.relative_key = mesh.active_shape_key
+                        # Add a duplicate basis key which we un-apply to fix shape keys
                         bpy.ops.object.shape_key_add(from_mix=False)
                         mesh.active_shape_key.name = "CATS Basis"
                         mesh.active_shape_key_index = 0
@@ -473,8 +476,6 @@ class AutoDecimateButton(bpy.types.Operator):
             # Repair shape keys if SMART mode is enabled
             if smart_decimation and Common.has_shapekeys(mesh_obj):
                 for idx in range(1, len(mesh_obj.data.shape_keys.key_blocks) - 1):
-                    if "Reverted" in mesh_obj.data.shape_keys.key_blocks[idx].name:
-                        continue
                     mesh_obj.active_shape_key_index = idx
                     Common.switch('EDIT')
                     bpy.ops.mesh.blend_from_shape(shape="CATS Basis", blend=-1.0, add=True)

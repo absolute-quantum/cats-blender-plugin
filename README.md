@@ -1,4 +1,4 @@
-# Cats Blender Plugin (0.18.0)
+# Cats Blender Plugin (0.19.0)
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -314,6 +314,45 @@ It checks for a new version automatically once every day.
 ---
 
 ## Changelog
+
+#### 0.19.0
+- **Fully compatible with Blender 2.93**
+- **Translations:**
+  - **Added Korean translation!**
+    - Cats is now translated into Korean by a large portion
+    - To use it, simply change your Blender language to Korean and then restart Blender or select it in the Cats Settings
+    - Thanks to **Siromori** for contributing the translation! <3
+  - Added Cats Ui Language setting
+    - This lets you choose in which language Cats should be displayed
+    - Setting it to "auto" will choose the current Blender language
+  - Added button to download the latest Cats Translations
+    - This feature is for translators to test their translations in the plugin
+    - If you want to help to translate Cats into any language, please let me (Hotox) know in our Discord
+- **Model Options:**
+  - Added "Connect Bones" button
+  - Added options to keep merged bones and to merge the bones of visible meshes only
+- **Custom Model Creation:**
+  - Reworked "Attach Mesh" feature, it is much more reliable now
+- **General:**
+  - Fixed translation errors
+  - Updated mmd_tools
+- **Bake: (by feilen)**
+  - Emission influence baking: fake realtime lighting based on your emissive channel, quest-compatible!
+  - 'Manual' reprojection mode for Bake: creating new UV maps called 'Target' will allow you to re-bake to a specific layout.
+  - 'Optimize static shapekeys' option
+    - Splits your mesh into two skinned meshes, one with all shapekey-influenced geometry, 
+      one with the rest (and fixes the normals in place). Significantly improves GPU performance, especially when a lot of shapekeys are in effect. 
+      Needs the lighting anchor point in Unity to be set to the armature Hips on both, or you'll get lighting artifacts.
+  - Introduce 'BakeFixer.cs', which is a run-time unity script that hopefully should do the lighting work for you.
+  - 'Ignore hidden objects' option
+    - When baking, this will ignore any objects you currently have hidden, making it easier to create different versions of your avatar.
+  - Apply Current Shapekey Mix option 
+    - Sets your basis to whatever current mix of shapekeys you have. Always-on shapekeys are terrible for performance, 
+      so if you have some that are only intended to customize the character without updates, this will help with that.
+  - '_bake' shapekeys: any shapekey with '_bake' at the end will be applied and completely removed, allowing the static shapekeys option to work better. 
+    If you're an avatar creator distributing bases, this is recommended for character customization keys!
+  - Misc: Updated defaults to be in line with updated Quest limits.
+
 
 #### 0.18.0
 - **Added Bake Panel!**

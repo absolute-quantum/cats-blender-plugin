@@ -1,5 +1,5 @@
 from ..tools.common import version_2_79_or_older
-from ..translations import t
+from ..tools.translations import t
 
 class ToolPanel(object):
     bl_label = t('ToolPanel.label')

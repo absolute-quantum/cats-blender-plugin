@@ -32,6 +32,8 @@ else:
 
 
 def _getMMDCameraAngle(prop):
+    if not mmd_camera.MMDCamera.isMMDCamera(prop.id_data):
+        return 0
     cam = __get_camera(prop.id_data)
     return math.atan(cam.data.sensor_height/cam.data.lens/2) * 2
 
@@ -40,6 +42,8 @@ def _setMMDCameraAngle(prop, value):
     cam.data.lens = cam.data.sensor_height/math.tan(value/2)/2
 
 def _getIsPerspective(prop):
+    if not mmd_camera.MMDCamera.isMMDCamera(prop.id_data):
+        return False
     cam = __get_camera(prop.id_data)
     return cam.data.type == 'PERSP'
 

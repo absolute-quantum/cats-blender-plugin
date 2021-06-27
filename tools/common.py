@@ -43,7 +43,7 @@ from . import translate as Translate
 from . import armature_bones as Bones
 from . import settings as Settings
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 from mmd_tools_local import utils
 from mmd_tools_local.panels import tool as mmd_tool
@@ -152,7 +152,11 @@ def get_top_parent(child):
 
 def unhide_all_unnecessary():
     # TODO: Documentation? What does "unnecessary" mean?
-    bpy.ops.object.hide_view_clear()
+    try:
+        bpy.ops.object.hide_view_clear()
+    except RuntimeError:
+        pass
+
     for collection in bpy.data.collections:
         collection.hide_select = False
         collection.hide_viewport = False
@@ -299,11 +303,12 @@ def set_default_stage():
 def apply_modifier(mod, as_shapekey=False):
     if bpy.app.version < (2, 90):
         bpy.ops.object.modifier_apply(apply_as='SHAPE' if as_shapekey else 'DATA', modifier=mod.name)
+        return
+
+    if as_shapekey:
+        bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=mod.name)
     else:
-        if as_shapekey:
-            bpy.ops.object.modifier_apply_as_shapekey(keep_modifier=False, modifier=mod.name)
-        else:
-            bpy.ops.object.modifier_apply(modifier=mod.name)
+        bpy.ops.object.modifier_apply(modifier=mod.name)
 
 
 def remove_bone(find_bone):
@@ -531,7 +536,7 @@ def get_bones_merge(self, context):
 
 
 # names - The first object will be the first one in the list. So the first one has to be the one that exists in the most models
-def get_bones(names=None, armature_name=None):
+def get_bones(names=None, armature_name=None, check_list=False):
     if not names:
         names = []
     if not armature_name:
@@ -564,8 +569,9 @@ def get_bones(names=None, armature_name=None):
         if name in armature.data.bones and choices[0][0] != name:
             choices2.append((name, name, name))
 
-    for choice in choices:
-        choices2.append(choice)
+    if not check_list:
+        for choice in choices:
+            choices2.append(choice)
 
     bpy.types.Object.Enum = choices2
 
@@ -714,7 +720,7 @@ def get_texture_sizes(self, context):
     return bpy.types.Object.Enum
 
 
-def get_meshes_objects(armature_name=None, mode=0, check=True):
+def get_meshes_objects(armature_name=None, mode=0, check=True, visible_only=False):
     # Modes:
     # 0 = With armatures only
     # 1 = Top level only
@@ -729,7 +735,7 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
     meshes = []
     for ob in get_objects():
         if ob.type == 'MESH':
-            if mode == 0:
+            if mode == 0 or mode == 5:
                 if ob.parent:
                     if ob.parent.type == 'ARMATURE' and ob.parent.name == armature_name:
                         meshes.append(ob)
@@ -746,6 +752,11 @@ def get_meshes_objects(armature_name=None, mode=0, check=True):
             elif mode == 3:
                 if is_selected(ob):
                     meshes.append(ob)
+
+    if visible_only:
+        for mesh in meshes:
+            if is_hidden(mesh):
+                meshes.remove(mesh)
 
     # Check for broken meshes and delete them
     if check:
@@ -1621,6 +1632,10 @@ def show_error(scale, error_list, override_header=False):
     global override, dpi_scale, error
     override = override_header
     dpi_scale = scale
+
+    if type(error_list) is str:
+        error_list = error_list.split('\n')
+
     error = error_list
 
     header = t('ShowError.label')
@@ -1828,6 +1843,8 @@ def fix_bone_orientations(armature):
             # Only connect them if the other bone is a certain distance away, otherwise blender will delete them
             if dist > 0.005:
                 bone.tail = bone.children[0].head
+                if len(bone.parent.children) == 1:  # if the bone's parent bone only has one child, connect the bones (Don't connect them all because that would mess up hand/finger bones)
+                    bone.use_connect = True
 
 
 def update_material_list(self=None, context=None):

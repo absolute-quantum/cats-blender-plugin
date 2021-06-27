@@ -7,7 +7,7 @@ from ..tools import common as Common
 from ..tools import decimation as Decimation
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 @register_wrap
 class AutoDecimatePresetGood(bpy.types.Operator):
@@ -115,7 +115,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 for shape in Decimation.ignore_shapes:
                     row = layout_split(col, factor=0.8, align=False)
                     row.label(text=shape, icon='SHAPEKEY_DATA')
-                    op = row.operator(Decimation.RemoveShapeButton.bl_idname, icon=globs.ICON_REMOVE)
+                    op = row.operator(Decimation.RemoveShapeButton.bl_idname, text='', icon=globs.ICON_REMOVE)
                     op.shape_name = shape
             elif context.scene.selection_mode == 'MESHES':
                 row = layout_split(col, factor=0.7, align=False)
@@ -136,7 +136,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 for mesh in Decimation.ignore_meshes:
                     row = layout_split(col, factor=0.8, align=False)
                     row.label(text=mesh, icon='MESH_DATA')
-                    op = row.operator(Decimation.RemoveMeshButton.bl_idname, icon=globs.ICON_REMOVE)
+                    op = row.operator(Decimation.RemoveMeshButton.bl_idname, text='', icon=globs.ICON_REMOVE)
                     op.mesh_name = mesh
 
             col = box.column(align=True)

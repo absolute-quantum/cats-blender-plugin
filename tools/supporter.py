@@ -25,6 +25,7 @@
 # Edits by: GiveMeAllYourCats
 
 import os
+import ssl
 import bpy
 import json
 import shutil
@@ -44,7 +45,7 @@ from . import common as Common
 from . import settings as Settings
 from .. import globs
 from ..tools.register import register_wrap
-from ..translations import t
+from .translations import t
 
 # global variables
 preview_collections = {}
@@ -169,6 +170,7 @@ def download_file():
     # Download zip
     # print('DOWNLOAD FILE')
     try:
+        ssl._create_default_https_context = ssl._create_unverified_context
         urllib.request.urlretrieve("https://github.com/Darkblader24/cats_supporter_list/archive/master.zip", supporter_zip_file)
     except urllib.error.URLError:
         print("FILE COULD NOT BE DOWNLOADED")
@@ -385,6 +387,7 @@ def check_for_update(force_update):
 def update_needed():
     # print('CHECK UPDATE')
     try:
+        ssl._create_default_https_context = ssl._create_unverified_context
         with urllib.request.urlopen("https://api.github.com/repos/Darkblader24/cats_supporter_list/commits/master") as url:
             data = json.loads(url.read().decode())
     except urllib.error.URLError:

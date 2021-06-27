@@ -13,7 +13,7 @@ from ..tools import rootbone as Rootbone
 
 from ..tools.common import version_2_79_or_older
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 draw_smc_ui = None
 old_smc_version = False
@@ -36,6 +36,10 @@ def check_for_smc():
             # print(mod.__name__, mod.bl_info['version'])
             # print(addon_utils.check(mod.__name__))
             if mod.bl_info['version'] < (2, 1, 1, 2):
+                old_smc_version = True
+                # print('TOO OLD!')
+                continue
+            if bpy.app.version >= (2, 93) and mod.bl_info['version'] < (2, 1, 1, 8):
                 old_smc_version = True
                 # print('TOO OLD!')
                 continue

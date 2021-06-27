@@ -4,7 +4,8 @@ from .tools import eyetracking as Eyetracking
 from .tools import rootbone as Rootbone
 from .tools import settings as Settings
 from .tools import importer as Importer
-from .translations import t
+from .tools import translations as Translations
+from .tools.translations import t
 
 from bpy.types import Scene, Material
 from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty
@@ -84,9 +85,22 @@ def register():
         default=True
     )
 
+    # Manual
     Scene.use_google_only = BoolProperty(
         name=t('Scene.use_google_only.label'),
         description=t('Scene.use_google_only.desc'),
+        default=False
+    )
+
+    Scene.keep_merged_bones = BoolProperty(
+        name='Keep Merged Bones',
+        description='Select this to keep the bones after merging them to their parents or to the active bone',
+        default=False
+    )
+
+    Scene.merge_visible_meshes_only = BoolProperty(
+        name='Merge Visible Meshes Only',
+        description='Select this to only merge the weights of the visible meshes',
         default=False
     )
 
@@ -96,6 +110,7 @@ def register():
         default=False
     )
 
+    # Custom Avatar Creation
     Scene.merge_mode = EnumProperty(
         name=t('Scene.merge_mode.label'),
         description=t('Scene.merge_mode.desc'),
@@ -204,9 +219,33 @@ def register():
     Scene.bake_max_tris = IntProperty(
         name=t('Scene.max_tris.label'),
         description=t('Scene.max_tris.desc'),
-        default=5000,
+        default=7500,
         min=1,
         max=70000
+    )
+
+    Scene.bake_remove_doubles = BoolProperty(
+        name=t('Scene.decimation_remove_doubles.label'),
+        description=t('Scene.decimation_remove_doubles.desc'),
+        default=True
+    )
+
+    Scene.bake_optimize_static = BoolProperty(
+        name="Optimize Static Shapekeys",
+        description="Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",
+        default=True
+    )
+
+    Scene.bake_cleanup_shapekeys = BoolProperty(
+        name="Cleanup Shapekeys",
+        description="Remove backup shapekeys in the final result, e.g. 'Key1 - Reverted' or 'blink_old'",
+        default=True
+    )
+
+    Scene.bake_create_disable_shapekeys = BoolProperty(
+        name="Create 'Disable' Shapekeys",
+        description="Create 'Disable' shapekeys for all but the largest mesh, that cause it to shrink to nothing. Lets you keep toggleable props, without the need for additional meshes.",
+        default=False
     )
 
     # Bake
@@ -237,20 +276,31 @@ def register():
             ("NONE", t("Scene.bake_uv_overlap_correction.none.label"), t("Scene.bake_uv_overlap_correction.none.desc")),
             ("UNMIRROR", t("Scene.bake_uv_overlap_correction.unmirror.label"), t("Scene.bake_uv_overlap_correction.unmirror.desc")),
             ("REPROJECT", t("Scene.bake_uv_overlap_correction.reproject.label"), t("Scene.bake_uv_overlap_correction.reproject.desc")),
+            ("MANUAL", "Manual", "Bake will take island information from any UVMap named 'Target' from your meshes, else it will default to the render-active one. Decimation works better when there's only one giant island per loose mesh!")
         ],
         default="UNMIRROR"
+    )
+
+    Scene.bake_device = EnumProperty(
+        name='Bake Device',
+        description='Device to bake on. GPU gives a significant speedup, but can cause issues depending on your graphics drivers.',
+        default='GPU',
+        items=[
+            ('CPU', 'CPU', 'Perform bakes on CPU (Safe)'),
+            ('GPU', 'GPU', 'Perform bakes on GPU (Fast)')
+        ]
     )
 
     Scene.bake_prioritize_face = BoolProperty(
         name=t('Scene.bake_prioritize_face.label'),
         description=t('Scene.bake_prioritize_face.desc'),
-        default=True
+        default=False
     )
 
     Scene.bake_face_scale = FloatProperty(
         name=t('Scene.bake_face_scale.label'),
         description=t('Scene.bake_face_scale.desc'),
-        default=3.0,
+        default=2.0,
         min=0.5,
         max=4.0,
         step=0.25,
@@ -282,6 +332,12 @@ def register():
         default=True
     )
 
+    Scene.bake_diffuse_vertex_colors = BoolProperty(
+        name="Bake to vertex colors",
+        description="Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO.",
+        default=False
+    )
+
     Scene.bake_preserve_seams = BoolProperty(
         name=t('Scene.bake_preserve_seams.label'),
         description=t('Scene.bake_preserve_seams.desc'),
@@ -297,6 +353,18 @@ def register():
     Scene.bake_normal_apply_trans = BoolProperty(
         name=t('Scene.bake_normal_apply_trans.label'),
         description=t('Scene.bake_normal_apply_trans.desc'),
+        default=True
+    )
+
+    Scene.bake_apply_keys = BoolProperty(
+        name="Apply current shapekey mix",
+        description="When selected, currently active shape keys will be applied to the basis. This is extremely beneficial to performance if your avatar is intended to 'default' to one shapekey mix, as having active shapekeys all the time is expensive. Keys ending in '_bake' are always applied to the basis and removed completely, regardless of this option.",
+        default=False
+    )
+
+    Scene.bake_ignore_hidden = BoolProperty(
+        name="Ignore hidden objects",
+        description="Ignore currently hidden objects when copying",
         default=True
     )
 
@@ -316,6 +384,18 @@ def register():
         name=t('Scene.bake_pass_emit.label'),
         description=t('Scene.bake_pass_emit.desc'),
         default=False
+    )
+
+    Scene.bake_emit_indirect = BoolProperty(
+        name="Bake projected light",
+        description="Bake the effect of emission on nearby surfaces. Results in much more realistic lighting effects, but can animate less well.",
+        default=False
+    )
+
+    Scene.bake_emit_exclude_eyes = BoolProperty(
+        name="Exclude eyes",
+        description="Bakes the effect of any eye glow onto surrounding objects, but not vice-versa. Improves animation when eyes are moving around..",
+        default=True
     )
 
     Scene.bake_diffuse_alpha_pack = EnumProperty(
@@ -405,7 +485,7 @@ def register():
         description=t('Scene.max_tris.desc'),
         default=70000,
         min=1,
-        max=200000
+        max=500000
     )
 
     # Eye Tracking
@@ -660,7 +740,12 @@ def register():
         default=False,
         update=Settings.update_settings
     )
-
+    Scene.ui_lang = EnumProperty(
+        name=t('Scene.ui_lang.label'),
+        description=t('Scene.ui_lang.desc'),
+        items=Translations.get_languages_list,
+        update=Translations.update_ui
+    )
     Scene.debug_translations = BoolProperty(
         name=t('Scene.debug_translations.label'),
         description=t('Scene.debug_translations.desc'),

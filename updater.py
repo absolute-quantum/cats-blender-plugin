@@ -1,4 +1,5 @@
 import os
+import ssl
 import bpy
 import time
 import json
@@ -10,7 +11,7 @@ import addon_utils
 from threading import Thread
 from collections import OrderedDict
 from bpy.app.handlers import persistent
-from .translations import t
+from .tools.translations import t
 
 no_ver_check = False
 fake_update = False
@@ -418,6 +419,7 @@ def get_github_releases(repo):
         return True
 
     try:
+        ssl._create_default_https_context = ssl._create_unverified_context
         with urllib.request.urlopen('https://api.github.com/repos/' + repo + '/cats-blender-plugin/releases') as url:
             data = json.loads(url.read().decode())
     except urllib.error.URLError:
@@ -551,6 +553,7 @@ def download_file(update_url):
     # Download zip
     print('DOWNLOAD FILE')
     try:
+        ssl._create_default_https_context = ssl._create_unverified_context
         urllib.request.urlretrieve(update_url, update_zip_file)
     except urllib.error.URLError:
         print("FILE COULD NOT BE DOWNLOADED")

@@ -30,7 +30,7 @@ bl_info = {
     'author': 'GiveMeAllYourCats & Hotox',
     'location': 'View 3D > Tool Shelf > CATS',
     'description': 'A tool designed to shorten steps needed to import and optimize models into VRChat',
-    'version': (0, 18, 0),  # Has to be (x, x, x) not [x, x, x]!! Only change this version and the dev branch var right before publishing the new update!
+    'version': (0, 19, 0),  # Has to be (x, x, x) not [x, x, x]!! Only change this version and the dev branch var right before publishing the new update!
     'blender': (2, 80, 0),
     'wiki_url': 'https://github.com/michaeldegroot/cats-blender-plugin',
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
@@ -49,7 +49,6 @@ if file_dir not in sys.path:
 import shutil
 import pathlib
 import requests
-import platform
 
 from . import globs
 
@@ -60,14 +59,11 @@ if "bpy" not in locals():
 else:
     is_reloading = True
 
-import mmd_tools_local
-
 # Load or reload all cats modules
 if not is_reloading:
     # This order is important
-    # import mmd_tools_local
+    import mmd_tools_local
     from . import updater
-    from . import translations
     from . import tools
     from . import ui
     from . import extentions
@@ -75,12 +71,12 @@ else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
-    importlib.reload(translations)
     importlib.reload(tools)
     importlib.reload(ui)
     importlib.reload(extentions)
 
-from .translations import t
+from .tools import translations
+from .tools.translations import t
 
 
 # How to update mmd_tools: (outdated, no longer used)
@@ -264,20 +260,14 @@ def register():
     # Register Updater and check for CATS update
     updater.register(bl_info, dev_branch, version_str)
 
-    # Load translations and check for missing translations
-    translations.check_missing_translations()
-
     # Set some global settings, first allowed use of globs
     globs.dev_branch = dev_branch
     globs.version_str = version_str
 
     # Load settings and show error if a faulty installation was deleted recently
-    show_error = False
     try:
         tools.settings.load_settings()
     except FileNotFoundError:
-        show_error = True
-    if show_error:
         sys.tracebacklimit = 0
         raise ImportError(t('Main.error.restartAndEnable_alt'))
 

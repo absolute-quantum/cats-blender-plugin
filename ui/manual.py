@@ -7,7 +7,7 @@ from ..tools import supporter
 from ..tools import translate as Translate
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 
 @register_wrap
@@ -40,6 +40,13 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.label(text=t('ManualPanel.mergeWeights'), icon='BONE_DATA')
         row.operator(Armature_manual.MergeWeights.bl_idname, text=t('ManualPanel.MergeWeights.label'))
         row.operator(Armature_manual.MergeWeightsToActive.bl_idname, text=t('ManualPanel.MergeWeightsToActive.label'))
+
+        row = col.row(align=True)
+        row.scale_y = 0.75
+        row.prop(context.scene, 'keep_merged_bones')
+        row = col.row(align=True)
+        row.scale_y = 0.75
+        row.prop(context.scene, 'merge_visible_meshes_only')
 
         # Translate
         col.separator()
@@ -90,6 +97,9 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.DuplicateBonesButton.bl_idname, icon='GROUP_BONE')
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.operator(Armature_manual.ConnectBonesButton.bl_idname, icon='CONSTRAINT_BONE')
 
             col.separator()
             row = layout_split(col, factor=0.27, align=True)
@@ -122,6 +132,11 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.FixVRMShapesButton.bl_idname, icon='SHAPEKEY_DATA')
+
+            if globs.dev_branch:
+                row = col.row(align=True)
+                row.scale_y = button_height
+                row.operator(Armature_manual.TestButton.bl_idname)
 
             # row = col.row(align=True)
             # row.scale_y = button_height

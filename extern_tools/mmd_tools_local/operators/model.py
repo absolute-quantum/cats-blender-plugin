@@ -310,6 +310,7 @@ class ConvertToMMDModel(Operator):
         DisplayItemQuickSetup.load_bone_groups(root.mmd_root, armature)
         rig.initialDisplayFrames(reset=False) # ensure default frames
         DisplayItemQuickSetup.load_facial_items(root.mmd_root)
+        root.mmd_root.active_display_item_frame = 0
 
 @register_wrap
 class TranslateMMDModel(Operator):

@@ -109,6 +109,7 @@ class google_translator:
         return freq
 
     def translate(self, text, lang_tgt='auto', lang_src='auto', pronounce=False):
+        print("\n\nDEBUG: Translating", text)
         try:
             lang = LANGUAGES[lang_src]
         except:
@@ -150,24 +151,34 @@ class google_translator:
                     try:
                         response = (decoded_line + ']')
                         response = json.loads(response)
+                        print("DEBUG1", response)
                         response = list(response)
                         response = json.loads(response[0][2])
                         response_ = list(response)
                         response = response_[1][0]
+                        print("DEBUG2", response)
                         if len(response) == 1:
                             if len(response[0]) > 5:
                                 sentences = response[0][5]
-                            else: ## only url
+                                print("DEBUG3", sentences)
+                            else:  # only url
                                 sentences = response[0][0]
+                                print("DEBUG4", sentences)
                                 if pronounce == False:
                                     return sentences
                                 elif pronounce == True:
                                     return [sentences,None,None]
                             translate_text = ""
-                            for sentence in sentences:
-                                sentence = sentence[0]
-                                translate_text += sentence.strip() + ' '
-                            translate_text = translate_text
+                            # for sentence in sentences:
+                            #     sentence = sentence[0]
+                            #     translate_text += sentence.strip() + ' '
+
+                            translations = sentences[0]
+                            if not translations:
+                                return text
+
+                            translate_text = translations[0]
+
                             if pronounce == False:
                                 return translate_text
                             elif pronounce == True:

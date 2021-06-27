@@ -168,7 +168,7 @@ def getTranslator(csvfile='', keep_order=False):
         translator.load_from_stream(csvfile)
     elif isinstance(csvfile, dict):
         translator.csv_tuples.extend(csvfile.items())
-    elif csvfile in bpy.data.texts:
+    elif csvfile in bpy.data.texts.keys():
         translator.load_from_stream(bpy.data.texts[csvfile])
     else:
         translator.load(csvfile)

@@ -1,10 +1,11 @@
 import bpy
+import addon_utils
 
 from .main import ToolPanel
 from ..tools import common as Common
 from ..tools import bake as Bake
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 
 @register_wrap
@@ -41,6 +42,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'bake_max_tris', expand=True)
             row = col.row(align=True)
             row.separator()
+            row.prop(context.scene, 'bake_remove_doubles', expand=True)
+            row = col.row(align=True)
+            row.separator()
             row.prop(context.scene, 'bake_preserve_seams', expand=True)
             row = col.row(align=True)
             row.separator()
@@ -60,7 +64,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_face_scale', expand=True)
-                if armature is None or "Head" not in armature.data.bones:
+
+                if armature is None or len(Common.get_bones(names=['Head', 'head'], armature_name=armature.name, check_list=True)) == 0:
                     row = col.row(align=True)
                     row.separator()
                     row.label(text=t('BakePanel.noheadfound'), icon="INFO")
@@ -68,6 +73,16 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.separator()
             row.label(text=t('BakePanel.overlapfixlabel'))
             row.prop(context.scene, 'bake_uv_overlap_correction', expand=True)
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_ignore_hidden', expand=True)
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_optimize_static', expand=True)
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_cleanup_shapekeys', expand=True)
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_apply_keys', expand=True)
+        #row = col.row(align=True)
+        #row.prop(context.scene, 'bake_create_disable_shapekeys', expand=True)
         #row = col.row(align=True)
         #row.prop(context.scene, 'bake_simplify_armature', expand=True)
         row = col.row(align=True)
@@ -77,7 +92,11 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.label(text=t('BakePanel.bakepasseslabel'))
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_diffuse', expand=True)
-        if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha):
+        if context.scene.bake_pass_diffuse and bpy.app.version >= (2, 92, 0):
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_diffuse_vertex_colors', expand=True)
+        if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha) and not context.scene.bake_diffuse_vertex_colors:
             row = col.row(align=True)
             row.separator()
             row.label(text=t('BakePanel.alphalabel'))
@@ -128,7 +147,23 @@ class BakePanel(ToolPanel, bpy.types.Panel):
 
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_emit', expand=True)
+        if context.scene.bake_pass_emit:
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_emit_indirect', expand=True)
+            if context.scene.bake_emit_indirect:
+                row = col.row(align=True)
+                row.separator()
+                row.separator()
+                row.prop(context.scene, 'bake_emit_exclude_eyes', expand=True)
+
         row = col.row(align=True)
         col.separator()
         col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_device', expand=True)
+        row = col.row(align=True)
         row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
+        if not addon_utils.check("render_auto_tile_size")[1]:
+            row = col.row(align=True)
+            row.label(text="Enabling \"Auto Tile Size\" reccomended!", icon="INFO")

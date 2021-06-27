@@ -10,7 +10,7 @@ from ..tools import supporter as Supporter
 from ..tools import eyetracking as Eyetracking
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
-from ..translations import t
+from ..tools.translations import t
 
 
 @register_wrap

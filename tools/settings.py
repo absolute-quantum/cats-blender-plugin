@@ -39,7 +39,7 @@ from ..tools.register import register_wrap
 # from ..googletrans import Translator  # Todo Remove this
 from ..extern_tools.google_trans_new.google_trans_new import google_translator
 from . import translate as Translate
-from ..translations import t
+from .translations import t
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -52,6 +52,7 @@ settings_data_unchanged = None
 settings_default = OrderedDict()
 settings_default['show_mmd_tabs'] = [True, False]
 settings_default['embed_textures'] = [False, False]
+settings_default['ui_lang'] = ["auto", False]
 # settings_default['use_custom_mmd_tools'] = [False, True]
 
 lock_settings = False
@@ -215,8 +216,15 @@ def apply_settings():
     while not applied:
         if hasattr(bpy.context, 'scene'):
             try:
+                settings_to_reset = []
                 for setting in settings_default.keys():
-                    setattr(bpy.context.scene, setting, settings_data.get(setting))
+                    try:
+                        setattr(bpy.context.scene, setting, settings_data.get(setting))
+                    except TypeError:
+                        settings_to_reset.append(setting)
+                if settings_to_reset:
+                    reset_settings(to_reset_settings=settings_to_reset)
+                    print("RESET SETTING ON TIMER:", setting)
             except AttributeError:
                 time.sleep(0.3)
                 continue
@@ -239,11 +247,23 @@ def settings_changed():
 
 
 def update_settings(self, context):
+    # Use False and None for this variable, because Blender would complain otherwise
+    # None means that the settings did change
+    settings_changed_tmp = False
     if lock_settings:
-        return
+        return settings_changed_tmp
+
     for setting in settings_default.keys():
-        settings_data[setting] = getattr(bpy.context.scene, setting)
-    save_settings()
+        old = settings_data[setting]
+        new = getattr(bpy.context.scene, setting)
+        if old != new:
+            settings_data[setting] = getattr(bpy.context.scene, setting)
+            settings_changed_tmp = True
+
+    if settings_changed_tmp:
+        save_settings()
+
+    return settings_changed_tmp
 
 
 def set_last_supporter_update(last_supporter_update):
@@ -261,3 +281,7 @@ def get_use_custom_mmd_tools():
 
 def get_embed_textures():
     return settings_data.get('embed_textures')
+
+
+def get_ui_lang():
+    return settings_data.get('ui_lang')

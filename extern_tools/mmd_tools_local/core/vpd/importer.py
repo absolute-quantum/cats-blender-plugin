@@ -57,6 +57,7 @@ class VPDImporter:
 
         for bone in armObj.pose.bones:
             vpd_pose = pose_data.get(bone, None)
+            bone.bone.select = bool(vpd_pose)
             if vpd_pose:
                 bone.matrix_basis = vpd_pose
             elif reset_transform:

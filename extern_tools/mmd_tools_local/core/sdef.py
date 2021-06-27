@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import bpy
 from mathutils import Vector, Matrix, Quaternion
-import numpy as np
 import time
 
 from mmd_tools_local.bpyutils import matmul
@@ -37,10 +36,7 @@ class FnSDEF():
             cls.g_verts[key] = cls.__find_vertices(obj)
             cls.g_bone_check[key] = {}
             cls.__g_armature_check[key] = key_armature
-            shapekey_co = np.zeros(len(shapekey.data) * 3, dtype=np.float32)
-            shapekey.data.foreach_get('co', shapekey_co)
-            shapekey_co = shapekey_co.reshape(len(shapekey.data), 3)
-            cls.g_shapekey_data[key] = shapekey_co
+            cls.g_shapekey_data[key] = None
             return True
         return False
 
@@ -179,6 +175,11 @@ class FnSDEF():
                         shapekey_data[vid].co = matmul(mat_rot, pos_c) + matmul(mat0, cr0)*w0 + matmul(mat1, cr1)*w1
         else: # bulk update
             shapekey_data = cls.g_shapekey_data[_hash(obj)]
+            if shapekey_data is None:
+                import numpy as np
+                shapekey_data = np.zeros(len(shapekey.data)*3, dtype=np.float32)
+                shapekey.data.foreach_get('co', shapekey_data)
+                shapekey_data = cls.g_shapekey_data[_hash(obj)] = shapekey_data.reshape(len(shapekey.data), 3)
             if use_scale:
                 # scale & bulk update
                 for bone0, bone1, sdef_data, vids in cls.g_verts[_hash(obj)].values():

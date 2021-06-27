@@ -42,7 +42,7 @@ from .register import register_wrap
 from .. import globs
 # from ..googletrans import Translator  # TODO Remove this
 from ..extern_tools.google_trans_new.google_trans_new import google_translator
-from ..translations import t
+from .translations import t
 
 from mmd_tools_local import translations as mmd_translations
 
@@ -437,7 +437,7 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
         try:
             translations = [translator.translate(text, lang_src='ja', lang_tgt='en').strip() for text in google_input]
             break
-        except requests.exceptions.ConnectionError:
+        except (requests.exceptions.ConnectionError, ConnectionRefusedError):
             print('CONNECTION TO GOOGLE FAILED!')
             if self:
                 self.report({'ERROR'}, t('update_dictionary.error.cantConnect'))

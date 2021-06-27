@@ -510,6 +510,8 @@ class _MorphSlider:
             __config_bone_morph(pb.constraints, 'LOCATION', attributes_loc, 100, '100')
 
         # uv morphs
+        if bpy.app.version >= (2, 80, 0): # workaround for Blender 2.80+, data_path can't be properly detected (Save & Reopen file also works)
+            root.parent, root.parent, root.matrix_parent_inverse = arm, root.parent, root.matrix_parent_inverse.copy()
         b = arm.pose.bones['mmd_bind_ctrl_base']
         b.is_mmd_shadow_bone = True
         b.mmd_shadow_bone_type = 'BIND'

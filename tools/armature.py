@@ -37,7 +37,7 @@ from . import translate as Translate
 from . import armature_bones as Bones
 from .common import version_2_79_or_older
 from .register import register_wrap
-from ..translations import t
+from .translations import t
 
 # Only load mmd_tools if it's not on linux and 2.90 or higher since it causes Blender to crash
 from mmd_tools_local.operators import morph as Morph
@@ -217,9 +217,16 @@ class FixArmature(bpy.types.Operator):
         # Reset to default
         armature = Common.set_default_stage()
 
-        if bpy.context.space_data:
-            bpy.context.space_data.clip_start = 0.01
-            bpy.context.space_data.clip_end = 300
+        # Find 3D view
+        view_area = None
+        for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                view_area = area.spaces[0]
+                break
+
+        if view_area:
+            view_area.clip_start = 0.01
+            view_area.clip_end = 300
 
         if version_2_79_or_older():
             # Set better bone view
@@ -240,7 +247,8 @@ class FixArmature(bpy.types.Operator):
             armature.show_in_front = True
             armature.data.show_bone_custom_shapes = False
             # context.space_data.overlay.show_transparent_bones = True
-            context.space_data.shading.show_backface_culling = True
+            if view_area:
+                view_area.shading.show_backface_culling = True
 
             # Set the Color Management View Transform to "Standard" instead of the Blender default "Filmic"
             try:
