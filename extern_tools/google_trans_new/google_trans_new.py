@@ -149,21 +149,23 @@ class google_translator:
                 decoded_line = line.decode('utf-8')
                 if "MkEWBc" in decoded_line:
                     try:
-                        response = (decoded_line + ']')
+                        # response = (decoded_line + ']')
+                        response = decoded_line
+                        # print("DEBUG0", response)
                         response = json.loads(response)
-                        print("DEBUG1", response)
+                        # print("DEBUG1", response)
                         response = list(response)
                         response = json.loads(response[0][2])
                         response_ = list(response)
                         response = response_[1][0]
-                        print("DEBUG2", response)
+                        # print("DEBUG2", response)
                         if len(response) == 1:
                             if len(response[0]) > 5:
                                 sentences = response[0][5]
-                                print("DEBUG3", sentences)
+                                # print("DEBUG3", sentences)
                             else:  # only url
                                 sentences = response[0][0]
-                                print("DEBUG4", sentences)
+                                # print("DEBUG4", sentences)
                                 if pronounce == False:
                                     return sentences
                                 elif pronounce == True:

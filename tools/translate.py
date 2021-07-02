@@ -442,9 +442,12 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
             if self:
                 self.report({'ERROR'}, t('update_dictionary.error.cantConnect'))
             return
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
             if self:
-                self.report({'ERROR'}, t('update_dictionary.error.temporaryBan') + t('update_dictionary.error.catsTranslated'))
+                print(traceback.format_exc())
+                self.report({'ERROR'}, 'Either Google changed their API or you got banned from Google Translate temporarily!'
+                                       '\nCats translated what it could with the local dictionary,'
+                                       '\nbut you will have to try again later for the Google translations.')
             print('YOU GOT BANNED BY GOOGLE!')
             return
         except RuntimeError as e:
@@ -472,7 +475,7 @@ def update_dictionary(to_translate_list, translating_shapes=False, self=None):
                 translator = google_translator(url_suffix='com')
                 continue
 
-            # If if didn't work after 20 tries, just quit
+            # If if didn't work after 3 tries, just quit
             # The response from Google was printed into "cats/resources/google-response.txt"
             if self:
                 self.report({'ERROR'}, t('update_dictionary.error.apiChanged'))
