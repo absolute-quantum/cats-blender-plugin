@@ -1110,7 +1110,7 @@ class ErrorDisplay(bpy.types.Operator):
 
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text=t('ErrorDisplay.eyes2', naéme=self.eye_meshes_not_named_body[0]))
+            row.label(text=t('ErrorDisplay.eyes2', name=self.eye_meshes_not_named_body[0]))
             row = col.row(align=True)
             row.scale_y = 0.75
             row.label(text=t( 'ErrorDisplay.eyes3'))
