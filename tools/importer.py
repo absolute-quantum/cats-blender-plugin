@@ -69,11 +69,11 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
         bl_description = t('ImportAnyModel.desc2.8')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
-    directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
+    files : bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
+    directory : bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
 
-    filter_glob = bpy.props.StringProperty(default=formats_279 if version_2_79_or_older() else formats, options={'HIDDEN'})
-    text1 = bpy.props.BoolProperty(
+    filter_glob : bpy.props.StringProperty(default=formats_279 if version_2_79_or_older() else formats, options={'HIDDEN'})
+    text1 : bpy.props.BoolProperty(
         name=t('ImportAnyModel.importantInfo.label'),
         description=t('ImportAnyModel.importantInfo.desc'),
         default=False
