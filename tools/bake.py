@@ -530,7 +530,8 @@ class BakeButton(bpy.types.Operator):
                         if "Target" in child.data.uv_layers:
                             for idx, loop in enumerate(child.data.uv_layers["Target"].data):
                                 child.data.uv_layers["CATS UV"].data[idx].uv = loop.uv
-                                child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
+                                if supersample_normals:
+                                    child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
 
             # Select all meshes. Select all UVs. Average islands scale
             for layer in cats_uv_layers:
@@ -761,6 +762,11 @@ class BakeButton(bpy.types.Operator):
 
         # Bake AO
         if pass_ao:
+            for obj in collection.all_objects:
+                if Common.has_shapekeys(obj):
+                    for key in obj.data.shape_keys.key_blocks:
+                        if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
+                            key.value = 1.0
             if illuminate_eyes:
                 # Add modifiers that prevent LeftEye and RightEye being baked
                 for obj in collection.all_objects:
@@ -781,6 +787,12 @@ class BakeButton(bpy.types.Operator):
                     obj.modifiers.remove(leyemask)
                 if "reyemask" in obj.modifiers:
                     obj.modifiers.remove(reyemask)
+
+            for obj in collection.all_objects:
+                if Common.has_shapekeys(obj):
+                    for key in obj.data.shape_keys.key_blocks:
+                        if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
+                            key.value = 0.0
 
         # Blend diffuse and AO to create Quest Diffuse (if selected)
         if pass_diffuse and pass_ao and pass_questdiffuse:
