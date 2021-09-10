@@ -120,6 +120,9 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.RemoveDoubles.bl_idname, icon='X')
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.operator(Armature_manual.RepairShapekeys.bl_idname, icon='MESH_DATA')
 
             col.separator()
             row = layout_split(col, factor=0.6, align=True)

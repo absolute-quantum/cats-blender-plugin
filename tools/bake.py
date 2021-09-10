@@ -431,7 +431,7 @@ class BakeButton(bpy.types.Operator):
         normal_apply_trans = context.scene.bake_normal_apply_trans
         diffuse_alpha_pack = context.scene.bake_diffuse_alpha_pack
         metallic_alpha_pack = context.scene.bake_metallic_alpha_pack
-        supersample_normals = context.scene.bake_pass_normal and context.scene.bake_use_decimation # Bake the intermediate step at 2x resolution. Probably best to leave this on.
+        supersample_normals = context.scene.bake_pass_normal and context.scene.bake_use_decimation and uv_overlap_correction == "UNMIRROR" # Bake the intermediate step at 2x resolution
         overlap_aware = False # Unreliable until UVP doesn't care about the island scale.
         emit_indirect = context.scene.bake_emit_indirect
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
@@ -530,7 +530,8 @@ class BakeButton(bpy.types.Operator):
                         if "Target" in child.data.uv_layers:
                             for idx, loop in enumerate(child.data.uv_layers["Target"].data):
                                 child.data.uv_layers["CATS UV"].data[idx].uv = loop.uv
-                                child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
+                                if supersample_normals:
+                                    child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
 
             # Select all meshes. Select all UVs. Average islands scale
             for layer in cats_uv_layers:
@@ -761,6 +762,11 @@ class BakeButton(bpy.types.Operator):
 
         # Bake AO
         if pass_ao:
+            for obj in collection.all_objects:
+                if Common.has_shapekeys(obj):
+                    for key in obj.data.shape_keys.key_blocks:
+                        if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
+                            key.value = 1.0
             if illuminate_eyes:
                 # Add modifiers that prevent LeftEye and RightEye being baked
                 for obj in collection.all_objects:
@@ -781,6 +787,12 @@ class BakeButton(bpy.types.Operator):
                     obj.modifiers.remove(leyemask)
                 if "reyemask" in obj.modifiers:
                     obj.modifiers.remove(reyemask)
+
+            for obj in collection.all_objects:
+                if Common.has_shapekeys(obj):
+                    for key in obj.data.shape_keys.key_blocks:
+                        if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
+                            key.value = 0.0
 
         # Blend diffuse and AO to create Quest Diffuse (if selected)
         if pass_diffuse and pass_ao and pass_questdiffuse:
@@ -877,7 +889,7 @@ class BakeButton(bpy.types.Operator):
             # Bake normals in object coordinates
             if pass_normal:
                 for obj in collection.all_objects:
-                    if obj.type == 'MESH' and generate_uvmap:
+                    if obj.type == 'MESH' and generate_uvmap and supersample_normals:
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
                 bake_size = ((resolution * 2, resolution * 2) if
                              supersample_normals else
@@ -918,6 +930,9 @@ class BakeButton(bpy.types.Operator):
             normaltexnode = tree.nodes.new("ShaderNodeTexImage")
             if use_decimation:
                 normaltexnode.image = bpy.data.images["SCRIPT_world.png"]
+                # If not supersampling, sample SCRIPT_WORLD 1:1 so we don't blur it
+                if not supersample_normals:
+                    normaltexnode.interpolation = "Closest"
             normaltexnode.location.x -= 500
             normaltexnode.location.y -= 200
 
@@ -990,6 +1005,7 @@ class BakeButton(bpy.types.Operator):
         if pass_normal:
             normaltexnode.image = bpy.data.images["SCRIPT_normal.png"]
             normalmapnode.space = "TANGENT"
+            normaltexnode.interpolation = "Linear"
         if pass_diffuse:
             diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
             diffusetexnode.image = bpy.data.images["SCRIPT_diffuse.png"]
