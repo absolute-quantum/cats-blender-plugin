@@ -2128,6 +2128,7 @@ def toggle_mmd_tabs(shutdown_plugin=False):
         mmd_tool.MMDJointSelectorPanel,
         mmd_util_tools.MMDMaterialSorter,
         mmd_util_tools.MMDMeshSorter,
+        mmd_util_tools.MMDBoneOrder,
     ]
     mmd_cls_shading = [
         mmd_view_prop.MMDViewPanel,
