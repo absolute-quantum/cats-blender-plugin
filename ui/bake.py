@@ -45,11 +45,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'bake_remove_doubles', expand=True)
             row = col.row(align=True)
             row.separator()
+            row.prop(context.scene, 'bake_loop_decimate', expand=True)
+            row = col.row(align=True)
+            row.separator()
             row.prop(context.scene, 'bake_preserve_seams', expand=True)
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'bake_animation_weighting', expand=True)
-            if context.scene.bake_animation_weighting:
+            if context.scene.bake_animation_weighting and not context.scene.bake_loop_decimate:
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)

@@ -375,7 +375,10 @@ class BakeButton(bpy.types.Operator):
         decimation_animation_weighting = context.scene.decimation_animation_weighting
         decimation_animation_weighting_factor = context.scene.decimation_animation_weighting_factor
 
-        context.scene.decimation_mode = "SMART"
+        if context.scene.bake_loop_decimate:
+            context.scene.decimation_mode = "LOOP"
+        else:
+            context.scene.decimation_mode = "SMART"
         context.scene.max_tris = context.scene.bake_max_tris
         context.scene.decimate_fingers = False
         context.scene.decimation_remove_doubles = context.scene.bake_remove_doubles

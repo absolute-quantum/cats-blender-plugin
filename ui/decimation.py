@@ -67,6 +67,8 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 0.7
         if context.scene.decimation_mode == 'SMART':
             row.label(text=t('DecimationPanel.smartModeDesc'))
+        elif context.scene.decimation_mode == 'LOOP':
+            row.label(text="Attempt to preserve loops (HQ, SLOW)")
         elif context.scene.decimation_mode == 'SAFE':
             row.label(text=t('DecimationPanel.safeModeDesc'))
         elif context.scene.decimation_mode == 'HALF':
@@ -162,13 +164,14 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
 
         col.separator()
         col.separator()
-        row = col.row(align=True)
-        row.prop(context.scene, 'decimate_fingers')
+        if not context.scene.decimation_mode == "LOOP":
+            row = col.row(align=True)
+            row.prop(context.scene, 'decimate_fingers')
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_remove_doubles')
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_animation_weighting', expand=True)
-        if context.scene.decimation_animation_weighting:
+        if context.scene.decimation_animation_weighting and context.scene.decimation_mode != "LOOP":
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'decimation_animation_weighting_factor', expand=True)
