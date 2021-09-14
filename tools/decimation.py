@@ -24,8 +24,6 @@
 # Repo: https://github.com/michaeldegroot/cats-blender-plugin
 # Edits by:
 
-from bpy_extras.mesh_utils import edge_loops_from_edges
-
 import bpy
 import math
 import mathutils
@@ -34,7 +32,6 @@ from . import common as Common
 from . import armature_bones as Bones
 from .register import register_wrap
 from .translations import t
-
 
 
 ignore_shapes = []
@@ -525,22 +522,44 @@ class AutoDecimateButton(bpy.types.Operator):
                     for idx, _ in newweights.items():
                         weights[idx] = max(weights[idx], newweights[idx])
 
-                edge_loops = edge_loops_from_edges(mesh_obj.data)
+                all_edges = set(edge.index for edge in mesh_obj.data.edges[:])
+                edge_loops = []
 
+                # pop one edge out, select it, select edge loop, remove all selected edges from the set of all edges and add to the edge loops
+                # ugly ugly, and very slow (though scalable)
+                while(len(all_edges) > 0):
+                    bpy.ops.object.mode_set(mode="EDIT")
+                    bpy.ops.mesh.select_mode(type='EDGE')
+                    bpy.ops.mesh.select_all(action="DESELECT")
+                    bpy.ops.object.mode_set(mode="OBJECT")
+                    selected_edge = next(edge for edge in all_edges)
+                    mesh_obj.data.edges[selected_edge].select = True
+                    bpy.ops.object.mode_set(mode="OBJECT")
+                    bpy.ops.object.mode_set(mode="EDIT")
+                    bpy.ops.mesh.loop_multi_select(ring=False)
+                    bpy.ops.object.mode_set(mode="OBJECT")
+                    edge_loop = set(edge.index for edge in mesh_obj.data.edges if edge.select)
+                    edge_loop.add(selected_edge)
+                    edge_loops.append(edge_loop)
+                    print("Found edge loop: {}".format(edge_loop))
+                    all_edges.difference_update(edge_loop)
+                # from the new decimation vertex group, create a dict() of loops to sum of shape-importance (loops which contain texture edges put at the end)
                 # TODO: order needs to be usual -> texture boundaries -> mesh boundaries
                 bpy.ops.object.mode_set(mode="EDIT")
                 bpy.ops.uv.seams_from_islands()
                 bpy.ops.object.mode_set(mode="OBJECT")
                 edge_loops_weighted = [l for l in sorted([
-                                         (max(weights[mesh_obj.data.edges[edge].vertices[0]] + weights[mesh_obj.data.edges[edge].vertices[1]]
-                                              for edge in edge_loop),
+                                         (sum(weights[mesh_obj.data.edges[edge].vertices[0]] + weights[mesh_obj.data.edges[edge].vertices[1]]
+                                              for edge in edge_loop
+                                              if mesh_obj.data.edges[edge] in weights),
                                          edge_loop)
                                          for edge_loop in edge_loops
                                          if not any(mesh_obj.data.edges[edge].use_seam for edge in edge_loop)
                                       ], key=lambda v: v[0])]
                 edge_loops_weighted+= [l for l in sorted([
-                                         (max(weights[mesh_obj.data.edges[edge].vertices[0]] + weights[mesh_obj.data.edges[edge].vertices[1]]
-                                              for edge in edge_loop),
+                                         (sum(weights[mesh_obj.data.edges[edge].vertices[0]] + weights[mesh_obj.data.edges[edge].vertices[1]]
+                                              for edge in edge_loop
+                                              if mesh_obj.data.edges[edge] in weights),
                                          edge_loop)
                                          for edge_loop in edge_loops
                                          if any(mesh_obj.data.edges[edge].use_seam for edge in edge_loop)
@@ -549,10 +568,10 @@ class AutoDecimateButton(bpy.types.Operator):
                 print(edge_loops_weighted)
 
                 # dissolve from the bottom up until target decimation is met
-                selected_edges = set()
+                selected_edges = []
                 while len(selected_edges) <= ((1-decimation) * Common.get_tricount(mesh_obj)/2):
                     loop = edge_loops_weighted.pop()
-                    selected_edges.update(loop[1])
+                    selected_edges.extend(list(loop[1]))
                 bpy.ops.object.mode_set(mode="EDIT")
                 bpy.ops.mesh.select_mode(type='EDGE')
                 bpy.ops.mesh.select_all(action="DESELECT")
