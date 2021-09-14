@@ -568,10 +568,10 @@ class AutoDecimateButton(bpy.types.Operator):
                 print(edge_loops_weighted)
 
                 # dissolve from the bottom up until target decimation is met
-                selected_edges = []
+                selected_edges = set()
                 while len(selected_edges) <= ((1-decimation) * Common.get_tricount(mesh_obj)/2):
                     loop = edge_loops_weighted.pop()
-                    selected_edges.extend(list(loop[1]))
+                    selected_edges.update(loop[1])
                 bpy.ops.object.mode_set(mode="EDIT")
                 bpy.ops.mesh.select_mode(type='EDGE')
                 bpy.ops.mesh.select_all(action="DESELECT")
