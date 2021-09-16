@@ -507,7 +507,7 @@ class AutoDecimateButton(bpy.types.Operator):
                     bpy.ops.object.mode_set(mode="OBJECT")
                     mesh_decimated = mesh_obj.evaluated_get(depsgraph)
                     for vert in mesh_decimated.data.vertices:
-                        _, idx, distance = kd.find(vert.co)
+                        _, idx, distance = kd.find(vert.undeformed_co)
                         if not idx in weights and distance < 0.001:
                             weights[idx] = 1 - (i/iterations)
                 for i in range(0,len(mesh_obj.data.vertices)):
