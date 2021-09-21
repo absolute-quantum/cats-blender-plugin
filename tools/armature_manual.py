@@ -875,6 +875,84 @@ class RemoveConstraints(bpy.types.Operator):
         return {'FINISHED'}
 
 @register_wrap
+class OptimizeStaticShapekeys(bpy.types.Operator):
+    bl_idname = 'cats_manual.optimize_static_shapekeys'
+    bl_label = 'Optimize Static Shapekeys'
+    bl_description = "Move all shapekey-affected geometry into its own mesh, significantly decreasing GPU cost"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        obj = context.active_object
+        if obj and obj.type == 'MESH':
+            return True
+
+        meshes = Common.get_meshes_objects(check=False)
+        return meshes
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+
+        objs = [context.active_object]
+        if not objs[0] or (objs[0] and (objs[0].type != 'MESH' or objs[0].data.shape_keys is None)):
+            Common.unselect_all()
+            meshes = Common.get_meshes_objects()
+            if len(meshes) == 0:
+                saved_data.load()
+                return {'FINISHED'}
+            objs = meshes
+
+        if len([obj for obj in objs if obj.type == 'MESH']) > 1:
+            self.report({'ERROR'}, "Meshes must first be combined for this to be beneficial.")
+
+        for mesh in objs:
+            if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
+                context.view_layer.objects.active = mesh
+
+                # Ensure auto-smooth is enabled, set custom normals from faces
+                if not mesh.data.use_auto_smooth:
+                    mesh.data.use_auto_smooth = True
+                    mesh.data.auto_smooth_angle = 3.1416
+
+                bpy.ops.object.mode_set(mode = 'EDIT')
+                bpy.ops.mesh.select_mode(type="VERT")
+                bpy.ops.mesh.select_all(action = 'DESELECT')
+                bpy.ops.mesh.set_normals_from_faces(keep_sharp=True)
+
+                # Separate non-animating
+                bpy.ops.object.mode_set(mode = 'EDIT')
+                bpy.ops.mesh.select_mode(type="VERT")
+                bpy.ops.mesh.select_all(action = 'DESELECT')
+                bpy.ops.object.mode_set(mode = 'OBJECT')
+                for key_block in mesh.data.shape_keys.key_blocks[1:]:
+                    basis = mesh.data.shape_keys.key_blocks[0]
+
+                    for idx, vert in enumerate(key_block.data):
+                        if (math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
+                        math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
+                        math.pow(basis.data[idx].co[2] - vert.co[2], 2.0)) > 0.0001):
+                            mesh.data.vertices[idx].select = True
+
+                if not all(v.select for v in mesh.data.vertices):
+                    if any(v.select for v in mesh.data.vertices):
+                        # Some affected, separate
+                        bpy.ops.object.mode_set(mode = 'EDIT')
+                        bpy.ops.mesh.select_more()
+                        bpy.ops.mesh.separate(type='SELECTED')
+                        bpy.ops.object.mode_set(mode = 'OBJECT')
+                    bpy.context.object.active_shape_key_index = 0
+                    mesh.name = "Static"
+                    # remove all shape keys for 'Static'
+                    bpy.ops.object.shape_key_remove(all=True)
+
+        Common.set_default_stage()
+
+        saved_data.load()
+        self.report({'INFO'}, "Separation complete.")
+        return {'FINISHED'}
+
+
+@register_wrap
 class RepairShapekeys(bpy.types.Operator):
     bl_idname = 'cats_manual.repair_shapekeys'
     bl_label = 'Repair Broken Shapekeys'
