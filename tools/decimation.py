@@ -27,6 +27,7 @@
 import bpy
 import math
 import mathutils
+import struct
 
 from . import common as Common
 from . import armature_bones as Bones
@@ -492,10 +493,11 @@ class AutoDecimateButton(bpy.types.Operator):
                 mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
                 mod.use_symmetry = True
                 mod.symmetry_axis = 'X'
-                kd = mathutils.kdtree.KDTree(len(mesh_obj.data.vertices))
-                for i, v in enumerate(mesh_obj.data.vertices):
-                    kd.insert(v.co, i)
-                kd.balance()
+                # Dark magic... encode the vert index into the 'red' channel of a vertex color map
+                # col is a float in range [0.0, 1.0], so we can encode the idx into the lower 23b
+                mesh_obj.data.vertex_colors.new(name='CATS Vert', do_init=False)
+                for vertex in mesh_obj.data.vertices:
+                    mesh_obj.data.vertex_colors['CATS Vert'].data[vertex.index].color[0] = struct.unpack('f', struct.pack('I', vertex.index))[0]
 
                 # decimate N times, n/N% each time, and observe the result to get a list of leftover verts (the ones decimated)
                 iterations = 20
@@ -507,8 +509,9 @@ class AutoDecimateButton(bpy.types.Operator):
                     bpy.ops.object.mode_set(mode="OBJECT")
                     mesh_decimated = mesh_obj.evaluated_get(depsgraph)
                     for vert in mesh_decimated.data.vertices:
-                        _, idx, distance = kd.find(vert.undeformed_co)
-                        if not idx in weights and distance < 0.001:
+                        idx = struct.unpack('I', struct.pack('f',
+                                mesh_obj.data.vertex_colors['CATS Vert'].data[vert.index].color[0]))[0]
+                        if not idx in weights:
                             weights[idx] = 1 - (i/iterations)
                 for i in range(0,len(mesh_obj.data.vertices)):
                     if not i in weights:
