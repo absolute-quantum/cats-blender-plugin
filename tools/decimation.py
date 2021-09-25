@@ -500,7 +500,7 @@ class AutoDecimateButton(bpy.types.Operator):
                     mesh_obj.data.vertex_colors['CATS Vert'].data[vertex.index].color[0] = struct.unpack('f', struct.pack('I', vertex.index))[0]
 
                 # decimate N times, n/N% each time, and observe the result to get a list of leftover verts (the ones decimated)
-                iterations = 20
+                iterations = 100
                 weights = dict()
 
                 for i in range(1, iterations):
@@ -552,17 +552,17 @@ class AutoDecimateButton(bpy.types.Operator):
                 bpy.ops.uv.seams_from_islands()
                 bpy.ops.object.mode_set(mode="OBJECT")
                 edge_loops_weighted = [l for l in sorted([
-                                         (sum(weights[mesh_obj.data.edges[edge].vertices[0]] + weights[mesh_obj.data.edges[edge].vertices[1]]
-                                              for edge in edge_loop
-                                              if mesh_obj.data.edges[edge] in weights),
+                                         (max(weights[mesh_obj.data.edges[edge].vertices[0]] +
+                                              weights[mesh_obj.data.edges[edge].vertices[1]]
+                                              for edge in edge_loop),
                                          edge_loop)
                                          for edge_loop in edge_loops
                                          if not any(mesh_obj.data.edges[edge].use_seam for edge in edge_loop)
                                       ], key=lambda v: v[0])]
                 edge_loops_weighted+= [l for l in sorted([
-                                         (sum(weights[mesh_obj.data.edges[edge].vertices[0]] + weights[mesh_obj.data.edges[edge].vertices[1]]
-                                              for edge in edge_loop
-                                              if mesh_obj.data.edges[edge] in weights),
+                                         (max(weights[mesh_obj.data.edges[edge].vertices[0]] +
+                                              weights[mesh_obj.data.edges[edge].vertices[1]]
+                                              for edge in edge_loop),
                                          edge_loop)
                                          for edge_loop in edge_loops
                                          if any(mesh_obj.data.edges[edge].use_seam for edge in edge_loop)

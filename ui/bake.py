@@ -95,10 +95,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.label(text=t('BakePanel.bakepasseslabel'))
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_diffuse', expand=True)
-        if context.scene.bake_pass_diffuse and bpy.app.version >= (2, 92, 0):
+        if context.scene.bake_pass_diffuse:
+            if bpy.app.version >= (2, 92, 0):
+                row = col.row(align=True)
+                row.separator()
+                row.prop(context.scene, 'bake_diffuse_vertex_colors', expand=True)
             row = col.row(align=True)
             row.separator()
-            row.prop(context.scene, 'bake_diffuse_vertex_colors', expand=True)
+            row.prop(context.scene, 'bake_diffuse_sharpen', expand=True)
         if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha) and not context.scene.bake_diffuse_vertex_colors:
             row = col.row(align=True)
             row.separator()
@@ -115,9 +119,16 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'bake_normal_apply_trans', expand=True)
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_normal_sharpen', expand=True)
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_smoothness', expand=True)
+        if context.scene.bake_pass_smoothness:
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_smoothness_sharpen', expand=True)
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_ao', expand=True)
@@ -125,6 +136,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'bake_illuminate_eyes', expand=True)
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_ao_denoise', expand=True)
         col.separator()
         if context.scene.bake_pass_diffuse and context.scene.bake_pass_ao:
             row = col.row(align=True)
@@ -139,6 +153,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_pass_metallic', expand=True)
+        if context.scene.bake_pass_metallic:
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_metallic_sharpen', expand=True)
         if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
             row = col.row(align=True)
             row.separator()
@@ -157,8 +175,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             if context.scene.bake_emit_indirect:
                 row = col.row(align=True)
                 row.separator()
-                row.separator()
                 row.prop(context.scene, 'bake_emit_exclude_eyes', expand=True)
+                row = col.row(align=True)
+                row.separator()
+                row.prop(context.scene, 'bake_emit_denoise', expand=True)
 
         row = col.row(align=True)
         col.separator()

@@ -45,7 +45,6 @@ class BakeTutorialButton(bpy.types.Operator):
         self.report({'INFO'}, t('cats_bake.tutorial_button.success'))
         return {'FINISHED'}
 
-
 def autodetect_passes(self, context, tricount, is_desktop):
     context.scene.bake_max_tris = tricount
     context.scene.bake_resolution = 2048 if is_desktop else 1024
@@ -203,6 +202,44 @@ class BakeButton(bpy.types.Operator):
 
                             if alpha_input:
                                 tree.links.new(node.inputs[input2], alpha_input)
+
+    # filter_node_create is a function which, given a tree, returns a tuple of
+    # (input, output)
+    def filter_image(self, context, image, filter_create):
+        # This is performed in our throwaway scene, so we don't have to keep settings
+        context.scene.view_settings.view_transform = 'Standard'
+        # Bizarrely, getting the pixels from a render result is extremely difficult.
+        # To keep things simple, we perform a render here and then reload from disk.
+        bpy.data.images[image].save()
+        # set up compositor
+        context.scene.use_nodes = True
+        tree = context.scene.node_tree
+        for node in tree.nodes:
+            tree.nodes.remove(node)
+        image_node = tree.nodes.new(type="CompositorNodeImage")
+        image_node.image = bpy.data.images[image]
+        filter_input, filter_output = filter_create(tree)
+        tree.links.new(filter_input, image_node.outputs["Image"])
+        viewer_node = tree.nodes.new(type="CompositorNodeComposite")
+        tree.links.new(viewer_node.inputs["Image"], filter_output)
+
+        # rerender image
+        context.scene.render.resolution_x = bpy.data.images[image].size[0]
+        context.scene.render.resolution_y = bpy.data.images[image].size[1]
+        context.scene.render.filepath = bpy.data.images[image].filepath
+        # Immediately overwrite when we do this
+        bpy.ops.render.render(write_still=True, scene=context.scene.name)
+        bpy.data.images[image].reload()
+
+    def denoise_create(tree):
+        denoise_node = tree.nodes.new(type="CompositorNodeDenoise")
+        return denoise_node.inputs["Image"], denoise_node.outputs["Image"]
+
+    def sharpen_create(tree):
+        sharpen_node = tree.nodes.new(type="CompositorNodeFilter")
+        sharpen_node.filter_type = "SHARPEN"
+        sharpen_node.inputs["Fac"].default_value = 0.1
+        return sharpen_node.inputs["Image"], sharpen_node.outputs["Image"]
 
     def set_values(self, objects, input_name, input_value):
         already_set = set()
@@ -443,6 +480,14 @@ class BakeButton(bpy.types.Operator):
         create_disable_shapekeys = context.scene.bake_create_disable_shapekeys
         ignore_hidden = context.scene.bake_ignore_hidden
 
+        # Filters
+        diffuse_sharpen = context.scene.bake_diffuse_sharpen
+        normal_sharpen = context.scene.bake_normal_sharpen
+        smoothness_sharpen = context.scene.bake_smoothness_sharpen
+        metallic_sharpen = context.scene.bake_metallic_sharpen
+        ao_denoise = context.scene.bake_ao_denoise
+        emit_denoise = context.scene.bake_emit_denoise
+
         # Save reference to original armature
         armature = Common.get_armature()
 
@@ -627,6 +672,9 @@ class BakeButton(bpy.types.Operator):
                            (resolution, resolution), 32, 0, [0.5, 0.5, 0.5, 1.0], True, int(margin * resolution / 2))
 
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
+            bpy.data.images["SCRIPT_diffuse.png"].save()
+            if diffuse_sharpen:
+                self.filter_image(context, "SCRIPT_diffuse.png", BakeButton.sharpen_create)
 
         # Bake roughness, invert
         if pass_smoothness:
@@ -643,6 +691,8 @@ class BakeButton(bpy.types.Operator):
                 if (idx % 4) != 3:
                     pixel_buffer[idx] = 1.0 - pixel_buffer[idx]
             image.pixels[:] = pixel_buffer
+            if smoothness_sharpen:
+                self.filter_image(context, "SCRIPT_smoothness.png", BakeButton.sharpen_create)
 
         # bake emit
         if pass_emit:
@@ -689,6 +739,8 @@ class BakeButton(bpy.types.Operator):
                             obj.modifiers.remove(obj.modifiers["reyemask"])
 
                 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = original_color
+                if emit_denoise:
+                    self.filter_image(context, "SCRIPT_emission.png", BakeButton.denoise_create)
 
 
         # advanced: bake alpha from bsdf output
@@ -731,6 +783,8 @@ class BakeButton(bpy.types.Operator):
             # Revert the changes (re-flip)
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Roughness")
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
+            if metallic_sharpen:
+                self.filter_image(context, "SCRIPT_metallic.png", BakeButton.sharpen_create)
 
         # Pack to diffuse alpha (if selected)
         if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
@@ -796,6 +850,8 @@ class BakeButton(bpy.types.Operator):
                     for key in obj.data.shape_keys.key_blocks:
                         if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
                             key.value = 0.0
+            if ao_denoise:
+                self.filter_image(context, "SCRIPT_ao.png", BakeButton.denoise_create)
 
         # Blend diffuse and AO to create Quest Diffuse (if selected)
         if pass_diffuse and pass_ao and pass_questdiffuse:
@@ -876,6 +932,8 @@ class BakeButton(bpy.types.Operator):
             if pass_normal:
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                                (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
+                if normal_sharpen:
+                    self.filter_image(context, "SCRIPT_normal.png", BakeButton.sharpen_create)
         else:
             if not normal_apply_trans:
                 # Join meshes
@@ -974,6 +1032,8 @@ class BakeButton(bpy.types.Operator):
             if use_decimation:
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
                                (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
+                if normal_sharpen:
+                    self.filter_image(context, "SCRIPT_normal.png", BakeButton.sharpen_create)
 
 
         # Reapply keys
