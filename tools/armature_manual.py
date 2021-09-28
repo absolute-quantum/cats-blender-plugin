@@ -27,6 +27,7 @@
 import bpy
 import operator
 import math
+from mathutils.geometry import intersect_point_line
 
 from . import common as Common
 from . import eyetracking as Eyetracking
@@ -849,6 +850,69 @@ class RemoveZeroWeightGroups(bpy.types.Operator):
     #     self.report({'INFO'}, 'Removed ' + str(remove_count) + ' zero weight vertex groups.')
     #     return {'FINISHED'}
 
+@register_wrap
+class GenerateTwistBones(bpy.types.Operator):
+    bl_idname = 'cats_manual.generate_twist_bones'
+    bl_label = "Generate Twist Bones"
+    bl_description = "Attempt to generate twistbones for the selected bones"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+        return bpy.context.selected_editable_bones
+
+    def execute(self, context):
+        saved_data = Common.SavedData()
+
+        armature = bpy.context.object
+        bone_count = len(bpy.context.selected_editable_bones)
+        # For each bone...
+        bone_pairs = []
+        twist_locations = dict()
+        for bone in bpy.context.selected_editable_bones:
+            # Add '<bone>_Twist' and move the head halfway to the tail
+            twist_bone = armature.data.edit_bones.new(bone.name + "_Twist")
+            twist_bone.parent = bone
+            twist_bone.tail = bone.tail
+            twist_bone.head[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
+            twist_locations[twist_bone.name] = (twist_bone.head, twist_bone.tail)
+            bone_pairs.append((bone.name, twist_bone.name))
+
+        Common.switch('OBJECT')
+        for bone_name, twist_bone_name in bone_pairs:
+            twist_bone_head, twist_bone_tail = twist_locations[twist_bone_name]
+            for mesh in Common.get_meshes_objects(armature_name=armature.name):
+                if not bone_name in mesh.vertex_groups:
+                    continue
+
+                Common.set_active(mesh)
+
+                mesh.vertex_groups.new(name=twist_bone_name)
+                Common.mix_weights(mesh, bone_name, twist_bone_name, delete_old_vg=False)
+
+                # twist bone weights are a linear(?) gradient from head to tail, 0-1 * orig weight
+                group_idx = mesh.vertex_groups[bone_name].index
+                twist_group_idx = mesh.vertex_groups[twist_bone_name].index
+                for vertex in mesh.data.vertices:
+                    if any(group.group == twist_group_idx for group in vertex.groups):
+                        # calculate
+
+                        _, dist = intersect_point_line(vertex.co, twist_bone_head, twist_bone_tail)
+                        clamped_dist = max(0.0, min(1.0, dist))
+                        weight = mesh.vertex_groups[bone_name].weight(vertex.index) * clamped_dist
+                        mesh.vertex_groups[twist_bone_name].add([vertex.index], weight, "REPLACE")
+                        # orig bone weights are their original weight minus the twist weight
+                        mesh.vertex_groups[bone_name].add([vertex.index],
+                            mesh.vertex_groups[twist_bone_name].weight(vertex.index),
+                            "SUBTRACT")
+
+        Common.set_default_stage()
+
+        saved_data.load()
+        self.report({'INFO'}, t('RemoveConstraints.success'))
+        return {'FINISHED'}
 
 @register_wrap
 class RemoveConstraints(bpy.types.Operator):
