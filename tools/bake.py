@@ -587,11 +587,11 @@ class BakeButton(bpy.types.Operator):
 
             # Select all meshes. Select all UVs. Average islands scale
             for layer in cats_uv_layers:
+                Common.switch('OBJECT')
                 for obj in collection.all_objects:
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers[layer]
-                context.view_layer.objects.active = next(child for child in arm_copy.children if child.type == "MESH")
-                bpy.ops.object.editmode_toggle()
+                        context.view_layer.objects.active = obj
                 Common.switch('EDIT')
                 bpy.ops.mesh.select_all(action='SELECT')
                 bpy.ops.uv.select_all(action='SELECT')
