@@ -873,7 +873,7 @@ class GenerateTwistBones(bpy.types.Operator):
         twist_locations = dict()
         for bone in bpy.context.selected_editable_bones:
             # Add '<bone>_Twist' and move the head halfway to the tail
-            twist_bone = armature.data.edit_bones.new(bone.name + "_Twist")
+            twist_bone = armature.data.edit_bones.new('~' + bone.name + "_Twist")
             twist_bone.parent = bone
             twist_bone.tail = bone.tail
             twist_bone.head[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]

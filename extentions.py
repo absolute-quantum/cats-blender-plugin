@@ -321,6 +321,18 @@ def register():
         default=True
     )
 
+    Scene.bake_sharpen = BoolProperty(
+        name="Sharpen bakes",
+        description="Sharpen resampled images after baking diffuse/smoothness/metallic. Reccomended as any sampling will cause blur.",
+        default=True
+    )
+
+    Scene.bake_denoise = BoolProperty(
+        name="Denoise renders",
+        description="Denoise the resulting image after emit/AO. Reccomended as this will reduce the 'grainy' quality of inexpensive rendering..",
+        default=True
+    )
+
     Scene.bake_illuminate_eyes = BoolProperty(
         name=t('Scene.bake_illuminate_eyes.label'),
         description=t('Scene.bake_illuminate_eyes.desc'),
@@ -333,21 +345,9 @@ def register():
         default=True
     )
 
-    Scene.bake_smoothness_sharpen = BoolProperty(
-        name="Sharpen",
-        description="Sharpen the resulting image after baking. Reccomended as any sampling will cause blur.",
-        default=True
-    )
-
     Scene.bake_pass_diffuse = BoolProperty(
         name=t('Scene.bake_pass_diffuse.label'),
         description=t('Scene.bake_pass_diffuse.desc'),
-        default=True
-    )
-
-    Scene.bake_diffuse_sharpen = BoolProperty(
-        name="Sharpen",
-        description="Sharpen the resulting image after baking. Reccomended as any sampling will cause blur.",
         default=True
     )
 
@@ -366,12 +366,6 @@ def register():
     Scene.bake_pass_normal = BoolProperty(
         name=t('Scene.bake_pass_normal.label'),
         description=t('Scene.bake_pass_normal.desc'),
-        default=True
-    )
-
-    Scene.bake_normal_sharpen = BoolProperty(
-        name="Sharpen",
-        description="Sharpen the resulting image after baking. Reccomended as any sampling will cause blur.",
         default=True
     )
 
@@ -399,12 +393,6 @@ def register():
         default=False
     )
 
-    Scene.bake_ao_denoise = BoolProperty(
-        name="Denoise",
-        description="Denoise the resulting image after baking. Reccomended as this will reduce the 'grainy' quality of inexpensive rendering..",
-        default=True
-    )
-
     Scene.bake_pass_questdiffuse = BoolProperty(
         name=t('Scene.bake_pass_questdiffuse.label'),
         description=t('Scene.bake_pass_questdiffuse.desc'),
@@ -415,12 +403,6 @@ def register():
         name=t('Scene.bake_pass_emit.label'),
         description=t('Scene.bake_pass_emit.desc'),
         default=False
-    )
-
-    Scene.bake_emit_denoise = BoolProperty(
-        name="Denoise",
-        description="Denoise the resulting image after baking. Reccomended as this will reduce the 'grainy' quality of inexpensive rendering..",
-        default=True
     )
 
     Scene.bake_emit_indirect = BoolProperty(
@@ -466,12 +448,6 @@ def register():
         name=t('Scene.bake_pass_metallic.label'),
         description=t('Scene.bake_pass_metallic.desc'),
         default=False
-    )
-
-    Scene.bake_metallic_sharpen = BoolProperty(
-        name="Sharpen",
-        description="Sharpen the resulting image after baking. Reccomended as any sampling will cause blur.",
-        default=True
     )
 
     Scene.bake_questdiffuse_opacity = FloatProperty(
