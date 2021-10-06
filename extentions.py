@@ -156,6 +156,12 @@ def register():
         default=False
     )
 
+    Scene.generate_twistbones_upper = BoolProperty(
+        name="Generate Upperhalf",
+        description="Generate the twistbones on the upper half of the bone. Usually used for upper legs.",
+        default=False
+    )
+
     Scene.merge_armatures_join_meshes = BoolProperty(
         name=t('Scene.merge_armatures_join_meshes.label'),
         description=t('Scene.merge_armatures_join_meshes.desc'),

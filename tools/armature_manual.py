@@ -866,6 +866,7 @@ class GenerateTwistBones(bpy.types.Operator):
     def execute(self, context):
         saved_data = Common.SavedData()
 
+        generate_upper = context.scene.generate_twistbones_upper
         armature = bpy.context.object
         bone_count = len(bpy.context.selected_editable_bones)
         # For each bone...
@@ -873,11 +874,18 @@ class GenerateTwistBones(bpy.types.Operator):
         twist_locations = dict()
         for bone in bpy.context.selected_editable_bones:
             # Add '<bone>_Twist' and move the head halfway to the tail
-            twist_bone = armature.data.edit_bones.new('~' + bone.name + "_Twist")
+            if not generate_upper:
+                twist_bone = armature.data.edit_bones.new('~' + bone.name + "_Twist")
+                twist_bone.tail = bone.tail
+                twist_bone.head[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
+                twist_locations[twist_bone.name] = (twist_bone.head, twist_bone.tail)
+            else:
+                twist_bone = armature.data.edit_bones.new('~' + bone.name + "_UpperTwist")
+                twist_bone.tail[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
+                twist_bone.head = bone.head
+                twist_locations[twist_bone.name] = (twist_bone.tail, twist_bone.head)
             twist_bone.parent = bone
-            twist_bone.tail = bone.tail
-            twist_bone.head[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
-            twist_locations[twist_bone.name] = (twist_bone.head, twist_bone.tail)
+
             bone_pairs.append((bone.name, twist_bone.name))
 
         Common.switch('OBJECT')

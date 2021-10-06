@@ -129,6 +129,9 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.GenerateTwistBones.bl_idname, icon='OUTLINER_DATA_ARMATURE')
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.prop(context.scene, 'generate_twistbones_upper')
 
             col.separator()
             row = layout_split(col, factor=0.6, align=True)
