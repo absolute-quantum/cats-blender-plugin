@@ -967,11 +967,28 @@ class BakeButton(bpy.types.Operator):
                 if denoise_bakes:
                     self.filter_image(context, "SCRIPT_emission.png", BakeButton.denoise_create)
 
-        # join meshes here if we didn't decimate
+        # Apply any masking modifiers before decimation
+        print("Applying mask modifiers")
+        for obj in collection.all_objects:
+            Common.switch("OBJECT")
+            bpy.ops.object.select_all(action='DESELECT')
+            context.view_layer.objects.active = obj
+
+            for mod in obj.modifiers:
+                if mod.type == 'MASK':
+                    Common.switch("OBJECT")
+                    vgroup_idx = obj.vertex_groups[mod.vertex_group].index
+                    for vert in obj.data.vertices:
+                        vert.select = any(group.group == vgroup_idx for group in vert.groups)
+                    Common.switch("EDIT")
+                    bpy.ops.mesh.delete(type="VERT")
+
+        print("Decimating")
         if use_decimation:
             # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
             bpy.ops.cats_decimation.auto_decimate(armature_name=arm_copy.name, preserve_seams=preserve_seams, seperate_materials=False)
         else:
+            # join meshes here if we didn't decimate
             Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
 
         # Remove all other materials if we've done at least one bake pass
