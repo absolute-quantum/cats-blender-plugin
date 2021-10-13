@@ -101,6 +101,9 @@ def autodetect_passes(self, context, tricount, is_desktop):
     # Unfortunately, though it's technically faster, this makes things ineligible as Quest fallback avatars. So leave it off.
     context.scene.bake_optimize_static = is_desktop
 
+    # Quest has no use for twistbones
+    context.scene.bake_merge_twistbones = not is_desktop
+
     # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
     # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
     # diffuse ao: off if desktop
@@ -487,6 +490,7 @@ class BakeButton(bpy.types.Operator):
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
         diffuse_vertex_colors = context.scene.bake_diffuse_vertex_colors
         cleanup_shapekeys = context.scene.bake_cleanup_shapekeys # Reverted and _old shapekeys
+        merge_twistbones = context.scene.bake_merge_twistbones
         create_disable_shapekeys = context.scene.bake_create_disable_shapekeys
         ignore_hidden = context.scene.bake_ignore_hidden
 
@@ -517,6 +521,8 @@ class BakeButton(bpy.types.Operator):
             for modifier in child.modifiers:
                 if modifier.type == "ARMATURE":
                     modifier.object = arm_copy
+                if modifier.type == "MULTIRES":
+                    modifier.render_levels = modifier.total_levels
 
         # Copy default values from the largest diffuse BSDF
         objs_size_descending = sorted([obj for obj in collection.all_objects if obj.type == "MESH"],
@@ -667,6 +673,31 @@ class BakeButton(bpy.types.Operator):
             for obj in collection.all_objects:
                 if obj.type == 'MESH':
                     obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
+
+        # Optionally cleanup bones if we're not going to use them
+        if merge_twistbones:
+            print("merging bones")
+            bpy.ops.object.select_all(action='DESELECT')
+            context.view_layer.objects.active = arm_copy
+            Common.switch("EDIT")
+            bpy.ops.armature.select_all(action="DESELECT")
+            bone_children = dict()
+            for editbone in context.visible_bones:
+                if not editbone.parent:
+                    continue
+                if not editbone.parent.name in bone_children:
+                    bone_children[editbone.parent.name] = []
+                bone_children[editbone.parent.name].append(editbone.name)
+            for editbone in context.visible_bones:
+                if 'twist' in editbone.name.lower() and not editbone.children:
+                    editbone.select = True
+                    if editbone.parent:
+                        # only select if bone is alphabetically after all non-twistbones. Prevents hierarchy problems
+                        if any(otherbone > editbone.name for otherbone in bone_children[editbone.parent.name]
+                               if not 'twist' in otherbone.lower()):
+                            editbone.select = False
+            bpy.ops.cats_manual.merge_weights()
+            Common.switch("OBJECT")
 
         # Bake diffuse
         if pass_diffuse:
@@ -967,6 +998,15 @@ class BakeButton(bpy.types.Operator):
                 if denoise_bakes:
                     self.filter_image(context, "SCRIPT_emission.png", BakeButton.denoise_create)
 
+        # Remove multires modifiers
+        for obj in collection.all_objects:
+            mods = []
+            for mod in obj.modifiers:
+                if mod.type == "MULTIRES":
+                    mods.append(mod.name)
+            for mod in mods:
+                obj.modifiers.remove(obj.modifiers[mod])
+
         # Apply any masking modifiers before decimation
         print("Applying mask modifiers")
         for obj in collection.all_objects:
@@ -975,7 +1015,7 @@ class BakeButton(bpy.types.Operator):
             context.view_layer.objects.active = obj
 
             for mod in obj.modifiers:
-                if mod.type == 'MASK':
+                if mod.show_viewport and mod.type == 'MASK':
                     Common.switch("OBJECT")
                     vgroup_idx = obj.vertex_groups[mod.vertex_group].index
                     for vert in obj.data.vertices:
@@ -1191,9 +1231,6 @@ class BakeButton(bpy.types.Operator):
             tree.links.new(bsdfnode.inputs["Base Color"], diffusevertnode.outputs["Color"])
 
 
-        # TODO: Optionally cleanup bones as a last step
-        # Select all bones which don't fuzzy match a whitelist (Chest, Head, etc) and do Merge Weights to parent on them
-        # For now, just add a note saying you should merge bones manually
 
         if cleanup_shapekeys:
             for mesh in collection.all_objects:

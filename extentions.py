@@ -255,6 +255,12 @@ def register():
         default=True
     )
 
+    Scene.bake_merge_twistbones = BoolProperty(
+        name="Merge Twist Bones",
+        description="Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints.",
+        default=False
+    )
+
     Scene.bake_create_disable_shapekeys = BoolProperty(
         name="Create 'Disable' Shapekeys",
         description="Create 'Disable' shapekeys for all but the largest mesh, that cause it to shrink to nothing. Lets you keep toggleable props, without the need for additional meshes.",

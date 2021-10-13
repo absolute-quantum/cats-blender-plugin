@@ -640,12 +640,12 @@ class MergeWeights(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        active_obj = bpy.context.active_object
-        if not active_obj or not bpy.context.active_object.type == 'ARMATURE':
+        active_obj = context.active_object
+        if not active_obj or not context.active_object.type == 'ARMATURE':
             return False
-        if active_obj.mode == 'EDIT' and bpy.context.selected_editable_bones:
+        if active_obj.mode == 'EDIT' and context.selected_editable_bones:
             return True
-        if active_obj.mode == 'POSE' and bpy.context.selected_pose_bones:
+        if active_obj.mode == 'POSE' and context.selected_pose_bones:
             return True
 
         return False
@@ -653,15 +653,15 @@ class MergeWeights(bpy.types.Operator):
     def execute(self, context):
         saved_data = Common.SavedData()
 
-        armature = bpy.context.object
+        armature = context.object
 
         Common.switch('EDIT')
 
         # Find which bones to work on and put their name and their parent in a list
         parenting_list = {}
-        for bone in bpy.context.selected_editable_bones:
+        for bone in context.selected_editable_bones:
             parent = bone.parent
-            while parent and parent.parent and parent in bpy.context.selected_editable_bones:
+            while parent and parent.parent and parent in context.selected_editable_bones:
                 parent = parent.parent
             if not parent:
                 continue

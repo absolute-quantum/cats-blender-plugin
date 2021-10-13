@@ -87,6 +87,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'bake_cleanup_shapekeys', expand=True)
         row = col.row(align=True)
+        row.prop(context.scene, 'bake_merge_twistbones', expand=True)
+        row = col.row(align=True)
         row.prop(context.scene, 'bake_apply_keys', expand=True)
         #row = col.row(align=True)
         #row.prop(context.scene, 'bake_create_disable_shapekeys', expand=True)
@@ -173,4 +175,4 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
         if not addon_utils.check("render_auto_tile_size")[1]:
             row = col.row(align=True)
-            row.label(text="Enabling \"Auto Tile Size\" reccomended!", icon="INFO")
+            row.label(text="Enabling \"Auto Tile Size\" plugin reccomended!", icon="INFO")
