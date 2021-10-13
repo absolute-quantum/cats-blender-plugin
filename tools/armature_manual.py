@@ -861,19 +861,22 @@ class GenerateTwistBones(bpy.types.Operator):
     def poll(cls, context):
         if not Common.get_armature():
             return False
-        return bpy.context.selected_editable_bones
+        return context.selected_editable_bones
 
     def execute(self, context):
         saved_data = Common.SavedData()
 
+        context.object.data.use_mirror_x = False
+        context.object.pose.use_mirror_x = False
         generate_upper = context.scene.generate_twistbones_upper
-        armature = bpy.context.object
-        bone_count = len(bpy.context.selected_editable_bones)
+        armature = context.object
         # For each bone...
         bone_pairs = []
         twist_locations = dict()
-        for bone in bpy.context.selected_editable_bones:
+        editable_bone_names = [bone.name for bone in context.selected_editable_bones]
+        for bone_name in editable_bone_names:
             # Add '<bone>_Twist' and move the head halfway to the tail
+            bone = armature.data.edit_bones[bone_name]
             if not generate_upper:
                 twist_bone = armature.data.edit_bones.new('~' + bone.name + "_Twist")
                 twist_bone.tail = bone.tail
@@ -890,7 +893,9 @@ class GenerateTwistBones(bpy.types.Operator):
 
         Common.switch('OBJECT')
         for bone_name, twist_bone_name in bone_pairs:
-            twist_bone_head, twist_bone_tail = twist_locations[twist_bone_name]
+            twist_bone_head_tail = twist_locations[twist_bone_name]
+            print(twist_bone_head_tail[0])
+            print(twist_bone_head_tail[1])
             for mesh in Common.get_meshes_objects(armature_name=armature.name):
                 if not bone_name in mesh.vertex_groups:
                     continue
@@ -898,23 +903,20 @@ class GenerateTwistBones(bpy.types.Operator):
                 Common.set_active(mesh)
 
                 mesh.vertex_groups.new(name=twist_bone_name)
-                Common.mix_weights(mesh, bone_name, twist_bone_name, delete_old_vg=False)
 
                 # twist bone weights are a linear(?) gradient from head to tail, 0-1 * orig weight
                 group_idx = mesh.vertex_groups[bone_name].index
-                twist_group_idx = mesh.vertex_groups[twist_bone_name].index
                 for vertex in mesh.data.vertices:
-                    if any(group.group == twist_group_idx for group in vertex.groups):
+                    if any(group.group == group_idx for group in vertex.groups):
                         # calculate
 
-                        _, dist = intersect_point_line(vertex.co, twist_bone_head, twist_bone_tail)
+                        _, dist = intersect_point_line(vertex.co, twist_bone_head_tail[0], twist_bone_head_tail[1])
                         clamped_dist = max(0.0, min(1.0, dist))
-                        weight = mesh.vertex_groups[bone_name].weight(vertex.index) * clamped_dist
-                        mesh.vertex_groups[twist_bone_name].add([vertex.index], weight, "REPLACE")
                         # orig bone weights are their original weight minus the twist weight
-                        mesh.vertex_groups[bone_name].add([vertex.index],
-                            mesh.vertex_groups[twist_bone_name].weight(vertex.index),
-                            "SUBTRACT")
+                        twist_weight = mesh.vertex_groups[bone_name].weight(vertex.index) * clamped_dist
+                        untwist_weight = mesh.vertex_groups[bone_name].weight(vertex.index) * (1.0 - clamped_dist)
+                        mesh.vertex_groups[twist_bone_name].add([vertex.index], twist_weight, "REPLACE")
+                        mesh.vertex_groups[bone_name].add([vertex.index], untwist_weight, "REPLACE")
 
         Common.set_default_stage()
 
