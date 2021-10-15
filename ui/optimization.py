@@ -255,6 +255,9 @@ class OptimizePanel(ToolPanel, bpy.types.Panel):
 
             draw_smc_ui(context, col)
 
+            col.separator()
+            col.label(text="For PBR/Normal maps, use Bake.", icon='INFO')
+
         elif context.scene.optimize_mode == 'MATERIAL':
 
             # if not version_2_79_or_older():  # TODO
