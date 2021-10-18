@@ -233,6 +233,7 @@ class BakeButton(bpy.types.Operator):
         # rerender image
         context.scene.render.resolution_x = bpy.data.images[image].size[0]
         context.scene.render.resolution_y = bpy.data.images[image].size[1]
+        context.scene.render.resolution_percentage = 100
         context.scene.render.filepath = bpy.data.images[image].filepath
         # Immediately overwrite when we do this
         bpy.ops.render.render(write_still=True, scene=context.scene.name)
