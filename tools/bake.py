@@ -700,6 +700,9 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.cats_manual.merge_weights()
             Common.switch("OBJECT")
 
+        if not os.path.exists(bpy.path.abspath("//CATS Bake/")):
+            os.mkdir(bpy.path.abspath("//CATS Bake/"))
+
         # Bake diffuse
         if pass_diffuse:
             # Metallic can cause issues baking diffuse, so we put it somewhere typically unused
@@ -1264,8 +1267,6 @@ class BakeButton(bpy.types.Operator):
                 obj.name = "Body"
             elif obj.type == "ARMATURE":
                 obj.name = "Armature"
-        if not os.path.exists(bpy.path.abspath("//CATS Bake/")):
-            os.mkdir(bpy.path.abspath("//CATS Bake/"))
         bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
                                  use_selection=True,
                                  use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
