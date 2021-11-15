@@ -1376,6 +1376,18 @@ class FixVRMShapesButton(bpy.types.Operator):
 
         self.report({'INFO'}, t('FixVRMShapesButton.success'))
         return {'FINISHED'}
+		
+def duplicatebone(b):
+    arm = bpy.context.object.data
+    cb = arm.edit_bones.new(b.name)
+
+    cb.head = b.head
+    cb.tail = b.tail
+    cb.matrix = b.matrix
+    cb.parent = b.parent
+    return cb
+
+		
 class CreateDigigradeLegs(bpy.types.Operator):
     """Create Digigrade Legs While In Edit Mode With Digigrade Thighs Selected."""
     bl_idname = "armature.createdigigradelegs"
