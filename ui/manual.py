@@ -133,10 +133,9 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.operator(Armature_manual.OptimizeStaticShapekeys.bl_idname, icon='MESH_DATA')
             
             if not Common.version_2_79_or_older():
-                col.separator()
                 row = col.row(align=True)
                 row.scale_y = button_height
-                row.operator(Armature_manual.CreateDigigradeLegs.bl_idname, icon='OUTLINER_DATA_ARMATURE')
+                row.operator(Armature_manual.CreateDigitigradeLegs.bl_idname, icon='OUTLINER_DATA_ARMATURE')
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.GenerateTwistBones.bl_idname, icon='OUTLINER_DATA_ARMATURE')
