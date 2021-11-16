@@ -84,14 +84,20 @@ def register():
         description=t('Scene.remove_rigidbodies_joints.desc'),
         default=True
     )
-
+    
     # Manual
     Scene.use_google_only = BoolProperty(
         name=t('Scene.use_google_only.label'),
         description=t('Scene.use_google_only.desc'),
         default=False
     )
-
+    
+    Scene.translate_to_valve = BoolProperty(
+        name="Translate To Valve",
+        description="Translate Bones and Materials to Valve after fix.",
+        default=False
+    )
+    
     Scene.keep_merged_bones = BoolProperty(
         name='Keep Merged Bones',
         description='Select this to keep the bones after merging them to their parents or to the active bone',
