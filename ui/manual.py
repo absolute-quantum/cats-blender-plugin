@@ -5,6 +5,7 @@ from .main import ToolPanel
 from .main import layout_split
 from ..tools import supporter
 from ..tools import translate as Translate
+from ..tools import common as Common
 from ..tools import armature_manual as Armature_manual
 from ..tools.register import register_wrap
 from ..tools.translations import t
@@ -56,6 +57,10 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = button_height
         row.prop(context.scene, 'use_google_only')
+        
+        row = col.row(align=True)
+        row.scale_y = button_height
+        row.prop(context.scene, 'translate_to_valve')
 
         split = layout_split(col, factor=0.27, align=True)
 
@@ -128,6 +133,7 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.operator(Armature_manual.OptimizeStaticShapekeys.bl_idname, icon='MESH_DATA')
             
             if not Common.version_2_79_or_older():
+                col.separator()
                 row = col.row(align=True)
                 row.scale_y = button_height
                 row.operator(Armature_manual.CreateDigitigradeLegs.bl_idname, icon='OUTLINER_DATA_ARMATURE')
