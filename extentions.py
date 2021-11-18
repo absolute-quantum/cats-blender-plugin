@@ -91,6 +91,12 @@ def register():
         description=t('Scene.use_google_only.desc'),
         default=False
     )
+    
+    Scene.translate_to_valve = BoolProperty(
+        name="Translate To Valve",
+        description="Translate Bones and Materials to Valve after fix.",
+        default=False
+    )
 
     Scene.keep_merged_bones = BoolProperty(
         name='Keep Merged Bones',

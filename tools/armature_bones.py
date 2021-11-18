@@ -395,6 +395,7 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Mixamorig_Spine4',
 
     # 3DMax?
+	#whoever made comment above, this applies to Valve_Biped and some others.
     'Bip_Spine',
     'Bip_Spine0',
     'Bip_Spine1',
