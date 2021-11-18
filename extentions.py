@@ -98,6 +98,7 @@ def register():
         default=False
     )
     
+
     Scene.keep_merged_bones = BoolProperty(
         name='Keep Merged Bones',
         description='Select this to keep the bones after merging them to their parents or to the active bone',

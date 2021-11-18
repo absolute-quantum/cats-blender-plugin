@@ -1270,7 +1270,7 @@ class BakeButton(bpy.types.Operator):
         bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
                                  use_selection=True,
                                  use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
-                                 bake_space_transform=False, object_types={'ARMATURE', 'CAMERA', 'EMPTY', 'LIGHT', 'MESH', 'OTHER'},
+                                 bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
                                  use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
                                  use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
                                  secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,

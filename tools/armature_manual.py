@@ -1388,10 +1388,10 @@ def duplicatebone(b):
     return cb
 
 @register_wrap
-class CreateDigigradeLegs(bpy.types.Operator):
-    """Create Digigrade Legs While In Edit Mode With Digigrade Thighs Selected."""
-    bl_idname = "armature.createdigigradelegs"
-    bl_label = "Create Digi-grade Legs"
+class CreateDigitigradeLegs(bpy.types.Operator):
+    """Create digitigrade legs while in edit mode with digitigrade thighs selected."""
+    bl_idname = "armature.createdigitigradelegs"
+    bl_label = "Create Digitigrade Legs"
 
     @classmethod
     def poll(cls, context):
