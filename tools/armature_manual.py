@@ -27,6 +27,7 @@
 import bpy
 import operator
 import math
+import webbrowser
 from mathutils.geometry import intersect_point_line
 
 from . import common as Common
@@ -35,6 +36,27 @@ from .common import version_2_79_or_older
 from .register import register_wrap
 from .translations import t
 
+@register_wrap
+class TwistTutorialButton(bpy.types.Operator):
+    bl_idname = 'cats_manual.twist_tutorial'
+    bl_label = t('cats_bake.tutorial_button.label')
+    bl_description = "This will open a basic tutorial on how to setup and use these constraints. You can skip to the Unity section."
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        webbrowser.open("https://web.archive.org/web/20211014084533/https://vrcat.club/threads/tutorial-guide-twist-bones-what-are-they-and-how-do-you-use-them.3622/")
+        return {'FINISHED'}
+
+@register_wrap
+class DigitigradeTutorialButton(bpy.types.Operator):
+    bl_idname = 'cats_manual.digitigrade_tutorial'
+    bl_label = t('cats_bake.tutorial_button.label')
+    bl_description = "This will open a basic tutorial on how to setup and use aim constraints for Digitigrade avatars. Desktop-only!"
+    bl_options = {'INTERNAL'}
+
+    def execute(self, context):
+        webbrowser.open("https://www.furaffinity.net/view/44035707/")
+        return {'FINISHED'}
 
 @register_wrap
 class StartPoseMode(bpy.types.Operator):
@@ -1376,7 +1398,7 @@ class FixVRMShapesButton(bpy.types.Operator):
 
         self.report({'INFO'}, t('FixVRMShapesButton.success'))
         return {'FINISHED'}
-        
+
 def duplicatebone(b):
     arm = bpy.context.object.data
     cb = arm.edit_bones.new(b.name)
@@ -1403,12 +1425,12 @@ class CreateDigitigradeLegs(bpy.types.Operator):
         return False
 
     def execute(self, context):
-            
+
         for digi0 in context.selected_editable_bones:
             digi1 = None
             digi2 = None
             digi3 = None
-            
+
             try:
                 digi1 = digi0.children[0]
                 digi2 = digi1.children[0]
@@ -1428,21 +1450,21 @@ class CreateDigitigradeLegs(bpy.types.Operator):
                 digi4.select = True
             bpy.ops.armature.roll_clear()
             bpy.ops.armature.select_all(action='DESELECT')
-            
+
             scene = context.scene
             #creating transform for upper leg
             digi0.select = True
             bpy.ops.transform.create_orientation(name="CATS_digi0", overwrite=True)
             bpy.ops.armature.select_all(action='DESELECT')
-            
-            
+
+
             #duplicate digi0 and assign it to thigh
             thigh = duplicatebone(digi0)
             bpy.ops.armature.select_all(action='DESELECT')
-            
+
             #make digi2 parrallel to digi1
             digi2.align_orientation(digi0)
-                
+
             #extrude thigh
             thigh.select_tail = True
             bpy.ops.armature.extrude_move(ARMATURE_OT_extrude={"forked":False},TRANSFORM_OT_translate=None)
@@ -1450,10 +1472,10 @@ class CreateDigitigradeLegs(bpy.types.Operator):
             bpy.ops.armature.select_more()
             calf = context.selected_bones[0]
             bpy.ops.armature.select_all(action='DESELECT')
-            
+
             #set calf end to  digi2 end
             calf.tail = digi2.tail
-            
+
             #make copy of calf, flip it, and then align bone so that it's head is moved to match in align phase
             flipedcalf = duplicatebone(calf)
             bpy.ops.armature.select_all(action='DESELECT')
@@ -1465,17 +1487,17 @@ class CreateDigitigradeLegs(bpy.types.Operator):
             flippeddigi1.select = True
             bpy.ops.armature.switch_direction()
             bpy.ops.armature.select_all(action='DESELECT')
-            
-           
-        
+
+
+
             #align flipped calf to flipped middle leg to move the head
             flipedcalf.align_orientation(flippeddigi1)
-            
+
             flipedcalf.length = flippeddigi1.length
-            
+
             #assign calf tail to flipped calf head so it moves calf's head
             calf.head = flipedcalf.tail
-        
+
             #delete helper bones
             bpy.ops.armature.select_all(action='DESELECT')
             flippeddigi1.select = True
@@ -1484,11 +1506,11 @@ class CreateDigitigradeLegs(bpy.types.Operator):
             flipedcalf.select = True
             bpy.ops.armature.delete()
             bpy.ops.armature.select_all(action='DESELECT')
-            
-            
+
+
             #Tada! It's done! Now to duplicate toes and change parents
-            
-            
+
+
             #duplicate old foot and reparent
             newfoot = duplicatebone(digi3)
             newfoot.parent = calf
