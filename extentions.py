@@ -84,7 +84,7 @@ def register():
         description=t('Scene.remove_rigidbodies_joints.desc'),
         default=True
     )
-
+    
     # Manual
     Scene.use_google_only = BoolProperty(
         name=t('Scene.use_google_only.label'),
