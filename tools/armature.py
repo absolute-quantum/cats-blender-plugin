@@ -417,6 +417,9 @@ class FixArmature(bpy.types.Operator):
                         Common.fix_mmd_shader(mesh)
                     Common.fix_vrm_shader(mesh)
                     Common.add_principled_shader(mesh)
+                    for mat_slot in mesh.material_slots: #fix transparency per polygon and general garbage look in blender. Asthetic purposes to fix user complaints.
+                        mat_slot.material.shadow_method = "HASHED"
+                        mat_slot.material.blend_method = "HASHED"
 
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)

@@ -663,7 +663,7 @@ class PMXImporter:
             vtx_morph.name = morph.name
             vtx_morph.name_e = morph.name_e
             vtx_morph.category = categories.get(morph.category, 'OTHER')
-            for md in morph.offsets:
+            for md in morph.offsets: #TODO: Why does this throw an error index out of bounds?
                 shapeKeyPoint = shapeKey.data[md.index]
                 shapeKeyPoint.co += Vector(md.offset).xzy * self.__scale
 

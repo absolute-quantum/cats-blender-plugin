@@ -70,12 +70,12 @@ class TranslateShapekeyButton(bpy.types.Operator):
         saved_data = Common.SavedData()
 
         to_translate = []
-
-        for mesh in Common.get_meshes_objects(mode=2):
-            if Common.has_shapekeys(mesh):
-                for shapekey in mesh.data.shape_keys.key_blocks:
-                    if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
-                        to_translate.append(shapekey.name)
+        if(not bpy.context.scene.translate_to_valve):
+            for mesh in Common.get_meshes_objects(mode=2):
+                if Common.has_shapekeys(mesh):
+                    for shapekey in mesh.data.shape_keys.key_blocks:
+                        if 'vrc.' not in shapekey.name and shapekey.name not in to_translate:
+                            to_translate.append(shapekey.name)
 
         update_dictionary(to_translate, translating_shapes=True, self=self)
 
@@ -85,9 +85,16 @@ class TranslateShapekeyButton(bpy.types.Operator):
         for mesh in Common.get_meshes_objects(mode=2):
             if Common.has_shapekeys(mesh):
                 for shapekey in mesh.data.shape_keys.key_blocks:
-                    if 'vrc.' not in shapekey.name:
-                        shapekey.name, translated = translate(shapekey.name, add_space=True, translating_shapes=True)
-                        if translated:
+                    if(not bpy.context.scene.translate_to_valve):
+                        if 'vrc.' not in shapekey.name:
+                            shapekey.name, translated = translate(shapekey.name, add_space=True, translating_shapes=True)
+                            if translated:
+                                i += 1
+                    else:
+                        if(shapekey.name == shapekey.name.lower()):
+                            pass
+                        else:
+                            shapekey.name = shapekey.name.lower()
                             i += 1
 
         Common.ui_refresh()
@@ -112,21 +119,37 @@ class TranslateBonesButton(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        to_translate = []
-        for armature in Common.get_armature_objects():
-            for bone in armature.data.bones:
-                to_translate.append(bone.name)
+        if(not bpy.context.scene.translate_to_valve):
+            
+            to_translate = []
+            for armature in Common.get_armature_objects():
+                for bone in armature.data.bones:
+                    to_translate.append(bone.name)
 
-        update_dictionary(to_translate, self=self)
+            update_dictionary(to_translate, self=self)
 
-        count = 0
-        for armature in Common.get_armature_objects():
-            for bone in armature.data.bones:
-                bone.name, translated = translate(bone.name)
-                if translated:
-                    count += 1
+            count = 0
+            for armature in Common.get_armature_objects():
+                for bone in armature.data.bones:
+                    bone.name, translated = translate(bone.name)
+                    if translated:
+                        count += 1
 
-        self.report({'INFO'}, t('TranslateBonesButton.success', number=str(count)))
+            self.report({'INFO'}, t('TranslateBonesButton.success', number=str(count)))
+        else:
+            translatebonefails = 0
+            for armature in Common.get_armature_objects():
+			
+                valve_translations = {'Hips': "ValveBiped.Bip01_Pelvis",'Spine': "ValveBiped.Bip01_Spine",'Chest': "ValveBiped.Bip01_Spine1",'Upper_Chest': "ValveBiped.Bip01_Spine2",'Neck': "ValveBiped.Bip01_Neck1",'Head': "ValveBiped.Bip01_Head",'Left leg': "ValveBiped.Bip01_L_Thigh",'Left knee': "ValveBiped.Bip01_L_Calf",'Left ankle': "ValveBiped.Bip01_L_Foot",'Right leg': "ValveBiped.Bip01_R_Thigh",'Right knee': "ValveBiped.Bip01_R_Calf",'Right ankle': "ValveBiped.Bip01_R_Foot",'Left shoulder': "ValveBiped.Bip01_L_Clavicle",'Left arm': "ValveBiped.Bip01_L_UpperArm",'Left elbow': "ValveBiped.Bip01_L_Forearm",'Left wrist': "ValveBiped.Bip01_L_Hand",'Right shoulder': "ValveBiped.Bip01_R_Clavicle",'Right arm': "ValveBiped.Bip01_R_UpperArm",'Right elbow': "ValveBiped.Bip01_R_Forearm",'Right wrist': "ValveBiped.Bip01_R_Hand"}
+                
+                for bone in armature.data.bones:
+                    if(bone.name in valve_translations):
+                        bone.name = valve_translations[bone.name]
+                    else:
+                        translatebonefails += 1
+            if translatebonefails > 0:
+                self.report({'INFO'}, "Failed to translate "+str(translatebonefails)+" bones! Make sure your model has standard bone names!")
+                
         return {'FINISHED'}
 
 
