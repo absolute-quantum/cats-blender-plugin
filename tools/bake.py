@@ -342,7 +342,8 @@ class BakeButton(bpy.types.Operator):
         context.scene.render.bake.use_pass_color = "COLOR" in bake_pass_filter
         context.scene.render.bake.use_pass_diffuse = "DIFFUSE" in bake_pass_filter
         context.scene.render.bake.use_pass_emit = "EMIT" in bake_pass_filter
-        context.scene.render.bake.use_pass_ambient_occlusion = "AO" in bake_pass_filter
+        if Common.version_2_93_or_older():
+            context.scene.render.bake.use_pass_ambient_occlusion = "AO" in bake_pass_filter
         if bpy.app.version >= (2, 92, 0):
             context.scene.render.bake.target = "VERTEX_COLORS" if "VERTEX_COLORS" in bake_pass_filter else "IMAGE_TEXTURES"
         context.scene.cycles.samples = bake_samples
@@ -697,7 +698,8 @@ class BakeButton(bpy.types.Operator):
                         if any(otherbone > editbone.name for otherbone in bone_children[editbone.parent.name]
                                if not 'twist' in otherbone.lower()):
                             editbone.select = False
-            bpy.ops.cats_manual.merge_weights()
+            if context.selected_editable_bones:
+                bpy.ops.cats_manual.merge_weights()
             Common.switch("OBJECT")
 
         if not os.path.exists(bpy.path.abspath("//CATS Bake/")):
