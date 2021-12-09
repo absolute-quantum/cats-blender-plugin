@@ -1842,8 +1842,8 @@ def fix_bone_orientations(armature):
 
             # Only connect them if the other bone is a certain distance away, otherwise blender will delete them
             if dist > 0.005:
-                bone.tail = bone.children[0].head
                 if(bone.parent):
+                    bone.tail = bone.children[0].head
                     if len(bone.parent.children) == 1:  # if the bone's parent bone only has one child, connect the bones (Don't connect them all because that would mess up hand/finger bones)
                         bone.use_connect = True
                 
