@@ -171,8 +171,11 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         col.separator()
         row = col.row(align=True)
         row.prop(context.scene, 'bake_device', expand=True)
+        if context.preferences.addons['cycles'].preferences.compute_device_type == 'NONE' and context.scene.bake_device == 'GPU':
+            row = col.row(align=True)
+            row.label(text="No render device configured in Settings. Bake will use CPU", icon="INFO")
         row = col.row(align=True)
         row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
-        if not addon_utils.check("render_auto_tile_size")[1]:
+        if not addon_utils.check("render_auto_tile_size")[1] and Common.version_2_93_or_older():
             row = col.row(align=True)
             row.label(text="Enabling \"Auto Tile Size\" plugin reccomended!", icon="INFO")

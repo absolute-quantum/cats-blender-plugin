@@ -61,6 +61,9 @@ from mmd_tools_local.panels import view_prop as mmd_view_prop
 def version_2_79_or_older():
     return bpy.app.version < (2, 80)
 
+def version_2_93_or_older():
+    return bpy.app.version < (2, 90)
+
 
 def get_objects():
     return bpy.context.scene.objects if version_2_79_or_older() else bpy.context.view_layer.objects
