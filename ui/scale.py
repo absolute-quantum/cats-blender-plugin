@@ -48,7 +48,10 @@ class ScalingPanel(ToolPanel, bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
 
-        row.operator(Scaler
+        box = layout.box()
+        col = box.column(align=True)
+        row = col.row(align=True)
+        row.operator(Scaler.ImmersiveScalerHelpButton.bl_idname, icon='QUESTION')
 
         # Installed but disabled
         if imscale_is_disabled:
@@ -76,13 +79,13 @@ class ScalingPanel(ToolPanel, bpy.types.Panel):
         if not draw_imscale_ui:
             box = layout.box()
             col = box.column(align=True)
-            row = row.col(align=True)
+            row = col.row(align=True)
 
             row.scale_y = 0.75
             row.label(text=t('ScalingPanel.imscaleNotInstalled1'))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text=t('ScalingPanel.imscaleDisabled2'))
+            row.label(text=t('ScalingPanel.imscaleNotInstalled2'))
             col.separator()
             row = col.row(align=True)
             row.operator(Scaler.ImmersiveScalerButton.bl_idname, icon='CHECKBOX_HLT')

@@ -183,7 +183,7 @@ BakePanel.doublepackwarning,Smoothness packed in two places!,,두군데에 부�
 ScalingPanel.label,Scaling,,
 ScalingPanel.imscaleDisabled1,Immersive Scaler is not enabled!,,
 ScalingPanel.imscaleDisabled2,Enable it in your user preferences:,,
-ScalingPanel.imscaleNotInstalled1,Immersive Scaler is not installed!:,,
+ScalingPanel.imscaleNotInstalled1,Immersive Scaler is not installed!,,
 ScalingPanel.imscaleNotInstalled2,Download and install it manually:,,
 UpdaterPanel.label,Settings & Updates,設定と更新,세팅 & 업데이트
 UpdaterPanel.name,Settings:,設定:,세팅:
@@ -460,8 +460,10 @@ ShotariyaButton.URL,https://vrcat.club/threads/material-combiner-blender-addon-1
 ShotariyaButton.success,Material Combiner link opened,,
 ImmersiveScalerButton.URL,https://github.com/triazo/immersive_scaler/releases/latest,,
 ImmersiveScalerButton.success,Immersive Scaler link opened,,
+ImmersiveScalerButton.label,Download Immersive Scaler,,
+ImmersiveScalerButton.desc,Open latest Immersive Scaler release,,
 ImmersiveScalerHelpButton.URL,https://github.com/triazo/immersive_scaler,,
-ImmersiveScalerHelpButton.label,Immersive Scaling,,
+ImmersiveScalerHelpButton.label,Download Immersive Scaler,,
 ImmersiveScalerHelpButton.desc,Open guide for Immersive Scaler,,
 ImmersiveScalerHelpButton.success,Immersive Scaler Readme opened,,
 EnableIMScale.label,Enable Immersive Scaler,,

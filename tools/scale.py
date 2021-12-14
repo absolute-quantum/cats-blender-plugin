@@ -5,9 +5,17 @@
 # Code largely taken from the material combiner integration.
 ##
 
+import bpy
+import webbrowser
+import addon_utils
+
+from . import common as Common
+from .register import register_wrap
+from .translations import t
+
 # Operator to enable the immersive scaler after it's installed
 @register_wrap
-class EnableSMC(bpy.types.Operator):
+class EnableIMScale(bpy.types.Operator):
     bl_idname = 'cats_scale.enable_imscale'
     bl_label = t('EnableIMScale.label')
     bl_description = t('EnableIMScale.desc')
@@ -46,7 +54,8 @@ class EnableSMC(bpy.types.Operator):
 @register_wrap
 class ImmersiveScalerButton(bpy.types.Operator):
     bl_idname = 'imscale.download_immersive_scaler'
-    bl_label = t('')
+    bl_label = t('ImmersiveScalerButton.label')
+    bl_description = t('ImmersiveScalerButton.desc')
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
@@ -65,5 +74,6 @@ class ImmersiveScalerHelpButton(bpy.types.Operator):
 
     def execute(self, context):
         webbrowser.open(t('ImmersiveScalerHelpButton.URL'))
+
         self.report({'INFO'}, t('ImmersiveScalerHelpButton.success'))
         return {'FINISHED'}
