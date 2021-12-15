@@ -70,8 +70,22 @@ class ScalingPanel(ToolPanel, bpy.types.Panel):
             check_for_imscale()
             return None
 
+        # Currently, instructions for an old version are the same as
+        # it not being installed - a manual install either way.
         if old_imscale_version:
-            print("Old Immersive Scaler Version!!")
+            box = layout.box()
+            col = box.column(align=True)
+            row = col.row(align=True)
+
+            row.scale_y = 0.75
+            row.label(text=t('ScalingPanel.imscaleOldVersion1'))
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text=t('ScalingPanel.imscaleNotInstalled2'))
+            col.separator()
+            row = col.row(align=True)
+            row.operator(Scaler.ImmersiveScalerButton.bl_idname, icon='CHECKBOX_HLT')
+
             check_for_imscale()
             return None
 
