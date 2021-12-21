@@ -5,6 +5,7 @@ if "bpy" not in locals():
     from . import armature
     from . import manual
     from . import custom
+    from . import scale
     from . import decimation
     from . import eye_tracking
     from . import visemes
@@ -22,6 +23,7 @@ else:
     importlib.reload(armature)
     importlib.reload(manual)
     importlib.reload(custom)
+    importlib.reload(scale)
     importlib.reload(decimation)
     importlib.reload(eye_tracking)
     importlib.reload(visemes)

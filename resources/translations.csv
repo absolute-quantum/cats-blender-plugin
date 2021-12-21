@@ -2,17 +2,17 @@ name,en_US,ja_JP,ko_KR
 Main.error.restartAdmin,"
 
 Faulty CATS installation found!
-To fix this restart Blender as admin!     
+To fix this restart Blender as admin!
 ",,"
 
 잘못 설치된 Cats Plugin이 발견되었습니다!
-이 문제를 해결하려면 Blender를 관리자로 다시 시작하세요!     
+이 문제를 해결하려면 Blender를 관리자로 다시 시작하세요!
 "
-Main.error.deleteFollowing,"                                                                                                                                                                                                         
+Main.error.deleteFollowing,"
 
 Faulty CATS installation found!
 To fix this delete the following files and folders inside your addons folder:
-",,"                                                                                                                                                                                                         
+",,"
 
 잘못 설치된 Cats Plugin이 발견되었습니다!
 이 문제를 해결하려면 addons 폴더에서 다음 파일과 폴더를 삭제하세요.:
@@ -37,11 +37,11 @@ Blender를 다시 시작하고 Cats Plugin를 다시 활성화하세요!
 "
 Main.error.unsupportedVersion,"
 
-Blender versions older than 2.79 are not supported by Cats. 
+Blender versions older than 2.79 are not supported by Cats.
 Please use Blender 2.79 or later.
 ",,"
 
-2.79 이전의 블렌더 버전은 Cats에서 지원하지 않습니다. 
+2.79 이전의 블렌더 버전은 Cats에서 지원하지 않습니다.
 Blender 2.79 버전 이상을 사용하세요.
 "
 Main.error.beta2.80,"
@@ -146,7 +146,7 @@ EyeTrackingPanel.error.wrongNameArm3,      (currently ',      (現在は ',     
 EyeTrackingPanel.error.wrongNameBody1,The mesh containing the eyes has to be,アイトラッキングが機能するには,눈들을 포함한 메쉬는 반드시
 EyeTrackingPanel.error.wrongNameBody2,      named 'Body' for Eye Tracking to work!,      目を含むメッシュに'Body'という名前を付ける必要があります!,      눈 추적(Eye Tracking)을 위해 'Body'로 이름을 지어야 합니다.
 EyeTrackingPanel.error.wrongNameBody3,      (currently ',      (現在は ',      (현재로서는 '
-EyeTrackingPanel.warn.assignEyes1,Don't forget to assign 'LeftEye' and 'RightEye','左目'と'右目' を割り当てることを忘れないでください。,유니티에서 'LeftEye'와 'RightEye'를 
+EyeTrackingPanel.warn.assignEyes1,Don't forget to assign 'LeftEye' and 'RightEye','左目'と'右目' を割り当てることを忘れないでください。,유니티에서 'LeftEye'와 'RightEye'를
 EyeTrackingPanel.warn.assignEyes2,      to the eyes in Unity!,      ユニティの目に,      적용하는 것을 잊지 마세요!
 VisemePanel.label,Visemes,バイセム,립싱크(Visemes)
 VisemePanel.error.noMesh,No meshes found!,メッシュが見つかりません!,메쉬가 발견되지 않음!
@@ -180,6 +180,12 @@ BakePanel.alphalabel,Alpha:,,
 BakePanel.transparencywarning,Transparency isn't currently selected!,,현재 투명도가 선택되지 않았습니다!
 BakePanel.smoothnesswarning,Smoothness isn't currently selected!,,현재 부드러움이 선택되지 않았습니다!
 BakePanel.doublepackwarning,Smoothness packed in two places!,,두군데에 부드러움이 설정되었습니다!
+ScalingPanel.label,Scaling,,
+ScalingPanel.imscaleDisabled1,Immersive Scaler is not enabled!,,
+ScalingPanel.imscaleDisabled2,Enable it in your user preferences:,,
+ScalingPanel.imscaleOldVersion1,Immersive Scaler is not installed!,,
+ScalingPanel.imscaleNotInstalled1,Immersive Scaler is not installed!,,
+ScalingPanel.imscaleNotInstalled2,Download and install it manually:,,
 UpdaterPanel.label,Settings & Updates,設定と更新,세팅 & 업데이트
 UpdaterPanel.name,Settings:,設定:,세팅:
 UpdaterPanel.requireRestart1,Restart required.,再起動が必要.,재시작이 필요합니다.
@@ -228,7 +234,7 @@ FixArmature.cantFix1,Looks like you found a model which Cats could not fix!,,Cat
 FixArmature.cantFix2,If this is a non modified model we would love to make it compatible.,,이것이 수정되지 않은 모델이라면 우리는 호환되도록 만들고 싶습니다.
 FixArmature.cantFix3,"Report it to us in the forum or in our discord, links can be found in the Credits panel.",,포럼이나 디스코드에서 우리에게 신고해주세요. 링크는 크레딧 패널에 있습니다.
 FixArmature.notParent," is not parented at all, this will cause problems!",," 부모설정이 전혀 안됐다면, 이로 인해 문제가 발생할 수 있습니다!"
-FixArmature.notParentTo1, is not parented to ,, 가 
+FixArmature.notParentTo1, is not parented to ,, 가
 FixArmature.notParentTo2,", this will cause problems!",,"의 부모로 설정돼지 않았다면, 이로 인해 문제가 발생할 수 있습니다!"
 StartPoseMode.label,Start Pose Mode,ポーズモードを開始,포즈모드 시작
 StartPoseMode.desc,"Starts the pose mode.
@@ -453,6 +459,17 @@ InstallShotariya.error.version3,Please download and install it manually:,,
 ShotariyaButton.label,Download Material Combiner,マテリアルコンバイナーをダウンロード,매테리얼 통합기 다운로드
 ShotariyaButton.URL,https://vrcat.club/threads/material-combiner-blender-addon-1-1-3.2255/,,
 ShotariyaButton.success,Material Combiner link opened,,
+ImmersiveScalerButton.URL,https://github.com/triazo/immersive_scaler/releases/latest,,
+ImmersiveScalerButton.success,Immersive Scaler link opened,,
+ImmersiveScalerButton.label,Download Immersive Scaler,,
+ImmersiveScalerButton.desc,Open latest Immersive Scaler release,,
+ImmersiveScalerHelpButton.URL,https://github.com/triazo/immersive_scaler,,
+ImmersiveScalerHelpButton.label,Download Immersive Scaler,,
+ImmersiveScalerHelpButton.desc,Open guide for Immersive Scaler,,
+ImmersiveScalerHelpButton.success,Immersive Scaler Readme opened,,
+EnableIMScale.label,Enable Immersive Scaler,,
+EnableIMScale.desc,Enable Immersive Scaler,,
+EnableIMScale.success,Enabled Immersive Scaler!,,
 BoneMergeButton.label,Merge Bones,ボーンをマージする,뼈 통합
 BoneMergeButton.desc,"Merges the given percentage of bones together.
 This is useful to reduce the amount of bones used by Dynamic Bones.",,
@@ -555,8 +572,8 @@ Supported types:
 - XNALara: .xps/.mesh/.ascii
 - Source: .smd/.qc
 - VRM: .vrm
-- FBX .fbx 
-- DAE: .dae 
+- FBX .fbx
+- DAE: .dae
 - ZIP: .zip",,
 ImportAnyModel.desc2.8,"Import a model of any supported type.
 
@@ -566,7 +583,7 @@ Supported types:
 - Source: .smd/.qc/.vta/.dmx
 - VRM: .vrm
 - FBX: .fbx
-- DAE: .dae 
+- DAE: .dae
 - ZIP: .zip",,
 ImportAnyModel.importantInfo.label,IMPORTANT INFO (hover here),重要な情報(ここにホバー),
 ImportAnyModel.importantInfo.desc,"If you want to modify the import settings, use the button next to the Import button.
