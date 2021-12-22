@@ -293,7 +293,10 @@ def register():
     # Register immersive scaler if it's loaded
     if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
         import immersive_scaler.immersive_scaler as imscale
-        imscale.register()
+        try:
+            imscale.register()
+        except ModuleNotFoundError:
+            pass
 
     # Register all classes
     count = 0
@@ -373,7 +376,10 @@ def unregister():
     # Unload immersive scaler
     if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
         import immersive_scaler.immersive_scaler as imscale
-        imscale.unregister()
+        try:
+            imscale.unregister()
+        except ModuleNotFoundError:
+            pass
 
     # Unload all classes in reverse order
     count = 0
