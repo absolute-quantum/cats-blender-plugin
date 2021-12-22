@@ -50,6 +50,8 @@ import shutil
 import pathlib
 import requests
 
+from importlib.util import find_spec
+
 from . import globs
 
 # Check if cats is reloading or started fresh
@@ -63,6 +65,8 @@ else:
 if not is_reloading:
     # This order is important
     import mmd_tools_local
+    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
+        import immersive_scaler.immersive_scaler as imscale
     from . import updater
     from . import tools
     from . import ui
@@ -71,6 +75,8 @@ else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
+    if 'imscale' in vars():
+        importlib.reload(imscale)
     importlib.reload(tools)
     importlib.reload(ui)
     importlib.reload(extentions)
@@ -284,6 +290,11 @@ def register():
     except ValueError:
         print('mmd_tools is already registered')
 
+    # Register immersive scaler if it's loaded
+    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
+        import immersive_scaler.immersive_scaler as imscale
+        imscale.register()
+
     # Register all classes
     count = 0
     tools.register.order_classes()
@@ -358,6 +369,10 @@ def unregister():
     except ValueError:
         print('mmd_tools was not registered')
         pass
+
+    # Unload immersive scaler
+    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
+        imscale.unregister()
 
     # Unload all classes in reverse order
     count = 0
