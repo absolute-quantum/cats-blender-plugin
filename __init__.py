@@ -372,6 +372,7 @@ def unregister():
 
     # Unload immersive scaler
     if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
+        import immersive_scaler.immersive_scaler as imscale
         imscale.unregister()
 
     # Unload all classes in reverse order
