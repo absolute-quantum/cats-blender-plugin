@@ -3,6 +3,7 @@
 import bpy
 import addon_utils
 from importlib import import_module
+from importlib.util import find_spec
 
 from .main import ToolPanel
 from ..tools import scale as Scaler
@@ -18,6 +19,11 @@ def check_for_imscale():
     global draw_imscale_ui, old_imscale_version, imscale_is_disabled
 
     draw_imscale_ui = None
+
+    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
+        import immersive_scaler.immersive_scaler as imscale
+        draw_imscale_ui = imscale.ui.draw_ui
+        return
 
     for mod in addon_utils.modules():
         if mod.bl_info['name'] == "Immersive Scaler":
