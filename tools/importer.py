@@ -450,6 +450,311 @@ class ImportMMD(bpy.types.Operator):
 
         return {'FINISHED'}
 
+@register_wrap
+class ImportUnityAnim(bpy.types.Operator,bpy_extras.io_utils.ImportHelper):
+    bl_idname = 'cats_importer.import_unity_anim'
+    bl_label = "Import Unity Anim"
+    bl_description = "Import Unity Animation (*.anim)"
+    bl_options = {'INTERNAL'}
+    
+    filter_glob: bpy.props.StringProperty(
+        default="*.anim",
+        options={'HIDDEN'}
+    )
+    
+    @classmethod
+    def poll(cls, context):
+        if Common.get_armature() is None:
+            return False
+        return True
+    
+    def execute(self, context):
+        Common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if hasattr(context.scene, 'layers'):
+            context.scene.layers[0] = True
+        
+        #Turn Unity Animator Property Names into Cats Standard RNA Paths
+        #Number is the index.
+        curve_val_attribute_to_bone = {
+            #Root AKA Hips
+            "RootT.x":["pose.bones[\"Hips\"].location",0],
+            "RootT.y":["pose.bones[\"Hips\"].location",1],
+            "RootT.z":["pose.bones[\"Hips\"].location",2],
+            "RootQ.x":["pose.bones[\"Hips\"].rotation_quaternion",1],
+            "RootQ.y":["pose.bones[\"Hips\"].rotation_quaternion",2],
+            "RootQ.z":["pose.bones[\"Hips\"].rotation_quaternion",3],
+            "RootQ.w":["pose.bones[\"Hips\"].rotation_quaternion",0],
+            #left foot
+            "LeftFootT.x":["pose.bones[\"Left ankle\"].location",0],
+            "LeftFootT.y":["pose.bones[\"Left ankle\"].location",1],
+            "LeftFootT.z":["pose.bones[\"Left ankle\"].location",2],
+            "LeftFootQ.x":["pose.bones[\"Left ankle\"].rotation_quaternion",1],
+            "LeftFootQ.y":["pose.bones[\"Left ankle\"].rotation_quaternion",2],
+            "LeftFootQ.z":["pose.bones[\"Left ankle\"].rotation_quaternion",3],
+            "LeftFootQ.w":["pose.bones[\"Left ankle\"].rotation_quaternion",0],
+            #right foot
+            "RightFootT.x":["pose.bones[\"Right ankle\"].location",0],
+            "RightFootT.y":["pose.bones[\"Right ankle\"].location",1],
+            "RightFootT.z":["pose.bones[\"Right ankle\"].location",2],
+            "RightFootQ.x":["pose.bones[\"Right ankle\"].rotation_quaternion",1],
+            "RightFootQ.y":["pose.bones[\"Right ankle\"].rotation_quaternion",2],
+            "RightFootQ.z":["pose.bones[\"Right ankle\"].rotation_quaternion",3],
+            "RightFootQ.w":["pose.bones[\"Right ankle\"].rotation_quaternion",0],
+            #left hand
+            "LeftHandT.x":["pose.bones[\"Left wrist\"].location",0],
+            "LeftHandT.y":["pose.bones[\"Left wrist\"].location",1],
+            "LeftHandT.z":["pose.bones[\"Left wrist\"].location",2],
+            "LeftHandQ.x":["pose.bones[\"Left wrist\"].rotation_quaternion",1],
+            "LeftHandQ.y":["pose.bones[\"Left wrist\"].rotation_quaternion",2],
+            "LeftHandQ.z":["pose.bones[\"Left wrist\"].rotation_quaternion",3],
+            "LeftHandQ.w":["pose.bones[\"Left wrist\"].rotation_quaternion",0],
+            #right hand
+            "RightHandT.x":["pose.bones[\"Right wrist\"].location",0],
+            "RightHandT.y":["pose.bones[\"Right wrist\"].location",1],
+            "RightHandT.z":["pose.bones[\"Right wrist\"].location",2],
+            "RightHandQ.x":["pose.bones[\"Right wrist\"].rotation_quaternion",1],
+            "RightHandQ.y":["pose.bones[\"Right wrist\"].rotation_quaternion",2],
+            "RightHandQ.z":["pose.bones[\"Right wrist\"].rotation_quaternion",3],
+            "RightHandQ.w":["pose.bones[\"Right wrist\"].rotation_quaternion",0],
+            #spine
+            "Spine Front-Back":["pose.bones[\"Spine\"].rotation_euler",0],
+            "Spine Left-Right":["pose.bones[\"Spine\"].rotation_euler",1],
+            "Spine Twist Left-Right":["pose.bones[\"Spine\"].rotation_euler",2],
+            #Chest
+            "Chest Front-Back":["pose.bones[\"Chest\"].rotation_euler",0],
+            "Chest Left-Right":["pose.bones[\"Chest\"].rotation_euler",1],
+            "Chest Twist Left-Right":["pose.bones[\"Chest\"].rotation_euler",2],
+            #Upper Chest
+            "UpperChest Front-Back":["pose.bones[\"Upper Chest\"].rotation_euler",0],
+            "UpperChest Left-Right":["pose.bones[\"Upper Chest\"].rotation_euler",1],
+            "UpperChest Twist Left-Right":["pose.bones[\"Upper Chest\"].rotation_euler",2],
+            #Neck
+            "Neck Nod Down-Up":["pose.bones[\"Neck\"].rotation_euler",0],
+            "Neck Tilt Left-Right":["pose.bones[\"Neck\"].rotation_euler",1],
+            "Neck Turn Left-Right":["pose.bones[\"Neck\"].rotation_euler",2],
+            #Head
+            "Head Nod Down-Up":["pose.bones[\"Head\"].rotation_euler",0],
+            "Head Tilt Left-Right":["pose.bones[\"Head\"].rotation_euler",1],
+            "Head Turn Left-Right":["pose.bones[\"Head\"].rotation_euler",2],
+            #Left Eye
+            "Left Eye Down-Up":["pose.bones[\"LeftEye\"].rotation_euler",0],
+            "Left Eye In-Out":["pose.bones[\"LeftEye\"].rotation_euler",1],
+            #Right Eye
+            "Right Eye Down-Up":["pose.bones[\"RightEye\"].rotation_euler",0],
+            "Right Eye In-Out":["pose.bones[\"RightEye\"].rotation_euler",1],
+            #Jaw
+            "Jaw Close":["pose.bones[\"Jaw\"].rotation_euler",0],
+            "Jaw Left-Right":["pose.bones[\"Jaw\"].rotation_euler",1],
+            #Left Thigh
+            "Left Upper Leg Front-Back":["pose.bones[\"Left leg\"].rotation_euler",0],
+            "Left Upper Leg Twist In-Out":["pose.bones[\"Left leg\"].rotation_euler",1],
+            "Left Upper Leg In-Out":["pose.bones[\"Left leg\"].rotation_euler",2],
+            #Right Thigh
+            "Right Upper Leg Front-Back":["pose.bones[\"Right leg\"].rotation_euler",0],
+            "Right Upper Leg Twist In-Out":["pose.bones[\"Right leg\"].rotation_euler",1],
+            "Right Upper Leg In-Out":["pose.bones[\"Right leg\"].rotation_euler",2],
+            #Left Calf
+            "Left Lower Leg Stretch":["pose.bones[\"Left knee\"].rotation_euler",0],
+            "Left Lower Leg Twist In-Out":["pose.bones[\"Left knee\"].rotation_euler",1],
+            #Right Calf
+            "Right Lower Leg Stretch":["pose.bones[\"Right knee\"].rotation_euler",0],
+            "Right Lower Leg Twist In-Out":["pose.bones[\"Right knee\"].rotation_euler",1],
+            #Left Foot
+            "Left Foot Up-Down":["pose.bones[\"Left ankle\"].location",1],
+            "Left Foot Twist In-Out":["pose.bones[\"Left ankle\"].location",2],
+            #Right Foot
+            "Right Foot Up-Down":["pose.bones[\"Right ankle\"].location",0],
+            "Right Foot Twist In-Out":["pose.bones[\"Right ankle\"].location",1],
+            #Left Toes
+            "Left Toes Up-Down":["pose.bones[\"Left toe\"].rotation_euler",0],
+            #Right Toes
+            "Right Toes Up-Down":["pose.bones[\"Right toe\"].rotation_euler",0],
+            #Left Shoulder
+            "Left Shoulder Down-Up":["pose.bones[\"Left shoulder\"].rotation_euler",0],
+            "Left Shoulder Front-Back":["pose.bones[\"Left shoulder\"].rotation_euler",2],
+            #Right Shoulder
+            "Right Shoulder Down-Up":["pose.bones[\"Right shoulder\"].rotation_euler",0],
+            "Right Shoulder Front-Back":["pose.bones[\"Right shoulder\"].rotation_euler",2],
+            #Left Arm
+            "Left Arm Down-Up":["pose.bones[\"Left arm\"].rotation_euler",0],
+            "Left Arm Twist In-Out":["pose.bones[\"Left arm\"].rotation_euler",1],
+            "Left Arm Front-Back":["pose.bones[\"Left arm\"].rotation_euler",2],
+            #Right Arm
+            "Right Arm Down-Up":["pose.bones[\"Right arm\"].rotation_euler",0],
+            "Right Arm Twist In-Out":["pose.bones[\"Right arm\"].rotation_euler",1],
+            "Right Arm Front-Back":["pose.bones[\"Right arm\"].rotation_euler",2],
+            #Left Forearm
+            "Left Forearm Stretch":["pose.bones[\"Left elbow\"].rotation_euler",0],
+            "Left Forearm Twist In-Out":["pose.bones[\"Left elbow\"].rotation_euler",1],
+            #Right Forearm
+            "Right Forearm Stretch":["pose.bones[\"Right elbow\"].rotation_euler",0],
+            "Right Forearm Twist In-Out":["pose.bones[\"Right elbow\"].rotation_euler",1],
+            #Left Hand
+            "Left Hand Down-Up":["pose.bones[\"Left wrist\"].rotation_euler",0],
+            "Left Hand In-Out":["pose.bones[\"Left wrist\"].rotation_euler",2],
+            #Right Hand
+            "Right Hand Down-Up":["pose.bones[\"Right wrist\"].rotation_euler",0],
+            "Right Hand In-Out":["pose.bones[\"Right wrist\"].rotation_euler",2],
+            
+            #Finger Bones:
+            
+            #Left Thumb
+            "LeftHand.Thumb.Spread":["pose.bones[\"Thumb0_L\"].rotation_euler",0],
+            "LeftHand.Thumb.1 Stretched":["pose.bones[\"Thumb0_L\"].rotation_euler",2],
+            "LeftHand.Thumb.2 Stretched":["pose.bones[\"Thumb1_L\"].rotation_euler",2],
+            "LeftHand.Thumb.3 Stretched":["pose.bones[\"Thumb2_L\"].rotation_euler",2],
+            #Left Index
+            "LeftHand.Index.Spread":["pose.bones[\"IndexFinger1_L\"].rotation_euler",0],
+            "LeftHand.Index.1 Stretched":["pose.bones[\"IndexFinger1_L\"].rotation_euler",2],
+            "LeftHand.Index.2 Stretched":["pose.bones[\"IndexFinger2_L\"].rotation_euler",2],
+            "LeftHand.Index.3 Stretched":["pose.bones[\"IndexFinger3_L\"].rotation_euler",2],
+            #Left Middle
+            "LeftHand.Middle.Spread":["pose.bones[\"MiddleFinger1_L\"].rotation_euler",0],
+            "LeftHand.Middle.1 Stretched":["pose.bones[\"MiddleFinger1_L\"].rotation_euler",2],
+            "LeftHand.Middle.2 Stretched":["pose.bones[\"MiddleFinger2_L\"].rotation_euler",2],
+            "LeftHand.Middle.3 Stretched":["pose.bones[\"MiddleFinger3_L\"].rotation_euler",2],
+            #Left Ring
+            "LeftHand.Ring.Spread":["pose.bones[\"RingFinger1_L\"].rotation_euler",0],
+            "LeftHand.Ring.1 Stretched":["pose.bones[\"RingFinger1_L\"].rotation_euler",2],
+            "LeftHand.Ring.2 Stretched":["pose.bones[\"RingFinger2_L\"].rotation_euler",2],
+            "LeftHand.Ring.3 Stretched":["pose.bones[\"RingFinger3_L\"].rotation_euler",2],
+            #Left Pinkie
+            "LeftHand.Little.Spread":["pose.bones[\"LittleFinger1_L\"].rotation_euler",0],
+            "LeftHand.Little.1 Stretched":["pose.bones[\"LittleFinger1_L\"].rotation_euler",2],
+            "LeftHand.Little.2 Stretched":["pose.bones[\"LittleFinger2_L\"].rotation_euler",2],
+            "LeftHand.Little.3 Stretched":["pose.bones[\"LittleFinger3_L\"].rotation_euler",2],
+            
+            
+            #Right Thumb
+            "RightHand.Thumb.Spread":["pose.bones[\"Thumb0_R\"].rotation_euler",0],
+            "RightHand.Thumb.1 Stretched":["pose.bones[\"Thumb0_R\"].rotation_euler",2],
+            "RightHand.Thumb.2 Stretched":["pose.bones[\"Thumb1_R\"].rotation_euler",2],
+            "RightHand.Thumb.3 Stretched":["pose.bones[\"Thumb2_R\"].rotation_euler",2],
+            #Right Index
+            "RightHand.Index.Spread":["pose.bones[\"IndexFinger1_R\"].rotation_euler",0],
+            "RightHand.Index.1 Stretched":["pose.bones[\"IndexFinger1_R\"].rotation_euler",2],
+            "RightHand.Index.2 Stretched":["pose.bones[\"IndexFinger2_R\"].rotation_euler",2],
+            "RightHand.Index.3 Stretched":["pose.bones[\"IndexFinger3_R\"].rotation_euler",2],
+            #Right Middle
+            "RightHand.Middle.Spread":["pose.bones[\"MiddleFinger1_R\"].rotation_euler",0],
+            "RightHand.Middle.1 Stretched":["pose.bones[\"MiddleFinger1_R\"].rotation_euler",2],
+            "RightHand.Middle.2 Stretched":["pose.bones[\"MiddleFinger2_R\"].rotation_euler",2],
+            "RightHand.Middle.3 Stretched":["pose.bones[\"MiddleFinger3_R\"].rotation_euler",2],
+            #Right Ring
+            "RightHand.Ring.Spread":["pose.bones[\"RingFinger1_R\"].rotation_euler",0],
+            "RightHand.Ring.1 Stretched":["pose.bones[\"RingFinger1_R\"].rotation_euler",2],
+            "RightHand.Ring.2 Stretched":["pose.bones[\"RingFinger2_R\"].rotation_euler",2],
+            "RightHand.Ring.3 Stretched":["pose.bones[\"RingFinger3_R\"].rotation_euler",2],
+            #Right Pinkie
+            "RightHand.Little.Spread":["pose.bones[\"LittleFinger1_R\"].rotation_euler",0],
+            "RightHand.Little.1 Stretched":["pose.bones[\"LittleFinger1_R\"].rotation_euler",2],
+            "RightHand.Little.2 Stretched":["pose.bones[\"LittleFinger2_R\"].rotation_euler",2],
+            "RightHand.Little.3 Stretched":["pose.bones[\"LittleFinger3_R\"].rotation_euler",2],
+        }
+        name="No Name"
+        
+        file = open(self.filepath,'r')
+        Lines = file.readlines()
+        samplerate = 0
+        
+        for line in Lines:
+            if line.startswith("  m_Name: "):
+                name = line.split("  m_Name: ")[0].strip()
+            elif line.startswith("  m_SampleRate: "):
+                samplerate = int(line.replace("m_SampleRate: ",""))
+            
+            
+        
+        armObj = Common.set_default_stage()
+        action = bpy.data.actions.new(name=name)
+        armObj.animation_data_create().action = action
+        
+        
+        
+        
+        curvevalue = None
+        
+        fcurveunbaked = dict()
+        
+        file.close()
+        
+        with open(self.filepath, 'r') as f:
+            line = f.readline().strip()
+            while line:
+                if line.startswith("- curve:"):
+                    fcurveunbaked = dict()
+                    curvevalue = None
+                elif line.startswith("time:"):
+                    frame = float(line.replace("time:",""))
+                    line = f.readline().strip()
+                    value = 0
+                    inSlope = 0
+                    outSlope = 0
+                    tangentMode = 0
+                    weightedMode = 0
+                    inWeight = 0
+                    outWeight = 0
+                    if line.startswith("value: "): 
+                        value = float(line.replace("value: ",""))
+                        line = f.readline().strip()
+                        if line.startswith("inSlope: "): 
+                            inSlope = float(line.replace("inSlope: ",""))
+                            line = f.readline().strip()
+                            if line.startswith("outSlope: "): 
+                                outSlope = float(line.replace("outSlope: ",""))
+                                line = f.readline().strip()
+                                if line.startswith("tangentMode: "): 
+                                    tangentMode = int(line.replace("tangentMode: ",""))
+                                    line = f.readline().strip()
+                                    if line.startswith("weightedMode: "): 
+                                        weightedMode = int(line.replace("weightedMode: ",""))
+                                        line = f.readline().strip()
+                                        if line.startswith("inWeight: "): 
+                                            inWeight = float(line.replace("inWeight: ",""))
+                                            line = f.readline().strip()
+                                            if line.startswith("outWeight: "): 
+                                                outWeight = float(line.replace("outWeight: ",""))
+                        fcurveunbaked[str(frame)] = {
+                            "frame":(frame*samplerate),
+                            "value":value,
+                            "inSlope":inSlope,
+                            "outSlope":outSlope,
+                            "tangentMode":tangentMode,
+                            "weightedMode":weightedMode,
+                            "inWeight":inWeight,
+                            "outWeight":outWeight
+                        }
+                        continue
+                    #extras have been stored for simplicity and to improve upon the importer later.
+                    
+                elif line.startswith("attribute: "):
+                    curvevalue = line.replace("attribute: ","")
+                    
+                    if curvevalue in curve_val_attribute_to_bone: 
+                        curvedatapath = curve_val_attribute_to_bone[curvevalue][0]
+                        try:
+                            fcurve = action.fcurves.new(data_path=curvedatapath, index=curve_val_attribute_to_bone[curvevalue][1], action_group=curvedatapath.split("\"")[1])
+                        except:
+                            fcurve = action.fcurves.find(data_path=curvedatapath, index=curve_val_attribute_to_bone[curvevalue][1])
+                        for values in fcurveunbaked:
+                            value = fcurveunbaked[values]["value"]
+                            if curvedatapath.split("\"")[1] in ["Right shoulder","Left shoulder"] and curve_val_attribute_to_bone[curvevalue][1] == 2:
+                                value2 = value-90
+                            else:
+                                value2 = value
+                            fcurve.keyframe_points.insert(frame=fcurveunbaked[values]["frame"],value=value2)
+                    else:
+                        logging.warning("WARNING: Importer Doesn't have a translation for %s with %d frames!", curvevalue, len(fcurveunbaked))
+                elif line.startswith("m_ClipBindingConstant:"):
+                    break
+                
+                line = f.readline().strip()
+                
+        return {'FINISHED'}
+
+
 
 @register_wrap
 class ImportXPS(bpy.types.Operator):
