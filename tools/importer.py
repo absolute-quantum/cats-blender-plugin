@@ -27,10 +27,13 @@ import os
 import bpy
 import copy
 import zipfile
+import logging
 import platform
 import webbrowser
 import addon_utils
 import bpy_extras.io_utils
+from mathutils import Matrix
+from math import radians 
 
 from .. import globs
 from . import armature_manual
@@ -412,6 +415,9 @@ class ModelsPopup(bpy.types.Operator):
         row = col.row(align=True)
         row.scale_y = 1.3
         row.operator(ImportVRM.bl_idname)
+        row = col.row(align=True)
+        row.scale_y = 1.3
+        row.operator(ImportUnityAnim.bl_idname)
 
 
 @register_wrap
