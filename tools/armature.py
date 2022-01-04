@@ -346,9 +346,7 @@ class FixArmature(bpy.types.Operator):
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
         Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
-        # Combines same materials
-        if context.scene.combine_mats:
-            bpy.ops.cats_material.combine_mats()
+        
 
         # Apply transforms of this model
         Common.apply_transforms()
@@ -392,9 +390,6 @@ class FixArmature(bpy.types.Operator):
 
                 Common.sort_shape_keys(mesh.name, shapekey_order)
 
-            # Remove empty shape keys and then save the shape key order
-            Common.clean_shapekeys(mesh)
-            Common.save_shapekey_order(mesh.name)
 
             # Clean material names. Combining mats would do this too
             Common.clean_material_names(mesh)
@@ -420,7 +415,16 @@ class FixArmature(bpy.types.Operator):
                     for mat_slot in mesh.material_slots: #fix transparency per polygon and general garbage look in blender. Asthetic purposes to fix user complaints.
                         mat_slot.material.shadow_method = "HASHED"
                         mat_slot.material.blend_method = "HASHED"
-
+            
+			# Remove empty shape keys and then save the shape key order
+            Common.clean_shapekeys(mesh)
+            Common.save_shapekey_order(mesh.name)
+			
+            # Combines same materials
+            if context.scene.combine_mats:
+                bpy.ops.cats_material.combine_mats()
+            
+            
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)
 
