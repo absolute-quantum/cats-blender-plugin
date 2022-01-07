@@ -2,7 +2,7 @@ import bpy
 
 from .. import globs
 from .main import ToolPanel
-from .main import layout_split
+from .main import layout_split, add_button_with_small_button
 from ..tools import supporter
 from ..tools import translate as Translate
 from ..tools import common as Common
@@ -113,14 +113,8 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.operator(Armature_manual.RecalculateNormals.bl_idname, text=t('ManualPanel.RecalculateNormals.label'))
             row.operator(Armature_manual.FlipNormals.bl_idname, text=t('ManualPanel.FlipNormals.label'))
 
-            row = col.row(align=True)
-            row.scale_y = 1
-            subcol = layout_split(row, factor=0, align=True)
-            subcol.scale_y = button_height
-            subcol.operator(Armature_manual.ApplyTransformations.bl_idname, icon='OUTLINER_DATA_ARMATURE')
-            subcol = layout_split(row, factor=0, align=True)
-            subcol.scale_y = button_height
-            subcol.operator(Armature_manual.ApplyAllTransformations.bl_idname, text="", icon=globs.ICON_ALL)
+            add_button_with_small_button(col, Armature_manual.ApplyTransformations.bl_idname, 'OUTLINER_DATA_ARMATURE',
+                                              Armature_manual.ApplyAllTransformations.bl_idname, globs.ICON_ALL, scale=button_height)
 
             row = col.row(align=True)
             row.scale_y = button_height
@@ -134,20 +128,12 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
 
             if not Common.version_2_79_or_older():
                 col.separator()
-                row = col.row(align=True)
-                row.scale_y = button_height
-                row.operator(Armature_manual.DigitigradeTutorialButton.bl_idname, icon='FORWARD')
-                row = col.row(align=True)
-                row.scale_y = button_height
-                row.operator(Armature_manual.CreateDigitigradeLegs.bl_idname, icon='OUTLINER_DATA_ARMATURE')
+                add_button_with_small_button(col, Armature_manual.CreateDigitigradeLegs.bl_idname, 'OUTLINER_DATA_ARMATURE',
+                                                  Armature_manual.DigitigradeTutorialButton.bl_idname, 'QUESTION', scale=button_height)
 
             col.separator()
-            row = col.row(align=True)
-            row.scale_y = button_height
-            row.operator(Armature_manual.TwistTutorialButton.bl_idname, icon='FORWARD')
-            row = col.row(align=True)
-            row.scale_y = button_height
-            row.operator(Armature_manual.GenerateTwistBones.bl_idname, icon='OUTLINER_DATA_ARMATURE')
+            add_button_with_small_button(col, Armature_manual.GenerateTwistBones.bl_idname, 'OUTLINER_DATA_ARMATURE',
+                                              Armature_manual.TwistTutorialButton.bl_idname, 'QUESTION', scale=button_height)
             row = col.row(align=True)
             row.scale_y = button_height
             row.prop(context.scene, 'generate_twistbones_upper')

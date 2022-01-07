@@ -1026,12 +1026,12 @@ class FixArmature(bpy.types.Operator):
                             if not temp_list_reparent_bones.get(child.name):
                                 temp_list_reparent_bones[child.name] = bone_parent.name
 
-                    # Mix the weights
-                    Common.mix_weights(mesh, bone_child.name, bone_parent.name)
-
                     # Add bone to delete list
                     if bone_child.name not in bones_to_delete:
                         bones_to_delete.append(bone_child.name)
+
+                    # Mix the weights
+                    Common.mix_weights(mesh, bone_child.name, bone_parent.name)
 
             # Merge weights
             for bone_new, bones_old in temp_reweight_bones.items():
@@ -1094,10 +1094,10 @@ class FixArmature(bpy.types.Operator):
                                     temp_list_reparent_bones[child.name] = bone[0]
                         
                         # Add bone to delete list
-                        if str(vg.name) not in [str(i) for i in bones_to_delete]:
+                        if vg.name not in bones_to_delete:
                             bones_to_delete.append(vg.name)
                         
-                        #mix and delete group
+                        # Mix and delete group
                         Common.mix_weights(mesh, vg.name, bone[0])
 
             # Old mixing weights. Still important
@@ -1145,14 +1145,11 @@ class FixArmature(bpy.types.Operator):
                     print('BUG: ' + vg_to.name + ' tried to mix weights with itself!')
                     continue
 
-                
-
                 # Add bone to delete list
                 if vg_from.name not in bones_to_delete:
                     bones_to_delete.append(vg_from.name)
                     
                 # Mix the weights
-                # print(vg_from.name, 'into', vg_to.name)
                 Common.mix_weights(mesh, vg_from.name, vg_to.name)
 
             # Put back armature modifier
