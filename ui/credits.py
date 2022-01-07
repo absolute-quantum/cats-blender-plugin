@@ -32,6 +32,9 @@ class CreditsPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 0.5
         row.label(text=t('CreditsPanel.descContributors'))
+        row = col.row(align=True)
+        row.scale_y = 0.5
+        row.label(text=t('CreditsPanel.descContributors2'))
         col.separator()
         row = col.row(align=True)
         row.label(text=t('CreditsPanel.desc5'))

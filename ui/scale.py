@@ -47,7 +47,7 @@ def check_for_imscale():
 
 @register_wrap
 class ScalingPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_scale_v1'
+    bl_idname = 'VIEW3D_PT_scale_v2'
     bl_label = t('ScalingPanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 

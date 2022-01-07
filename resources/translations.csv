@@ -180,7 +180,7 @@ BakePanel.alphalabel,Alpha:,,
 BakePanel.transparencywarning,Transparency isn't currently selected!,,현재 투명도가 선택되지 않았습니다!
 BakePanel.smoothnesswarning,Smoothness isn't currently selected!,,현재 부드러움이 선택되지 않았습니다!
 BakePanel.doublepackwarning,Smoothness packed in two places!,,두군데에 부드러움이 설정되었습니다!
-ScalingPanel.label,Scaling,,
+ScalingPanel.label,Model Scaling,,
 ScalingPanel.imscaleDisabled1,Immersive Scaler is not enabled!,,
 ScalingPanel.imscaleDisabled2,Enable it in your user preferences:,,
 ScalingPanel.imscaleOldVersion1,Immersive Scaler is not installed!,,
@@ -200,7 +200,8 @@ CreditsPanel.desc1,Cats Blender Plugin (,,
 CreditsPanel.desc2,Created by Hotox and GiveMeAllYourCats,HotoxとGiveMeAllYourCatsによって作成,멋진 VRChat 커뮤니티를 위해서
 CreditsPanel.desc3,For the awesome VRChat community <3,素晴らしいVRChatコミュニティのために <3,Hotox와 GiveMeAllYourCats에 의해 제작됨 <3
 CreditsPanel.desc4,Special thanks to:,特別な感謝: ShotariyaとNeitri,다음 분들께 특별한 감사를 전합니다:
-CreditsPanel.descContributors,"Feilen, Jordo, Ruubick, Shotariya and Neitri",Feilen、Jordo、Ruubick、ShotariyaとNeitri,"Feilen, Jordo, Ruubick, Shotariya와 Neitri"
+CreditsPanel.descContributors,"Feilen, Jordo, Ruubick, 989onan, triazo,","Feilen、Jordo、Ruubick、989onan、triazo、","Feilen, Jordo, Ruubick, 989onan, triazo,"
+CreditsPanel.descContributors2,"Shotariya and Neitri","ShotariyaとNeitri","Shotariya와 Neitri"
 CreditsPanel.desc5,Do you need help or found a bug?,助けが必要ですか、バグを見つけましたか?,도움이 필요하시거나 혹시 버그를 찾으셨나요?
 FixArmature.label,Fix Model,モデル修正,모델 고치기
 FixArmature.desc,"Automatically:
@@ -459,7 +460,6 @@ InstallShotariya.error.version3,Please download and install it manually:,,
 ShotariyaButton.label,Download Material Combiner,マテリアルコンバイナーをダウンロード,매테리얼 통합기 다운로드
 ShotariyaButton.URL,https://vrcat.club/threads/material-combiner-blender-addon-1-1-3.2255/,,
 ShotariyaButton.success,Material Combiner link opened,,
-ImmersiveScalerButton.URL,https://github.com/triazo/immersive_scaler/releases/latest,,
 ImmersiveScalerButton.success,Immersive Scaler link opened,,
 ImmersiveScalerButton.label,Download Immersive Scaler,,
 ImmersiveScalerButton.desc,Open latest Immersive Scaler release,,
