@@ -1800,6 +1800,60 @@ class ConnectBonesButton(bpy.types.Operator):
 
 
 @register_wrap
+class ConvertToValveButton(bpy.types.Operator):
+    bl_idname = 'cats_manual.convert_to_valve'
+    bl_label = 'Convert Bones To Valve'
+    bl_description = 'Converts all main bone names to default valve bone names.' \
+                     '\nMake sure your model has the CATS standard bone names from after using Fix Model'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+        return True
+
+    def execute(self, context):
+        translate_bone_fails = 0
+        armature = Common.get_armature()
+
+        valve_translations = {
+            'Hips': "ValveBiped.Bip01_Pelvis",
+            'Spine': "ValveBiped.Bip01_Spine",
+            'Chest': "ValveBiped.Bip01_Spine1",
+            'Upper_Chest': "ValveBiped.Bip01_Spine2",
+            'Neck': "ValveBiped.Bip01_Neck1",
+            'Head': "ValveBiped.Bip01_Head",
+            'Left leg': "ValveBiped.Bip01_L_Thigh",
+            'Left knee': "ValveBiped.Bip01_L_Calf",
+            'Left ankle': "ValveBiped.Bip01_L_Foot",
+            'Right leg': "ValveBiped.Bip01_R_Thigh",
+            'Right knee': "ValveBiped.Bip01_R_Calf",
+            'Right ankle': "ValveBiped.Bip01_R_Foot",
+            'Left shoulder': "ValveBiped.Bip01_L_Clavicle",
+            'Left arm': "ValveBiped.Bip01_L_UpperArm",
+            'Left elbow': "ValveBiped.Bip01_L_Forearm",
+            'Left wrist': "ValveBiped.Bip01_L_Hand",
+            'Right shoulder': "ValveBiped.Bip01_R_Clavicle",
+            'Right arm': "ValveBiped.Bip01_R_UpperArm",
+            'Right elbow': "ValveBiped.Bip01_R_Forearm",
+            'Right wrist': "ValveBiped.Bip01_R_Hand"
+        }
+
+        for bone in armature.data.bones:
+            if bone.name in valve_translations:
+                bone.name = valve_translations[bone.name]
+            else:
+                translate_bone_fails += 1
+
+        if translate_bone_fails > 0:
+            self.report({'ERROR'}, f"Failed to translate {translate_bone_fails} bones! Make sure your model has standard bone names!")
+
+        self.report({'INFO'}, 'Connected all bones!')
+        return {'FINISHED'}
+
+
+@register_wrap
 class TestButton(bpy.types.Operator):
     bl_idname = 'cats_manual.test'
     bl_label = 'Testing Stuff'
