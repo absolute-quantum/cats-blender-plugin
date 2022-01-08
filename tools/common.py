@@ -29,6 +29,7 @@ import bpy
 import time
 import bmesh
 import platform
+import numpy as np
 
 from math import degrees
 from mathutils import Vector
@@ -1991,6 +1992,7 @@ def add_principled_shader(mesh):
                     node_image = mat_slot.material.node_tree.nodes.new(type="ShaderNodeTexImage")
                     node_image.location = mmd_texture_bake_pos
                     node_image.label = "Mmd Base Tex"
+                    node_image.name = "mmd_base_tex"
                     node_image.image = bpy.data.images.new("MMDCatsBaked", width=8, height=8, alpha=True)
                     
                     #make pixels using AO color
@@ -2000,6 +2002,22 @@ def add_principled_shader(mesh):
                     node_image.image.generated_color = basecolor
                     node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
                     node_image.image.file_format = 'PNG'
+                    node_image.image.save()
+                elif node_image:
+                    
+                    #multiply color on top of default color.
+                    pixels = np.array(node_image.image.pixels[:])
+                    
+                    multiply_image = np.tile(np.array(basecolor),int(len(pixels)/4))
+                    
+                    new_pixels = pixels*multiply_image
+                    
+                    #create new image as to not touch old one
+                    node_image.image = bpy.data.images.new(node_image.image.name+"MMDCatsBaked", width=node_image.image.size[0], height=node_image.image.size[1], alpha=True)
+                    node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
+                    node_image.image.file_format = 'PNG'
+                    
+                    node_image.image.pixels = new_pixels
                     node_image.image.save()
                     
             
