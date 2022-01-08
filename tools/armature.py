@@ -329,7 +329,32 @@ class FixArmature(bpy.types.Operator):
         if is_vrm:
             for mesh in Common.get_meshes_objects(mode=2):
                 if mesh.name.endswith(('.baked', '.baked0')):
-                    mesh.parent = armature  # TODO
+                    mesh.parent = armature  # TODO ----- (edit, 989onan here, if you mean get it visually under it in the outliner I got you covered now through lines below.)
+                    # unlink from old collections
+        
+        
+        #Fix visual unlinkage in the outliner so the objects are under object in outliner
+        #Fixes issues like random objects not under a valve character skeleton.
+        for mesh in Common.get_meshes_objects():
+            name = None
+            try:
+                name = armature.users_collection[0].name
+            except:
+                pass
+            #If the armature is in a collection put everything under it. else put everything outside the collections.
+            if name:
+                for both in [armature,mesh]:
+                    for c in both.users_collection:
+                        c.objects.unlink(both)
+                    # make a new collection and link to it
+                    coll = bpy.data.collections.get(name)
+                    if not coll:
+                        coll = bpy.data.collections.new(name)
+                        scene.collection.children.link(coll)
+                    coll.objects.link(both)
+            else:
+                for c in both.users_collection:
+                        c.objects.unlink(o)
 
         # Check if weird FBX model
         print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
