@@ -472,7 +472,7 @@ class ShotariyaButton(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open(t('ShotariyaButton.URL'))
+        webbrowser.open('https://github.com/Grim-es/material-combiner-addon/releases/latest')
 
         self.report({'INFO'}, 'ShotariyaButton.success')
         return {'FINISHED'}

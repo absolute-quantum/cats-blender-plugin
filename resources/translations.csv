@@ -458,7 +458,6 @@ InstallShotariya.error.version1,Material Combiner is outdated!,,
 InstallShotariya.error.version2,The latest version is required for this function.,,
 InstallShotariya.error.version3,Please download and install it manually:,,
 ShotariyaButton.label,Download Material Combiner,マテリアルコンバイナーをダウンロード,매테리얼 통합기 다운로드
-ShotariyaButton.URL,https://vrcat.club/threads/material-combiner-blender-addon-1-1-3.2255/,,
 ShotariyaButton.success,Material Combiner link opened,,
 ImmersiveScalerButton.success,Immersive Scaler link opened,,
 ImmersiveScalerButton.label,Download Immersive Scaler,,
