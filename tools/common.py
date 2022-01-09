@@ -1986,7 +1986,10 @@ def add_principled_shader(mesh):
                 #bake AO and Diffuse color into pixels for MMD texture. if texture exists, multiply over
                 #Thank this guy for pixel manipulation: https://blender.stackexchange.com/a/652
                 
-                basecolor = [max(0,min(1, a + b )) for a, b in zip(node_mmd_shader.inputs[0].default_value[:], [x*0.6 for x in node_mmd_shader.inputs[1].default_value[:]])]
+                
+                basecolor = [x*0.6 for x in node_mmd_shader.inputs[1].default_value[:]] #multply color of diffuse by .6 which is MMD's addition factor         
+                for rgba,num in enumerate(basecolor):
+                    basecolor[rgba] = max(0,min(1,basecolor[rgba]+node_mmd_shader.inputs[0].default_value[rgba])) #add AO to diffuse and clamp between 0-1 for each channel
                 
                 if not node_image:
                     node_image = mat_slot.material.node_tree.nodes.new(type="ShaderNodeTexImage")
