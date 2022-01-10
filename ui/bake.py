@@ -68,13 +68,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'bake_prioritize_face', expand=True)
             row = col.row(align=True)
             row.separator()
-            row.prop(context.scene, 'bake_optimize_solid_materials', expand=True)
+            if context.scene.bake_uv_overlap_correction != "NONE" and (not context.scene.bake_pass_ao) and (not context.scene.bake_use_decimation) and (not context.scene.bake_pass_normal):
+                row.prop(context.scene, 'bake_optimize_solid_materials', expand=True)
             if context.scene.bake_prioritize_face:
                 armature = Common.get_armature()
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_face_scale', expand=True)
-
+                    
                 if armature is None or len(Common.get_bones(names=['Head', 'head'], armature_name=armature.name, check_list=True)) == 0:
                     row = col.row(align=True)
                     row.separator()
@@ -83,6 +84,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.separator()
             row.label(text=t('BakePanel.overlapfixlabel'))
             row.prop(context.scene, 'bake_uv_overlap_correction', expand=True)
+            if context.scene.bake_uv_overlap_correction == "REPROJECT":
+                row = col.row(align=True)
+                row.separator()
+                row.prop(context.scene, 'bake_unwrap_angle', expand=True)
         row = col.row(align=True)
         row.prop(context.scene, 'bake_ignore_hidden', expand=True)
         row = col.row(align=True)
