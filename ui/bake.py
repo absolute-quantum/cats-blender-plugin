@@ -66,6 +66,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'bake_prioritize_face', expand=True)
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'bake_optimize_solid_materials', expand=True)
             if context.scene.bake_prioritize_face:
                 armature = Common.get_armature()
                 row = col.row(align=True)

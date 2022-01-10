@@ -273,7 +273,7 @@ class BakeButton(bpy.types.Operator):
 
     # "Bake pass" function. Run a single bake to "<bake_name>.png" against all selected objects.
     def bake_pass(self, context, bake_name, bake_type, bake_pass_filter, objects, bake_size, bake_samples, bake_ray_distance, background_color, clear, bake_margin, bake_active=None, bake_multires=False,
-                  normal_space='TANGENT'):
+                  normal_space='TANGENT',solidmaterialcolors=dict()):
         bpy.ops.object.select_all(action='DESELECT')
         if bake_active is not None:
             bake_active.select_set(True)
@@ -368,6 +368,36 @@ class BakeButton(bpy.types.Operator):
                     for node in obj.active_material.node_tree.nodes:
                         if node.type == "VALUE" and node.label == "bake_" + bake_name:
                             node.outputs["Value"].default_value = 0
+        
+        
+        if context.scene.bake_optimize_solid_materials: 
+            #arranging old pixels and assignment to image pixels this way makes only one update per pass, so many many times faster - @989onan
+            old_pixels = image.pixels[:]
+            
+            #lastly, slap our solid squares on top of bake atlas, to make a nice solid square without interuptions from the rest of the bake - @989onan
+            for child in [obj for obj in objects if obj.type == "MESH"]: #grab all mesh objects being baked
+                for matindex,material in enumerate(child.data.materials):
+                    if material.name in solidmaterialcolors:
+                        index = list(solidmaterialcolors.keys()).index(material.name)
+                        old_pixels = list(old_pixels)
+                        #in pixels
+                        square_center_coord = (((-(((((index*2)+1)%(bake_size[0]/4))*4)-(bake_size[0]/2))/bake_size[0])*2)*bake_size[0],   (((((int(((index*2)+1)/(bake_size[1]/4))*-8)+((bake_size[1]/2)-4)))/bake_size[1])*2)*bake_size[1])
+                        
+                        color = solidmaterialcolors[material.name][bake_name+"_color"]
+                        
+                        
+                        
+                        
+                        
+                        #while in pixels inside image but 4 pixel padding around our solid center square position
+                        for x in range(max(0,int(square_center_coord[0]-4)),min(bake_size[0], int(square_center_coord[0]+4))):
+                            for y in range(max(0,int(square_center_coord[1]-4)),min(bake_size[1], int(square_center_coord[1]+4))):
+                                for channel,rgba in enumerate(color):
+                                    #since the array is one dimensional, (kinda like old minecraft schematics) we have to convert 2d cords to 1d cords, then multiply by 4 since there are 4 channels, then add current channel.
+                                    old_pixels[(((y*bake_size[0])+x)*4)+channel] = rgba
+            image.pixels[:] = old_pixels[:]
+                        
+                        
 
     def copy_ob(self, ob, parent, collection):
         # copy ob
@@ -409,7 +439,6 @@ class BakeButton(bpy.types.Operator):
         if not bpy.data.is_saved:
             self.report({'ERROR'}, "You need to save your .blend somewhere first!")
             return {'FINISHED'}
-        # TODO: Check if any UV islands are self-overlapping, emit a warning
 
         # Change render engine to cycles and save the current one
         render_engine_tmp = context.scene.render.engine
@@ -468,8 +497,9 @@ class BakeButton(bpy.types.Operator):
         quick_compare = context.scene.bake_quick_compare
         optimize_static = context.scene.bake_optimize_static # Separate blendshape geometry into its own mesh, improves performance
         apply_keys = context.scene.bake_apply_keys
+        optimize_solid_materials = context.scene.bake_optimize_solid_materials
 
-        # TODO: Option to seperate by loose parts and bake selected to active
+        # TODO: Option to seperate by loose parts and bake selected to active @989onan says: But why?
 
         # Passes
         pass_diffuse = context.scene.bake_pass_diffuse
@@ -546,130 +576,158 @@ class BakeButton(bpy.types.Operator):
         
         #first fix broken colors by adding their textures, then add the results of color only materials/solid textures to see if they need special UV treatment.
         #To detect and fix UV's for materials that are solid and don't need entire uv maps if all the textures are consistent throught. Also adds solid textures for BSDF's with default values but no texture
-        solidmaterialindexeslist = dict()
+        solidmaterialnames = dict()
         
-        for child in collection.all_objects:
-            if child.type == "MESH":
-                for matindex,material in enumerate(child.data.materials):
-                    for node in material.node_tree.nodes:
-                        if node.type == "BSDF_PRINCIPLED":#For each material bsdf in every object in each material
-                            solidmaterialindexeslist[child.name] = dict()    
-                            
-                            ao_solid = pass_ao
-                            diffuse_solid = True
-                            smoothness_solid = True
-                            normal_solid = True
-                            emission_solid = True
-                            metallic_solid = True
-                            
-                            def check_if_tex_solid(bsdfinputname,node_prinipled):
-                                node_image = node_prinipled.inputs[bsdfinputname].links[0].from_node
-                                if node_image.type != "TEX_IMAGE": #To catch normal maps
-                                    if len(node_image.inputs) >= 2:
-                                        if node_image.inputs[1].links[0].from_node.type != "TEX_IMAGE":
-                                            return False #just in case if there's a node further down the line that isn't solid.
+        #to store the colors for each pass for each solid material to apply to bake atlas later.
+        solidmaterialcolors = dict()
+        if optimize_solid_materials:
+            for child in collection.all_objects:
+                if child.type == "MESH":
+                    for matindex,material in enumerate(child.data.materials):
+                        for node in material.node_tree.nodes:
+                            if node.type == "BSDF_PRINCIPLED":#For each material bsdf in every object in each material 
+                                
+                                ao_solid = (not pass_ao)
+                                diffuse_solid = True
+                                diffuse_color = [0.0,0.0,0.0,1.0]
+                                smoothness_solid = True
+                                smoothness_color = [0.0,0.0,0.0,1.0]
+                                normal_solid = True
+                                normal_color = [0.501961, 0.501961, 1.000000, 1.000000]
+                                emission_solid = False
+                                emission_color = [0.0,0.0,0.0,1.0]
+                                metallic_solid = True
+                                metallic_color = [0.0,0.0,0.0,1.0]
+                                
+                                def check_if_tex_solid(bsdfinputname,node_prinipled,executestring):
+                                    node_image = node_prinipled.inputs[bsdfinputname].links[0].from_node
+                                    if node_image.type != "TEX_IMAGE": #To catch normal maps
+                                        if len(node_image.inputs) >= 2:
+                                            if node_image.inputs[1].links[0].from_node.type != "TEX_IMAGE":
+                                                return [False,[0.0,0.0,0.0,1.0]] #just in case if there's a node further down the line that isn't solid.
+                                            else:
+                                                node_image = node_image.inputs[1].links[0].from_node
                                         else:
-                                            node_image = node_image.inputs[1].links[0].from_node
+                                            return [False,[0.0,0.0,0.0,1.0]] #just in case if there's a node further down the line that isn't solid.
+                                    old_pixels = node_image.image.pixels[:]
+                                    solidimagepixels = np.tile(old_pixels[0:4], int(len(old_pixels)/4))
+                                    if np.array_equal(solidimagepixels,old_pixels):
+                                        return [True,old_pixels[0:4]]
+                                    return [False,[0.0,0.0,0.0,1.0]]
+                                #each pass below makes solid color textures or reads the texture and checks if it's solid using numpy.
+                                
+                                node_prinipled = node
+                                
+                                if pass_diffuse:
+                                    if not node.inputs["Base Color"].is_linked:
+                                        diffuse_solid = True
+                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                                        node_image.image = bpy.data.images.new("Base Color", width=8, height=8, alpha=True)
+                                        node_image.location = (1101, -500)
+                                        node_image.label = "Base Color"
+                                        
+                                        #assign to image so it's baked
+                                        node_image.image.generated_color = node.inputs["Base Color"].default_value
+                                        diffuse_color = node.inputs["Base Color"].default_value
+                                        node_image.image.file_format = 'PNG'
+                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
                                     else:
-                                        return False #just in case if there's a node further down the line that isn't solid.
-                                old_pixels = node_image.image.pixels[:]
-                                solidimagepixels = np.tile(old_pixels[0:4], int(len(old_pixels)/4))
-                                if np.array_equal(solidimagepixels,old_pixels):
-                                    return True
-                                return False
-                            #each pass below makes solid color textures or reads the texture and checks if it's solid using numpy.
-                            
-                            node_prinipled = node
-                            
-                            if pass_diffuse:
-                                if not node.inputs["Base Color"].is_linked:
-                                    diffuse_solid = True
-                                    node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                    node_image.image = bpy.data.images.new("Base Color", width=8, height=8, alpha=True)
-                                    node_image.location = (1101, -500)
-                                    node_image.label = "Base Color"
-                                    
-                                    #assign to image so it's baked
-                                    node_image.image.generated_color = node.inputs["Base Color"].default_value
-                                    node_image.image.file_format = 'PNG'
-                                    material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
+                                        if ao_solid: #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
+                                            diffuse_solid,diffuse_color = check_if_tex_solid("Base Color",node_prinipled,'diffuse_color')
+                                        else:
+                                            diffuse_solid = False
+                                
+                                if pass_normal:
+                                    if not node.inputs["Normal"].is_linked:
+                                        normal_solid = True
+                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                                        node_image.image = bpy.data.images.new("Normal", width=8, height=8, alpha=True)
+                                        node_image.location = (1101, -500)
+                                        node_image.label = "Normal"
+                                        node_image.image.colorspace_settings.name = 'Non-Color'
+                                        
+                                        
+                                        #assign to image so it's baked
+                                        node_image.image.generated_color = [node.inputs["Normal"].default_value[0],node.inputs["Normal"].default_value[1],node.inputs["Normal"].default_value[2],1.0]
+                                        normal_color = node.inputs["Normal"].default_value
+                                        node_image.image.file_format = 'PNG'
+                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Normal'])
+                                    else:
+                                        if diffuse_solid: #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
+                                            normal_solid,normal_color = check_if_tex_solid("Normal",node_prinipled,"normal_color")
+                                        else:
+                                            normal_solid = False
+                                
+                                if pass_emit:
+                                    if not node.inputs["Emission"].is_linked:
+                                        emission_solid = True
+                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                                        node_image.image = bpy.data.images.new("Emission", width=8, height=8, alpha=True)
+                                        node_image.location = (1101, -500)
+                                        node_image.label = "Emission"
+                                        
+                                        
+                                        #assign to image so it's baked
+                                        node_image.image.generated_color = node.inputs["Emission"].default_value
+                                        emission_color = node.inputs["Emission"].default_value
+                                        node_image.image.file_format = 'PNG'
+                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Emission'])
+                                    else:
+                                        emission_solid,emission_color = check_if_tex_solid("Emission",node_prinipled,"emission_color") #emission doesn't care about other things for mat to be solid
+                                if pass_smoothness:
+                                    if not node.inputs["Roughness"].is_linked:
+                                        smoothness_solid = True
+                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                                        node_image.image = bpy.data.images.new("Roughness", width=8, height=8, alpha=True)
+                                        node_image.location = (1101, -500)
+                                        node_image.label = "Roughness"
+                                        
+                                        
+                                        #assign to image so it's baked
+                                        node_image.image.generated_color = node.inputs["Roughness"].default_value
+                                        smoothness_color = node.inputs["Roughness"].default_value
+                                        node_image.image.file_format = 'PNG'
+                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Roughness'])
+                                    else:
+                                        if normal_solid: #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
+                                            smoothness_solid,smoothness_color = check_if_tex_solid("Roughness",node_prinipled,"smoothness_color")
+                                        else:
+                                            smoothness_solid = False
+                                if pass_metallic:
+                                    if not node.inputs["Metallic"].is_linked:
+                                        metallic_solid = True
+                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                                        node_image.image = bpy.data.images.new("Metallic", width=8, height=8, alpha=True)
+                                        node_image.location = (1101, -500)
+                                        node_image.label = "Metallic"
+                                        
+                                        
+                                        #assign to image so it's baked
+                                        node_image.image.generated_color = node.inputs["Metallic"].default_value
+                                        metallic_color = node.inputs["Metallic"].default_value
+                                        node_image.image.file_format = 'PNG'
+                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Metallic'])
+                                    else:
+                                        if smoothness_solid:  #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
+                                            metallic_solid,metallic_color = check_if_tex_solid("Metallic",node_prinipled,"metallic_color")
+                                        else:
+                                            metallic_solid = False
+                                
+                                #now we check based on all the passes if our material is solid.
+                                if ao_solid and diffuse_solid and smoothness_solid and normal_solid and metallic_solid:
+                                    solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
+                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"normal_color":normal_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
+                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
+                                elif emission_solid:
+                                    solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
+                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"normal_color":normal_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
+                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
                                 else:
-                                    diffuse_solid = check_if_tex_solid("Base Color",node_prinipled)
-                            
-                            if pass_normal:
-                                if not node.inputs["Normal"].is_linked:
-                                    normal_solid = True
-                                    node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                    node_image.image = bpy.data.images.new("Normal", width=8, height=8, alpha=True)
-                                    node_image.location = (1101, -500)
-                                    node_image.label = "Normal"
-                                    node_image.image.colorspace_settings.name = 'Non-Color'
-                                    
-                                    
-                                    #assign to image so it's baked
-                                    node_image.image.generated_color = [node.inputs["Normal"].default_value[0],node.inputs["Normal"].default_value[1],node.inputs["Normal"].default_value[2],1.0]
-                                    node_image.image.file_format = 'PNG'
-                                    material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Normal'])
-                                else:
-                                    normal_solid = check_if_tex_solid("Normal",node_prinipled)
-                            
-                            if pass_emit:
-                                if not node.inputs["Emission"].is_linked:
-                                    normal_solid = True
-                                    node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                    node_image.image = bpy.data.images.new("Emission", width=8, height=8, alpha=True)
-                                    node_image.location = (1101, -500)
-                                    node_image.label = "Emission"
-                                    
-                                    
-                                    #assign to image so it's baked
-                                    node_image.image.generated_color = node.inputs["Emission"].default_value
-                                    node_image.image.file_format = 'PNG'
-                                    material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Emission'])
-                                else:
-                                    normal_solid = check_if_tex_solid("Emission",node_prinipled)
-                            if pass_smoothness:
-                                if not node.inputs["Roughness"].is_linked:
-                                    normal_solid = True
-                                    node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                    node_image.image = bpy.data.images.new("Roughness", width=8, height=8, alpha=True)
-                                    node_image.location = (1101, -500)
-                                    node_image.label = "Roughness"
-                                    
-                                    
-                                    #assign to image so it's baked
-                                    node_image.image.generated_color = node.inputs["Roughness"].default_value
-                                    node_image.image.file_format = 'PNG'
-                                    material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Roughness'])
-                                else:
-                                    normal_solid = check_if_tex_solid("Roughness",node_prinipled)
-                            if pass_metallic:
-                                if not node.inputs["Roughness"].is_linked:
-                                    normal_solid = True
-                                    node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                    node_image.image = bpy.data.images.new("Roughness", width=8, height=8, alpha=True)
-                                    node_image.location = (1101, -500)
-                                    node_image.label = "Roughness"
-                                    
-                                    
-                                    #assign to image so it's baked
-                                    node_image.image.generated_color = node.inputs["Roughness"].default_value
-                                    node_image.image.file_format = 'PNG'
-                                    material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Roughness'])
-                                else:
-                                    normal_solid = check_if_tex_solid("Roughness",node_prinipled)
-                            
-                            
-                            #now we check based on all the passes if our material is solid.
-                            if (not ao_solid) and diffuse_solid and smoothness_solid and normal_solid and metallic_solid:
-                                solidmaterialindexeslist[child.name][matindex] = True
-                            elif emission_solid and (not ao_solid) and diffuse_solid and smoothness_solid and normal_solid and metallic_solid:
-                                solidmaterialindexeslist[child.name][matindex] = True
-                            else:
-                                solidmaterialindexeslist[child.name][matindex] = False #put false in our list of wiether materials are solid since our material isn't totally solid.
-                            
-                            break #since we found our principled and did our stuff we can break the node scanning loop on this material.
-                            
+                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is NOT solid!")
+                                    pass #don't put an entry, and assume if there is no entry, then it isn't solid.
+                                
+                                break #since we found our principled and did our stuff we can break the node scanning loop on this material.
+                                
                                     
         if generate_uvmap:
             bpy.ops.object.select_all(action='DESELECT')
@@ -705,7 +763,7 @@ class BakeButton(bpy.types.Operator):
                                 bpy.ops.object.material_slot_select()
                                 
                                 bpy.ops.uv.select_all(action='SELECT')
-                                bpy.ops.uv.smart_project(angle_limit=80, island_margin=margin)
+                                bpy.ops.uv.smart_project(angle_limit=89.0, island_margin=margin)
                             Common.switch('OBJECT')
                             child.data.uv_layers.active_index = idx
                     elif uv_overlap_correction == "UNMIRROR":
@@ -725,7 +783,50 @@ class BakeButton(bpy.types.Operator):
                                 child.data.uv_layers["CATS UV"].data[idx].uv = loop.uv
                                 if supersample_normals:
                                     child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
-
+            
+            #PLEASE DO THIS TO PREVENT PROBLEMS WITH UV EDITING LATER ON:
+            bpy.data.scenes["CATS Scene"].tool_settings.use_uv_select_sync = False
+            
+            
+            if optimize_solid_materials:
+                #go through the solid materials on all the meshes and scale their UV's down to 0 in a grid of rows of squares so that they bake on a small separate part of the image mostly in the top left -@989onan
+                for child in collection.all_objects:
+                    if child.type == "MESH":
+                        for matindex,material in enumerate(child.data.materials):
+                            if material.name in solidmaterialnames:
+                                for layer in cats_uv_layers:
+                                    print("processing material: \""+material.name+"\" on layer: \""+layer+"\" on object: \""+child.name)
+                                    idx = child.data.uv_layers.active_index
+                                    child.data.uv_layers[layer].active = True
+                                    Common.switch('EDIT')
+                                    #deselect all geometry and uv, select material that we are on that is solid, and then select all on visible UV. This will isolate the solid material UV's on this layer and object.
+                                    
+                                    bpy.ops.mesh.select_all(action='SELECT') #select all mesh
+                                    bpy.ops.uv.select_all(action='DESELECT') #deselect all UV
+                                    bpy.ops.mesh.select_all(action='DESELECT') #deselect all mesh
+                                    
+                                    child.active_material_index = matindex
+                                    bpy.ops.object.material_slot_select() #select our material on mesh 
+                                    bpy.ops.uv.select_all(action='SELECT') #select all uv
+                                    
+                                    #https://blender.stackexchange.com/a/75095
+                                    #Scale a 2D vector v, considering a scale s and a pivot point p
+                                    def Scale2D( v, s, p ):
+                                        return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
+                                    
+                                    Common.switch('OBJECT')#idk why this has to be here but it breaks without it - @989onan
+                                    index = solidmaterialnames[material.name]
+                                    uv_layer = child.data.uv_layers[layer].data
+                                    for poly in child.data.polygons:
+                                        for loop in poly.loop_indices:
+                                            if uv_layer[loop].select: #make sure that it is selected (only visible will be selected in this case)
+                                                #Here we scale the UV's down to 0 starting at the top left corner and going down row by row of solid materials. this equation for figuring out spots was prototyped in blender math nodes - @989onan
+                                                uv_layer[loop].uv = Scale2D( uv_layer[loop].uv, (0,0), ((-(((((index*2)+1)%(resolution/4))*4)-(resolution/2))/resolution)*2,   ((((int(((index*2)+1)/(resolution/4))*-8)+((resolution/2)-4)))/resolution)*2)  )
+                                    Common.switch('EDIT')
+                                    #deselect UV's and hide mesh for scaling uv's out the way later. this also prevents the steps for averaging islands and prioritizing head size from going bad later.
+                                    bpy.ops.uv.select_all(action='DESELECT')
+                                    bpy.ops.mesh.hide(unselected=False)
+                            
             # Select all meshes. Select all UVs. Average islands scale
             for layer in cats_uv_layers:
                 Common.switch('OBJECT')
@@ -774,52 +875,6 @@ class BakeButton(bpy.types.Operator):
                                     if uv_layer[loop].select:
                                         uv_layer[loop].uv.x *= prioritize_factor
                                         uv_layer[loop].uv.y *= prioritize_factor
-            #Code if got working could optimize layout for solid materials. (doesn't error or break anything, just doesn't do anything for some unknown reason) - @989onan
-#            solid_material_names = dict() 
-#             
-#            #record all solid material names and what order the squares should go in
-#            for child in collection.all_objects:
-#                if child.type == "MESH":
-#                    for matindex,is_solid in enumerate({k: v for k, v in solidmaterialindexeslist[child.name].items() if v}): #https://stackoverflow.com/a/12118700
-#                        if not (child.data.materials[matindex].name in solid_material_names):
-#                             solid_material_names[child.data.materials[matindex].name] = len(solid_material_names)
-#            #go through the solid materials on all the meshes and scale their UV's down to 0 in a grid of rows of squares so that they bake on a small separate part of the image mostly in the top left 
-#            for child in collection.all_objects:
-#                if child.type == "MESH":
-#                    for matindex,is_solid in enumerate({k: v for k, v in solidmaterialindexeslist[child.name].items() if v}): #https://stackoverflow.com/a/12118700
-#                        for layer in cats_uv_layers:
-#                            print("unhiding layer "+layer)
-#                            idx = child.data.uv_layers.active_index
-#                            child.data.uv_layers[layer].active = True
-#                            Common.switch('EDIT')
-#                            #deselect all geometry and uv, select material that we are on that is solid, and then select all on visible UV. This will isolate the solid material UV's on this layer and object.
-#                            
-#                            bpy.ops.mesh.select_all(action='SELECT')
-#                            bpy.ops.uv.select_all(action='DESELECT')
-#                            bpy.ops.mesh.select_all(action='DESELECT')
-#                            
-#                            child.active_material_index = matindex
-#                            bpy.ops.object.material_slot_select()
-#                            bpy.ops.uv.select_all(action='SELECT')
-#                            
-#                            
-#                            #https://blender.stackexchange.com/a/75095
-#                            #Scale a 2D vector v, considering a scale s and a pivot point p
-#                            def Scale2D( v, s, p ):
-#                                return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
-#
-#                            for uvIndex in range( len(child.data.uv_layers[layer].data) ):
-#                                index = solid_material_names[child.data.materials[matindex].name]
-#                                
-#                                if child.data.uv_layers[layer].data[uvIndex].select == True: #make sure that it is selected (only visible will be selected in this case)
-#                                    #Here we scale the UV's down to 0 starting at the top left corner and going down row by row of solid materials. this equation for figuring out spots was prototyped in blender math nodes - @989onan
-#                                    child.data.uv_layers[layer].data[uvIndex].uv = Scale2D( child.data.uv_layers[layer].data[uvIndex].uv, (0,0), (((((index*2)+1)%(resolution/4))*4)-(resolution/2),(int(((index*2)+1)/(resolution/4))*-8)+((resolution/2)-4)) )
-#                            
-#                            #deselect UV's and hide mesh for scaling uv's out the way later.
-#                            bpy.ops.uv.select_all(action='DESELECT')
-#                            bpy.ops.mesh.hide(unselected=False)
-                            
-                
                 
                 
             # Pack islands. Optionally use UVPackMaster if it's available
@@ -849,43 +904,44 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
                     pass
                 Common.switch('OBJECT')
-
-#Code if got working could optimize layout for solid materials. (doesn't error or break anything, just doesn't do anything for some unknown reason) - @989onan
-
-#            #unhide geometry from step before pack islands that fixed solid material uvs, then scale uv's to be short enough to avoid color squares at top right.
-#            for child in collection.all_objects:
-#                if child.type == "MESH":           
-#                    for layer in cats_uv_layers:
-#                        idx = child.data.uv_layers.active_index
-#                        child.data.uv_layers[layer].active = True
-#                        Common.switch('EDIT')
-#                        
-#                        bpy.ops.mesh.select_all(action='SELECT')
-#                        bpy.ops.uv.select_all(action='SELECT')
-#                        
-#                        #https://blender.stackexchange.com/a/75095
-#                        #Scale a 2D vector v, considering a scale s and a pivot point p
-#                        def Scale2D( v, s, p ):
-#                            return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
-#                        
-#                        last_index = len(solid_material_names)
-#                        
-#                        maxium_y_position_materials = ((int(((last_index*2)+1)/(resolution/4))*-8)+((resolution/2)-4))
-#                        
-#                        for uvIndex in range( 0,len(child.data.uv_layers[layer].data) ):
-#                            if child.data.uv_layers[layer].data[uvIndex].select == True: #make sure that it is selected (only visible will be selected in this case)
-#                                #scale UV downwards so square stuff above can fit for solid colors
-#                                child.data.uv_layers[layer].data[uvIndex].uv = Scale2D( child.data.uv_layers[layer].data[uvIndex].uv, scale, (0,(maxium_y_position_materials+4)/resolution) )
-#                        
-#                    #unhide all mesh polygons from our material hiding for scaling
-#                    for layer in cats_uv_layers:
-#                        idx = child.data.uv_layers.active_index
-#                        child.data.uv_layers[layer].active = True
-#                        Common.switch('EDIT')
-#                        bpy.ops.mesh.select_all(action='SELECT')
-#                        bpy.ops.uv.select_all(action='SELECT')
-#                        bpy.ops.mesh.reveal(select=True)
-#                        Common.switch('OBJECT') #below will error if it isn't in object because of poll error
+            
+            if optimize_solid_materials: 
+                #unhide geometry from step before pack islands that fixed solid material uvs, then scale uv's to be short enough to avoid color squares at top right. - @989onan
+                for child in collection.all_objects:
+                    if child.type == "MESH":           
+                        for layer in cats_uv_layers:
+                            idx = child.data.uv_layers.active_index
+                            child.data.uv_layers[layer].active = True
+                            Common.switch('EDIT')
+                            
+                            bpy.ops.mesh.select_all(action='SELECT')
+                            bpy.ops.uv.select_all(action='SELECT')
+                            
+                            #https://blender.stackexchange.com/a/75095
+                            #Scale a 2D vector v, considering a scale s and a pivot point p
+                            def Scale2D( v, s, p ):
+                                return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )     
+                            
+                            last_index = len(solidmaterialnames)
+                            
+                            maxium_y_position_materials = ((((int(((last_index*2)+1)/(resolution/4))*-8)+((resolution/2)-4)))/resolution)*2
+                            Common.switch('OBJECT')#idk why this has to be here but it breaks without it - @989onan
+                            for poly in child.data.polygons:
+                                for loop in poly.loop_indices:
+                                    uv_layer = child.data.uv_layers[layer].data
+                                    if uv_layer[loop].select: #make sure that it is selected (only visible will be selected in this case)
+                                        #scale UV downwards so square stuff above can fit for solid colors
+                                        uv_layer[loop].uv = Scale2D( uv_layer[loop].uv, (1,((maxium_y_position_materials-(4/resolution)-(margin*2)))), (0,0) )
+                            
+                        #unhide all mesh polygons from our material hiding for scaling
+                        for layer in cats_uv_layers:
+                            idx = child.data.uv_layers.active_index
+                            child.data.uv_layers[layer].active = True
+                            Common.switch('EDIT')
+                            bpy.ops.mesh.select_all(action='SELECT')
+                            bpy.ops.uv.select_all(action='SELECT')
+                            bpy.ops.mesh.reveal(select=True)
+                            Common.switch('OBJECT') #below will error if it isn't in object because of poll error
             
             #lastly make our target UV map active
             for obj in collection.all_objects:
@@ -931,10 +987,11 @@ class BakeButton(bpy.types.Operator):
             self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
 
             self.bake_pass(context, "diffuse", "DIFFUSE", {"COLOR"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [0.5, 0.5, 0.5, 1.0], True, margin*2*resolution)
+                           (resolution, resolution), 32, 0, [0.5, 0.5, 0.5, 1.0], True, margin*2*resolution,solidmaterialcolors=solidmaterialcolors)
 
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
             bpy.data.images["SCRIPT_diffuse.png"].save()
+            
             if sharpen_bakes:
                 self.filter_image(context, "SCRIPT_diffuse.png", BakeButton.sharpen_create)
 
@@ -944,7 +1001,7 @@ class BakeButton(bpy.types.Operator):
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
             self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", 0.5)
             self.bake_pass(context, "smoothness", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [1.0, 1.0, 1.0, 1.0], True, margin*2*resolution)
+                           (resolution, resolution), 32, 0, [1.0, 1.0, 1.0, 1.0], True, margin*2*resolution,solidmaterialcolors=solidmaterialcolors)
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
             image = bpy.data.images["SCRIPT_smoothness.png"]
             pixel_buffer = list(image.pixels)
@@ -991,7 +1048,7 @@ class BakeButton(bpy.types.Operator):
 
             # Run the bake pass
             self.bake_pass(context, "metallic", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, margin*2*resolution)
+                           (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, margin*2*resolution,solidmaterialcolors=solidmaterialcolors)
 
             # Revert the changes (re-flip)
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Roughness")
@@ -1082,7 +1139,7 @@ class BakeButton(bpy.types.Operator):
             # Just bake the traditional way
             if pass_normal:
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, margin*2*resolution)
+                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, margin*2*resolution,solidmaterialcolors=solidmaterialcolors)
         else:
             if not normal_apply_trans:
                 # Join meshes
@@ -1105,7 +1162,7 @@ class BakeButton(bpy.types.Operator):
                              supersample_normals else
                              (resolution, resolution))
                 self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               bake_size, 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * bake_size[0]/ 2), normal_space="OBJECT")
+                               bake_size, 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * bake_size[0]/ 2), normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
 
         # Reset UV
         for obj in collection.all_objects:
@@ -1186,7 +1243,7 @@ class BakeButton(bpy.types.Operator):
                 original_color = bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value
                 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0,0,0,1)
                 self.bake_pass(context, "emission", "COMBINED", {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 512, 0, [0.0, 0.0, 0.0, 1.0], True, margin*2*resolution)
+                               (resolution, resolution), 512, 0, [0.0, 0.0, 0.0, 1.0], True, margin*2*resolution,solidmaterialcolors=solidmaterialcolors)
                 if emit_exclude_eyes:
                     def group_relevant(obj, groupname):
                         if obj.type == "MESH" and groupname in obj.vertex_groups:
@@ -1202,7 +1259,7 @@ class BakeButton(bpy.types.Operator):
                             leyemask.vertex_group = "LeftEye"
                             leyemask.invert_vertex_group = False
                     self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if group_relevant(obj, "LeftEye")],
-                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, margin*2*resolution)
+                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, margin*2*resolution,solidmaterialcolors=solidmaterialcolors)
                     for obj in collection.all_objects:
                         if "leyemask" in obj.modifiers:
                             obj.modifiers.remove(obj.modifiers["leyemask"])
@@ -1214,7 +1271,7 @@ class BakeButton(bpy.types.Operator):
                             reyemask.vertex_group = "RightEye"
                             reyemask.invert_vertex_group = False
                     self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if group_relevant(obj, "RightEye")],
-                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, margin*2*resolution)
+                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, margin*2*resolution,solidmaterialcolors=solidmaterialcolors)
                     for obj in collection.all_objects:
                         if "reyemask" in obj.modifiers:
                             obj.modifiers.remove(obj.modifiers["reyemask"])
@@ -1322,7 +1379,7 @@ class BakeButton(bpy.types.Operator):
             # Bake tangent normals
             if use_decimation:
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, margin*2*resolution)
+                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, margin*2*resolution,solidmaterialcolors=solidmaterialcolors)
 
         # Reapply keys
         if not apply_keys:

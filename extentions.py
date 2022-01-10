@@ -479,6 +479,12 @@ def register():
         precision=2,
         subtype='FACTOR'
     )
+    
+    Scene.bake_optimize_solid_materials = BoolProperty(
+        name="Optimize Solid Materials",
+        description="Optimizes solid materials by making a small area for them. AO pass will nullify",
+        default=True
+    )
 
 
     Scene.selection_mode = EnumProperty(
