@@ -58,10 +58,6 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.scale_y = button_height
         row.prop(context.scene, 'use_google_only')
 
-        row = col.row(align=True)
-        row.scale_y = button_height
-        row.prop(context.scene, 'translate_to_valve')
-
         split = layout_split(col, factor=0.27, align=True)
 
         row = split.row(align=True)
