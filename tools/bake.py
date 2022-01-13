@@ -659,8 +659,8 @@ class BakeButton(bpy.types.Operator):
                                         
                                         
                                         #assign to image so it's baked
-                                        node_image.image.generated_color = node.inputs["Roughness"].default_value
-                                        smoothness_color = node.inputs["Roughness"].default_value
+                                        node_image.image.generated_color = [node.inputs["Roughness"].default_value]*4
+                                        smoothness_color = [node.inputs["Roughness"].default_value]*4
                                         node_image.image.file_format = 'PNG'
                                         material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Roughness'])
                                     else:
@@ -678,8 +678,8 @@ class BakeButton(bpy.types.Operator):
                                         
                                         
                                         #assign to image so it's baked
-                                        node_image.image.generated_color = node.inputs["Metallic"].default_value
-                                        metallic_color = node.inputs["Metallic"].default_value
+                                        node_image.image.generated_color = [node.inputs["Metallic"].default_value]*4
+                                        metallic_color = [node.inputs["Metallic"].default_value]*4
                                         node_image.image.file_format = 'PNG'
                                         material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Metallic'])
                                     else:
