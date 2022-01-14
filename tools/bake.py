@@ -45,9 +45,8 @@ class BakeTutorialButton(bpy.types.Operator):
         self.report({'INFO'}, t('cats_bake.tutorial_button.success'))
         return {'FINISHED'}
 
-def autodetect_passes(self, context, tricount, is_desktop):
-    context.scene.bake_max_tris = tricount
-    context.scene.bake_resolution = 2048 if is_desktop else 1024
+def autodetect_passes(self, context, item, tricount, is_desktop):
+    item.max_tris = tricount
     # Autodetect passes based on BSDF node inputs
     bsdf_nodes = []
     objects = [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]
@@ -64,7 +63,7 @@ def autodetect_passes(self, context, tricount, is_desktop):
 
     # Decimate if we're over the limit
     total_tricount = sum([Common.get_tricount(obj) for obj in objects])
-    context.scene.bake_use_decimation = total_tricount > tricount
+    item.use_decimation = total_tricount > tricount
 
     # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
     context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
@@ -79,7 +78,7 @@ def autodetect_passes(self, context, tricount, is_desktop):
                                     or len(set([node.inputs["Emission"].default_value[:] for node in bsdf_nodes])) > 1)
 
     # Transparency: similar to diffuse
-    context.scene.bake_pass_alpha = is_desktop and (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
+    context.scene.bake_pass_alpha = (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
                                                     or len(set([node.inputs["Alpha"].default_value for node in bsdf_nodes])) > 1)
 
     # Metallic: similar to diffuse
@@ -87,7 +86,7 @@ def autodetect_passes(self, context, tricount, is_desktop):
                                         or len(set([node.inputs["Metallic"].default_value for node in bsdf_nodes])) > 1)
 
     # Normal: on if any normals connected or if decimating... so, always on for this preset
-    context.scene.bake_pass_normal = (context.scene.bake_use_decimation
+    context.scene.bake_pass_normal = (item.use_decimation
                                       or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
 
     # Apply transforms: on if more than one mesh TODO: with different materials?
@@ -95,49 +94,50 @@ def autodetect_passes(self, context, tricount, is_desktop):
 
     if any("Target" in obj.data.uv_layers for obj in Common.get_meshes_objects(check=False)):
         context.scene.bake_uv_overlap_correction = 'MANUAL'
-    elif context.scene.bake_use_decimation and context.scene.bake_pass_normal:
+    elif any(plat.use_decimation for plat in context.scene.bake_platforms) and context.scene.bake_pass_normal:
         context.scene.bake_uv_overlap_correction = 'UNMIRROR'
 
     # Unfortunately, though it's technically faster, this makes things ineligible as Quest fallback avatars. So leave it off.
-    context.scene.bake_optimize_static = is_desktop
+    # Sadly this is still fairly unkind to a number of lighting situations, so we'll leave it off
+    # context.scene.bake_optimize_static = is_desktop
 
     # Quest has no use for twistbones
-    context.scene.bake_merge_twistbones = not is_desktop
+    item.merge_twistbones = not is_desktop
 
     # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
     # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
     # diffuse ao: off if desktop
-    context.scene.bake_pass_questdiffuse = not is_desktop
+    item.diffuse_premultiply_ao = not is_desktop
 
     # alpha packs: arrange for maximum efficiency.
     # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
-    context.scene.bake_diffuse_alpha_pack = "NONE"
-    context.scene.bake_metallic_alpha_pack = "NONE"
+    item.diffuse_alpha_pack = "NONE"
+    item.metallic_alpha_pack = "NONE"
     if is_desktop:
         # If 'smoothness' and 'transparency', we need to force metallic to bake so we can pack to it.
         if context.scene.bake_pass_smoothness and context.scene.bake_pass_alpha:
             context.scene.bake_pass_metallic = True
         # If we have transparency, it needs to go in diffuse alpha
         if context.scene.bake_pass_alpha:
-            context.scene.bake_diffuse_alpha_pack = "TRANSPARENCY"
+            item.diffuse_alpha_pack = "TRANSPARENCY"
         # Smoothness to diffuse is only the most efficient when we don't have metallic or alpha
         if context.scene.bake_pass_smoothness and not context.scene.bake_pass_metallic and not context.scene.bake_pass_alpha:
-            context.scene.bake_diffuse_alpha_pack = "SMOOTHNESS"
+            item.diffuse_alpha_pack = "SMOOTHNESS"
         if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
-            context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
+            item.metallic_alpha_pack = "SMOOTHNESS"
     else:
         # Diffuse vertex color bake? Only if there's already no texture inputs!
         if not is_desktop and not any([node.inputs["Base Color"].is_linked for node in bsdf_nodes]):
-            context.scene.bake_diffuse_vertex_colors = True
+            item.diffuse_vertex_colors = True
 
         # alpha packs: arrange for maximum efficiency.
         # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
-        context.scene.bake_diffuse_alpha_pack = "NONE"
-        context.scene.bake_metallic_alpha_pack = "NONE"
+        item.diffuse_alpha_pack = "NONE"
+        item.metallic_alpha_pack = "NONE"
         # If 'smoothness', we need to force metallic to bake so we can pack to it. (smoothness source is not configurable)
         if context.scene.bake_pass_smoothness:
             context.scene.bake_pass_metallic = True
-            context.scene.bake_metallic_alpha_pack = "SMOOTHNESS"
+            item.metallic_alpha_pack = "SMOOTHNESS"
 
 
 @register_wrap
@@ -148,7 +148,9 @@ class BakePresetDesktop(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        autodetect_passes(self, context, 32000, True)
+        item = context.scene.bake_platforms.add()
+        item.name = "VRChat Desktop"
+        autodetect_passes(self, context, item, 32000, True)
         return {'FINISHED'}
 
 
@@ -160,7 +162,9 @@ class BakePresetQuest(bpy.types.Operator):
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
-        autodetect_passes(self, context, 7500, False)
+        item = context.scene.bake_platforms.add()
+        item.name = "VRChat Quest"
+        autodetect_passes(self, context, item, 7500, False)
         return {'FINISHED'}
 
 
@@ -170,6 +174,10 @@ class BakeButton(bpy.types.Operator):
     bl_label = t('cats_bake.bake.label')
     bl_description = t('cats_bake.bake.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.bake_platforms
 
     # Only works between equal data types.
     def swap_links(self, objects, input1, input2):
@@ -243,7 +251,7 @@ class BakeButton(bpy.types.Operator):
 
     def denoise_create(context, tree):
         denoise_node = tree.nodes.new(type="CompositorNodeDenoise")
-        if context.scene.bake_use_decimation:
+        if context.scene.bake_pass_normal:
             normal_node = tree.nodes.new(type="CompositorNodeImage")
             normal_node.image = bpy.data.images["SCRIPT_world.png"]
             tree.links.new(denoise_node.inputs["Normal"], normal_node.outputs["Image"])
@@ -427,15 +435,6 @@ class BakeButton(bpy.types.Operator):
         decimation_animation_weighting = context.scene.decimation_animation_weighting
         decimation_animation_weighting_factor = context.scene.decimation_animation_weighting_factor
 
-        if context.scene.bake_loop_decimate:
-            context.scene.decimation_mode = "LOOP"
-        else:
-            context.scene.decimation_mode = "SMART"
-        context.scene.max_tris = context.scene.bake_max_tris
-        context.scene.decimate_fingers = False
-        context.scene.decimation_remove_doubles = context.scene.bake_remove_doubles
-        context.scene.decimation_animation_weighting = context.scene.bake_animation_weighting
-        context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
         self.perform_bake(context)
 
         context.scene.decimation_mode = decimation_mode
@@ -457,15 +456,12 @@ class BakeButton(bpy.types.Operator):
         #       default it to something sane, but maybe add a menu later?
         # Global options
         resolution = context.scene.bake_resolution
-        use_decimation = context.scene.bake_use_decimation
-        preserve_seams = context.scene.bake_preserve_seams
         generate_uvmap = context.scene.bake_generate_uvmap
         prioritize_face = context.scene.bake_prioritize_face
         prioritize_factor = context.scene.bake_face_scale
         uv_overlap_correction = context.scene.bake_uv_overlap_correction
         margin = 0.01
-        quick_compare = context.scene.bake_quick_compare
-        optimize_static = context.scene.bake_optimize_static # Separate blendshape geometry into its own mesh, improves performance
+        quick_compare = True
         apply_keys = context.scene.bake_apply_keys
 
         # TODO: Option to seperate by loose parts and bake selected to active
@@ -475,24 +471,18 @@ class BakeButton(bpy.types.Operator):
         pass_normal = context.scene.bake_pass_normal
         pass_smoothness = context.scene.bake_pass_smoothness
         pass_ao = context.scene.bake_pass_ao
-        pass_questdiffuse = context.scene.bake_pass_questdiffuse
         pass_emit = context.scene.bake_pass_emit
         pass_alpha = context.scene.bake_pass_alpha
         pass_metallic = context.scene.bake_pass_metallic
 
         # Pass options
         illuminate_eyes = context.scene.bake_illuminate_eyes
-        questdiffuse_opacity = context.scene.bake_questdiffuse_opacity
         normal_apply_trans = context.scene.bake_normal_apply_trans
-        diffuse_alpha_pack = context.scene.bake_diffuse_alpha_pack
-        metallic_alpha_pack = context.scene.bake_metallic_alpha_pack
-        supersample_normals = context.scene.bake_pass_normal and context.scene.bake_use_decimation and uv_overlap_correction == "UNMIRROR" # Bake the intermediate step at 2x resolution
+        supersample_normals = context.scene.bake_pass_normal and any(plat.use_decimation for plat in context.scene.bake_platforms) and uv_overlap_correction == "UNMIRROR" # Bake the intermediate step at 2x resolution
         overlap_aware = False # Unreliable until UVP doesn't care about the island scale.
         emit_indirect = context.scene.bake_emit_indirect
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
-        diffuse_vertex_colors = context.scene.bake_diffuse_vertex_colors
         cleanup_shapekeys = context.scene.bake_cleanup_shapekeys # Reverted and _old shapekeys
-        merge_twistbones = context.scene.bake_merge_twistbones
         create_disable_shapekeys = context.scene.bake_create_disable_shapekeys
         ignore_hidden = context.scene.bake_ignore_hidden
 
@@ -567,6 +557,7 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.mesh.uv_texture_add()
                         child.data.uv_layers[-1].name = 'CATS UV Super'
                         cats_uv_layers.append('CATS UV Super')
+
                     if uv_overlap_correction == "REPROJECT" or reproject_anyway:
                         for layer in cats_uv_layers:
                             idx = child.data.uv_layers.active_index
@@ -670,32 +661,6 @@ class BakeButton(bpy.types.Operator):
                 if obj.type == 'MESH':
                     obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
-        # Optionally cleanup bones if we're not going to use them
-        if merge_twistbones:
-            print("merging bones")
-            bpy.ops.object.select_all(action='DESELECT')
-            context.view_layer.objects.active = arm_copy
-            Common.switch("EDIT")
-            bpy.ops.armature.select_all(action="DESELECT")
-            bone_children = dict()
-            for editbone in context.visible_bones:
-                if not editbone.parent:
-                    continue
-                if not editbone.parent.name in bone_children:
-                    bone_children[editbone.parent.name] = []
-                bone_children[editbone.parent.name].append(editbone.name)
-            for editbone in context.visible_bones:
-                if 'twist' in editbone.name.lower() and not editbone.children:
-                    editbone.select = True
-                    if editbone.parent:
-                        # only select if bone is alphabetically after all non-twistbones. Prevents hierarchy problems
-                        if any(otherbone > editbone.name for otherbone in bone_children[editbone.parent.name]
-                               if not 'twist' in otherbone.lower()):
-                            editbone.select = False
-            if context.selected_editable_bones:
-                bpy.ops.cats_manual.merge_weights()
-            Common.switch("OBJECT")
-
         if not os.path.exists(bpy.path.abspath("//CATS Bake/")):
             os.mkdir(bpy.path.abspath("//CATS Bake/"))
 
@@ -774,34 +739,7 @@ class BakeButton(bpy.types.Operator):
             if sharpen_bakes:
                 self.filter_image(context, "SCRIPT_metallic.png", BakeButton.sharpen_create)
 
-        # Pack to diffuse alpha (if selected)
-        if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
-                             (diffuse_alpha_pack == "TRANSPARENCY" and pass_alpha)):
-            print("Packing to diffuse alpha")
-            diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-            alpha_image = None
-            if diffuse_alpha_pack == "SMOOTHNESS":
-                alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
-            elif diffuse_alpha_pack == "TRANSPARENCY":
-                alpha_image = bpy.data.images["SCRIPT_alpha.png"]
-            pixel_buffer = list(diffuse_image.pixels)
-            alpha_buffer = alpha_image.pixels[:]
-            for idx in range(3, len(pixel_buffer), 4):
-                pixel_buffer[idx] = alpha_buffer[idx - 3]
-            diffuse_image.pixels[:] = pixel_buffer
-
-        # Pack to metallic alpha (if selected)
-        if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
-            print("Packing to metallic alpha")
-            metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-            alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
-            pixel_buffer = list(metallic_image.pixels)
-            alpha_buffer = alpha_image.pixels[:]
-            for idx in range(3, len(pixel_buffer), 4):
-                pixel_buffer[idx] = alpha_buffer[idx - 3]
-            metallic_image.pixels[:] = pixel_buffer
-
-        # TODO: advanced: bake detail mask from diffuse node setup
+       # TODO: advanced: bake detail mask from diffuse node setup
 
         # TODO: specularity? would allow specular setups on pre-existing avatars
 
@@ -853,34 +791,28 @@ class BakeButton(bpy.types.Operator):
                 obj.active_shape_key_index = 0
 
         # Bake highres normals
-        if not use_decimation:
-            # Just bake the traditional way
-            if pass_normal:
-                self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
+        if not normal_apply_trans:
+            # Join meshes
+            Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
         else:
-            if not normal_apply_trans:
-                # Join meshes
-                Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
-            else:
-                for obj in collection.all_objects:
-                    # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
-                    if obj.type == "MESH":
-                        bpy.ops.object.select_all(action='DESELECT')
-                        obj.select_set(True)
-                        context.view_layer.objects.active = obj
-                        bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
+            for obj in collection.all_objects:
+                # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
+                if obj.type == "MESH":
+                    bpy.ops.object.select_all(action='DESELECT')
+                    obj.select_set(True)
+                    context.view_layer.objects.active = obj
+                    bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
 
-            # Bake normals in object coordinates
-            if pass_normal:
-                for obj in collection.all_objects:
-                    if obj.type == 'MESH' and generate_uvmap and supersample_normals:
-                        obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
-                bake_size = ((resolution * 2, resolution * 2) if
-                             supersample_normals else
-                             (resolution, resolution))
-                self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               bake_size, 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * bake_size[0]/ 2), normal_space="OBJECT")
+        # Bake normals in object coordinates
+        if pass_normal:
+            for obj in collection.all_objects:
+                if obj.type == 'MESH' and generate_uvmap and supersample_normals:
+                    obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
+            bake_size = ((resolution * 2, resolution * 2) if
+                         supersample_normals else
+                         (resolution, resolution))
+            self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+                           bake_size, 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * bake_size[0]/ 2), normal_space="OBJECT")
 
         # Reset UV
         for obj in collection.all_objects:
@@ -922,33 +854,6 @@ class BakeButton(bpy.types.Operator):
                             key.value = 0.0
             if denoise_bakes:
                 self.filter_image(context, "SCRIPT_ao.png", BakeButton.denoise_create)
-
-        # Blend diffuse and AO to create Quest Diffuse (if selected)
-        if pass_diffuse and pass_ao and pass_questdiffuse:
-            if "SCRIPT_questdiffuse.png" in bpy.data.images:
-                image = bpy.data.images["SCRIPT_questdiffuse.png"]
-                image.user_clear()
-                bpy.data.images.remove(image)
-            bpy.ops.image.new(name="SCRIPT_questdiffuse.png", width=resolution, height=resolution,
-                              generated_type="BLANK", alpha=False)
-            image = bpy.data.images["SCRIPT_questdiffuse.png"]
-            image.filepath = bpy.path.abspath("//CATS Bake/" + "SCRIPT_questdiffuse.png")
-            diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-            ao_image = bpy.data.images["SCRIPT_ao.png"]
-            image.generated_width = resolution
-            image.generated_height = resolution
-            image.scale(resolution, resolution)
-            pixel_buffer = list(image.pixels)
-            diffuse_buffer = diffuse_image.pixels[:]
-            ao_buffer = ao_image.pixels[:]
-            for idx in range(0, len(image.pixels)):
-                if (idx % 4 != 3):
-                    # Map range: set the black point up to 1-opacity
-                    pixel_buffer[idx] = diffuse_buffer[idx] * ((1.0 - questdiffuse_opacity) + (questdiffuse_opacity * ao_buffer[idx]))
-                else:
-                    # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
-                    pixel_buffer[idx] = 1.0
-            image.pixels[:] = pixel_buffer
 
         # bake emit
         if pass_emit:
@@ -1023,287 +928,481 @@ class BakeButton(bpy.types.Operator):
                     Common.switch("EDIT")
                     bpy.ops.mesh.delete(type="VERT")
 
-        print("Decimating")
-        if use_decimation:
-            # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
-            bpy.ops.cats_decimation.auto_decimate(armature_name=arm_copy.name, preserve_seams=preserve_seams, seperate_materials=False)
-        else:
-            # join meshes here if we didn't decimate
-            Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
+        ########### BEGIN PLATFORM SPECIFIC CODE ###########
+        for platform_number, platform in enumerate(context.scene.bake_platforms):
 
-        # Remove all other materials if we've done at least one bake pass
-        for obj in collection.all_objects:
-            if obj.type == 'MESH':
-                context.view_layer.objects.active = obj
-                while len(obj.material_slots) > 0:
-                    obj.active_material_index = 0  # select the top material
-                    bpy.ops.object.material_slot_remove()
+            platform_name = platform.name
+            merge_twistbones = platform.merge_twistbones
+            diffuse_alpha_pack = platform.diffuse_alpha_pack
+            metallic_alpha_pack = platform.metallic_alpha_pack
+            diffuse_premultiply_ao = platform.diffuse_premultiply_ao
+            diffuse_premultiply_opacity = platform.diffuse_premultiply_opacity
+            smoothness_premultiply_ao = platform.smoothness_premultiply_ao
+            smoothness_premultiply_opacity = platform.smoothness_premultiply_opacity
+            use_decimation = platform.use_decimation
+            optimize_static = platform.optimize_static
+            preserve_seams = platform.preserve_seams
+            diffuse_vertex_colors = platform.diffuse_vertex_colors
 
-        # Apply generated material (object normals -> normal map -> BSDF normal and other textures)
-        mat = bpy.data.materials.get("CATS Baked")
-        if mat is not None:
-            bpy.data.materials.remove(mat, do_unlink=True)
-        # create material
-        mat = bpy.data.materials.new(name="CATS Baked")
-        mat.use_nodes = True
-        mat.use_backface_culling = True
-        # add a normal map and image texture to connect the world texture, if it exists
-        tree = mat.node_tree
-        bsdfnode = next(node for node in tree.nodes if node.type == "BSDF_PRINCIPLED")
-        if bsdf_original is not None:
-            for bsdfinput in bsdfnode.inputs:
-                bsdfinput.default_value = bsdf_original.inputs[bsdfinput.identifier].default_value
-        if pass_normal:
-            normaltexnode = tree.nodes.new("ShaderNodeTexImage")
+            if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
+                os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
+
+            # Create yet another output collection
+            plat_collection = bpy.data.collections.new("CATS Bake " + platform_name)
+            #context.scene.collection.children.link(plat_collection)
+            orig_scene.collection.children.link(plat_collection)
+
+            # Tree-copy all meshes
+            plat_arm_copy = self.tree_copy(arm_copy, None, plat_collection, ignore_hidden)
+
+            # Create an extra scene to render in
+            plat_orig_scene_name = "CATS Scene"
+            bpy.ops.scene.new(type="EMPTY") # copy keeps existing settings
+            context.scene.name = "CATS Scene " + platform_name
+            plat_orig_scene = bpy.data.scenes[orig_scene_name]
+            context.scene.collection.children.link(plat_collection)
+
+            # Make sure all armature modifiers target the new armature
+            for child in plat_collection.all_objects:
+                for modifier in child.modifiers:
+                    if modifier.type == "ARMATURE":
+                        modifier.object = plat_arm_copy
+                    if modifier.type == "MULTIRES":
+                        modifier.render_levels = modifier.total_levels
+
+
+            # Optionally cleanup bones if we're not going to use them
+            if merge_twistbones:
+                print("merging bones")
+                bpy.ops.object.select_all(action='DESELECT')
+                context.view_layer.objects.active = plat_arm_copy
+                Common.switch("EDIT")
+                bpy.ops.armature.select_all(action="DESELECT")
+                bone_children = dict()
+                for editbone in context.visible_bones:
+                    if not editbone.parent:
+                        continue
+                    if not editbone.parent.name in bone_children:
+                        bone_children[editbone.parent.name] = []
+                    bone_children[editbone.parent.name].append(editbone.name)
+                for editbone in context.visible_bones:
+                    if 'twist' in editbone.name.lower() and not editbone.children:
+                        editbone.select = True
+                        if editbone.parent:
+                            # only select if bone is alphabetically after all non-twistbones. Prevents hierarchy problems
+                            if any(otherbone > editbone.name for otherbone in bone_children[editbone.parent.name]
+                                   if not 'twist' in otherbone.lower()):
+                                editbone.select = False
+                if context.selected_editable_bones:
+                    bpy.ops.cats_manual.merge_weights()
+                Common.switch("OBJECT")
+
+
+            # Blend diffuse and AO to create Quest Diffuse (if selected)
+            if pass_diffuse and pass_ao and diffuse_premultiply_ao:
+                platform_diffuse = platform_name + " diffuse.png"
+                if platform_diffuse in bpy.data.images:
+                    image = bpy.data.images[platform_diffuse]
+                    image.user_clear()
+                    bpy.data.images.remove(image)
+                bpy.ops.image.new(name=platform_diffuse, width=resolution, height=resolution,
+                                  generated_type="BLANK", alpha=False)
+                image = bpy.data.images[platform_diffuse]
+                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_diffuse)
+                diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
+                ao_image = bpy.data.images["SCRIPT_ao.png"]
+                image.generated_width = resolution
+                image.generated_height = resolution
+                image.scale(resolution, resolution)
+                pixel_buffer = list(image.pixels)
+                diffuse_buffer = diffuse_image.pixels[:]
+                ao_buffer = ao_image.pixels[:]
+                for idx in range(0, len(image.pixels)):
+                    if (idx % 4 != 3):
+                        # Map range: set the black point up to 1-opacity
+                        pixel_buffer[idx] = diffuse_buffer[idx] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[idx]))
+                    else:
+                        # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
+                        pixel_buffer[idx] = 1.0
+                image.pixels[:] = pixel_buffer
+                image.save()
+
+            if pass_smoothness and pass_ao and smoothness_premultiply_ao:
+                platform_smoothness = platform_name + " smoothness.png"
+                if platform_smoothness in bpy.data.images:
+                    image = bpy.data.images[platform_smoothness]
+                    image.user_clear()
+                    bpy.data.images.remove(image)
+                bpy.ops.image.new(name=platform_smoothness, width=resolution, height=resolution,
+                                  generated_type="BLANK", alpha=False)
+                image = bpy.data.images[platform_smoothness]
+                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_smoothness)
+                smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
+                ao_image = bpy.data.images["SCRIPT_ao.png"]
+                image.generated_width = resolution
+                image.generated_height = resolution
+                image.scale(resolution, resolution)
+                pixel_buffer = list(image.pixels)
+                smoothness_buffer = smoothness_image.pixels[:]
+                ao_buffer = ao_image.pixels[:]
+                for idx in range(0, len(image.pixels)):
+                    if (idx % 4 != 3):
+                        # Map range: set the black point up to 1-opacity
+                        pixel_buffer[idx] = smoothness_buffer[idx] * ((1.0 - smoothness_premultiply_opacity) + (smoothness_premultiply_opacity * ao_buffer[idx]))
+                    else:
+                        # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
+                        pixel_buffer[idx] = 1.0
+                image.pixels[:] = pixel_buffer
+                image.save()
+
+            # Pack to diffuse alpha (if selected)
+            if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
+                                 (diffuse_alpha_pack == "TRANSPARENCY" and pass_alpha)):
+                platform_diffuse = platform_name + " diffuse.png"
+                if platform_diffuse not in bpy.data.images:
+                    bpy.ops.image.new(name=platform_diffuse, width=resolution, height=resolution,
+                                      generated_type="BLANK", alpha=False)
+                image = bpy.data.images[platform_diffuse]
+                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_diffuse)
+                print("Packing to diffuse alpha")
+                diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
+                alpha_image = None
+                if diffuse_alpha_pack == "SMOOTHNESS":
+                    if pass_smoothness and pass_ao and smoothness_premultiply_ao:
+                        alpha_image = bpy.data.images[platform_name + " smoothness.png"]
+                    else:
+                        alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
+                elif diffuse_alpha_pack == "TRANSPARENCY":
+                    alpha_image = bpy.data.images["SCRIPT_alpha.png"]
+                pixel_buffer = list(diffuse_image.pixels)
+                alpha_buffer = alpha_image.pixels[:]
+                for idx in range(3, len(pixel_buffer), 4):
+                    pixel_buffer[idx] = alpha_buffer[idx - 3]
+                image.pixels[:] = pixel_buffer
+                image.save()
+
+            # Pack to metallic alpha (if selected)
+            if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
+                platform_metallic = platform_name + " metallic.png"
+                print("Packing to metallic alpha")
+                if platform_diffuse not in bpy.data.images:
+                    bpy.ops.image.new(name=platform_diffuse, width=resolution, height=resolution,
+                                      generated_type="BLANK", alpha=False)
+                image = bpy.data.images[platform_diffuse]
+                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_metallic)
+                metallic_image = bpy.data.images["SCRIPT_metallic.png"]
+                if pass_smoothness and pass_ao and smoothness_premultiply_ao:
+                    alpha_image = bpy.data.images[platform_name + " smoothness.png"]
+                else:
+                    alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
+                pixel_buffer = list(metallic_image.pixels)
+                alpha_buffer = alpha_image.pixels[:]
+                for idx in range(3, len(pixel_buffer), 4):
+                    pixel_buffer[idx] = alpha_buffer[idx - 3]
+                image.pixels[:] = pixel_buffer
+                image.save()
+
+            print("Decimating")
             if use_decimation:
+                # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
+                if context.scene.bake_loop_decimate:
+                    context.scene.decimation_mode = "LOOP"
+                else:
+                    context.scene.decimation_mode = "SMART"
+                context.scene.max_tris = platform.max_tris
+                context.scene.decimate_fingers = False
+                context.scene.decimation_remove_doubles = platform.remove_doubles
+                context.scene.decimation_animation_weighting = context.scene.bake_animation_weighting
+                context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
+                bpy.ops.cats_decimation.auto_decimate(armature_name=plat_arm_copy.name, preserve_seams=preserve_seams, seperate_materials=False)
+            else:
+                # join meshes here if we didn't decimate
+                Common.join_meshes(armature_name=plat_arm_copy.name, repair_shape_keys=False)
+
+            # Remove all other materials if we've done at least one bake pass
+            for obj in plat_collection.all_objects:
+                if obj.type == 'MESH':
+                    context.view_layer.objects.active = obj
+                    while len(obj.material_slots) > 0:
+                        obj.active_material_index = 0  # select the top material
+                        bpy.ops.object.material_slot_remove()
+
+            # Apply generated material (object normals -> normal map -> BSDF normal and other textures)
+            mat = bpy.data.materials.get("CATS Baked " + platform_name)
+            if mat is not None:
+                bpy.data.materials.remove(mat, do_unlink=True)
+            # create material
+            mat = bpy.data.materials.new(name="CATS Baked" + platform_name)
+            mat.use_nodes = True
+            mat.use_backface_culling = True
+            # add a normal map and image texture to connect the world texture, if it exists
+            tree = mat.node_tree
+            bsdfnode = next(node for node in tree.nodes if node.type == "BSDF_PRINCIPLED")
+            if bsdf_original is not None:
+                for bsdfinput in bsdfnode.inputs:
+                    bsdfinput.default_value = bsdf_original.inputs[bsdfinput.identifier].default_value
+            if pass_normal:
+                normaltexnode = tree.nodes.new("ShaderNodeTexImage")
                 normaltexnode.image = bpy.data.images["SCRIPT_world.png"]
                 # If not supersampling, sample SCRIPT_WORLD 1:1 so we don't blur it
                 if not supersample_normals:
                     normaltexnode.interpolation = "Closest"
-            normaltexnode.location.x -= 500
-            normaltexnode.location.y -= 200
+                normaltexnode.location.x -= 500
+                normaltexnode.location.y -= 200
 
-            normalmapnode = tree.nodes.new("ShaderNodeNormalMap")
-            normalmapnode.space = "OBJECT"
-            normalmapnode.location.x -= 200
-            normalmapnode.location.y -= 200
+                normalmapnode = tree.nodes.new("ShaderNodeNormalMap")
+                normalmapnode.space = "OBJECT"
+                normalmapnode.location.x -= 200
+                normalmapnode.location.y -= 200
 
-            tree.links.new(normalmapnode.inputs["Color"], normaltexnode.outputs["Color"])
-            tree.links.new(bsdfnode.inputs["Normal"], normalmapnode.outputs["Normal"])
+                tree.links.new(normalmapnode.inputs["Color"], normaltexnode.outputs["Color"])
+                tree.links.new(bsdfnode.inputs["Normal"], normalmapnode.outputs["Normal"])
 
-            if supersample_normals and generate_uvmap:
-                for obj in collection.all_objects:
-                    if obj.type == "MESH":
-                        obj.data.uv_layers["CATS UV Super"].active_render = True
-        for child in collection.all_objects:
-            if child.type == "MESH":
-                child.data.materials.append(mat)
-
-        # Remove old UV maps (if we created new ones)
-        if generate_uvmap:
-            for child in collection.all_objects:
+                if supersample_normals and generate_uvmap:
+                    for obj in plat_collection.all_objects:
+                        if obj.type == "MESH":
+                            obj.data.uv_layers["CATS UV Super"].active_render = True
+            for child in plat_collection.all_objects:
                 if child.type == "MESH":
-                    uv_layers = [layer.name for layer in child.data.uv_layers]
-                    while uv_layers:
-                        layer = uv_layers.pop()
-                        if layer != "CATS UV Super" and layer != "CATS UV" and layer != "Detail Map":
-                            print("Removing UV {}".format(layer))
-                            child.data.uv_layers.remove(child.data.uv_layers[layer])
-            for obj in collection.all_objects:
-                if obj.type == 'MESH':
-                    obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
+                    child.data.materials.append(mat)
 
-        if pass_normal:
-            # Bake tangent normals
-            if use_decimation:
-                self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+            if pass_normal:
+                # Bake tangent normals
+                platform_normal = platform_name + " normal.png"
+                self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
                                (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, int(margin * resolution / 2))
+                bpy.ops.image.new(name=platform_normal, width=resolution, height=resolution,
+                                  generated_type="BLANK", alpha=False)
+                image = bpy.data.images[platform_normal]
+                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_normal)
+                image.colorspace_settings.name = 'Non-Color'
+                normal_image = bpy.data.images["SCRIPT_normal.png"]
+                image.pixels[:] = normal_image.pixels[:]
+                image.save()
 
-        # Reapply keys
-        if not apply_keys:
-            for obj in collection.all_objects:
-                if Common.has_shapekeys(obj):
-                    for key in obj.data.shape_keys.key_blocks:
-                        if key.name in shapekey_values:
-                            key.value = shapekey_values[key.name]
+            # Remove old UV maps (if we created new ones)
+            if generate_uvmap:
+                for child in plat_collection.all_objects:
+                    if child.type == "MESH":
+                        uv_layers = [layer.name for layer in child.data.uv_layers]
+                        while uv_layers:
+                            layer = uv_layers.pop()
+                            if layer != "CATS UV Super" and layer != "CATS UV" and layer != "Detail Map":
+                                print("Removing UV {}".format(layer))
+                                child.data.uv_layers.remove(child.data.uv_layers[layer])
+                for obj in plat_collection.all_objects:
+                    if obj.type == 'MESH':
+                        obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
+
+            # Reapply keys
+            if not apply_keys:
+                for obj in plat_collection.all_objects:
+                    if Common.has_shapekeys(obj):
+                        for key in obj.data.shape_keys.key_blocks:
+                            if key.name in shapekey_values:
+                                key.value = shapekey_values[key.name]
 
 
-        # Remove CATS UV Super
-        if generate_uvmap and supersample_normals:
-            for child in collection.all_objects:
-                if child.type == "MESH":
-                    uv_layers = [layer.name for layer in child.data.uv_layers]
-                    while uv_layers:
-                        layer = uv_layers.pop()
-                        if layer == "CATS UV Super":
-                            print("Removing UV {}".format(layer))
-                            child.data.uv_layers.remove(child.data.uv_layers[layer])
+            # Remove CATS UV Super
+            if generate_uvmap and supersample_normals:
+                for child in plat_collection.all_objects:
+                    if child.type == "MESH":
+                        uv_layers = [layer.name for layer in child.data.uv_layers]
+                        while uv_layers:
+                            layer = uv_layers.pop()
+                            if layer == "CATS UV Super":
+                                print("Removing UV {}".format(layer))
+                                child.data.uv_layers.remove(child.data.uv_layers[layer])
 
-        # Always remove existing vertex colors here
-        for obj in collection.all_objects:
-            if obj.type == "MESH":
-                if obj.data.vertex_colors is not None and len(obj.data.vertex_colors) > 0:
-                    while len(obj.data.vertex_colors) > 0:
-                        context.view_layer.objects.active = obj
-                        bpy.ops.mesh.vertex_color_remove()
-
-        # Update generated material to preview all of our passes
-        if pass_normal:
-            normaltexnode.image = bpy.data.images["SCRIPT_normal.png"]
-            normalmapnode.space = "TANGENT"
-            normaltexnode.interpolation = "Linear"
-        if pass_diffuse:
-            diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
-            diffusetexnode.image = bpy.data.images["SCRIPT_diffuse.png"]
-            diffusetexnode.location.x -= 300
-            diffusetexnode.location.y += 500
-
-            # If AO, blend in AO.
-            if pass_ao:
-                # AO -> Math (* ao_opacity + (1-ao_opacity)) -> Mix (Math, diffuse) -> Color
-                aotexnode = tree.nodes.new("ShaderNodeTexImage")
-                aotexnode.image = bpy.data.images["SCRIPT_ao.png"]
-                aotexnode.location.x -= 700
-                aotexnode.location.y += 800
-
-                multiplytexnode = tree.nodes.new("ShaderNodeMath")
-                multiplytexnode.operation = "MULTIPLY_ADD"
-                multiplytexnode.inputs[1].default_value = questdiffuse_opacity
-                multiplytexnode.inputs[2].default_value = 1.0 - questdiffuse_opacity
-                multiplytexnode.location.x -= 400
-                multiplytexnode.location.y += 700
-                tree.links.new(multiplytexnode.inputs[0], aotexnode.outputs["Color"])
-
-                mixnode = tree.nodes.new("ShaderNodeMixRGB")
-                mixnode.blend_type = "MULTIPLY"
-                mixnode.inputs["Fac"].default_value = 1.0
-                mixnode.location.x -= 200
-                mixnode.location.y += 700
-                tree.links.new(mixnode.inputs["Color1"], multiplytexnode.outputs["Value"])
-                tree.links.new(mixnode.inputs["Color2"], diffusetexnode.outputs["Color"])
-
-                tree.links.new(bsdfnode.inputs["Base Color"], mixnode.outputs["Color"])
-            else:
-                tree.links.new(bsdfnode.inputs["Base Color"], diffusetexnode.outputs["Color"])
-        if pass_metallic:
-            metallictexnode = tree.nodes.new("ShaderNodeTexImage")
-            metallictexnode.image = bpy.data.images["SCRIPT_metallic.png"]
-            metallictexnode.location.x -= 300
-            metallictexnode.location.y += 200
-            tree.links.new(bsdfnode.inputs["Metallic"], metallictexnode.outputs["Color"])
-        if pass_smoothness:
-            if pass_diffuse and (diffuse_alpha_pack == "SMOOTHNESS"):
-                invertnode = tree.nodes.new("ShaderNodeInvert")
-                diffusetexnode.location.x -= 200
-                invertnode.location.x -= 200
-                invertnode.location.y += 200
-                tree.links.new(invertnode.inputs["Color"], diffusetexnode.outputs["Alpha"])
-                tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
-            elif pass_metallic and (metallic_alpha_pack == "SMOOTHNESS"):
-                invertnode = tree.nodes.new("ShaderNodeInvert")
-                metallictexnode.location.x -= 200
-                invertnode.location.x -= 200
-                invertnode.location.y += 100
-                tree.links.new(invertnode.inputs["Color"], metallictexnode.outputs["Alpha"])
-                tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
-            else:
-                smoothnesstexnode = tree.nodes.new("ShaderNodeTexImage")
-                smoothnesstexnode.image = bpy.data.images["SCRIPT_smoothness.png"]
-                invertnode = tree.nodes.new("ShaderNodeInvert")
-                tree.links.new(invertnode.inputs["Color"], smoothnesstexnode.outputs["Color"])
-                tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
-        if pass_alpha:
-            if pass_diffuse and (diffuse_alpha_pack == "TRANSPARENCY"):
-                tree.links.new(bsdfnode.inputs["Alpha"], diffusetexnode.outputs["Alpha"])
-            else:
-                alphatexnode = tree.nodes.new("ShaderNodeTexImage")
-                alphatexnode.image = bpy.data.images["SCRIPT_alpha.png"]
-                tree.links.new(bsdfnode.inputs["Alpha"], alphatexnode.outputs["Color"])
-            mat.blend_method = 'CLIP'
-        if pass_emit:
-            emittexnode = tree.nodes.new("ShaderNodeTexImage")
-            emittexnode.image = bpy.data.images["SCRIPT_emission.png"]
-            emittexnode.location.x -= 800
-            emittexnode.location.y -= 150
-            tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
-
-        # Rebake diffuse to vertex colors: Incorperates AO
-        if pass_diffuse and diffuse_vertex_colors:
-            for obj in collection.all_objects:
+            # Always remove existing vertex colors here
+            for obj in plat_collection.all_objects:
                 if obj.type == "MESH":
-                    context.view_layer.objects.active = obj
-                    bpy.ops.mesh.vertex_color_add()
+                    if obj.data.vertex_colors is not None and len(obj.data.vertex_colors) > 0:
+                        while len(obj.data.vertex_colors) > 0:
+                            context.view_layer.objects.active = obj
+                            bpy.ops.mesh.vertex_color_remove()
 
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
-            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
-            self.bake_pass(context, "vertex_diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.0], True, int(margin * resolution / 2))
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
+            # Update generated material to preview all of our passes
+            if pass_normal:
+                normaltexnode.image = bpy.data.images[platform_name + " normal.png"]
+                normalmapnode.space = "TANGENT"
+                normaltexnode.interpolation = "Linear"
+            if pass_diffuse:
+                diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
+                diffusetexnode.image = bpy.data.images["SCRIPT_diffuse.png"]
+                diffusetexnode.location.x -= 300
+                diffusetexnode.location.y += 500
 
-            # TODO: If we're not baking anything else in, remove all UV maps entirely
+                # If AO, blend in AO.
+                if pass_ao:
+                    # AO -> Math (* ao_opacity + (1-ao_opacity)) -> Mix (Math, diffuse) -> Color
+                    aotexnode = tree.nodes.new("ShaderNodeTexImage")
+                    aotexnode.image = bpy.data.images["SCRIPT_ao.png"]
+                    aotexnode.location.x -= 700
+                    aotexnode.location.y += 800
 
-            # Update material preview
-            #tree.nodes.remove(diffusetexnode)
-            diffusevertnode = tree.nodes.new("ShaderNodeVertexColor")
-            diffusevertnode.layer_name = "Col"
-            diffusevertnode.location.x -= 300
-            diffusevertnode.location.y += 500
-            tree.links.new(bsdfnode.inputs["Base Color"], diffusevertnode.outputs["Color"])
+                    multiplytexnode = tree.nodes.new("ShaderNodeMath")
+                    multiplytexnode.operation = "MULTIPLY_ADD"
+                    multiplytexnode.inputs[1].default_value = diffuse_premultiply_opacity
+                    multiplytexnode.inputs[2].default_value = 1.0 - diffuse_premultiply_opacity
+                    multiplytexnode.location.x -= 400
+                    multiplytexnode.location.y += 700
+                    tree.links.new(multiplytexnode.inputs[0], aotexnode.outputs["Color"])
+
+                    mixnode = tree.nodes.new("ShaderNodeMixRGB")
+                    mixnode.blend_type = "MULTIPLY"
+                    mixnode.inputs["Fac"].default_value = 1.0
+                    mixnode.location.x -= 200
+                    mixnode.location.y += 700
+                    tree.links.new(mixnode.inputs["Color1"], multiplytexnode.outputs["Value"])
+                    tree.links.new(mixnode.inputs["Color2"], diffusetexnode.outputs["Color"])
+
+                    tree.links.new(bsdfnode.inputs["Base Color"], mixnode.outputs["Color"])
+                else:
+                    tree.links.new(bsdfnode.inputs["Base Color"], diffusetexnode.outputs["Color"])
+            if pass_metallic:
+                metallictexnode = tree.nodes.new("ShaderNodeTexImage")
+                metallictexnode.image = bpy.data.images["SCRIPT_metallic.png"]
+                metallictexnode.location.x -= 300
+                metallictexnode.location.y += 200
+                tree.links.new(bsdfnode.inputs["Metallic"], metallictexnode.outputs["Color"])
+            if pass_smoothness:
+                #if pass_diffuse and (diffuse_alpha_pack == "SMOOTHNESS"):
+                #    invertnode = tree.nodes.new("ShaderNodeInvert")
+                #    diffusetexnode.location.x -= 200
+                #    invertnode.location.x -= 200
+                #    invertnode.location.y += 200
+                #    tree.links.new(invertnode.inputs["Color"], diffusetexnode.outputs["Alpha"])
+                #    tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
+                #elif pass_metallic and (metallic_alpha_pack == "SMOOTHNESS"):
+                #    invertnode = tree.nodes.new("ShaderNodeInvert")
+                #    metallictexnode.location.x -= 200
+                #    invertnode.location.x -= 200
+                #    invertnode.location.y += 100
+                #    tree.links.new(invertnode.inputs["Color"], metallictexnode.outputs["Alpha"])
+                #    tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
+                #else:
+                if True:
+                    smoothnesstexnode = tree.nodes.new("ShaderNodeTexImage")
+                    smoothnesstexnode.image = bpy.data.images["SCRIPT_smoothness.png"]
+                    invertnode = tree.nodes.new("ShaderNodeInvert")
+                    tree.links.new(invertnode.inputs["Color"], smoothnesstexnode.outputs["Color"])
+                    tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
+            if pass_alpha:
+                #if pass_diffuse and (diffuse_alpha_pack == "TRANSPARENCY"):
+                #    tree.links.new(bsdfnode.inputs["Alpha"], diffusetexnode.outputs["Alpha"])
+                #else:
+                if True:
+                    alphatexnode = tree.nodes.new("ShaderNodeTexImage")
+                    alphatexnode.image = bpy.data.images["SCRIPT_alpha.png"]
+                    tree.links.new(bsdfnode.inputs["Alpha"], alphatexnode.outputs["Color"])
+                mat.blend_method = 'CLIP'
+            if pass_emit:
+                emittexnode = tree.nodes.new("ShaderNodeTexImage")
+                emittexnode.image = bpy.data.images["SCRIPT_emission.png"]
+                emittexnode.location.x -= 800
+                emittexnode.location.y -= 150
+                tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
+
+            # Rebake diffuse to vertex colors: Incorperates AO
+            if pass_diffuse and diffuse_vertex_colors:
+                for obj in plat_collection.all_objects:
+                    if obj.type == "MESH":
+                        context.view_layer.objects.active = obj
+                        bpy.ops.mesh.vertex_color_add()
+
+                self.swap_links([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
+                self.set_values([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
+                self.bake_pass(context, "vertex_diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
+                               (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.0], True, int(margin * resolution / 2))
+                self.swap_links([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
+
+                # TODO: If we're not baking anything else in, remove all UV maps entirely
+
+                # Update material preview
+                #tree.nodes.remove(diffusetexnode)
+                diffusevertnode = tree.nodes.new("ShaderNodeVertexColor")
+                diffusevertnode.layer_name = "Col"
+                diffusevertnode.location.x -= 300
+                diffusevertnode.location.y += 500
+                tree.links.new(bsdfnode.inputs["Base Color"], diffusevertnode.outputs["Color"])
 
 
 
-        if cleanup_shapekeys:
-            for mesh in collection.all_objects:
+            if cleanup_shapekeys:
+                for mesh in plat_collection.all_objects:
+                    if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
+                        names = [key.name for key in mesh.data.shape_keys.key_blocks]
+                        for name in names:
+                            if name[-4:] == "_old" or name[-11:] == " - Reverted":
+                                mesh.shape_key_remove(key=mesh.data.shape_keys.key_blocks[name])
+
+            # '_bake' shapekeys are always applied and removed.
+            for mesh in plat_collection.all_objects:
                 if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
                     names = [key.name for key in mesh.data.shape_keys.key_blocks]
                     for name in names:
-                        if name[-4:] == "_old" or name[-11:] == " - Reverted":
+                        if name[-5:] == "_bake":
                             mesh.shape_key_remove(key=mesh.data.shape_keys.key_blocks[name])
 
-        # '_bake' shapekeys are always applied and removed.
-        for mesh in collection.all_objects:
-            if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
-                names = [key.name for key in mesh.data.shape_keys.key_blocks]
-                for name in names:
-                    if name[-5:] == "_bake":
-                        mesh.shape_key_remove(key=mesh.data.shape_keys.key_blocks[name])
 
+            if optimize_static:
+                for mesh in plat_collection.all_objects:
+                    if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
+                        context.view_layer.objects.active = mesh
+                        bpy.ops.cats_manual.optimize_static_shapekeys()
 
-        if optimize_static:
-            for mesh in collection.all_objects:
-                if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
-                    context.view_layer.objects.active = mesh
-                    bpy.ops.cats_manual.optimize_static_shapekeys()
+            # Export the model to the bake dir
+            bpy.ops.object.select_all(action='DESELECT')
+            for obj in plat_collection.all_objects:
+                obj.select_set(True)
+                if obj.type == "MESH" and obj.name != "Static":
+                    obj.name = "Body"
+                elif obj.type == "ARMATURE":
+                    obj.name = "Armature"
+            bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
+                                     use_selection=True,
+                                     use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
+                                     bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
+                                     use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
+                                     use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
+                                     secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,
+                                     path_mode='AUTO',
+                                     embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
+                                     axis_forward='-Z', axis_up='Y')
 
-        # Export the model to the bake dir
-        bpy.ops.object.select_all(action='DESELECT')
-        for obj in collection.all_objects:
-            obj.select_set(True)
-            if obj.type == "MESH" and obj.name != "Static":
-                obj.name = "Body"
-            elif obj.type == "ARMATURE":
-                obj.name = "Armature"
-        bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
-                                 use_selection=True,
-                                 use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
-                                 bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
-                                 use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
-                                 use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
-                                 secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,
-                                 path_mode='AUTO',
-                                 embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
-                                 axis_forward='-Z', axis_up='Y')
+            # Try to only output what you'll end up importing into unity.
+            if pass_diffuse and not diffuse_vertex_colors:
+                bpy.data.images["SCRIPT_diffuse.png"].save()
+            if pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS"):
+                bpy.data.images["SCRIPT_smoothness.png"].save()
+            if pass_ao:
+                bpy.data.images["SCRIPT_ao.png"].save()
+            if pass_emit:
+                bpy.data.images["SCRIPT_emission.png"].save()
+            if pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY"):
+                bpy.data.images["SCRIPT_alpha.png"].save()
+            if pass_metallic:
+                bpy.data.images["SCRIPT_metallic.png"].save()
+            if optimize_static:
+                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/BakeFixer.cs", 'r') as infile:
+                    with open(bpy.path.abspath("//CATS Bake/" + platform_name + "/") + "BakeFixer.cs", 'w') as outfile:
+                        for line in infile:
+                            outfile.write(line)
 
-        # Try to only output what you'll end up importing into unity.
-        if pass_diffuse and not diffuse_vertex_colors:
-            bpy.data.images["SCRIPT_diffuse.png"].save()
-        if pass_normal:
-            bpy.data.images["SCRIPT_normal.png"].save()
-        if pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS"):
-            bpy.data.images["SCRIPT_smoothness.png"].save()
-        if pass_ao:
-            bpy.data.images["SCRIPT_ao.png"].save()
-        if pass_diffuse and pass_ao and pass_questdiffuse:
-            bpy.data.images["SCRIPT_questdiffuse.png"].save()
-        if pass_emit:
-            bpy.data.images["SCRIPT_emission.png"].save()
-        if pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY"):
-            bpy.data.images["SCRIPT_alpha.png"].save()
-        if pass_metallic:
-            bpy.data.images["SCRIPT_metallic.png"].save()
-        if optimize_static:
-            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/BakeFixer.cs", 'r') as infile:
-                with open(bpy.path.abspath("//CATS Bake/") + "BakeFixer.cs", 'w') as outfile:
-                    for line in infile:
-                        outfile.write(line)
+            # Delete our duplicate scene
+            bpy.ops.scene.delete()
 
-        # Delete our duplicate scene
+            # Move armature so we can see it
+            if quick_compare:
+                plat_arm_copy.location.x += plat_arm_copy.dimensions.x * (1 + platform_number)
+
+        # Delete our duplicate scene and the platform-agnostic CATS Bake
         bpy.ops.scene.delete()
+        for obj in collection.objects:
+            bpy.data.objects.remove(obj, do_unlink=True)
 
+        bpy.data.collections.remove(collection)
         self.report({'INFO'}, t('cats_bake.info.success'))
-
-        # Move armature so we can see it
-        if quick_compare:
-            arm_copy.location.x += arm_copy.dimensions.x
 
         print("BAKE COMPLETE!")
