@@ -949,6 +949,11 @@ class BakeButton(bpy.types.Operator):
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
+            for img_pass in ['diffuse.png', 'metallic.png', 'normal.png']:
+                if platform_name + " " + img_pass in bpy.data.images:
+                    image = bpy.data.images[platform_name + " " + img_pass]
+                    image.user_clear()
+                    bpy.data.images.remove(image)
 
             # Create yet another output collection
             plat_collection = bpy.data.collections.new("CATS Bake " + platform_name)
@@ -1056,7 +1061,8 @@ class BakeButton(bpy.types.Operator):
                         # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
                         pixel_buffer[idx] = 1.0
                 image.pixels[:] = pixel_buffer
-                image.save()
+                context.scene.render.image_settings.color_mode = 'RGBA'
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
             # Pack to diffuse alpha (if selected)
             if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
@@ -1082,7 +1088,8 @@ class BakeButton(bpy.types.Operator):
                 for idx in range(3, len(pixel_buffer), 4):
                     pixel_buffer[idx] = alpha_buffer[idx - 3]
                 image.pixels[:] = pixel_buffer
-                image.save()
+                context.scene.render.image_settings.color_mode = 'RGBA'
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
             # Pack to metallic alpha (if selected)
             if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
@@ -1103,7 +1110,8 @@ class BakeButton(bpy.types.Operator):
                 for idx in range(3, len(pixel_buffer), 4):
                     pixel_buffer[idx] = alpha_buffer[idx - 3]
                 image.pixels[:] = pixel_buffer
-                image.save()
+                context.scene.render.image_settings.color_mode = 'RGBA'
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
             print("Decimating")
             if use_decimation:
@@ -1377,18 +1385,30 @@ class BakeButton(bpy.types.Operator):
                                      axis_forward='-Z', axis_up='Y')
 
             # Try to only output what you'll end up importing into unity.
-            if pass_diffuse and not diffuse_vertex_colors:
-                bpy.data.images["SCRIPT_diffuse.png"].save()
-            if pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS"):
-                bpy.data.images["SCRIPT_smoothness.png"].save()
-            if pass_ao:
-                bpy.data.images["SCRIPT_ao.png"].save()
+            if pass_diffuse and not diffuse_vertex_colors and not platform_name + " diffuse.png" in bpy.data.images:
+                image = bpy.data.images["SCRIPT_diffuse.png"]
+                context.scene.render.image_settings.color_mode = 'RGB'
+                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " diffuse.png")), scene=context.scene)
+            if pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS") and not platform_name + " smoothness.png" in bpy.data.images:
+                image = bpy.data.images["SCRIPT_smoothness.png"]
+                context.scene.render.image_settings.color_mode = 'RGB'
+                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " smoothness.png")), scene=context.scene)
+            if pass_ao and not diffuse_premultiply_ao:
+                image = bpy.data.images["SCRIPT_ao.png"]
+                context.scene.render.image_settings.color_mode = 'RGB'
+                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " ao.png")), scene=context.scene)
             if pass_emit:
-                bpy.data.images["SCRIPT_emission.png"].save()
+                image = bpy.data.images["SCRIPT_emit.png"]
+                context.scene.render.image_settings.color_mode = 'RGB'
+                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " emit.png")), scene=context.scene)
             if pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY"):
-                bpy.data.images["SCRIPT_alpha.png"].save()
-            if pass_metallic:
-                bpy.data.images["SCRIPT_metallic.png"].save()
+                image = bpy.data.images["SCRIPT_alpha.png"]
+                context.scene.render.image_settings.color_mode = 'RGB'
+                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " alpha.png")), scene=context.scene)
+            if pass_metallic and not platform_name + " metallic.png" in bpy.data.images:
+                image = bpy.data.images["SCRIPT_metallic.png"]
+                context.scene.render.image_settings.color_mode = 'RGB'
+                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " metallic.png")), scene=context.scene)
             if optimize_static:
                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/BakeFixer.cs", 'r') as infile:
                     with open(bpy.path.abspath("//CATS Bake/" + platform_name + "/") + "BakeFixer.cs", 'w') as outfile:

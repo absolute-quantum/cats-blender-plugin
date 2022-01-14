@@ -238,7 +238,7 @@ def register():
     )
 
     class BakePlatformPropertyGroup(PropertyGroup):
-        name: StringProperty(default="New Platform")
+        name: StringProperty(name='Name', default="New Platform")
         use_decimation: BoolProperty(
             name=t('Scene.bake_use_decimation.label'),
             description=t('Scene.bake_use_decimation.desc'),
