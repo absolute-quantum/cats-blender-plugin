@@ -806,8 +806,11 @@ class BakeButton(bpy.types.Operator):
         # Bake normals in object coordinates
         if pass_normal:
             for obj in collection.all_objects:
-                if obj.type == 'MESH' and generate_uvmap and supersample_normals:
-                    obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
+                if obj.type == 'MESH' and generate_uvmap:
+                    if supersample_normals:
+                        obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
+                    else:
+                        obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
             bake_size = ((resolution * 2, resolution * 2) if
                          supersample_normals else
                          (resolution, resolution))
@@ -1085,10 +1088,10 @@ class BakeButton(bpy.types.Operator):
             if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
                 platform_metallic = platform_name + " metallic.png"
                 print("Packing to metallic alpha")
-                if platform_diffuse not in bpy.data.images:
-                    bpy.ops.image.new(name=platform_diffuse, width=resolution, height=resolution,
+                if platform_metallic not in bpy.data.images:
+                    bpy.ops.image.new(name=platform_metallic, width=resolution, height=resolution,
                                       generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_diffuse]
+                image = bpy.data.images[platform_metallic]
                 image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_metallic)
                 metallic_image = bpy.data.images["SCRIPT_metallic.png"]
                 if pass_smoothness and pass_ao and smoothness_premultiply_ao:
@@ -1132,7 +1135,7 @@ class BakeButton(bpy.types.Operator):
             if mat is not None:
                 bpy.data.materials.remove(mat, do_unlink=True)
             # create material
-            mat = bpy.data.materials.new(name="CATS Baked" + platform_name)
+            mat = bpy.data.materials.new(name="CATS Baked " + platform_name)
             mat.use_nodes = True
             mat.use_backface_culling = True
             # add a normal map and image texture to connect the world texture, if it exists
@@ -1158,10 +1161,12 @@ class BakeButton(bpy.types.Operator):
                 tree.links.new(normalmapnode.inputs["Color"], normaltexnode.outputs["Color"])
                 tree.links.new(bsdfnode.inputs["Normal"], normalmapnode.outputs["Normal"])
 
-                if supersample_normals and generate_uvmap:
-                    for obj in plat_collection.all_objects:
-                        if obj.type == "MESH":
+                for obj in plat_collection.all_objects:
+                    if obj.type == "MESH" and generate_uvmap:
+                        if supersample_normals:
                             obj.data.uv_layers["CATS UV Super"].active_render = True
+                        else:
+                            obj.data.uv_layers["CATS UV"].active_render = True
             for child in plat_collection.all_objects:
                 if child.type == "MESH":
                     child.data.materials.append(mat)
