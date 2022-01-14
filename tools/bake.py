@@ -608,36 +608,29 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
                 Common.switch('OBJECT')
 
-            head_selection = Common.get_bones(names=['Head', 'head'], armature_name=arm_copy.name, check_list=True)
 
-            # Select all islands belonging to 'Head' and children and enlarge them
-            if prioritize_face and len(head_selection) > 0:
-                selected_group_names = [head_selection[0][0]]
-                selected_group_names.extend([bone.name for bone in arm_copy.data.bones[head_selection[0][0]].children_recursive])
-                print("Prioritizing vertex groups: " + (", ".join(selected_group_names)))
-
+            if prioritize_face:
                 for obj in collection.all_objects:
                     if obj.type != "MESH":
                         continue
                     context.view_layer.objects.active = obj
-                    Common.switch('EDIT')
-                    bpy.ops.uv.select_all(action='DESELECT')
-                    bpy.ops.mesh.select_all(action='DESELECT')
-                    for group in selected_group_names:
+                    for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', 'RightEye', 'righteye', 'Righteye', 'Eye.R']:
                         if group in obj.vertex_groups:
+                            print("{} found in {}".format(group, obj.name))
+                            bpy.ops.object.mode_set(mode='EDIT')
+                            bpy.ops.uv.select_all(action='DESELECT')
+                            bpy.ops.mesh.select_all(action='DESELECT')
                             # Select all vertices in it
                             obj.vertex_groups.active = obj.vertex_groups[group]
                             bpy.ops.object.vertex_group_select()
-                    # Synchronize
-                    Common.switch('OBJECT')
-                    Common.switch('EDIT')
-                    # Then select all UVs
-                    bpy.ops.uv.select_all(action='SELECT')
-                    # Then for each UV (cause of the viewport thing) scale up by the selected factor
-                    Common.switch('OBJECT')
-                    for layer in cats_uv_layers:
-                        if layer in obj.data.uv_layers:
-                            uv_layer = obj.data.uv_layers[layer].data
+                            # Synchronize
+                            bpy.ops.object.mode_set(mode='OBJECT')
+                            bpy.ops.object.mode_set(mode='EDIT')
+                            # Then select all UVs
+                            bpy.ops.uv.select_all(action='SELECT')
+                            bpy.ops.object.mode_set(mode='OBJECT')
+                            # Then for each UV (cause of the viewport thing) scale up by the selected factor
+                            uv_layer = obj.data.uv_layers["CATS UV"].data
                             for poly in obj.data.polygons:
                                 for loop in poly.loop_indices:
                                     if uv_layer[loop].select:

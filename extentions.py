@@ -84,20 +84,20 @@ def register():
         description=t('Scene.remove_rigidbodies_joints.desc'),
         default=True
     )
-    
+
     # Manual
     Scene.use_google_only = BoolProperty(
         name=t('Scene.use_google_only.label'),
         description=t('Scene.use_google_only.desc'),
         default=False
     )
-    
+
     Scene.translate_to_valve = BoolProperty(
         name="Translate To Valve",
         description="Translate Bones and Materials to Valve after fix.",
         default=False
     )
-    
+
 
     Scene.keep_merged_bones = BoolProperty(
         name='Keep Merged Bones',
@@ -320,13 +320,13 @@ def register():
     Scene.bake_prioritize_face = BoolProperty(
         name=t('Scene.bake_prioritize_face.label'),
         description=t('Scene.bake_prioritize_face.desc'),
-        default=False
+        default=True
     )
 
     Scene.bake_face_scale = FloatProperty(
         name=t('Scene.bake_face_scale.label'),
         description=t('Scene.bake_face_scale.desc'),
-        default=2.0,
+        default=3.0,
         min=0.5,
         max=4.0,
         step=0.25,
