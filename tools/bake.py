@@ -651,6 +651,7 @@ class BakeButton(bpy.types.Operator):
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers[layer]
                 Common.switch('EDIT')
+                bpy.ops.mesh.reveal()
                 bpy.ops.mesh.select_all(action='SELECT')
                 bpy.ops.uv.select_all(action='SELECT')
                 # detect if UVPackMaster installed and configured
@@ -666,7 +667,7 @@ class BakeButton(bpy.types.Operator):
                     context.scene.uvp2_props.similarity_threshold = 3
                     context.scene.uvp2_props.precision = 1000
                     # Give UVP a static number of iterations to do TODO: make this configurable?
-                    for _ in range(1, 10):
+                    for _ in range(1, 3):
                         bpy.ops.uvpackmaster2.uv_pack()
                 except AttributeError:
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
