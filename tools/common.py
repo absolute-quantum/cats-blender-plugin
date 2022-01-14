@@ -2005,7 +2005,8 @@ def add_principled_shader(mesh):
                     node_image.image.generated_color = basecolor
                     node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
                     node_image.image.file_format = 'PNG'
-                    node_image.image.save()
+                    if bpy.data.is_saved:
+                        node_image.image.save()
                 elif node_image:
                     
                     #multiply color on top of default color.
@@ -2021,7 +2022,8 @@ def add_principled_shader(mesh):
                     node_image.image.file_format = 'PNG'
                     
                     node_image.image.pixels = new_pixels
-                    node_image.image.save()
+                    if bpy.data.is_saved:
+                        node_image.image.save()
                     
             
             # Create Principled BSDF node
