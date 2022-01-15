@@ -129,7 +129,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 if item.smoothness_premultiply_ao:
                     row = col.row(align=True)
                     row.separator()
-                    row.prop(item, 'diffuse_premultiply_opacity', expand=True)
+                    row.prop(item, 'smoothness_premultiply_opacity', expand=True)
             if context.scene.bake_pass_diffuse:
                 if bpy.app.version >= (2, 92, 0):
                     row = col.row(align=True)
