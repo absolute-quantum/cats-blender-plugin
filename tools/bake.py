@@ -45,7 +45,7 @@ class BakeTutorialButton(bpy.types.Operator):
         self.report({'INFO'}, t('cats_bake.tutorial_button.success'))
         return {'FINISHED'}
 
-def autodetect_passes(self, context, item, tricount, is_desktop):
+def autodetect_passes(self, context, item, tricount, platform):
     item.max_tris = tricount
     # Autodetect passes based on BSDF node inputs
     bsdf_nodes = []
@@ -99,21 +99,23 @@ def autodetect_passes(self, context, item, tricount, is_desktop):
 
     # Unfortunately, though it's technically faster, this makes things ineligible as Quest fallback avatars. So leave it off.
     # Sadly this is still fairly unkind to a number of lighting situations, so we'll leave it off
-    # context.scene.bake_optimize_static = is_desktop
+    # context.scene.bake_optimize_static = platform == "DESKTOP"
 
     # Quest has no use for twistbones
-    item.merge_twistbones = not is_desktop
+    item.merge_twistbones = platform != "DESKTOP"
 
     # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
     # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
     # diffuse ao: off if desktop
-    item.diffuse_premultiply_ao = not is_desktop
+    item.diffuse_premultiply_ao = platform != "DESKTOP"
 
     # alpha packs: arrange for maximum efficiency.
     # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
     item.diffuse_alpha_pack = "NONE"
     item.metallic_alpha_pack = "NONE"
-    if is_desktop:
+    if platform == "DESKTOP":
+        item.export_format = "FBX"
+        item.translate_bone_names = "NONE"
         # If 'smoothness' and 'transparency', we need to force metallic to bake so we can pack to it.
         if context.scene.bake_pass_smoothness and context.scene.bake_pass_alpha:
             context.scene.bake_pass_metallic = True
@@ -125,9 +127,11 @@ def autodetect_passes(self, context, item, tricount, is_desktop):
             item.diffuse_alpha_pack = "SMOOTHNESS"
         if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
             item.metallic_alpha_pack = "SMOOTHNESS"
-    else:
+    elif platform == "QUEST":
+        item.export_format = "FBX"
+        item.translate_bone_names = "NONE"
         # Diffuse vertex color bake? Only if there's already no texture inputs!
-        if not is_desktop and not any([node.inputs["Base Color"].is_linked for node in bsdf_nodes]):
+        if not any([node.inputs["Base Color"].is_linked for node in bsdf_nodes]):
             item.diffuse_vertex_colors = True
 
         # alpha packs: arrange for maximum efficiency.
@@ -138,6 +142,24 @@ def autodetect_passes(self, context, item, tricount, is_desktop):
         if context.scene.bake_pass_smoothness:
             context.scene.bake_pass_metallic = True
             item.metallic_alpha_pack = "SMOOTHNESS"
+    elif platform == "SECONDLIFE":
+        item.export_format = "DAE"
+        item.translate_bone_names = "SECONDLIFE"
+        if context.scene.bake_pass_alpha:
+            item.diffuse_alpha_pack = "TRANSPARENCY"
+        item.specular_setup = context.scene.bake_pass_diffuse and context.scene.bake_pass_metallic
+        item.specular_alpha_pack = "SMOOTHNESS" if context.scene.bake_pass_smoothness else "NONE"
+    elif platform == "GMOD":
+        """
+        https://developer.valvesoftware.com/wiki/Adapting_PBR_Textures_to_Source
+        TBD: We probably want to produce a VMT that at least gives breadcrumbs for how to import. Passes we need:
+        $basetexture: premultiplied albedo. Source also reccomends dodging the base texture with the roughness map: albedo * curve(roughness, 127->0, 191->16, 255->64)
+        $envmapmask: single-channel specularity map. Anything with $bumpmap must use $basealphaenvmapmask instead (or $normalmapalphaenvmapmask)
+        for source we also need to invert the roughness and apply a curve from 1-roughness, 108->0 208->112 (in srgb)
+        $bumpmap: normals, needs Y (green) channel flipped
+        $emissiveblendenabled and $emissiveblendbasetexture: emit
+        """
+
 
 
 @register_wrap
@@ -150,9 +172,8 @@ class BakePresetDesktop(bpy.types.Operator):
     def execute(self, context):
         item = context.scene.bake_platforms.add()
         item.name = "VRChat Desktop"
-        autodetect_passes(self, context, item, 32000, True)
+        autodetect_passes(self, context, item, 32000, "DESKTOP")
         return {'FINISHED'}
-
 
 @register_wrap
 class BakePresetQuest(bpy.types.Operator):
@@ -164,9 +185,34 @@ class BakePresetQuest(bpy.types.Operator):
     def execute(self, context):
         item = context.scene.bake_platforms.add()
         item.name = "VRChat Quest"
-        autodetect_passes(self, context, item, 7500, False)
+        autodetect_passes(self, context, item, 7500, "QUEST")
         return {'FINISHED'}
 
+@register_wrap
+class BakePresetSecondlife(bpy.types.Operator):
+    bl_idname = 'cats_bake.preset_secondlife'
+    bl_label = 'Second Life'
+    bl_description = "Preset for producing a single-material Second Life Mesh avatar"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        item = context.scene.bake_platforms.add()
+        item.name = "Second Life"
+        autodetect_passes(self, context, item, 21844, "SECONDLIFE")
+        return {'FINISHED'}
+
+@register_wrap
+class BakePresetGmod(bpy.types.Operator):
+    bl_idname = 'cats_bake.preset_gmod'
+    bl_label = "Garry's Mod"
+    bl_description = "Preset for producing a compatible Garry's Mod character model"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        item = context.scene.bake_platforms.add()
+        item.name = "Garry's Mod"
+        autodetect_passes(self, context, item, 10000, "GMOD")
+        return {'FINISHED'}
 
 @register_wrap
 class BakeButton(bpy.types.Operator):
@@ -946,6 +992,9 @@ class BakeButton(bpy.types.Operator):
             optimize_static = platform.optimize_static
             preserve_seams = platform.preserve_seams
             diffuse_vertex_colors = platform.diffuse_vertex_colors
+            translate_bone_names = platform.translate_bone_names
+            export_format = platform.export_format
+            specular_setup = platform.specular_setup
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
@@ -1005,6 +1054,8 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.cats_manual.merge_weights()
                 Common.switch("OBJECT")
 
+            if translate_bone_names == "SECONDLIFE":
+                bpy.ops.cats_manual.convert_to_secondlife()
 
             # Blend diffuse and AO to create Quest Diffuse (if selected)
             if pass_diffuse and pass_ao and diffuse_premultiply_ao:
@@ -1340,7 +1391,11 @@ class BakeButton(bpy.types.Operator):
                 diffusevertnode.location.y += 500
                 tree.links.new(bsdfnode.inputs["Base Color"], diffusevertnode.outputs["Color"])
 
-
+            # TODO: specular_setup
+            # specularity: diffuse * metallic + (.04 * (1-metallic))
+            # diffuse: diffuse * (1-metallic)
+            # preapplied emit: diffuse + emit as 'screen'
+            # emissive mask: emit as grayscale -> alpha channel
 
             if cleanup_shapekeys:
                 for mesh in plat_collection.all_objects:
@@ -1373,16 +1428,31 @@ class BakeButton(bpy.types.Operator):
                     obj.name = "Body"
                 elif obj.type == "ARMATURE":
                     obj.name = "Armature"
-            bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
-                                     use_selection=True,
-                                     use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
-                                     bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
-                                     use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
-                                     use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
-                                     secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,
-                                     path_mode='AUTO',
-                                     embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
-                                     axis_forward='-Z', axis_up='Y')
+            if export_format == "FBX":
+                bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
+                                         use_selection=True,
+                                         use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
+                                         bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
+                                         use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
+                                         use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
+                                         secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,
+                                         path_mode='AUTO',
+                                         embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
+                                         axis_forward='-Z', axis_up='Y')
+            elif export_format == "DAE":
+                bpy.ops.wm.collada_export(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/Bake.dae"), check_existing=True, filter_blender=False, filter_backup=False, filter_image=False, filter_movie=False,
+                                          filter_python=False, filter_font=False, filter_sound=False, filter_text=False, filter_archive=False, filter_btx=False,
+                                          filter_collada=True, filter_alembic=False, filter_usd=False, filter_volume=False, filter_folder=True,
+                                          filter_blenlib=False, filemode=8, display_type='DEFAULT', prop_bc_export_ui_section='main',
+                                          apply_modifiers=False, export_mesh_type=0, export_mesh_type_selection='view', export_global_forward_selection='Y',
+                                          export_global_up_selection='Z', apply_global_orientation=False, selected=True, include_children=False,
+                                          include_armatures=True, include_shapekeys=False, deform_bones_only=False, include_animations=True, include_all_actions=True,
+                                          export_animation_type_selection='sample', sampling_rate=1, keep_smooth_curves=False, keep_keyframes=False, keep_flat_curves=False,
+                                          active_uv_only=False, use_texture_copies=False, triangulate=True, use_object_instantiation=True, use_blender_profile=True,
+                                          sort_by_name=False, export_object_transformation_type=0, export_object_transformation_type_selection='matrix',
+                                          export_animation_transformation_type=0, open_sim=False,
+                                          limit_precision=False, keep_bind_info=False)
+                #TODO: move decimation/normal baking as close to here as possible so we can just export the LODs in one go
 
             # Try to only output what you'll end up importing into unity.
             if pass_diffuse and not diffuse_vertex_colors and not platform_name + " diffuse.png" in bpy.data.images:
@@ -1398,7 +1468,7 @@ class BakeButton(bpy.types.Operator):
                 context.scene.render.image_settings.color_mode = 'RGB'
                 image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " ao.png")), scene=context.scene)
             if pass_emit:
-                image = bpy.data.images["SCRIPT_emit.png"]
+                image = bpy.data.images["SCRIPT_emission.png"]
                 context.scene.render.image_settings.color_mode = 'RGB'
                 image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " emit.png")), scene=context.scene)
             if pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY"):
@@ -1420,7 +1490,7 @@ class BakeButton(bpy.types.Operator):
 
             # Move armature so we can see it
             if quick_compare:
-                plat_arm_copy.location.x += plat_arm_copy.dimensions.x * (1 + platform_number)
+                plat_arm_copy.location.x += armature.dimensions.x * (1 + platform_number)
 
         # Delete our duplicate scene and the platform-agnostic CATS Bake
         bpy.ops.scene.delete()

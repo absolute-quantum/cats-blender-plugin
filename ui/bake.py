@@ -72,6 +72,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.operator(Bake.BakePresetDesktop.bl_idname, icon="ANTIALIASED")
         row.operator(Bake.BakePresetQuest.bl_idname, icon="ALIASED")
+        row = col.row(align=True)
+        row.operator(Bake.BakePresetSecondlife.bl_idname, icon="VIEW_PAN")
         col.separator()
         row = col.row()
         col.label(text="Platforms:")
@@ -150,6 +152,12 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row.prop(item, 'metallic_alpha_pack', expand=True)
                 if item.diffuse_alpha_pack == "SMOOTHNESS" and item.metallic_alpha_pack == "SMOOTHNESS":
                     col.label(text=t('BakePanel.doublepackwarning'), icon="INFO")
+            row = col.row(align=True)
+            row.label(text="Bone Conversion:")
+            row = col.row(align=True)
+            row.prop(item, 'translate_bone_names')
+            row = col.row(align=True)
+            row.prop(item, 'export_format')
 
         if context.scene.bake_platforms:
             col.separator()
