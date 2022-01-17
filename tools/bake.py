@@ -1394,7 +1394,7 @@ class BakeButton(bpy.types.Operator):
             # TODO: specular_setup
             # specularity: diffuse * metallic + (.04 * (1-metallic))
             # diffuse: diffuse * (1-metallic)
-            # preapplied emit: diffuse + emit as 'screen'
+            # preapplied emit: diffuse + emit as 'screen': 1-(1-emit)*(1-diffuse)
             # emissive mask: emit as grayscale -> alpha channel
 
             if cleanup_shapekeys:

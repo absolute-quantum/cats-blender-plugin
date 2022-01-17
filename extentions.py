@@ -292,12 +292,18 @@ def register():
                 ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
                 ("TRANSPARENCY", t("Scene.bake_diffuse_alpha_pack.transparency.label"), t("Scene.bake_diffuse_alpha_pack.transparency.desc")),
                 ("SMOOTHNESS", t("Scene.bake_diffuse_alpha_pack.smoothness.label"), t("Scene.bake_diffuse_alpha_pack.smoothness.desc")),
+                ("EMITMASK", "Emit Mask", "A single-color emission mask, for use with preapplied emission")
             ],
             default="NONE"
         )
         diffuse_premultiply_ao: BoolProperty(
             name="Premultiply Diffuse w/ AO",
             description=t('Scene.bake_pass_questdiffuse.desc'),
+            default=False
+        )
+        diffuse_preadd_emit: BoolProperty(
+            name="Preadd Diffuse w/ Emission",
+            description="Blend emission color onto Diffuse, for engines where there's no seperate emission channel",
             default=False
         )
         diffuse_premultiply_opacity: FloatProperty(
@@ -325,6 +331,40 @@ def register():
             precision=2,
             subtype='FACTOR'
         )
+        translate_bone_names: EnumProperty(
+            name="Translate bone names",
+            description="Target another bone naming standard when exporting. Requires standard bone names",
+            items=[
+                ("NONE", "None", "Don't translate any bones"),
+                ("VALVE", "Valve", "Translate to Valve conventions when exporting, for use with Source Engine"),
+                ("SECONDLIFE", "Second Life", "Translate to Second Life conventions when exporting, for use with Second Life")
+            ],
+            default="NONE"
+        )
+        export_format: EnumProperty(
+            name='Export format',
+            description='Model format to use when exporting',
+            items=[
+                ("FBX", "FBX", "FBX export format, for use with Unity"),
+                ("DAE", "DAE", "Collada DAE, for use with Second Life and older engines")
+            ]
+        )
+        specular_setup: BoolProperty(
+            name='Specular Setup',
+            description="Convert Diffuse and Metallic to premultiplied Diffuse and Specular. Compatible with older engines",
+            default=False
+        )
+        specular_alpha_pack: EnumProperty(
+            name="Specular Alpha Channel",
+            description="What to pack to the Alpha channel of Specularity",
+            items=[
+                ("NONE", t("Scene.bake_metallic_alpha_pack.none.label"), t("Scene.bake_metallic_alpha_pack.none.desc")),
+                ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), "Smoothness, for use with Second Life")
+            ],
+            default="NONE"
+        )
+        #TODO: LODs
+
 
     register_class(BakePlatformPropertyGroup)
 
