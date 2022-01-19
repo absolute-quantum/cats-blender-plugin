@@ -594,8 +594,6 @@ class BakeButton(bpy.types.Operator):
         cats_uv_layers = []
 
         if generate_uvmap:
-            # TODO: Try to turn seperate materials into seperate islands so they maintain a hard edge!!
-
             bpy.ops.object.select_all(action='DESELECT')
             # Make copies of the currently render-active UV layer, name "CATS UV"
             for child in collection.all_objects:
@@ -621,6 +619,7 @@ class BakeButton(bpy.types.Operator):
                     if uv_overlap_correction == "REPROJECT" or reproject_anyway:
                         for layer in cats_uv_layers:
                             idx = child.data.uv_layers.active_index
+                            bpy.ops.object.select_all(action='DESELECT')
                             child.data.uv_layers[layer].active = True
                             Common.switch('EDIT')
                             bpy.ops.mesh.select_all(action='SELECT')
@@ -647,6 +646,7 @@ class BakeButton(bpy.types.Operator):
                                     child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
 
             # Select all meshes. Select all UVs. Average islands scale
+            bpy.ops.object.select_all(action='SELECT')
             for layer in cats_uv_layers:
                 Common.switch('OBJECT')
                 for obj in collection.all_objects:
@@ -690,6 +690,7 @@ class BakeButton(bpy.types.Operator):
 
 
             # Pack islands. Optionally use UVPackMaster if it's available
+            bpy.ops.object.select_all(action='SELECT')
             for layer in cats_uv_layers:
                 for obj in collection.all_objects:
                     if obj.type == 'MESH':
@@ -907,9 +908,9 @@ class BakeButton(bpy.types.Operator):
             if illuminate_eyes:
                 for obj in collection.all_objects:
                     if "leyemask" in obj.modifiers:
-                        obj.modifiers.remove(leyemask)
+                        obj.modifiers.remove(obj.modifiers['leyemask'])
                     if "reyemask" in obj.modifiers:
-                        obj.modifiers.remove(reyemask)
+                        obj.modifiers.remove(obj.modifiers['leyemask'])
 
             for obj in collection.all_objects:
                 if Common.has_shapekeys(obj):
