@@ -215,6 +215,20 @@ class BakePresetGmod(bpy.types.Operator):
         return {'FINISHED'}
 
 @register_wrap
+class BakePresetAll(bpy.types.Operator):
+    bl_idname = 'cats_bake.preset_all'
+    bl_label = "Autodetect All"
+    bl_description = "Attempt to bake all possible output platforms. Not significantly slower than baking for any one platform"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        bpy.ops.cats_bake.preset_desktop()
+        bpy.ops.cats_bake.preset_quest()
+        #bpy.ops.cats_bake.preset_gmod()
+        bpy.ops.cats_bake.preset_secondlife()
+        return {'FINISHED'}
+
+@register_wrap
 class BakeButton(bpy.types.Operator):
     bl_idname = 'cats_bake.bake'
     bl_label = t('cats_bake.bake.label')
@@ -891,10 +905,11 @@ class BakeButton(bpy.types.Operator):
             self.bake_pass(context, "ao", "AO", {"AO"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
                            (resolution, resolution), 512, 0, [1.0, 1.0, 1.0, 1.0], True, int(margin * resolution / 2))
             if illuminate_eyes:
-                if "leyemask" in obj.modifiers:
-                    obj.modifiers.remove(leyemask)
-                if "reyemask" in obj.modifiers:
-                    obj.modifiers.remove(reyemask)
+                for obj in collection.all_objects:
+                    if "leyemask" in obj.modifiers:
+                        obj.modifiers.remove(leyemask)
+                    if "reyemask" in obj.modifiers:
+                        obj.modifiers.remove(reyemask)
 
             for obj in collection.all_objects:
                 if Common.has_shapekeys(obj):
@@ -912,6 +927,11 @@ class BakeButton(bpy.types.Operator):
             else:
                 # Bake indirect lighting contributions: Turn off the lights and bake all diffuse passes
                 # TODO: disable scene lights?
+                for obj in collection.all_objects:
+                    if Common.has_shapekeys(obj):
+                        for key in obj.data.shape_keys.key_blocks:
+                            if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
+                                key.value = 1.0
                 original_color = bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value
                 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0,0,0,1)
                 self.bake_pass(context, "emission", "COMBINED", {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
@@ -951,6 +971,11 @@ class BakeButton(bpy.types.Operator):
                 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = original_color
                 if denoise_bakes:
                     self.filter_image(context, "SCRIPT_emission.png", BakeButton.denoise_create)
+                for obj in collection.all_objects:
+                    if Common.has_shapekeys(obj):
+                        for key in obj.data.shape_keys.key_blocks:
+                            if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
+                                key.value = 0.0
 
         # Remove multires modifiers
         for obj in collection.all_objects:

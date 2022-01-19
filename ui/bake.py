@@ -70,6 +70,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
 
         col.label(text=t('BakePanel.autodetectlabel'))
         row = col.row(align=True)
+        row.operator(Bake.BakePresetAll.bl_idname, icon="SHADERFX")
+        row = col.row(align=True)
         row.operator(Bake.BakePresetDesktop.bl_idname, icon="ANTIALIASED")
         row.operator(Bake.BakePresetQuest.bl_idname, icon="ALIASED")
         row = col.row(align=True)
