@@ -371,6 +371,10 @@ class BakeButton(bpy.types.Operator):
         image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
 
         # Select only objects we're baking
+        if not objects:
+            print("No objects selected!")
+            return
+
         for obj in objects:
             obj.select_set(True)
             context.view_layer.objects.active = obj
@@ -470,7 +474,7 @@ class BakeButton(bpy.types.Operator):
         # if context.scene.render.engine != 'CYCLES':
         #     self.report({'ERROR'}, t('cats_bake.error.render_engine'))
         #     return {'FINISHED'}
-        if any([obj.hide_render for obj in Common.get_armature().children]):
+        if any([obj.hide_render and not Common.is_hidden(obj) for obj in Common.get_armature().children]):
             self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
             return {'FINISHED'}
         if not bpy.data.is_saved:
@@ -910,7 +914,7 @@ class BakeButton(bpy.types.Operator):
                     if "leyemask" in obj.modifiers:
                         obj.modifiers.remove(obj.modifiers['leyemask'])
                     if "reyemask" in obj.modifiers:
-                        obj.modifiers.remove(obj.modifiers['leyemask'])
+                        obj.modifiers.remove(obj.modifiers['reyemask'])
 
             for obj in collection.all_objects:
                 if Common.has_shapekeys(obj):
