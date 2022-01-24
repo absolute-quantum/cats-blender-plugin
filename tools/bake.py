@@ -1165,7 +1165,7 @@ class BakeButton(bpy.types.Operator):
             # Pack to diffuse alpha (if selected)
             if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
                                  (diffuse_alpha_pack == "TRANSPARENCY" and pass_alpha) or
-                                 (diffuse_alpha_pack == "EMITMASK")):
+                                 (diffuse_alpha_pack == "EMITMASK" and pass_emit)):
                 platform_diffuse = platform_name + " diffuse.png"
                 if platform_diffuse not in bpy.data.images:
                     bpy.ops.image.new(name=platform_diffuse, width=resolution, height=resolution,
@@ -1229,8 +1229,6 @@ class BakeButton(bpy.types.Operator):
                 image.scale(resolution, resolution)
                 pixel_buffer = list(image.pixels)
                 if pass_metallic:
-                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
                     diffuse_image = None
                     if ((specular_setup and pass_metallic) or
                        (pass_ao and diffuse_premultiply_ao) or
@@ -1239,17 +1237,16 @@ class BakeButton(bpy.types.Operator):
                     else:
                         diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
                     diffuse_buffer = diffuse_image.pixels[:]
+                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
+                    metallic_buffer = metallic_image.pixels[:]
                     for idx in range(0, len(image.pixels)):
                         if (idx % 4 != 3):
                             # Simple specularity: most nonmetallic objects have about 4% reflectiveness
                             pixel_buffer[idx] = (diffuse_buffer[idx] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
-                    image.pixels[:] = pixel_buffer
                 else:
                     for idx in range(0, len(image.pixels)):
                         if (idx % 4 != 3):
                             pixel_buffer[idx] = 0.04
-                        else:
-                            pixel_buffer[idx] = 1.0
                 if specular_alpha_pack == "SMOOTHNESS" and pass_smoothness:
                     alpha_image = None
                     if pass_smoothness and pass_ao and smoothness_premultiply_ao:
