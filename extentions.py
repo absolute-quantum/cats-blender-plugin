@@ -215,6 +215,8 @@ def register():
         subtype='FACTOR'
     )
 
+
+    # Bake
     Scene.bake_animation_weighting = BoolProperty(
         name=t('Scene.decimation_animation_weighting.label'),
         description=t('Scene.decimation_animation_weighting.desc'),
@@ -386,7 +388,6 @@ def register():
         default=False
     )
 
-    # Bake
     Scene.bake_resolution = IntProperty(
         name=t('Scene.bake_resolution.label'),
         description=t('Scene.bake_resolution.desc'),
@@ -528,6 +529,22 @@ def register():
         name=t('Scene.bake_pass_metallic.label'),
         description=t('Scene.bake_pass_metallic.desc'),
         default=False
+    )
+
+    Scene.bake_optimize_solid_materials = BoolProperty(
+        name="Optimize Solid Materials",
+        description="Optimizes solid materials by making a small area for them. AO pass will nullify",
+        default=True
+    )
+
+    Scene.bake_unwrap_angle = FloatProperty(
+        name="Unwrap Angle",
+        description="The angle Reproject uses when unwrapping. Larger angles yield less islands but more stretching and smaller does opposite",
+        default=66.0,
+        min=0.1,
+        max=89.9,
+        step=0.1,
+        precision=1
     )
 
     Scene.selection_mode = EnumProperty(

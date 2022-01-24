@@ -196,8 +196,16 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         row.label(text=t('BakePanel.noheadfound'), icon="INFO")
                 row = col.row(align=True)
                 row.separator()
+                if context.scene.bake_uv_overlap_correction != "NONE" and (not context.scene.bake_pass_ao) and (not any(plat.use_decimation for plat in context.scene.bake_platforms)) and (not context.scene.bake_pass_normal):
+                    row.prop(context.scene, 'bake_optimize_solid_materials', expand=True)
+                    row = col.row(align=True)
+                row.separator()
                 row.label(text=t('BakePanel.overlapfixlabel'))
                 row.prop(context.scene, 'bake_uv_overlap_correction', expand=True)
+                if context.scene.bake_uv_overlap_correction == "REPROJECT":
+                    row = col.row(align=True)
+                    row.separator()
+                    row.prop(context.scene, 'bake_unwrap_angle', expand=True)
             row = col.row(align=True)
             row.prop(context.scene, 'bake_ignore_hidden', expand=True)
             row = col.row(align=True)
