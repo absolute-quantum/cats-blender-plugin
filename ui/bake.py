@@ -121,6 +121,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.prop(item, 'merge_twistbones', expand=True)
 
+            row = col.row(align=True)
+            row.prop(item, 'specular_setup', expand=True)
+            if item.specular_setup:
+                row = col.row(align=True)
+                row.prop(item, 'specular_alpha_pack', expand=True)
+            if context.scene.bake_pass_diffuse and context.scene.bake_pass_emit:
+                row = col.row(align=True)
+                row.prop(item, "diffuse_emit_overlay", expand=True)
             if context.scene.bake_pass_diffuse and context.scene.bake_pass_ao:
                 row = col.row(align=True)
                 row.prop(item, "diffuse_premultiply_ao", expand=True)

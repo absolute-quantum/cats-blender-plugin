@@ -124,7 +124,8 @@ def register():
         description=t('Scene.merge_mode.desc'),
         items=[
             ("ARMATURE", t('Scene.merge_mode.armature.label'), t('Scene.merge_mode.armature.desc')),
-            ("MESH", t('Scene.merge_mode.mesh.label'), t('Scene.merge_mode.mesh.desc'))
+            ("MESH", t('Scene.merge_mode.mesh.label'), t('Scene.merge_mode.mesh.desc')),
+            ("CLOTHES", "Fit Clothes", "Here you can attach un-rigged clothes to an already rigged body"),
         ]
     )
 
@@ -301,11 +302,6 @@ def register():
             description=t('Scene.bake_pass_questdiffuse.desc'),
             default=False
         )
-        diffuse_preadd_emit: BoolProperty(
-            name="Preadd Diffuse w/ Emission",
-            description="Blend emission color onto Diffuse, for engines where there's no seperate emission channel",
-            default=False
-        )
         diffuse_premultiply_opacity: FloatProperty(
             name=t('Scene.bake_questdiffuse_opacity.label'),
             description=t('Scene.bake_questdiffuse_opacity.desc'),
@@ -362,6 +358,11 @@ def register():
                 ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), "Smoothness, for use with Second Life")
             ],
             default="NONE"
+        )
+        diffuse_emit_overlay: BoolProperty(
+            name='Diffuse Emission Overlay',
+            description='Blends emission into the diffuse map, for engines without a seperate emission map',
+            default=False
         )
         #TODO: LODs
 

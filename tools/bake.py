@@ -145,10 +145,11 @@ def autodetect_passes(self, context, item, tricount, platform):
     elif platform == "SECONDLIFE":
         item.export_format = "DAE"
         item.translate_bone_names = "SECONDLIFE"
-        if context.scene.bake_pass_alpha:
-            item.diffuse_alpha_pack = "TRANSPARENCY"
+        if context.scene.bake_pass_emit:
+            item.diffuse_alpha_pack = "EMITMASK"
         item.specular_setup = context.scene.bake_pass_diffuse and context.scene.bake_pass_metallic
         item.specular_alpha_pack = "SMOOTHNESS" if context.scene.bake_pass_smoothness else "NONE"
+        item.diffuse_emit_overlay = context.scene.bake_pass_emit
     elif platform == "GMOD":
         """
         https://developer.valvesoftware.com/wiki/Adapting_PBR_Textures_to_Source
@@ -1025,10 +1026,12 @@ class BakeButton(bpy.types.Operator):
             translate_bone_names = platform.translate_bone_names
             export_format = platform.export_format
             specular_setup = platform.specular_setup
+            specular_alpha_pack = platform.specular_alpha_pack
+            diffuse_emit_overlay = platform.diffuse_emit_overlay
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
-            for img_pass in ['diffuse.png', 'metallic.png', 'normal.png']:
+            for img_pass in ['diffuse.png', 'metallic.png', 'normal.png', 'specular.png']:
                 if platform_name + " " + img_pass in bpy.data.images:
                     image = bpy.data.images[platform_name + " " + img_pass]
                     image.user_clear()
@@ -1088,7 +1091,8 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.cats_manual.convert_to_secondlife()
 
             # Blend diffuse and AO to create Quest Diffuse (if selected)
-            if pass_diffuse and pass_ao and diffuse_premultiply_ao:
+            # Overlay emission onto diffuse, dodge metallic if specular
+            if pass_diffuse:
                 platform_diffuse = platform_name + " diffuse.png"
                 if platform_diffuse in bpy.data.images:
                     image = bpy.data.images[platform_diffuse]
@@ -1098,24 +1102,37 @@ class BakeButton(bpy.types.Operator):
                                   generated_type="BLANK", alpha=False)
                 image = bpy.data.images[platform_diffuse]
                 image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_diffuse)
-                diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-                ao_image = bpy.data.images["SCRIPT_ao.png"]
                 image.generated_width = resolution
                 image.generated_height = resolution
                 image.scale(resolution, resolution)
-                pixel_buffer = list(image.pixels)
-                diffuse_buffer = diffuse_image.pixels[:]
-                ao_buffer = ao_image.pixels[:]
-                for idx in range(0, len(image.pixels)):
-                    if (idx % 4 != 3):
-                        # Map range: set the black point up to 1-opacity
-                        pixel_buffer[idx] = diffuse_buffer[idx] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[idx]))
-                    else:
-                        # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
-                        pixel_buffer[idx] = 1.0
+                diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
+                pixel_buffer = list(diffuse_image.pixels)
+                if pass_ao and diffuse_premultiply_ao:
+                    ao_image = bpy.data.images["SCRIPT_ao.png"]
+                    ao_buffer = ao_image.pixels[:]
+                    for idx in range(0, len(image.pixels)):
+                        if (idx % 4 != 3):
+                            # Map range: set the black point up to 1-opacity
+                            pixel_buffer[idx] = pixel_buffer[idx] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[idx]))
+                if specular_setup and pass_metallic:
+                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
+                    metallic_buffer = metallic_image.pixels[:]
+                    for idx in range(0, len(image.pixels)):
+                        if (idx % 4 != 3):
+                            # Map range: metallic blocks diffuse light
+                            pixel_buffer[idx] = pixel_buffer[idx] * (1 - metallic_buffer[idx])
+                if pass_emit and diffuse_emit_overlay:
+                    emit_image = bpy.data.images["SCRIPT_emission.png"]
+                    emit_buffer = emit_image.pixels[:]
+                    for idx in range(0, len(image.pixels)):
+                        if (idx % 4 != 3):
+                            # Map range: screen the emission onto diffuse
+                            pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
+
                 image.pixels[:] = pixel_buffer
                 image.save()
 
+            # Preultiply AO into smoothness if selected, to avoid shine in dark areas
             if pass_smoothness and pass_ao and smoothness_premultiply_ao:
                 platform_smoothness = platform_name + " smoothness.png"
                 if platform_smoothness in bpy.data.images:
@@ -1147,7 +1164,8 @@ class BakeButton(bpy.types.Operator):
 
             # Pack to diffuse alpha (if selected)
             if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
-                                 (diffuse_alpha_pack == "TRANSPARENCY" and pass_alpha)):
+                                 (diffuse_alpha_pack == "TRANSPARENCY" and pass_alpha) or
+                                 (diffuse_alpha_pack == "EMITMASK")):
                 platform_diffuse = platform_name + " diffuse.png"
                 if platform_diffuse not in bpy.data.images:
                     bpy.ops.image.new(name=platform_diffuse, width=resolution, height=resolution,
@@ -1155,7 +1173,6 @@ class BakeButton(bpy.types.Operator):
                 image = bpy.data.images[platform_diffuse]
                 image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_diffuse)
                 print("Packing to diffuse alpha")
-                diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
                 alpha_image = None
                 if diffuse_alpha_pack == "SMOOTHNESS":
                     if pass_smoothness and pass_ao and smoothness_premultiply_ao:
@@ -1164,10 +1181,12 @@ class BakeButton(bpy.types.Operator):
                         alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
                 elif diffuse_alpha_pack == "TRANSPARENCY":
                     alpha_image = bpy.data.images["SCRIPT_alpha.png"]
-                pixel_buffer = list(diffuse_image.pixels)
+                elif diffuse_alpha_pack == "EMITMASK":
+                    alpha_image = bpy.data.images["SCRIPT_emission.png"]
+                pixel_buffer = list(image.pixels)
                 alpha_buffer = alpha_image.pixels[:]
                 for idx in range(3, len(pixel_buffer), 4):
-                    pixel_buffer[idx] = alpha_buffer[idx - 3]
+                    pixel_buffer[idx] = (alpha_buffer[idx - 3] * 0.299) + (alpha_buffer[idx - 2] * 0.587) + (alpha_buffer[idx - 1] * 0.114)
                 image.pixels[:] = pixel_buffer
                 context.scene.render.image_settings.color_mode = 'RGBA'
                 image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
@@ -1190,6 +1209,58 @@ class BakeButton(bpy.types.Operator):
                 alpha_buffer = alpha_image.pixels[:]
                 for idx in range(3, len(pixel_buffer), 4):
                     pixel_buffer[idx] = alpha_buffer[idx - 3]
+                image.pixels[:] = pixel_buffer
+                context.scene.render.image_settings.color_mode = 'RGBA'
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
+
+            # Create specular map
+            if specular_setup:
+                platform_specular = platform_name + " specular.png"
+                if platform_specular in bpy.data.images:
+                    image = bpy.data.images[platform_specular]
+                    image.user_clear()
+                    bpy.data.images.remove(image)
+                bpy.ops.image.new(name=platform_specular, width=resolution, height=resolution,
+                                  generated_type="BLANK", alpha=False)
+                image = bpy.data.images[platform_specular]
+                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_specular)
+                image.generated_width = resolution
+                image.generated_height = resolution
+                image.scale(resolution, resolution)
+                pixel_buffer = list(image.pixels)
+                if pass_metallic:
+                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
+                    metallic_buffer = metallic_image.pixels[:]
+                    diffuse_image = None
+                    if ((specular_setup and pass_metallic) or
+                       (pass_ao and diffuse_premultiply_ao) or
+                       (pass_emit and diffuse_emit_overlay)):
+                        diffuse_image = bpy.data.images[platform_name + " diffuse.png"]
+                    else:
+                        diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
+                    diffuse_buffer = diffuse_image.pixels[:]
+                    for idx in range(0, len(image.pixels)):
+                        if (idx % 4 != 3):
+                            # Simple specularity: most nonmetallic objects have about 4% reflectiveness
+                            pixel_buffer[idx] = (diffuse_buffer[idx] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
+                    image.pixels[:] = pixel_buffer
+                else:
+                    for idx in range(0, len(image.pixels)):
+                        if (idx % 4 != 3):
+                            pixel_buffer[idx] = 0.04
+                        else:
+                            pixel_buffer[idx] = 1.0
+                if specular_alpha_pack == "SMOOTHNESS" and pass_smoothness:
+                    alpha_image = None
+                    if pass_smoothness and pass_ao and smoothness_premultiply_ao:
+                        alpha_image = bpy.data.images[platform_name + " smoothness.png"]
+                    else:
+                        alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
+                    alpha_image_buffer = alpha_image.pixels[:]
+                    for idx in range(0, len(image.pixels)):
+                        if (idx % 4 == 3):
+                            pixel_buffer[idx] = alpha_image_buffer[idx - 3]
+
                 image.pixels[:] = pixel_buffer
                 context.scene.render.image_settings.color_mode = 'RGBA'
                 image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
