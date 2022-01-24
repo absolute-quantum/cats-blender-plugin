@@ -150,7 +150,12 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = button_height
             row.operator(Armature_manual.ConvertToValveButton.bl_idname, icon='SMALL_CAPS')
 
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.operator(Armature_manual.ConvertToSecondlifeButton.bl_idname, icon='SMALL_CAPS')
+
             if globs.dev_branch:
+                col.separator()
                 row = col.row(align=True)
                 row.scale_y = button_height
                 row.operator(Armature_manual.TestButton.bl_idname)

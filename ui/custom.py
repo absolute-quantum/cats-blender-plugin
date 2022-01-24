@@ -88,7 +88,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.operator(Armature_custom.MergeArmature.bl_idname, icon='ARMATURE_DATA')
 
         # Attach Mesh
-        else:
+        elif context.scene.merge_mode == "MESH":
             row = col.row(align=True)
             row.scale_y = 1.05
             row.label(text=t('CustomPanel.attachMesh1'))
@@ -120,3 +120,21 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.2
             row.operator(Armature_custom.AttachMesh.bl_idname, icon='ARMATURE_DATA')
+        elif context.scene.merge_mode == "CLOTHES":
+            row = col.row(align=True)
+            row.scale_y = 1.05
+            row.label(text="Attach Clothes to Body")
+
+            if len(context.view_layer.objects.selected) <= 1 or not context.view_layer.objects.active or not 'Armature' in context.view_layer.objects.active.modifiers:
+                row = col.row(align=True)
+                row.scale_y = 1.05
+                col.label(text='An already rigged body and other meshes required!', icon='INFO')
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text="Make sure the body is the one highlighted.", icon='BLANK1')
+                return
+
+            row = col.row(align=True)
+            row.scale_y = 1.2
+            row.operator(Armature_custom.FitClothes.bl_idname, icon='MOD_CLOTH')
+

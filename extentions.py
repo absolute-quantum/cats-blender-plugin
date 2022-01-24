@@ -7,8 +7,9 @@ from .tools import importer as Importer
 from .tools import translations as Translations
 from .tools.translations import t
 
-from bpy.types import Scene, Material
-from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty
+from bpy.types import Scene, Material, PropertyGroup
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty, IntVectorProperty, StringProperty
+from bpy.utils import register_class
 
 
 def register():
@@ -84,8 +85,7 @@ def register():
         description=t('Scene.remove_rigidbodies_joints.desc'),
         default=True
     )
-    
-    
+
     # Manual
     Scene.use_google_only = BoolProperty(
         name=t('Scene.use_google_only.label'),
@@ -117,7 +117,8 @@ def register():
         description=t('Scene.merge_mode.desc'),
         items=[
             ("ARMATURE", t('Scene.merge_mode.armature.label'), t('Scene.merge_mode.armature.desc')),
-            ("MESH", t('Scene.merge_mode.mesh.label'), t('Scene.merge_mode.mesh.desc'))
+            ("MESH", t('Scene.merge_mode.mesh.label'), t('Scene.merge_mode.mesh.desc')),
+            ("CLOTHES", "Fit Clothes", "Here you can attach un-rigged clothes to an already rigged body"),
         ]
     )
 
@@ -207,6 +208,8 @@ def register():
         subtype='FACTOR'
     )
 
+
+    # Bake
     Scene.bake_animation_weighting = BoolProperty(
         name=t('Scene.decimation_animation_weighting.label'),
         description=t('Scene.decimation_animation_weighting.desc'),
@@ -230,36 +233,146 @@ def register():
         default=False
     )
 
-    Scene.bake_max_tris = IntProperty(
-        name=t('Scene.max_tris.label'),
-        description=t('Scene.max_tris.desc'),
-        default=7500,
-        min=1,
-        max=70000
-    )
+    class BakePlatformPropertyGroup(PropertyGroup):
+        name: StringProperty(name='Name', default="New Platform")
+        use_decimation: BoolProperty(
+            name=t('Scene.bake_use_decimation.label'),
+            description=t('Scene.bake_use_decimation.desc'),
+            default=True
+        )
+        max_tris: IntProperty(
+            name=t('Scene.max_tris.label'),
+            description=t('Scene.max_tris.desc'),
+            default=7500,
+            min=1,
+            max=70000
+        )
+        remove_doubles: BoolProperty(
+            name=t('Scene.decimation_remove_doubles.label'),
+            description=t('Scene.decimation_remove_doubles.desc'),
+            default=True
+        )
+        preserve_seams: BoolProperty(
+            name=t('Scene.bake_preserve_seams.label'),
+            description=t('Scene.bake_preserve_seams.desc'),
+            default=False
+        )
+        optimize_static: BoolProperty(
+            name="Optimize Static Shapekeys",
+            description="Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",
+            default=False
+        )
+        merge_twistbones: BoolProperty(
+            name="Merge Twist Bones",
+            description="Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints.",
+            default=False
+        )
+        metallic_alpha_pack: EnumProperty(
+            name=t('Scene.bake_metallic_alpha_pack.label'),
+            description=t('Scene.bake_metallic_alpha_pack.desc'),
+            items=[
+                ("NONE", t("Scene.bake_metallic_alpha_pack.none.label"), t("Scene.bake_metallic_alpha_pack.none.desc")),
+                ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), t("Scene.bake_metallic_alpha_pack.smoothness.desc"))
+            ],
+            default="NONE"
+        )
+        diffuse_vertex_colors: BoolProperty(
+            name="Bake to vertex colors",
+            description="Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO.",
+            default=False
+        )
+        diffuse_alpha_pack: EnumProperty(
+            name=t('Scene.bake_diffuse_alpha_pack.label'),
+            description=t('Scene.bake_diffuse_alpha_pack.desc'),
+            items=[
+                ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
+                ("TRANSPARENCY", t("Scene.bake_diffuse_alpha_pack.transparency.label"), t("Scene.bake_diffuse_alpha_pack.transparency.desc")),
+                ("SMOOTHNESS", t("Scene.bake_diffuse_alpha_pack.smoothness.label"), t("Scene.bake_diffuse_alpha_pack.smoothness.desc")),
+                ("EMITMASK", "Emit Mask", "A single-color emission mask, for use with preapplied emission")
+            ],
+            default="NONE"
+        )
+        diffuse_premultiply_ao: BoolProperty(
+            name="Premultiply Diffuse w/ AO",
+            description=t('Scene.bake_pass_questdiffuse.desc'),
+            default=False
+        )
+        diffuse_premultiply_opacity: FloatProperty(
+            name=t('Scene.bake_questdiffuse_opacity.label'),
+            description=t('Scene.bake_questdiffuse_opacity.desc'),
+            default=0.75,
+            min=0.0,
+            max=1.0,
+            step=0.05,
+            precision=2,
+            subtype='FACTOR'
+        )
+        smoothness_premultiply_ao: BoolProperty(
+            name="Premultiply Smoothness w/ AO",
+            description="While not technically accurate, this avoids the 'shine effect' on obscured portions of your model",
+            default=False
+        )
+        smoothness_premultiply_opacity: FloatProperty(
+            name=t('Scene.bake_questdiffuse_opacity.label'),
+            description=t('Scene.bake_questdiffuse_opacity.desc'),
+            default=1.0,
+            min=0.0,
+            max=1.0,
+            step=0.05,
+            precision=2,
+            subtype='FACTOR'
+        )
+        translate_bone_names: EnumProperty(
+            name="Translate bone names",
+            description="Target another bone naming standard when exporting. Requires standard bone names",
+            items=[
+                ("NONE", "None", "Don't translate any bones"),
+                ("VALVE", "Valve", "Translate to Valve conventions when exporting, for use with Source Engine"),
+                ("SECONDLIFE", "Second Life", "Translate to Second Life conventions when exporting, for use with Second Life")
+            ],
+            default="NONE"
+        )
+        export_format: EnumProperty(
+            name='Export format',
+            description='Model format to use when exporting',
+            items=[
+                ("FBX", "FBX", "FBX export format, for use with Unity"),
+                ("DAE", "DAE", "Collada DAE, for use with Second Life and older engines")
+            ]
+        )
+        specular_setup: BoolProperty(
+            name='Specular Setup',
+            description="Convert Diffuse and Metallic to premultiplied Diffuse and Specular. Compatible with older engines",
+            default=False
+        )
+        specular_alpha_pack: EnumProperty(
+            name="Specular Alpha Channel",
+            description="What to pack to the Alpha channel of Specularity",
+            items=[
+                ("NONE", t("Scene.bake_metallic_alpha_pack.none.label"), t("Scene.bake_metallic_alpha_pack.none.desc")),
+                ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), "Smoothness, for use with Second Life")
+            ],
+            default="NONE"
+        )
+        diffuse_emit_overlay: BoolProperty(
+            name='Diffuse Emission Overlay',
+            description='Blends emission into the diffuse map, for engines without a seperate emission map',
+            default=False
+        )
+        #TODO: LODs
 
-    Scene.bake_remove_doubles = BoolProperty(
-        name=t('Scene.decimation_remove_doubles.label'),
-        description=t('Scene.decimation_remove_doubles.desc'),
-        default=True
-    )
 
-    Scene.bake_optimize_static = BoolProperty(
-        name="Optimize Static Shapekeys",
-        description="Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",
-        default=True
+    register_class(BakePlatformPropertyGroup)
+
+    Scene.bake_platforms = CollectionProperty(
+        type=BakePlatformPropertyGroup
     )
+    Scene.bake_platform_index = IntProperty(default=0)
 
     Scene.bake_cleanup_shapekeys = BoolProperty(
         name="Cleanup Shapekeys",
         description="Remove backup shapekeys in the final result, e.g. 'Key1 - Reverted' or 'blink_old'",
         default=True
-    )
-
-    Scene.bake_merge_twistbones = BoolProperty(
-        name="Merge Twist Bones",
-        description="Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints.",
-        default=False
     )
 
     Scene.bake_create_disable_shapekeys = BoolProperty(
@@ -268,19 +381,12 @@ def register():
         default=False
     )
 
-    # Bake
     Scene.bake_resolution = IntProperty(
         name=t('Scene.bake_resolution.label'),
         description=t('Scene.bake_resolution.desc'),
         default=2048,
         min=128,
         max=4096
-    )
-
-    Scene.bake_use_decimation = BoolProperty(
-        name=t('Scene.bake_use_decimation.label'),
-        description=t('Scene.bake_use_decimation.desc'),
-        default=True
     )
 
     Scene.bake_generate_uvmap = BoolProperty(
@@ -314,24 +420,18 @@ def register():
     Scene.bake_prioritize_face = BoolProperty(
         name=t('Scene.bake_prioritize_face.label'),
         description=t('Scene.bake_prioritize_face.desc'),
-        default=False
+        default=True
     )
 
     Scene.bake_face_scale = FloatProperty(
         name=t('Scene.bake_face_scale.label'),
         description=t('Scene.bake_face_scale.desc'),
-        default=2.0,
+        default=3.0,
         min=0.5,
         max=4.0,
         step=0.25,
         precision=2,
         subtype='FACTOR'
-    )
-
-    Scene.bake_quick_compare = BoolProperty(
-        name=t('Scene.bake_quick_compare.label'),
-        description=t('Scene.bake_quick_compare.desc'),
-        default=True
     )
 
     Scene.bake_sharpen = BoolProperty(
@@ -364,18 +464,6 @@ def register():
         default=True
     )
 
-    Scene.bake_diffuse_vertex_colors = BoolProperty(
-        name="Bake to vertex colors",
-        description="Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO.",
-        default=False
-    )
-
-    Scene.bake_preserve_seams = BoolProperty(
-        name=t('Scene.bake_preserve_seams.label'),
-        description=t('Scene.bake_preserve_seams.desc'),
-        default=False
-    )
-
     Scene.bake_pass_normal = BoolProperty(
         name=t('Scene.bake_pass_normal.label'),
         description=t('Scene.bake_pass_normal.desc'),
@@ -406,12 +494,6 @@ def register():
         default=False
     )
 
-    Scene.bake_pass_questdiffuse = BoolProperty(
-        name=t('Scene.bake_pass_questdiffuse.label'),
-        description=t('Scene.bake_pass_questdiffuse.desc'),
-        default=True
-    )
-
     Scene.bake_pass_emit = BoolProperty(
         name=t('Scene.bake_pass_emit.label'),
         description=t('Scene.bake_pass_emit.desc'),
@@ -430,27 +512,6 @@ def register():
         default=True
     )
 
-    Scene.bake_diffuse_alpha_pack = EnumProperty(
-        name=t('Scene.bake_diffuse_alpha_pack.label'),
-        description=t('Scene.bake_diffuse_alpha_pack.desc'),
-        items=[
-            ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
-            ("TRANSPARENCY", t("Scene.bake_diffuse_alpha_pack.transparency.label"), t("Scene.bake_diffuse_alpha_pack.transparency.desc")),
-            ("SMOOTHNESS", t("Scene.bake_diffuse_alpha_pack.smoothness.label"), t("Scene.bake_diffuse_alpha_pack.smoothness.desc")),
-        ],
-        default="NONE"
-    )
-
-    Scene.bake_metallic_alpha_pack = EnumProperty(
-        name=t('Scene.bake_metallic_alpha_pack.label'),
-        description=t('Scene.bake_metallic_alpha_pack.desc'),
-        items=[
-            ("NONE", t("Scene.bake_metallic_alpha_pack.none.label"), t("Scene.bake_metallic_alpha_pack.none.desc")),
-            ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), t("Scene.bake_metallic_alpha_pack.smoothness.desc"))
-        ],
-        default="NONE"
-    )
-
     Scene.bake_pass_alpha = BoolProperty(
         name=t('Scene.bake_pass_alpha.label'),
         description=t('Scene.bake_pass_alpha.desc'),
@@ -463,17 +524,21 @@ def register():
         default=False
     )
 
-    Scene.bake_questdiffuse_opacity = FloatProperty(
-        name=t('Scene.bake_questdiffuse_opacity.label'),
-        description=t('Scene.bake_questdiffuse_opacity.desc'),
-        default=0.75,
-        min=0.0,
-        max=1.0,
-        step=0.05,
-        precision=2,
-        subtype='FACTOR'
+    Scene.bake_optimize_solid_materials = BoolProperty(
+        name="Optimize Solid Materials",
+        description="Optimizes solid materials by making a small area for them. AO pass will nullify",
+        default=True
     )
 
+    Scene.bake_unwrap_angle = FloatProperty(
+        name="Unwrap Angle",
+        description="The angle Reproject uses when unwrapping. Larger angles yield less islands but more stretching and smaller does opposite",
+        default=66.0,
+        min=0.1,
+        max=89.9,
+        step=0.1,
+        precision=1
+    )
 
     Scene.selection_mode = EnumProperty(
         name=t('Scene.selection_mode.label'),

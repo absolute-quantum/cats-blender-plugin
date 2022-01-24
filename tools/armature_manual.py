@@ -1852,6 +1852,103 @@ class ConvertToValveButton(bpy.types.Operator):
         self.report({'INFO'}, 'Connected all bones!')
         return {'FINISHED'}
 
+@register_wrap
+class ConvertToSecondlifeButton(bpy.types.Operator):
+    bl_idname = 'cats_manual.convert_to_secondlife'
+    bl_label = 'Convert Bones To Second Life'
+    bl_description = 'Converts all main bone names to second life.' \
+                     '\nMake sure your model has the CATS standard bone names from after using Fix Model'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    armature_name: bpy.props.StringProperty(
+        default=''
+    )
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+        return True
+
+    def execute(self, context):
+        armature = Common.get_armature(self.armature_name)
+
+        translate_bone_fails = 0
+        untranslated_bones = set()
+
+        sl_translations = {
+            'Hips': "mPelvis",
+            'Spine': "mTorso",
+            'Chest': "mChest",
+            # Merge? 'Upper_Chest': "",
+            'Neck': "mNeck",
+            'Head': "mHead",
+            # SL also specifies 'mSkull', generate by averaging coords of mEyeLeft and mEyeRight
+            'LeftEye': "mEyeLeft",
+            'RightEye': "mEyeRight",
+            'Right leg': "mHipRight",
+            'Right knee': "mKneeRight",
+            'Right ankle': "mAnkleRight",
+            'Right foot': "mFootRight",
+            'Right toe': 'mToeRight',
+            'Right shoulder': "mCollarRight",
+            'Right arm': "mShoulderRight",
+            'Right elbow': "mElbowRight",
+            'Right wrist': "mWristRight",
+            'Left leg': "mHipLeft",
+            'Left knee': "mKneeLeft",
+            'Left ankle': "mAnkleLeft",
+            'Left foot': "mFootLeft",
+            'Left toe': 'mToeLeft',
+            'Left shoulder': "mCollarLeft",
+            'Left arm': "mShoulderLeft",
+            'Left elbow': "mElbowLeft",
+            'Left wrist': "mWristLeft"
+            # TODO: if we only have ankle and toe, subdivide toe and rename original to foot
+        }
+
+        # Generalize: case insensitive, space agnostic
+        sl_translations_general = {k.replace(' ', '').lower():v for k, v in sl_translations.items()}
+
+        context.view_layer.objects.active = armature
+        Common.switch('EDIT')
+        old_mirror_setting = context.object.data.use_mirror_x
+        context.object.data.use_mirror_x = False
+
+        Common.switch('OBJECT')
+        for bone in armature.data.bones:
+            if bone.name.replace(' ', '').lower() in sl_translations_general:
+                bone.name = sl_translations_general[bone.name.replace(' ', '').lower()]
+            else:
+                untranslated_bones.add(bone.name)
+                translate_bone_fails += 1
+
+        Common.switch('EDIT')
+        bpy.ops.armature.select_all(action='DESELECT')
+        for bone in context.visible_bones:
+            bone.select = bone.name in untranslated_bones
+        Common.switch('OBJECT')
+        Common.switch('EDIT')
+        print(untranslated_bones)
+        if context.selected_editable_bones:
+            bpy.ops.cats_manual.merge_weights()
+
+        for bone in context.visible_bones:
+            bone.use_connect = False
+
+        for bone in context.visible_bones:
+            bone.tail[:] = bone.head[:]
+            bone.tail[0] = bone.head[0] + 0.1
+            # TODO: clear rolls
+
+        context.object.data.use_mirror_x = old_mirror_setting
+        Common.switch('OBJECT')
+
+        if translate_bone_fails > 0:
+            self.report({'INFO'}, f"Failed to translate {translate_bone_fails} bones! They will be merged to their parent bones.")
+        else:
+            self.report({'INFO'}, 'Translated all bones!')
+
+        return {'FINISHED'}
 
 @register_wrap
 class TestButton(bpy.types.Operator):

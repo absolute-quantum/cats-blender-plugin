@@ -1119,9 +1119,9 @@ This will leave any map named ""Detail Map"" alone.
 Uses UVPackMaster where available for more efficient UVs, make sure the window is showing",,
 Scene.bake_uv_overlap_correction.label,Overlap correction,,중복 보정
 Scene.bake_uv_overlap_correction.desc,Method used to prevent overlaps in UVMap,,
-Scene.bake_prioritize_face.label,Prioritize Head/Eyes,,머리 / 눈 우선 순위 지정
+Scene.bake_prioritize_face.label,Prioritize Eyes,,머리 / 눈 우선 순위 지정
 Scene.bake_prioritize_face.desc,Scale any UV islands attached to the head/eyes by a given factor.,,
-Scene.bake_face_scale.label,Head/Eyes Scale,,머리 / 눈 스케일
+Scene.bake_face_scale.label,Eyes Scale,,머리 / 눈 스케일
 Scene.bake_face_scale.desc,How much to scale up the face/eyes portion of the textures.,,
 Scene.bake_quick_compare.label,Quick compare,,빠른 비교
 Scene.bake_quick_compare.desc,Move output avatar next to existing one to quickly compare,,
