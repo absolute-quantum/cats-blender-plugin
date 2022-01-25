@@ -457,7 +457,7 @@ class BakeButton(bpy.types.Operator):
 
                         #in pixels
                         #Thanks to @Sacred#9619 on discord for this one.
-                        margin = int(0.0078125 * context.scene.bake_resolution) #has to be the same as "pixelmargin"
+                        margin = int(math.ceil(0.0078125 * context.scene.bake_resolution / 2)) #has to be the same as "pixelmargin"
                         n = int( bake_size[0]/margin )
                         n2 = int( bake_size[1]/margin )
                         X = margin/2 + margin * int( index % n )
@@ -559,7 +559,7 @@ class BakeButton(bpy.types.Operator):
         prioritize_factor = context.scene.bake_face_scale
         uv_overlap_correction = context.scene.bake_uv_overlap_correction
         margin = 0.0078125 # we want a 1-pixel margin around each island at 256x256, so 1/256, and since it's the space between islands we multiply it by two
-        pixelmargin = margin * resolution
+        pixelmargin = int(math.ceil(margin * resolution / 2))
         quick_compare = True
         apply_keys = context.scene.bake_apply_keys
         optimize_solid_materials = context.scene.bake_optimize_solid_materials
@@ -1740,7 +1740,7 @@ class BakeButton(bpy.types.Operator):
                 self.swap_links([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
                 self.set_values([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
                 self.bake_pass(context, "vertex_diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
-                               (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.0], True, pixel_margin)
+                               (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.0], True, pixelmargin)
                 self.swap_links([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
 
                 # TODO: If we're not baking anything else in, remove all UV maps entirely
