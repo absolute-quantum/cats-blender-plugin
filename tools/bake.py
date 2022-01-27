@@ -1274,6 +1274,8 @@ class BakeButton(bpy.types.Operator):
 
         ########### BEGIN PLATFORM SPECIFIC CODE ###########
         for platform_number, platform in enumerate(context.scene.bake_platforms):
+            def platform_img(img_pass):
+                return platform_name + " " + img_pass
 
             platform_name = platform.name
             merge_twistbones = platform.merge_twistbones
@@ -1295,11 +1297,35 @@ class BakeButton(bpy.types.Operator):
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
-            for img_pass in ['diffuse.png', 'metallic.png', 'normal.png', 'specular.png']:
-                if platform_name + " " + img_pass in bpy.data.images:
-                    image = bpy.data.images[platform_name + " " + img_pass]
+
+            # for cleanliness create platform-specific copies here
+            for (bakepass, bakename) in [
+                (pass_diffuse, 'diffuse.png'),
+                (pass_normal, 'normal.png'),
+                (pass_smoothness, 'smoothness.png'),
+                (pass_ao, 'ao.png'),
+                (pass_emit, 'emission.png'),
+                (pass_alpha, 'alpha.png'),
+                (pass_metallic, 'metallic.png'),
+                (specular_setup, 'specular.png'),
+            ]:
+                if not bakepass:
+                    continue
+                if platform_img(bakename) in bpy.data.images:
+                    image = bpy.data.images[platform_img(bakename)]
                     image.user_clear()
                     bpy.data.images.remove(image)
+                bpy.ops.image.new(name=platform_img(bakename), width=resolution, height=resolution,
+                                  generated_type="BLANK", alpha=False)
+                image = bpy.data.images[platform_img(bakename)]
+                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_img(bakename))
+                image.generated_width = resolution
+                image.generated_height = resolution
+                image.scale(resolution, resolution)
+                # already completed passes
+                if bakename not in ["specular.png", "normal.png"]:
+                    orig_image = bpy.data.images["SCRIPT_" + bakename]
+                    image.pixels[:] = orig_image.pixels[:]
 
             # Create yet another output collection
             plat_collection = bpy.data.collections.new("CATS Bake " + platform_name)
@@ -1323,7 +1349,6 @@ class BakeButton(bpy.types.Operator):
                         modifier.object = plat_arm_copy
                     if modifier.type == "MULTIRES":
                         modifier.render_levels = modifier.total_levels
-
 
             # Optionally cleanup bones if we're not going to use them
             if merge_twistbones:
@@ -1357,18 +1382,7 @@ class BakeButton(bpy.types.Operator):
             # Blend diffuse and AO to create Quest Diffuse (if selected)
             # Overlay emission onto diffuse, dodge metallic if specular
             if pass_diffuse:
-                platform_diffuse = platform_name + " diffuse.png"
-                if platform_diffuse in bpy.data.images:
-                    image = bpy.data.images[platform_diffuse]
-                    image.user_clear()
-                    bpy.data.images.remove(image)
-                bpy.ops.image.new(name=platform_diffuse, width=resolution, height=resolution,
-                                  generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_diffuse]
-                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_diffuse)
-                image.generated_width = resolution
-                image.generated_height = resolution
-                image.scale(resolution, resolution)
+                image = bpy.data.images[platform_img("diffuse.png")]
                 diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
                 pixel_buffer = list(diffuse_image.pixels)
                 if pass_ao and diffuse_premultiply_ao:
@@ -1398,20 +1412,9 @@ class BakeButton(bpy.types.Operator):
 
             # Preultiply AO into smoothness if selected, to avoid shine in dark areas
             if pass_smoothness and pass_ao and smoothness_premultiply_ao:
-                platform_smoothness = platform_name + " smoothness.png"
-                if platform_smoothness in bpy.data.images:
-                    image = bpy.data.images[platform_smoothness]
-                    image.user_clear()
-                    bpy.data.images.remove(image)
-                bpy.ops.image.new(name=platform_smoothness, width=resolution, height=resolution,
-                                  generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_smoothness]
-                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_smoothness)
+                image = bpy.data.images[platform_img("smoothness.png")]
                 smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
                 ao_image = bpy.data.images["SCRIPT_ao.png"]
-                image.generated_width = resolution
-                image.generated_height = resolution
-                image.scale(resolution, resolution)
                 pixel_buffer = list(image.pixels)
                 smoothness_buffer = smoothness_image.pixels[:]
                 ao_buffer = ao_image.pixels[:]
@@ -1423,26 +1426,16 @@ class BakeButton(bpy.types.Operator):
                         # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
                         pixel_buffer[idx] = 1.0
                 image.pixels[:] = pixel_buffer
-                context.scene.render.image_settings.color_mode = 'RGBA'
-                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
             # Pack to diffuse alpha (if selected)
             if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
                                  (diffuse_alpha_pack == "TRANSPARENCY" and pass_alpha) or
                                  (diffuse_alpha_pack == "EMITMASK" and pass_emit)):
-                platform_diffuse = platform_name + " diffuse.png"
-                if platform_diffuse not in bpy.data.images:
-                    bpy.ops.image.new(name=platform_diffuse, width=resolution, height=resolution,
-                                      generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_diffuse]
-                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_diffuse)
+                image = bpy.data.images[platform_img("diffuse.png")]
                 print("Packing to diffuse alpha")
                 alpha_image = None
                 if diffuse_alpha_pack == "SMOOTHNESS":
-                    if pass_smoothness and pass_ao and smoothness_premultiply_ao:
-                        alpha_image = bpy.data.images[platform_name + " smoothness.png"]
-                    else:
-                        alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
+                    alpha_image = bpy.data.images[platform_img("smoothness.png")]
                 elif diffuse_alpha_pack == "TRANSPARENCY":
                     alpha_image = bpy.data.images["SCRIPT_alpha.png"]
                 elif diffuse_alpha_pack == "EMITMASK":
@@ -1452,45 +1445,22 @@ class BakeButton(bpy.types.Operator):
                 for idx in range(3, len(pixel_buffer), 4):
                     pixel_buffer[idx] = (alpha_buffer[idx - 3] * 0.299) + (alpha_buffer[idx - 2] * 0.587) + (alpha_buffer[idx - 1] * 0.114)
                 image.pixels[:] = pixel_buffer
-                context.scene.render.image_settings.color_mode = 'RGBA'
-                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
             # Pack to metallic alpha (if selected)
             if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
-                platform_metallic = platform_name + " metallic.png"
+                image = bpy.data.images[platform_img("metallic.png")]
                 print("Packing to metallic alpha")
-                if platform_metallic not in bpy.data.images:
-                    bpy.ops.image.new(name=platform_metallic, width=resolution, height=resolution,
-                                      generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_metallic]
-                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_metallic)
                 metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                if pass_smoothness and pass_ao and smoothness_premultiply_ao:
-                    alpha_image = bpy.data.images[platform_name + " smoothness.png"]
-                else:
-                    alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
+                alpha_image = bpy.data.images[platform_img("smoothness.png")]
                 pixel_buffer = list(metallic_image.pixels)
                 alpha_buffer = alpha_image.pixels[:]
                 for idx in range(3, len(pixel_buffer), 4):
                     pixel_buffer[idx] = alpha_buffer[idx - 3]
                 image.pixels[:] = pixel_buffer
-                context.scene.render.image_settings.color_mode = 'RGBA'
-                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
             # Create specular map
             if specular_setup:
-                platform_specular = platform_name + " specular.png"
-                if platform_specular in bpy.data.images:
-                    image = bpy.data.images[platform_specular]
-                    image.user_clear()
-                    bpy.data.images.remove(image)
-                bpy.ops.image.new(name=platform_specular, width=resolution, height=resolution,
-                                  generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_specular]
-                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_specular)
-                image.generated_width = resolution
-                image.generated_height = resolution
-                image.scale(resolution, resolution)
+                image = bpy.data.images[platform_img("specular.png")]
                 pixel_buffer = list(image.pixels)
                 if pass_metallic:
                     # Use the unaltered diffuse map
@@ -1507,19 +1477,13 @@ class BakeButton(bpy.types.Operator):
                         if (idx % 4 != 3):
                             pixel_buffer[idx] = 0.04
                 if specular_alpha_pack == "SMOOTHNESS" and pass_smoothness:
-                    alpha_image = None
-                    if pass_smoothness and pass_ao and smoothness_premultiply_ao:
-                        alpha_image = bpy.data.images[platform_name + " smoothness.png"]
-                    else:
-                        alpha_image = bpy.data.images["SCRIPT_smoothness.png"]
+                    alpha_image = bpy.data.images[platform_img("smoothness.png")]
                     alpha_image_buffer = alpha_image.pixels[:]
                     for idx in range(0, len(image.pixels)):
                         if (idx % 4 == 3):
                             pixel_buffer[idx] = alpha_image_buffer[idx - 3]
 
                 image.pixels[:] = pixel_buffer
-                context.scene.render.image_settings.color_mode = 'RGBA'
-                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
             print("Decimating")
             if use_decimation:
@@ -1589,13 +1553,9 @@ class BakeButton(bpy.types.Operator):
 
             if pass_normal:
                 # Bake tangent normals
-                platform_normal = platform_name + " normal.png"
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
                                (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
-                bpy.ops.image.new(name=platform_normal, width=resolution, height=resolution,
-                                  generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_normal]
-                image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_normal)
+                image = bpy.data.images[platform_img("normal.png")]
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
                 image.pixels[:] = normal_image.pixels[:]
@@ -1645,12 +1605,12 @@ class BakeButton(bpy.types.Operator):
 
             # Update generated material to preview all of our passes
             if pass_normal:
-                normaltexnode.image = bpy.data.images[platform_name + " normal.png"]
+                normaltexnode.image = bpy.data.images[platform_img("normal.png")]
                 normalmapnode.space = "TANGENT"
                 normaltexnode.interpolation = "Linear"
             if pass_diffuse:
                 diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
-                diffusetexnode.image = bpy.data.images["SCRIPT_diffuse.png"]
+                diffusetexnode.image = bpy.data.images[platform_img("diffuse.png")]
                 diffusetexnode.location.x -= 300
                 diffusetexnode.location.y += 500
 
@@ -1658,7 +1618,7 @@ class BakeButton(bpy.types.Operator):
                 if pass_ao:
                     # AO -> Math (* ao_opacity + (1-ao_opacity)) -> Mix (Math, diffuse) -> Color
                     aotexnode = tree.nodes.new("ShaderNodeTexImage")
-                    aotexnode.image = bpy.data.images["SCRIPT_ao.png"]
+                    aotexnode.image = bpy.data.images[platform_img("ao.png")]
                     aotexnode.location.x -= 700
                     aotexnode.location.y += 800
 
@@ -1683,44 +1643,42 @@ class BakeButton(bpy.types.Operator):
                     tree.links.new(bsdfnode.inputs["Base Color"], diffusetexnode.outputs["Color"])
             if pass_metallic:
                 metallictexnode = tree.nodes.new("ShaderNodeTexImage")
-                metallictexnode.image = bpy.data.images["SCRIPT_metallic.png"]
+                metallictexnode.image = bpy.data.images[platform_img("metallic.png")]
                 metallictexnode.location.x -= 300
                 metallictexnode.location.y += 200
                 tree.links.new(bsdfnode.inputs["Metallic"], metallictexnode.outputs["Color"])
             if pass_smoothness:
-                #if pass_diffuse and (diffuse_alpha_pack == "SMOOTHNESS"):
-                #    invertnode = tree.nodes.new("ShaderNodeInvert")
-                #    diffusetexnode.location.x -= 200
-                #    invertnode.location.x -= 200
-                #    invertnode.location.y += 200
-                #    tree.links.new(invertnode.inputs["Color"], diffusetexnode.outputs["Alpha"])
-                #    tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
-                #elif pass_metallic and (metallic_alpha_pack == "SMOOTHNESS"):
-                #    invertnode = tree.nodes.new("ShaderNodeInvert")
-                #    metallictexnode.location.x -= 200
-                #    invertnode.location.x -= 200
-                #    invertnode.location.y += 100
-                #    tree.links.new(invertnode.inputs["Color"], metallictexnode.outputs["Alpha"])
-                #    tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
-                #else:
-                if True:
+                if pass_diffuse and (diffuse_alpha_pack == "SMOOTHNESS"):
+                    invertnode = tree.nodes.new("ShaderNodeInvert")
+                    diffusetexnode.location.x -= 200
+                    invertnode.location.x -= 200
+                    invertnode.location.y += 200
+                    tree.links.new(invertnode.inputs["Color"], diffusetexnode.outputs["Alpha"])
+                    tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
+                elif pass_metallic and (metallic_alpha_pack == "SMOOTHNESS"):
+                    invertnode = tree.nodes.new("ShaderNodeInvert")
+                    metallictexnode.location.x -= 200
+                    invertnode.location.x -= 200
+                    invertnode.location.y += 100
+                    tree.links.new(invertnode.inputs["Color"], metallictexnode.outputs["Alpha"])
+                    tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
+                else:
                     smoothnesstexnode = tree.nodes.new("ShaderNodeTexImage")
-                    smoothnesstexnode.image = bpy.data.images["SCRIPT_smoothness.png"]
+                    smoothnesstexnode.image = bpy.data.images[platform_img("smoothness.png")]
                     invertnode = tree.nodes.new("ShaderNodeInvert")
                     tree.links.new(invertnode.inputs["Color"], smoothnesstexnode.outputs["Color"])
                     tree.links.new(bsdfnode.inputs["Roughness"], invertnode.outputs["Color"])
             if pass_alpha:
-                #if pass_diffuse and (diffuse_alpha_pack == "TRANSPARENCY"):
-                #    tree.links.new(bsdfnode.inputs["Alpha"], diffusetexnode.outputs["Alpha"])
-                #else:
-                if True:
+                if pass_diffuse and (diffuse_alpha_pack == "TRANSPARENCY"):
+                    tree.links.new(bsdfnode.inputs["Alpha"], diffusetexnode.outputs["Alpha"])
+                else:
                     alphatexnode = tree.nodes.new("ShaderNodeTexImage")
-                    alphatexnode.image = bpy.data.images["SCRIPT_alpha.png"]
+                    alphatexnode.image = bpy.data.images[platform_img("alpha.png")]
                     tree.links.new(bsdfnode.inputs["Alpha"], alphatexnode.outputs["Color"])
                 mat.blend_method = 'CLIP'
             if pass_emit:
                 emittexnode = tree.nodes.new("ShaderNodeTexImage")
-                emittexnode.image = bpy.data.images["SCRIPT_emission.png"]
+                emittexnode.image = bpy.data.images[platform_img("emission.png")]
                 emittexnode.location.x -= 800
                 emittexnode.location.y -= 150
                 tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
@@ -1812,30 +1770,28 @@ class BakeButton(bpy.types.Operator):
                 #TODO: move decimation/normal baking as close to here as possible so we can just export the LODs in one go
 
             # Try to only output what you'll end up importing into unity.
-            if pass_diffuse and not diffuse_vertex_colors and not platform_name + " diffuse.png" in bpy.data.images:
-                image = bpy.data.images["SCRIPT_diffuse.png"]
-                context.scene.render.image_settings.color_mode = 'RGB'
-                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " diffuse.png")), scene=context.scene)
-            if pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS") and not platform_name + " smoothness.png" in bpy.data.images:
-                image = bpy.data.images["SCRIPT_smoothness.png"]
-                context.scene.render.image_settings.color_mode = 'RGB'
-                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " smoothness.png")), scene=context.scene)
+            context.scene.render.image_settings.color_mode = 'RGBA'
+            if pass_diffuse and not diffuse_vertex_colors:
+                image = bpy.data.images[platform_img("diffuse.png")]
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
+            if pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS") and (specular_alpha_pack != "SMOOTHNESS"):
+                image = bpy.data.images[platform_img("smoothness.png")]
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
             if pass_ao and not diffuse_premultiply_ao:
-                image = bpy.data.images["SCRIPT_ao.png"]
-                context.scene.render.image_settings.color_mode = 'RGB'
-                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " ao.png")), scene=context.scene)
-            if pass_emit:
-                image = bpy.data.images["SCRIPT_emission.png"]
-                context.scene.render.image_settings.color_mode = 'RGB'
-                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " emit.png")), scene=context.scene)
+                image = bpy.data.images[platform_img("ao.png")]
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
+            if pass_emit and not diffuse_alpha_pack == "EMITMASK":
+                image = bpy.data.images[platform_img("emission.png")]
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
             if pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY"):
-                image = bpy.data.images["SCRIPT_alpha.png"]
-                context.scene.render.image_settings.color_mode = 'RGB'
-                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " alpha.png")), scene=context.scene)
-            if pass_metallic and not platform_name + " metallic.png" in bpy.data.images:
-                image = bpy.data.images["SCRIPT_metallic.png"]
-                context.scene.render.image_settings.color_mode = 'RGB'
-                image.save_render(bpy.path.abspath(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_name + " metallic.png")), scene=context.scene)
+                image = bpy.data.images[platform_img("alpha.png")]
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
+            if pass_metallic and not specular_setup:
+                image = bpy.data.images[platform_img("metallic.png")]
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
+            if specular_setup:
+                image = bpy.data.images[platform_img("specular.png")]
+                image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
             if optimize_static:
                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/BakeFixer.cs", 'r') as infile:
                     with open(bpy.path.abspath("//CATS Bake/" + platform_name + "/") + "BakeFixer.cs", 'w') as outfile:
