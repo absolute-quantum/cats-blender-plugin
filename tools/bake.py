@@ -1493,13 +1493,8 @@ class BakeButton(bpy.types.Operator):
                 image.scale(resolution, resolution)
                 pixel_buffer = list(image.pixels)
                 if pass_metallic:
-                    diffuse_image = None
-                    if ((specular_setup and pass_metallic) or
-                       (pass_ao and diffuse_premultiply_ao) or
-                       (pass_emit and diffuse_emit_overlay)):
-                        diffuse_image = bpy.data.images[platform_name + " diffuse.png"]
-                    else:
-                        diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
+                    # Use the unaltered diffuse map
+                    diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
                     diffuse_buffer = diffuse_image.pixels[:]
                     metallic_image = bpy.data.images["SCRIPT_metallic.png"]
                     metallic_buffer = metallic_image.pixels[:]
