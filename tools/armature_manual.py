@@ -1952,7 +1952,9 @@ class ConvertToSecondlifeButton(bpy.types.Operator):
         context.view_layer.objects.active = armature
         Common.switch('EDIT')
         old_mirror_setting = context.object.data.use_mirror_x
+        old_merge_setting = context.scene.keep_merged_bones
         context.object.data.use_mirror_x = False
+        context.scene.keep_merged_bones = False
 
         Common.switch('OBJECT')
         for bone in armature.data.bones:
@@ -1985,6 +1987,7 @@ class ConvertToSecondlifeButton(bpy.types.Operator):
                 bone.name = "mToeRight"
 
         # Merge unused or SL rejects
+        Common.switch('OBJECT')
         Common.switch('EDIT')
         bpy.ops.armature.select_all(action='DESELECT')
         for bone in context.visible_bones:
@@ -2004,6 +2007,7 @@ class ConvertToSecondlifeButton(bpy.types.Operator):
             # TODO: clear rolls
 
         context.object.data.use_mirror_x = old_mirror_setting
+        context.scene.keep_merged_bones = old_merge_setting
         Common.switch('OBJECT')
 
         if translate_bone_fails > 0:

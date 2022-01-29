@@ -190,10 +190,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.separator()
                     row.prop(context.scene, 'bake_face_scale', expand=True)
 
-                    if armature is None or len(Common.get_bones(names=['Head', 'head'], armature_name=armature.name, check_list=True)) == 0:
-                        row = col.row(align=True)
-                        row.separator()
-                        row.label(text=t('BakePanel.noheadfound'), icon="INFO")
                 row = col.row(align=True)
                 row.separator()
                 if context.scene.bake_uv_overlap_correction != "NONE" and (not context.scene.bake_pass_ao) and (not any(plat.use_decimation for plat in context.scene.bake_platforms)) and (not context.scene.bake_pass_normal):
@@ -238,6 +234,27 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.prop(context.scene, 'bake_illuminate_eyes', expand=True)
+                if context.scene.bake_illuminate_eyes:
+                    multires_obj_names = []
+                    for obj in Common.get_meshes_objects(check=False):
+                        if obj.name not in context.view_layer.objects:
+                            continue
+                        if Common.is_hidden(obj):
+                             continue
+                        if any(mod.type == "MULTIRES" for mod in obj.modifiers):
+                            multires_obj_names.append(obj.name)
+
+                    if multires_obj_names:
+                        row = col.row(align=True)
+                        row.separator()
+                        row.label(text="One or more of your objects are using Multires.", icon="ERROR")
+                        row = col.row(align=True)
+                        row.separator()
+                        row.label(text="This has issues excluding the eyes, try adding")
+                        row = col.row(align=True)
+                        row.separator()
+                        row.label(text="'ambient occlusion' shape keys instead.")
+
             col.separator()
             row = col.row(align=True)
             row.prop(context.scene, 'bake_pass_alpha', expand=True)
@@ -270,7 +287,37 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         if not addon_utils.check("render_auto_tile_size")[1] and Common.version_2_93_or_older():
             row = col.row(align=True)
             row.label(text="Enabling \"Auto Tile Size\" plugin reccomended!", icon="INFO")
-        # TODO: warn if any material isn't principled BSDF, list which
+        non_bsdf_mat_names = []
+        non_node_mat_names = []
+        for obj in Common.get_meshes_objects(check=False):
+            if obj.name not in context.view_layer.objects:
+                continue
+            if Common.is_hidden(obj):
+                continue
+            for slot in obj.material_slots:
+                if slot.material:
+                    if not slot.material.use_nodes:
+                        non_node_mat_names.append(slot.material.name)
+                    if not any(node.type == "BSDF_PRINCIPLED" for node in slot.material.node_tree.nodes):
+                        non_bsdf_mat_names.append(slot.material.name)
+
+        if non_node_mat_names:
+            row = col.row(align=True)
+            row.label(text="The following materials do not use nodes!", icon="ERROR")
+            row = col.row(align=True)
+            row.label(text="Ensure they have Use Nodes checked in their properties or Bake will not run.")
+            for name in non_node_mat_names:
+                row = col.row(align=True)
+                row.label(text=name, icon="MATERIAL")
+        if non_bsdf_mat_names:
+            row = col.row(align=True)
+            row.label(text="The following materials do use Principled BSDF!", icon="INFO")
+            row = col.row(align=True)
+            row.label(text="Bake may have unexpected results.")
+            for name in non_bsdf_mat_names:
+                row = col.row(align=True)
+                row.label(text=name, icon="MATERIAL")
+
         # TODO: warn if multires + AO
 
         # Bake button

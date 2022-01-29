@@ -487,20 +487,22 @@ class BakeButton(bpy.types.Operator):
         collection.objects.link(copy)
         return copy
 
-    def tree_copy(self, ob, parent, collection, ignore_hidden, levels=3):
-        def recurse(ob, parent, depth, ignore_hidden):
+    def tree_copy(self, ob, parent, collection, ignore_hidden, levels=3, view_layer=None):
+        def recurse(ob, parent, depth, ignore_hidden, view_layer=None):
             if depth > levels:
                 return
             if Common.is_hidden(ob) and ob.type != 'ARMATURE' and ignore_hidden:
                 return
+            if view_layer and obj.name not in view_layer.objects:
+                return
             copy = self.copy_ob(ob, parent, collection)
 
             for child in ob.children:
-                recurse(child, copy, depth + 1, ignore_hidden)
+                recurse(child, copy, depth + 1, ignore_hidden, view_layer=view_layer)
 
             return copy
 
-        return recurse(ob, ob.parent, 0, ignore_hidden)
+        return recurse(ob, ob.parent, 0, ignore_hidden, view_layer=view_layer)
 
     def execute(self, context):
         if not [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]:
@@ -509,7 +511,7 @@ class BakeButton(bpy.types.Operator):
         # if context.scene.render.engine != 'CYCLES':
         #     self.report({'ERROR'}, t('cats_bake.error.render_engine'))
         #     return {'FINISHED'}
-        if any([obj.hide_render and not Common.is_hidden(obj) for obj in Common.get_armature().children]):
+        if any([obj.hide_render and not Common.is_hidden(obj) for obj in Common.get_armature().children if obj in context.view_layer.objects]):
             self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
             return {'FINISHED'}
         if not bpy.data.is_saved:
@@ -602,7 +604,7 @@ class BakeButton(bpy.types.Operator):
         context.scene.collection.children.link(collection)
 
         # Tree-copy all meshes
-        arm_copy = self.tree_copy(armature, None, collection, ignore_hidden)
+        arm_copy = self.tree_copy(armature, None, collection, ignore_hidden, view_layer=context.view_layer)
 
         # Create an extra scene to render in
         orig_scene_name = context.scene.name
