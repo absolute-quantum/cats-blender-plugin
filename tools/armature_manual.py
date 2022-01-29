@@ -36,6 +36,39 @@ from .common import version_2_79_or_older
 from .register import register_wrap
 from .translations import t
 
+# Bone names from https://github.com/triazo/immersive_scaler/
+bone_names = {
+    "right_shoulder": ["rightshoulder", "shoulderr", "rshoulder"],
+    "right_arm": ["rightarm", "armr", "rarm", "upperarmr", "rightupperarm"],
+    "right_elbow": ["rightelbow", "elbowr", "relbow", "lowerarmr", "rightlowerarm", "lowerarmr"],
+    "right_wrist": ["rightwrist", "wristr", "rwrist", "handr", "righthand"],
+    "right_leg": ["rightleg", "legr", "rleg", "upperlegr", "thighr","rightupperleg"],
+    "right_knee": ["rightknee", "kneer", "rknee", "lowerlegr", "calfr", "rightlowerleg"],
+    "right_ankle": ["rightankle", "ankler", "rankle", "rightfoot", "footr", "rightfoot"],
+    "right_toe": ["righttoe", "toeright", "toer", "rtoe"],
+
+    "left_shoulder": ["leftshoulder", "shoulderl", "rshoulder"],
+    "left_arm": ["leftarm", "arml", "rarm", "upperarml", "leftupperarm"],
+    "left_elbow": ["leftelbow", "elbowl", "relbow", "lowerarml", "leftlowerarm", "lowerarml"],
+    "left_wrist": ["leftwrist", "wristl", "rwrist", "handl", "lefthand"],
+    "left_leg": ["leftleg", "legl", "rleg", "upperlegl", "thighl","leftupperleg"],
+    "left_knee": ["leftknee", "kneel", "rknee", "lowerlegl", "calfl", "leftlowerleg"],
+    "left_ankle": ["leftankle", "anklel", "rankle", "leftfoot", "footl", "leftfoot"],
+    "left_toe": ["lefttoe", "toeleft", "toel", "ltoe"],
+
+    'hips': ["pelvis", "hips"],
+    'spine': ["torso", "spine"],
+    'chest': ["chest"],
+    'upper_chest': ["upperchest"],
+    'neck': ["neck"],
+    'head': ["head"],
+    'left_eye': ["eyeleft", "lefteye", "eyel", "leye"],
+    'right_eye': ["eyeright", "righteye", "eyer", "reye"],
+}
+
+def simplify_bonename(n):
+    return n.lower().translate(dict.fromkeys(map(ord, u" _.")))
+
 @register_wrap
 class TwistTutorialButton(bpy.types.Operator):
     bl_idname = 'cats_manual.twist_tutorial'
@@ -1817,32 +1850,37 @@ class ConvertToValveButton(bpy.types.Operator):
         translate_bone_fails = 0
         armature = Common.get_armature()
 
+        reverse_bone_lookup = dict()
+        for (preferred_name, name_list) in bone_names.items():
+            for name in name_list:
+                reverse_bone_lookup[name] = preferred_name
+
         valve_translations = {
-            'Hips': "ValveBiped.Bip01_Pelvis",
-            'Spine': "ValveBiped.Bip01_Spine",
-            'Chest': "ValveBiped.Bip01_Spine1",
-            'Upper_Chest': "ValveBiped.Bip01_Spine2",
-            'Neck': "ValveBiped.Bip01_Neck1",
-            'Head': "ValveBiped.Bip01_Head",
-            'Left leg': "ValveBiped.Bip01_L_Thigh",
-            'Left knee': "ValveBiped.Bip01_L_Calf",
-            'Left ankle': "ValveBiped.Bip01_L_Foot",
-            'Right leg': "ValveBiped.Bip01_R_Thigh",
-            'Right knee': "ValveBiped.Bip01_R_Calf",
-            'Right ankle': "ValveBiped.Bip01_R_Foot",
-            'Left shoulder': "ValveBiped.Bip01_L_Clavicle",
-            'Left arm': "ValveBiped.Bip01_L_UpperArm",
-            'Left elbow': "ValveBiped.Bip01_L_Forearm",
-            'Left wrist': "ValveBiped.Bip01_L_Hand",
-            'Right shoulder': "ValveBiped.Bip01_R_Clavicle",
-            'Right arm': "ValveBiped.Bip01_R_UpperArm",
-            'Right elbow': "ValveBiped.Bip01_R_Forearm",
-            'Right wrist': "ValveBiped.Bip01_R_Hand"
+            'hips': "ValveBiped.Bip01_Pelvis",
+            'spine': "ValveBiped.Bip01_Spine",
+            'chest': "ValveBiped.Bip01_Spine1",
+            'upper_chest': "ValveBiped.Bip01_Spine2",
+            'neck': "ValveBiped.Bip01_Neck1",
+            'head': "ValveBiped.Bip01_Head",
+            'left_leg': "ValveBiped.Bip01_L_Thigh",
+            'left_knee': "ValveBiped.Bip01_L_Calf",
+            'left_ankle': "ValveBiped.Bip01_L_Foot",
+            'right_leg': "ValveBiped.Bip01_R_Thigh",
+            'right_knee': "ValveBiped.Bip01_R_Calf",
+            'right_ankle': "ValveBiped.Bip01_R_Foot",
+            'left_shoulder': "ValveBiped.Bip01_L_Clavicle",
+            'left_arm': "ValveBiped.Bip01_L_UpperArm",
+            'left_elbow': "ValveBiped.Bip01_L_Forearm",
+            'left_wrist': "ValveBiped.Bip01_L_Hand",
+            'right_shoulder': "ValveBiped.Bip01_R_Clavicle",
+            'right_arm': "ValveBiped.Bip01_R_UpperArm",
+            'right_elbow': "ValveBiped.Bip01_R_Forearm",
+            'right_wrist': "ValveBiped.Bip01_R_Hand"
         }
 
         for bone in armature.data.bones:
-            if bone.name in valve_translations:
-                bone.name = valve_translations[bone.name]
+            if simplify_bonename(bone.name) in reverse_bone_lookup and reverse_bone_lookup[simplify_bonename(bone.name)] in valve_translations:
+                bone.name = valve_translations[reverse_bone_lookup[simplify_bonename(bone.name)]]
             else:
                 translate_bone_fails += 1
 
@@ -1875,39 +1913,40 @@ class ConvertToSecondlifeButton(bpy.types.Operator):
         translate_bone_fails = 0
         untranslated_bones = set()
 
+        reverse_bone_lookup = dict()
+        for (preferred_name, name_list) in bone_names.items():
+            for name in name_list:
+                reverse_bone_lookup[name] = preferred_name
+
         sl_translations = {
-            'Hips': "mPelvis",
-            'Spine': "mTorso",
-            'Chest': "mChest",
-            # Merge? 'Upper_Chest': "",
-            'Neck': "mNeck",
-            'Head': "mHead",
+            'hips': "mPelvis",
+            'spine': "mTorso",
+            'chest': "mChest",
+            'neck': "mNeck",
+            'head': "mHead",
             # SL also specifies 'mSkull', generate by averaging coords of mEyeLeft and mEyeRight
-            'LeftEye': "mEyeLeft",
-            'RightEye': "mEyeRight",
-            'Right leg': "mHipRight",
-            'Right knee': "mKneeRight",
-            'Right ankle': "mAnkleRight",
-            'Right foot': "mFootRight",
-            'Right toe': 'mToeRight',
-            'Right shoulder': "mCollarRight",
-            'Right arm': "mShoulderRight",
-            'Right elbow': "mElbowRight",
-            'Right wrist': "mWristRight",
-            'Left leg': "mHipLeft",
-            'Left knee': "mKneeLeft",
-            'Left ankle': "mAnkleLeft",
-            'Left foot': "mFootLeft",
-            'Left toe': 'mToeLeft',
-            'Left shoulder': "mCollarLeft",
-            'Left arm': "mShoulderLeft",
-            'Left elbow': "mElbowLeft",
-            'Left wrist': "mWristLeft"
+            'left_eye': "mEyeLeft",
+            'right_eye': "mEyeRight",
+            'right_leg': "mHipRight",
+            'right_knee': "mKneeRight",
+            'right_ankle': "mAnkleRight",
+            'right_foot': "mFootRight",
+            'right_toe': 'mToeRight',
+            'right_shoulder': "mCollarRight",
+            'right_arm': "mShoulderRight",
+            'right_elbow': "mElbowRight",
+            'right_wrist': "mWristRight",
+            'left_leg': "mHipLeft",
+            'left_knee': "mKneeLeft",
+            'left_ankle': "mAnkleLeft",
+            'left_foot': "mFootLeft",
+            'left_toe': 'mToeLeft',
+            'left_shoulder': "mCollarLeft",
+            'left_arm': "mShoulderLeft",
+            'left_elbow': "mElbowLeft",
+            'left_wrist': "mWristLeft"
             # TODO: if we only have ankle and toe, subdivide toe and rename original to foot
         }
-
-        # Generalize: case insensitive, space agnostic
-        sl_translations_general = {k.replace(' ', '').lower():v for k, v in sl_translations.items()}
 
         context.view_layer.objects.active = armature
         Common.switch('EDIT')
@@ -1916,8 +1955,8 @@ class ConvertToSecondlifeButton(bpy.types.Operator):
 
         Common.switch('OBJECT')
         for bone in armature.data.bones:
-            if bone.name.replace(' ', '').lower() in sl_translations_general:
-                bone.name = sl_translations_general[bone.name.replace(' ', '').lower()]
+            if simplify_bonename(bone.name) in reverse_bone_lookup and reverse_bone_lookup[simplify_bonename(bone.name)] in sl_translations:
+                bone.name = sl_translations[reverse_bone_lookup[simplify_bonename(bone.name)]]
             else:
                 untranslated_bones.add(bone.name)
                 translate_bone_fails += 1

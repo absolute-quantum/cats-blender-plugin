@@ -1615,7 +1615,7 @@ class BakeButton(bpy.types.Operator):
                 diffusetexnode.location.y += 500
 
                 # If AO, blend in AO.
-                if pass_ao:
+                if pass_ao and not diffuse_premultiply_ao:
                     # AO -> Math (* ao_opacity + (1-ao_opacity)) -> Mix (Math, diffuse) -> Color
                     aotexnode = tree.nodes.new("ShaderNodeTexImage")
                     aotexnode.image = bpy.data.images[platform_img("ao.png")]

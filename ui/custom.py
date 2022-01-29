@@ -132,6 +132,9 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.scale_y = 0.75
                 row.label(text="Make sure the body is the one highlighted.", icon='BLANK1')
+                row = col.row(align=True)
+                row.scale_y = 0.75
+                row.label(text="Works with any mesh that conforms closely to the body.", icon='BLANK1')
                 return
 
             row = col.row(align=True)
