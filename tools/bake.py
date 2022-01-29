@@ -1505,9 +1505,8 @@ class BakeButton(bpy.types.Operator):
                 context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
                 bpy.ops.cats_decimation.auto_decimate(armature_name=new_arm.name, preserve_seams=False, seperate_materials=False)
                 for obj in new_arm.children:
-                    obj.parent = None
                     obj.name = "LODPhysics"
-                bpy.data.objects.remove(new_arm, do_unlink=True)
+                new_arm.name = "ArmatureLODPhysics"
 
             if use_lods:
                 for idx, lod in enumerate(lods):
@@ -1519,9 +1518,8 @@ class BakeButton(bpy.types.Operator):
                     context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
                     bpy.ops.cats_decimation.auto_decimate(armature_name=new_arm.name, preserve_seams=preserve_seams, seperate_materials=False)
                     for obj in new_arm.children:
-                        obj.parent = None
                         obj.name = "LOD" + str(idx + 1)
-                    bpy.data.objects.remove(new_arm, do_unlink=True)
+                    new_arm.name = "ArmatureLOD" + str(idx + 1)
 
             if use_decimation:
                 # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
@@ -1776,17 +1774,17 @@ class BakeButton(bpy.types.Operator):
             export_groups = [
                 ("Bake", ["Body", "Armature", "Static"])
             ]
+            for idx, _ in enumerate(lods):
+                export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
+
 
             # Create groups to export... One for the main, one each for each LOD
             for obj in plat_collection.all_objects:
-                if obj.type == "MESH" and obj.name != "Static" and "LOD" not in obj.name:
-                    obj.name = "Body"
-                elif obj.type == "ARMATURE":
-                    obj.name = "Armature"
-
-            for obj in plat_collection.all_objects:
-                if obj.name not in export_groups[0][1]:
-                    export_groups.append((obj.name, [obj.name]))
+                if not "LOD" in obj.name:
+                    if obj.type == "MESH" and obj.name != "Static":
+                        obj.name = "Body"
+                    elif obj.type == "ARMATURE":
+                        obj.name = "Armature"
 
             for export_group in export_groups:
                 bpy.ops.object.select_all(action='DESELECT')
@@ -1853,11 +1851,11 @@ class BakeButton(bpy.types.Operator):
             # Move armature so we can see it
             if quick_compare:
                 for obj in plat_collection.objects:
-                    if obj.type == "ARMATURE" or "LOD" in obj.name:
+                    if obj.type == "ARMATURE":
                         obj.location.x += armature.dimensions.x * (1 + platform_number)
                 for idx, _ in enumerate(lods):
-                    if "LOD" + str(idx + 1) in plat_collection.objects:
-                        plat_collection.objects["LOD" + str(idx + 1)].location.z += armature.dimensions.z * (1 + idx)
+                    if "ArmatureLOD" + str(idx + 1) in plat_collection.objects:
+                        plat_collection.objects["ArmatureLOD" + str(idx + 1)].location.z += armature.dimensions.z * (1 + idx)
 
         # Delete our duplicate scene and the platform-agnostic CATS Bake
         bpy.ops.scene.delete()
