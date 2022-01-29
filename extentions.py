@@ -8,7 +8,7 @@ from .tools import translations as Translations
 from .tools.translations import t
 
 from bpy.types import Scene, Material, PropertyGroup
-from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty, IntVectorProperty, StringProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty, IntVectorProperty, StringProperty, FloatVectorProperty
 from bpy.utils import register_class
 
 
@@ -246,6 +246,28 @@ def register():
             default=7500,
             min=1,
             max=70000
+        )
+        use_lods: BoolProperty(
+            name="Generate LODs",
+            description="Generate courser decimation levels for efficient rendering.",
+            default=False
+        )
+        lods: FloatVectorProperty(
+            name="LODs",
+            description='LOD generation levels, as a percent of the max tris',
+            #min=0.0,
+            #max=1.0
+        )
+        use_physmodel: BoolProperty(
+            name="Generate Physics Model",
+            description="Generate an additional LOD used for simplified physics interactions",
+            default=False
+        )
+        physmodel_lod: FloatProperty(
+            name="Physmodel Percent",
+            default=0.1,
+            min=0.0,
+            max=1.0
         )
         remove_doubles: BoolProperty(
             name=t('Scene.decimation_remove_doubles.label'),

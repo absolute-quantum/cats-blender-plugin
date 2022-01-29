@@ -493,7 +493,7 @@ class BakeButton(bpy.types.Operator):
                 return
             if Common.is_hidden(ob) and ob.type != 'ARMATURE' and ignore_hidden:
                 return
-            if view_layer and obj.name not in view_layer.objects:
+            if view_layer and ob.name not in view_layer.objects:
                 return
             copy = self.copy_ob(ob, parent, collection)
 
@@ -511,7 +511,7 @@ class BakeButton(bpy.types.Operator):
         # if context.scene.render.engine != 'CYCLES':
         #     self.report({'ERROR'}, t('cats_bake.error.render_engine'))
         #     return {'FINISHED'}
-        if any([obj.hide_render and not Common.is_hidden(obj) for obj in Common.get_armature().children if obj in context.view_layer.objects]):
+        if any([obj.hide_render and not Common.is_hidden(obj) for obj in Common.get_armature().children if obj.name in context.view_layer.objects]):
             self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
             return {'FINISHED'}
         if not bpy.data.is_saved:
@@ -1296,6 +1296,10 @@ class BakeButton(bpy.types.Operator):
             specular_setup = platform.specular_setup
             specular_alpha_pack = platform.specular_alpha_pack
             diffuse_emit_overlay = platform.diffuse_emit_overlay
+            use_physmodel = platform.use_physmodel
+            physmodel_lod = platform.physmodel_lod
+            use_lods = platform.use_lods
+            lods = platform.lods
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
@@ -1488,6 +1492,37 @@ class BakeButton(bpy.types.Operator):
                 image.pixels[:] = pixel_buffer
 
             print("Decimating")
+
+            # Physmodel does a couple extra things like ensuring doubles are removed, wire display
+            if use_physmodel:
+                new_arm = self.tree_copy(plat_arm_copy, None, plat_collection, ignore_hidden, view_layer=context.view_layer)
+                for obj in new_arm.children:
+                    obj.display_type = "WIRE"
+                context.scene.max_tris = platform.max_tris * physmodel_lod
+                context.scene.decimate_fingers = False
+                context.scene.decimation_remove_doubles = True
+                context.scene.decimation_animation_weighting = context.scene.bake_animation_weighting
+                context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
+                bpy.ops.cats_decimation.auto_decimate(armature_name=new_arm.name, preserve_seams=False, seperate_materials=False)
+                for obj in new_arm.children:
+                    obj.parent = None
+                    obj.name = "LODPhysics"
+                bpy.data.objects.remove(new_arm, do_unlink=True)
+
+            if use_lods:
+                for idx, lod in enumerate(lods):
+                    new_arm = self.tree_copy(plat_arm_copy, None, plat_collection, ignore_hidden, view_layer=context.view_layer)
+                    context.scene.max_tris = platform.max_tris * lod
+                    context.scene.decimate_fingers = False
+                    context.scene.decimation_remove_doubles = platform.remove_doubles
+                    context.scene.decimation_animation_weighting = context.scene.bake_animation_weighting
+                    context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
+                    bpy.ops.cats_decimation.auto_decimate(armature_name=new_arm.name, preserve_seams=preserve_seams, seperate_materials=False)
+                    for obj in new_arm.children:
+                        obj.parent = None
+                        obj.name = "LOD" + str(idx + 1)
+                    bpy.data.objects.remove(new_arm, do_unlink=True)
+
             if use_decimation:
                 # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
                 if context.scene.bake_loop_decimate:
@@ -1555,7 +1590,7 @@ class BakeButton(bpy.types.Operator):
 
             if pass_normal:
                 # Bake tangent normals
-                self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
+                self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name],
                                (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
                 image = bpy.data.images[platform_img("normal.png")]
                 image.colorspace_settings.name = 'Non-Color'
@@ -1738,38 +1773,50 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.cats_manual.optimize_static_shapekeys()
 
             # Export the model to the bake dir
-            bpy.ops.object.select_all(action='DESELECT')
+            export_groups = [
+                ("Bake", ["Body", "Armature", "Static"])
+            ]
+
+            # Create groups to export... One for the main, one each for each LOD
             for obj in plat_collection.all_objects:
-                obj.select_set(True)
-                if obj.type == "MESH" and obj.name != "Static":
+                if obj.type == "MESH" and obj.name != "Static" and "LOD" not in obj.name:
                     obj.name = "Body"
                 elif obj.type == "ARMATURE":
                     obj.name = "Armature"
-            if export_format == "FBX":
-                bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/Bake.fbx"), check_existing=False, filter_glob='*.fbx',
-                                         use_selection=True,
-                                         use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
-                                         bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
-                                         use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
-                                         use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
-                                         secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,
-                                         path_mode='AUTO',
-                                         embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
-                                         axis_forward='-Z', axis_up='Y')
-            elif export_format == "DAE":
-                bpy.ops.wm.collada_export(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/Bake.dae"), check_existing=True, filter_blender=False, filter_backup=False, filter_image=False, filter_movie=False,
-                                          filter_python=False, filter_font=False, filter_sound=False, filter_text=False, filter_archive=False, filter_btx=False,
-                                          filter_collada=True, filter_alembic=False, filter_usd=False, filter_volume=False, filter_folder=True,
-                                          filter_blenlib=False, filemode=8, display_type='DEFAULT', prop_bc_export_ui_section='main',
-                                          apply_modifiers=False, export_mesh_type=0, export_mesh_type_selection='view', export_global_forward_selection='Y',
-                                          export_global_up_selection='Z', apply_global_orientation=False, selected=True, include_children=False,
-                                          include_armatures=True, include_shapekeys=False, deform_bones_only=False, include_animations=True, include_all_actions=True,
-                                          export_animation_type_selection='sample', sampling_rate=1, keep_smooth_curves=False, keep_keyframes=False, keep_flat_curves=False,
-                                          active_uv_only=False, use_texture_copies=False, triangulate=True, use_object_instantiation=True, use_blender_profile=True,
-                                          sort_by_name=False, export_object_transformation_type=0, export_object_transformation_type_selection='matrix',
-                                          export_animation_transformation_type=0, open_sim=False,
-                                          limit_precision=False, keep_bind_info=False)
-                #TODO: move decimation/normal baking as close to here as possible so we can just export the LODs in one go
+
+            for obj in plat_collection.all_objects:
+                if obj.name not in export_groups[0][1]:
+                    export_groups.append((obj.name, [obj.name]))
+
+            for export_group in export_groups:
+                bpy.ops.object.select_all(action='DESELECT')
+                for obj in plat_collection.all_objects:
+                    if obj.name in export_group[1]:
+                        obj.select_set(True)
+                if export_format == "FBX":
+                    bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/" + export_group[0] + ".fbx"), check_existing=False, filter_glob='*.fbx',
+                                             use_selection=True,
+                                             use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
+                                             bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
+                                             use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
+                                             use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
+                                             secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,
+                                             path_mode='AUTO',
+                                             embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
+                                             axis_forward='-Z', axis_up='Y')
+                elif export_format == "DAE":
+                    bpy.ops.wm.collada_export(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/" + export_group[0] + ".dae"), check_existing=True, filter_blender=False, filter_backup=False, filter_image=False, filter_movie=False,
+                                              filter_python=False, filter_font=False, filter_sound=False, filter_text=False, filter_archive=False, filter_btx=False,
+                                              filter_collada=True, filter_alembic=False, filter_usd=False, filter_volume=False, filter_folder=True,
+                                              filter_blenlib=False, filemode=8, display_type='DEFAULT', prop_bc_export_ui_section='main',
+                                              apply_modifiers=False, export_mesh_type=0, export_mesh_type_selection='view', export_global_forward_selection='Y',
+                                              export_global_up_selection='Z', apply_global_orientation=False, selected=True, include_children=False,
+                                              include_armatures=True, include_shapekeys=False, deform_bones_only=False, include_animations=True, include_all_actions=True,
+                                              export_animation_type_selection='sample', sampling_rate=1, keep_smooth_curves=False, keep_keyframes=False, keep_flat_curves=False,
+                                              active_uv_only=False, use_texture_copies=False, triangulate=True, use_object_instantiation=True, use_blender_profile=True,
+                                              sort_by_name=False, export_object_transformation_type=0, export_object_transformation_type_selection='matrix',
+                                              export_animation_transformation_type=0, open_sim=False,
+                                              limit_precision=False, keep_bind_info=False)
 
             # Try to only output what you'll end up importing into unity.
             context.scene.render.image_settings.color_mode = 'RGBA'
@@ -1805,7 +1852,12 @@ class BakeButton(bpy.types.Operator):
 
             # Move armature so we can see it
             if quick_compare:
-                plat_arm_copy.location.x += armature.dimensions.x * (1 + platform_number)
+                for obj in plat_collection.objects:
+                    if obj.type == "ARMATURE" or "LOD" in obj.name:
+                        obj.location.x += armature.dimensions.x * (1 + platform_number)
+                for idx, _ in enumerate(lods):
+                    if "LOD" + str(idx + 1) in plat_collection.objects:
+                        plat_collection.objects["LOD" + str(idx + 1)].location.z += armature.dimensions.z * (1 + idx)
 
         # Delete our duplicate scene and the platform-agnostic CATS Bake
         bpy.ops.scene.delete()

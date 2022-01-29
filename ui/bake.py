@@ -50,6 +50,45 @@ class Bake_Platform_Delete(Operator):
         return{'FINISHED'}
 
 @register_wrap
+class Bake_Lod_New(Operator):
+    bl_idname = "cats_bake.lod_add"
+    bl_label = "Add"
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.bake_platforms
+
+    def execute(self, context):
+        bake_platforms = context.scene.bake_platforms
+        index = context.scene.bake_platform_index
+
+        lods = bake_platforms[index].lods
+        lods.add()
+
+        return{'FINISHED'}
+
+@register_wrap
+class Bake_Lod_Delete(Operator):
+    bl_idname = "cats_bake.lod_remove"
+    bl_label = "Delete"
+
+    @classmethod
+    def poll(cls, context):
+        bake_platforms = context.scene.bake_platforms
+        index = context.scene.bake_platform_index
+
+        return context.scene.bake_platforms and len(bake_platforms[index].lods) > 1
+
+    def execute(self, context):
+        bake_platforms = context.scene.bake_platforms
+        index = context.scene.bake_platform_index
+
+        lods = bake_platforms[index].lods
+        lods.remove(len(lods) - 1)
+
+        return{'FINISHED'}
+
+@register_wrap
 class BakePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_catsbake'
     bl_label = t('BakePanel.label')
@@ -116,6 +155,19 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 #    row = col.row(align=True)
                 #    row.separator()
                 #    row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)
+            row = col.row(align=True)
+            row.prop(item, 'use_physmodel', expand=True)
+            if item.use_physmodel:
+                row = col.row(align=True)
+                row.prop(item, 'physmodel_lod', expand=True)
+            row = col.row(align=True)
+            row.prop(item, 'use_lods', expand=True)
+            if item.use_lods:
+                row = col.row(align=True)
+                row.prop(item, 'lods', expand=True)
+                row = col.row(align=True)
+                row.operator(Bake_Lod_New.bl_idname)
+                row.operator(Bake_Lod_Delete.bl_idname)
             row = col.row(align=True)
             row.prop(item, 'optimize_static', expand=True)
             row = col.row(align=True)
