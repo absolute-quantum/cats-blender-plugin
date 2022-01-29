@@ -1930,7 +1930,6 @@ class ConvertToSecondlifeButton(bpy.types.Operator):
             'right_leg': "mHipRight",
             'right_knee': "mKneeRight",
             'right_ankle': "mAnkleRight",
-            'right_foot': "mFootRight",
             'right_toe': 'mToeRight',
             'right_shoulder': "mCollarRight",
             'right_arm': "mShoulderRight",
@@ -1939,12 +1938,14 @@ class ConvertToSecondlifeButton(bpy.types.Operator):
             'left_leg': "mHipLeft",
             'left_knee': "mKneeLeft",
             'left_ankle': "mAnkleLeft",
-            'left_foot': "mFootLeft",
             'left_toe': 'mToeLeft',
             'left_shoulder': "mCollarLeft",
             'left_arm': "mShoulderLeft",
             'left_elbow': "mElbowLeft",
             'left_wrist': "mWristLeft"
+            #'right_foot': "mFootRight",
+            #'left_foot': "mFootLeft",
+            # Our translation names any "foot" as "ankle". Best approach is to subdivide toe and rename the upper as foot
             # TODO: if we only have ankle and toe, subdivide toe and rename original to foot
         }
 
@@ -1961,6 +1962,29 @@ class ConvertToSecondlifeButton(bpy.types.Operator):
                 untranslated_bones.add(bone.name)
                 translate_bone_fails += 1
 
+        # Better foot setup
+        Common.switch('EDIT')
+        bpy.ops.armature.select_all(action='DESELECT')
+        for bone in context.visible_bones:
+            if bone.name == "mToeLeft" or bone.name == "mToeRight":
+                bone.select = True
+        Common.switch('OBJECT')
+        Common.switch('EDIT')
+        if context.selected_editable_bones:
+            bpy.ops.armature.subdivide()
+        Common.switch('OBJECT')
+        for bone in armature.data.bones:
+            if bone.name == "mToeLeft":
+                bone.name = "mFootLeft"
+            if bone.name == "mToeRight":
+                bone.name = "mFootRight"
+        for bone in armature.data.bones:
+            if bone.name == "mToeLeft.001":
+                bone.name = "mToeLeft"
+            if bone.name == "mToeRight.001":
+                bone.name = "mToeRight"
+
+        # Merge unused or SL rejects
         Common.switch('EDIT')
         bpy.ops.armature.select_all(action='DESELECT')
         for bone in context.visible_bones:
