@@ -228,7 +228,6 @@ class FitClothes(bpy.types.Operator):
             trans_modifier.data_types_verts = {'VGROUP_WEIGHTS'}
             trans_modifier.vert_mapping = 'POLYINTERP_NEAREST'
             context.view_layer.objects.active = obj
-            bpy.ops.object.modifier_apply(modifier=trans_modifier.name)
             Common.apply_modifier(trans_modifier)
 
             # Setup armature
