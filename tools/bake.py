@@ -128,6 +128,8 @@ def autodetect_passes(self, context, item, tricount, platform):
             item.diffuse_alpha_pack = "SMOOTHNESS"
         if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
             item.metallic_alpha_pack = "SMOOTHNESS"
+        item.use_lods = False
+        item.use_physmodel = False
     elif platform == "QUEST":
         item.export_format = "FBX"
         item.translate_bone_names = "NONE"
@@ -143,6 +145,8 @@ def autodetect_passes(self, context, item, tricount, platform):
         if context.scene.bake_pass_smoothness:
             context.scene.bake_pass_metallic = True
             item.metallic_alpha_pack = "SMOOTHNESS"
+        item.use_lods = False
+        item.use_physmodel = False
     elif platform == "SECONDLIFE":
         item.export_format = "DAE"
         item.translate_bone_names = "SECONDLIFE"
@@ -151,6 +155,10 @@ def autodetect_passes(self, context, item, tricount, platform):
         item.specular_setup = context.scene.bake_pass_diffuse and context.scene.bake_pass_metallic
         item.specular_alpha_pack = "SMOOTHNESS" if context.scene.bake_pass_smoothness else "NONE"
         item.diffuse_emit_overlay = context.scene.bake_pass_emit
+        item.use_physmodel = True
+        item.physmodel_lod = 0.1
+        item.use_lods = True
+        item.lods = (1.0/4, 1.0/16, 1.0/32)
     elif platform == "GMOD":
         """
         https://developer.valvesoftware.com/wiki/Adapting_PBR_Textures_to_Source
@@ -1774,8 +1782,11 @@ class BakeButton(bpy.types.Operator):
             export_groups = [
                 ("Bake", ["Body", "Armature", "Static"])
             ]
-            for idx, _ in enumerate(lods):
-                export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
+            if use_physmodel:
+                    export_groups.append(("LODPhysics", ["LODPhysics", "ArmatureLODPhysics"]))
+            if use_lods:
+                for idx, _ in enumerate(lods):
+                    export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
 
 
             # Create groups to export... One for the main, one each for each LOD
