@@ -331,18 +331,19 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
         col.separator()
         col.separator()
-        row = col.row(align=True)
-        row.prop(context.scene, 'bake_device', expand=True)
-
-        # Warnings. Ideally these should be dynamically generated but only take up a limited number of rows
         if context.preferences.addons['cycles'].preferences.compute_device_type == 'NONE' and context.scene.bake_device == 'GPU':
             row = col.row(align=True)
             row.label(text="No render device configured in Blender settings. Bake will use CPU", icon="INFO")
         if not addon_utils.check("render_auto_tile_size")[1] and Common.version_2_93_or_older():
             row = col.row(align=True)
             row.label(text="Enabling \"Auto Tile Size\" plugin reccomended!", icon="INFO")
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_device', expand=True)
+
+        # Warnings. Ideally these should be dynamically generated but only take up a limited number of rows
         non_bsdf_mat_names = []
         non_node_mat_names = []
+        non_world_scale_names = []
         for obj in Common.get_meshes_objects(check=False):
             if obj.name not in context.view_layer.objects:
                 continue
@@ -354,6 +355,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         non_node_mat_names.append(slot.material.name)
                     if not any(node.type == "BSDF_PRINCIPLED" for node in slot.material.node_tree.nodes):
                         non_bsdf_mat_names.append(slot.material.name)
+            if any(dim != 1.0 for dim in obj.scale):
+                non_world_scale_names.append(obj.name)
 
         if non_node_mat_names:
             row = col.row(align=True)
@@ -371,6 +374,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             for name in non_bsdf_mat_names:
                 row = col.row(align=True)
                 row.label(text=name, icon="MATERIAL")
+        if non_world_scale_names:
+            row = col.row(align=True)
+            row.label(text="The following objects do not have scale applied", icon="INFO")
+            row = col.row(align=True)
+            row.label(text="The resulting islands will be inversely scaled.")
+            for name in non_world_scale_names:
+                row = col.row(align=True)
+                row.label(text=name + ": " + "{:.1f}".format(1.0/bpy.data.objects[name].scale[0]) + "x")
 
         # TODO: warn if multires + AO
 
