@@ -1416,6 +1416,7 @@ class BakeButton(bpy.types.Operator):
                             prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
                             prop_bone.head = orig_bone.head
                             prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
+                            prop_bone.parent = orig_bone
                             Common.switch("OBJECT")
 
 
