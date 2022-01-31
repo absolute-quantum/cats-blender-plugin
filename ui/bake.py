@@ -172,6 +172,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.prop(item, 'optimize_static', expand=True)
             row = col.row(align=True)
             row.prop(item, 'merge_twistbones', expand=True)
+            row = col.row(align=True)
+            row.prop(item, 'generate_prop_bones', expand=True)
 
             row = col.row(align=True)
             row.prop(item, 'specular_setup', expand=True)

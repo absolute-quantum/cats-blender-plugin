@@ -1308,6 +1308,7 @@ class BakeButton(bpy.types.Operator):
             physmodel_lod = platform.physmodel_lod
             use_lods = platform.use_lods
             lods = platform.lods
+            generate_prop_bones = platform.generate_prop_bones
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
@@ -1389,6 +1390,35 @@ class BakeButton(bpy.types.Operator):
                 if context.selected_editable_bones:
                     bpy.ops.cats_manual.merge_weights()
                 Common.switch("OBJECT")
+
+            if generate_prop_bones:
+                # Find any mesh that's weighted to a single bone, duplicate and rename that bone, move mesh's vertex group to the new bone
+                for obj in plat_collection.objects:
+                    if obj.type == "MESH":
+                        found_vertex_groups = set()
+                        for vertex in obj.data.vertices:
+                            found_vertex_groups |= set([vgp.group for vgp in vertex.groups if vgp.weight > 0.00001])
+
+                        if len(found_vertex_groups) == 1:
+                            vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
+                            vgroup_name = vgroup_lookup[found_vertex_groups.pop()]
+                            print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
+                            # If the obj has ".001" or similar, trim it
+                            orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
+                            newbonename = "~" + vgroup_name + "_Prop_" + orig_obj_name
+                            obj.vertex_groups[vgroup_name].name = newbonename
+                            context.view_layer.objects.active = plat_arm_copy
+                            Common.switch("EDIT")
+                            orig_bone = plat_arm_copy.data.edit_bones[vgroup_name]
+                            if not orig_bone.children:
+                                Common.switch("OBJECT")
+                                print("Object " + obj.name + " already has no children, skipping")
+                            prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
+                            prop_bone.head = orig_bone.head
+                            prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
+                            Common.switch("OBJECT")
+
+
 
             if translate_bone_names == "SECONDLIFE":
                 bpy.ops.cats_manual.convert_to_secondlife()

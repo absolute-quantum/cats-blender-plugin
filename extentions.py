@@ -289,6 +289,11 @@ def register():
             description="Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints.",
             default=False
         )
+        generate_prop_bones: BoolProperty(
+            name="Generate Prop Bones",
+            description="This option will detect any meshes weighted to a single bone and create a 'prop' bone you can independently scale to 0.",
+            default=True
+        )
         metallic_alpha_pack: EnumProperty(
             name=t('Scene.bake_metallic_alpha_pack.label'),
             description=t('Scene.bake_metallic_alpha_pack.desc'),
