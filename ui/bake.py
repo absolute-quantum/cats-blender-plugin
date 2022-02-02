@@ -342,6 +342,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
 
         # Warnings. Ideally these should be dynamically generated but only take up a limited number of rows
         non_bsdf_mat_names = []
+        multi_bsdf_mat_names = []
         non_node_mat_names = []
         non_world_scale_names = []
         for obj in Common.get_meshes_objects(check=False):
@@ -355,6 +356,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         non_node_mat_names.append(slot.material.name)
                     if not any(node.type == "BSDF_PRINCIPLED" for node in slot.material.node_tree.nodes):
                         non_bsdf_mat_names.append(slot.material.name)
+                    if len([node for node in slot.material.node_tree.nodes if node.type == "BSDF_PRINCIPLED"]) > 1:
+                        multi_bsdf_mat_names.append(slot.material.name)
             if any(dim != 1.0 for dim in obj.scale):
                 non_world_scale_names.append(obj.name)
 
@@ -362,23 +365,31 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.label(text="The following materials do not use nodes!", icon="ERROR")
             row = col.row(align=True)
-            row.label(text="Ensure they have Use Nodes checked in their properties or Bake will not run.")
+            row.label(text="Ensure they have Use Nodes checked in their properties or Bake will not run.", icon="BLANK1")
             for name in non_node_mat_names:
                 row = col.row(align=True)
                 row.label(text=name, icon="MATERIAL")
         if non_bsdf_mat_names:
             row = col.row(align=True)
-            row.label(text="The following materials do use Principled BSDF!", icon="INFO")
+            row.label(text="The following materials do not use Principled BSDF!", icon="INFO")
             row = col.row(align=True)
-            row.label(text="Bake may have unexpected results.")
+            row.label(text="Bake may have unexpected results.", icon="BLANK1")
             for name in non_bsdf_mat_names:
+                row = col.row(align=True)
+                row.label(text=name, icon="MATERIAL")
+        if multi_bsdf_mat_names:
+            row = col.row(align=True)
+            row.label(text="The following materials have multiple Principled BSDF!", icon="INFO")
+            row = col.row(align=True)
+            row.label(text="Bake may have unexpected results.", icon="BLANK1")
+            for name in multi_bsdf_mat_names:
                 row = col.row(align=True)
                 row.label(text=name, icon="MATERIAL")
         if non_world_scale_names:
             row = col.row(align=True)
             row.label(text="The following objects do not have scale applied", icon="INFO")
             row = col.row(align=True)
-            row.label(text="The resulting islands will be inversely scaled.")
+            row.label(text="The resulting islands will be inversely scaled.", icon="BLANK1")
             for name in non_world_scale_names:
                 row = col.row(align=True)
                 row.label(text=name + ": " + "{:.1f}".format(1.0/bpy.data.objects[name].scale[0]) + "x")
