@@ -1417,9 +1417,25 @@ class BakeButton(bpy.types.Operator):
                             prop_bone.head = orig_bone.head
                             prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
                             prop_bone.parent = orig_bone
+                            # Create en/disable animation files
+                            next_bone = prop_bone.parent
+                            path_string = prop_bone.name
+                            while next_bone != None:
+                                path_string = next_bone.name + "/" + path_string
+                                next_bone = next_bone.parent
+                            path_string = "Armature/" + path_string
+
+                            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/enable.anim", 'r') as infile:
+                                newname = "Enable " + orig_obj_name
+                                with open(bpy.path.abspath("//CATS Bake/") + newname + ".anim", 'w') as outfile:
+                                    for line in infile:
+                                        outfile.write(line.replace("{NAME_STRING}", newname).replace("{PATH_STRING}", path_string))
+                            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/disable.anim", 'r') as infile:
+                                newname = "Disable " + orig_obj_name
+                                with open(bpy.path.abspath("//CATS Bake/") + newname + ".anim", 'w') as outfile:
+                                    for line in infile:
+                                        outfile.write(line.replace("{NAME_STRING}", newname).replace("{PATH_STRING}", path_string))
                             Common.switch("OBJECT")
-
-
 
             if translate_bone_names == "SECONDLIFE":
                 bpy.ops.cats_manual.convert_to_secondlife()
@@ -1840,12 +1856,12 @@ class BakeButton(bpy.types.Operator):
                                              bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
                                              use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
                                              use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
-                                             secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=False,
+                                             secondary_bone_axis='X', use_armature_deform_only=False, armature_nodetype='NULL', bake_anim=True,
                                              path_mode='AUTO',
                                              embed_textures=False, batch_mode='OFF', use_batch_own_dir=True, use_metadata=True,
                                              axis_forward='-Z', axis_up='Y')
                 elif export_format == "DAE":
-                    bpy.ops.wm.collada_export(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/" + export_group[0] + ".dae"), check_existing=True, filter_blender=False, filter_backup=False, filter_image=False, filter_movie=False,
+                    bpy.ops.wm.collada_export(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/" + export_group[0] + ".dae"), check_existing=False, filter_blender=False, filter_backup=False, filter_image=False, filter_movie=False,
                                               filter_python=False, filter_font=False, filter_sound=False, filter_text=False, filter_archive=False, filter_btx=False,
                                               filter_collada=True, filter_alembic=False, filter_usd=False, filter_volume=False, filter_folder=True,
                                               filter_blenlib=False, filemode=8, display_type='DEFAULT', prop_bc_export_ui_section='main',
