@@ -515,6 +515,18 @@ def register():
         default=True
     )
 
+    Scene.bake_show_advanced_general_options = BoolProperty(
+        name="Show Advanced General Options",
+        description="Will show extra options related to which bake passes are performed and how.",
+        default=False
+    )
+
+    Scene.bake_show_advanced_platform_options = BoolProperty(
+        name="Show Advanced Platform Options",
+        description="Will show extra options related to applicable bones and texture packing setups.",
+        default=False
+    )
+
     Scene.bake_pass_ao = BoolProperty(
         name=t('Scene.bake_pass_ao.label'),
         description=t('Scene.bake_pass_ao.desc'),

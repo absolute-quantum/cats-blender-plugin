@@ -1,6 +1,7 @@
 import bpy
 import addon_utils
 
+from .. import globs
 from .main import ToolPanel
 from ..tools import common as Common
 from ..tools import bake as Bake
@@ -134,94 +135,106 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.prop(item, 'name', expand=True)
             row = col.row(align=True)
+            row.separator()
             row.prop(item, 'use_decimation', expand=True)
             if item.use_decimation:
                 row = col.row(align=True)
                 row.separator()
                 row.prop(item, 'max_tris', expand=True)
-                row = col.row(align=True)
-                row.separator()
-                row.prop(item, 'remove_doubles', expand=True)
-                row = col.row(align=True)
-                row.separator()
-                #row.prop(context.scene, 'bake_loop_decimate', expand=True)
-                #row = col.row(align=True)
-                #row.separator()
-                row.prop(item, 'preserve_seams', expand=True)
-                #row = col.row(align=True)
-                #row.separator()
-                #row.prop(context.scene, 'bake_animation_weighting', expand=True)
-                #if context.scene.bake_animation_weighting: #and not context.scene.bake_loop_decimate:
-                #    row = col.row(align=True)
-                #    row.separator()
-                #    row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)
-            row = col.row(align=True)
-            row.prop(item, 'use_physmodel', expand=True)
-            if item.use_physmodel:
-                row = col.row(align=True)
-                row.prop(item, 'physmodel_lod', expand=True)
-            row = col.row(align=True)
-            row.prop(item, 'use_lods', expand=True)
-            if item.use_lods:
-                row = col.row(align=True)
-                row.prop(item, 'lods', expand=True)
-                row = col.row(align=True)
-                row.operator(Bake_Lod_New.bl_idname)
-                row.operator(Bake_Lod_Delete.bl_idname)
-            row = col.row(align=True)
-            row.prop(item, 'optimize_static', expand=True)
-            row = col.row(align=True)
-            row.prop(item, 'merge_twistbones', expand=True)
-            row = col.row(align=True)
-            row.prop(item, 'generate_prop_bones', expand=True)
 
+            ### BEGIN ADVANCED PLATFORM OPTIONS
+            col.separator()
             row = col.row(align=True)
-            row.prop(item, 'specular_setup', expand=True)
-            if item.specular_setup:
-                row = col.row(align=True)
-                row.prop(item, 'specular_alpha_pack', expand=True)
-            if context.scene.bake_pass_diffuse and context.scene.bake_pass_emit:
-                row = col.row(align=True)
-                row.prop(item, "diffuse_emit_overlay", expand=True)
-            if context.scene.bake_pass_diffuse and context.scene.bake_pass_ao:
-                row = col.row(align=True)
-                row.prop(item, "diffuse_premultiply_ao", expand=True)
-                if item.diffuse_premultiply_ao:
+            row.scale_y = 0.85
+            if not context.scene.bake_show_advanced_platform_options:
+                row.prop(context.scene, 'bake_show_advanced_platform_options', icon=globs.ICON_ADD, emboss=True, expand=False, toggle=False, event=False)
+            else:
+                row.prop(context.scene, 'bake_show_advanced_platform_options', icon=globs.ICON_REMOVE, emboss=True, expand=False, toggle=False, event=False)
+                if item.use_decimation:
                     row = col.row(align=True)
                     row.separator()
-                    row.prop(item, 'diffuse_premultiply_opacity', expand=True)
-                row = col.row(align=True)
-                row.prop(item, "smoothness_premultiply_ao", expand=True)
-                if item.smoothness_premultiply_ao:
+                    row.prop(item, 'remove_doubles', expand=True)
                     row = col.row(align=True)
                     row.separator()
-                    row.prop(item, 'smoothness_premultiply_opacity', expand=True)
-            if context.scene.bake_pass_diffuse:
-                if bpy.app.version >= (2, 92, 0):
+                    #row.prop(context.scene, 'bake_loop_decimate', expand=True)
+                    #row = col.row(align=True)
+                    #row.separator()
+                    row.prop(item, 'preserve_seams', expand=True)
+                    #row = col.row(align=True)
+                    #row.separator()
+                    #row.prop(context.scene, 'bake_animation_weighting', expand=True)
+                    #if context.scene.bake_animation_weighting: #and not context.scene.bake_loop_decimate:
+                    #    row = col.row(align=True)
+                    #    row.separator()
+                    #    row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)
+                row = col.row(align=True)
+                row.prop(item, 'use_physmodel', expand=True)
+                if item.use_physmodel:
                     row = col.row(align=True)
-                    row.prop(item, 'diffuse_vertex_colors', expand=True)
-            if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha) and not item.diffuse_vertex_colors:
+                    row.prop(item, 'physmodel_lod', expand=True)
                 row = col.row(align=True)
-                row.label(text="Diffuse Alpha:")
+                row.prop(item, 'use_lods', expand=True)
+                if item.use_lods:
+                    row = col.row(align=True)
+                    row.prop(item, 'lods', expand=True)
+                    row = col.row(align=True)
+                    row.operator(Bake_Lod_New.bl_idname)
+                    row.operator(Bake_Lod_Delete.bl_idname)
                 row = col.row(align=True)
-                row.prop(item, 'diffuse_alpha_pack', expand=True)
-                if (item.diffuse_alpha_pack == "TRANSPARENCY") and not context.scene.bake_pass_alpha:
-                    col.label(text=t('BakePanel.transparencywarning'), icon="INFO")
-                elif (item.diffuse_alpha_pack == "SMOOTHNESS") and not context.scene.bake_pass_smoothness:
-                    col.label(text=t('BakePanel.smoothnesswarning'), icon="INFO")
-            if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness and not item.specular_setup:
+                row.prop(item, 'optimize_static', expand=True)
                 row = col.row(align=True)
-                row.label(text="Metallic Alpha:")
+                row.prop(item, 'merge_twistbones', expand=True)
                 row = col.row(align=True)
-                row.prop(item, 'metallic_alpha_pack', expand=True)
-                if item.diffuse_alpha_pack == "SMOOTHNESS" and item.metallic_alpha_pack == "SMOOTHNESS":
-                    col.label(text=t('BakePanel.doublepackwarning'), icon="INFO")
-            row = col.row(align=True)
-            row.label(text="Bone Conversion:")
-            row = col.row(align=True)
-            row.prop(item, 'translate_bone_names')
-            row = col.row(align=True)
-            row.prop(item, 'export_format')
+                row.prop(item, 'generate_prop_bones', expand=True)
+
+                row = col.row(align=True)
+                row.prop(item, 'specular_setup', expand=True)
+                if item.specular_setup:
+                    row = col.row(align=True)
+                    row.prop(item, 'specular_alpha_pack', expand=True)
+                if context.scene.bake_pass_diffuse and context.scene.bake_pass_emit:
+                    row = col.row(align=True)
+                    row.prop(item, "diffuse_emit_overlay", expand=True)
+                if context.scene.bake_pass_diffuse and context.scene.bake_pass_ao:
+                    row = col.row(align=True)
+                    row.prop(item, "diffuse_premultiply_ao", expand=True)
+                    if item.diffuse_premultiply_ao:
+                        row = col.row(align=True)
+                        row.separator()
+                        row.prop(item, 'diffuse_premultiply_opacity', expand=True)
+                    row = col.row(align=True)
+                    row.prop(item, "smoothness_premultiply_ao", expand=True)
+                    if item.smoothness_premultiply_ao:
+                        row = col.row(align=True)
+                        row.separator()
+                        row.prop(item, 'smoothness_premultiply_opacity', expand=True)
+                if context.scene.bake_pass_diffuse:
+                    if bpy.app.version >= (2, 92, 0):
+                        row = col.row(align=True)
+                        row.prop(item, 'diffuse_vertex_colors', expand=True)
+                if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha) and not item.diffuse_vertex_colors:
+                    row = col.row(align=True)
+                    row.label(text="Diffuse Alpha:")
+                    row.prop(item, 'diffuse_alpha_pack', expand=True)
+                    if (item.diffuse_alpha_pack == "TRANSPARENCY") and not context.scene.bake_pass_alpha:
+                        col.label(text=t('BakePanel.transparencywarning'), icon="INFO")
+                    elif (item.diffuse_alpha_pack == "SMOOTHNESS") and not context.scene.bake_pass_smoothness:
+                        col.label(text=t('BakePanel.smoothnesswarning'), icon="INFO")
+                if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness and not item.specular_setup:
+                    row = col.row(align=True)
+                    row.label(text="Metallic Alpha:")
+                    row.prop(item, 'metallic_alpha_pack', expand=True)
+                    if item.diffuse_alpha_pack == "SMOOTHNESS" and item.metallic_alpha_pack == "SMOOTHNESS":
+                        col.label(text=t('BakePanel.doublepackwarning'), icon="INFO")
+                row = col.row(align=True)
+                row.label(text="Bone Conversion:")
+                row = col.row(align=True)
+                row.separator()
+                row.prop(item, 'translate_bone_names')
+                row = col.row(align=True)
+                row.separator()
+                row.prop(item, 'export_format')
+        # END ADVANCED PLATFORM OPTIONS
 
         if context.scene.bake_platforms:
             col.separator()
@@ -229,9 +242,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.prop(context.scene, 'bake_resolution', expand=True)
             row = col.row(align=True)
-            row.prop(context.scene, 'bake_sharpen', expand=True)
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_denoise', expand=True)
+            row.prop(context.scene, 'bake_ignore_hidden', expand=True)
             row = col.row(align=True)
             row.prop(context.scene, 'bake_generate_uvmap', expand=True)
             if context.scene.bake_generate_uvmap:
@@ -257,78 +268,93 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.separator()
                     row.prop(context.scene, 'bake_unwrap_angle', expand=True)
             row = col.row(align=True)
-            row.prop(context.scene, 'bake_ignore_hidden', expand=True)
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_cleanup_shapekeys', expand=True)
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_apply_keys', expand=True)
-            #row = col.row(align=True)
-            #row.prop(context.scene, 'bake_create_disable_shapekeys', expand=True)
-            #row = col.row(align=True)
-            #row.prop(context.scene, 'bake_simplify_armature', expand=True)
-            col.separator()
-            row = col.row(align=True)
-            col.label(text=t('BakePanel.bakepasseslabel'))
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_pass_diffuse', expand=True)
-            col.separator()
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_pass_normal', expand=True)
-            if context.scene.bake_pass_normal:
+            row.scale_y = 0.85
+            if not context.scene.bake_show_advanced_general_options:
+                row.prop(context.scene, 'bake_show_advanced_general_options', icon=globs.ICON_ADD, emboss=True, expand=False, toggle=False, event=False)
+            else:
+                row.prop(context.scene, 'bake_show_advanced_general_options', icon=globs.ICON_REMOVE, emboss=True, expand=False, toggle=False, event=False)
                 row = col.row(align=True)
-                row.separator()
-                row.prop(context.scene, 'bake_normal_apply_trans', expand=True)
-            col.separator()
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_pass_smoothness', expand=True)
-            col.separator()
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_pass_ao', expand=True)
-            if context.scene.bake_pass_ao:
+                row.prop(context.scene, 'bake_sharpen', expand=True)
                 row = col.row(align=True)
-                row.separator()
-                row.prop(context.scene, 'bake_illuminate_eyes', expand=True)
-                if context.scene.bake_illuminate_eyes:
-                    multires_obj_names = []
-                    for obj in Common.get_meshes_objects(check=False):
-                        if obj.name not in context.view_layer.objects:
-                            continue
-                        if Common.is_hidden(obj):
-                             continue
-                        if any(mod.type == "MULTIRES" for mod in obj.modifiers):
-                            multires_obj_names.append(obj.name)
-
-                    if multires_obj_names:
-                        row = col.row(align=True)
-                        row.separator()
-                        row.label(text="One or more of your objects are using Multires.", icon="ERROR")
-                        row = col.row(align=True)
-                        row.separator()
-                        row.label(text="This has issues excluding the eyes, try adding")
-                        row = col.row(align=True)
-                        row.separator()
-                        row.label(text="'ambient occlusion' shape keys instead.")
-
-            col.separator()
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_pass_alpha', expand=True)
-            col.separator()
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_pass_metallic', expand=True)
-            col.separator()
-
-            row = col.row(align=True)
-            row.prop(context.scene, 'bake_pass_emit', expand=True)
-            if context.scene.bake_pass_emit:
+                row.prop(context.scene, 'bake_denoise', expand=True)
                 row = col.row(align=True)
-                row.separator()
-                row.prop(context.scene, 'bake_emit_indirect', expand=True)
-                if context.scene.bake_emit_indirect:
+                row.prop(context.scene, 'bake_cleanup_shapekeys', expand=True)
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_apply_keys', expand=True)
+                #row = col.row(align=True)
+                #row.prop(context.scene, 'bake_create_disable_shapekeys', expand=True)
+                #row = col.row(align=True)
+                #row.prop(context.scene, 'bake_simplify_armature', expand=True)
+                col.separator()
+                row = col.row(align=True)
+                col.label(text=t('BakePanel.bakepasseslabel'))
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_diffuse', expand=True)
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_normal', expand=True)
+                if context.scene.bake_pass_normal:
                     row = col.row(align=True)
                     row.separator()
-                    row.prop(context.scene, 'bake_emit_exclude_eyes', expand=True)
+                    row.prop(context.scene, 'bake_normal_apply_trans', expand=True)
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_smoothness', expand=True)
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_ao', expand=True)
+                if context.scene.bake_pass_ao:
+                    row = col.row(align=True)
+                    row.separator()
+                    row.prop(context.scene, 'bake_illuminate_eyes', expand=True)
+                    if context.scene.bake_illuminate_eyes:
+                        multires_obj_names = []
+                        for obj in Common.get_meshes_objects(check=False):
+                            if obj.name not in context.view_layer.objects:
+                                continue
+                            if Common.is_hidden(obj):
+                                 continue
+                            if any(mod.type == "MULTIRES" for mod in obj.modifiers):
+                                multires_obj_names.add(obj.name)
 
+                        if multires_obj_names:
+                            row = col.row(align=True)
+                            row.separator()
+                            row.label(text="One or more of your objects are using Multires.", icon="ERROR")
+                            row = col.row(align=True)
+                            row.separator()
+                            row.label(text="This has issues excluding the eyes, try adding")
+                            row = col.row(align=True)
+                            row.separator()
+                            row.label(text="'ambient occlusion' shape keys instead.")
+
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_alpha', expand=True)
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_metallic', expand=True)
+                col.separator()
+
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_emit', expand=True)
+                if context.scene.bake_pass_emit:
+                    row = col.row(align=True)
+                    row.separator()
+                    row.prop(context.scene, 'bake_emit_indirect', expand=True)
+                    if context.scene.bake_emit_indirect:
+                        row = col.row(align=True)
+                        row.separator()
+                        row.prop(context.scene, 'bake_emit_exclude_eyes', expand=True)
+
+                row = col.row(align=True)
+        ### END ADVANCED GENERAL OPTIONS
+        else: # if not bake_platforms:
             row = col.row(align=True)
+            row.label(text="To get started, press 'Autodetect All' above.", icon="INFO")
+            row = col.row(align=True)
+            row.label(text="Then if the settings look right, press 'Copy and Bake'.", icon="BLANK1")
+
         col.separator()
         col.separator()
         if context.preferences.addons['cycles'].preferences.compute_device_type == 'NONE' and context.scene.bake_device == 'GPU':
@@ -340,11 +366,15 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'bake_device', expand=True)
 
+        # Bake button
+        row = col.row(align=True)
+        row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
+
         # Warnings. Ideally these should be dynamically generated but only take up a limited number of rows
-        non_bsdf_mat_names = []
-        multi_bsdf_mat_names = []
-        non_node_mat_names = []
-        non_world_scale_names = []
+        non_bsdf_mat_names = set()
+        multi_bsdf_mat_names = set()
+        non_node_mat_names = set()
+        non_world_scale_names = set()
         for obj in Common.get_meshes_objects(check=False):
             if obj.name not in context.view_layer.objects:
                 continue
@@ -353,13 +383,13 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             for slot in obj.material_slots:
                 if slot.material:
                     if not slot.material.use_nodes:
-                        non_node_mat_names.append(slot.material.name)
+                        non_node_mat_names.add(slot.material.name)
                     if not any(node.type == "BSDF_PRINCIPLED" for node in slot.material.node_tree.nodes):
-                        non_bsdf_mat_names.append(slot.material.name)
+                        non_bsdf_mat_names.add(slot.material.name)
                     if len([node for node in slot.material.node_tree.nodes if node.type == "BSDF_PRINCIPLED"]) > 1:
-                        multi_bsdf_mat_names.append(slot.material.name)
+                        multi_bsdf_mat_names.add(slot.material.name)
             if any(dim != 1.0 for dim in obj.scale):
-                non_world_scale_names.append(obj.name)
+                non_world_scale_names.add(obj.name)
 
         if non_node_mat_names:
             row = col.row(align=True)
@@ -376,6 +406,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.label(text="Bake may have unexpected results.", icon="BLANK1")
             for name in non_bsdf_mat_names:
                 row = col.row(align=True)
+                row.separator()
                 row.label(text=name, icon="MATERIAL")
         if multi_bsdf_mat_names:
             row = col.row(align=True)
@@ -384,6 +415,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.label(text="Bake may have unexpected results.", icon="BLANK1")
             for name in multi_bsdf_mat_names:
                 row = col.row(align=True)
+                row.separator()
                 row.label(text=name, icon="MATERIAL")
         if non_world_scale_names:
             row = col.row(align=True)
@@ -392,10 +424,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             row.label(text="The resulting islands will be inversely scaled.", icon="BLANK1")
             for name in non_world_scale_names:
                 row = col.row(align=True)
-                row.label(text=name + ": " + "{:.1f}".format(1.0/bpy.data.objects[name].scale[0]) + "x")
+                row.separator()
+                row.label(text=name + ": " + "{:.1f}".format(1.0/bpy.data.objects[name].scale[0]) + "x", icon="OBJECT_DATA")
 
-        # TODO: warn if multires + AO
-
-        # Bake button
-        row = col.row(align=True)
-        row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
