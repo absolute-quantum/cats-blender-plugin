@@ -247,6 +247,19 @@ class BakeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        for obj in Common.get_meshes_objects(check=False):
+            if obj.name not in context.view_layer.objects:
+                continue
+            if Common.is_hidden(obj):
+                continue
+            for slot in obj.material_slots:
+                if slot.material:
+                    if not slot.material.use_nodes:
+                        return False
+                else:
+                    if len(obj.material_slots) == 1:
+                        return False
+
         return context.scene.bake_platforms
 
     # Only works between equal data types.
@@ -1844,6 +1857,14 @@ class BakeButton(bpy.types.Operator):
                     elif obj.type == "ARMATURE":
                         obj.name = "Armature"
 
+            # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
+            for obj in plat_collection.all_objects:
+                if obj.type == 'MESH':
+                    context.view_layer.objects.active = obj
+                    while len(obj.material_slots) > 0:
+                        obj.active_material_index = 0  # select the top material
+                        bpy.ops.object.material_slot_remove()
+
             for export_group in export_groups:
                 bpy.ops.object.select_all(action='DESELECT')
                 for obj in plat_collection.all_objects:
@@ -1873,6 +1894,11 @@ class BakeButton(bpy.types.Operator):
                                               sort_by_name=False, export_object_transformation_type=0, export_object_transformation_type_selection='matrix',
                                               export_animation_transformation_type=0, open_sim=False,
                                               limit_precision=False, keep_bind_info=False)
+
+            # Reapply cats material
+            for child in plat_collection.all_objects:
+                if child.type == "MESH":
+                    child.data.materials.append(mat)
 
             # Try to only output what you'll end up importing into unity.
             context.scene.render.image_settings.color_mode = 'RGBA'

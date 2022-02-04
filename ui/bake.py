@@ -375,6 +375,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         multi_bsdf_mat_names = set()
         non_node_mat_names = set()
         non_world_scale_names = set()
+        empty_material_slots = set()
         for obj in Common.get_meshes_objects(check=False):
             if obj.name not in context.view_layer.objects:
                 continue
@@ -388,6 +389,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         non_bsdf_mat_names.add(slot.material.name)
                     if len([node for node in slot.material.node_tree.nodes if node.type == "BSDF_PRINCIPLED"]) > 1:
                         multi_bsdf_mat_names.add(slot.material.name)
+                else:
+                    if len(obj.material_slots) == 1:
+                        empty_material_slots.add(obj.name)
             if any(dim != 1.0 for dim in obj.scale):
                 non_world_scale_names.add(obj.name)
 
@@ -417,6 +421,15 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.label(text=name, icon="MATERIAL")
+        if empty_material_slots:
+            row = col.row(align=True)
+            row.label(text="The following objects have no material.", icon="INFO")
+            row = col.row(align=True)
+            row.label(text="Please assign one before continuing.", icon="BLANK1")
+            for name in empty_material_slots:
+                row = col.row(align=True)
+                row.separator()
+                row.label(text=name, icon="OBJECT_DATA")
         if non_world_scale_names:
             row = col.row(align=True)
             row.label(text="The following objects do not have scale applied", icon="INFO")
