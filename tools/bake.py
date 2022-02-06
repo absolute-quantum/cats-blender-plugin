@@ -194,8 +194,11 @@ class BakePresetQuest(bpy.types.Operator):
 
     def execute(self, context):
         item = context.scene.bake_platforms.add()
-        item.name = "VRChat Quest"
+        item.name = "VRChat Quest Excellent"
         autodetect_passes(self, context, item, 7500, "QUEST")
+        itemgood = context.scene.bake_platforms.add()
+        itemgood.name = "VRChat Quest Good"
+        autodetect_passes(self, context, itemgood, 10000, "QUEST")
         return {'FINISHED'}
 
 @register_wrap
