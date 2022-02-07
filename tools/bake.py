@@ -1325,6 +1325,8 @@ class BakeButton(bpy.types.Operator):
             use_lods = platform.use_lods
             lods = platform.lods
             generate_prop_bones = platform.generate_prop_bones
+            generate_prop_bone_max_influence_count = platform.generate_prop_bone_max_influence_count
+            generate_prop_bone_max_overall = 75 # platform-specific?
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
@@ -1411,47 +1413,72 @@ class BakeButton(bpy.types.Operator):
                 # Find any mesh that's weighted to a single bone, duplicate and rename that bone, move mesh's vertex group to the new bone
                 for obj in plat_collection.objects:
                     if obj.type == "MESH":
+                        orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
                         found_vertex_groups = set()
+                        path_strings = []
                         for vertex in obj.data.vertices:
                             found_vertex_groups |= set([vgp.group for vgp in vertex.groups if vgp.weight > 0.00001])
 
-                        if len(found_vertex_groups) == 1:
+                        if found_vertex_groups and len(found_vertex_groups) <= generate_prop_bone_max_influence_count:
                             vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
-                            vgroup_name = vgroup_lookup[found_vertex_groups.pop()]
-                            print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
-                            # If the obj has ".001" or similar, trim it
-                            orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
-                            newbonename = "~" + vgroup_name + "_Prop_" + orig_obj_name
-                            obj.vertex_groups[vgroup_name].name = newbonename
-                            context.view_layer.objects.active = plat_arm_copy
-                            Common.switch("EDIT")
-                            orig_bone = plat_arm_copy.data.edit_bones[vgroup_name]
-                            if not orig_bone.children:
-                                Common.switch("OBJECT")
-                                print("Object " + obj.name + " already has no children, skipping")
-                            prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
-                            prop_bone.head = orig_bone.head
-                            prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
-                            prop_bone.parent = orig_bone
-                            # Create en/disable animation files
-                            next_bone = prop_bone.parent
-                            path_string = prop_bone.name
-                            while next_bone != None:
-                                path_string = next_bone.name + "/" + path_string
-                                next_bone = next_bone.parent
-                            path_string = "Armature/" + path_string
+                            for vgp in found_vertex_groups:
+                                vgroup_name = vgroup_lookup[vgp]
 
-                            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/enable.anim", 'r') as infile:
-                                newname = "Enable " + orig_obj_name
-                                with open(bpy.path.abspath("//CATS Bake/") + newname + ".anim", 'w') as outfile:
-                                    for line in infile:
-                                        outfile.write(line.replace("{NAME_STRING}", newname).replace("{PATH_STRING}", path_string))
-                            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/disable.anim", 'r') as infile:
-                                newname = "Disable " + orig_obj_name
-                                with open(bpy.path.abspath("//CATS Bake/") + newname + ".anim", 'w') as outfile:
-                                    for line in infile:
-                                        outfile.write(line.replace("{NAME_STRING}", newname).replace("{PATH_STRING}", path_string))
-                            Common.switch("OBJECT")
+                                print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
+                                # If the obj has ".001" or similar, trim it
+                                newbonename = "~" + vgroup_name + "_Prop_" + orig_obj_name
+                                obj.vertex_groups[vgroup_name].name = newbonename
+                                context.view_layer.objects.active = plat_arm_copy
+                                Common.switch("EDIT")
+                                orig_bone = plat_arm_copy.data.edit_bones[vgroup_name]
+                                if not orig_bone.children:
+                                    #TODO: this doesn't account for props attached to something which has existing attachments
+                                    Common.switch("OBJECT")
+                                    print("Object " + obj.name + " already has no children, skipping")
+                                    continue
+                                prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
+                                prop_bone.head = orig_bone.head
+                                prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
+                                prop_bone.parent = orig_bone
+                                # To create en/disable animation files
+                                next_bone = prop_bone.parent
+                                path_string = prop_bone.name
+                                while next_bone != None:
+                                    path_string = next_bone.name + "/" + path_string
+                                    next_bone = next_bone.parent
+                                path_string = "Armature/" + path_string
+                                path_strings.append(path_string)
+                                Common.switch("OBJECT")
+
+                        # A bit of a hacky string manipulation, just create a curve for each bone based on the editor path. Output file is YAML
+                        # {EDITOR_VALUE} = 1
+                        # {SCALE_VALUE} = {x: 1, y: 1, z: 1}
+                        with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/enable.anim", 'r') as infile:
+                            newname = "Enable " + orig_obj_name
+                            editor_curves = ""
+                            scale_curves = ""
+                            for path_string in path_strings:
+                                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_ScaleCurves.anim.part", 'r') as infilepart:
+                                    scale_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{SCALE_VALUE}", "{x: 1, y: 1, z: 1}") for line in infilepart])
+                                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_EditorCurves.anim.part", 'r') as infilepart:
+                                    editor_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{EDITOR_VALUE}", "1") for line in infilepart])
+
+                            with open(bpy.path.abspath("//CATS Bake/") + newname + ".anim", 'w') as outfile:
+                                for line in infile:
+                                    outfile.write(line.replace("{NAME_STRING}", newname).replace("{EDITOR_CURVES}", editor_curves).replace("{SCALE_CURVES}", scale_curves))
+                        with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/disable.anim", 'r') as infile:
+                            newname = "Disable " + orig_obj_name
+                            editor_curves = ""
+                            scale_curves = ""
+                            for path_string in path_strings:
+                                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_ScaleCurves.anim.part", 'r') as infilepart:
+                                    scale_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{SCALE_VALUE}", "{x: 0, y: 0, z: 0}") for line in infilepart])
+                                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_EditorCurves.anim.part", 'r') as infilepart:
+                                    editor_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{EDITOR_VALUE}", "0") for line in infilepart])
+
+                            with open(bpy.path.abspath("//CATS Bake/") + newname + ".anim", 'w') as outfile:
+                                for line in infile:
+                                    outfile.write(line.replace("{NAME_STRING}", newname).replace("{EDITOR_CURVES}", editor_curves).replace("{SCALE_CURVES}", scale_curves))
 
             if translate_bone_names == "SECONDLIFE":
                 bpy.ops.cats_manual.convert_to_secondlife()

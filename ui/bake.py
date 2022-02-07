@@ -186,6 +186,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row.prop(item, 'merge_twistbones', expand=True)
                 row = col.row(align=True)
                 row.prop(item, 'generate_prop_bones', expand=True)
+                if item.generate_prop_bones:
+                    row = col.row(align=True)
+                    row.prop(item, 'generate_prop_bone_max_influence_count', expand=True)
 
                 row = col.row(align=True)
                 row.prop(item, 'specular_setup', expand=True)
@@ -392,6 +395,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 else:
                     if len(obj.material_slots) == 1:
                         empty_material_slots.add(obj.name)
+            if len(obj.material_slots) == 0:
+                empty_material_slots.add(obj.name)
             if any(dim != 1.0 for dim in obj.scale):
                 non_world_scale_names.add(obj.name)
 
