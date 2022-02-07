@@ -57,6 +57,10 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 0.95
             row.prop(context.scene, 'merge_armatures_remove_zero_weight_bones')
+            
+            row = col.row(align=True)
+            row.scale_y = 0.95
+            row.prop(context.scene, 'merge_armatures_cleanup_shape_keys')
 
             row = col.row(align=True)
             row.scale_y = 1.05
