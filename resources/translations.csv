@@ -900,6 +900,9 @@ Not checking this will always apply transforms",,
 Scene.merge_armatures_remove_zero_weight_bones.label,Remove Zero Weight Bones,ゼロウェイトボーンを削除する,제로 웨이트 본 제거
 Scene.merge_armatures_remove_zero_weight_bones.desc,"Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.
 Uncheck this if bones or vertex groups that you want to keep got deleted",,
+Scene.merge_armatures_cleanup_shape_keys.label,Cleanup Shape Keys,
+Scene.merge_armatures_cleanup_shape_keys.desc,"Cleans up the meshes shape keys.
+Uncheck this if shape keys you want to keep got deleted",,
 Scene.decimation_mode.label,Decimation Mode,単純化モード,
 Scene.decimation_mode.desc,Decimation Mode,,
 Scene.decimation_mode.smart.label,Smart,スマート,

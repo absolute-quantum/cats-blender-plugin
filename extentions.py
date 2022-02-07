@@ -175,6 +175,12 @@ def register():
         description=t('Scene.merge_armatures_remove_zero_weight_bones.desc'),
         default=True
     )
+    
+    Scene.merge_armatures_cleanup_shape_keys = BoolProperty(
+        name=t('Scene.merge_armatures_cleanup_shape_keys.label'),
+        description=t('Scene.merge_armatures_cleanup_shape_keys.desc'),
+        default=True
+    )
 
     # Decimation
     Scene.decimation_mode = EnumProperty(
