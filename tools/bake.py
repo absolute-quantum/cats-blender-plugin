@@ -1930,7 +1930,10 @@ class BakeButton(bpy.types.Operator):
             # Reapply cats material
             for child in plat_collection.all_objects:
                 if child.type == "MESH":
-                    child.data.materials.append(mat)
+                    if len(child.material_slots) == 0:
+                        child.data.materials.append(mat)
+                    else:
+                        child.material_slots[0].material = mat
 
             # Try to only output what you'll end up importing into unity.
             context.scene.render.image_settings.color_mode = 'RGBA'
