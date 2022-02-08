@@ -917,26 +917,28 @@ class BakeButton(bpy.types.Operator):
                     context.view_layer.objects.active = obj
                     for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', 'RightEye', 'righteye', 'Righteye', 'Eye.R']:
                         if group in obj.vertex_groups:
-                            print("{} found in {}".format(group, obj.name))
-                            bpy.ops.object.mode_set(mode='EDIT')
-                            bpy.ops.uv.select_all(action='DESELECT')
-                            bpy.ops.mesh.select_all(action='DESELECT')
-                            # Select all vertices in it
-                            obj.vertex_groups.active = obj.vertex_groups[group]
-                            bpy.ops.object.vertex_group_select()
-                            # Synchronize
-                            bpy.ops.object.mode_set(mode='OBJECT')
-                            bpy.ops.object.mode_set(mode='EDIT')
-                            # Then select all UVs
-                            bpy.ops.uv.select_all(action='SELECT')
-                            bpy.ops.object.mode_set(mode='OBJECT')
-                            # Then for each UV (cause of the viewport thing) scale up by the selected factor
-                            uv_layer = obj.data.uv_layers["CATS UV"].data
-                            for poly in obj.data.polygons:
-                                for loop in poly.loop_indices:
-                                    if uv_layer[loop].select:
-                                        uv_layer[loop].uv.x *= prioritize_factor
-                                        uv_layer[loop].uv.y *= prioritize_factor
+                            vgroup_idx = obj.vertex_groups[group].index
+                            if any(any(v_group.group == vgroup_idx for v_group in vert.groups) for vert in obj.data.vertices):
+                                print("{} found in {}".format(group, obj.name))
+                                bpy.ops.object.mode_set(mode='EDIT')
+                                bpy.ops.uv.select_all(action='DESELECT')
+                                bpy.ops.mesh.select_all(action='DESELECT')
+                                # Select all vertices in it
+                                obj.vertex_groups.active = obj.vertex_groups[group]
+                                bpy.ops.object.vertex_group_select()
+                                # Synchronize
+                                bpy.ops.object.mode_set(mode='OBJECT')
+                                bpy.ops.object.mode_set(mode='EDIT')
+                                # Then select all UVs
+                                bpy.ops.uv.select_all(action='SELECT')
+                                bpy.ops.object.mode_set(mode='OBJECT')
+                                # Then for each UV (cause of the viewport thing) scale up by the selected factor
+                                uv_layer = obj.data.uv_layers["CATS UV"].data
+                                for poly in obj.data.polygons:
+                                    for loop in poly.loop_indices:
+                                        if uv_layer[loop].select:
+                                            uv_layer[loop].uv.x *= prioritize_factor
+                                            uv_layer[loop].uv.y *= prioritize_factor
 
 
             # Pack islands. Optionally use UVPackMaster if it's available
