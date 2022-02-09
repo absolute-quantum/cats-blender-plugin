@@ -90,9 +90,6 @@ def autodetect_passes(self, context, item, tricount, platform):
     context.scene.bake_pass_normal = (item.use_decimation
                                       or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
 
-    # Apply transforms: on if more than one mesh TODO: with different materials?
-    context.scene.bake_normal_apply_trans = len(objects) > 1
-
     if any("Target" in obj.data.uv_layers for obj in Common.get_meshes_objects(check=False)):
         context.scene.bake_uv_overlap_correction = 'MANUAL'
     elif any(plat.use_decimation for plat in context.scene.bake_platforms) and context.scene.bake_pass_normal:
@@ -604,7 +601,6 @@ class BakeButton(bpy.types.Operator):
 
         # Pass options
         illuminate_eyes = context.scene.bake_illuminate_eyes
-        normal_apply_trans = context.scene.bake_normal_apply_trans
         supersample_normals = context.scene.bake_pass_normal and any(plat.use_decimation for plat in context.scene.bake_platforms) and uv_overlap_correction == "UNMIRROR" # Bake the intermediate step at 2x resolution
         overlap_aware = False # Unreliable until UVP doesn't care about the island scale.
         emit_indirect = context.scene.bake_emit_indirect
@@ -1097,10 +1093,7 @@ class BakeButton(bpy.types.Operator):
             if sharpen_bakes:
                 self.filter_image(context, "SCRIPT_metallic.png", BakeButton.sharpen_create)
 
-       # TODO: advanced: bake detail mask from diffuse node setup
-
-        # TODO: specularity? would allow specular setups on pre-existing avatars
-
+        # TODO: advanced: bake detail mask from diffuse node setup
 
         # Create 'disable' shape keys, each of which shrinks their relevant mesh down to a single point
         if create_disable_shapekeys:
@@ -1148,18 +1141,13 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.cats_shapekey.shape_key_to_basis()
                 obj.active_shape_key_index = 0
 
-        # Bake highres normals
-        if not normal_apply_trans:
-            # Join meshes
-            Common.join_meshes(armature_name=arm_copy.name, repair_shape_keys=False)
-        else:
-            for obj in collection.all_objects:
-                # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
-                if obj.type == "MESH":
-                    bpy.ops.object.select_all(action='DESELECT')
-                    obj.select_set(True)
-                    context.view_layer.objects.active = obj
-                    bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
+        # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
+        for obj in collection.all_objects:
+            if obj.type == "MESH":
+                bpy.ops.object.select_all(action='DESELECT')
+                obj.select_set(True)
+                context.view_layer.objects.active = obj
+                bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
 
         # Bake normals in object coordinates
         if pass_normal:
@@ -1287,18 +1275,24 @@ class BakeButton(bpy.types.Operator):
         # Apply any masking modifiers before decimation
         print("Applying mask modifiers")
         for obj in collection.all_objects:
-            Common.switch("OBJECT")
+            if not any(mod.type == "MASK" and mod.show_viewport for mod in obj.modifiers):
+                continue
             bpy.ops.object.select_all(action='DESELECT')
             context.view_layer.objects.active = obj
 
-            for mod in obj.modifiers:
-                if mod.show_viewport and mod.type == 'MASK':
-                    Common.switch("OBJECT")
-                    vgroup_idx = obj.vertex_groups[mod.vertex_group].index
-                    for vert in obj.data.vertices:
-                        vert.select = any(group.group == vgroup_idx and group.weight > 0.0 for group in vert.groups)
-                    Common.switch("EDIT")
-                    bpy.ops.mesh.delete(type="VERT")
+            vgroup_idxes = set([obj.vertex_groups[mod.vertex_group].index for mod in obj.modifiers
+                            if mod.show_viewport and mod.type == 'MASK'])
+            for group in vgroup_idxes:
+                print("Deleting vertices from {} on obj {}".format(group, obj.name))
+            Common.switch("EDIT")
+            bpy.ops.mesh.select_all(action='DESELECT')
+            Common.switch("OBJECT")
+            for vert in obj.data.vertices:
+                vert.select = any(group.group in vgroup_idxes and group.weight > 0.0 for group in vert.groups)
+
+            Common.switch("EDIT")
+            bpy.ops.mesh.delete(type="VERT")
+        Common.switch("OBJECT")
 
         ########### BEGIN PLATFORM SPECIFIC CODE ###########
         for platform_number, platform in enumerate(context.scene.bake_platforms):
@@ -1361,6 +1355,7 @@ class BakeButton(bpy.types.Operator):
                 if bakename not in ["specular.png", "normal.png"]:
                     orig_image = bpy.data.images["SCRIPT_" + bakename]
                     image.pixels[:] = orig_image.pixels[:]
+
 
             # Create yet another output collection
             plat_collection = bpy.data.collections.new("CATS Bake " + platform_name)
