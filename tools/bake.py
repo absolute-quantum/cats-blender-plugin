@@ -1128,8 +1128,8 @@ class BakeButton(bpy.types.Operator):
                             key.value = 0.0
 
         # Option to apply current shape keys, otherwise normals bake weird
-        # If true, apply all shapekeys and remove '_bakeme' keys
-        # Otherwise, only apply '_bakeme' keys
+        # If true, apply all shapekeys and remove '_bake' keys
+        # Otherwise, only apply '_bake' keys
         Common.switch('EDIT')
         Common.switch('OBJECT')
         for name in [ob.name for ob in collection.all_objects]:
@@ -1140,6 +1140,9 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.object.shape_key_add(from_mix=True)
                 bpy.ops.cats_shapekey.shape_key_to_basis()
                 obj.active_shape_key_index = 0
+                # Ensure all keys are now set to 0.0
+                for key in obj.data.shape_keys.key_blocks:
+                    key.value = 0.0
 
         # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
         for obj in collection.all_objects:
@@ -1420,6 +1423,11 @@ class BakeButton(bpy.types.Operator):
                             vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
                             for vgp in found_vertex_groups:
                                 vgroup_name = vgroup_lookup[vgp]
+                                if not plat_arm_copy.data.bones[vgroup_name].children:
+                                    #TODO: this doesn't account for props attached to something which has existing attachments
+                                    Common.switch("OBJECT")
+                                    print("Object " + obj.name + " already has no children, skipping")
+                                    continue
 
                                 print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
                                 # If the obj has ".001" or similar, trim it
@@ -1428,11 +1436,6 @@ class BakeButton(bpy.types.Operator):
                                 context.view_layer.objects.active = plat_arm_copy
                                 Common.switch("EDIT")
                                 orig_bone = plat_arm_copy.data.edit_bones[vgroup_name]
-                                if not orig_bone.children:
-                                    #TODO: this doesn't account for props attached to something which has existing attachments
-                                    Common.switch("OBJECT")
-                                    print("Object " + obj.name + " already has no children, skipping")
-                                    continue
                                 prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
                                 prop_bone.head = orig_bone.head
                                 prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]

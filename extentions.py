@@ -175,7 +175,7 @@ def register():
         description=t('Scene.merge_armatures_remove_zero_weight_bones.desc'),
         default=True
     )
-    
+
     Scene.merge_armatures_cleanup_shape_keys = BoolProperty(
         name=t('Scene.merge_armatures_cleanup_shape_keys.label'),
         description=t('Scene.merge_armatures_cleanup_shape_keys.desc'),
@@ -303,7 +303,7 @@ def register():
         generate_prop_bone_max_influence_count: IntProperty(
             name="Max Bones Per Prop",
             description="Maximum bones a prop can be attached to to be considered a prop. More will create more toggleable props, but increase armature complexity.",
-            default=4,
+            default=2,
             min=1,
             max=100
         )
