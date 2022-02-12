@@ -79,9 +79,9 @@ bone_names = {
     "pinkie_2_l": ["littlefinger2l"],
     "pinkie_3_l": ["littlefinger3l"],
     
-    "middle_1_l": ["ringfinger1l"],
-    "middle_2_l": ["ringfinger2l"],
-    "middle_3_l": ["ringfinger3l"],
+    "ring_1_l": ["ringfinger1l"],
+    "ring_2_l": ["ringfinger2l"],
+    "ring_3_l": ["ringfinger3l"],
     
     "middle_1_l": ["middlefinger1l"],
     "middle_2_l": ["middlefinger2l"],

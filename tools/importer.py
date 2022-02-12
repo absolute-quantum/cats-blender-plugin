@@ -1259,6 +1259,39 @@ class ExportGmodPlayermodel(bpy.types.Operator):
         
         
         print("generating compiling script file for body (.qc file)")
+        jiggle_bone_list = ""
+        jiggle_bone_entry = """\n$jigglebone \"{bone name here}\" {
+    is_flexible
+    {
+        length 10
+        tip_mass 20
+        pitch_stiffness 50
+        pitch_damping 10
+        yaw_stiffness 50
+        yaw_damping 10
+        along_stiffness 100
+        along_damping 0
+        pitch_constraint -20 20
+    }
+}\n"""
+        print("finding tail jiggle bones")
+        refcoll = bpy.data.collections[sanitized_model_name+"_ref"]
+        body_armature = None
+        parentobj = None
+        for obj in refcoll.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                body_armature = obj
+        Common.switch("OBJECT")
+        Common.unselect_all()
+        Common.set_active(body_armature,True)
+        Common.switch('EDIT')
+        for bone in body_armature.data.edit_bones:
+            if "tail" in bone.name.lower():
+                 jiggle_bone_list += jiggle_bone_entry.replace("{bone name here}", bone.name)
+        
+        
         qcfile = """$modelname \""""+sanitized_model_name+"""/"""+sanitized_model_name+""".mdl\"
 $BodyGroup \""""+refcoll.name+"""\"
 {
@@ -1298,8 +1331,7 @@ $bonemerge \"ValveBiped.Bip01_R_Clavicle\"
 $bonemerge \"ValveBiped.Bip01_R_UpperArm\"
 $bonemerge \"ValveBiped.Bip01_R_Forearm\"
 $bonemerge \"ValveBiped.Bip01_R_Hand\"
-$bonemerge \"ValveBiped.Anim_Attachment_RH\"
-
+$bonemerge \"ValveBiped.Anim_Attachment_RH\"\n\n"""+jiggle_bone_list+"""\n\n
 $ikchain \"rhand\" \"ValveBiped.Bip01_R_Hand\" knee 0.707 0.707 0
 $ikchain \"lhand\" \"ValveBiped.Bip01_L_Hand\" knee 0.707 0.707 0
 $ikchain \"rfoot\" \"ValveBiped.Bip01_R_Foot\" knee 0.707 -0.707 0
