@@ -589,14 +589,14 @@ class BakeButton(bpy.types.Operator):
         samplecurve = [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000334,0.000678,0.001033,0.001400,0.001779,0.002170,0.002575,0.002993,0.003424,0.003871,0.004332,0.004808,0.005301,0.005810,0.006335,0.006878,0.007439,0.008018,0.008616,0.009233,0.009870,0.010527,0.011204,0.011903,0.012624,0.013367,0.014132,0.014920,0.015732,0.016568,0.017429,0.018314,0.019225,0.020163,0.021126,0.022117,0.023134,0.024180,0.025255,0.026358,0.027490,0.028652,0.029845,0.031068,0.032323,0.033610,0.034928,0.036280,0.037664,0.039083,0.040535,0.042022,0.043544,0.045102,0.046696,0.048327,0.049994,0.051699,0.053442,0.055224,0.057045,0.058905,0.060805,0.062745,0.064729,0.066758,0.068831,0.070948,0.073109,0.075311,0.077555,0.079841,0.082166,0.084531,0.086935,0.089377,0.091856,0.094371,0.096923,0.099510,0.102131,0.104786,0.107474,0.110195,0.112947,0.115729,0.118542,0.121385,0.124256,0.127155,0.130082,0.133035,0.136013,0.139018,0.142046,0.145098,0.148173,0.151270,0.154389,0.157529,0.160689,0.163868,0.167066,0.170282,0.173515,0.176765,0.180030,0.183310,0.186605,0.189914,0.193235,0.196569,0.199914,0.203270,0.206635,0.210011,0.213395,0.216786,0.220185,0.223591,0.227002,0.230418,0.233838,0.237263,0.240690,0.244119,0.247549,0.250980]
         
         #256 values in curve
-        return samplecurve[round(256/sample_val)-1]
+        return samplecurve[round(256*sample_val)]
     
     #this samples for roughness map curve
     def sample_curve_roughness(self,sample_val):
         samplecurve = [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.002133,0.004309,0.006529,0.008791,0.011097,0.013447,0.015840,0.018276,0.020756,0.023280,0.025847,0.028459,0.031114,0.033813,0.036557,0.039344,0.042176,0.045053,0.047973,0.050938,0.053948,0.057002,0.060102,0.063245,0.066434,0.069668,0.072947,0.076271,0.079640,0.083054,0.086514,0.090019,0.093570,0.097166,0.100808,0.104495,0.108229,0.112008,0.115834,0.119705,0.123623,0.127586,0.131596,0.135653,0.139756,0.143905,0.148101,0.152343,0.156633,0.160969,0.165352,0.169782,0.174259,0.178784,0.183355,0.187974,0.192640,0.197354,0.202115,0.206924,0.211781,0.216685,0.221637,0.226637,0.231685,0.236781,0.241926,0.247118,0.252359,0.257648,0.262986,0.268372,0.273807,0.279291,0.284823,0.290404,0.296035,0.301714,0.307442,0.313220,0.319046,0.324922,0.330848,0.336823,0.342847,0.348921,0.355045,0.361219,0.367443,0.373716,0.380040,0.386413,0.392837,0.399311,0.405836,0.412410,0.419036,0.425712,0.432438,0.439216,0.446181,0.453467,0.461066,0.468971,0.477176,0.485674,0.494457,0.503519,0.512853,0.522451,0.532307,0.542413,0.552764,0.563351,0.574168,0.585208,0.596464,0.607929,0.619596,0.631458,0.643508,0.655739,0.668144,0.680716,0.693449,0.706335,0.719367,0.732538,0.745842,0.759271,0.772819,0.786478,0.800241,0.814102,0.828054,0.842089,0.856201,0.870382,0.884626,0.898926,0.913275,0.927665,0.942090,0.956543,0.971017,0.985505,1.000000]
         
         #256 values in curve
-        return samplecurve[round(256/sample_val)-1]
+        return samplecurve[round(256*sample_val)]
     
     #needed because it likes to pause blender entirely for a key input in console and we don't want that garbage - @989onan
     def compile_gmod_tga(self,steam_library_path,images_path,texturename):
@@ -605,7 +605,7 @@ class BakeButton(bpy.types.Operator):
         #print(str([steam_library_path+"steamapps/common/GarrysMod/bin/vtex.exe", images_path+"materialsrc/"+texturename,"-mkdir", "-quiet","-game", steam_library_path+"steamapps/common/GarrysMod/garrysmod"]))
         proc = subprocess.Popen([steam_library_path+"steamapps/common/GarrysMod/bin/vtex.exe", images_path+"materialsrc/"+texturename,"-mkdir", "-quiet","-game", steam_library_path+"steamapps/common/GarrysMod/garrysmod"])
         # trigger timout and kill process in 5 seconds
-        timer = threading.Timer(6, on_timeout, (proc,{'timeout':False}))
+        timer = threading.Timer(10, on_timeout, (proc,{'timeout':False}))
         timer.start()
         proc.wait()
         # in case we didn't hit timeout
@@ -677,20 +677,20 @@ class BakeButton(bpy.types.Operator):
             baked_smoothness_buffer = list(baked_smoothness.pixels[:])
             
             for idx in range(3, len(smoothness_image_buffer), 4):
-                roughness_image_buffer[idx - 3] = sample_curve_roughness(1-smoothness_image_buffer[idx - 3])
-                roughness_image_buffer[idx - 2] = sample_curve_roughness(1-smoothness_image_buffer[idx - 2])
-                roughness_image_buffer[idx - 1] = sample_curve_roughness(1-smoothness_image_buffer[idx - 1])
+                roughness_image_buffer[idx - 3] = self.sample_curve_roughness(1-smoothness_image_buffer[idx - 3])
+                roughness_image_buffer[idx - 2] = self.sample_curve_roughness(1-smoothness_image_buffer[idx - 2])
+                roughness_image_buffer[idx - 1] = self.sample_curve_roughness(1-smoothness_image_buffer[idx - 1])
             
             if shouldpackalpha and (not(normal_image is not None)) and (diffuse_image is not None):
                 diffuse_image_buffer = list(diffuse_image.pixels[:])
                 for idx in range(3,len(smoothness_image_buffer),4):
-                    diffuse_image_buffer[idx] = sample_curve_smoothness(smoothness_image_buffer[idx - 1])
+                    diffuse_image_buffer[idx] = self.sample_curve_smoothness(smoothness_image_buffer[idx - 1])
                     vmtfile += "\n    \"$basealphaenvmapmask\" 1"
                 diffuse_image.pixels[:] = diffuse_image_buffer
             elif shouldpackalpha and (normal_image is not None):
                 normal_image_buffer = list(normal_image.pixels[:])
                 for idx in range(3,len(smoothness_image_buffer),4):
-                    normal_image_buffer[idx] = sample_curve_smoothness(smoothness_image_buffer[idx - 1])
+                    normal_image_buffer[idx] = self.sample_curve_smoothness(smoothness_image_buffer[idx - 1])
                     vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
                 normal_image.pixels[:] = normal_image_buffer
                 
@@ -808,7 +808,7 @@ class BakeButton(bpy.types.Operator):
             
             for idx in range(3, len(pixel_buffer), 4):
                  baked_emissive_image_buffer[idx - 3] = pixel_buffer[idx - 3]
-                 baked_emissive_image_buffer[idx - 2] = 1-pixel_buffer[idx - 2] #flip green channel for garry's mod
+                 baked_emissive_image_buffer[idx - 2] = pixel_buffer[idx - 2]
                  baked_emissive_image_buffer[idx - 1] = pixel_buffer[idx - 1]
             
             baked_emissive_image.pixels[:] = baked_emissive_image_buffer
@@ -1422,6 +1422,7 @@ class BakeButton(bpy.types.Operator):
                     if supersample_normals:
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
                     else:
+                    
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
             bake_size = ((resolution * 2, resolution * 2) if
                          supersample_normals else

@@ -1438,6 +1438,9 @@ $sequence \"proportions\"{
         #body model
         parentobj = None
         body_armature = None
+        bpy.context.scene.vs.export_list_active = 0
+        bpy.context.scene.vs.export_list_active = 1
+        bpy.ops.export_scene.smd()
         collection = bpy.data.collections[sanitized_model_name+"_ref"]
         for obj in collection.objects:
             if obj.type == "MESH":
