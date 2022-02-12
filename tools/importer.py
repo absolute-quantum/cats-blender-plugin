@@ -30,7 +30,12 @@ import zipfile
 import platform
 import webbrowser
 import addon_utils
+import shutil
 import bpy_extras.io_utils
+import numpy as np
+import subprocess
+from mathutils import Matrix
+from math import sqrt
 
 from .. import globs
 from . import armature_manual
@@ -681,6 +686,1089 @@ class EnableMMD(bpy.types.Operator):
         row.label(text=t('EnableMMD.required2'))
 
 
+
+@register_wrap
+class ExportGmodPlayermodel(bpy.types.Operator):
+    bl_idname = "cats_importer.export_gmod_addon"
+    bl_label = "Export Gmod Addon"
+    bl_description = "Export as Gmod Playermodel Addon to your addons and make GMA beside Blender file. May not always work."
+    bl_options = {'INTERNAL'}
+    
+    steam_library_path = bpy.props.StringProperty(subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
+    gmod_model_name = bpy.props.StringProperty(default = "Missing No")
+    platform_name = bpy.props.StringProperty(default = "Garrys Mod")
+    
+    def execute(self, context):
+        print("===============START GMOD EXPORT PROCESS===============")
+        
+        model_name = self.gmod_model_name
+        platform_name = self.platform_name
+        sanitized_model_name = ""
+        offical_model_name = ""
+        
+        #for file names which must be lower case and no special symbols.
+        for i in model_name.lower():
+            if i.isalnum() or i == "_":
+                sanitized_model_name += i
+            else:
+                sanitized_model_name += "_"
+        #for name that appears in playermodel selection screen.
+        for i in model_name:
+            if i.isalnum() or i == "_" or i == " ":
+                offical_model_name += i
+            else:
+                offical_model_name += "_"
+        
+        print("sanitized model name:"+sanitized_model_name)
+        print("Playermodel Selection Menu Name"+offical_model_name)
+        
+        
+        steam_librarypath = self.steam_library_path+"steamapps/common/GarrysMod" #add the rest onto it so that we can get garrysmod only.
+        addonpath = steam_librarypath+"/garrysmod/addons/"+sanitized_model_name+"_playermodel/"
+        
+        Common.switch("OBJECT")
+        Common.unselect_all()
+        print("testing if SMD tools exist.")
+        try:
+            bpy.ops.import_scene.smd('EXEC_DEFAULT',files=[{'name': "barney_reference.smd"}], append = "NEW_ARMATURE",directory=os.path.dirname(os.path.abspath(__file__))+"/../extern_tools/valve_resources/")
+        except AttributeError:
+            bpy.ops.cats_importer.install_source('INVOKE_DEFAULT')
+            return
+        #clean imported stuff
+        print("cleaning imported armature")
+        objects = [j.name for j in bpy.context.selected_objects]
+        barneycollection = bpy.data.collections.get("barney_collection")
+        if not barneycollection:
+            barneycollection = bpy.data.collections.new("barney_collection")
+        for obj in objects:
+            newobj = bpy.data.objects.get(obj)
+            if newobj.type == "MESH":
+                Common.unselect_all()
+                Common.set_active(newobj)
+                bpy.ops.object.delete(use_global=False)
+                continue
+            for collection in bpy.data.collections:
+                try:
+                    collection.objects.unlink(newobj)
+                except:
+                    pass
+            try:
+                bpy.context.collection.objects.unlink(newobj)
+            except:
+                pass
+            barneycollection.objects.link(newobj)
+        bpy.context.collection.children.link(barneycollection)
+        Common.unselect_all()
+        
+        armature = Common.set_default_stage()
+        print("translating bones. if you hit an error here please fix your model using fix model!!!!!! If you have, please ignore the error.")
+        bpy.ops.cats_manual.convert_to_valve()
+
+        print("putting armature and objects under reference collection")
+        #putting objects and armature under a better collection.
+        refcoll = bpy.data.collections.get(sanitized_model_name+"_ref")
+        if not refcoll:
+            refcoll = bpy.data.collections.new(sanitized_model_name+"_ref")
+        for obj in armature.children:
+            for collection in bpy.data.collections:
+                try:
+                    collection.objects.unlink(obj)
+                except:
+                    pass
+            try:
+                bpy.context.collection.objects.unlink(obj)
+            except:
+                pass
+            refcoll.objects.link(obj)
+        for collection in bpy.data.collections:
+            try:
+                collection.objects.unlink(armature)
+            except:
+                pass
+        try:
+            bpy.context.collection.objects.unlink(armature)
+        except:
+            pass
+        refcoll.objects.link(armature)
+        bpy.context.collection.children.link(refcoll)
+        
+        for obj in refcoll.objects:
+            objname = obj.name
+            if bpy.data.objects[objname].type == "MESH":
+                print("lowercasing material name for gmod for object "+objname)
+                for material in bpy.data.objects[objname].material_slots:
+                    mat = material.material
+                    sanitized_material_name = ""
+                    for i in mat.name.lower():
+                        if i.isalnum() or i == "_":
+                            sanitized_material_name += i
+                        else:
+                            sanitized_material_name += "_"
+                    mat.name = sanitized_material_name
+        
+        
+        print("zeroing transforms and then scaling to gmod scale, then applying transforms.")
+        #zero armature position, scale to gmod size, and then apply transforms
+        armature.rotation_euler[0] = 0
+        armature.rotation_euler[1] = 0
+        armature.rotation_euler[2] = 0
+        armature.location[0] = 0
+        armature.location[1] = 0
+        armature.location[2] = 0
+        armature.scale[0] = 52.4934383202 #meters to hammer units
+        armature.scale[1] = 52.4934383202 #meters to hammer units
+        armature.scale[2] = 52.4934383202 #meters to hammer units
+        #apply transforms of all objects in ref collection
+        Common.unselect_all()
+        for obj in refcoll.objects:
+            Common.select(obj,True)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        
+        print("joining meshes in ref collection")
+        #clear selection
+        Common.unselect_all()
+        parentobj = None
+        body_armature = None
+        for obj in refcoll.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                body_armature = obj
+                
+        if (not body_armature) or (not parentobj):
+            print('Report: Error')
+            print(refcoll.name+" collection joining failed because it doesn't have atleast one armature and one mesh!")
+        
+        for obj in refcoll.objects:
+            if obj.type == "MESH" and obj != parentobj:
+                #clear selection
+                Common.unselect_all()
+                Common.select(obj,True)
+                Common.set_active(parentobj)
+                bpy.ops.object.join()
+        
+        print("clearing bone rolls")
+        Common.unselect_all()
+        Common.set_active(body_armature)
+        Common.switch("EDIT")
+        bpy.ops.armature.select_all(action='SELECT')
+        bpy.ops.armature.roll_clear()
+        Common.switch("OBJECT")
+        
+        print("a-posing armature")
+        Common.unselect_all()
+        Common.set_active(body_armature)
+        Common.switch("POSE")
+        bpy.ops.pose.select_all(action='SELECT')
+        body_armature.pose.bones["ValveBiped.Bip01_L_UpperArm"].rotation_mode = "XYZ"
+        body_armature.pose.bones["ValveBiped.Bip01_L_UpperArm"].rotation_euler[0] = -45
+        body_armature.pose.bones["ValveBiped.Bip01_R_UpperArm"].rotation_mode = "XYZ"
+        body_armature.pose.bones["ValveBiped.Bip01_R_UpperArm"].rotation_euler[0] = -45
+        bpy.ops.cats_manual.pose_to_rest()
+        Common.switch("OBJECT")
+        
+        
+        
+        print("grabbing barney armature")
+        barney_armature = None
+        barney_mesh = None
+        barneycollection = bpy.data.collections.get("barney_collection")
+        for obj in barneycollection.objects:
+            if obj.type == "ARMATURE":
+                barney_armature = obj
+                break
+        print("duplicating barney armature")
+        Common.switch('OBJECT')
+        Common.unselect_all()
+        Common.set_active(barney_armature)
+        bpy.ops.object.duplicate(
+        {"object" : barney_armature,
+         "selected_objects" : [barney_armature]},
+        linked=False)
+        barney_armature = context.object
+        
+        def children_bone_recursive(parent_bone):
+            child_bones = []
+            child_bones.append(parent_bone)
+            for child in parent_bone.children:
+                child_bones.extend(children_bone_recursive(child))
+            return child_bones
+        
+        print("positioning bones for barney armature at your armature's bones PLEASE HAVE A PELVIS BONE")
+        barney_pose_bone_names = [j.name for j in children_bone_recursive(barney_armature.pose.bones["ValveBiped.Bip01_Pelvis"])] #bones are default in order of parent child.
+        
+        armature_matrixes = dict()
+        barney_armature_name = barney_armature.name
+        body_armature_name = body_armature.name
+        for barney_bone_name in barney_pose_bone_names:
+            
+            
+            Common.switch('OBJECT')
+            Common.unselect_all()
+            Common.set_active(bpy.data.objects[body_armature_name])
+            Common.switch('EDIT')
+            try:
+                obj = bpy.data.objects[barney_armature_name]
+                editbone = bpy.data.objects[body_armature_name].data.edit_bones[barney_bone_name]
+                Common.switch('OBJECT')
+                bone = obj.pose.bones[barney_bone_name]
+                bone.rotation_mode = "XYZ"
+                newmatrix = Matrix.Translation((editbone.matrix[0][3],editbone.matrix[1][3],editbone.matrix[2][3]))
+                bone.matrix = newmatrix
+                bone.rotation_euler = (0,0,0)
+            except:
+                Common.switch('OBJECT')
+        
+        print("applying barney pose as rest pose")
+        Common.switch('OBJECT')
+        original_scene_armature_name = bpy.context.scene.armature
+        bpy.context.scene.armature = barney_armature_name
+        Common.unselect_all()
+        Common.set_active(bpy.data.objects[barney_armature_name])
+        Common.switch('POSE')
+        bpy.ops.cats_manual.pose_to_rest()
+        bpy.context.scene.armature = original_scene_armature_name 
+        Common.switch('OBJECT')
+        
+        print("putting barney armature bones on your model")
+        bpy.context.scene.merge_armature_into = barney_armature_name
+        bpy.context.scene.merge_armature = body_armature_name
+        bpy.context.scene.merge_same_bones = True
+        bpy.context.scene.merge_armatures_join_meshes = False
+        bpy.context.scene.merge_armatures_remove_zero_weight_bones = False
+        bpy.ops.cats_custom.merge_armatures()
+        
+        print("putting armature back under reference collection")
+        for collection in bpy.data.collections:
+            try:
+                collection.objects.unlink(bpy.data.objects[body_armature_name])
+            except:
+                pass
+        try:
+            bpy.context.collection.objects.unlink(bpy.data.objects[body_armature_name])
+        except:
+            pass
+        refcoll.objects.link(bpy.data.objects[body_armature_name])
+        
+        print("Duplicating reference collection to make phys collection")
+        body_armature = bpy.data.objects[body_armature_name]
+        physcoll = bpy.data.collections.get(sanitized_model_name+"_phys")
+        if not physcoll:
+            physcoll = bpy.data.collections.new(sanitized_model_name+"_phys")
+        bpy.context.collection.children.link(physcoll)
+        Common.switch('OBJECT')
+        Common.unselect_all()
+        Common.set_active(body_armature)
+        Common.select(parentobj,True)
+        bpy.ops.object.duplicate_move(OBJECT_OT_duplicate={"linked":False, "mode":'TRANSLATION'})
+        for obj in context.selected_objects:
+            try:
+                refcoll.objects.unlink(obj)
+            except:
+                pass
+            try:
+                bpy.context.collection.objects.unlink(obj)
+            except:
+                pass
+            physcoll.objects.link(obj)
+            
+        
+        print("making arms collection and copying over from reference")
+        armcoll = bpy.data.collections.get(sanitized_model_name+"_arms")
+        if not armcoll:
+            armcoll = bpy.data.collections.new(sanitized_model_name+"_arms")
+        bpy.context.collection.children.link(armcoll)
+        Common.unselect_all()
+        Common.set_active(body_armature)
+        Common.select(parentobj,True)
+        bpy.ops.object.duplicate_move(OBJECT_OT_duplicate={"linked":False, "mode":'TRANSLATION'})
+        for obj in context.selected_objects:
+            try:
+                refcoll.objects.unlink(obj)
+            except:
+                pass
+            try:
+                bpy.context.collection.objects.unlink(obj)
+            except:
+                pass
+            armcoll.objects.link(obj)
+        
+        print("making phys parts")
+        #bone names to make phys parts for. Max of 30 pleasee!!! Gmod cannot handle more than 30 but can do up to and including 30.
+        bone_names_for_phys = [
+        "ValveBiped.Bip01_L_UpperArm",
+        "ValveBiped.Bip01_R_UpperArm",
+        "ValveBiped.Bip01_L_Forearm",
+        "ValveBiped.Bip01_R_Forearm",
+        "ValveBiped.Bip01_L_Hand",
+        "ValveBiped.Bip01_R_Hand",
+        "ValveBiped.Bip01_L_Thigh",
+        "ValveBiped.Bip01_R_Thigh",
+        "ValveBiped.Bip01_L_Calf",
+        "ValveBiped.Bip01_R_Calf",
+        "ValveBiped.Bip01_L_Foot",
+        "ValveBiped.Bip01_R_Foot",
+        "ValveBiped.Bip01_Spine",
+        "ValveBiped.Bip01_Spine1",
+        "ValveBiped.Bip01_Pelvis",
+        "ValveBiped.Bip01_Neck1",
+        "ValveBiped.Bip01_Head1"
+        ]
+        convexobjects = dict()
+        original_object_phys = None
+        phys_armature = None
+        for obj in physcoll.objects:
+            if obj.type == "ARMATURE":
+                phys_armature = obj
+                break
+        
+        for obj in physcoll.objects:
+            if obj.type == 'MESH':
+                #deselect all objects and select our obj
+                original_object_phys = obj
+                #delete all bad vertex groups we are not using by merging
+                Common.switch('OBJECT')
+                Common.unselect_all()
+                Common.set_active(obj)
+                Common.switch('EDIT')
+                bpy.ops.mesh.select_all(action='DESELECT')
+                bones_to_merge_valve = []
+                for index,group in enumerate(obj.vertex_groups):
+                    if "tail" in group.name.lower():
+                        Common.switch('OBJECT')
+                        Common.unselect_all()
+                        Common.set_active(obj)
+                        Common.switch('EDIT')
+                        bpy.ops.mesh.select_all(action='DESELECT')
+                        obj.vertex_groups.active_index = index
+                        bpy.ops.object.vertex_group_select()
+                        bpy.ops.object.vertex_group_remove_from()
+                    elif not (group.name in bone_names_for_phys):
+                        Common.switch('OBJECT')
+                        Common.unselect_all()
+                        Common.set_active(phys_armature)
+                        Common.switch('EDIT')
+                        bpy.ops.armature.select_all(action='DESELECT')
+                        bone = phys_armature.data.edit_bones.get(group.name)
+                        if bone is not None:
+                            #select arm bone
+                            
+                            bones_to_merge_valve.append(bone.name)
+                        else:
+                            pass #if the group no longer has a bone who cares. usually....
+                Common.switch('OBJECT')
+                Common.unselect_all()
+                Common.set_active(phys_armature)
+                Common.switch('EDIT')
+                for bonename in bones_to_merge_valve:
+                    bone = phys_armature.data.edit_bones.get(bonename)
+                    bone.select = True
+                    bone.select_head = True
+                    bone.select_tail = True
+                    phys_armature.data.edit_bones.active = bone
+                    bpy.ops.cats_manual.merge_weights()
+                
+                #separating into seperate phys objects to join later.
+                Common.switch('OBJECT')
+                Common.unselect_all()
+                Common.set_active(obj)
+                Common.switch('EDIT')
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.object.vertex_group_normalize()
+                bpy.ops.object.vertex_group_quantize(group_select_mode='ALL', steps=1)
+                bpy.ops.object.vertex_group_clean(group_select_mode='ALL', limit=0.1)
+                for bone in bone_names_for_phys:
+                    bpy.ops.mesh.select_all(action='DESELECT')
+                    #select vertices belonging to bone
+                    try:
+                        for index,group in enumerate(obj.vertex_groups):
+                            if group.name == bone:
+                                obj.vertex_groups.active_index = index
+                                bpy.ops.object.vertex_group_select()
+                                break
+                    except:
+                        print("failed to find vertex group "+bone+" On phys obj. Skipping.")
+                        continue
+                    #duplicate and make convex hull then separate
+                    try:
+                        bpy.ops.mesh.duplicate_move(MESH_OT_duplicate={"mode":1})
+                        bpy.ops.mesh.convex_hull()
+                        bpy.ops.mesh.faces_shade_smooth()
+                        bpy.ops.mesh.separate(type = 'SELECTED')
+                    except Exception:
+                        print("phys joint failed for bone "+bone+". Ignoring!!")
+                        continue
+                break
+        selected_objects_memory = context.selected_objects
+        for obj in selected_objects_memory:
+            convexobjects[obj.vertex_groups[obj.vertex_groups.active_index].name+""] = obj
+        #clear selection
+        Common.unselect_all()
+        
+        print("joining phys parts and assigning to vertex groups")
+        #clear vertex groups and assign each object to their corosponding vertex group.
+        for bonename,obj in convexobjects.items():
+            Common.unselect_all()
+            Common.set_active(obj)
+            Common.switch('EDIT')
+            bpy.ops.mesh.select_all(action='SELECT')
+            obj.vertex_groups.clear()
+            obj.vertex_groups.new(name=bonename)
+            obj.vertex_groups.active_index = 0
+            bpy.ops.object.vertex_group_assign()
+            Common.switch('OBJECT')
+        
+        #clear selection
+        Common.unselect_all()
+        #since objects already have their armature modifiers, just join into one
+        for bonename,obj in convexobjects.items():
+            Common.select(obj,True)
+        print("if this doesn't work, then you have bad weights!!")
+        Common.set_active(list(convexobjects.values())[0])
+        bpy.ops.object.join() #join all objects separated into one.
+        Common.unselect_all()#unselect all and delete original object
+        Common.set_active(original_object_phys)
+        bpy.ops.object.delete(use_global=False)
+        
+        print("deleting rest of mesh for arms collection except arm bones")
+        parentobj = None
+        arms_armature = None
+        for obj in armcoll.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                arms_armature = obj
+        obj = parentobj
+        
+        
+        
+        print("step 1 arms: getting entire arm list of bones for each side.")
+        arm_bone_names = []
+        Common.switch('OBJECT')
+        Common.unselect_all()
+        Common.set_active(arms_armature,True)
+        Common.switch('EDIT')
+        #get armature bone names here since we have armature in edit mode.
+        #this is changed later to exlude arm bones
+        arms_armature_bone_names_list = [j.name for j in arms_armature.data.edit_bones]
+        
+        bpy.ops.armature.select_all(action='DESELECT')
+        for side in ["L","R"]:
+            upper_arm_name = "ValveBiped.Bip01_"+side+"_UpperArm"
+            #get arm bone for this side
+            bone = arms_armature.data.edit_bones.get(upper_arm_name)
+            if bone is not None:
+                #select arm bone
+                bone.select = True
+                bone.select_head = True
+                bone.select_tail = True
+                arms_armature.data.edit_bones.active = bone
+            else:
+                print("Getting upper arm for side "+side+" Has failed! Exiting!")
+                return
+            
+            #select arm bone children and add to list of arm bone names
+            bpy.ops.armature.select_similar(type='CHILDREN')
+            for bone in bpy.context.selected_editable_bones:
+                arm_bone_names.append(bone.name)
+        
+        if obj.type == 'MESH': #we know parent obj is a mesh this is just for solidarity.
+            #deselect all objects and select our obj
+            Common.switch('OBJECT')
+            Common.unselect_all()
+            Common.set_active(obj)
+            Common.switch('EDIT')
+            
+            bpy.ops.mesh.select_all(action='DESELECT') #deselecting entire mesh so we can select the mesh parts belonging to our arm bones
+            
+            #remove arms from armature bone names list
+            for i in arm_bone_names:
+                if i in arms_armature_bone_names_list:
+                    arms_armature_bone_names_list.remove(i)
+                    
+            
+            for bonename in arms_armature_bone_names_list:
+                #select vertices belonging to bone
+                try:
+                    for index,group in enumerate(obj.vertex_groups):
+                        if group.name == bonename:
+                            obj.vertex_groups.active_index = index
+                            bpy.ops.object.vertex_group_select()
+                            break
+                except:
+                    print("failed to find vertex group "+bone+" On arms. Skipping.")
+                    continue
+            bpy.ops.mesh.delete(type='VERT')
+            Common.switch('OBJECT')
+        #select all arm bones and invert selection, then delete bones in edit mode.
+        print("deleting leftover bones for arms and finding chest location.")
+        parentobj = None
+        arms_armature = None
+        for obj in armcoll.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                arms_armature = obj
+        obj = parentobj
+        Common.switch('OBJECT')
+        Common.unselect_all()
+        Common.set_active(arms_armature)
+        Common.switch('EDIT')
+        chestloc = None
+        bpy.ops.armature.select_all(action='DESELECT')
+        for bone in arms_armature.data.edit_bones:
+            bone.select = False
+            bone.select_head = False
+            bone.select_tail = False
+            #arm_bone_names = ["ValveBiped.Bip01_"+side+"_UpperArm","ValveBiped.Bip01_"+side+"_Forearm","ValveBiped.Bip01_"+side+"_Finger4","ValveBiped.Bip01_"+side+"_Finger41","ValveBiped.Bip01_"+side+"_Finger42","ValveBiped.Bip01_"+side+"_Finger3","ValveBiped.Bip01_"+side+"_Finger31","ValveBiped.Bip01_"+side+"_Finger32","ValveBiped.Bip01_"+side+"_Finger2","ValveBiped.Bip01_"+side+"_Finger21","ValveBiped.Bip01_"+side+"_Finger22","ValveBiped.Bip01_"+side+"_Finger1","ValveBiped.Bip01_"+side+"_Finger11","ValveBiped.Bip01_"+side+"_Finger12","ValveBiped.Bip01_"+side+"_Finger0","ValveBiped.Bip01_"+side+"_Finger01","ValveBiped.Bip01_"+side+"_Finger02"]
+            if bone.name in arm_bone_names:
+                bone.select = True
+                bone.select_head = True
+                bone.select_tail = True
+                arms_armature.data.edit_bones.active = bone
+            if bone.name == "ValveBiped.Bip01_Spine1" and chestloc == None:
+                chestloc = (bone.matrix[0][3],bone.matrix[1][3],bone.matrix[2][3])
+            if bone.name == "ValveBiped.Bip01_Spine2":
+                chestloc = (bone.matrix[0][3],bone.matrix[1][3],bone.matrix[2][3])
+        #once we are done selecting bones, invert and delete so we delete non arm bones.
+        bpy.ops.armature.select_all(action='INVERT')
+        bpy.ops.armature.delete()
+        Common.switch('OBJECT')
+        
+        
+        print("moving arms armature to origin and applying transforms")
+        parentobj = None
+        arms_armature = None
+        for obj in armcoll.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                arms_armature = obj
+        obj = parentobj
+        #move arms armature to origin
+        arms_armature.location = [(-1*chestloc[0]),(-1*chestloc[1]),(-1*chestloc[2])]
+        Common.select(parentobj,True)
+        Common.select(arms_armature,True)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+        
+        
+        print("configuring game and compiler paths")
+        bpy.context.scene.vs.export_format = "SMD"
+        bpy.context.scene.vs.engine_path = steam_librarypath+"/bin/"
+        bpy.context.scene.vs.game_path = steam_librarypath+"/garrysmod/"
+        
+        
+        print("generating compiling script file for body (.qc file)")
+        qcfile = """$modelname \""""+sanitized_model_name+"""/"""+sanitized_model_name+""".mdl\"
+$BodyGroup \""""+refcoll.name+"""\"
+{
+    studio \""""+refcoll.name+""".smd\"
+}
+$surfaceprop \"flesh\"
+
+$contents \"solid\"
+
+$illumposition -0.007 -0.637 35.329
+
+$eyeposition 0 0 70
+
+$ambientboost
+
+$mostlyopaque
+
+$cdmaterials \"models\\"""+sanitized_model_name+"""\\\"
+
+$attachment \"eyes\" \"ValveBiped.Bip01_Head1\" 3.47 -3.99 -0.1 rotate 0 -80.1 -90
+$attachment \"mouth\" \"ValveBiped.Bip01_Head1\" 0.8 -5.8 -0.15 rotate 0 -80 -90
+$attachment \"chest\" \"ValveBiped.Bip01_Spine2\" 5 4 0 rotate 0 90 90
+$attachment \"anim_attachment_head\" \"ValveBiped.Bip01_Head1\" 0 0 0 rotate -90 -90 0
+
+$cbox 0 0 0 0 0 0
+
+$bbox -13 -13 0 13 13 72
+
+{put define bones here}
+
+$bonemerge \"ValveBiped.Bip01_Pelvis\"
+$bonemerge \"ValveBiped.Bip01_Spine\"
+$bonemerge \"ValveBiped.Bip01_Spine1\"
+$bonemerge \"ValveBiped.Bip01_Spine2\"
+$bonemerge \"ValveBiped.Bip01_Spine4\"
+$bonemerge \"ValveBiped.Bip01_R_Clavicle\"
+$bonemerge \"ValveBiped.Bip01_R_UpperArm\"
+$bonemerge \"ValveBiped.Bip01_R_Forearm\"
+$bonemerge \"ValveBiped.Bip01_R_Hand\"
+$bonemerge \"ValveBiped.Anim_Attachment_RH\"
+
+$ikchain \"rhand\" \"ValveBiped.Bip01_R_Hand\" knee 0.707 0.707 0
+$ikchain \"lhand\" \"ValveBiped.Bip01_L_Hand\" knee 0.707 0.707 0
+$ikchain \"rfoot\" \"ValveBiped.Bip01_R_Foot\" knee 0.707 -0.707 0
+$ikchain \"lfoot\" \"ValveBiped.Bip01_L_Foot\" knee 0.707 -0.707 0
+
+{put_anims_here}
+
+$includemodel \"m_anm.mdl\"
+$includemodel \"m_shd.mdl\"
+$includemodel \"m_pst.mdl\"
+$includemodel \"m_gst.mdl\"
+$includemodel \"player/m_ss.mdl\"
+$includemodel \"player/cs_fix.mdl\"
+$includemodel \"player/global_include.mdl\"
+$includemodel \"humans/male_shared.mdl\"
+$includemodel \"humans/male_ss.mdl\"
+$includemodel \"humans/male_gestures.mdl\"
+$includemodel \"humans/male_postures.mdl\"
+
+$collisionjoints \""""+physcoll.name+""".smd\"
+{
+    $mass 90
+    $inertia 10
+    $damping 0.01
+    $rotdamping 1.5
+
+    $jointconstrain \"ValveBiped.Bip01_R_UpperArm\" x limit -39 39 0
+    $jointconstrain \"ValveBiped.Bip01_R_UpperArm\" y limit -79 95 0
+    $jointconstrain \"ValveBiped.Bip01_R_UpperArm\" z limit -93 23 0
+
+    $jointconstrain \"ValveBiped.Bip01_L_UpperArm\" x limit -30 30 0
+    $jointconstrain \"ValveBiped.Bip01_L_UpperArm\" y limit -95 84 0
+    $jointconstrain \"ValveBiped.Bip01_L_UpperArm\" z limit -86 26 0
+
+    $jointconstrain \"ValveBiped.Bip01_L_Forearm\" x limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_L_Forearm\" y limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_L_Forearm\" z limit -149 4 0
+
+    $jointconstrain \"ValveBiped.Bip01_L_Hand\" x limit -37 37 0
+    $jointconstrain \"ValveBiped.Bip01_L_Hand\" y limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_L_Hand\" z limit -57 59 0
+
+    $jointconstrain \"ValveBiped.Bip01_R_Forearm\" x limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_R_Forearm\" y limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_R_Forearm\" z limit -149 4 0
+
+    $jointconstrain \"ValveBiped.Bip01_R_Hand\" x limit -60 60 0
+    $jointconstrain \"ValveBiped.Bip01_R_Hand\" y limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_R_Hand\" z limit -57 70 0
+
+    $jointconstrain \"ValveBiped.Bip01_R_Thigh\" x limit -12 12 0
+    $jointconstrain \"ValveBiped.Bip01_R_Thigh\" y limit -8 75 0
+    $jointconstrain \"ValveBiped.Bip01_R_Thigh\" z limit -97 32 0
+
+    $jointconstrain \"ValveBiped.Bip01_R_Calf\" x limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_R_Calf\" y limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_R_Calf\" z limit -12 126 0
+
+    $jointconstrain \"ValveBiped.Bip01_Head1\" x limit -20 20 0
+    $jointconstrain \"ValveBiped.Bip01_Head1\" y limit -25 25 0
+    $jointconstrain \"ValveBiped.Bip01_Head1\" z limit -13 30 0
+
+    $jointconstrain \"ValveBiped.Bip01_L_Thigh\" x limit -12 12 0
+    $jointconstrain \"ValveBiped.Bip01_L_Thigh\" y limit -73 6 0
+    $jointconstrain \"ValveBiped.Bip01_L_Thigh\" z limit -93 30 0
+
+    $jointconstrain \"ValveBiped.Bip01_L_Calf\" x limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_L_Calf\" y limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_L_Calf\" z limit -8 126 0
+
+    $jointconstrain \"ValveBiped.Bip01_L_Foot\" x limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_L_Foot\" y limit -19 19 0
+    $jointconstrain \"ValveBiped.Bip01_L_Foot\" z limit -15 35 0
+
+    $jointconstrain \"ValveBiped.Bip01_R_Foot\" x limit 0 0 0
+    $jointconstrain \"ValveBiped.Bip01_R_Foot\" y limit -25 6 0
+    $jointconstrain \"ValveBiped.Bip01_R_Foot\" z limit -15 35 0
+
+    $jointcollide \"ValveBiped.Bip01_R_Forearm\" \"ValveBiped.Bip01_R_Thigh\"
+    $jointcollide \"ValveBiped.Bip01_R_Forearm\" \"ValveBiped.Bip01_L_Thigh\"
+    $jointcollide \"ValveBiped.Bip01_L_Forearm\" \"ValveBiped.Bip01_R_Thigh\"
+    $jointcollide \"ValveBiped.Bip01_L_Forearm\" \"ValveBiped.Bip01_L_Thigh\"
+    $jointcollide \"ValveBiped.Bip01_R_Foot\" \"ValveBiped.Bip01_L_Calf\"
+    $jointcollide \"ValveBiped.Bip01_L_Foot\" \"ValveBiped.Bip01_R_Calf\"
+    $jointcollide \"ValveBiped.Bip01_L_Foot\" \"ValveBiped.Bip01_R_Foot\"
+    $jointcollide \"ValveBiped.Bip01_R_Calf\" \"ValveBiped.Bip01_L_Calf\"
+    $jointcollide \"ValveBiped.Bip01_R_Thigh\" \"ValveBiped.Bip01_L_Thigh\"
+    $jointcollide \"ValveBiped.Bip01_R_Forearm\" \"ValveBiped.Bip01_Pelvis\"
+    $jointcollide \"ValveBiped.Bip01_L_Forearm\" \"ValveBiped.Bip01_Pelvis\"
+}"""
+        body_animation_qc="""$sequence \"reference\" {
+    \"anims/reference.smd\"
+    fadein 0.2
+    fadeout 0.2
+    fps 1
+}
+
+$animation \"a_proportions\" \""""+refcoll.name+""".smd\"{
+    fps 30
+    
+    subtract \"reference\" 0
+}
+$Sequence \"ragdoll\" {
+    \"anims/idle.smd\"
+    activity \"ACT_DIERAGDOLL\" 1
+    fadein 0.2
+    fadeout 0.2
+    fps 30
+}
+$sequence \"proportions\"{
+    \"a_proportions\" 
+    predelta 
+    autoplay
+    fadein 0.2
+    fadeout 0.2
+}"""
+
+        
+        
+        
+        print("writing body script file iteration 1. If this errors, please save your file!")
+        target_dir = bpy.path.abspath("//CATS Bake/" + platform_name + "/"+sanitized_model_name+"/")
+        os.makedirs(target_dir,0o777,True) 
+        compilefile = open(target_dir+sanitized_model_name+".qc", "w")
+        compilefile.write(qcfile.replace("{put_anims_here}","").replace("{put define bones here}",""))
+        compilefile.close()
+        
+        print("configuring export path for body. If this throws an error, save your file!!")
+        bpy.context.scene.vs.export_path = "//CATS Bake/" + platform_name + "/"+sanitized_model_name+"/"#two backslashes to escape the backslash because a backslash escapes.
+        bpy.context.scene.vs.qc_path = "//CATS Bake/" + platform_name + "/"+sanitized_model_name+"/"+sanitized_model_name+".qc"
+        
+        print("exporting body models")
+        Common.switch('OBJECT')
+        
+        #can't iterate so it had to be copied twice
+        #body model
+        parentobj = None
+        body_armature = None
+        collection = bpy.data.collections[sanitized_model_name+"_ref"]
+        for obj in collection.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                body_armature = obj
+        print("exporting "+collection.name)
+        Common.unselect_all()
+        for index,listitem in enumerate(bpy.context.scene.vs.export_list):
+            if listitem.name == collection.name+".smd":
+                bpy.context.scene.vs.export_list_active = index
+        body_armature.data.vs.implicit_zero_bone = False
+        bpy.ops.export_scene.smd()
+        
+        #phys model
+        parentobj = None
+        body_armature = None
+        collection = bpy.data.collections[sanitized_model_name+"_phys"]
+        for obj in collection.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                body_armature = obj
+        print("exporting "+collection.name)
+        Common.unselect_all()
+        for index,listitem in enumerate(bpy.context.scene.vs.export_list):
+            if listitem.name == collection.name+".smd":
+                bpy.context.scene.vs.export_list_active = index
+        body_armature.data.vs.implicit_zero_bone = False
+        bpy.ops.export_scene.smd()
+        
+        
+        
+        print("making animation for idle body")
+        Common.switch('OBJECT')
+        parentobj = None
+        body_armature = None
+        refcoll = bpy.data.collections[sanitized_model_name+"_ref"]
+        for obj in refcoll.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                body_armature = obj
+        if bpy.data.actions.get("idle"):
+            Common.unselect_all()
+            Common.set_active(body_armature)
+            try:
+                body_armature.animation_data_create()
+            except:
+                pass
+            body_armature.animation_data.action = bpy.data.actions["idle"]
+        else:
+            Common.unselect_all()
+            Common.set_active(body_armature)
+            try:
+                body_armature.animation_data_create()
+            except:
+                pass
+            body_armature.animation_data.action = bpy.data.actions.new(name="idle")
+        
+        Common.unselect_all()
+        Common.set_active(body_armature,True)
+        Common.switch('POSE')
+        for bone in body_armature.pose.bones:
+            bone.rotation_mode = "XYZ"
+            bone.keyframe_insert(data_path="rotation_euler", frame=1)
+            bone.keyframe_insert(data_path="location", frame=1)
+        
+        
+        print("exporting idle body animation")
+        body_armature.animation_data.action.name = "idle"
+        
+        bpy.context.scene.vs.subdir = "anims"
+        Common.unselect_all()
+        bpy.context.scene.vs.export_list_active = 0
+        bpy.context.scene.vs.export_list_active = 1
+        body_armature.data.vs.implicit_zero_bone = False
+        for index,listitem in enumerate(bpy.context.scene.vs.export_list):
+            if listitem.name == "anims\\"+body_armature.animation_data.action.name+".smd":
+                bpy.context.scene.vs.export_list_active = index
+        bpy.context.scene.vs.action_selection = "CURRENT"
+        body_armature.data.vs.implicit_zero_bone = False
+        bpy.ops.export_scene.smd()
+        
+        print("deleting old reference animations")
+        Common.switch('OBJECT')
+        animationnames = [j.name for j in bpy.data.actions]
+        for animationname in animationnames:
+            if "." in animationname:
+                if animationname.split(".")[0] == "reference":
+                    bpy.data.actions.remove(bpy.data.actions[animationname])
+            if animationname == "reference":
+                bpy.data.actions.remove(bpy.data.actions[animationname])
+        
+        print("making animation for reference body")
+        Common.switch('OBJECT')
+        parentobj = None
+        body_armature = None
+        refcoll = bpy.data.collections[sanitized_model_name+"_ref"]
+        for obj in refcoll.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                body_armature = obj
+        Common.switch('OBJECT')
+        Common.unselect_all()
+        Common.set_active(body_armature)
+        
+        bpy.ops.import_scene.smd('EXEC_DEFAULT',files=[{'name': "reference.smd"}], append = "APPEND",directory=os.path.dirname(os.path.abspath(__file__))+"/../extern_tools/valve_resources/")
+        
+        for barney_bone_name in barney_pose_bone_names:
+            bone = body_armature.pose.bones.get(barney_bone_name)
+            bone.rotation_mode = "XYZ"
+            bone.keyframe_insert(data_path="rotation_euler", frame=1)
+            bone.keyframe_insert(data_path="location", frame=1)
+        
+        print("exporting refrence body animation")
+        bpy.context.scene.vs.subdir = "anims"
+        bpy.context.scene.vs.export_list_active = 0
+        bpy.context.scene.vs.export_list_active = 1
+        body_armature.data.vs.implicit_zero_bone = False
+        Common.unselect_all()
+        #print("HELLOOOOOOOOOOOOOOOOOOOOOOOOOOO "+str(body_armature.data.vs.implicit_zero_bone))
+        for index,listitem in enumerate(bpy.context.scene.vs.export_list):
+            print(listitem.name)
+            if listitem.name == "anims\\"+body_armature.animation_data.action.name+".smd":
+                bpy.context.scene.vs.export_list_active = index
+        bpy.context.scene.vs.action_selection = "CURRENT"
+        body_armature.data.vs.implicit_zero_bone = False
+        bpy.ops.export_scene.smd()
+        
+        print("Generating bone definitions so your model doesn't collapse on itself. ")
+        output = subprocess.run([steam_librarypath+"/bin/studiomdl.exe", "-game", steam_librarypath+"/garrysmod", "-definebones", "-nop4", "-verbose", bpy.path.abspath(bpy.context.scene.vs.qc_path)],stdout=subprocess.PIPE)
+        
+        print("Writing DefineBones.qci")
+        define_bones_file = open(bpy.path.abspath("//CATS Bake/" + platform_name + "/"+sanitized_model_name+"/DefineBones.qci"), "w")
+        index = output.stdout.decode('utf-8').find('$')
+        define_bones_file.write(output.stdout.decode('utf-8')[index:])
+        define_bones_file.close()
+        
+        
+        print("Rewriting QC to include animations since we finished compiling define bones")
+        compilefile = open(bpy.path.abspath("//CATS Bake/" + platform_name + "/"+sanitized_model_name+"/"+sanitized_model_name+".qc"), "w")
+        compilefile.write(qcfile.replace("{put_anims_here}",body_animation_qc).replace("{put define bones here}","$include \"DefineBones.qci\""))
+        compilefile.close()
+        
+        print("Compiling model! (THIS CAN TAKE A LONG TIME AND IS PRONE TO ERRORS!!!!)")
+        bpy.ops.smd.compile_qc(filepath=bpy.path.abspath(bpy.context.scene.vs.qc_path))
+        #to prevent errors due to missing data because it changes
+        refcoll = bpy.data.collections[sanitized_model_name+"_phys"]
+        
+        print("Moving compiled model to addon folder.")
+        #path after models must match model path in QC.
+        #thanks to "https://stackoverflow.com/a/41827240" for helping me make sure this would work correctly.
+        source_dir = steam_librarypath+"/garrysmod/models/"+sanitized_model_name
+        target_dir = addonpath+"models/"+sanitized_model_name
+        file_names = os.listdir(source_dir)
+        os.makedirs(target_dir,0o777,True) 
+        for file_name in file_names:
+            if os.path.exists(os.path.join(target_dir, file_name)):  
+                os.remove(os.path.join(target_dir, file_name))
+            shutil.move(os.path.join(source_dir, file_name), target_dir)
+            
+        
+        print("Making lua file for adding playermodel to playermodel list in game")
+        os.makedirs(addonpath+"lua/autorun", exist_ok=True)
+        luafile = open(addonpath+"lua/autorun/"+sanitized_model_name+"_playermodel_adder.lua","w")
+        luafile_content = """player_manager.AddValidModel( \""""+offical_model_name+"""\", \""""+"models/"+sanitized_model_name+"/"+sanitized_model_name+""".mdl\" );
+list.Set( "PlayerOptionsModel", \""""+offical_model_name+"""\", \""""+"models/"+sanitized_model_name+"/"+sanitized_model_name+""".mdl\");
+player_manager.AddValidHands( \""""+offical_model_name+"""\", \""""+"models/"+sanitized_model_name+"/"+sanitized_model_name+"""_arms.mdl\", 0, "00000000" );"""
+        luafile.write(luafile_content)
+        luafile.close()
+        
+        print("resizing arms")
+        
+        arms_scale_factor = None
+        collection = bpy.data.collections[sanitized_model_name+"_arms"]
+        parentobj = None
+        for obj in collection.objects:
+            if obj.type == "ARMATURE":
+                parentobj = obj
+                break
+        Common.switch('OBJECT')
+        Common.unselect_all()
+        Common.unselect_all()
+        Common.set_active(parentobj)
+        try:
+            Common.switch('EDIT')
+            obj = parentobj
+            editbone1 = parentobj.data.edit_bones["ValveBiped.Bip01_L_UpperArm"]
+            editbone2 = parentobj.data.edit_bones["ValveBiped.Bip01_L_Forearm"]
+            loc1 = [editbone1.matrix[0][3],editbone1.matrix[1][3],editbone1.matrix[2][3]]
+            loc2 = [editbone2.matrix[0][3],editbone2.matrix[1][3],editbone2.matrix[2][3]]
+            Common.switch('OBJECT')
+            distance = sqrt(((loc2[0]-loc1[0])*(loc2[0]-loc1[0]))+((loc2[1]-loc1[1])*(loc2[1]-loc1[1]))+((loc2[2]-loc1[2])*(loc2[2]-loc1[2])))
+            arms_scale_factor = 11.692535032476918/distance #random number is distance between upper and lower arm for barney armature
+            
+        except Exception as e:
+            print("ARMS SOMEHOW DON'T HAVE ARM BONES. SCALER BROKE. PLEASE SEE USER \"434468177062133772\" ON CATS DISCORD.")
+            print("ERROR IS AS FOLLOWS: ",e)
+        if arms_scale_factor is not None:
+            parentobj.scale = (arms_scale_factor,arms_scale_factor,arms_scale_factor)
+            bpy.ops.object.transform_apply(location=False, rotation=False, scale=True, properties=False)
+        
+        print("configuring export path for arms. If this throws an error, save your file!!")
+        bpy.context.scene.vs.export_path = bpy.path.abspath("//CATS Bake/" + platform_name + "/"+sanitized_model_name+"_arms/")#two backslashes to escape the backslash because a backslash escapes.
+        bpy.context.scene.vs.qc_path = bpy.path.abspath("//CATS Bake/" + platform_name + "/"+sanitized_model_name+"_arms/"+sanitized_model_name+"_arms.qc")
+        
+        print("exporting arm model")
+        parentobj = None
+        body_armature = None
+        collection = bpy.data.collections[sanitized_model_name+"_arms"]
+        for obj in collection.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                body_armature = obj
+        Common.unselect_all()
+        print("exporting "+collection.name)
+        for index,listitem in enumerate(bpy.context.scene.vs.export_list):
+            if listitem.name == collection.name+".smd":
+                bpy.context.scene.vs.export_list_active = index
+        body_armature.data.vs.implicit_zero_bone = False
+        bpy.ops.export_scene.smd()
+        
+        print("making animation for idle arms")
+        Common.switch('OBJECT')
+        parentobj = None
+        body_armature = None
+        refcoll = bpy.data.collections[sanitized_model_name+"_arms"]
+        for obj in refcoll.objects:
+            if obj.type == "MESH":
+                parentobj = obj
+            if obj.type == "ARMATURE":
+                body_armature = obj
+        if bpy.data.actions.get("idle_arms"):
+            Common.unselect_all()
+            Common.set_active(body_armature)
+            try:
+                body_armature.animation_data_create()
+            except:
+                pass
+            body_armature.animation_data.action = bpy.data.actions["idle_arms"]
+        else:
+            Common.unselect_all()
+            Common.set_active(body_armature)
+            try:
+                body_armature.animation_data_create()
+            except:
+                pass
+            body_armature.animation_data.action = bpy.data.actions.new(name="idle_arms")
+        
+        Common.unselect_all()
+        Common.set_active(body_armature)
+        Common.switch('POSE')
+        for bone in body_armature.pose.bones:
+            bone.rotation_mode = "XYZ"
+            bone.keyframe_insert(data_path="rotation_euler", frame=1)
+            bone.keyframe_insert(data_path="location", frame=1)
+        
+        print("exporting idle arms animation")
+        body_armature.animation_data.action.name = "idle_arms"
+        bpy.context.scene.vs.subdir = "anims"
+        bpy.context.scene.vs.export_list_active = 0
+        bpy.context.scene.vs.export_list_active = 1
+        body_armature.data.vs.implicit_zero_bone = False
+        #print("HELLOOOOOOOOOOOOOOOOOOOOOOOOOOO "+str(body_armature.data.vs.implicit_zero_bone))
+        Common.unselect_all()
+        for index,listitem in enumerate(bpy.context.scene.vs.export_list):
+            print(listitem.name)
+            if listitem.name == "anims\\"+body_armature.animation_data.action.name+".smd":
+                bpy.context.scene.vs.export_list_active = index
+        bpy.context.scene.vs.action_selection = "CURRENT"
+        body_armature.data.vs.implicit_zero_bone = False
+        bpy.ops.export_scene.smd()
+        
+        print("generating qc file for arms")
+        qcfile = """$modelname \""""+sanitized_model_name+"""/"""+sanitized_model_name+"""_arms.mdl\"
+
+$BodyGroup \""""+sanitized_model_name+"""_arms\"
+{
+    studio \""""+sanitized_model_name+"""_arms.smd\"
+}
+
+
+$SurfaceProp \"flesh\"
+
+$Contents \"solid\"
+
+$EyePosition 0 0 70
+
+$MaxEyeDeflection 90
+
+$MostlyOpaque
+
+$CDMaterials \"models\\"""+sanitized_model_name+"""\\\"
+
+$CBox 0 0 0 0 0 0
+
+$BBox -13 -13 0 13 13 72
+
+$Sequence \"idle\" {
+    \"anims/idle_arms.smd\"
+    fps 1
+}"""
+        print("writing qc file for arms. If this errors, please save your file!")
+        compilefile = open(bpy.path.abspath("//CATS Bake/" + platform_name + "/"+sanitized_model_name+"_arms/"+sanitized_model_name+"_arms.qc"), "w")
+        compilefile.write(qcfile)
+        compilefile.close()
+        
+        print("Compiling arms model! (THIS CAN TAKE A LONG TIME AND IS PRONE TO ERRORS!!!!)")
+        bpy.ops.smd.compile_qc(filepath=bpy.path.abspath(bpy.context.scene.vs.qc_path))
+        
+        print("Moving compiled arms model to addon folder.")
+        #path after models must match model path in QC.
+        #thanks to "https://stackoverflow.com/a/41827240" for helping me make sure this would work correctly.
+        #this is the same as body because they should both be put in the same folder. This could be called once at the end of the script but eh i don't think it's needed.
+        source_dir = steam_librarypath+"/garrysmod/models/"+sanitized_model_name
+        target_dir = addonpath+"models/"+sanitized_model_name
+        file_names = os.listdir(source_dir)
+        os.makedirs(target_dir,0o777,True) 
+        for file_name in file_names:
+            if os.path.exists(os.path.join(target_dir, file_name)):  
+                os.remove(os.path.join(target_dir, file_name))
+            shutil.move(os.path.join(source_dir, file_name), target_dir)
+            
+            
+        print("======================FINISHED GMOD PROCESS======================")
+        return {'FINISHED'}
+        
+        
 # def popup_install_xps(self, context):
 #     layout = self.layout
 #     col = layout.column(align=True)

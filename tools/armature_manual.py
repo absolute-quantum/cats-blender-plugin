@@ -1861,7 +1861,7 @@ class ConvertToValveButton(bpy.types.Operator):
             'chest': "ValveBiped.Bip01_Spine1",
             'upper_chest': "ValveBiped.Bip01_Spine2",
             'neck': "ValveBiped.Bip01_Neck1",
-            'head': "ValveBiped.Bip01_Head",
+            'head': "ValveBiped.Bip01_Head1", #head1 is on purpose.
             'left_leg': "ValveBiped.Bip01_L_Thigh",
             'left_knee': "ValveBiped.Bip01_L_Calf",
             'left_ankle': "ValveBiped.Bip01_L_Foot",
@@ -1885,7 +1885,7 @@ class ConvertToValveButton(bpy.types.Operator):
                 translate_bone_fails += 1
 
         if translate_bone_fails > 0:
-            self.report({'ERROR'}, f"Failed to translate {translate_bone_fails} bones! Make sure your model has standard bone names!")
+            self.report({'INFO'}, "Error! Failed to translate {translate_bone_fails} bones! Make sure your model has standard bone names!")
 
         self.report({'INFO'}, 'Connected all bones!')
         return {'FINISHED'}
