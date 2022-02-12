@@ -1619,7 +1619,7 @@ class BakeButton(bpy.types.Operator):
                 image.generated_height = resolution
                 image.scale(resolution, resolution)
                 # already completed passes
-                if bakename not in ["specular.png", "normal.png"]:
+                if bakename not in ["specular", "normal"]:
                     orig_image = bpy.data.images["SCRIPT_" + bakename+'.png']
                     image.pixels[:] = orig_image.pixels[:]
 
