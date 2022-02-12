@@ -2200,6 +2200,7 @@ class BakeButton(bpy.types.Operator):
                         child.data.materials.append(mat)
 
             # Try to only output what you'll end up importing into unity.
+            context.scene.render.image_settings.file_format = "PNG"
             context.scene.render.image_settings.color_mode = 'RGBA'
             if pass_diffuse and not diffuse_vertex_colors:
                 image = bpy.data.images[platform_img("diffuse"+image_extension)]
