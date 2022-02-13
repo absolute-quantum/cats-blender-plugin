@@ -88,6 +88,18 @@ class Bake_Lod_Delete(Operator):
         lods.remove(len(lods) - 1)
 
         return{'FINISHED'}
+    
+    
+@register_wrap
+class Open_GPU_Settings(Operator):
+    bl_idname = "cats_bake.open_gpu_settings"
+    bl_label = "Open GPU Settings (Top of the page)"
+    
+    def execute(self, context):
+        bpy.ops.screen.userpref_show()
+        context.preferences.active_section = 'SYSTEM'
+
+        return{'FINISHED'}
 
 @register_wrap
 class BakePanel(ToolPanel, bpy.types.Panel):
@@ -359,6 +371,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         if context.preferences.addons['cycles'].preferences.compute_device_type == 'NONE' and context.scene.bake_device == 'GPU':
             row = col.row(align=True)
             row.label(text="No render device configured in Blender settings. Bake will use CPU", icon="INFO")
+            row = col.row(align=True)
+            row.operator(Open_GPU_Settings.bl_idname, icon="SETTINGS")
         if not addon_utils.check("render_auto_tile_size")[1] and Common.version_2_93_or_older():
             row = col.row(align=True)
             row.label(text="Enabling \"Auto Tile Size\" plugin reccomended!", icon="INFO")
