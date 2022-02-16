@@ -207,6 +207,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 if item.generate_prop_bones:
                     row = col.row(align=True)
                     row.prop(item, 'generate_prop_bone_max_influence_count', expand=True)
+                    row = col.row(align=True)
+                    row.operator(Bake.BakeAddProp.bl_idname)
+                    row.operator(Bake.BakeRemoveProp.bl_idname)
+
 
                 row = col.row(align=True)
                 row.prop(item, 'specular_setup', expand=True)
@@ -325,10 +329,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'bake_pass_normal', expand=True)
-                if context.scene.bake_pass_normal:
-                    row = col.row(align=True)
-                    row.separator()
-                    row.prop(context.scene, 'bake_normal_apply_trans', expand=True)
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'bake_pass_smoothness', expand=True)

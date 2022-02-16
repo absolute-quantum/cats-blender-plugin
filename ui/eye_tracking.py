@@ -16,12 +16,12 @@ class SearchMenuOperatorBoneHead(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_bones_head)
-    
+
     def execute(self, context):
         context.scene.head = self.my_enum
         print(context.scene.head)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
@@ -35,12 +35,12 @@ class SearchMenuOperatorBoneEyeLeft(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_bones_eye_l)
-    
+
     def execute(self, context):
         context.scene.eye_left = self.my_enum
         print(context.scene.eye_left)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
@@ -54,17 +54,17 @@ class SearchMenuOperatorBoneEyeRight(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_bones_eye_r)
-    
+
     def execute(self, context):
         context.scene.eye_right = self.my_enum
         print(context.scene.eye_right)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
         return {'FINISHED'}
-    
+
 @register_wrap
 class SearchMenuOperatorShapekeyWinkLeft(bpy.types.Operator):
     bl_description = t('Scene.wink_left.desc')
@@ -73,12 +73,12 @@ class SearchMenuOperatorShapekeyWinkLeft(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_shapekeys_eye_blink_l)
-    
+
     def execute(self, context):
         context.scene.wink_left = self.my_enum
         print(context.scene.wink_left)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
@@ -92,12 +92,12 @@ class SearchMenuOperatorShapekeyWinkRight(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_shapekeys_eye_blink_r)
-    
+
     def execute(self, context):
         context.scene.wink_right = self.my_enum
         print(context.scene.wink_right)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
@@ -111,12 +111,12 @@ class SearchMenuOperatorShapekeyLowerLidLeft(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_shapekeys_eye_low_l)
-    
+
     def execute(self, context):
         context.scene.lowerlid_left = self.my_enum
         print(context.scene.lowerlid_left)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
@@ -130,17 +130,17 @@ class SearchMenuOperatorShapekeyLowerLidRight(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_shapekeys_eye_low_r)
-    
+
     def execute(self, context):
         context.scene.lowerlid_right = self.my_enum
         print(context.scene.lowerlid_right)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
         return {'FINISHED'}
-    
+
 @register_wrap
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_eye_v3'
@@ -151,6 +151,9 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
         layout = self.layout
         box = layout.box()
         col = box.column(align=True)
+
+        row = col.row(align=True)
+        row.label(text="No longer neccesary for Avatars 3.0!", icon='INFO')
 
         row = col.row(align=True)
         row.prop(context.scene, 'eye_mode', expand=True)

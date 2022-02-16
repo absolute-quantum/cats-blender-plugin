@@ -176,6 +176,12 @@ def register():
         default=True
     )
 
+    Scene.merge_armatures_cleanup_shape_keys = BoolProperty(
+        name=t('Scene.merge_armatures_cleanup_shape_keys.label'),
+        description=t('Scene.merge_armatures_cleanup_shape_keys.desc'),
+        default=True
+    )
+
     # Decimation
     Scene.decimation_mode = EnumProperty(
         name=t('Scene.decimation_mode.label'),
@@ -300,6 +306,13 @@ def register():
             name="Generate Prop Bones",
             description="This option will detect any meshes weighted to a single bone and create a 'prop' bone you can independently scale to 0.",
             default=True
+        )
+        generate_prop_bone_max_influence_count: IntProperty(
+            name="Max Bones Per Prop",
+            description="Maximum bones a prop can be attached to to be considered a prop. More will create more toggleable props, but increase armature complexity.",
+            default=2,
+            min=1,
+            max=100
         )
         metallic_alpha_pack: EnumProperty(
             name=t('Scene.bake_metallic_alpha_pack.label'),

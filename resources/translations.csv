@@ -708,18 +708,9 @@ DebugTranslations.error,"Errors found, response printed!!",,
 DebugTranslations.success,"No issues with Google Translations found, response printed!",,
 ShapeKeyApplier.label,Apply Selected Shapekey to Basis,選択したシェイプキーをBasisに適用,선택된 쉐이프키를 Basis에 적용
 ShapeKeyApplier.desc,Applies the selected shape key to the new Basis at it's current strength and creates a reverted shape key from the selected one,,
-ShapeKeyApplier.error.revertCustomBasis,"To revert the shape keys, please apply the ""Reverted"" shape keys in reverse order.
-Start with the shape key called ""{name}"".
-
-If you didn't change the shape key order, you can revert the shape keys from top to bottom.",,
-ShapeKeyApplier.error.revertCustomBasis.scale,7.3,,
-ShapeKeyApplier.error.revert,"To revert the shape keys, please apply the ""Reverted"" shape keys in reverse order.
-Start with the reverted shape key that uses the relative key called ""Basis"".
-
-If you didn't change the shape key order, you can revert the shape keys from top to bottom.",,
-ShapeKeyApplier.error.revert.scale,7.3,,
+ShapeKeyApplier.error.recursiveRelativeToLoop,"Shapekey ""{name}"" is recursively relative to itself, so cannot be applied to the Basis",,
 ShapeKeyApplier.successRemoved,"Successfully removed shapekey ""{name}"" from the Basis.",,
-ShapeKeyApplier.successSet,"Successfully set shapekey ""{name}"" as the new Basis.",,
+ShapeKeyApplier.successSet,"Successfully applied shapekey ""{name}"" to the Basis.",,
 addToShapekeyMenu.ShapeKeyApplier.label,Apply Selected Shapekey to Basis,選択したシェイプキーをBasisに適用,선택된 쉐이프키를 Basis에 적용
 PatreonButton.label,Become a Patron,パトロンになる,후원하기
 PatreonButton.URL,https://www.patreon.com/catsblenderplugin,,
@@ -900,6 +891,9 @@ Not checking this will always apply transforms",,
 Scene.merge_armatures_remove_zero_weight_bones.label,Remove Zero Weight Bones,ゼロウェイトボーンを削除する,제로 웨이트 본 제거
 Scene.merge_armatures_remove_zero_weight_bones.desc,"Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.
 Uncheck this if bones or vertex groups that you want to keep got deleted",,
+Scene.merge_armatures_cleanup_shape_keys.label,Cleanup Shape Keys,
+Scene.merge_armatures_cleanup_shape_keys.desc,"Cleans up the meshes shape keys.
+Uncheck this if shape keys you want to keep got deleted",,
 Scene.decimation_mode.label,Decimation Mode,単純化モード,
 Scene.decimation_mode.desc,Decimation Mode,,
 Scene.decimation_mode.smart.label,Smart,スマート,
