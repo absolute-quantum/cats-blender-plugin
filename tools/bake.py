@@ -239,6 +239,38 @@ class BakePresetAll(bpy.types.Operator):
         return {'FINISHED'}
 
 @register_wrap
+class BakeAddProp(bpy.types.Operator):
+    bl_idname = 'cats_bake.add_prop'
+    bl_label = "Force Prop"
+    bl_description = "Forces selected objects to generate prop setups, regardless of bone counts."
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.view_layer.objects.selected and any(obj.type == "MESH" for obj in context.view_layer.objects.selected)
+
+    def execute(self, context):
+        for obj in context.view_layer.objects.selected:
+            obj['generatePropBones'] = True
+        return {'FINISHED'}
+
+@register_wrap
+class BakeRemoveProp(bpy.types.Operator):
+    bl_idname = 'cats_bake.remove_prop'
+    bl_label = "Force Not Prop"
+    bl_description = "Forces selected objects to never generate prop setups, regardless of bone counts."
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.view_layer.objects.selected and any(obj.type == "MESH" for obj in context.view_layer.objects.selected)
+
+    def execute(self, context):
+        for obj in context.view_layer.objects.selected:
+            obj['generatePropBones'] = False
+        return {'FINISHED'}
+
+@register_wrap
 class BakeButton(bpy.types.Operator):
     bl_idname = 'cats_bake.bake'
     bl_label = t('cats_bake.bake.label')
@@ -1419,15 +1451,18 @@ class BakeButton(bpy.types.Operator):
                         for vertex in obj.data.vertices:
                             found_vertex_groups |= set([vgp.group for vgp in vertex.groups if vgp.weight > 0.00001])
 
-                        if found_vertex_groups and len(found_vertex_groups) <= generate_prop_bone_max_influence_count:
+                        generate_bones = found_vertex_groups and len(found_vertex_groups) <= generate_prop_bone_max_influence_count
+                        if 'generatePropBones' in obj:
+                            generate_bones = obj['generatePropBones']
+                        if generate_bones:
                             vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
                             for vgp in found_vertex_groups:
                                 vgroup_name = vgroup_lookup[vgp]
-                                if not plat_arm_copy.data.bones[vgroup_name].children:
-                                    #TODO: this doesn't account for props attached to something which has existing attachments
-                                    Common.switch("OBJECT")
-                                    print("Object " + obj.name + " already has no children, skipping")
-                                    continue
+                                #if not plat_arm_copy.data.bones[vgroup_name].children:
+                                #    #TODO: this doesn't account for props attached to something which has existing attachments
+                                #    Common.switch("OBJECT")
+                                #    print("Object " + obj.name + " already has no children, skipping")
+                                #    continue
 
                                 print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
                                 # If the obj has ".001" or similar, trim it
