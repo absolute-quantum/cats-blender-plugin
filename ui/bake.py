@@ -95,9 +95,9 @@ class Bake_Lod_Delete(Operator):
 class Choose_Steam_Library(Operator, ImportHelper):
     bl_idname = "cats_bake.choose_steam_library"
     bl_label = "Choose Steam Library"
-    
+
     directory = StringProperty(subtype='DIR_PATH')
-    
+
     @classmethod
     def poll(cls, context):
         bake_platforms = context.scene.bake_platforms
@@ -135,6 +135,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row.operator(Bake.BakePresetQuest.bl_idname, icon="ALIASED")
         row = col.row(align=True)
         row.operator(Bake.BakePresetSecondlife.bl_idname, icon="VIEW_PAN")
+        row = col.row(align=True)
+        row.operator(Bake.BakePresetGmod.bl_idname, icon="EVENT_G")
         col.separator()
         row = col.row()
         col.label(text="Platforms:")
@@ -263,7 +265,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row.separator()
                 row.prop(item, 'image_export_format')
         # END ADVANCED PLATFORM OPTIONS
-        
+
         if context.scene.bake_platforms:
             col.separator()
             col.label(text=t('BakePanel.generaloptionslabel'))

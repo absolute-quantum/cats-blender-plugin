@@ -178,7 +178,7 @@ def autodetect_passes(self, context, item, tricount, platform):
         $emissiveblendenabled and $emissiveblendbasetexture: emit
         """
 
-    
+
 @register_wrap
 class BakePresetDesktop(bpy.types.Operator):
     bl_idname = 'cats_bake.preset_desktop'
@@ -224,7 +224,7 @@ class BakePresetSecondlife(bpy.types.Operator):
 @register_wrap
 class BakePresetGmod(bpy.types.Operator):
     bl_idname = 'cats_bake.preset_gmod'
-    bl_label = "Garrys Mod"
+    bl_label = "GMod (Experimental)"
     bl_description = "Preset for producing a compatible Garry's Mod character model"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -244,7 +244,6 @@ class BakePresetAll(bpy.types.Operator):
     def execute(self, context):
         bpy.ops.cats_bake.preset_desktop()
         bpy.ops.cats_bake.preset_quest()
-        bpy.ops.cats_bake.preset_gmod()
         bpy.ops.cats_bake.preset_secondlife()
         return {'FINISHED'}
 
@@ -372,7 +371,7 @@ class BakeButton(bpy.types.Operator):
         bpy.ops.render.render(write_still=True, scene=context.scene.name)
         bpy.data.images[image].reload()
         bpy.data.images[image].colorspace_settings.name = orig_colorspace
-    
+
 
     def denoise_create(context, tree):
         denoise_node = tree.nodes.new(type="CompositorNodeDenoise")
@@ -612,21 +611,21 @@ class BakeButton(bpy.types.Operator):
         context.scene.cycles.device = render_device_tmp
 
         return {'FINISHED'}
-    
-        #this samples curve to recalculate original smoothness to new smoothness 
+
+        #this samples curve to recalculate original smoothness to new smoothness
     def sample_curve_smoothness(self,sample_val):
         samplecurve = [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000334,0.000678,0.001033,0.001400,0.001779,0.002170,0.002575,0.002993,0.003424,0.003871,0.004332,0.004808,0.005301,0.005810,0.006335,0.006878,0.007439,0.008018,0.008616,0.009233,0.009870,0.010527,0.011204,0.011903,0.012624,0.013367,0.014132,0.014920,0.015732,0.016568,0.017429,0.018314,0.019225,0.020163,0.021126,0.022117,0.023134,0.024180,0.025255,0.026358,0.027490,0.028652,0.029845,0.031068,0.032323,0.033610,0.034928,0.036280,0.037664,0.039083,0.040535,0.042022,0.043544,0.045102,0.046696,0.048327,0.049994,0.051699,0.053442,0.055224,0.057045,0.058905,0.060805,0.062745,0.064729,0.066758,0.068831,0.070948,0.073109,0.075311,0.077555,0.079841,0.082166,0.084531,0.086935,0.089377,0.091856,0.094371,0.096923,0.099510,0.102131,0.104786,0.107474,0.110195,0.112947,0.115729,0.118542,0.121385,0.124256,0.127155,0.130082,0.133035,0.136013,0.139018,0.142046,0.145098,0.148173,0.151270,0.154389,0.157529,0.160689,0.163868,0.167066,0.170282,0.173515,0.176765,0.180030,0.183310,0.186605,0.189914,0.193235,0.196569,0.199914,0.203270,0.206635,0.210011,0.213395,0.216786,0.220185,0.223591,0.227002,0.230418,0.233838,0.237263,0.240690,0.244119,0.247549,0.250980]
-        
+
         #256 values in curve
         return samplecurve[round(256*sample_val)]
-    
+
     #this samples for roughness map curve
     def sample_curve_roughness(self,sample_val):
         samplecurve = [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.002133,0.004309,0.006529,0.008791,0.011097,0.013447,0.015840,0.018276,0.020756,0.023280,0.025847,0.028459,0.031114,0.033813,0.036557,0.039344,0.042176,0.045053,0.047973,0.050938,0.053948,0.057002,0.060102,0.063245,0.066434,0.069668,0.072947,0.076271,0.079640,0.083054,0.086514,0.090019,0.093570,0.097166,0.100808,0.104495,0.108229,0.112008,0.115834,0.119705,0.123623,0.127586,0.131596,0.135653,0.139756,0.143905,0.148101,0.152343,0.156633,0.160969,0.165352,0.169782,0.174259,0.178784,0.183355,0.187974,0.192640,0.197354,0.202115,0.206924,0.211781,0.216685,0.221637,0.226637,0.231685,0.236781,0.241926,0.247118,0.252359,0.257648,0.262986,0.268372,0.273807,0.279291,0.284823,0.290404,0.296035,0.301714,0.307442,0.313220,0.319046,0.324922,0.330848,0.336823,0.342847,0.348921,0.355045,0.361219,0.367443,0.373716,0.380040,0.386413,0.392837,0.399311,0.405836,0.412410,0.419036,0.425712,0.432438,0.439216,0.446181,0.453467,0.461066,0.468971,0.477176,0.485674,0.494457,0.503519,0.512853,0.522451,0.532307,0.542413,0.552764,0.563351,0.574168,0.585208,0.596464,0.607929,0.619596,0.631458,0.643508,0.655739,0.668144,0.680716,0.693449,0.706335,0.719367,0.732538,0.745842,0.759271,0.772819,0.786478,0.800241,0.814102,0.828054,0.842089,0.856201,0.870382,0.884626,0.898926,0.913275,0.927665,0.942090,0.956543,0.971017,0.985505,1.000000]
-        
+
         #256 values in curve
         return samplecurve[round(256*sample_val)]
-    
+
     #needed because it likes to pause blender entirely for a key input in console and we don't want that garbage - @989onan
     def compile_gmod_tga(self,steam_library_path,images_path,texturename):
         def on_timeout(process,statusdict):
@@ -639,8 +638,8 @@ class BakeButton(bpy.types.Operator):
         proc.wait()
         # in case we didn't hit timeout
         timer.cancel()
-        
-    
+
+
     def gmod_textures_compile(self,steam_library_path,platform_name,bake_resolution,model_name):
         """
         https://developer.valvesoftware.com/wiki/Adapting_PBR_Textures_to_Source
@@ -660,9 +659,9 @@ class BakeButton(bpy.types.Operator):
         baked_diffuse_image = None
         roughness_image = None
         baked_normal_image = None
-        
+
         scene=bpy.context.scene
-        
+
         #sanitizing name since everything needs to be simple characters and "_"'s
         sanitized_platform_name = ""
         for i in platform_name.lower():
@@ -670,7 +669,7 @@ class BakeButton(bpy.types.Operator):
                 sanitized_platform_name += i
             else:
                 sanitized_platform_name += "_"
-        
+
         sanitized_model_name = ""
         #for file names which must be lower case and no special symbols.
         for i in model_name.lower():
@@ -678,17 +677,17 @@ class BakeButton(bpy.types.Operator):
                 sanitized_model_name += i
             else:
                 sanitized_model_name += "_"
-        
+
         print("calculating gmod color space")
-        
+
         vmtfile = "\"VertexlitGeneric\"\n{\n    \"$surfaceprop\" \"Flesh\""
         scene.render.image_settings.file_format = 'TARGA'
         scene.render.image_settings.color_mode = "RGBA"
         shouldpackalpha = (alpha_image is not None) and (smoothness_image is not None) and (diffuse_image is not None)
         target_dir = steam_library_path+"steamapps/common/GarrysMod/garrysmod/addons/"+sanitized_model_name+"_playermodel/materials/models/"+sanitized_model_name
-        os.makedirs(target_dir,0o777,True) 
-        
-        
+        os.makedirs(target_dir,0o777,True)
+
+
         #bake roughness and smoothness layer first
         if smoothness_image is not None:
             if sanitized_platform_name+"baked_roughness.tga" in bpy.data.images:
@@ -696,20 +695,20 @@ class BakeButton(bpy.types.Operator):
                     image.user_clear()
             roughness_image = bpy.data.images.new(sanitized_platform_name+"baked_roughness.tga", width=bake_resolution, height=bake_resolution, alpha=True)
             roughness_image.file_format = 'TARGA'
-            
+
             baked_smoothness = bpy.data.images.new(sanitized_platform_name+"baked_smoothness.tga", width=bake_resolution, height=bake_resolution, alpha=True)
             baked_smoothness.file_format = 'TARGA'
-            
-            
+
+
             smoothness_image_buffer = list(smoothness_image.pixels)
             roughness_image_buffer = list(roughness_image.pixels[:])
             baked_smoothness_buffer = list(baked_smoothness.pixels[:])
-            
+
             for idx in range(3, len(smoothness_image_buffer), 4):
                 roughness_image_buffer[idx - 3] = self.sample_curve_roughness(1-smoothness_image_buffer[idx - 3])
                 roughness_image_buffer[idx - 2] = self.sample_curve_roughness(1-smoothness_image_buffer[idx - 2])
                 roughness_image_buffer[idx - 1] = self.sample_curve_roughness(1-smoothness_image_buffer[idx - 1])
-            
+
             if shouldpackalpha and (not(normal_image is not None)) and (diffuse_image is not None):
                 diffuse_image_buffer = list(diffuse_image.pixels[:])
                 for idx in range(3,len(smoothness_image_buffer),4):
@@ -722,27 +721,27 @@ class BakeButton(bpy.types.Operator):
                     normal_image_buffer[idx] = self.sample_curve_smoothness(smoothness_image_buffer[idx - 1])
                     vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
                 normal_image.pixels[:] = normal_image_buffer
-                
+
             roughness_image.pixels[:] = roughness_image_buffer
-            
+
             #don't need to save roughness on disk, just need it for multiplying with diffuse.
             #-----
             #roughness_image.filepath_raw = images_path+"materialsrc/"+roughness_image.name
             #roughness_image.save_render(roughness_image.filepath_raw,scene=scene)
             #print("COMPILE DIFFUSE VTF")
             #subprocess.run([steam_library_path+"steamapps/common/GarrysMod/bin/vtex.exe", roughness_image.filepath, "-nopause","-game", steam_library_path+"steamapps/common/GarrysMod/garrysmod"],stdout=subprocess.PIPE)
-            
-            
-            
+
+
+
             baked_smoothness.pixels[:] = baked_smoothness_buffer
             baked_smoothness.filepath_raw = images_path+"materialsrc/"+roughness_image.name
             baked_smoothness.save_render(baked_smoothness.filepath_raw,scene=scene)
             print("COMPILE ENVIROMENT MAP VTF")
             self.compile_gmod_tga(steam_library_path,images_path,roughness_image.name)
-            if os.path.isfile(target_dir+"/"+roughness_image.name.replace(".tga",".vtf")):  
+            if os.path.isfile(target_dir+"/"+roughness_image.name.replace(".tga",".vtf")):
                 os.remove(target_dir+"/"+roughness_image.name.replace(".tga",".vtf"))
             shutil.move(images_path+"materials/"+roughness_image.name.replace(".tga",".vtf"), target_dir)
-        
+
         #multiply resampled roughness by diffuse
         if diffuse_image and (sanitized_platform_name+"baked_roughness.tga" in bpy.data.images):
             if sanitized_platform_name+"baked_diffuse.tga" in bpy.data.images:
@@ -750,23 +749,23 @@ class BakeButton(bpy.types.Operator):
                     image.user_clear()
             baked_diffuse_image = bpy.data.images.new(sanitized_platform_name+"baked_diffuse.tga", width=bake_resolution, height=bake_resolution, alpha=True)
             baked_diffuse_image.file_format = 'TARGA'
-            
+
             diffuse_image_buffer = list(diffuse_image.pixels[:])
             roughness_buffer = list(roughness_image.pixels[:])
             baked_diffuse_image_buffer = list(baked_diffuse_image.pixels[:])
-            
+
             for idx in range(3, len(diffuse_image_buffer), 4):
                  baked_diffuse_image_buffer[idx - 3] = diffuse_image_buffer[idx - 3]*roughness_buffer[idx - 3]
                  baked_diffuse_image_buffer[idx - 2] = diffuse_image_buffer[idx - 2]*roughness_buffer[idx - 2]
                  baked_diffuse_image_buffer[idx - 1] = diffuse_image_buffer[idx - 1]*roughness_buffer[idx - 1]
-            
-            
+
+
             baked_diffuse_image.pixels[:] = baked_diffuse_image_buffer
             baked_diffuse_image.filepath_raw = images_path+"materialsrc/"+baked_diffuse_image.name
             baked_diffuse_image.save_render(baked_diffuse_image.filepath_raw,scene=scene)
             print("COMPILE DIFFUSE VTF")
             self.compile_gmod_tga(steam_library_path,images_path,baked_diffuse_image.name)
-            if os.path.isfile(target_dir+"/"+baked_diffuse_image.name.replace(".tga",".vtf")):  
+            if os.path.isfile(target_dir+"/"+baked_diffuse_image.name.replace(".tga",".vtf")):
                 os.remove(target_dir+"/"+baked_diffuse_image.name.replace(".tga",".vtf"))
             shutil.move(images_path+"materials/"+baked_diffuse_image.name.replace(".tga",".vtf"), target_dir)
             #add base texture to file
@@ -777,86 +776,86 @@ class BakeButton(bpy.types.Operator):
                     image.user_clear()
             baked_diffuse_image = bpy.data.images.new(sanitized_platform_name+"baked_diffuse.tga", width=bake_resolution, height=bake_resolution, alpha=True)
             baked_diffuse_image.file_format = 'TARGA'
-            
+
             diffuse_image_buffer = list(diffuse_image.pixels[:])
             baked_diffuse_image_buffer = list(baked_diffuse_image.pixels[:])
-            
+
             for idx in range(3, len(diffuse_image_buffer), 4):
                  baked_diffuse_image_buffer[idx - 3] = diffuse_image_buffer[idx - 3]
                  baked_diffuse_image_buffer[idx - 2] = diffuse_image_buffer[idx - 2]
                  baked_diffuse_image_buffer[idx - 1] = diffuse_image_buffer[idx - 1]
-            
+
             baked_diffuse_image.pixels[:] = baked_diffuse_image_buffer
             baked_diffuse_image.filepath_raw = images_path+"materialsrc/"+baked_diffuse_image.name
             baked_diffuse_image.save_render(baked_diffuse_image.filepath_raw,scene=scene)
             print("COMPILE DIFFUSE VTF")
             self.compile_gmod_tga(steam_library_path,images_path,baked_diffuse_image.name)
-            if os.path.isfile(target_dir+"/"+baked_diffuse_image.name.replace(".tga",".vtf")):  
+            if os.path.isfile(target_dir+"/"+baked_diffuse_image.name.replace(".tga",".vtf")):
                 os.remove(target_dir+"/"+baked_diffuse_image.name.replace(".tga",".vtf"))
             shutil.move(images_path+"materials/"+baked_diffuse_image.name.replace(".tga",".vtf"), target_dir)
-            
+
             #add base texture to file
             vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+baked_diffuse_image.name.replace(".tga","")+"\""
-        
+
         if normal_image is not None:
             if sanitized_platform_name+"baked_normal.tga" in bpy.data.images:
                     image = bpy.data.images[sanitized_platform_name+"baked_normal.tga"]
                     image.user_clear()
             baked_normal_image = bpy.data.images.new(sanitized_platform_name+"baked_normal.tga", width=bake_resolution, height=bake_resolution, alpha=True)
             baked_normal_image.file_format = 'TARGA'
-            
+
             pixel_buffer = list(normal_image.pixels[:])
             baked_normal_image_buffer = list(baked_normal_image.pixels[:])
-            
+
             for idx in range(3, len(pixel_buffer), 4):
                  baked_normal_image_buffer[idx - 3] = pixel_buffer[idx - 3]
                  baked_normal_image_buffer[idx - 2] = 1-pixel_buffer[idx - 2] #flip green channel for garry's mod
                  baked_normal_image_buffer[idx - 1] = pixel_buffer[idx - 1]
-            
+
             baked_normal_image.pixels[:] = baked_normal_image_buffer
             baked_normal_image.filepath_raw = images_path+"materialsrc/"+baked_normal_image.name
             baked_normal_image.save_render(baked_normal_image.filepath_raw,scene=scene)
             print("COMPILE NORMAL VTF")
             self.compile_gmod_tga(steam_library_path,images_path,baked_normal_image.name)
-            if os.path.isfile(target_dir+"/"+baked_normal_image.name.replace(".tga",".vtf")):  
+            if os.path.isfile(target_dir+"/"+baked_normal_image.name.replace(".tga",".vtf")):
                 os.remove(target_dir+"/"+baked_normal_image.name.replace(".tga",".vtf"))
             shutil.move(images_path+"materials/"+baked_normal_image.name.replace(".tga",".vtf"), target_dir)
-            
+
             #add base texture to file
             vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+baked_normal_image.name.replace(".tga","")+"\""
-        
+
         if emissive_image is not None:
             if sanitized_platform_name+"baked_emissive.tga" in bpy.data.images:
                     image = bpy.data.images[sanitized_platform_name+"baked_emissive.tga"]
                     image.user_clear()
             baked_emissive_image = bpy.data.images.new(sanitized_platform_name+"baked_emissive.tga", width=bake_resolution, height=bake_resolution, alpha=True)
             baked_emissive_image.file_format = 'TARGA'
-            
+
             pixel_buffer = list(emissive_image.pixels[:])
             baked_emissive_image_buffer = list(baked_emissive_image.pixels[:])
-            
+
             for idx in range(3, len(pixel_buffer), 4):
                  baked_emissive_image_buffer[idx - 3] = pixel_buffer[idx - 3]
                  baked_emissive_image_buffer[idx - 2] = pixel_buffer[idx - 2]
                  baked_emissive_image_buffer[idx - 1] = pixel_buffer[idx - 1]
-            
+
             baked_emissive_image.pixels[:] = baked_emissive_image_buffer
             baked_emissive_image.filepath_raw = images_path+"materialsrc/"+baked_emissive_image.name
             baked_emissive_image.save_render(baked_emissive_image.filepath_raw,scene=scene)
             print("COMPILE EMISSION VTF")
             self.compile_gmod_tga(steam_library_path,images_path,baked_emissive_image.name)
-            if os.path.isfile(target_dir+"/"+baked_emissive_image.name.replace(".tga",".vtf")):  
+            if os.path.isfile(target_dir+"/"+baked_emissive_image.name.replace(".tga",".vtf")):
                 os.remove(target_dir+"/"+baked_emissive_image.name.replace(".tga",".vtf"))
             shutil.move(images_path+"materials/"+baked_emissive_image.name.replace(".tga",".vtf"), target_dir)
             #add base texture to file
             vmtfile += "\n    \"$selfillummask\" \"models/"+sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\"\n    \"$selfillum\" 1"
-        
+
         vmtfile += "\n}"
-        
+
         vmtfiledir = open(target_dir+"/cats_baked_"+sanitized_platform_name+".vmt","w")
         vmtfiledir.write(vmtfile)
         vmtfiledir.close()
-        
+
     def perform_bake(self, context):
         print('START BAKE')
         # TODO: diffuse, emit, alpha, metallic and smoothness all have a very slight difference between sample counts
@@ -905,8 +904,8 @@ class BakeButton(bpy.types.Operator):
 
         # Save reference to original armature
         armature = Common.get_armature()
-        
-        
+
+
         # Create an output collection
         collection = bpy.data.collections.new("CATS Bake")
         context.scene.collection.children.link(collection)
@@ -1447,7 +1446,7 @@ class BakeButton(bpy.types.Operator):
                     if supersample_normals:
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
                     else:
-                    
+
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
             bake_size = ((resolution * 2, resolution * 2) if
                          supersample_normals else
@@ -1613,7 +1612,7 @@ class BakeButton(bpy.types.Operator):
             use_lods = platform.use_lods
             lods = platform.lods
             gmod_model_name = platform.gmod_model_name
-            
+
             image_extension = ""
             if platform.image_export_format == "TGA":
                 image_extension = ".tga"
@@ -2268,7 +2267,7 @@ class BakeButton(bpy.types.Operator):
                             outfile.write(line)
             # Delete our duplicate scene
             bpy.ops.scene.delete()
-            
+
             if export_format == "GMOD":
                 self.gmod_textures_compile(steam_library_path,platform_name,resolution,gmod_model_name)
                 collection = bpy.data.collections["CATS Bake"]
@@ -2283,14 +2282,14 @@ class BakeButton(bpy.types.Operator):
 
         # Delete our duplicate scene and the platform-agnostic CATS Bake
         bpy.ops.scene.delete()
-        
+
         for obj in collection.objects:
             bpy.data.objects.remove(obj, do_unlink=True)
 
         bpy.data.collections.remove(collection)
-        
+
         #clean unused data
         bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
         self.report({'INFO'}, t('cats_bake.info.success'))
-        
+
         print("BAKE COMPLETE!")
