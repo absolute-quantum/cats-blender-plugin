@@ -253,6 +253,13 @@ def register():
             min=1,
             max=70000
         )
+        generate_prop_bone_max_influence_count: IntProperty(
+            name="Prop bones Max Influence Count",
+            description="Prop bones Max Influence Count",
+            default=45,
+            min=1,
+            max=45
+        )
         use_lods: BoolProperty(
             name="Generate LODs",
             description="Generate courser decimation levels for efficient rendering.",
@@ -377,7 +384,16 @@ def register():
             description='Model format to use when exporting',
             items=[
                 ("FBX", "FBX", "FBX export format, for use with Unity"),
-                ("DAE", "DAE", "Collada DAE, for use with Second Life and older engines")
+                ("DAE", "DAE", "Collada DAE, for use with Second Life and older engines"),
+                ("GMOD", "GMOD", "Exports to gmod. Requires TGA image export enabled as well to work")
+            ]
+        )
+        image_export_format: EnumProperty(
+            name='Image export format',
+            description='image type to use when exporting',
+            items=[
+                ("TGA", ".tga", "targa export format, for use with Gmod"),
+                ("PNG", ".png", "png format, for use with most platforms.")
             ]
         )
         specular_setup: BoolProperty(
@@ -399,6 +415,7 @@ def register():
             description='Blends emission into the diffuse map, for engines without a seperate emission map',
             default=False
         )
+        gmod_model_name: StringProperty(name='Gmod Model Name', default="missing no")
         #TODO: LODs
 
 
@@ -591,6 +608,8 @@ def register():
         step=0.1,
         precision=1
     )
+    
+    Scene.bake_steam_library = StringProperty(name='Steam Library', default="MISSING STEAM LIBRARY")
 
     Scene.selection_mode = EnumProperty(
         name=t('Scene.selection_mode.label'),

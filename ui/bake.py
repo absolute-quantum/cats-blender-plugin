@@ -9,6 +9,8 @@ from ..tools.register import register_wrap
 from ..tools.translations import t
 
 from bpy.types import UIList, Operator
+from bpy_extras.io_utils import ImportHelper
+from bpy.props import StringProperty
 
 @register_wrap
 class Bake_Platform_List(UIList):
@@ -90,6 +92,23 @@ class Bake_Lod_Delete(Operator):
         return{'FINISHED'}
 
 @register_wrap
+class Choose_Steam_Library(Operator, ImportHelper):
+    bl_idname = "cats_bake.choose_steam_library"
+    bl_label = "Choose Steam Library"
+    
+    directory = StringProperty(subtype='DIR_PATH')
+    
+    @classmethod
+    def poll(cls, context):
+        bake_platforms = context.scene.bake_platforms
+        index = context.scene.bake_platform_index
+
+        return bake_platforms[index].export_format == "GMOD"
+    def execute(self, context):
+        context.scene.bake_steam_library = self.directory
+        return{'FINISHED'}
+
+@register_wrap
 class BakePanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_catsbake'
     bl_label = t('BakePanel.label')
@@ -141,7 +160,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.prop(item, 'max_tris', expand=True)
-
             ### BEGIN ADVANCED PLATFORM OPTIONS
             col.separator()
             row = col.row(align=True)
@@ -241,8 +259,11 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.prop(item, 'export_format')
+                row = col.row(align=True)
+                row.separator()
+                row.prop(item, 'image_export_format')
         # END ADVANCED PLATFORM OPTIONS
-
+        
         if context.scene.bake_platforms:
             col.separator()
             col.label(text=t('BakePanel.generaloptionslabel'))
@@ -276,6 +297,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.prop(context.scene, 'bake_unwrap_angle', expand=True)
             row = col.row(align=True)
             row.scale_y = 0.85
+            if item.export_format == "GMOD":
+                row = col.row(align=True)
+                row.operator(Choose_Steam_Library.bl_idname, icon="FILE_FOLDER")
+                row = col.row(align=True)
+                row.prop(context.scene, "bake_steam_library", expand=True)
+                row = col.row(align=True)
+                row.prop(item, "gmod_model_name", expand=True)
+                row = col.row(align=True)
             if not context.scene.bake_show_advanced_general_options:
                 row.prop(context.scene, 'bake_show_advanced_general_options', icon=globs.ICON_ADD, emboss=True, expand=False, toggle=False, event=False)
             else:

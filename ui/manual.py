@@ -3,6 +3,7 @@ import bpy
 from .. import globs
 from .main import ToolPanel
 from .main import layout_split, add_button_with_small_button
+from ..tools import importer as Importer
 from ..tools import supporter
 from ..tools import translate as Translate
 from ..tools import common as Common
@@ -149,13 +150,18 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.ConvertToValveButton.bl_idname, icon='SMALL_CAPS')
-
+            
             row = col.row(align=True)
             row.scale_y = button_height
             row.operator(Armature_manual.ConvertToSecondlifeButton.bl_idname, icon='SMALL_CAPS')
-
+            
+            row = col.row(align=True)
+            row.scale_y = button_height
+            row.operator(Importer.ExportGmodPlayermodel.bl_idname, icon='OUTLINER_DATA_ARMATURE')
+            
+            
+            
             if globs.dev_branch:
-                col.separator()
                 row = col.row(align=True)
                 row.scale_y = button_height
                 row.operator(Armature_manual.TestButton.bl_idname)
