@@ -219,6 +219,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 if item.specular_setup:
                     row = col.row(align=True)
                     row.prop(item, 'specular_alpha_pack', expand=True)
+                    row = col.row(align=True)
+                    row.prop(item, 'specular_smoothness_overlay', expand=True)
                 if context.scene.bake_pass_diffuse and context.scene.bake_pass_emit:
                     row = col.row(align=True)
                     row.prop(item, "diffuse_emit_overlay", expand=True)
@@ -247,6 +249,13 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         col.label(text=t('BakePanel.transparencywarning'), icon="INFO")
                     elif (item.diffuse_alpha_pack == "SMOOTHNESS") and not context.scene.bake_pass_smoothness:
                         col.label(text=t('BakePanel.smoothnesswarning'), icon="INFO")
+                if context.scene.bake_pass_normal and item.specular_setup:
+                    row = col.row(align=True)
+                    row.label(text="Normal Alpha:")
+                    row.prop(item, 'normal_alpha_pack', expand=True)
+                if context.scene.bake_pass_normal:
+                    row = col.row(align=True)
+                    row.prop(item, 'normal_invert_g', expand=True)
                 if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness and not item.specular_setup:
                     row = col.row(align=True)
                     row.label(text="Metallic Alpha:")
@@ -264,6 +273,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.prop(item, 'image_export_format')
+                if item.export_format == "GMOD":
+                    row = col.row(align=True)
+                    row.operator(Choose_Steam_Library.bl_idname, icon="FILE_FOLDER")
+                    row = col.row(align=True)
+                    row.prop(context.scene, "bake_steam_library", expand=True)
+                    row = col.row(align=True)
+                    row.prop(item, "gmod_model_name", expand=True)
+                    row = col.row(align=True)
         # END ADVANCED PLATFORM OPTIONS
 
         if context.scene.bake_platforms:
@@ -299,14 +316,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.prop(context.scene, 'bake_unwrap_angle', expand=True)
             row = col.row(align=True)
             row.scale_y = 0.85
-            if item.export_format == "GMOD":
-                row = col.row(align=True)
-                row.operator(Choose_Steam_Library.bl_idname, icon="FILE_FOLDER")
-                row = col.row(align=True)
-                row.prop(context.scene, "bake_steam_library", expand=True)
-                row = col.row(align=True)
-                row.prop(item, "gmod_model_name", expand=True)
-                row = col.row(align=True)
             if not context.scene.bake_show_advanced_general_options:
                 row.prop(context.scene, 'bake_show_advanced_general_options', icon=globs.ICON_ADD, emboss=True, expand=False, toggle=False, event=False)
             else:

@@ -339,6 +339,20 @@ def register():
             ],
             default="NONE"
         )
+        normal_alpha_pack: EnumProperty(
+            name="Normal Alpha Pack",
+            description=t('Scene.bake_diffuse_alpha_pack.desc'),
+            items=[
+                ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
+                ("SPECULAR", "Specular", t("Scene.bake_diffuse_alpha_pack.none.desc")),
+            ],
+            default="NONE"
+        )
+        normal_invert_g: BoolProperty(
+            name="Invert green channel",
+            description="Source engine uses an inverse green channel, this fixes that on export",
+            default=False
+        )
         diffuse_premultiply_ao: BoolProperty(
             name="Premultiply Diffuse w/ AO",
             description=t('Scene.bake_pass_questdiffuse.desc'),
@@ -413,6 +427,11 @@ def register():
         diffuse_emit_overlay: BoolProperty(
             name='Diffuse Emission Overlay',
             description='Blends emission into the diffuse map, for engines without a seperate emission map',
+            default=False
+        )
+        specular_smoothness_overlay: BoolProperty(
+            name='Specular Smoothness Overlay',
+            description='Merges smoothness into the specular map, for engines without a seperate smoothness map',
             default=False
         )
         gmod_model_name: StringProperty(name='Gmod Model Name', default="missing no")
@@ -608,8 +627,8 @@ def register():
         step=0.1,
         precision=1
     )
-    
-    Scene.bake_steam_library = StringProperty(name='Steam Library', default="MISSING STEAM LIBRARY")
+
+    Scene.bake_steam_library = StringProperty(name='Steam Library', default="C:\\Program Files (x86)\\Steam\\")
 
     Scene.selection_mode = EnumProperty(
         name=t('Scene.selection_mode.label'),
