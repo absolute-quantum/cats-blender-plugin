@@ -1029,21 +1029,6 @@ class BakeButton(bpy.types.Operator):
                 if not overlap_aware:
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
                 try:  # UVP doesn't respect margins when called like this, find out why
-                    context.scene.uvp2_props.normalize_islands = False
-                    context.scene.uvp2_props.lock_overlapping_mode = ('0' if
-                                                                      layer == 'CATS UV Super' else
-                                                                      '2')
-                    context.scene.uvp2_props.pack_to_others = False
-                    context.scene.uvp2_props.margin = margin
-                    context.scene.uvp2_props.similarity_threshold = 3
-                    context.scene.uvp2_props.precision = 1000
-                    # Give UVP a static number of iterations to do TODO: make this configurable?
-                    for _ in range(1, 3):
-                        bpy.ops.uvpackmaster2.uv_pack()
-                except AttributeError:
-                    pass
-                    
-                try:
                     context.scene.uvpm3_props.normalize_islands = False
                     context.scene.uvpm3_props.lock_overlapping_enable = True
                     context.scene.uvpm3_props.lock_overlapping_mode = ('1' if
@@ -1056,6 +1041,21 @@ class BakeButton(bpy.types.Operator):
                     # Give UVP a static number of iterations to do TODO: make this configurable?
                     for _ in range(1, 3):
                         bpy.ops.uvpackmaster3.pack(mode_id='pack.single_tile')
+                except AttributeError:
+                    pass
+                    
+                try:
+                    context.scene.uvp2_props.normalize_islands = False
+                    context.scene.uvp2_props.lock_overlapping_mode = ('0' if
+                                                                      layer == 'CATS UV Super' else
+                                                                      '2')
+                    context.scene.uvp2_props.pack_to_others = False
+                    context.scene.uvp2_props.margin = margin
+                    context.scene.uvp2_props.similarity_threshold = 3
+                    context.scene.uvp2_props.precision = 1000
+                    # Give UVP a static number of iterations to do TODO: make this configurable?
+                    for _ in range(1, 3):
+                        bpy.ops.uvpackmaster2.uv_pack()
                 except AttributeError:
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
                     pass
