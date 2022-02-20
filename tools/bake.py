@@ -1041,6 +1041,22 @@ class BakeButton(bpy.types.Operator):
                     for _ in range(1, 3):
                         bpy.ops.uvpackmaster2.uv_pack()
                 except AttributeError:
+                    pass
+                    
+                try:
+                    context.scene.uvpm3_props.normalize_islands = False
+                    context.scene.uvpm3_props.lock_overlapping_enable = True
+                    context.scene.uvpm3_props.lock_overlapping_mode = ('1' if
+                                                                      layer == 'CATS UV Super' else
+                                                                      '2')
+                    context.scene.uvpm3_props.pack_to_others = False
+                    context.scene.uvpm3_props.margin = margin
+                    context.scene.uvpm3_props.simi_threshold = 3
+                    context.scene.uvpm3_props.precision = 1000
+                    # Give UVP a static number of iterations to do TODO: make this configurable?
+                    for _ in range(1, 3):
+                        bpy.ops.uvpackmaster3.pack(mode_id='pack.single_tile')
+                except AttributeError:
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
                     pass
                 Common.switch('OBJECT')
