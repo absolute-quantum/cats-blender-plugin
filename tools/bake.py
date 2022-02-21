@@ -1451,7 +1451,8 @@ class BakeButton(bpy.types.Operator):
             vmtfile = "\"VertexlitGeneric\"\n{\n    \"$surfaceprop\" \"Flesh\""
             images_path = steam_library_path+"steamapps/common/GarrysMod/garrysmod/"
             target_dir = steam_library_path+"steamapps/common/GarrysMod/garrysmod/addons/"+sanitized_model_name+"_playermodel/materials/models/"+sanitized_model_name
-            os.makedirs(target_dir,0o777,True)
+            if export_format == "GMOD":
+                os.makedirs(target_dir, 0o777, True)
 
             generate_prop_bones = platform.generate_prop_bones
             generate_prop_bone_max_influence_count = platform.generate_prop_bone_max_influence_count
