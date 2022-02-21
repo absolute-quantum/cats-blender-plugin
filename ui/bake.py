@@ -291,6 +291,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             col.label(text=t('BakePanel.generaloptionslabel'))
             row = col.row(align=True)
             row.prop(context.scene, 'bake_resolution', expand=True)
+            # Texture quality (samples control)
+            self.draw_bake_panel_texture_quality(context, col)
             row = col.row(align=True)
             row.prop(context.scene, 'bake_ignore_hidden', expand=True)
             row = col.row(align=True)
@@ -487,4 +489,74 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.label(text=name + ": " + "{:.1f}".format(1.0/bpy.data.objects[name].scale[0]) + "x", icon="OBJECT_DATA")
+
+    @staticmethod
+    def draw_bake_panel_texture_quality(context, col):
+        row = col.row(align=True)
+        row.label(text='Texture Quality')
+        row.prop(context.scene, 'bake_samples_quality', text='')
+        if context.scene.bake_samples_quality == 'CUSTOM':
+            at_least_one_bake_pass = False
+            row = col.row(align=True)
+            row.separator()
+            col2 = row.column(align=True)
+            col2.separator()
+            # Order these in the same order as the bake passes
+            if context.scene.bake_pass_diffuse:
+                at_least_one_bake_pass = True
+                row = col2.row(align=True)
+                row.prop(context.scene.bake_advanced_samples, 'diffuse')
+                vertex_diffuse_used = False
+                for platform in context.scene.bake_platforms:
+                    if platform.diffuse_vertex_colors:
+                        vertex_diffuse_used = True
+                        break
+                if vertex_diffuse_used:
+                    row = col2.row(align=True)
+                    row.prop(context.scene.bake_advanced_samples, 'vertex_diffuse')
+                col2.separator()
+            if context.scene.bake_pass_normal:
+                at_least_one_bake_pass = True
+                row = col2.row(align=True)
+                row.prop(context.scene.bake_advanced_samples, 'normal_world')
+                row = col2.row(align=True)
+                row.prop(context.scene.bake_advanced_samples, 'normal_tangent')
+                col2.separator()
+            if context.scene.bake_pass_smoothness:
+                at_least_one_bake_pass = True
+                row = col2.row(align=True)
+                row.prop(context.scene.bake_advanced_samples, 'smoothness')
+                col2.separator()
+            if context.scene.bake_pass_ao:
+                at_least_one_bake_pass = True
+                row = col2.row(align=True)
+                row.prop(context.scene.bake_advanced_samples, 'ao')
+                col2.separator()
+            if context.scene.bake_pass_alpha:
+                at_least_one_bake_pass = True
+                row = col2.row(align=True)
+                row.prop(context.scene.bake_advanced_samples, 'alpha')
+                col2.separator()
+            if context.scene.bake_pass_metallic:
+                at_least_one_bake_pass = True
+                row = col2.row(align=True)
+                row.prop(context.scene.bake_advanced_samples, 'metallic')
+                col2.separator()
+            if context.scene.bake_pass_emit:
+                at_least_one_bake_pass = True
+                if not context.scene.bake_emit_indirect:
+                    row = col2.row(align=True)
+                    row.prop(context.scene.bake_advanced_samples, 'emit')
+                    col2.separator()
+                else:
+                    row = col2.row(align=True)
+                    row.prop(context.scene.bake_advanced_samples, 'emit_indirect')
+                    if context.scene.bake_emit_exclude_eyes:
+                        row = col2.row(align=True)
+                        row.prop(context.scene.bake_advanced_samples, 'emit_indirect_eyes')
+                    col2.separator()
+            if not at_least_one_bake_pass:
+                row = col2.row(align=True)
+                row.label(text="No bake passes enabled")
+                col2.separator()
 

@@ -8,7 +8,7 @@ from .tools import translations as Translations
 from .tools.translations import t
 
 from bpy.types import Scene, Material, PropertyGroup
-from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty, IntVectorProperty, StringProperty, FloatVectorProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty, IntVectorProperty, StringProperty, FloatVectorProperty, PointerProperty
 from bpy.utils import register_class
 
 
@@ -635,6 +635,103 @@ def register():
     )
 
     Scene.bake_steam_library = StringProperty(name='Steam Library', default="C:\\Program Files (x86)\\Steam\\")
+
+    Scene.bake_samples_quality = EnumProperty(
+        items=[('HIGH', 'High', 'High quality.\nRecommended to use once Bake is all set up'),
+               ('LOW', 'Low', 'Low quality.\n1/4 the detail of High, but usually still looks pretty good, and usually twice as fast.'),
+               ('LOWEST', 'Lowest', 'Fastest and lowest possible quality.\nCan be used with a low Resolution setting to more quickly preview a Bake'),
+               ('CUSTOM', 'Custom (advanced)', 'Advanced users can manually set the samples of each baked texture with this setting.\nThe sliders max out at the High Quality preset, but higher values can be typed in manually')],
+        name='Texture Quality',
+        description="Adjust the quality of baked textures. This setting has a large effect on how long the bake takes.",
+        default='HIGH',
+    )
+
+    class BakeSamplesPropertyGroup(PropertyGroup):
+        diffuse: IntProperty(
+            name="Diffuse samples",
+            description="Number of samples to use for the diffuse pass",
+            default=32,
+            min=1,
+            soft_max=32,
+        )
+        smoothness: IntProperty(
+            name="Smoothness samples",
+            description="Number of samples to use for the smoothness pass",
+            default=32,
+            min=1,
+            soft_max=32,
+        )
+        alpha: IntProperty(
+            name="Transparency samples",
+            description="Number of samples to use for the transparency pass",
+            default=32,
+            min=1,
+            soft_max=32,
+        )
+        metallic: IntProperty(
+            name="Metallic samples",
+            description="Number of samples to use for the metallic pass",
+            default=32,
+            min=1,
+            soft_max=32,
+        )
+        normal_world: IntProperty(
+            name="Normal (world) samples",
+            description="Number of samples to use for the world normal pass\nThis is an intermediate step in baking normals",
+            default=128,
+            min=1,
+            soft_max=128,
+        )
+        normal_tangent: IntProperty(
+            name="Normal (tangent) samples",
+            description="Number of samples to use for the tangent normal pass\nThis is the output normal map",
+            default=128,
+            min=1,
+            soft_max=128,
+        )
+        ao: IntProperty(
+            name="Ambient Occlusion samples",
+            description="Number of samples to use for the ambient occlusion pass",
+            default=512,
+            min=1,
+            # AO can look bad without at least a few samples
+            soft_min=4,
+            soft_max=512,
+        )
+        emit: IntProperty(
+            name="Emit samples",
+            description="Number of samples to use for the emission pass\nThis is the basic emit pass without projected light",
+            default=32,
+            min=1,
+            soft_max=32,
+        )
+        emit_indirect: IntProperty(
+            name="Emit (projected light) samples",
+            description="Number of samples to use for the projected light emission pass",
+            default=512,
+            min=1,
+            soft_max=512,
+        )
+        emit_indirect_eyes: IntProperty(
+            name="Emit (projected light eyes) samples",
+            description="Number of samples to use for the eye exclusion projected light emission pass",
+            default=32,
+            min=1,
+            soft_max=32,
+        )
+        vertex_diffuse: IntProperty(
+            name="Vertex Diffuse samples",
+            description="Number of samples to use when baking diffuse to vertex colors",
+            default=32,
+            min=1,
+            soft_max=32,
+        )
+
+    register_class(BakeSamplesPropertyGroup)
+
+    Scene.bake_advanced_samples = PointerProperty(
+        type=BakeSamplesPropertyGroup
+    )
 
     Scene.selection_mode = EnumProperty(
         name=t('Scene.selection_mode.label'),

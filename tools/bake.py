@@ -30,6 +30,7 @@ import numpy as np
 import subprocess
 import shutil
 import threading
+from typing import NamedTuple
 
 from . import common as Common
 from .register import register_wrap
@@ -309,6 +310,22 @@ class BakeRemoveProp(bpy.types.Operator):
             obj['generatePropBones'] = False
         return {'FINISHED'}
 
+
+class BakePassSettings(NamedTuple):
+    name: str
+    type: str
+    image_resolution: int
+    samples: int
+    background_color: tuple[float, float, float, float]
+    margin_px: int
+    filter: set[str] = None
+    clear: bool = True
+    ray_distance: float = 0
+    normal_space: str = 'TANGENT'
+    solid_material_colors: dict = None
+    bake_multires: bool = False
+
+
 @register_wrap
 class BakeButton(bpy.types.Operator):
     bl_idname = 'cats_bake.bake'
@@ -332,6 +349,24 @@ class BakeButton(bpy.types.Operator):
                         return False
 
         return context.scene.bake_platforms
+
+    @staticmethod
+    def scale_samples_by_quality(context, *, samples: int, minimum=None):
+        quality = context.scene.bake_samples_quality
+
+        # Scale by the selected quality setting
+        if quality == 'LOW':
+            samples = samples * 0.25
+        elif quality == 'LOWEST':
+            samples = 1
+
+        if minimum is not None:
+            samples = max(minimum, samples)
+
+        # Samples cannot be less than 1
+        samples = max(1, samples)
+        return int(samples)
+
 
     # Only works between equal data types.
     def swap_links(self, objects, input1, input2):
@@ -433,8 +468,21 @@ class BakeButton(bpy.types.Operator):
                             node.inputs[input_name].default_value = input_value
 
     # "Bake pass" function. Run a single bake to "<bake_name>.png" against all selected objects.
-    def bake_pass(self, context, bake_name, bake_type, bake_pass_filter, objects, bake_size, bake_samples, bake_ray_distance, background_color, clear, bake_margin, bake_active=None, bake_multires=False,
-                  normal_space='TANGENT',solidmaterialcolors=dict()):
+    @staticmethod
+    def bake_pass(context, bake_settings: BakePassSettings, objects, *, bake_active=None):
+        bake_name = bake_settings.name
+        bake_type = bake_settings.type
+        bake_pass_filter = {} if bake_settings.filter is None else bake_settings.filter
+        bake_size = (bake_settings.image_resolution, bake_settings.image_resolution)
+        bake_samples = bake_settings.samples
+        bake_ray_distance = bake_settings.ray_distance
+        background_color = bake_settings.background_color
+        clear = bake_settings.clear
+        bake_margin = bake_settings.margin_px
+        normal_space = bake_settings.normal_space
+        solidmaterialcolors = {} if bake_settings.solid_material_colors is None else bake_settings.solid_material_colors
+        bake_multires = bake_settings.bake_multires
+
         bpy.ops.object.select_all(action='DESELECT')
         if bake_active is not None:
             bake_active.select_set(True)
@@ -1117,16 +1165,77 @@ class BakeButton(bpy.types.Operator):
         if not os.path.exists(bpy.path.abspath("//CATS Bake/")):
             os.mkdir(bpy.path.abspath("//CATS Bake/"))
 
+        # Gather settings for each bake pass
+        white_bg = (1.0, 1.0, 1.0, 1.0)
+        gray_bg = (0.5, 0.5, 0.5, 1.0)
+        black_bg = (0.0, 0.0, 0.0, 1.0)
+        world_normal_bg = (0.0, 0.0, 1.0, 1.0)
+        tangent_normal_big = (0.5, 0.5, 1.0, 1.0)
+        if context.scene.bake_samples_quality == 'CUSTOM':
+            advanced_samples = context.scene.bake_advanced_samples
+            diffuse_samples = advanced_samples.diffuse
+            smoothness_samples = advanced_samples.smoothness
+            alpha_samples = advanced_samples.alpha
+            metallic_samples = advanced_samples.metallic
+            world_normal_samples = advanced_samples.normal_world
+            tangent_normal_samples = advanced_samples.normal_tangent
+            ao_samples = advanced_samples.ao
+            emit_samples = advanced_samples.emit
+            emit_indirect_samples = advanced_samples.emit_indirect
+            emit_indirect_eyes_samples = advanced_samples.emit_indirect_eyes
+            vertex_diffuse_samples = advanced_samples.vertex_diffuse
+        else:
+            # AO, particularly without denoising, often ends up rather speckled all over without at least a few samples
+            ao_samples = self.scale_samples_by_quality(context, samples=512, minimum=4)
+            emit_indirect_samples = self.scale_samples_by_quality(context, samples=512)
+            world_normal_samples = tangent_normal_samples = self.scale_samples_by_quality(context, samples=128)
+            diffuse_samples = smoothness_samples = alpha_samples = metallic_samples = emit_samples = \
+                emit_indirect_eyes_samples = vertex_diffuse_samples = self.scale_samples_by_quality(context, samples=32)
+
+        world_normal_resolution = resolution * 2 if supersample_normals else resolution
+
+        diffuse_settings = BakePassSettings(
+            "diffuse", "DIFFUSE", resolution, diffuse_samples, gray_bg, pixelmargin, filter={"COLOR"},
+            solid_material_colors=solidmaterialcolors)
+        smoothness_settings = BakePassSettings(
+            "smoothness", "ROUGHNESS", resolution, smoothness_samples, white_bg, pixelmargin,
+            solid_material_colors=solidmaterialcolors)
+        alpha_settings = BakePassSettings(
+            "alpha", "ROUGHNESS", resolution, alpha_samples, white_bg, pixelmargin)
+        metallic_settings = BakePassSettings(
+            "metallic", "ROUGHNESS", resolution, metallic_samples, black_bg, pixelmargin,
+            solid_material_colors=solidmaterialcolors)
+        world_normal_settings = BakePassSettings(
+            "world", "NORMAL", world_normal_resolution, world_normal_samples, world_normal_bg, pixelmargin, normal_space="OBJECT",
+            solid_material_colors=solidmaterialcolors)
+        ao_settings = BakePassSettings(
+            "ao", "AO", resolution, ao_samples, white_bg, pixelmargin, filter={"AO"})
+        emit_no_indirect_settings = BakePassSettings(
+            "emission", "EMIT", resolution, emit_samples, black_bg, pixelmargin)
+        emit_indirect_settings = BakePassSettings(
+            "emission", "COMBINED", resolution, emit_indirect_samples, black_bg, pixelmargin,
+            filter={"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, solid_material_colors=solidmaterialcolors)
+        emit_indirect_eyes = BakePassSettings(
+            "emission", "EMIT", resolution, emit_indirect_eyes_samples, black_bg, pixelmargin, clear=False,
+            solid_material_colors=solidmaterialcolors)
+        tangent_normal_settings = BakePassSettings(
+            "normal", "NORMAL", resolution, tangent_normal_samples, tangent_normal_big, pixelmargin,
+            solid_material_colors=solidmaterialcolors)
+        vertex_diffuse_settings = BakePassSettings(
+            "vertex_diffuse", "DIFFUSE", 1, vertex_diffuse_samples, gray_bg, pixelmargin, filter={"COLOR", "VERTEX_COLORS"})
+
+        # Most bake passes use all the mesh objects in collection.all_objects
+        all_mesh_objects = [obj for obj in collection.all_objects if obj.type == 'MESH']
+
         # Bake diffuse
         if pass_diffuse:
             # Metallic can cause issues baking diffuse, so we put it somewhere typically unused
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
-            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
+            self.swap_links(all_mesh_objects, "Metallic", "Anisotropic Rotation")
+            self.set_values(all_mesh_objects, "Metallic", 0.0)
 
-            self.bake_pass(context, "diffuse", "DIFFUSE", {"COLOR"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [0.5, 0.5, 0.5, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+            self.bake_pass(context, diffuse_settings, all_mesh_objects)
 
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
+            self.swap_links(all_mesh_objects, "Metallic", "Anisotropic Rotation")
             bpy.data.images["SCRIPT_diffuse.png"].save()
 
             if sharpen_bakes:
@@ -1135,11 +1244,10 @@ class BakeButton(bpy.types.Operator):
         # Bake roughness, invert
         if pass_smoothness:
             # Specularity of 0 messes up 'roughness' bakes. Fix that here.
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
-            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", 0.5)
-            self.bake_pass(context, "smoothness", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [1.0, 1.0, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
+            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
+            self.set_values(all_mesh_objects, "Specular", 0.5)
+            self.bake_pass(context, smoothness_settings, all_mesh_objects)
+            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
             image = bpy.data.images["SCRIPT_smoothness.png"]
             pixel_buffer = list(image.pixels)
             for idx in range(0, len(image.pixels)):
@@ -1154,42 +1262,38 @@ class BakeButton(bpy.types.Operator):
         if pass_alpha:
             # when baking alpha as roughness, the -real- alpha needs to be set to 1 to avoid issues
             # this will clobber whatever's in Anisotropic Rotation!
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Anisotropic Rotation")
-            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", 1.0)
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic")
-            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0)
+            self.swap_links(all_mesh_objects, "Alpha", "Roughness")
+            self.swap_links(all_mesh_objects, "Alpha", "Anisotropic Rotation")
+            self.set_values(all_mesh_objects, "Alpha", 1.0)
+            self.swap_links(all_mesh_objects, "Metallic", "Anisotropic")
+            self.set_values(all_mesh_objects, "Metallic", 0)
             # Specularity of 0 messes up 'roughness' bakes. Fix that here.
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
-            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", 0.5)
-
+            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
+            self.set_values(all_mesh_objects, "Specular", 0.5)
 
             # Run the bake pass (bake roughness)
-            self.bake_pass(context, "alpha", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [1, 1, 1, 1.0], True, pixelmargin)
+            self.bake_pass(context, alpha_settings, all_mesh_objects)
 
             # Revert the changes (re-flip)
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic")
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Anisotropic Rotation")
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Alpha", "Roughness")
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
-
+            self.swap_links(all_mesh_objects, "Metallic", "Anisotropic")
+            self.swap_links(all_mesh_objects, "Alpha", "Anisotropic Rotation")
+            self.swap_links(all_mesh_objects, "Alpha", "Roughness")
+            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
 
         # advanced: bake metallic from last bsdf output
         if pass_metallic:
             # Find all Principled BSDF nodes. Flip Roughness and Metallic (default_value and connection)
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Roughness")
+            self.swap_links(all_mesh_objects, "Metallic", "Roughness")
             # Specularity of 0 messes up 'roughness' bakes. Fix that here.
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
-            self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", 0.5)
+            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
+            self.set_values(all_mesh_objects, "Specular", 0.5)
 
             # Run the bake pass
-            self.bake_pass(context, "metallic", "ROUGHNESS", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+            self.bake_pass(context, metallic_settings, all_mesh_objects)
 
             # Revert the changes (re-flip)
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Roughness")
-            self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Specular", "Transmission Roughness")
+            self.swap_links(all_mesh_objects, "Metallic", "Roughness")
+            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
             if sharpen_bakes:
                 self.filter_image(context, "SCRIPT_metallic.png", BakeButton.sharpen_create)
 
@@ -1254,23 +1358,18 @@ class BakeButton(bpy.types.Operator):
 
         # Bake normals in object coordinates
         if pass_normal:
-            for obj in collection.all_objects:
-                if obj.type == 'MESH' and generate_uvmap:
+            if generate_uvmap:
+                for obj in all_mesh_objects:
                     if supersample_normals:
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
                     else:
-
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
-            bake_size = ((resolution * 2, resolution * 2) if
-                         supersample_normals else
-                         (resolution, resolution))
-            self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           bake_size, 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
+            self.bake_pass(context, world_normal_settings, all_mesh_objects)
 
         # Reset UV
-        for obj in collection.all_objects:
-             if obj.type == 'MESH' and generate_uvmap and supersample_normals:
-                  obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
+        if generate_uvmap and supersample_normals:
+            for obj in all_mesh_objects:
+                obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
         # Bake AO
         if pass_ao:
@@ -1281,21 +1380,20 @@ class BakeButton(bpy.types.Operator):
                             key.value = 1.0
             if illuminate_eyes:
                 # Add modifiers that prevent LeftEye and RightEye being baked
-                for obj in collection.all_objects:
-                    if obj.type == "MESH" and "LeftEye" in obj.vertex_groups:
+                for obj in all_mesh_objects:
+                    if "LeftEye" in obj.vertex_groups:
                         leyemask = obj.modifiers.new(type='MASK', name="leyemask")
                         leyemask.mode = "VERTEX_GROUP"
                         leyemask.vertex_group = "LeftEye"
                         leyemask.invert_vertex_group = True
-                    if obj.type == "MESH" and "RightEye" in obj.vertex_groups:
+                    if "RightEye" in obj.vertex_groups:
                         reyemask = obj.modifiers.new(type='MASK', name="reyemask")
                         reyemask.mode = "VERTEX_GROUP"
                         reyemask.vertex_group = "RightEye"
                         reyemask.invert_vertex_group = True
-            self.bake_pass(context, "ao", "AO", {"AO"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 512, 0, [1.0, 1.0, 1.0, 1.0], True, pixelmargin)
+            self.bake_pass(context, ao_settings, all_mesh_objects)
             if illuminate_eyes:
-                for obj in collection.all_objects:
+                for obj in all_mesh_objects:
                     if "leyemask" in obj.modifiers:
                         obj.modifiers.remove(obj.modifiers['leyemask'])
                     if "reyemask" in obj.modifiers:
@@ -1312,8 +1410,7 @@ class BakeButton(bpy.types.Operator):
         # bake emit
         if pass_emit:
             if not emit_indirect:
-                self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, pixelmargin)
+                self.bake_pass(context, emit_no_indirect_settings, all_mesh_objects)
             else:
                 # Bake indirect lighting contributions: Turn off the lights and bake all diffuse passes
                 # TODO: disable scene lights?
@@ -1324,37 +1421,36 @@ class BakeButton(bpy.types.Operator):
                                 key.value = 1.0
                 original_color = bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value
                 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0,0,0,1)
-                self.bake_pass(context, "emission", "COMBINED", {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 512, 0, [0.0, 0.0, 0.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+                self.bake_pass(context, emit_indirect_settings, all_mesh_objects)
                 if emit_exclude_eyes:
                     def group_relevant(obj, groupname):
-                        if obj.type == "MESH" and groupname in obj.vertex_groups:
+                        if groupname in obj.vertex_groups:
                             idx = obj.vertex_groups[groupname].index
                             return any( any(group.group == idx and group.weight > 0.0 for group in vert.groups)
                                     for vert in obj.data.vertices)
 
                     # Bake each eye on top individually
-                    for obj in collection.all_objects:
+                    for obj in all_mesh_objects:
                         if group_relevant(obj, "LeftEye"):
                             leyemask = obj.modifiers.new(type='MASK', name="leyemask")
                             leyemask.mode = "VERTEX_GROUP"
                             leyemask.vertex_group = "LeftEye"
                             leyemask.invert_vertex_group = False
-                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if group_relevant(obj, "LeftEye")],
-                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, pixelmargin, solidmaterialcolors=solidmaterialcolors)
-                    for obj in collection.all_objects:
+                    left_eye_relevant_meshes = [obj for obj in all_mesh_objects if group_relevant(obj, "LeftEye")]
+                    self.bake_pass(context, emit_indirect_eyes, left_eye_relevant_meshes)
+                    for obj in all_mesh_objects:
                         if "leyemask" in obj.modifiers:
                             obj.modifiers.remove(obj.modifiers["leyemask"])
 
-                    for obj in collection.all_objects:
+                    for obj in all_mesh_objects:
                         if group_relevant(obj, "RightEye"):
                             reyemask = obj.modifiers.new(type='MASK', name="reyemask")
                             reyemask.mode = "VERTEX_GROUP"
                             reyemask.vertex_group = "RightEye"
                             reyemask.invert_vertex_group = False
-                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if group_relevant(obj, "RightEye")],
-                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, pixelmargin, solidmaterialcolors=solidmaterialcolors)
-                    for obj in collection.all_objects:
+                    right_eye_relevant_meshes = [obj for obj in all_mesh_objects if group_relevant(obj, "RightEye")]
+                    self.bake_pass(context, emit_indirect_eyes, right_eye_relevant_meshes)
+                    for obj in all_mesh_objects:
                         if "reyemask" in obj.modifiers:
                             obj.modifiers.remove(obj.modifiers["reyemask"])
 
@@ -1869,8 +1965,8 @@ class BakeButton(bpy.types.Operator):
 
             if pass_normal:
                 # Bake tangent normals
-                self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name],
-                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+                self.bake_pass(context, tangent_normal_settings,
+                               [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name])
                 image = bpy.data.images[platform_img("normal")]
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
@@ -2027,8 +2123,7 @@ class BakeButton(bpy.types.Operator):
 
                 self.swap_links([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
                 self.set_values([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
-                self.bake_pass(context, "vertex_diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
-                               (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.0], True, pixelmargin)
+                self.bake_pass(context, vertex_diffuse_settings, [obj for obj in plat_collection.all_objects if obj.type == "MESH"])
                 self.swap_links([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
 
                 # TODO: If we're not baking anything else in, remove all UV maps entirely
