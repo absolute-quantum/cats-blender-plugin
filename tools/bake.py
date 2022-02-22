@@ -326,6 +326,19 @@ class BakePassSettings(NamedTuple):
     bake_multires: bool = False
 
 
+def get_pixel_buffer(image, out=None):
+    """Highly efficient method to get all of an image's pixels
+    'out' argument allows for re-using an existing buffer if it's the correct size and type"""
+    if out is not None and out.size == len(image.pixels) and out.dtype == np.single:
+        # Ensure it's flat
+        out.shape = -1
+        pixel_buffer = out
+    else:
+        pixel_buffer = np.empty(len(image.pixels), dtype=np.single)
+    image.pixels.foreach_get(pixel_buffer)
+    return pixel_buffer
+
+
 @register_wrap
 class BakeButton(bpy.types.Operator):
     bl_idname = 'cats_bake.bake'
@@ -473,7 +486,7 @@ class BakeButton(bpy.types.Operator):
         bake_name = bake_settings.name
         bake_type = bake_settings.type
         bake_pass_filter = {} if bake_settings.filter is None else bake_settings.filter
-        bake_size = (bake_settings.image_resolution, bake_settings.image_resolution)
+        bake_width = bake_height = bake_settings.image_resolution
         bake_samples = bake_settings.samples
         bake_ray_distance = bake_settings.ray_distance
         background_color = bake_settings.background_color
@@ -496,20 +509,22 @@ class BakeButton(bpy.types.Operator):
                 image.user_clear()
                 bpy.data.images.remove(image)
 
-            bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_size[0], height=bake_size[1], color=background_color,
+            bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_width, height=bake_height, color=background_color,
                               generated_type="BLANK", alpha=True)
             image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
             image.filepath = bpy.path.abspath("//CATS Bake/" + "SCRIPT_" + bake_name + ".png")
             image.alpha_mode = "STRAIGHT"
             image.generated_color = background_color
-            image.generated_width = bake_size[0]
-            image.generated_height = bake_size[1]
-            image.scale(bake_size[0], bake_size[1])
+            image.generated_width = bake_width
+            image.generated_height = bake_height
+            image.scale(bake_width, bake_height)
             if bake_type == 'NORMAL' or bake_type == 'ROUGHNESS':
                 image.colorspace_settings.name = 'Non-Color'
             if bake_name == 'diffuse' or bake_name == 'metallic':  # For packing smoothness to alpha
                 image.alpha_mode = 'CHANNEL_PACKED'
-            image.pixels[:] = background_color * bake_size[0] * bake_size[1]
+            # No dtype argument in np.tile so need to create a correctly typed array first
+            background_color_array = np.array(background_color, dtype=np.single)
+            image.pixels.foreach_set(np.tile(background_color_array, bake_width * bake_height))
         image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
 
         # Select only objects we're baking
@@ -586,32 +601,43 @@ class BakeButton(bpy.types.Operator):
         #solid material optimization making 4X4 squares of solid color for this pass - @989onan
         if context.scene.bake_optimize_solid_materials and (not any(plat.use_decimation for plat in context.scene.bake_platforms)) and (not context.scene.bake_pass_ao) and (not context.scene.bake_pass_normal):
             #arranging old pixels and assignment to image pixels this way makes only one update per pass, so many many times faster - @989onan
-            old_pixels = image.pixels[:]
+            old_pixels = get_pixel_buffer(image)
+            # Set shape to a 3D array of (width, height, rgba)
+            old_pixels.shape = (image.size[0], image.size[1], 4)
 
-            #lastly, slap our solid squares on top of bake atlas, to make a nice solid square without interuptions from the rest of the bake - @989onan
-            for child in [obj for obj in objects if obj.type == "MESH"]: #grab all mesh objects being baked
-                for matindex,material in enumerate(child.data.materials):
+            # lastly, slap our solid squares on top of bake atlas, to make a nice solid square without interuptions from the rest of the bake - @989onan
+            #
+            # in pixels
+            # Thanks to @Sacred#9619 on discord for this one.
+            # 0.0078125 is 1/128, so the margin is 1/256th of the bake resolution, rounded up
+            margin = math.ceil(0.0078125 * context.scene.bake_resolution / 2)  # has to be the same as "pixelmargin"
+            margins_in_width = bake_width // margin
+            margins_in_height = bake_height // margin
+
+            solid_material_index_lookup = {key: index for index, key in enumerate(solidmaterialcolors.keys())}
+
+            for child in [obj for obj in objects if obj.type == "MESH"]:  # grab all mesh objects being baked
+                for material in child.data.materials:
                     if material.name in solidmaterialcolors:
-                        index = list(solidmaterialcolors.keys()).index(material.name)
-                        old_pixels = list(old_pixels)
+                        index = solid_material_index_lookup[material.name]
 
-                        #in pixels
-                        #Thanks to @Sacred#9619 on discord for this one.
-                        margin = int(math.ceil(0.0078125 * context.scene.bake_resolution / 2)) #has to be the same as "pixelmargin"
-                        n = int( bake_size[0]/margin )
-                        n2 = int( bake_size[1]/margin )
-                        X = margin/2 + margin * int( index % n )
-                        Y = margin/2 + margin * int( index / n2 )
-                        square_center_coord = [X,Y]
+                        x_start = margin * (index % margins_in_width)
+                        x_end_excl = x_start + margin
+                        y_start = margin * (index // margins_in_height)
+                        y_end_excl = y_start + margin
 
-                        color = solidmaterialcolors[material.name][bake_name+"_color"]
-                        #while in pixels inside image but 4 pixel padding around our solid center square position
-                        for x in range(max(0,int(square_center_coord[0]-(margin/2))),min(bake_size[0], int(square_center_coord[0]+(margin/2)))):
-                            for y in range(max(0,int(square_center_coord[1]-(margin/2))),min(bake_size[1], int(square_center_coord[1]+(margin/2)))):
-                                for channel,rgba in enumerate(color):
-                                    #since the array is one dimensional, (kinda like old minecraft schematics) we have to convert 2d cords to 1d cords, then multiply by 4 since there are 4 channels, then add current channel.
-                                    old_pixels[(((y*bake_size[0])+x)*4)+channel] = rgba
-            image.pixels[:] = old_pixels[:]
+                        # while in pixels inside image but 4 pixel padding around our solid center square position
+                        x_start = max(0, x_start)
+                        x_end_excl = min(bake_width, x_end_excl)
+                        y_start = max(0, y_start)
+                        y_end_excl = min(bake_height, y_end_excl)
+
+                        color = solidmaterialcolors[material.name][bake_name + "_color"]
+
+                        # Update pixel values via 2D slice
+                        old_pixels[y_start:y_end_excl, x_start:x_end_excl] = color
+            old_pixels.shape = -1
+            image.pixels.foreach_set(old_pixels)
 
 
 
@@ -831,13 +857,21 @@ class BakeButton(bpy.types.Operator):
 
                                 def check_if_tex_solid(bsdfinputname,node_prinipled,executestring):
                                     node_image = node_prinipled.inputs[bsdfinputname].links[0].from_node
-                                    if node_image.type != "TEX_IMAGE": #To catch normal maps
-                                        return [False,[0.0,0.0,0.0,1.0]] #if not image then it's some type of node chain that is too complicated so return false
-                                    old_pixels = node_image.image.pixels[:]
-                                    solidimagepixels = np.tile(old_pixels[0:4], int(len(old_pixels)/4))
-                                    if np.array_equal(solidimagepixels,old_pixels):
-                                        return [True,old_pixels[0:4]]
-                                    return [False,[0.0,0.0,0.0,1.0]]
+                                    if node_image.type != "TEX_IMAGE":  # To catch normal maps
+                                        return False, (0.0, 0.0, 0.0, 1.0)  # if not image then it's some type of node chain that is too complicated so return false
+                                    pixels = get_pixel_buffer(node_image.image)
+                                    # Sneaky minor optimisation since there's no axis argument available in numpy.equal
+                                    # Create custom dtype for viewing every four elements as a single tuple-like element
+                                    rgba_dtype = np.dtype([("", pixels.dtype), ] * 4)
+                                    # View the data as this custom type
+                                    pixels_rgba_view = pixels.view(rgba_dtype)
+                                    first_pixel = pixels_rgba_view[0]
+                                    # Using the custom dtype means there's only a quarter as many elements to compare, making it slightly faster
+                                    if (pixels_rgba_view == first_pixel).all():
+                                        # first_pixel will be a np.void type which could cause problems, so convert to tuple before returning
+                                        return True, tuple(first_pixel)
+                                    else:
+                                        return False, (0.0, 0.0, 0.0, 1.0)
                                 #each pass below makes solid color textures or reads the texture and checks if it's solid using numpy.
 
                                 node_prinipled = node
@@ -1249,12 +1283,17 @@ class BakeButton(bpy.types.Operator):
             self.bake_pass(context, smoothness_settings, all_mesh_objects)
             self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
             image = bpy.data.images["SCRIPT_smoothness.png"]
-            pixel_buffer = list(image.pixels)
-            for idx in range(0, len(image.pixels)):
-                # invert r, g, b, but not a
-                if (idx % 4) != 3:
-                    pixel_buffer[idx] = 1.0 - pixel_buffer[idx]
-            image.pixels[:] = pixel_buffer
+            pixel_buffer = get_pixel_buffer(image)
+            # Set shape so each pixel is grouped into an array of [r, g, b, a]
+            pixel_buffer.shape = (-1, 4)
+            # 2D Slice to view only the first 3 columns (rgb)
+            pixel_buffer_rgb_view = pixel_buffer[:, :3]
+            # Invert (one minus) all the rgb values and write the updated values back to itself
+            np.subtract(1.0, pixel_buffer_rgb_view, out=pixel_buffer_rgb_view)
+            # Set shape back to flat
+            pixel_buffer.shape = -1
+            # Set the updated pixels from the buffer
+            image.pixels.foreach_set(pixel_buffer)
             if sharpen_bakes:
                 self.filter_image(context, "SCRIPT_smoothness.png", BakeButton.sharpen_create, use_linear=True)
 
@@ -1588,7 +1627,8 @@ class BakeButton(bpy.types.Operator):
                 # already completed passes
                 if bakename not in ["specular", "normal", "phong"]:
                     orig_image = bpy.data.images["SCRIPT_" + bakename+'.png']
-                    image.pixels[:] = orig_image.pixels[:]
+                    pixel_buffer = get_pixel_buffer(orig_image)
+                    image.pixels.foreach_set(pixel_buffer)
 
 
             # Create yet another output collection
@@ -1722,31 +1762,55 @@ class BakeButton(bpy.types.Operator):
             if pass_diffuse:
                 image = bpy.data.images[platform_img("diffuse")]
                 diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-                pixel_buffer = list(diffuse_image.pixels)
+                pixel_buffer = get_pixel_buffer(diffuse_image)
+                pixel_buffer.shape = (-1, 4)
+                pixel_buffer_rgb_view = pixel_buffer[:, :3]
                 if pass_ao and diffuse_premultiply_ao:
                     ao_image = bpy.data.images["SCRIPT_ao.png"]
-                    ao_buffer = ao_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Map range: set the black point up to 1-opacity
-                            pixel_buffer[idx] = pixel_buffer[idx] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[idx]))
+                    ao_buffer = get_pixel_buffer(ao_image)
+                    ao_buffer.shape = (-1, 4)
+                    ao_buffer_rgb_view = ao_buffer[:, :3]
+                    # Map range: set the black point up to 1-opacity
+                    # pixel_rgb = pixel_rgb * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_rgb))
+                    #
+                    # ao_rgb *= diffuse_premultiply_opacity
+                    np.multiply(diffuse_premultiply_opacity, ao_buffer_rgb_view, out=ao_buffer_rgb_view)
+                    # ao_rgb += 1.0 - diffuse_premultiply_opacity
+                    np.add(1.0 - diffuse_premultiply_opacity, ao_buffer_rgb_view, out=ao_buffer_rgb_view)
+                    # pixel_rgb *= ao_rgb
+                    np.multiply(pixel_buffer_rgb_view, ao_buffer_rgb_view, out=pixel_buffer_rgb_view)
                 if specular_setup and pass_metallic:
                     metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Map range: metallic blocks diffuse light
-                            pixel_buffer[idx] = pixel_buffer[idx] * (1 - metallic_buffer[idx])
+                    metallic_buffer = get_pixel_buffer(metallic_image)
+                    metallic_buffer.shape = (-1, 4)
+                    metallic_buffer_rgb_view = metallic_buffer[:, :3]
+                    # Map range: metallic blocks diffuse light
+                    # pixel_rgb = pixel_rgb * (1 - metallic_rgb)
+                    #
+                    # metallic_rgb = 1 - metallic_rgb
+                    np.subtract(1, metallic_buffer_rgb_view, out=metallic_buffer_rgb_view)
+                    # pixel_rgb *= metallic_rgb
+                    np.multiply(pixel_buffer_rgb_view, metallic_buffer_rgb_view, out=pixel_buffer_rgb_view)
                 if pass_emit and diffuse_emit_overlay:
                     emit_image = bpy.data.images["SCRIPT_emission.png"]
-                    emit_buffer = emit_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Map range: screen the emission onto diffuse
-                            pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
+                    emit_buffer = get_pixel_buffer(emit_image)
+                    emit_buffer.shape = (-1, 4)
+                    emit_buffer_rgb_view = emit_buffer[:, :3]
+                    # Map range: screen the emission onto diffuse
+                    # pixel_rgb = 1.0 - (1.0 - emit_rgb) * (1.0 - pixel_rgb)
+                    #
+                    # emit_rgb = 1.0 - emit_rgb
+                    np.subtract(1.0, emit_buffer_rgb_view, out=emit_buffer_rgb_view)
+                    # pixel_rgb = 1.0 - pixel_rgb
+                    np.subtract(1.0, pixel_buffer_rgb_view, out=pixel_buffer_rgb_view)
+                    # emit_rgb *= pixel_rgb
+                    np.multiply(emit_buffer_rgb_view, pixel_buffer_rgb_view, out=emit_buffer_rgb_view)
+                    # pixel_rgb = 1.0 - emit_rgb
+                    np.subtract(1.0, emit_buffer_rgb_view, out=pixel_buffer_rgb_view)
 
                 vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
-                image.pixels[:] = pixel_buffer
+                pixel_buffer.shape = -1
+                image.pixels.foreach_set(pixel_buffer)
                 image.save()
 
             # Preultiply AO into smoothness if selected, to avoid shine in dark areas
@@ -1754,17 +1818,32 @@ class BakeButton(bpy.types.Operator):
                 image = bpy.data.images[platform_img("smoothness")]
                 smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
                 ao_image = bpy.data.images["SCRIPT_ao.png"]
-                pixel_buffer = list(image.pixels)
-                smoothness_buffer = smoothness_image.pixels[:]
-                ao_buffer = ao_image.pixels[:]
-                for idx in range(0, len(image.pixels)):
-                    if (idx % 4 != 3):
-                        # Map range: set the black point up to 1-opacity
-                        pixel_buffer[idx] = smoothness_buffer[idx] * ((1.0 - smoothness_premultiply_opacity) + (smoothness_premultiply_opacity * ao_buffer[idx]))
-                    else:
-                        # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
-                        pixel_buffer[idx] = 1.0
-                image.pixels[:] = pixel_buffer
+                pixel_buffer = get_pixel_buffer(image)
+                smoothness_buffer = get_pixel_buffer(smoothness_image)
+                ao_buffer = get_pixel_buffer(ao_image)
+
+                # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
+                pixel_buffer[3::4] = 1.0
+
+                pixel_buffer.shape = (-1, 4)
+                smoothness_buffer.shape = (-1, 4)
+                ao_buffer.shape = (-1, 4)
+                pixel_buffer_rgb_view = pixel_buffer[:, :3]
+                smoothness_buffer_rgb_view = smoothness_buffer[:, :3]
+                ao_buffer_rgb_view = ao_buffer[:, :3]
+
+                # Map range: set the black point up to 1-opacity
+                # pixel_rgb = smoothness_rgb * (1.0 - smoothness_premultiply_opacity + smoothness_premultiply_opacity * ao_buffer_rgb)
+                #           = smoothness_rgb * (smoothness_premultiply_opacity * ao_buffer_rgb + 1.0 - smoothness_premultiply_opacity)
+                # ao_buffer_rgb *= smoothness_premultiply_opacity
+                np.multiply(ao_buffer_rgb_view, smoothness_premultiply_opacity, out=ao_buffer_rgb_view)
+                # ao_buffer_rgb += 1.0 - smoothness_premultiply_opacity
+                np.add(ao_buffer_rgb_view, 1.0 - smoothness_premultiply_opacity, out=ao_buffer_rgb_view)
+                # pixel_rgb = smoothness_rgb * ao_buffer_rgb
+                np.multiply(smoothness_buffer_rgb_view, ao_buffer_rgb_view, out=pixel_buffer_rgb_view)
+
+                pixel_buffer.shape = -1
+                image.pixels.foreach_set(pixel_buffer)
 
             # Pack to diffuse alpha (if selected)
             if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
@@ -1786,11 +1865,23 @@ class BakeButton(bpy.types.Operator):
                     # https://developer.valvesoftware.com/wiki/Glowing_Textures
                     # TODO: independent emit if transparency "\n    \"$selfillummask\" \"models/"+sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\""
                     vmtfile += "\n    \"$selfillum\" 1"
-                pixel_buffer = list(image.pixels)
-                alpha_buffer = alpha_image.pixels[:]
-                for idx in range(3, len(pixel_buffer), 4):
-                    pixel_buffer[idx] = (alpha_buffer[idx - 3] * 0.299) + (alpha_buffer[idx - 2] * 0.587) + (alpha_buffer[idx - 1] * 0.114)
-                image.pixels[:] = pixel_buffer
+                pixel_buffer = get_pixel_buffer(image)
+                alpha_buffer = get_pixel_buffer(alpha_image)
+                # Set pixel_buffer alpha to alpha_buffer grayscale
+                # Reshape into sub-arrays of rgba
+                alpha_buffer.shape = (-1, 4)
+                # 2d slice to view only the rgb columns
+                alpha_buffer_rgb_view = alpha_buffer[:, :3]
+                # Grayscale = 0.299r + 0.587g + 0.114b
+                rgb_to_grayscale_coefficients = [0.299, 0.587, 0.114]
+                # In-place multiply the rgb columns by the grayscale coefficients
+                np.multiply(alpha_buffer_rgb_view, rgb_to_grayscale_coefficients, out=alpha_buffer_rgb_view)
+                # Get view of only pixel_buffer alpha
+                pixel_buffer_a_view = pixel_buffer[3::4]
+                # sum each rgb in alpha_buffer and store the result in the alpha channel of pixel_buffer
+                np.sum(alpha_buffer_rgb_view, axis=1, out=pixel_buffer_a_view)
+
+                image.pixels.foreach_set(pixel_buffer)
 
             # Pack to metallic alpha (if selected)
             if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
@@ -1798,57 +1889,76 @@ class BakeButton(bpy.types.Operator):
                 print("Packing to metallic alpha")
                 metallic_image = bpy.data.images["SCRIPT_metallic.png"]
                 alpha_image = bpy.data.images[platform_img("smoothness")]
-                pixel_buffer = list(metallic_image.pixels)
-                alpha_buffer = alpha_image.pixels[:]
-                for idx in range(3, len(pixel_buffer), 4):
-                    pixel_buffer[idx] = alpha_buffer[idx - 3]
-                image.pixels[:] = pixel_buffer
+                pixel_buffer = get_pixel_buffer(metallic_image)
+                alpha_buffer = get_pixel_buffer(alpha_image)
+                # Set pixel_buffer alpha to alpha_buffer red
+                pixel_buffer[3::4] = alpha_buffer[0::4]
+                image.pixels.foreach_set(pixel_buffer)
 
             # Create specular map
             if specular_setup:
                 # TODO: Valve has their own suggested curve ramps, which are indexed above.
                 # Add an an option to apply it for a more "source-ey" specular setup
                 image = bpy.data.images[platform_img("specular")]
-                pixel_buffer = list(image.pixels)
+                pixel_buffer = get_pixel_buffer(image)
+                # Reshape to sub-arrays of rgba
+                pixel_buffer.shape = (-1, 4)
                 if pass_metallic:
                     # Use the unaltered diffuse map
                     diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-                    diffuse_buffer = diffuse_image.pixels[:]
+                    diffuse_buffer = get_pixel_buffer(diffuse_image)
+                    diffuse_buffer.shape = (-1, 4)
                     metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Simple specularity: most nonmetallic objects have about 4% reflectiveness
-                            pixel_buffer[idx] = (diffuse_buffer[idx] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
+                    metallic_buffer = get_pixel_buffer(metallic_image)
+                    metallic_buffer.shape = (-1, 4)
+                    pixel_buffer_rgb_view = pixel_buffer[:, :3]
+                    diffuse_buffer_rgb_view = diffuse_buffer[:, :3]
+                    metallic_buffer_rgb_view = metallic_buffer[:, :3]
+
+                    # Simple specularity: most nonmetallic objects have about 4% reflectiveness
+                    # pixel_rgb = diffuse_rgb * metallic_rgb + .04 * (1-metallic_rgb)
+                    #
+                    # pixel_rgb = diffuse_rgb * metallic_rgb
+                    np.multiply(diffuse_buffer_rgb_view, metallic_buffer_rgb_view, out=pixel_buffer_rgb_view)
+                    # metallic_rgb = 1 - metallic_rgb
+                    np.subtract(1, metallic_buffer_rgb_view, out=metallic_buffer_rgb_view)
+                    # metallic_rgb = .04 * metallic_rgb
+                    np.multiply(.04, metallic_buffer_rgb_view, out=metallic_buffer_rgb_view)
+                    # pixel_rgb = pixel_rgb + metallic_rgb
+                    np.add(pixel_buffer_rgb_view, metallic_buffer_rgb_view, out=pixel_buffer_rgb_view)
                 else:
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            pixel_buffer[idx] = 0.04
+                    # Set all rgb to 0.04
+                    pixel_buffer[:, :3] = 0.04
                 if specular_alpha_pack == "SMOOTHNESS" and pass_smoothness:
                     alpha_image = bpy.data.images[platform_img("smoothness")]
-                    alpha_image_buffer = alpha_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 == 3):
-                            pixel_buffer[idx] = alpha_image_buffer[idx - 3]
+                    alpha_image_buffer = get_pixel_buffer(alpha_image)
+                    # Change pixel buffer shape back to flat
+                    pixel_buffer.shape = -1
+                    # Copy red channel from alpha_image_buffer to alpha channel of pixel_buffer
+                    pixel_buffer[3::4] = alpha_image_buffer[0::4]
+                    # Restore pixel_buffer shape back to sub-arrays of rgba
+                    pixel_buffer.shape = (-1, 4)
                 # for source games, screen(specular, smoothness) to create envmapmask
                 if specular_smoothness_overlay and pass_smoothness:
                     smoothness_image = bpy.data.images[platform_img("smoothness")]
-                    smoothness_image_buffer = smoothness_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if idx % 4 != 3:
-                            pixel_buffer[idx] = pixel_buffer[idx] * smoothness_image_buffer[idx]
-
-                image.pixels[:] = pixel_buffer
+                    smoothness_buffer = get_pixel_buffer(smoothness_image)
+                    smoothness_buffer.shape = (-1, 4)
+                    pixel_buffer_rgb_view = pixel_buffer[:, :3]
+                    smoothness_buffer_rgb_view = smoothness_buffer[:, :3]
+                    # pixel_buffer_rgb = pixel_buffer_rgb * smoothness_image_buffer_rgb
+                    np.multiply(pixel_buffer_rgb_view, smoothness_buffer_rgb_view, out=pixel_buffer_rgb_view)
+                pixel_buffer.shape = -1
+                image.pixels.foreach_set(pixel_buffer)
 
             # Phong texture (R: smoothness, G: metallic, pack smoothness * AO to normalmap alpha as mask)
             if phong_setup and pass_smoothness:
                 image = bpy.data.images[platform_img("phong")]
-                pixel_buffer = list(image.pixels)
+                pixel_buffer = get_pixel_buffer(image)
                 # Use the unaltered smoothness
                 smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
-                smoothness_buffer = smoothness_image.pixels[:]
-                for idx in range(0, len(image.pixels), 4):
-                    pixel_buffer[idx] = smoothness_buffer[idx]
+                smoothness_buffer = get_pixel_buffer(smoothness_image)
+                # Copy red channel from smoothness_buffer to red channel of pixel_buffer
+                pixel_buffer[0::4] = smoothness_buffer[0::4]
 
                 if pass_normal:
                     # Has to be specified first!
@@ -1861,12 +1971,12 @@ class BakeButton(bpy.types.Operator):
                 if pass_metallic:
                     # Use the unaltered metallic
                     metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(1, len(image.pixels), 4):
-                        pixel_buffer[idx] = metallic_buffer[idx]
+                    metallic_buffer = get_pixel_buffer(metallic_image, out=smoothness_buffer)
+                    # Copy green channel from metallic_buffer to green channel of pixel_buffer
+                    pixel_buffer[1::4] = metallic_buffer[1::4]
                     vmtfile += "\n    \"$phongalbedotint\" 1"
 
-                image.pixels[:] = pixel_buffer
+                image.pixels.foreach_set(pixel_buffer)
 
             print("Decimating")
 
@@ -1970,27 +2080,47 @@ class BakeButton(bpy.types.Operator):
                 image = bpy.data.images[platform_img("normal")]
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
-                image.pixels[:] = normal_image.pixels[:]
+                # Copy normal_image.pixels to image.pixels
+                pixel_buffer = get_pixel_buffer(normal_image)
+                image.pixels.foreach_set(pixel_buffer)
                 vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+                pixel_buffer = None
                 if normal_alpha_pack != "NONE":
                     print("Packing to normal alpha")
                     if normal_alpha_pack == "SPECULAR":
                         alpha_image = bpy.data.images[platform_img("specular")]
                         vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
                         vmtfile += "\n    \"$envmap\" env_cubemap"
-                    elif normal_alpha_pack == "SMOOTHNESS":
+                    else:  # normal_alpha_pack == "SMOOTHNESS":
                         # 'There must be a Phong mask. The alpha channel of a bump map acts as a Phong mask by default.'
                         alpha_image = bpy.data.images[platform_img("smoothness")]
-                    pixel_buffer = list(image.pixels)
-                    alpha_buffer = alpha_image.pixels[:]
-                    for idx in range(3, len(pixel_buffer), 4):
-                        pixel_buffer[idx] = (alpha_buffer[idx - 3] * 0.299) + (alpha_buffer[idx - 2] * 0.587) + (alpha_buffer[idx - 1] * 0.114)
-                    image.pixels[:] = pixel_buffer
+                    vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
+                    vmtfile += "\n    \"$envmap\" env_cubemap"
+                    # Get image pixels
+                    pixel_buffer = get_pixel_buffer(image)
+                    pixel_buffer_a_view = pixel_buffer[3::4]
+
+                    # Get alpha_image pixels
+                    alpha_buffer = get_pixel_buffer(alpha_image)
+                    # Reshape into sub-arrays of rgba
+                    alpha_buffer.shape = (-1, 4)
+                    # 2d slice to view only the rgb columns
+                    alpha_buffer_rgb_view = alpha_buffer[:, :3]
+                    # Grayscale = 0.299r + 0.587g + 0.114b
+                    rgb_to_grayscale_coefficients = [0.299, 0.587, 0.114]
+                    # In-place multiply the rgb columns by the grayscale coefficients
+                    np.multiply(alpha_buffer_rgb_view, rgb_to_grayscale_coefficients, out=alpha_buffer_rgb_view)
+
+                    # sum each rgb in alpha_buffer and store the result in the alpha channel of pixel_buffer
+                    np.sum(alpha_buffer_rgb_view, axis=1, out=pixel_buffer_a_view)
                 if normal_invert_g:
-                    pixel_buffer = list(image.pixels)
-                    for idx in range(1, len(pixel_buffer), 4):
-                        pixel_buffer[idx] = 1.0 - pixel_buffer[idx]
-                    image.pixels[:] = pixel_buffer
+                    if pixel_buffer is None:
+                        pixel_buffer = get_pixel_buffer(image)
+                    pixel_buffer_g_view = pixel_buffer[1::4]
+                    np.subtract(1.0, pixel_buffer_g_view, out=pixel_buffer_g_view)
+                if pixel_buffer is not None:
+                    # Write any modifications back to the image
+                    image.pixels.foreach_set(pixel_buffer)
 
             # Remove old UV maps (if we created new ones)
             if generate_uvmap:
