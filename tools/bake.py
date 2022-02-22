@@ -49,7 +49,7 @@ class BakeTutorialButton(bpy.types.Operator):
         self.report({'INFO'}, t('cats_bake.tutorial_button.success'))
         return {'FINISHED'}
 
-def autodetect_passes(self, context, item, tricount, platform):
+def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
     item.max_tris = tricount
     # Autodetect passes based on BSDF node inputs
     bsdf_nodes = []
@@ -169,12 +169,21 @@ def autodetect_passes(self, context, item, tricount, platform):
         item.image_export_format = "TGA"
         item.translate_bone_names = "VALVE"
         item.gmod_model_name = "Missing No"
-        item.specular_setup = True
         item.generate_prop_bones = False
-        if context.scene.bake_pass_normal:
-            item.normal_alpha_pack = "SPECULAR"
-            item.normal_invert_g = True
-        item.specular_smoothness_overlay = context.scene.bake_pass_smoothness
+        if not use_phong:
+            if context.scene.bake_pass_normal:
+                item.normal_alpha_pack = "SPECULAR"
+                item.normal_invert_g = True
+            item.specular_setup = True
+            item.phong_setup = False
+            item.specular_smoothness_overlay = context.scene.bake_pass_smoothness
+        else:
+            if context.scene.bake_pass_normal:
+                item.normal_alpha_pack = "SMOOTHNESS"
+                item.normal_invert_g = True
+            item.specular_setup = False
+            item.phong_setup = True
+            item.specular_smoothness_overlay = False
         item.diffuse_emit_overlay = context.scene.bake_pass_emit
         item.diffuse_premultiply_ao = context.scene.bake_pass_ao
         item.smoothness_premultiply_ao = context.scene.bake_pass_ao and context.scene.bake_pass_smoothness
@@ -232,14 +241,27 @@ class BakePresetSecondlife(bpy.types.Operator):
 @register_wrap
 class BakePresetGmod(bpy.types.Operator):
     bl_idname = 'cats_bake.preset_gmod'
-    bl_label = "GMod (Experimental)"
+    bl_label = "GMod Metallic (Experimental)"
     bl_description = "Preset for producing a compatible Garry's Mod character model"
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     def execute(self, context):
         item = context.scene.bake_platforms.add()
-        item.name = "Garrys Mod"
+        item.name = "Garrys Mod (Metallic)"
         autodetect_passes(self, context, item, 10000, "GMOD")
+        return {'FINISHED'}
+
+@register_wrap
+class BakePresetGmodPhong(bpy.types.Operator):
+    bl_idname = 'cats_bake.preset_gmod_phong'
+    bl_label = "GMod Organic (Experimental)"
+    bl_description = "Preset for producing a compatible Garry's Mod character model"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    def execute(self, context):
+        item = context.scene.bake_platforms.add()
+        item.name = "Garrys Mod (Organic)"
+        autodetect_passes(self, context, item, 10000, "GMOD", use_phong=True)
         return {'FINISHED'}
 
 @register_wrap
@@ -1411,6 +1433,7 @@ class BakeButton(bpy.types.Operator):
             translate_bone_names = platform.translate_bone_names
             export_format = platform.export_format
             specular_setup = platform.specular_setup
+            phong_setup = platform.phong_setup
             specular_alpha_pack = platform.specular_alpha_pack
             specular_smoothness_overlay = platform.specular_smoothness_overlay
             normal_alpha_pack = platform.normal_alpha_pack
@@ -1447,6 +1470,7 @@ class BakeButton(bpy.types.Operator):
                 (pass_alpha, 'alpha'),
                 (pass_metallic, 'metallic'),
                 (specular_setup, 'specular'),
+                (phong_setup, 'phong')
             ]:
                 if not bakepass:
                     continue
@@ -1465,7 +1489,7 @@ class BakeButton(bpy.types.Operator):
                 image.generated_height = resolution
                 image.scale(resolution, resolution)
                 # already completed passes
-                if bakename not in ["specular", "normal"]:
+                if bakename not in ["specular", "normal", "phong"]:
                     orig_image = bpy.data.images["SCRIPT_" + bakename+'.png']
                     image.pixels[:] = orig_image.pixels[:]
 
@@ -1719,6 +1743,34 @@ class BakeButton(bpy.types.Operator):
 
                 image.pixels[:] = pixel_buffer
 
+            # Phong texture (R: smoothness, G: metallic, pack smoothness * AO to normalmap alpha as mask)
+            if phong_setup and pass_smoothness:
+                image = bpy.data.images[platform_img("phong")]
+                pixel_buffer = list(image.pixels)
+                # Use the unaltered smoothness
+                smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
+                smoothness_buffer = smoothness_image.pixels[:]
+                for idx in range(0, len(image.pixels), 4):
+                    pixel_buffer[idx] = smoothness_buffer[idx]
+
+                if pass_normal:
+                    # Has to be specified first!
+                    vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+                vmtfile += "\n    \"$phong\" 1"
+                vmtfile += "\n    \"$phongboost\" 1.0"
+                vmtfile += "\n    \"$phongfresnelranges\" \"[0 0.5 1.0\"]"
+                vmtfile += "\n    \"$phongexponenttexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+
+                if pass_metallic:
+                    # Use the unaltered metallic
+                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
+                    metallic_buffer = metallic_image.pixels[:]
+                    for idx in range(1, len(image.pixels), 4):
+                        pixel_buffer[idx] = metallic_buffer[idx]
+                    vmtfile += "\n    \"$phongalbedotint\" 1"
+
+                image.pixels[:] = pixel_buffer
+
             print("Decimating")
 
             # Physmodel does a couple extra things like ensuring doubles are removed, wire display
@@ -1823,11 +1875,15 @@ class BakeButton(bpy.types.Operator):
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
                 image.pixels[:] = normal_image.pixels[:]
                 vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
-                if normal_alpha_pack == "SPECULAR":
+                if normal_alpha_pack != "NONE":
                     print("Packing to normal alpha")
-                    alpha_image = bpy.data.images[platform_img("specular")]
-                    vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
-                    vmtfile += "\n    \"$envmap\" env_cubemap"
+                    if normal_alpha_pack == "SPECULAR":
+                        alpha_image = bpy.data.images[platform_img("specular")]
+                        vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
+                        vmtfile += "\n    \"$envmap\" env_cubemap"
+                    elif normal_alpha_pack == "SMOOTHNESS":
+                        # 'There must be a Phong mask. The alpha channel of a bump map acts as a Phong mask by default.'
+                        alpha_image = bpy.data.images[platform_img("smoothness")]
                     pixel_buffer = list(image.pixels)
                     alpha_buffer = alpha_image.pixels[:]
                     for idx in range(3, len(pixel_buffer), 4):
@@ -1989,12 +2045,13 @@ class BakeButton(bpy.types.Operator):
             context.scene.render.image_settings.color_mode = 'RGBA'
             for (bakepass, bakeconditions) in [
                 ("diffuse", pass_diffuse and not diffuse_vertex_colors),
-                ("smoothness", pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS") and (specular_alpha_pack != "SMOOTHNESS") and not specular_smoothness_overlay),
+                ("smoothness", pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS") and (specular_alpha_pack != "SMOOTHNESS") and (normal_alpha_pack != "SMOOTHNESS") and not specular_smoothness_overlay),
                 ("ao", pass_ao and not diffuse_premultiply_ao),
                 ("emission", pass_emit and not diffuse_alpha_pack == "EMITMASK"),
                 ("alpha", pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY")),
-                ("metallic", pass_metallic and not specular_setup),
+                ("metallic", pass_metallic and not specular_setup and not phong_setup),
                 ("specular", specular_setup and normal_alpha_pack != "SPECULAR"),
+                ("phong", phong_setup),
                 ("normal", pass_normal)
             ]:
                 if not bakeconditions:

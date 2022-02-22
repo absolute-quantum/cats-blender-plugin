@@ -345,6 +345,7 @@ def register():
             items=[
                 ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
                 ("SPECULAR", "Specular", t("Scene.bake_diffuse_alpha_pack.none.desc")),
+                ("SMOOTHNESS", "Smoothness", t("Scene.bake_diffuse_alpha_pack.none.desc")),
             ],
             default="NONE"
         )
@@ -423,6 +424,11 @@ def register():
                 ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), "Smoothness, for use with Second Life")
             ],
             default="NONE"
+        )
+        phong_setup: BoolProperty(
+            name='Phong Setup (Source)',
+            description="For Source engine only. Provides diffuse lighting reflections for nonmetallic objects.",
+            default=False
         )
         diffuse_emit_overlay: BoolProperty(
             name='Diffuse Emission Overlay',

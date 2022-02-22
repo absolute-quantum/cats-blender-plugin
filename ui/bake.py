@@ -137,6 +137,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row.operator(Bake.BakePresetSecondlife.bl_idname, icon="VIEW_PAN")
         row = col.row(align=True)
         row.operator(Bake.BakePresetGmod.bl_idname, icon="EVENT_G")
+        row.operator(Bake.BakePresetGmodPhong.bl_idname, icon="EVENT_G")
         col.separator()
         row = col.row()
         col.label(text="Platforms:")
@@ -215,6 +216,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
 
 
                 row = col.row(align=True)
+                row.prop(item, 'phong_setup', expand=True)
+                row = col.row(align=True)
                 row.prop(item, 'specular_setup', expand=True)
                 if item.specular_setup:
                     row = col.row(align=True)
@@ -249,14 +252,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         col.label(text=t('BakePanel.transparencywarning'), icon="INFO")
                     elif (item.diffuse_alpha_pack == "SMOOTHNESS") and not context.scene.bake_pass_smoothness:
                         col.label(text=t('BakePanel.smoothnesswarning'), icon="INFO")
-                if context.scene.bake_pass_normal and item.specular_setup:
+                if context.scene.bake_pass_normal and (item.specular_setup or item.phong_setup):
                     row = col.row(align=True)
                     row.label(text="Normal Alpha:")
                     row.prop(item, 'normal_alpha_pack', expand=True)
                 if context.scene.bake_pass_normal:
                     row = col.row(align=True)
                     row.prop(item, 'normal_invert_g', expand=True)
-                if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness and not item.specular_setup:
+                if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness and not item.specular_setup and not item.phong_setup:
                     row = col.row(align=True)
                     row.label(text="Metallic Alpha:")
                     row.prop(item, 'metallic_alpha_pack', expand=True)
