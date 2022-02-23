@@ -31,6 +31,7 @@ import subprocess
 import shutil
 import threading
 from typing import NamedTuple
+from itertools import chain
 from time import perf_counter
 
 from . import common as Common
@@ -1162,31 +1163,80 @@ class BakeButton(bpy.types.Operator):
                 for obj in collection.all_objects:
                     if obj.type != "MESH":
                         continue
-                    context.view_layer.objects.active = obj
-                    for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', 'RightEye', 'righteye', 'Righteye', 'Eye.R']:
-                        if group in obj.vertex_groups:
-                            vgroup_idx = obj.vertex_groups[group].index
-                            if any(any(v_group.group == vgroup_idx and v_group.weight > 0.0 for v_group in vert.groups) for vert in obj.data.vertices):
+
+                    groups_to_look_for = ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', 'RightEye', 'righteye', 'Righteye', 'Eye.R']
+
+                    # Get the index of each group and ignore any groups which don't exist
+                    idx_to_group = {obj.vertex_groups[group].index: group for group in groups_to_look_for if group in obj.vertex_groups}
+
+                    found_groups = []
+                    # Iterate through all the groups of all the vertices, once each, until we find the groups we're
+                    # looking for
+                    # Using this chain lets us avoid the extra code needed to break an outer for loop from an inner for
+                    # loop
+                    vgroup_iter = chain.from_iterable(vert.groups for vert in obj.data.vertices)
+                    if idx_to_group:
+                        for v_group in vgroup_iter:
+                            if v_group.group in idx_to_group and v_group.weight > 0.0:
+                                # Found a group we're looking for with an acceptable weight!
+                                group = idx_to_group[v_group.group]
                                 print("{} found in {}".format(group, obj.name))
-                                bpy.ops.object.mode_set(mode='EDIT')
-                                bpy.ops.uv.select_all(action='DESELECT')
-                                bpy.ops.mesh.select_all(action='DESELECT')
-                                # Select all vertices in it
-                                obj.vertex_groups.active = obj.vertex_groups[group]
-                                bpy.ops.object.vertex_group_select()
-                                # Synchronize
-                                bpy.ops.object.mode_set(mode='OBJECT')
-                                bpy.ops.object.mode_set(mode='EDIT')
-                                # Then select all UVs
-                                bpy.ops.uv.select_all(action='SELECT')
-                                bpy.ops.object.mode_set(mode='OBJECT')
-                                # Then for each UV (cause of the viewport thing) scale up by the selected factor
-                                uv_layer = obj.data.uv_layers["CATS UV"].data
-                                for poly in obj.data.polygons:
-                                    for loop in poly.loop_indices:
-                                        if uv_layer[loop].select:
-                                            uv_layer[loop].uv.x *= prioritize_factor
-                                            uv_layer[loop].uv.y *= prioritize_factor
+                                # Add it to the list
+                                found_groups.append(group)
+                                # Remove it from the dictionary
+                                idx_to_group.pop(v_group.group)
+                                # Ideally, we would process the found group immediately, but it requires going into and
+                                # out of edit mode, which is likely to cause obj.data.vertices to change, which seems
+                                # to cause some sort of memory corruption when trying to iterate the now stale
+                                # obj.data.vertices, often crashing Blender or causing weird corruption in the bake
+                                if not idx_to_group:
+                                    # If there are no more groups to look for, we can stop looking
+                                    break
+
+                    context.view_layer.objects.active = obj
+
+                    uvs = None
+                    for group in found_groups:
+                        bpy.ops.object.mode_set(mode='EDIT')
+                        bpy.ops.uv.select_all(action='DESELECT')
+                        bpy.ops.mesh.select_all(action='DESELECT')
+                        # Select all vertices in it
+                        obj.vertex_groups.active = obj.vertex_groups[group]
+                        bpy.ops.object.vertex_group_select()
+                        # Synchronize
+                        bpy.ops.object.mode_set(mode='OBJECT')
+                        bpy.ops.object.mode_set(mode='EDIT')
+                        # Then select all UVs
+                        bpy.ops.uv.select_all(action='SELECT')
+                        bpy.ops.object.mode_set(mode='OBJECT')
+                        # Then for each UV (cause of the viewport thing) scale up by the selected factor
+
+                        # Going in and out of edit mode can cause any existing reference to uv_layer to become stale and
+                        # presumably point to some unrelated part of memory, so we can't maintain a single reference to
+                        # the uv_layer and use it over and over again otherwise we risk randomly crashing Blender
+                        uv_layer = obj.data.uv_layers["CATS UV"]
+
+                        if uvs is None:
+                            uvs = np.empty(len(uv_layer.data) * 2, dtype=np.single)
+                            uv_layer.data.foreach_get('uv', uvs)
+                            uvs.shape = (-1, 2)
+
+                        # Get uv select state
+                        uv_select = np.empty(len(uv_layer.data), dtype=bool)
+                        uv_layer.data.foreach_get('select', uv_select)
+
+                        # Multiply the values by prioritize_factor where the uvs are selected
+                        uvs[uv_select] *= prioritize_factor
+
+                    if uvs is not None:
+                        # Flatten and update
+                        # Note: This assumes that entering and exiting edit mode and selecting/deselecting parts
+                        #       of the mesh and uvs cannot affect uv ordering. If sometimes the uvs get completely
+                        #       messed up, try setting the updated uvs at the end of each iteration of the above for
+                        #       loop instead of only once here after the for loop has finished
+                        uv_layer = obj.data.uv_layers["CATS UV"]
+                        uvs.shape = -1
+                        uv_layer.data.foreach_set('uv', uvs)
 
 
             # Pack islands. Optionally use UVPackMaster if it's available
