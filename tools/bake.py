@@ -1059,54 +1059,88 @@ class BakeButton(bpy.types.Operator):
             #PLEASE DO THIS TO PREVENT PROBLEMS WITH UV EDITING LATER ON:
             bpy.data.scenes["CATS Scene"].tool_settings.use_uv_select_sync = False
 
-
             if optimize_solid_materials:
-                #go through the solid materials on all the meshes and scale their UV's down to 0 in a grid of rows of squares so that they bake on a small separate part of the image mostly in the top left -@989onan
+                # Thanks to @Sacred#9619 on discord for this one.
+                squaremargin = pixelmargin
+                n = resolution // squaremargin
+
+                # go through the solid materials on all the meshes and scale their UV's down to 0 in a grid of rows of
+                # squares so that they bake on a small separate part of the image mostly in the bottom left -@989onan
                 for child in collection.all_objects:
                     if child.type == "MESH":
-                        for matindex,material in enumerate(child.data.materials):
+                        poly_material_indices = None
+                        poly_loop_totals = None
+                        poly_hide = None
+                        uv_layers_uvs = {}
+                        for matindex, material in enumerate(child.data.materials):
                             if material.name in solidmaterialnames:
-                                for layer in cats_uv_layers:
-                                    print("processing solid material: \""+material.name+"\" on layer: \""+layer+"\" on object: \""+child.name+"\"")
-                                    idx = child.data.uv_layers.active_index
-                                    child.data.uv_layers[layer].active = True
-                                    Common.switch('EDIT')
-                                    #deselect all geometry and uv, select material that we are on that is solid, and then select all on visible UV. This will isolate the solid material UV's on this layer and object.
+                                # Only get the material indices at most once per object
+                                if poly_material_indices is None:
+                                    poly_material_indices = np.empty(len(child.data.polygons), dtype=np.ushort)
+                                    child.data.polygons.foreach_get('material_index', poly_material_indices)
+                                # Only get the polygon loop_totals at most once per object
+                                if poly_loop_totals is None:
+                                    poly_loop_totals = np.empty(len(child.data.polygons), dtype=np.uintc)
+                                    child.data.polygons.foreach_get('loop_total', poly_loop_totals)
+                                # Only get polygon hide at most once per object
+                                if poly_hide is None:
+                                    poly_hide = np.empty(len(child.data.polygons), dtype=bool)
+                                    child.data.polygons.foreach_get('hide', poly_hide)
 
-                                    bpy.ops.mesh.select_all(action='SELECT') #select all mesh
-                                    bpy.ops.uv.select_all(action='DESELECT') #deselect all UV
-                                    bpy.ops.mesh.select_all(action='DESELECT') #deselect all mesh
+                                # Find which polygons are in this material
+                                polygons_in_mat = np.equal(poly_material_indices, matindex)
 
-                                    bpy.ops.mesh.select_mode(type="FACE")
-                                    child.active_material_index = matindex
-                                    bpy.ops.object.material_slot_select() #select our material on mesh
-                                    bpy.ops.uv.select_all(action='SELECT') #select all uv
+                                # Hide the polygons so that, when uv unwrapping later, it ignores these polygons
+                                poly_hide[polygons_in_mat] = True
 
-                                    #https://blender.stackexchange.com/a/75095
-                                    #Scale a 2D vector v, considering a scale s and a pivot point p
-                                    def Scale2D( v, s, p ):
-                                        return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )
+                                # Use the loop totals to get which uvs are in this material
+                                uvs_in_mat = np.repeat(polygons_in_mat, poly_loop_totals)
 
-                                    Common.switch('OBJECT')#idk why this has to be here but it breaks without it - @989onan
-                                    index = solidmaterialnames[material.name]
+                                # The index of the solid material determines its location on the uv map and texture
+                                index = solidmaterialnames[material.name]
 
+                                # Thanks to @Sacred#9619 on discord for this one.
+                                x = squaremargin / 2 + squaremargin * index % n
+                                y = squaremargin / 2 + squaremargin * index // n
 
-                                    #Thanks to @Sacred#9619 on discord for this one.
-                                    squaremargin = pixelmargin
-                                    n = int( resolution/squaremargin )
-                                    X = squaremargin/2 + squaremargin * int( index % n )
-                                    Y = squaremargin/2 + squaremargin * int( index / n )
+                                pivot_point = (x / resolution, y / resolution)
 
-                                    uv_layer = child.data.uv_layers[layer].data
-                                    for poly in child.data.polygons:
-                                        for loop in poly.loop_indices:
-                                            if uv_layer[loop].select: #make sure that it is selected (only visible will be selected in this case)
-                                                #Here we scale the UV's down to 0 starting at the bottom left corner and going up row by row of solid materials.
-                                                uv_layer[loop].uv = Scale2D( uv_layer[loop].uv, (0,0), ((X/resolution),(Y/resolution))  )
-                                    Common.switch('EDIT')
-                                    #deselect UV's and hide mesh for scaling uv's out the way later. this also prevents the steps for averaging islands and prioritizing head size from going bad later.
-                                    bpy.ops.uv.select_all(action='DESELECT')
-                                    bpy.ops.mesh.hide(unselected=False)
+                                for layer_name in cats_uv_layers:
+                                    # Only get the uvs for each uv layer at most once per object
+                                    uvs_and_data = uv_layers_uvs.get(layer_name)
+                                    if uvs_and_data is None:
+                                        uv_layer_data = child.data.uv_layers[layer_name].data
+                                        uvs = np.empty(len(uv_layer_data) * 2, dtype=np.single)
+                                        uv_layer_data.foreach_get('uv', uvs)
+                                        # Change shape to put each u and v into their own sub-arrays
+                                        # This makes it so that each index gets a uv pair
+                                        uvs.shape = (-1, 2)
+                                        uv_layers_uvs[layer_name] = (uvs, uv_layer_data)
+                                    else:
+                                        uvs, _uv_layer_data = uvs_and_data
+                                    # We want to scale the uvs in the current material down to zero relative to the
+                                    # pivot point
+                                    # This is the same as setting the uvs to that pivot point
+                                    uvs[uvs_in_mat] = pivot_point
+                        # Write modified uvs back to their corresponding uv_layer
+                        # Deselect all the uvs for scaling uv's out the way later.
+                        if uv_layers_uvs:
+                            all_deselect = None
+                            for uvs, uv_layer_data in uv_layers_uvs.values():
+                                # Must be flat when setting
+                                uvs.shape = -1
+                                uv_layer_data.foreach_set('uv', uvs)
+                                if all_deselect is None:
+                                    # All the uv_layers will have the same number of elements, so we can reuse the same
+                                    # array each time
+                                    all_deselect = np.zeros(len(uv_layer_data), dtype=bool)
+                                uv_layer_data.foreach_set('select', all_deselect)
+                        # Write modified poly_hide back to the polygons for scaling uv's out the way later.
+                        # This and the uv deselecting also prevents the steps for averaging islands and prioritizing
+                        # head size from going bad later.
+                        if poly_hide is not None:
+                            child.data.polygons.foreach_set('hide', poly_hide)
+
 
             # Select all meshes. Select all UVs. Average islands scale
             Common.switch('OBJECT')
@@ -1162,7 +1196,10 @@ class BakeButton(bpy.types.Operator):
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers[layer]
                 Common.switch('EDIT')
-                bpy.ops.mesh.reveal()
+                if not optimize_solid_materials:
+                    # keep polygons for solid materials hidden, so they don't get packed and unwrapped
+                    # All other polygons will already be set as visible
+                    bpy.ops.mesh.reveal()
                 bpy.ops.mesh.select_all(action='SELECT')
                 bpy.ops.uv.select_all(action='SELECT')
                 # detect if UVPackMaster installed and configured
@@ -1187,50 +1224,61 @@ class BakeButton(bpy.types.Operator):
 
             if optimize_solid_materials:
                 #unhide geometry from step before pack islands that fixed solid material uvs, then scale uv's to be short enough to avoid color squares at top right. - @989onan
+
+                last_index = len(solidmaterialnames)
+
+                # Thanks to @Sacred#9619 on discord for this one.
+                squaremargin = pixelmargin
+                n = resolution // squaremargin
+                y = squaremargin / 2 + squaremargin * last_index // n
+
+                y_scale_amount = 1-((y+(pixelmargin+squaremargin))/resolution)
+
                 for child in collection.all_objects:
                     if child.type == "MESH":
+                        poly_material_indices = np.empty(len(child.data.polygons), dtype=np.ushort)
+                        child.data.polygons.foreach_get('material_index', poly_material_indices)
+                        poly_loop_totals = np.empty(len(child.data.polygons), dtype=np.uintc)
+                        child.data.polygons.foreach_get('loop_total', poly_loop_totals)
+                        poly_hide = np.empty(len(child.data.polygons), dtype=bool)
+                        child.data.polygons.foreach_get('hide', poly_hide)
+
+                        visible_polygons = np.invert(poly_hide, out=poly_hide)
+                        uvs_of_visible_polygons = np.repeat(visible_polygons, poly_loop_totals)
                         for layer in cats_uv_layers:
-                            idx = child.data.uv_layers.active_index
-                            child.data.uv_layers[layer].active = True
-                            Common.switch('EDIT')
+                            # get all polygons that aren't hidden
+                            # use polygon loop totals with np.repeat to choose the uvs we want from the non-hidden polygons
+                            # scale the uvs
+                            # Unhide the mesh (we should only have to unhide polygons since that's the only thing we hid
+                            # earlier?)
+                            # Select all the uvs in each uv layer
+                            # Select all the polygons, vertices and edges
+                            # Only get the material indices at most once per object
 
-                            bpy.ops.mesh.select_all(action='SELECT')
-                            bpy.ops.uv.select_all(action='SELECT')
+                            uv_layer_data = child.data.uv_layers[layer].data
+                            uvs = np.empty(len(uv_layer_data) * 2, dtype=np.single)
+                            uv_layer_data.foreach_get('uv', uvs)
+                            # Slice to get a view of only y coordinates
+                            uvs_y = uvs[1::2]
 
-                            #https://blender.stackexchange.com/a/75095
-                            #Scale a 2D vector v, considering a scale s and a pivot point p
-                            def Scale2D( v, s, p ):
-                                return ( p[0] + s[0]*(v[0] - p[0]), p[1] + s[1]*(v[1] - p[1]) )
+                            # https://blender.stackexchange.com/a/75095
+                            # Scale a 2D vector v, considering a scale s and a pivot point p
+                            # scale y by y_scale_amount about y=1
+                            uvs_y[uvs_of_visible_polygons] = uvs_y[uvs_of_visible_polygons] * y_scale_amount + (1 - y_scale_amount)
 
-                            last_index = len(solidmaterialnames)
-
-                            #Thanks to @Sacred#9619 on discord for this one.
-                            squaremargin = pixelmargin
-                            n = int( resolution/squaremargin )
-                            Y = squaremargin/2 + squaremargin * int( last_index / n )
-
-                            Common.switch('OBJECT')#idk why this has to be here but it breaks without it - @989onan
-                            for poly in child.data.polygons:
-                                for loop in poly.loop_indices:
-                                    uv_layer = child.data.uv_layers[layer].data
-                                    if uv_layer[loop].select: #make sure that it is selected (only visible will be selected in this case)
-                                        #scale UV upwards so square stuff below can fit for solid colors
-                                        uv_layer[loop].uv = Scale2D( uv_layer[loop].uv, (1,1-((Y+(pixelmargin+squaremargin))/resolution)), (0,1) )
+                            uv_layer_data.foreach_set('uv', uvs)
 
                         #unhide all mesh polygons from our material hiding for scaling
-                        for layer in cats_uv_layers:
-                            idx = child.data.uv_layers.active_index
-                            child.data.uv_layers[layer].active = True
-                            Common.switch('EDIT')
-                            bpy.ops.mesh.select_all(action='SELECT')
-                            bpy.ops.uv.select_all(action='SELECT')
-                            bpy.ops.mesh.reveal(select=True)
-                            Common.switch('OBJECT') #below will error if it isn't in object because of poll error
-
-            #lastly make our target UV map active
-            for obj in collection.all_objects:
-                if obj.type == 'MESH':
-                    obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
+                        unhide_all = np.zeros(len(child.data.polygons), dtype=bool)
+                        child.data.polygons.foreach_set('hide', unhide_all)
+                        # TODO: Do we still need to select all of the mesh and select all of the uvs?
+                        # lastly make our target UV map active
+                        child.data.uv_layers.active = child.data.uv_layers["CATS UV"]
+            else:
+                # even if we didn't optimise solid materials, we still need to make our target UV map active
+                for obj in collection.all_objects:
+                    if obj.type == 'MESH':
+                        obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
         if not os.path.exists(bpy.path.abspath("//CATS Bake/")):
             os.mkdir(bpy.path.abspath("//CATS Bake/"))
