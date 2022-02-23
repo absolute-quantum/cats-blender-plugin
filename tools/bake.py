@@ -985,8 +985,10 @@ class BakeButton(bpy.types.Operator):
                         if uvmap.active_render:
                             child.data.uv_layers.active = uvmap
                             active_uv = uvmap
-                    reproject_anyway = (len(child.data.uv_layers) == 0 or
-                                        all(set(loop.uv[:]).issubset({0,1}) for loop in active_uv.data))
+
+                    reproject_anyway = len(child.data.uv_layers) == 0 \
+                        or all(loop.uv[0] in {0, 1} and loop.uv[1] in {0, 1} for loop in active_uv.data)
+
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
                     cats_uv_layers.append('CATS UV')
@@ -1013,21 +1015,46 @@ class BakeButton(bpy.types.Operator):
                             child.data.uv_layers.active_index = idx
                     elif uv_overlap_correction == "UNMIRROR":
                         # TODO: issue a warning if any source images don't use 'wrap'
-                        # Select all faces in +X
+                        # Move uvs of all faces in +X over by (1, 0)
                         print("Un-mirroring source CATS UV data")
-                        uv_layer = (child.data.uv_layers["CATS UV Super"].data if
+                        uv_layer = (child.data.uv_layers["CATS UV Super"] if
                                    supersample_normals else
-                                   child.data.uv_layers["CATS UV"].data)
-                        for poly in child.data.polygons:
-                            if poly.center[0] > 0:
-                                for loop in poly.loop_indices:
-                                    uv_layer[loop].uv.x += 1
+                                   child.data.uv_layers["CATS UV"])
+                        # Get centers of all polygons
+                        poly_centers = np.empty(len(child.data.polygons) * 3, dtype=np.single)
+                        child.data.polygons.foreach_get('center', poly_centers)
+                        # The polygon centers are 3 dimensional vectors, which get flattened into one big array of floats
+                        # Use a slice to get a view of every third value, starting from the
+                        poly_centers_x_view = poly_centers[0::3]
+                        # Find where the x value of the centers are greater than 0
+                        x_greater_than_zero = np.greater(poly_centers_x_view, 0)
+
+                        # Get loop total of all polygons
+                        loop_totals = np.empty(len(child.data.polygons), dtype=np.uintc)
+                        child.data.polygons.foreach_get('loop_total', loop_totals)
+
+                        # Repeat the bools so there's one for each polygon loop index of each polygon
+                        x_greater_than_zero_mask = np.repeat(x_greater_than_zero, loop_totals)
+
+                        # Get uvs
+                        uvs = np.empty(len(uv_layer.data) * 2, dtype=np.single)
+                        uv_layer.data.foreach_get('uv', uvs)
+                        # Get view of only the x components of the uvs
+                        uv_x_components_view = uvs[::2]
+                        # Add 1 to all the uv x components where the polygon's center's x component is greater than zero
+                        uv_x_components_view[x_greater_than_zero_mask] += 1
+
+                        # Write the updated uvs to the uv layer
+                        uv_layer.data.foreach_set('uv', uvs)
                     elif uv_overlap_correction == "MANUAL":
                         if "Target" in child.data.uv_layers:
-                            for idx, loop in enumerate(child.data.uv_layers["Target"].data):
-                                child.data.uv_layers["CATS UV"].data[idx].uv = loop.uv
-                                if supersample_normals:
-                                    child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
+                            # Copy uvs from "Target" to "CATS UV" and "CATS UV Super"
+                            target_layer = child.data.uv_layers["Target"]
+                            uvs = np.empty(len(target_layer.data) * 2, dtype=np.single)
+                            target_layer.data.foreach_get('uv', uvs)
+                            child.data.uv_layers["CATS UV"].data.foreach_set('uv', uvs)
+                            if supersample_normals:
+                                child.data.uv_layers["CATS UV Super"].data.foreach_set('uv', uvs)
 
             #PLEASE DO THIS TO PREVENT PROBLEMS WITH UV EDITING LATER ON:
             bpy.data.scenes["CATS Scene"].tool_settings.use_uv_select_sync = False
