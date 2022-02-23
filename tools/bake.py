@@ -31,6 +31,7 @@ import subprocess
 import shutil
 import threading
 from typing import NamedTuple
+from time import perf_counter
 
 from . import common as Common
 from .register import register_wrap
@@ -671,6 +672,8 @@ class BakeButton(bpy.types.Operator):
         return recurse(ob, ob.parent, 0, ignore_hidden, view_layer=view_layer)
 
     def execute(self, context):
+        bake_start = perf_counter()
+
         if not [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]:
             self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
             return {'FINISHED'}
@@ -713,6 +716,12 @@ class BakeButton(bpy.types.Operator):
         # Change render engine back to original
         context.scene.render.engine = render_engine_tmp
         context.scene.cycles.device = render_device_tmp
+
+        bake_end = perf_counter()
+
+        bake_duration = bake_end - bake_start
+
+        print(f'Bake completed in {bake_duration} seconds')
 
         return {'FINISHED'}
 
