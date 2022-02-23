@@ -2380,15 +2380,17 @@ class BakeButton(bpy.types.Operator):
 
             # Rebake diffuse to vertex colors: Incorperates AO
             if pass_diffuse and diffuse_vertex_colors:
-                for obj in plat_collection.all_objects:
-                    if obj.type == "MESH":
-                        context.view_layer.objects.active = obj
-                        bpy.ops.mesh.vertex_color_add()
+                plat_collection_meshes = [obj for obj in plat_collection.all_objects if obj.type == "MESH"]
+                for obj in plat_collection_meshes:
+                    context.view_layer.objects.active = obj
+                    bpy.ops.mesh.vertex_color_add()
 
-                self.swap_links([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
-                self.set_values([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
-                self.bake_pass(context, vertex_diffuse_settings, [obj for obj in plat_collection.all_objects if obj.type == "MESH"])
-                self.swap_links([obj for obj in plat_collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
+
+
+                self.swap_links(plat_collection_meshes, "Metallic", "Anisotropic Rotation")
+                self.set_values(plat_collection_meshes, "Metallic", 0.0)
+                self.bake_pass(context, vertex_diffuse_settings, plat_collection_meshes)
+                self.swap_links(plat_collection_meshes, "Metallic", "Anisotropic Rotation")
 
                 # TODO: If we're not baking anything else in, remove all UV maps entirely
 
