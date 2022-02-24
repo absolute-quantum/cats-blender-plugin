@@ -1511,17 +1511,24 @@ class BakeButton(bpy.types.Operator):
                 # Set the update cos for the disable shape key
                 disable_shape.data.foreach_set('co', disable_shape_cos)
 
-        # Save and disable shape keys
+        # Save the current values and disable (set value to zero) the shape keys of each mesh that we don't want to bake
+        # into the Basis shapekey of the mesh they belong to
+        # If apply_keys is True, all shape keys are applied to the Basis at their current values, so there's no need to
+        # save their values
+        # If apply_keys is False only shape keys ending in '_bake' are applied to the Basis at their current values, so
+        # other shape keys need to have their values saved and be temporarily disabled
         shapekey_values = dict()
         if not apply_keys:
-            for obj in collection.all_objects:
+            for obj in all_mesh_objects:
                 if Common.has_shapekeys(obj):
+                    # Different meshes could have shape keys with the same names, so we need a sub-dict for each mesh
+                    dict_for_mesh = shapekey_values.setdefault(obj.name, {})
                     # This doesn't work for keys which have different starting
                     # values... but generally that's not what you should do anyway
                     for key in obj.data.shape_keys.key_blocks:
                         # Always ignore '_bake' keys so they're baked in
                         if key.name[-5:] != '_bake':
-                            shapekey_values[key.name] = key.value
+                            dict_for_mesh[key.name] = key.value
                             key.value = 0.0
 
         # Option to apply current shape keys, otherwise normals bake weird
@@ -2290,13 +2297,14 @@ class BakeButton(bpy.types.Operator):
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
-            # Reapply keys
+            # Re-enable keys that were disabled instead of being applied to the Basis
             if not apply_keys:
                 for obj in plat_collection.all_objects:
-                    if Common.has_shapekeys(obj):
+                    if obj.name in shapekey_values:
+                        values_dict = shapekey_values[obj.name]
                         for key in obj.data.shape_keys.key_blocks:
-                            if key.name in shapekey_values:
-                                key.value = shapekey_values[key.name]
+                            if key.name in values_dict:
+                                key.value = values_dict[key.name]
 
 
             # Remove CATS UV Super
