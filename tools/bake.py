@@ -1531,30 +1531,32 @@ class BakeButton(bpy.types.Operator):
                             dict_for_mesh[key.name] = key.value
                             key.value = 0.0
 
-        # Option to apply current shape keys, otherwise normals bake weird
-        # If true, apply all shapekeys and remove '_bake' keys
-        # Otherwise, only apply '_bake' keys
-        Common.switch('EDIT')
-        Common.switch('OBJECT')
-        for name in [ob.name for ob in collection.all_objects]:
-            obj = collection.all_objects[name]
-            if obj.type == "MESH" and Common.has_shapekeys(obj):
-                obj.select_set(True)
-                context.view_layer.objects.active = obj
-                bpy.ops.object.shape_key_add(from_mix=True)
-                bpy.ops.cats_shapekey.shape_key_to_basis()
+        # Bake all the shape keys
+        # Apply current shape key mix and then disable all shape keys, otherwise normals bake weird
+        for obj in all_mesh_objects:
+            if Common.has_shapekeys(obj):
+                # Add a new shape key from the current mix
+                obj.shape_key_add(from_mix=True)
+                # The new shape key will be the last index, set it as active so we can apply it to the basis
+                obj.active_shape_key_index = len(obj.data.shape_keys.key_blocks) - 1
+                # Create context override for shape_key_to_basis
+                override_context = {'object': obj}
+                # Apply the new mix shape key to basis
+                bpy.ops.cats_shapekey.shape_key_to_basis(override_context)
+                # Set the active shape key to the basis
                 obj.active_shape_key_index = 0
                 # Ensure all keys are now set to 0.0
                 for key in obj.data.shape_keys.key_blocks:
                     key.value = 0.0
 
         # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
-        for obj in collection.all_objects:
-            if obj.type == "MESH":
-                bpy.ops.object.select_all(action='DESELECT')
-                obj.select_set(True)
-                context.view_layer.objects.active = obj
-                bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
+        # Deselect all objects
+        bpy.ops.object.select_all(action='DESELECT')
+        # Select all of our meshes
+        for obj in all_mesh_objects:
+            obj.select_set(True)
+        # Apply transforms for all the objects we selected
+        bpy.ops.object.transform_apply(location=True, scale=True, rotation=True)
 
         # Bake normals in object coordinates
         if pass_normal:
@@ -2242,8 +2244,8 @@ class BakeButton(bpy.types.Operator):
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
                 # Copy normal_image.pixels to image.pixels
-                pixel_buffer = get_pixel_buffer(normal_image)
-                image.pixels.foreach_set(pixel_buffer)
+                normal_buffer = get_pixel_buffer(normal_image)
+                image.pixels.foreach_set(normal_buffer)
                 vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
                 pixel_buffer = None
                 if normal_alpha_pack != "NONE":
@@ -2258,7 +2260,7 @@ class BakeButton(bpy.types.Operator):
                     vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
                     vmtfile += "\n    \"$envmap\" env_cubemap"
                     # Get image pixels
-                    pixel_buffer = get_pixel_buffer(image)
+                    pixel_buffer = get_pixel_buffer(image, out=normal_buffer)
                     pixel_buffer_a_view = pixel_buffer[3::4]
 
                     # Get alpha_image pixels
@@ -2276,7 +2278,7 @@ class BakeButton(bpy.types.Operator):
                     np.sum(alpha_buffer_rgb_view, axis=1, out=pixel_buffer_a_view)
                 if normal_invert_g:
                     if pixel_buffer is None:
-                        pixel_buffer = get_pixel_buffer(image)
+                        pixel_buffer = get_pixel_buffer(image, out=normal_buffer)
                     pixel_buffer_g_view = pixel_buffer[1::4]
                     np.subtract(1.0, pixel_buffer_g_view, out=pixel_buffer_g_view)
                 if pixel_buffer is not None:
