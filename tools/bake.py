@@ -1047,6 +1047,14 @@ class BakeButton(bpy.types.Operator):
 
                         # Write the updated uvs to the uv layer
                         uv_layer.data.foreach_set('uv', uvs)
+
+                        del uv_x_components_view
+                        del uvs
+                        del x_greater_than_zero_mask
+                        del loop_totals
+                        del x_greater_than_zero
+                        del poly_centers_x_view
+                        del poly_centers
                     elif uv_overlap_correction == "MANUAL":
                         if "Target" in child.data.uv_layers:
                             # Copy uvs from "Target" to "CATS UV" and "CATS UV Super"
@@ -1056,6 +1064,7 @@ class BakeButton(bpy.types.Operator):
                             child.data.uv_layers["CATS UV"].data.foreach_set('uv', uvs)
                             if supersample_normals:
                                 child.data.uv_layers["CATS UV Super"].data.foreach_set('uv', uvs)
+                            del uvs
 
             #PLEASE DO THIS TO PREVENT PROBLEMS WITH UV EDITING LATER ON:
             bpy.data.scenes["CATS Scene"].tool_settings.use_uv_select_sync = False
@@ -1123,6 +1132,8 @@ class BakeButton(bpy.types.Operator):
                                     # pivot point
                                     # This is the same as setting the uvs to that pivot point
                                     uvs[uvs_in_mat] = pivot_point
+                                del uvs_in_mat
+                                del polygons_in_mat
                         # Write modified uvs back to their corresponding uv_layer
                         # Deselect all the uvs for scaling uv's out the way later.
                         if uv_layers_uvs:
@@ -1136,11 +1147,16 @@ class BakeButton(bpy.types.Operator):
                                     # array each time
                                     all_deselect = np.zeros(len(uv_layer_data), dtype=bool)
                                 uv_layer_data.foreach_set('select', all_deselect)
+                            del all_deselect
                         # Write modified poly_hide back to the polygons for scaling uv's out the way later.
                         # This and the uv deselecting also prevents the steps for averaging islands and prioritizing
                         # head size from going bad later.
                         if poly_hide is not None:
                             child.data.polygons.foreach_set('hide', poly_hide)
+                        del uv_layers_uvs
+                        del poly_hide
+                        del poly_loop_totals
+                        del poly_material_indices
 
 
             # Select all meshes. Select all UVs. Average islands scale
@@ -1227,6 +1243,7 @@ class BakeButton(bpy.types.Operator):
 
                         # Multiply the values by prioritize_factor where the uvs are selected
                         uvs[uv_select] *= prioritize_factor
+                        del uv_select
 
                     if uvs is not None:
                         # Flatten and update
@@ -1237,6 +1254,7 @@ class BakeButton(bpy.types.Operator):
                         uv_layer = obj.data.uv_layers["CATS UV"]
                         uvs.shape = -1
                         uv_layer.data.foreach_set('uv', uvs)
+                    del uvs
 
 
             # Pack islands. Optionally use UVPackMaster if it's available
@@ -1317,6 +1335,8 @@ class BakeButton(bpy.types.Operator):
                             uvs_y[uvs_of_visible_polygons] = uvs_y[uvs_of_visible_polygons] * y_scale_amount + (1 - y_scale_amount)
 
                             uv_layer_data.foreach_set('uv', uvs)
+                            del uvs_y
+                            del uvs
 
                         #unhide all mesh polygons from our material hiding for scaling
                         unhide_all = np.zeros(len(child.data.polygons), dtype=bool)
@@ -1324,6 +1344,12 @@ class BakeButton(bpy.types.Operator):
                         # TODO: Do we still need to select all of the mesh and select all of the uvs?
                         # lastly make our target UV map active
                         child.data.uv_layers.active = child.data.uv_layers["CATS UV"]
+                        del unhide_all
+                        del uvs_of_visible_polygons
+                        del visible_polygons
+                        del poly_hide
+                        del poly_loop_totals
+                        del poly_material_indices
             else:
                 # even if we didn't optimise solid materials, we still need to make our target UV map active
                 for obj in collection.all_objects:
@@ -1430,6 +1456,8 @@ class BakeButton(bpy.types.Operator):
             image.pixels.foreach_set(pixel_buffer)
             if sharpen_bakes:
                 self.filter_image(context, "SCRIPT_smoothness.png", BakeButton.sharpen_create, use_linear=True)
+            del pixel_buffer_rgb_view
+            del pixel_buffer
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
@@ -1510,6 +1538,7 @@ class BakeButton(bpy.types.Operator):
 
                 # Set the update cos for the disable shape key
                 disable_shape.data.foreach_set('co', disable_shape_cos)
+                del disable_shape_cos
 
         # Save the current values and disable (set value to zero) the shape keys of each mesh that we don't want to bake
         # into the Basis shapekey of the mesh they belong to
@@ -1792,6 +1821,7 @@ class BakeButton(bpy.types.Operator):
                     orig_image = bpy.data.images["SCRIPT_" + bakename+'.png']
                     pixel_buffer = get_pixel_buffer(orig_image)
                     image.pixels.foreach_set(pixel_buffer)
+                    del pixel_buffer
 
 
             # Create yet another output collection
@@ -1942,6 +1972,8 @@ class BakeButton(bpy.types.Operator):
                     np.add(1.0 - diffuse_premultiply_opacity, ao_buffer_rgb_view, out=ao_buffer_rgb_view)
                     # pixel_rgb *= ao_rgb
                     np.multiply(pixel_buffer_rgb_view, ao_buffer_rgb_view, out=pixel_buffer_rgb_view)
+                    del ao_buffer_rgb_view
+                    del ao_buffer
                 if specular_setup and pass_metallic:
                     metallic_image = bpy.data.images["SCRIPT_metallic.png"]
                     metallic_buffer = get_pixel_buffer(metallic_image)
@@ -1954,6 +1986,8 @@ class BakeButton(bpy.types.Operator):
                     np.subtract(1, metallic_buffer_rgb_view, out=metallic_buffer_rgb_view)
                     # pixel_rgb *= metallic_rgb
                     np.multiply(pixel_buffer_rgb_view, metallic_buffer_rgb_view, out=pixel_buffer_rgb_view)
+                    del metallic_buffer_rgb_view
+                    del metallic_buffer
                 if pass_emit and diffuse_emit_overlay:
                     emit_image = bpy.data.images["SCRIPT_emission.png"]
                     emit_buffer = get_pixel_buffer(emit_image)
@@ -1970,11 +2004,15 @@ class BakeButton(bpy.types.Operator):
                     np.multiply(emit_buffer_rgb_view, pixel_buffer_rgb_view, out=emit_buffer_rgb_view)
                     # pixel_rgb = 1.0 - emit_rgb
                     np.subtract(1.0, emit_buffer_rgb_view, out=pixel_buffer_rgb_view)
+                    del emit_buffer_rgb_view
+                    del emit_buffer
 
                 vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
                 pixel_buffer.shape = -1
                 image.pixels.foreach_set(pixel_buffer)
                 image.save()
+                del pixel_buffer_rgb_view
+                del pixel_buffer
 
             # Preultiply AO into smoothness if selected, to avoid shine in dark areas
             if pass_smoothness and pass_ao and smoothness_premultiply_ao:
@@ -2007,6 +2045,12 @@ class BakeButton(bpy.types.Operator):
 
                 pixel_buffer.shape = -1
                 image.pixels.foreach_set(pixel_buffer)
+                del ao_buffer_rgb_view
+                del smoothness_buffer_rgb_view
+                del pixel_buffer_rgb_view
+                del ao_buffer
+                del smoothness_buffer
+                del pixel_buffer
 
             # Pack to diffuse alpha (if selected)
             if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
@@ -2046,6 +2090,11 @@ class BakeButton(bpy.types.Operator):
 
                 image.pixels.foreach_set(pixel_buffer)
 
+                del pixel_buffer_a_view
+                del alpha_buffer_rgb_view
+                del alpha_buffer
+                del pixel_buffer
+
             # Pack to metallic alpha (if selected)
             if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
                 image = bpy.data.images[platform_img("metallic")]
@@ -2057,6 +2106,9 @@ class BakeButton(bpy.types.Operator):
                 # Set pixel_buffer alpha to alpha_buffer red
                 pixel_buffer[3::4] = alpha_buffer[0::4]
                 image.pixels.foreach_set(pixel_buffer)
+
+                del alpha_buffer
+                del pixel_buffer
 
             # Create specular map
             if specular_setup:
@@ -2089,6 +2141,11 @@ class BakeButton(bpy.types.Operator):
                     np.multiply(.04, metallic_buffer_rgb_view, out=metallic_buffer_rgb_view)
                     # pixel_rgb = pixel_rgb + metallic_rgb
                     np.add(pixel_buffer_rgb_view, metallic_buffer_rgb_view, out=pixel_buffer_rgb_view)
+                    del metallic_buffer_rgb_view
+                    del diffuse_buffer_rgb_view
+                    del pixel_buffer_rgb_view
+                    del metallic_buffer
+                    del diffuse_buffer
                 else:
                     # Set all rgb to 0.04
                     pixel_buffer[:, :3] = 0.04
@@ -2101,6 +2158,7 @@ class BakeButton(bpy.types.Operator):
                     pixel_buffer[3::4] = alpha_image_buffer[0::4]
                     # Restore pixel_buffer shape back to sub-arrays of rgba
                     pixel_buffer.shape = (-1, 4)
+                    del alpha_image_buffer
                 # for source games, screen(specular, smoothness) to create envmapmask
                 if specular_smoothness_overlay and pass_smoothness:
                     smoothness_image = bpy.data.images[platform_img("smoothness")]
@@ -2110,8 +2168,11 @@ class BakeButton(bpy.types.Operator):
                     smoothness_buffer_rgb_view = smoothness_buffer[:, :3]
                     # pixel_buffer_rgb = pixel_buffer_rgb * smoothness_image_buffer_rgb
                     np.multiply(pixel_buffer_rgb_view, smoothness_buffer_rgb_view, out=pixel_buffer_rgb_view)
+                    del smoothness_buffer_rgb_view
+                    del smoothness_buffer
                 pixel_buffer.shape = -1
                 image.pixels.foreach_set(pixel_buffer)
+                del pixel_buffer
 
             # Phong texture (R: smoothness, G: metallic, pack smoothness * AO to normalmap alpha as mask)
             if phong_setup and pass_smoothness:
@@ -2138,8 +2199,11 @@ class BakeButton(bpy.types.Operator):
                     # Copy green channel from metallic_buffer to green channel of pixel_buffer
                     pixel_buffer[1::4] = metallic_buffer[1::4]
                     vmtfile += "\n    \"$phongalbedotint\" 1"
+                    del metallic_buffer
 
                 image.pixels.foreach_set(pixel_buffer)
+                del smoothness_buffer
+                del pixel_buffer
 
             print("Decimating")
 
@@ -2276,14 +2340,20 @@ class BakeButton(bpy.types.Operator):
 
                     # sum each rgb in alpha_buffer and store the result in the alpha channel of pixel_buffer
                     np.sum(alpha_buffer_rgb_view, axis=1, out=pixel_buffer_a_view)
+                    del alpha_buffer_rgb_view
+                    del alpha_buffer
+                    del pixel_buffer_a_view
                 if normal_invert_g:
                     if pixel_buffer is None:
                         pixel_buffer = get_pixel_buffer(image, out=normal_buffer)
                     pixel_buffer_g_view = pixel_buffer[1::4]
                     np.subtract(1.0, pixel_buffer_g_view, out=pixel_buffer_g_view)
+                    del pixel_buffer_g_view
                 if pixel_buffer is not None:
                     # Write any modifications back to the image
                     image.pixels.foreach_set(pixel_buffer)
+                del pixel_buffer
+                del normal_buffer
 
             # Remove old UV maps (if we created new ones)
             if generate_uvmap:
