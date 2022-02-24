@@ -1474,22 +1474,42 @@ class BakeButton(bpy.types.Operator):
 
         # Create 'disable' shape keys, each of which shrinks their relevant mesh down to a single point
         if create_disable_shapekeys:
-            for obj in sorted(filter(lambda o: o.type == "MESH", collection.all_objects),
-                              key=lambda o: len(o.data.vertices))[:-1]:
+            # Iterate over all the mesh objects except the one with the most vertices
+            for obj in sorted(all_mesh_objects, key=lambda o: len(o.data.vertices))[:-1]:
                 print(obj.name)
-                bpy.ops.object.select_all(action='DESELECT')
-                obj.select_set(True)
-                context.view_layer.objects.active = obj
-                if obj.data.shape_keys is None or len(obj.data.shape_keys.key_blocks) == 0:
-                    bpy.ops.object.shape_key_add(from_mix=True)
-                    obj.data.shape_keys.key_blocks[-1].name = "Basis"
-                bpy.ops.object.shape_key_add(from_mix=True)
-                obj.data.shape_keys.key_blocks[-1].name = "Disable " + obj.name[:-4]
-                Common.switch("EDIT")
-                bpy.ops.transform.resize(value=(0,0,0))
-                Common.switch("OBJECT")
 
-        Common.switch('OBJECT')
+                # If there aren't any shape keys, we need to add a Basis shape key first
+                if obj.data.shape_keys is None or len(obj.data.shape_keys.key_blocks) == 0:
+                    obj.shape_key_add(name="Basis")
+
+                # Add a new shape key for disabling the object
+                disable_shape = obj.shape_key_add(name="Disable " + obj.name[:-4], from_mix=True)
+
+                # Get the flattened vertex positions
+                disable_shape_cos = np.empty(len(disable_shape.data) * 3, dtype=np.single)
+                disable_shape.data.foreach_get('co', disable_shape_cos)
+                # Reshape into an array of [x, y, z] sub-arrays
+                disable_shape_cos.shape = (-1, 3)
+
+                # Calculate bounding box center
+                # Find the min and max of each column
+                min_xyz = np.amin(disable_shape_cos, axis=0)
+                max_xyz = np.amax(disable_shape_cos, axis=0)
+
+                # Bounding box center will be the mean average
+                bounding_box_center = (min_xyz + max_xyz) * 0.5
+
+                # An alternative would be to shrink to the mean point of the vertices
+                # mean_point = np.mean(disable_shape_cos, axis=0)
+
+                # Set all co to the bounding box center
+                disable_shape_cos[:] = bounding_box_center
+
+                # Re-flatten the vertex positions
+                disable_shape_cos.shape = -1
+
+                # Set the update cos for the disable shape key
+                disable_shape.data.foreach_set('co', disable_shape_cos)
 
         # Save and disable shape keys
         shapekey_values = dict()
