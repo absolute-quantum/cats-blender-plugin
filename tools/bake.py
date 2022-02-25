@@ -2138,6 +2138,7 @@ class BakeButton(bpy.types.Operator):
                 image = bpy.data.images[platform_img("diffuse")]
                 print("Packing to diffuse alpha")
                 alpha_image = None
+                convert_to_grayscale = False
                 if diffuse_alpha_pack == "SMOOTHNESS":
                     alpha_image = bpy.data.images[platform_img("smoothness")]
                     vmtfile += "\n    \"$basealphaenvmapmask\" 1"
@@ -2151,26 +2152,33 @@ class BakeButton(bpy.types.Operator):
                     # https://developer.valvesoftware.com/wiki/Glowing_Textures
                     # TODO: independent emit if transparency "\n    \"$selfillummask\" \"models/"+sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\""
                     vmtfile += "\n    \"$selfillum\" 1"
-                pixel_buffer = get_pixel_buffer(image)
-                alpha_buffer = get_pixel_buffer(alpha_image)
-                # Set pixel_buffer alpha to alpha_buffer grayscale
-                # Reshape into sub-arrays of rgba
-                alpha_buffer.shape = (-1, 4)
-                # 2d slice to view only the rgb columns
-                alpha_buffer_rgb_view = alpha_buffer[:, :3]
-                # Grayscale = 0.299r + 0.587g + 0.114b
-                rgb_to_grayscale_coefficients = [0.299, 0.587, 0.114]
-                # In-place multiply the rgb columns by the grayscale coefficients
-                np.multiply(alpha_buffer_rgb_view, rgb_to_grayscale_coefficients, out=alpha_buffer_rgb_view)
-                # Get view of only pixel_buffer alpha
-                pixel_buffer_a_view = pixel_buffer[3::4]
-                # sum each rgb in alpha_buffer and store the result in the alpha channel of pixel_buffer
-                np.sum(alpha_buffer_rgb_view, axis=1, out=pixel_buffer_a_view)
+                    convert_to_grayscale = True
+                if alpha_image:
+                    pixel_buffer = get_pixel_buffer(image)
+                    alpha_buffer = get_pixel_buffer(alpha_image)
+
+                    if convert_to_grayscale:
+                        # Set pixel_buffer alpha to alpha_buffer grayscale
+                        # Reshape into sub-arrays of rgba
+                        alpha_buffer.shape = (-1, 4)
+                        # 2d slice to view only the rgb columns
+                        alpha_buffer_rgb_view = alpha_buffer[:, :3]
+                        # Grayscale = 0.299r + 0.587g + 0.114b
+                        rgb_to_grayscale_coefficients = [0.299, 0.587, 0.114]
+                        # In-place multiply the rgb columns by the grayscale coefficients
+                        np.multiply(alpha_buffer_rgb_view, rgb_to_grayscale_coefficients, out=alpha_buffer_rgb_view)
+                        # Get view of only pixel_buffer alpha
+                        pixel_buffer_a_view = pixel_buffer[3::4]
+                        # sum each rgb in alpha_buffer and store the result in the alpha channel of pixel_buffer
+                        np.sum(alpha_buffer_rgb_view, axis=1, out=pixel_buffer_a_view)
+
+                        del pixel_buffer_a_view
+                        del alpha_buffer_rgb_view
+                    else:
+                        # Copy alpha_image red channel into pixel_buffer alpha channel
+                        pixel_buffer[3::4] = alpha_buffer[0::4]
 
                 image.pixels.foreach_set(pixel_buffer)
-
-                del pixel_buffer_a_view
-                del alpha_buffer_rgb_view
                 del alpha_buffer
                 del pixel_buffer
 
