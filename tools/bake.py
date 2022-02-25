@@ -30,6 +30,7 @@ import numpy as np
 import subprocess
 import shutil
 import threading
+from contextlib import contextmanager
 from typing import NamedTuple
 from itertools import chain
 from time import perf_counter
@@ -382,6 +383,74 @@ class BakeButton(bpy.types.Operator):
         samples = max(1, samples)
         return int(samples)
 
+    @staticmethod
+    @contextmanager
+    # **kwargs are not suitable as input names can be any string
+    def temp_disable_links(objects, *inputs_to_disable):
+        """ContextManager to temporarily disable links to Principled BSDF inputs and optionally temporarily set different default values\n
+        inputs_to_disable contains the names of the inputs and their replacement default values, specifying a
+        replacement default value of None will leave the current default value unchanged\n
+        inputs_to_disable can be a mix of different types:\n
+        only the input name, in which case, the replacement default value is assumed to be None\n
+        tuples of (input_name, replacement_default_value)\n
+        dictionaries of {input_name: replacement_default_value}, each containing as many key-value pairs as you like"""
+        # Parse all the arguments into one big dictionary
+        inputs_to_disable_with_defaults = {}
+        for input_to_disable in inputs_to_disable:
+            if isinstance(input_to_disable, dict):
+                inputs_to_disable_with_defaults.update(input_to_disable)
+            elif isinstance(input_to_disable, tuple):
+                inputs_to_disable_with_defaults[input_to_disable[0]] = input_to_disable[1]
+            else:
+                inputs_to_disable_with_defaults[input_to_disable] = None
+
+        already_disabled = set()
+        re_enable_data = {}
+        for material in chain.from_iterable(o.data.materials for o in objects):
+            if not material or material.name in already_disabled:
+                continue
+            else:
+                already_disabled.add(material.name)
+                tree = material.node_tree
+                for node in tree.nodes:
+                    if node.type == "BSDF_PRINCIPLED":
+                        for input_to_disable, replacement_default_value in inputs_to_disable_with_defaults.items():
+                            node_input = node.inputs[input_to_disable]
+
+                            # Get current link sockets and remove the links to them
+                            old_link_sockets = []
+                            if node_input.is_linked:
+                                # Important to only get .links once as it takes O(len(nodetree.links)) time
+                                links = node_input.links
+                                for link in links:
+                                    # There will probably only ever be one link, but this is able to handle multiple links
+                                    old_link_sockets.append(link.from_socket)
+                                    tree.links.remove(link)
+
+                            # Optionally get and replace the current default value
+                            if replacement_default_value is not None:
+                                old_default_value = node_input.default_value
+                                node_input.default_value = replacement_default_value
+                            else:
+                                old_default_value = None
+
+                            # Save the old link sockets and old default value, so they can be restored later
+                            link_data_list = re_enable_data.setdefault(material.name, [])
+                            link_data_list.append((node_input, old_link_sockets, old_default_value))
+
+        # see contextmanager for details
+        try:
+            yield None
+        finally:
+            # Restore all the links and default values that were temporarily disabled
+            for material_name, link_data_list in re_enable_data.items():
+                material = bpy.data.materials[material_name]
+                tree = material.node_tree
+                for node_input, old_link_sockets, old_default_value in link_data_list:
+                    if old_default_value is not None:
+                        node_input.default_value = old_default_value
+                    for link_socket in old_link_sockets:
+                        tree.links.new(node_input, link_socket)
 
     # Only works between equal data types.
     def swap_links(self, objects, input1, input2):
@@ -1364,7 +1433,7 @@ class BakeButton(bpy.types.Operator):
         gray_bg = (0.5, 0.5, 0.5, 1.0)
         black_bg = (0.0, 0.0, 0.0, 1.0)
         world_normal_bg = (0.0, 0.0, 1.0, 1.0)
-        tangent_normal_big = (0.5, 0.5, 1.0, 1.0)
+        tangent_normal_bg = (0.5, 0.5, 1.0, 1.0)
         if context.scene.bake_samples_quality == 'CUSTOM':
             advanced_samples = context.scene.bake_advanced_samples
             diffuse_samples = advanced_samples.diffuse
@@ -1413,7 +1482,7 @@ class BakeButton(bpy.types.Operator):
             "emission", "EMIT", resolution, emit_indirect_eyes_samples, black_bg, pixelmargin, clear=False,
             solid_material_colors=solidmaterialcolors)
         tangent_normal_settings = BakePassSettings(
-            "normal", "NORMAL", resolution, tangent_normal_samples, tangent_normal_big, pixelmargin,
+            "normal", "NORMAL", resolution, tangent_normal_samples, tangent_normal_bg, pixelmargin,
             solid_material_colors=solidmaterialcolors)
         vertex_diffuse_settings = BakePassSettings(
             "vertex_diffuse", "DIFFUSE", 1, vertex_diffuse_samples, gray_bg, pixelmargin, filter={"COLOR", "VERTEX_COLORS"})
@@ -1423,13 +1492,11 @@ class BakeButton(bpy.types.Operator):
 
         # Bake diffuse
         if pass_diffuse:
-            # Metallic can cause issues baking diffuse, so we put it somewhere typically unused
-            self.swap_links(all_mesh_objects, "Metallic", "Anisotropic Rotation")
-            self.set_values(all_mesh_objects, "Metallic", 0.0)
-
-            self.bake_pass(context, diffuse_settings, all_mesh_objects)
-
-            self.swap_links(all_mesh_objects, "Metallic", "Anisotropic Rotation")
+            # Metallic can cause issues baking diffuse, so temporarily disable it and set it to 0.0
+            # Alpha causes issues baking diffuse (multiplies with the diffuse intensity), so we temporarily disable its
+            # link and set its value to 1.0
+            with self.temp_disable_links(all_mesh_objects, {"Alpha": 1.0, "Metallic": 0.0}):
+                self.bake_pass(context, diffuse_settings, all_mesh_objects)
             bpy.data.images["SCRIPT_diffuse.png"].save()
 
             if sharpen_bakes:
@@ -1437,11 +1504,9 @@ class BakeButton(bpy.types.Operator):
 
         # Bake roughness, invert
         if pass_smoothness:
-            # Specularity of 0 messes up 'roughness' bakes. Fix that here.
-            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
-            self.set_values(all_mesh_objects, "Specular", 0.5)
-            self.bake_pass(context, smoothness_settings, all_mesh_objects)
-            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
+            # Specularity or alpha of 0 mess up 'roughness' bakes. Fix that here.
+            with self.temp_disable_links(all_mesh_objects, {"Alpha": 1.0, "Specular": 0.5}):
+                self.bake_pass(context, smoothness_settings, all_mesh_objects)
             image = bpy.data.images["SCRIPT_smoothness.png"]
             pixel_buffer = get_pixel_buffer(image)
             # Set shape so each pixel is grouped into an array of [r, g, b, a]
@@ -1461,40 +1526,27 @@ class BakeButton(bpy.types.Operator):
 
         # advanced: bake alpha from bsdf output
         if pass_alpha:
-            # when baking alpha as roughness, the -real- alpha needs to be set to 1 to avoid issues
-            # this will clobber whatever's in Anisotropic Rotation!
+            # We're baking alpha via a roughness bake
             self.swap_links(all_mesh_objects, "Alpha", "Roughness")
-            self.swap_links(all_mesh_objects, "Alpha", "Anisotropic Rotation")
-            self.set_values(all_mesh_objects, "Alpha", 1.0)
-            self.swap_links(all_mesh_objects, "Metallic", "Anisotropic")
-            self.set_values(all_mesh_objects, "Metallic", 0)
-            # Specularity of 0 messes up 'roughness' bakes. Fix that here.
-            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
-            self.set_values(all_mesh_objects, "Specular", 0.5)
-
-            # Run the bake pass (bake roughness)
-            self.bake_pass(context, alpha_settings, all_mesh_objects)
+            # Specularity or alpha of 0 mess up 'roughness' bakes. Fix that here.
+            with self.temp_disable_links(all_mesh_objects, {"Alpha": 1.0, "Metallic": 0.0, "Specular": 0.5}):
+                # Run the bake pass (bake roughness)
+                self.bake_pass(context, alpha_settings, all_mesh_objects)
 
             # Revert the changes (re-flip)
-            self.swap_links(all_mesh_objects, "Metallic", "Anisotropic")
-            self.swap_links(all_mesh_objects, "Alpha", "Anisotropic Rotation")
             self.swap_links(all_mesh_objects, "Alpha", "Roughness")
-            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
 
         # advanced: bake metallic from last bsdf output
         if pass_metallic:
             # Find all Principled BSDF nodes. Flip Roughness and Metallic (default_value and connection)
             self.swap_links(all_mesh_objects, "Metallic", "Roughness")
-            # Specularity of 0 messes up 'roughness' bakes. Fix that here.
-            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
-            self.set_values(all_mesh_objects, "Specular", 0.5)
-
-            # Run the bake pass
-            self.bake_pass(context, metallic_settings, all_mesh_objects)
+            # Specularity or alpha of 0 mess up 'roughness' bakes. Fix that here.
+            with self.temp_disable_links(all_mesh_objects, {"Alpha": 1.0, "Specular": 0.5}):
+                # Run the bake pass
+                self.bake_pass(context, metallic_settings, all_mesh_objects)
 
             # Revert the changes (re-flip)
             self.swap_links(all_mesh_objects, "Metallic", "Roughness")
-            self.swap_links(all_mesh_objects, "Specular", "Transmission Roughness")
             if sharpen_bakes:
                 self.filter_image(context, "SCRIPT_metallic.png", BakeButton.sharpen_create)
 
@@ -2485,12 +2537,8 @@ class BakeButton(bpy.types.Operator):
                     context.view_layer.objects.active = obj
                     bpy.ops.mesh.vertex_color_add()
 
-
-
-                self.swap_links(plat_collection_meshes, "Metallic", "Anisotropic Rotation")
-                self.set_values(plat_collection_meshes, "Metallic", 0.0)
-                self.bake_pass(context, vertex_diffuse_settings, plat_collection_meshes)
-                self.swap_links(plat_collection_meshes, "Metallic", "Anisotropic Rotation")
+                with self.temp_disable_links(plat_collection_meshes, {"Alpha": 1.0, "Metallic": 0.0}):
+                    self.bake_pass(context, vertex_diffuse_settings, plat_collection_meshes)
 
                 # TODO: If we're not baking anything else in, remove all UV maps entirely
 
