@@ -635,6 +635,27 @@ class BakeButton(bpy.types.Operator):
                         node.location.x += 500
                         node.location.y -= 500
 
+        # If we bake only the color from a color texture, the color gets multiplied by the texture's alpha during the
+        # bake if its alpha_mode is set to STRAIGHT or PREMUL (premultiplied alpha)
+        # This is the wrong behaviour for what we want when baking, we want the rgb of the color texture as is
+        #
+        # For all color images that have STRAIGHT or PREMUL alpha mode, temporarily set the alpha mode to
+        # CHANNEL_PACKED.
+        # CHANNEL_PACKED will allow any nodes using the alpha of the texture separately to still function, which
+        # wouldn't be the case if we were to set the alpha mode to NONE
+        # We'll ignore the image we're baking to since that has its alpha mode set up specifically
+        alpha_modes = {'PREMUL', 'STRAIGHT'}
+        # Non-color colorspaces don't use alpha_modes, so are unaffected by their own alpha during baking; we can ignore
+        # any such images
+        non_color_colorspaces = {'Non-Color', 'Raw', 'XYZ'}
+        images_to_restore_alpha_mode = {}
+        for i in bpy.data.images:
+            # Skip the image we're baking to, since its alpha_mode is usually set up specifically
+            # Skip all images which have unsaved changes as changing their alpha_mode would revert the unsaved changes.
+            if i is not image and not i.is_dirty and i.alpha_mode in alpha_modes and i.colorspace_settings.name not in non_color_colorspaces:
+                images_to_restore_alpha_mode[i.name] = i.alpha_mode
+                i.alpha_mode = 'CHANNEL_PACKED'
+
         # Run bake.
         context.scene.cycles.bake_type = bake_type
         context.scene.render.bake.use_pass_direct = "DIRECT" in bake_pass_filter
@@ -660,6 +681,12 @@ class BakeButton(bpy.types.Operator):
                             cage_extrusion=bake_ray_distance,
                             normal_space=normal_space
                             )
+
+        # Restore image alpha_modes that got changed to CHANNEL_PACKED so that the rgb channels don't get multiplied by
+        # the alpha channel during the bake
+        for image_name, orig_alpha_mode in images_to_restore_alpha_mode.items():
+            bpy.data.images[image_name].alpha_mode = orig_alpha_mode
+
         # For all materials in use, change any value node labeled "bake_<bake_name>" to 1.0, then back to 0.0.
         for obj in objects:
             for slot in obj.material_slots:
