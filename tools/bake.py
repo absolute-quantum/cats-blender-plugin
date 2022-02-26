@@ -1983,10 +1983,16 @@ class BakeButton(bpy.types.Operator):
                 for obj in plat_collection.objects:
                     if obj.type == "MESH":
                         orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
-                        found_vertex_groups = set()
                         path_strings = []
-                        for vertex in obj.data.vertices:
-                            found_vertex_groups |= set([vgp.group for vgp in vertex.groups if vgp.weight > 0.00001])
+                        group_gen = chain.from_iterable(vertex.groups for vertex in obj.data.vertices)
+                        found_vertex_groups = {vgp.group for vgp in group_gen if vgp.weight > 0.00001}
+
+                        # Keep only the vertex group indices that have a corresponding bone with use_deform enabled
+                        all_deform_bone_names = {bone.name for bone in plat_arm_copy.data.bones if bone.use_deform}
+                        vertex_group_names = {group.name for group in obj.vertex_groups}
+                        deform_bone_vg_names = all_deform_bone_names.intersection(vertex_group_names)
+                        deform_bone_vg_idx = {obj.vertex_groups[db_name].index for db_name in deform_bone_vg_names}
+                        found_vertex_groups.intersection_update(deform_bone_vg_idx)
 
                         generate_bones = found_vertex_groups and len(found_vertex_groups) <= generate_prop_bone_max_influence_count
                         if 'generatePropBones' in obj:
