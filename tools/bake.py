@@ -607,33 +607,57 @@ class BakeButton(bpy.types.Operator):
             obj.select_set(True)
             context.view_layer.objects.active = obj
 
-        # For all materials in use, change any value node labeled "bake_<bake_name>" to 1.0, then back to 0.0.
-        for obj in objects:
-            for slot in obj.material_slots:
-                if slot.material:
-                    for node in obj.active_material.node_tree.nodes:
-                        if node.type == "VALUE" and node.label == "bake_" + bake_name:
-                            node.outputs["Value"].default_value = 1
+        # As an alternative to this system of specifically named value nodes, we could create our own node group with
+        # one output for each pass and tell people to use that node group. We would need to be able to programmatically
+        # redo the nodes in the group without breaking existing links to the group outputs in user materials, in case a
+        # user were to modify the group's nodes or in case a new bake pass is added to Bake in an update - Mysteryem
+        #
+        # For all materials in use and all node groups, change any value node labeled "bake_<bake_name>" to 1.0,
+        # then back to 0.0.
+        bake_node_label = "bake_" + bake_name
+        # Create a generator that will let us iterate through all the nodes in the materials of the objects we're
+        # baking, plus all the nodes of all the node groups
+        # Generator to get all the material slots of the objects we're baking
+        material_slot_gen = chain.from_iterable(obj.material_slots for obj in objects)
+        # Set comprehension to get all the unique materials that are using nodes
+        unique_materials = {slot.material for slot in material_slot_gen if slot.material and slot.material.use_nodes}
+        # Generator to get all the .nodes from the all the unique materials
+        nodes_from_materials_gen = (material.node_tree.nodes for material in unique_materials)
 
-        # For all materials in all objects, add or repurpose an image texture node named "SCRIPT_BAKE"
-        for obj in objects:
-            for slot in obj.material_slots:
-                if slot.material:
-                    for node in slot.material.node_tree.nodes:
-                        # Assign bake node
-                        tree = slot.material.node_tree
-                        node = None
-                        if "bake" in tree.nodes:
-                            node = tree.nodes["bake"]
-                        else:
-                            node = tree.nodes.new("ShaderNodeTexImage")
-                        node.name = "bake"
-                        node.label = "Cats bake - do not use"
-                        node.select = True
-                        node.image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
-                        tree.nodes.active = node
-                        node.location.x += 500
-                        node.location.y -= 500
+        # Generator to get all the .nodes from all the node groups
+        # Getting all of them is much simpler than trying to figure out which ones are actually used by materials,
+        # especially when node groups could be nested many layers deep
+        nodes_from_node_groups_gen = (group.nodes for group in bpy.data.node_groups if group.nodes)
+
+        # We'll store all node outputs that get changed to 1.0, so they can be easily changed back to 0.0 after the bake
+        bake_value_node_outputs = []
+
+        # For all materials in use, add or repurpose an image texture node with a specific name that we'll set as active
+        # so that it becomes baking target
+        bake_target_node_name = "CATS_SCRIPT_BAKE"
+        #
+        for nodes_gen, is_material in [(nodes_from_materials_gen, True), (nodes_from_node_groups_gen, False)]:
+            for nodes in nodes_gen:
+                for node_i in nodes:
+                    if node_i.type == "VALUE" and node_i.label == bake_node_label:
+                        node_output = node_i.outputs["Value"]
+                        node_output.default_value = 1
+                        # Add the node output to the list of outputs that were changed
+                        bake_value_node_outputs.append(node_output)
+                if is_material:
+                    # Add or repurpose an image texture node with bake_target_node_name as its name, make it the active node
+                    # (so it gets baked to) and set it to the image we're going to bake to.
+                    if bake_target_node_name in nodes:
+                        node = nodes[bake_target_node_name]
+                    else:
+                        node = nodes.new("ShaderNodeTexImage")
+                        node.name = bake_target_node_name
+                    node.label = "Cats bake - do not use"
+                    node.select = True
+                    node.image = image
+                    node.location.x += 500
+                    node.location.y -= 500
+                    nodes.active = node
 
         # If we bake only the color from a color texture, the color gets multiplied by the texture's alpha during the
         # bake if its alpha_mode is set to STRAIGHT or PREMUL (premultiplied alpha)
@@ -687,13 +711,10 @@ class BakeButton(bpy.types.Operator):
         for image_name, orig_alpha_mode in images_to_restore_alpha_mode.items():
             bpy.data.images[image_name].alpha_mode = orig_alpha_mode
 
-        # For all materials in use, change any value node labeled "bake_<bake_name>" to 1.0, then back to 0.0.
-        for obj in objects:
-            for slot in obj.material_slots:
-                if slot.material:
-                    for node in obj.active_material.node_tree.nodes:
-                        if node.type == "VALUE" and node.label == "bake_" + bake_name:
-                            node.outputs["Value"].default_value = 0
+        # Change all the "bake_<bake_name>" labelled value nodes in all materials of all objects being baked back from
+        # 1.0 to 0.0
+        for node_output in bake_value_node_outputs:
+            node_output.default_value = 0.0
 
 
         #solid material optimization making 4X4 squares of solid color for this pass - @989onan
