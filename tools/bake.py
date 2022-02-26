@@ -737,7 +737,7 @@ class BakeButton(bpy.types.Operator):
 
             for child in [obj for obj in objects if obj.type == "MESH"]:  # grab all mesh objects being baked
                 for material in child.data.materials:
-                    if material.name in solidmaterialcolors:
+                    if material and material.name in solidmaterialcolors:
                         index = solid_material_index_lookup[material.name]
 
                         x_start = margin * (index % margins_in_width)
@@ -967,9 +967,14 @@ class BakeButton(bpy.types.Operator):
         #to store the colors for each pass for each solid material to apply to bake atlas later.
         solidmaterialcolors = dict()
         if optimize_solid_materials:
+            # Avoid checking a material more than once
+            checked_material_names = set()
             for child in collection.all_objects:
                 if child.type == "MESH":
-                    for matindex,material in enumerate(child.data.materials):
+                    for material in child.data.materials:
+                        if material is None or material.name in checked_material_names:
+                            continue
+                        checked_material_names.add(material.name)
                         for node in material.node_tree.nodes:
                             if node.type == "BSDF_PRINCIPLED":#For each material bsdf in every object in each material
 
@@ -1076,15 +1081,15 @@ class BakeButton(bpy.types.Operator):
 
                                 #now we check based on all the passes if our material is solid.
                                 if diffuse_solid and smoothness_solid and metallic_solid:
-                                    solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
-                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
-                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
+                                    solidmaterialnames[material.name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
+                                    solidmaterialcolors[material.name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
+                                    print("Object: \""+child.name+"\" with Material: \""+material.name+"\" is solid!")
                                 elif emission_solid:
-                                    solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
-                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
-                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
+                                    solidmaterialnames[material.name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
+                                    solidmaterialcolors[material.name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
+                                    print("Object: \""+child.name+"\" with Material: \""+material.name+"\" is solid!")
                                 else:
-                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is NOT solid!")
+                                    print("Object: \""+child.name+"\" with Material: \""+material.name+"\" is NOT solid!")
                                     pass #don't put an entry, and assume if there is no entry, then it isn't solid.
 
                                 break #since we found our principled and did our stuff we can break the node scanning loop on this material.
@@ -1200,7 +1205,7 @@ class BakeButton(bpy.types.Operator):
                         poly_hide = None
                         uv_layers_uvs = {}
                         for matindex, material in enumerate(child.data.materials):
-                            if material.name in solidmaterialnames:
+                            if material and material.name in solidmaterialnames:
                                 # Only get the material indices at most once per object
                                 if poly_material_indices is None:
                                     poly_material_indices = np.empty(len(child.data.polygons), dtype=np.ushort)
