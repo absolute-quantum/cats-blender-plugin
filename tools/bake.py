@@ -687,6 +687,8 @@ class BakeButton(bpy.types.Operator):
         context.scene.render.bake.use_pass_color = "COLOR" in bake_pass_filter
         context.scene.render.bake.use_pass_diffuse = "DIFFUSE" in bake_pass_filter
         context.scene.render.bake.use_pass_emit = "EMIT" in bake_pass_filter
+        context.scene.render.bake.use_pass_glossy = "GLOSSY" in bake_pass_filter
+        context.scene.render.bake.use_pass_transmission = "TRANSMISSION" in bake_pass_filter  # unused currently
         if Common.version_2_93_or_older():
             context.scene.render.bake.use_pass_ambient_occlusion = "AO" in bake_pass_filter
         if bpy.app.version >= (2, 92, 0):
@@ -1525,12 +1527,14 @@ class BakeButton(bpy.types.Operator):
             "world", "NORMAL", world_normal_resolution, world_normal_samples, world_normal_bg, pixelmargin, normal_space="OBJECT",
             solid_material_colors=solidmaterialcolors)
         ao_settings = BakePassSettings(
-            "ao", "AO", resolution, ao_samples, white_bg, pixelmargin, filter={"AO"})
+            "ao", "AO", resolution, ao_samples, white_bg, pixelmargin)
         emit_no_indirect_settings = BakePassSettings(
-            "emission", "EMIT", resolution, emit_samples, black_bg, pixelmargin)
+            "emission", "EMIT", resolution, emit_samples, black_bg, pixelmargin, solid_material_colors=solidmaterialcolors)
+        # Baking emit_indirect with solid_material_colors set is a little questionable, since the solid material colors
+        # won't receive be able to receive any light from other
         emit_indirect_settings = BakePassSettings(
             "emission", "COMBINED", resolution, emit_indirect_samples, black_bg, pixelmargin,
-            filter={"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, solid_material_colors=solidmaterialcolors)
+            filter={"DIRECT", "INDIRECT", "EMIT", "DIFFUSE", "GLOSSY"}, solid_material_colors=solidmaterialcolors)
         emit_indirect_eyes = BakePassSettings(
             "emission", "EMIT", resolution, emit_indirect_eyes_samples, black_bg, pixelmargin, clear=False,
             solid_material_colors=solidmaterialcolors)
@@ -1746,7 +1750,8 @@ class BakeButton(bpy.types.Operator):
         # bake emit
         if pass_emit:
             if not emit_indirect:
-                self.bake_pass(context, emit_no_indirect_settings, all_mesh_objects)
+                with self.temp_disable_links(all_mesh_objects, {'Alpha': 1.0}):
+                    self.bake_pass(context, emit_no_indirect_settings, all_mesh_objects)
             else:
                 # Bake indirect lighting contributions: Turn off the lights and bake all diffuse passes
                 # TODO: disable scene lights?
@@ -1757,38 +1762,39 @@ class BakeButton(bpy.types.Operator):
                                 key.value = 1.0
                 original_color = bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value
                 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0,0,0,1)
-                self.bake_pass(context, emit_indirect_settings, all_mesh_objects)
-                if emit_exclude_eyes:
-                    def group_relevant(obj, groupname):
-                        if groupname in obj.vertex_groups:
-                            idx = obj.vertex_groups[groupname].index
-                            return any( any(group.group == idx and group.weight > 0.0 for group in vert.groups)
-                                    for vert in obj.data.vertices)
+                with self.temp_disable_links(all_mesh_objects, {'Alpha': 1.0}):
+                    self.bake_pass(context, emit_indirect_settings, all_mesh_objects)
+                    if emit_exclude_eyes:
+                        def group_relevant(obj, groupname):
+                            if groupname in obj.vertex_groups:
+                                idx = obj.vertex_groups[groupname].index
+                                return any( any(group.group == idx and group.weight > 0.0 for group in vert.groups)
+                                        for vert in obj.data.vertices)
 
-                    # Bake each eye on top individually
-                    for obj in all_mesh_objects:
-                        if group_relevant(obj, "LeftEye"):
-                            leyemask = obj.modifiers.new(type='MASK', name="leyemask")
-                            leyemask.mode = "VERTEX_GROUP"
-                            leyemask.vertex_group = "LeftEye"
-                            leyemask.invert_vertex_group = False
-                    left_eye_relevant_meshes = [obj for obj in all_mesh_objects if group_relevant(obj, "LeftEye")]
-                    self.bake_pass(context, emit_indirect_eyes, left_eye_relevant_meshes)
-                    for obj in all_mesh_objects:
-                        if "leyemask" in obj.modifiers:
-                            obj.modifiers.remove(obj.modifiers["leyemask"])
+                        # Bake each eye on top individually
+                        for obj in all_mesh_objects:
+                            if group_relevant(obj, "LeftEye"):
+                                leyemask = obj.modifiers.new(type='MASK', name="leyemask")
+                                leyemask.mode = "VERTEX_GROUP"
+                                leyemask.vertex_group = "LeftEye"
+                                leyemask.invert_vertex_group = False
+                        left_eye_relevant_meshes = [obj for obj in all_mesh_objects if group_relevant(obj, "LeftEye")]
+                        self.bake_pass(context, emit_indirect_eyes, left_eye_relevant_meshes)
+                        for obj in all_mesh_objects:
+                            if "leyemask" in obj.modifiers:
+                                obj.modifiers.remove(obj.modifiers["leyemask"])
 
-                    for obj in all_mesh_objects:
-                        if group_relevant(obj, "RightEye"):
-                            reyemask = obj.modifiers.new(type='MASK', name="reyemask")
-                            reyemask.mode = "VERTEX_GROUP"
-                            reyemask.vertex_group = "RightEye"
-                            reyemask.invert_vertex_group = False
-                    right_eye_relevant_meshes = [obj for obj in all_mesh_objects if group_relevant(obj, "RightEye")]
-                    self.bake_pass(context, emit_indirect_eyes, right_eye_relevant_meshes)
-                    for obj in all_mesh_objects:
-                        if "reyemask" in obj.modifiers:
-                            obj.modifiers.remove(obj.modifiers["reyemask"])
+                        for obj in all_mesh_objects:
+                            if group_relevant(obj, "RightEye"):
+                                reyemask = obj.modifiers.new(type='MASK', name="reyemask")
+                                reyemask.mode = "VERTEX_GROUP"
+                                reyemask.vertex_group = "RightEye"
+                                reyemask.invert_vertex_group = False
+                        right_eye_relevant_meshes = [obj for obj in all_mesh_objects if group_relevant(obj, "RightEye")]
+                        self.bake_pass(context, emit_indirect_eyes, right_eye_relevant_meshes)
+                        for obj in all_mesh_objects:
+                            if "reyemask" in obj.modifiers:
+                                obj.modifiers.remove(obj.modifiers["reyemask"])
 
                 bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = original_color
                 if denoise_bakes:
