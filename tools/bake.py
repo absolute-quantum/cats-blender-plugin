@@ -1755,7 +1755,7 @@ class BakeButton(bpy.types.Operator):
 
                 if pass_normal:
                     # Has to be specified first!
-                    vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+                    vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(platform_img("normal")).replace(".tga","")+"\""
                 vmtfile += "\n    \"$phong\" 1"
                 vmtfile += "\n    \"$phongboost\" 1.0"
                 vmtfile += "\n    \"$phongfresnelranges\" \"[0 0.5 1.0\"]"
