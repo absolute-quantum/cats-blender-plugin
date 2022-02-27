@@ -980,18 +980,17 @@ class BakeButton(bpy.types.Operator):
                         for node in material.node_tree.nodes:
                             if node.type == "BSDF_PRINCIPLED":#For each material bsdf in every object in each material
 
-                                diffuse_solid = True
                                 diffuse_color = [0.0,0.0,0.0,1.0]
-                                smoothness_solid = True
                                 smoothness_color = [0.0,0.0,0.0,1.0]
-                                emission_solid = False
                                 emission_color = [0.0,0.0,0.0,1.0]
-                                metallic_solid = True
                                 metallic_color = [0.0,0.0,0.0,1.0]
 
                                 def check_if_tex_solid(bsdfinputname,node_prinipled,executestring):
                                     node_image = node_prinipled.inputs[bsdfinputname].links[0].from_node
                                     if node_image.type != "TEX_IMAGE":  # To catch normal maps
+                                        # TODO: This prevents us from supporting Smoothness textures or smoothness
+                                        #  packed into metallic alpha since they must be inverted to roughness before
+                                        #  being linked to a Principled BSDF node - Mysteryem
                                         return False, (0.0, 0.0, 0.0, 1.0)  # if not image then it's some type of node chain that is too complicated so return false
                                     pixels = get_pixel_buffer(node_image.image)
                                     # Sneaky minor optimisation since there's no axis argument available in numpy.equal
@@ -1010,83 +1009,45 @@ class BakeButton(bpy.types.Operator):
 
                                 node_prinipled = node
 
+                                # Check each active pass to see if it's solid
+                                # If not, set material_solid to False
+                                # Once we know the material is not solid, we can skip checking the other passes since
+                                # all the enabled passes must be solid due to them sharing the same UV map once baked
+                                material_solid = True
+
                                 if pass_diffuse:
                                     if not node.inputs["Base Color"].is_linked:
-                                        diffuse_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Base Color", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Base Color"
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = node.inputs["Base Color"].default_value
                                         diffuse_color = node.inputs["Base Color"].default_value
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
                                     else:
                                         diffuse_solid,diffuse_color = check_if_tex_solid("Base Color",node_prinipled,'diffuse_color')
+                                        # Update whether the material is still considered solid
+                                        material_solid = material_solid and diffuse_solid
 
-                                if pass_emit:
+                                if pass_emit and material_solid:
                                     if not node.inputs["Emission"].is_linked:
-                                        emission_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Emission", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Emission"
-
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = node.inputs["Emission"].default_value
                                         emission_color = node.inputs["Emission"].default_value
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Emission'])
                                     else:
-                                        emission_solid,emission_color = check_if_tex_solid("Emission",node_prinipled,"emission_color") #emission doesn't care about other things for mat to be solid
-                                if pass_smoothness:
+                                        emission_solid,emission_color = check_if_tex_solid("Emission",node_prinipled,"emission_color")
+                                        # Update whether the material is still considered solid
+                                        material_solid = material_solid and emission_solid
+
+                                if pass_smoothness and material_solid:
                                     if not node.inputs["Roughness"].is_linked:
-                                        smoothness_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Roughness", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Roughness"
-
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = [node.inputs["Roughness"].default_value]*4
-                                        smoothness_color = [node.inputs["Roughness"].default_value]*4
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Roughness'])
+                                        roughness_val = node.inputs["Roughness"].default_value
+                                        smoothness_color = (roughness_val, roughness_val, roughness_val, 1)
                                     else:
-                                        if diffuse_solid: #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
-                                            smoothness_solid,smoothness_color = check_if_tex_solid("Roughness",node_prinipled,"smoothness_color")
-                                        else:
-                                            smoothness_solid = False
-                                if pass_metallic:
+                                        smoothness_solid,smoothness_color = check_if_tex_solid("Roughness",node_prinipled,"smoothness_color")
+                                        material_solid = material_solid and smoothness_solid
+
+                                if pass_metallic and material_solid:
                                     if not node.inputs["Metallic"].is_linked:
-                                        metallic_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Metallic", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Metallic"
-
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = [node.inputs["Metallic"].default_value]*4
-                                        metallic_color = [node.inputs["Metallic"].default_value]*4
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Metallic'])
+                                        metallic_val = node.inputs["Metallic"].default_value
+                                        metallic_color = (metallic_val, metallic_val, metallic_val, 1)
                                     else:
-                                        if smoothness_solid:  #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
-                                            metallic_solid,metallic_color = check_if_tex_solid("Metallic",node_prinipled,"metallic_color")
-                                        else:
-                                            metallic_solid = False
+                                        metallic_solid,metallic_color = check_if_tex_solid("Metallic",node_prinipled,"metallic_color")
+                                        material_solid = material_solid and metallic_solid
 
-                                #now we check based on all the passes if our material is solid.
-                                if diffuse_solid and smoothness_solid and metallic_solid:
-                                    solidmaterialnames[material.name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
-                                    solidmaterialcolors[material.name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
-                                    print("Object: \""+child.name+"\" with Material: \""+material.name+"\" is solid!")
-                                elif emission_solid:
+                                if material_solid:
                                     solidmaterialnames[material.name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
                                     solidmaterialcolors[material.name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
                                     print("Object: \""+child.name+"\" with Material: \""+material.name+"\" is solid!")
