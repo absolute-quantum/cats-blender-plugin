@@ -12,19 +12,6 @@ There are a lot of perks like having your name inside the plugin!
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
 #### Download here: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
-
-
-## FAQ
-- "It said "Python Most Recent Callback Last..." and It worked before!! why!?!": Check to make sure that the version of blender you are using is supported. Blender updates don't mean we will instantly have a fix and a cats version for it. Try the development version first in the settings menu before reporting.
-
-- "It said "Cats found some bones that it could not fix!" What do I do?": Fix model button is not a magical button! Under the hood it only knows many fixes but not infinite cases it can fix. In all the other cases it can fail to find your bones or know what is going on. Try renaming the bone that should be the left leg/ left thigh to "Left leg" and any others that cats shows in the error message. If this still doesn't work, ask these questions:
-  - Is this a model cats can do? If it's not in the import model list it's probably not supported.
-  - Is this a comissioned model or you got the model from a certain artist? Then the model probably shouldn't need a "Fix Model" but instead some slightly manual steps (like using cat's merge to parents button to automatically merge unwanted selected bones) that would result in a much better model than if you tried fix model. 
-  - Is this a material problem regarding textures? Reassign the textures manually is usually the answer, since cats can't search for your textures and know where they go, since it's a robot.
-
-- "Material combiner won't install pillow!" or "Material combiner does a bad job!": Just use bake. With the right settings bake can do the same thing anyway but better. As a wise @Sacred#9619 on discord once said, "should be using Bake unless you have a specific reason to atlas"
-
-- "My materials/textures aren't transfering to Unity! Why?": Short answer, they shouldn't. Packed textures inside FBX's increase avatar file size, reduce performance, and overall should be avoided. Instead, reassign the textures manually in Unity. It may take longer but your friend's computers will thank you later.
  
 ## Features (Expandable)
 - <details><summary>Optimizing model with one-two click!</summary>
