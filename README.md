@@ -94,7 +94,7 @@ There are a lot of perks like having your name inside the plugin!
    
  - <details><summary>Optimizing materials by creating an atlas</summary>
    
-   If this feature does not work at any point for you, use Bake! Bake is a more streamlined and better alternative. Use this feature only if you have a specific reason to or if it happens to work for you out of the box.
+   If this feature does not work at any point for you, :star:Use Bake!:star: Bake is a more streamlined and better alternative. Use this feature only if you have a specific reason to or if it happens to work for you out of the box.
    
    ## Texture atlas
    
