@@ -265,6 +265,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.prop(item, 'metallic_alpha_pack', expand=True)
                     if item.diffuse_alpha_pack == "SMOOTHNESS" and item.metallic_alpha_pack == "SMOOTHNESS":
                         col.label(text=t('BakePanel.doublepackwarning'), icon="INFO")
+                if context.scene.bake_pass_metallic and context.scene.bake_pass_ao:
+                    row = col.row(align=True)
+                    row.prop(item, 'metallic_pack_ao', expand=True)
                 row = col.row(align=True)
                 row.label(text="Bone Conversion:")
                 row = col.row(align=True)

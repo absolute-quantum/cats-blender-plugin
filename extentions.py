@@ -323,6 +323,11 @@ def register():
             ],
             default="NONE"
         )
+        metallic_pack_ao: BoolProperty(
+            name="Pack AO to Metallic Green",
+            description="Pack Ambient Occlusion to the Green channel. Saves a texture as Unity uses G for AO, R for Metallic.",
+            default=True
+        )
         diffuse_vertex_colors: BoolProperty(
             name="Bake to vertex colors",
             description="Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO.",

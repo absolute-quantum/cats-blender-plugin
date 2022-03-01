@@ -129,6 +129,8 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
             item.diffuse_alpha_pack = "SMOOTHNESS"
         if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
             item.metallic_alpha_pack = "SMOOTHNESS"
+        if context.scene.bake_pass_metallic and context.scene.bake_pass_ao:
+            item.metallic_pack_ao = True
         item.use_lods = False
         item.use_physmodel = False
     elif platform == "QUEST":
@@ -148,6 +150,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         if context.scene.bake_pass_smoothness:
             context.scene.bake_pass_metallic = True
             item.metallic_alpha_pack = "SMOOTHNESS"
+        item.metallic_pack_ao = False
         item.use_lods = False
         item.use_physmodel = False
     elif platform == "SECONDLIFE":
@@ -647,14 +650,14 @@ class BakeButton(bpy.types.Operator):
         samplecurve = [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000334,0.000678,0.001033,0.001400,0.001779,0.002170,0.002575,0.002993,0.003424,0.003871,0.004332,0.004808,0.005301,0.005810,0.006335,0.006878,0.007439,0.008018,0.008616,0.009233,0.009870,0.010527,0.011204,0.011903,0.012624,0.013367,0.014132,0.014920,0.015732,0.016568,0.017429,0.018314,0.019225,0.020163,0.021126,0.022117,0.023134,0.024180,0.025255,0.026358,0.027490,0.028652,0.029845,0.031068,0.032323,0.033610,0.034928,0.036280,0.037664,0.039083,0.040535,0.042022,0.043544,0.045102,0.046696,0.048327,0.049994,0.051699,0.053442,0.055224,0.057045,0.058905,0.060805,0.062745,0.064729,0.066758,0.068831,0.070948,0.073109,0.075311,0.077555,0.079841,0.082166,0.084531,0.086935,0.089377,0.091856,0.094371,0.096923,0.099510,0.102131,0.104786,0.107474,0.110195,0.112947,0.115729,0.118542,0.121385,0.124256,0.127155,0.130082,0.133035,0.136013,0.139018,0.142046,0.145098,0.148173,0.151270,0.154389,0.157529,0.160689,0.163868,0.167066,0.170282,0.173515,0.176765,0.180030,0.183310,0.186605,0.189914,0.193235,0.196569,0.199914,0.203270,0.206635,0.210011,0.213395,0.216786,0.220185,0.223591,0.227002,0.230418,0.233838,0.237263,0.240690,0.244119,0.247549,0.250980]
 
         #256 values in curve
-        return samplecurve[round(256*sample_val)]
+        return samplecurve[round(255*sample_val)]
 
     #this samples for roughness map curve
     def sample_curve_roughness(self,sample_val):
         samplecurve = [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.002133,0.004309,0.006529,0.008791,0.011097,0.013447,0.015840,0.018276,0.020756,0.023280,0.025847,0.028459,0.031114,0.033813,0.036557,0.039344,0.042176,0.045053,0.047973,0.050938,0.053948,0.057002,0.060102,0.063245,0.066434,0.069668,0.072947,0.076271,0.079640,0.083054,0.086514,0.090019,0.093570,0.097166,0.100808,0.104495,0.108229,0.112008,0.115834,0.119705,0.123623,0.127586,0.131596,0.135653,0.139756,0.143905,0.148101,0.152343,0.156633,0.160969,0.165352,0.169782,0.174259,0.178784,0.183355,0.187974,0.192640,0.197354,0.202115,0.206924,0.211781,0.216685,0.221637,0.226637,0.231685,0.236781,0.241926,0.247118,0.252359,0.257648,0.262986,0.268372,0.273807,0.279291,0.284823,0.290404,0.296035,0.301714,0.307442,0.313220,0.319046,0.324922,0.330848,0.336823,0.342847,0.348921,0.355045,0.361219,0.367443,0.373716,0.380040,0.386413,0.392837,0.399311,0.405836,0.412410,0.419036,0.425712,0.432438,0.439216,0.446181,0.453467,0.461066,0.468971,0.477176,0.485674,0.494457,0.503519,0.512853,0.522451,0.532307,0.542413,0.552764,0.563351,0.574168,0.585208,0.596464,0.607929,0.619596,0.631458,0.643508,0.655739,0.668144,0.680716,0.693449,0.706335,0.719367,0.732538,0.745842,0.759271,0.772819,0.786478,0.800241,0.814102,0.828054,0.842089,0.856201,0.870382,0.884626,0.898926,0.913275,0.927665,0.942090,0.956543,0.971017,0.985505,1.000000]
 
         #256 values in curve
-        return samplecurve[round(256*sample_val)]
+        return samplecurve[round(255*sample_val)]
 
     #needed because it likes to pause blender entirely for a key input in console and we don't want that garbage - @989onan
     def compile_gmod_tga(self,steam_library_path,images_path,texturename):
@@ -1422,6 +1425,7 @@ class BakeButton(bpy.types.Operator):
             merge_twistbones = platform.merge_twistbones
             diffuse_alpha_pack = platform.diffuse_alpha_pack
             metallic_alpha_pack = platform.metallic_alpha_pack
+            metallic_pack_ao = platform.metallic_pack_ao
             diffuse_premultiply_ao = platform.diffuse_premultiply_ao
             diffuse_premultiply_opacity = platform.diffuse_premultiply_opacity
             smoothness_premultiply_ao = platform.smoothness_premultiply_ao
@@ -1707,6 +1711,27 @@ class BakeButton(bpy.types.Operator):
                     pixel_buffer[idx] = alpha_buffer[idx - 3]
                 image.pixels[:] = pixel_buffer
 
+            if pass_metallic and pass_ao and metallic_pack_ao:
+                image = bpy.data.images[platform_img("metallic")]
+                green_image = bpy.data.images[platform_img("ao")]
+                pixel_buffer = list(image.pixels)
+                green_buffer = green_image.pixels[:]
+                for idx in range(len(pixel_buffer)):
+                    if idx % 4 == 1:
+                        pixel_buffer[idx] = green_buffer[idx]
+                    elif idx % 4 == 2:
+                        # Zero out B, saves space if crunching
+                        pixel_buffer[idx] = 0
+                image.pixels[:] = pixel_buffer
+            elif pass_metallic:
+                image = bpy.data.images[platform_img("metallic")]
+                pixel_buffer = list(image.pixels)
+                for idx in range(len(pixel_buffer)):
+                    if (idx % 4) == 1 or (idx % 4) == 2:
+                        # Zero out GB, saves space if crunching
+                        pixel_buffer[idx] = 0
+                image.pixels[:] = pixel_buffer
+
             # Create specular map
             if specular_setup:
                 # TODO: Valve has their own suggested curve ramps, which are indexed above.
@@ -1719,10 +1744,11 @@ class BakeButton(bpy.types.Operator):
                     diffuse_buffer = diffuse_image.pixels[:]
                     metallic_image = bpy.data.images["SCRIPT_metallic.png"]
                     metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Simple specularity: most nonmetallic objects have about 4% reflectiveness
-                            pixel_buffer[idx] = (diffuse_buffer[idx] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
+                    for idx in range(0, len(image.pixels), 4):
+                        # Simple specularity: most nonmetallic objects have about 4% reflectiveness
+                        pixel_buffer[idx] = (diffuse_buffer[idx] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
+                        pixel_buffer[idx+1] = (diffuse_buffer[idx+1] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
+                        pixel_buffer[idx+2] = (diffuse_buffer[idx+1] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
                 else:
                     for idx in range(0, len(image.pixels)):
                         if (idx % 4 != 3):
@@ -1766,7 +1792,7 @@ class BakeButton(bpy.types.Operator):
                     metallic_image = bpy.data.images["SCRIPT_metallic.png"]
                     metallic_buffer = metallic_image.pixels[:]
                     for idx in range(1, len(image.pixels), 4):
-                        pixel_buffer[idx] = metallic_buffer[idx]
+                        pixel_buffer[idx] = metallic_buffer[idx-1]
                     vmtfile += "\n    \"$phongalbedotint\" 1"
 
                 image.pixels[:] = pixel_buffer
@@ -1942,6 +1968,15 @@ class BakeButton(bpy.types.Operator):
                 normaltexnode.image = bpy.data.images[platform_img("normal")]
                 normalmapnode.space = "TANGENT"
                 normaltexnode.interpolation = "Linear"
+            if pass_metallic:
+                metallictexnode = tree.nodes.new("ShaderNodeTexImage")
+                metallictexnode.image = bpy.data.images[platform_img("metallic")]
+                metallictexnode.location.x -= 300
+                metallictexnode.location.y += 200
+                seprgbnode = tree.nodes.new("ShaderNodeSeparateRGB")
+
+                tree.links.new(seprgbnode.inputs["Image"], metallictexnode.outputs["Color"])
+                tree.links.new(bsdfnode.inputs["Metallic"], seprgbnode.outputs["R"])
             if pass_diffuse:
                 diffusetexnode = tree.nodes.new("ShaderNodeTexImage")
                 diffusetexnode.image = bpy.data.images[platform_img("diffuse")]
@@ -1951,18 +1986,20 @@ class BakeButton(bpy.types.Operator):
                 # If AO, blend in AO.
                 if pass_ao and not diffuse_premultiply_ao:
                     # AO -> Math (* ao_opacity + (1-ao_opacity)) -> Mix (Math, diffuse) -> Color
-                    aotexnode = tree.nodes.new("ShaderNodeTexImage")
-                    aotexnode.image = bpy.data.images[platform_img("ao")]
-                    aotexnode.location.x -= 700
-                    aotexnode.location.y += 800
-
                     multiplytexnode = tree.nodes.new("ShaderNodeMath")
                     multiplytexnode.operation = "MULTIPLY_ADD"
                     multiplytexnode.inputs[1].default_value = diffuse_premultiply_opacity
                     multiplytexnode.inputs[2].default_value = 1.0 - diffuse_premultiply_opacity
                     multiplytexnode.location.x -= 400
                     multiplytexnode.location.y += 700
-                    tree.links.new(multiplytexnode.inputs[0], aotexnode.outputs["Color"])
+                    if metallic_pack_ao:
+                        tree.links.new(multiplytexnode.inputs[0], seprgbnode.outputs["G"])
+                    else:
+                        aotexnode = tree.nodes.new("ShaderNodeTexImage")
+                        aotexnode.image = bpy.data.images[platform_img("ao")]
+                        aotexnode.location.x -= 700
+                        aotexnode.location.y += 800
+                        tree.links.new(multiplytexnode.inputs[0], aotexnode.outputs["Color"])
 
                     mixnode = tree.nodes.new("ShaderNodeMixRGB")
                     mixnode.blend_type = "MULTIPLY"
@@ -1975,12 +2012,6 @@ class BakeButton(bpy.types.Operator):
                     tree.links.new(bsdfnode.inputs["Base Color"], mixnode.outputs["Color"])
                 else:
                     tree.links.new(bsdfnode.inputs["Base Color"], diffusetexnode.outputs["Color"])
-            if pass_metallic:
-                metallictexnode = tree.nodes.new("ShaderNodeTexImage")
-                metallictexnode.image = bpy.data.images[platform_img("metallic")]
-                metallictexnode.location.x -= 300
-                metallictexnode.location.y += 200
-                tree.links.new(bsdfnode.inputs["Metallic"], metallictexnode.outputs["Color"])
             if pass_smoothness:
                 if pass_diffuse and (diffuse_alpha_pack == "SMOOTHNESS"):
                     invertnode = tree.nodes.new("ShaderNodeInvert")
@@ -2046,7 +2077,7 @@ class BakeButton(bpy.types.Operator):
             for (bakepass, bakeconditions) in [
                 ("diffuse", pass_diffuse and not diffuse_vertex_colors),
                 ("smoothness", pass_smoothness and (diffuse_alpha_pack != "SMOOTHNESS") and (metallic_alpha_pack != "SMOOTHNESS") and (specular_alpha_pack != "SMOOTHNESS") and (normal_alpha_pack != "SMOOTHNESS") and not specular_smoothness_overlay),
-                ("ao", pass_ao and not diffuse_premultiply_ao),
+                ("ao", pass_ao and not diffuse_premultiply_ao and not (metallic_pack_ao and pass_metallic)),
                 ("emission", pass_emit and not diffuse_alpha_pack == "EMITMASK"),
                 ("alpha", pass_alpha and (diffuse_alpha_pack != "TRANSPARENCY")),
                 ("metallic", pass_metallic and not specular_setup and not phong_setup),
