@@ -369,11 +369,7 @@ def get_zip_content(self, context):
                 encode_str(file_name),
                 t('get_zip_content.choose', model=encode_str(file_name), zipName=encode_str(zip_name))))
 
-    if len(choices) == 0:
-        choices.append(('None', 'None', 'None'))
-
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
-    return bpy.types.Object.Enum
+    return choices
 
 
 def encode_str(s):

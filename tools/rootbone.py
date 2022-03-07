@@ -42,9 +42,7 @@ class RootButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.root_bone == "":
-            return False
-        return True
+        return Common.is_enum_non_empty(context.scene.root_bone)
 
     def execute(self, context):
         saved_data = Common.SavedData()
@@ -86,8 +84,7 @@ def get_parent_root_bones(self, context):
     choices = []
 
     if armature is None:
-        bpy.types.Object.Enum = choices
-        return bpy.types.Object.Enum
+        return choices
     armature = armature.data
 
     # Get cache if exists
@@ -156,13 +153,11 @@ def get_parent_root_bones(self, context):
             choices.append((rootbone, rootbone.replace('_R', '').replace('_L', '') + ' (' + str(len(bone_groups[rootbone])) + ' bones)', rootbone))
             bone_groups_tmp[rootbone] = bone_groups[rootbone]
 
-    bpy.types.Object.Enum = choices
-
     # set cache
     globs.root_bones = bone_groups_tmp
     globs.root_bones_choices = choices
 
-    return bpy.types.Object.Enum
+    return choices
 
 
 @register_wrap

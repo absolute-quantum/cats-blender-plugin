@@ -1,4 +1,5 @@
 from .tools import common as Common
+from .tools.common import wrap_dynamic_enum_items
 from .tools import atlas as Atlas
 from .tools import eyetracking as Eyetracking
 from .tools import rootbone as Rootbone
@@ -16,14 +17,14 @@ def register():
     Scene.armature = EnumProperty(
         name=t('Scene.armature.label'),
         description=t('Scene.armature.desc'),
-        items=Common.get_armature_list,
-        update=Common.update_material_list
+        items=wrap_dynamic_enum_items(Common.get_armature_list, 'armature', sort=False, in_place=False),
+        update=Common.update_material_list,
     )
 
     Scene.zip_content = EnumProperty(
         name=t('Scene.zip_content.label'),
         description=t('Scene.zip_content.desc'),
-        items=Importer.get_zip_content
+        items=wrap_dynamic_enum_items(Importer.get_zip_content, 'zip_content'),
     )
 
     Scene.keep_upper_chest = BoolProperty(
@@ -125,25 +126,25 @@ def register():
     Scene.merge_armature_into = EnumProperty(
         name=t('Scene.merge_armature_into.label'),
         description=t('Scene.merge_armature_into.desc'),
-        items=Common.get_armature_list
+        items=wrap_dynamic_enum_items(Common.get_armature_list, 'merge_armature_into'),
     )
 
     Scene.merge_armature = EnumProperty(
         name=t('Scene.merge_armature.label'),
         description=t('Scene.merge_armature.desc'),
-        items=Common.get_armature_merge_list
+        items=wrap_dynamic_enum_items(Common.get_armature_merge_list, 'merge_armature'),
     )
 
     Scene.attach_to_bone = EnumProperty(
         name=t('Scene.attach_to_bone.label'),
         description=t('Scene.attach_to_bone.desc'),
-        items=Common.get_bones_merge
+        items=wrap_dynamic_enum_items(Common.get_bones_merge, 'attach_to_bone', sort=False),
     )
 
     Scene.attach_mesh = EnumProperty(
         name=t('Scene.attach_mesh.label'),
         description=t('Scene.attach_mesh.desc'),
-        items=Common.get_top_meshes
+        items=wrap_dynamic_enum_items(Common.get_top_meshes, 'attach_mesh'),
     )
 
     Scene.merge_same_bones = BoolProperty(
@@ -653,13 +654,13 @@ def register():
     Scene.add_shape_key = EnumProperty(
         name=t('Scene.add_shape_key.label'),
         description=t('Scene.add_shape_key.desc'),
-        items=Common.get_shapekeys_decimation
+        items=wrap_dynamic_enum_items(Common.get_shapekeys_decimation, 'add_shape_key'),
     )
 
     Scene.add_mesh = EnumProperty(
         name=t('Scene.add_mesh.label'),
         description=t('Scene.add_mesh.desc'),
-        items=Common.get_meshes_decimation
+        items=wrap_dynamic_enum_items(Common.get_meshes_decimation, 'add_mesh'),
     )
 
     Scene.decimate_fingers = BoolProperty(
@@ -700,49 +701,50 @@ def register():
     Scene.mesh_name_eye = EnumProperty(
         name=t('Scene.mesh_name_eye.label'),
         description=t('Scene.mesh_name_eye.desc'),
-        items=Common.get_meshes
+        # get_meshes is used elsewhere than for EnumProperty items so must contain the sorting itself
+        items=wrap_dynamic_enum_items(Common.get_meshes, 'mesh_name_eye', sort=False),
     )
 
     Scene.head = EnumProperty(
         name=t('Scene.head.label'),
         description=t('Scene.head.desc'),
-        items=Common.get_bones_head
+        items=wrap_dynamic_enum_items(Common.get_bones_head, 'head'),
     )
 
     Scene.eye_left = EnumProperty(
         name=t('Scene.eye_left.label'),
         description=t('Scene.eye_left.desc'),
-        items=Common.get_bones_eye_l
+        items=wrap_dynamic_enum_items(Common.get_bones_eye_l, 'eye_left'),
     )
 
     Scene.eye_right = EnumProperty(
         name=t('Scene.eye_right.label'),
         description=t('Scene.eye_right.desc'),
-        items=Common.get_bones_eye_r
+        items=wrap_dynamic_enum_items(Common.get_bones_eye_r, 'eye_right'),
     )
 
     Scene.wink_left = EnumProperty(
         name=t('Scene.wink_left.label'),
         description=t('Scene.wink_left.desc'),
-        items=Common.get_shapekeys_eye_blink_l
+        items=wrap_dynamic_enum_items(Common.get_shapekeys_eye_blink_l, 'wink_left', sort=False),
     )
 
     Scene.wink_right = EnumProperty(
         name=t('Scene.wink_right.label'),
         description=t('Scene.wink_right.desc'),
-        items=Common.get_shapekeys_eye_blink_r
+        items=wrap_dynamic_enum_items(Common.get_shapekeys_eye_blink_r, 'wink_right', sort=False),
     )
 
     Scene.lowerlid_left = EnumProperty(
         name=t('Scene.lowerlid_left.label'),
         description=t('Scene.lowerlid_left.desc'),
-        items=Common.get_shapekeys_eye_low_l
+        items=wrap_dynamic_enum_items(Common.get_shapekeys_eye_low_l, 'lowerlid_left', sort=False),
     )
 
     Scene.lowerlid_right = EnumProperty(
         name=t('Scene.lowerlid_right.label'),
         description=t('Scene.lowerlid_right.desc'),
-        items=Common.get_shapekeys_eye_low_r
+        items=wrap_dynamic_enum_items(Common.get_shapekeys_eye_low_r, 'lowerlid_right', sort=False),
     )
 
     Scene.disable_eye_movement = BoolProperty(
@@ -826,25 +828,26 @@ def register():
     Scene.mesh_name_viseme = EnumProperty(
         name=t('Scene.mesh_name_viseme.label'),
         description=t('Scene.mesh_name_viseme.desc'),
-        items=Common.get_meshes
+        # get_meshes is used elsewhere than for EnumProperty items so must contain the sorting itself
+        items=wrap_dynamic_enum_items(Common.get_meshes, 'mesh_name_viseme', sort=False),
     )
 
     Scene.mouth_a = EnumProperty(
         name=t('Scene.mouth_a.label'),
         description=t('Scene.mouth_a.desc'),
-        items=Common.get_shapekeys_mouth_ah,
+        items=wrap_dynamic_enum_items(Common.get_shapekeys_mouth_ah, 'mouth_a', sort=False),
     )
 
     Scene.mouth_o = EnumProperty(
         name=t('Scene.mouth_o.label'),
         description=t('Scene.mouth_o.desc'),
-        items=Common.get_shapekeys_mouth_oh,
+        items=wrap_dynamic_enum_items(Common.get_shapekeys_mouth_oh, 'mouth_o', sort=False),
     )
 
     Scene.mouth_ch = EnumProperty(
         name=t('Scene.mouth_ch.label'),
         description=t('Scene.mouth_ch.desc'),
-        items=Common.get_shapekeys_mouth_ch,
+        items=wrap_dynamic_enum_items(Common.get_shapekeys_mouth_ch, 'mouth_ch', sort=False),
     )
 
     Scene.shape_intensity = FloatProperty(
@@ -862,7 +865,8 @@ def register():
     Scene.root_bone = EnumProperty(
         name=t('Scene.root_bone.label'),
         description=t('Scene.root_bone.desc'),
-        items=Rootbone.get_parent_root_bones,
+        # Root bone choices get cached, so we don't want to fix them in-place, otherwise the cache would get modified
+        items=wrap_dynamic_enum_items(Rootbone.get_parent_root_bones, 'root_bone', sort=False, in_place=False),
     )
 
     # Optimize
@@ -910,13 +914,15 @@ def register():
     Scene.merge_mesh = EnumProperty(
         name=t('Scene.merge_mesh.label'),
         description=t('Scene.merge_mesh.desc'),
-        items=Common.get_meshes
+        # get_meshes is used elsewhere than for EnumProperty items so must contain the sorting itself
+        items=wrap_dynamic_enum_items(Common.get_meshes, 'merge_mesh', sort=False),
     )
 
     Scene.merge_bone = EnumProperty(
         name=t('Scene.merge_bone.label'),
         description=t('Scene.merge_bone.desc'),
-        items=Rootbone.get_parent_root_bones,
+        # Root bone choices get cached, so we don't want to fix them in-place, otherwise the cache would get modified
+        items=wrap_dynamic_enum_items(Rootbone.get_parent_root_bones, 'merge_bone', sort=False, in_place=False),
     )
 
     # Settings
@@ -941,7 +947,7 @@ def register():
     Scene.ui_lang = EnumProperty(
         name=t('Scene.ui_lang.label'),
         description=t('Scene.ui_lang.desc'),
-        items=Translations.get_languages_list,
+        items=wrap_dynamic_enum_items(Translations.get_languages_list, 'ui_lang', sort=False),
         update=Translations.update_ui
     )
     Scene.debug_translations = BoolProperty(
