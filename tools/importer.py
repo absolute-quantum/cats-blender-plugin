@@ -324,7 +324,7 @@ class ZipPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 6))
 
     def check(self, context):
         # Important for changing options
@@ -391,7 +391,7 @@ class ModelsPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 3))
 
     def check(self, context):
         # Important for changing options
@@ -555,7 +555,7 @@ class InstallXPS(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4.5))
 
     def check(self, context):
         # Important for changing options
@@ -592,7 +592,7 @@ class InstallSource(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4.5))
 
     def check(self, context):
         # Important for changing options
@@ -629,7 +629,7 @@ class InstallVRM(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4.5))
 
     def check(self, context):
         # Important for changing options
@@ -665,7 +665,7 @@ class EnableMMD(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4))
 
     def check(self, context):
         # Important for changing options
