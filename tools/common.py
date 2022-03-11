@@ -29,6 +29,7 @@ import bpy
 import time
 import bmesh
 import platform
+import numpy as np
 
 from math import degrees
 from mathutils import Vector
@@ -1937,6 +1938,7 @@ def add_principled_shader(mesh):
     # Unity to automatically detect exported materials
     principled_shader_pos = (501, -500)
     output_shader_pos = (801, -500)
+    mmd_texture_bake_pos = (1101, -500)
     principled_shader_label = 'Cats Export Shader'
     output_shader_label = 'Cats Export'
 
@@ -1945,16 +1947,25 @@ def add_principled_shader(mesh):
             nodes = mat_slot.material.node_tree.nodes
             node_image = None
             node_image_count = 0
-
+            node_mmd_shader = None
+            needsmmdcolor = False
+            
             # Check if the new nodes should be added and to which image node they should be attached to
             for node in nodes:
                 # Cancel if the cats nodes are already found
                 if node.type == 'BSDF_PRINCIPLED' and node.label == principled_shader_label:
                     node_image = None
                     break
-                if node.type == 'OUTPUT_MATERIAL' and node.label == output_shader_label:
+                elif node.type == 'OUTPUT_MATERIAL' and node.label == output_shader_label:
                     node_image = None
                     break
+                elif node.type == 'OUTPUT_MATERIAL': #So that blender doesn't get confused on which to output
+                    nodes.remove(node)
+                    continue
+                if node.name == "mmd_shader":
+                    node_mmd_shader = node
+                    needsmmdcolor = True
+                    continue
 
                 # Skip if this node is not an image node
                 if node.type != 'TEX_IMAGE':
@@ -1969,10 +1980,53 @@ def add_principled_shader(mesh):
 
                 # This is an image node, so link it to the principled shader later
                 node_image = node
-
-            if not node_image or node_image_count > 1:
+            #this material doesn't have a texture and doesn't have a MMD AO+Diffuse so skip
+            if (not node_image or node_image_count > 1) and not needsmmdcolor:
                 continue
-
+            elif needsmmdcolor and node_mmd_shader: #this needs to implement mmd color and has a shader node
+                #bake AO and Diffuse color into pixels for MMD texture. if texture exists, multiply over
+                #Thank this guy for pixel manipulation: https://blender.stackexchange.com/a/652
+                
+                
+                basecolor = [x*0.6 for x in node_mmd_shader.inputs[1].default_value[:]] #multply color of diffuse by .6 which is MMD's addition factor         
+                for rgba,num in enumerate(basecolor):
+                    basecolor[rgba] = max(0,min(1,basecolor[rgba]+node_mmd_shader.inputs[0].default_value[rgba])) #add AO to diffuse and clamp between 0-1 for each channel
+                
+                if not node_image:
+                    node_image = mat_slot.material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                    node_image.location = mmd_texture_bake_pos
+                    node_image.label = "Mmd Base Tex"
+                    node_image.name = "mmd_base_tex"
+                    node_image.image = bpy.data.images.new("MMDCatsBaked", width=8, height=8, alpha=True)
+                    
+                    #make pixels using AO color
+                    
+                    
+                    #assign to image so it's baked
+                    node_image.image.generated_color = basecolor
+                    node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
+                    node_image.image.file_format = 'PNG'
+                    if bpy.data.is_saved:
+                        node_image.image.save()
+                elif node_image:
+                    
+                    #multiply color on top of default color.
+                    pixels = np.array(node_image.image.pixels[:])
+                    
+                    multiply_image = np.tile(np.array(basecolor),int(len(pixels)/4))
+                    
+                    new_pixels = pixels*multiply_image
+                    
+                    #create new image as to not touch old one
+                    node_image.image = bpy.data.images.new(node_image.image.name+"MMDCatsBaked", width=node_image.image.size[0], height=node_image.image.size[1], alpha=True)
+                    node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
+                    node_image.image.file_format = 'PNG'
+                    
+                    node_image.image.pixels = new_pixels
+                    if bpy.data.is_saved:
+                        node_image.image.save()
+                    
+            
             # Create Principled BSDF node
             node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
             node_prinipled.label = 'Cats Export Shader'
