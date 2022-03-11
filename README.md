@@ -289,9 +289,9 @@ This works by checking all bones and trying to figure out if they can be grouped
 
 ## Bake
 
-![](https://user-images.githubusercontent.com/1109288/97830517-147d1500-1c82-11eb-8b20-feba732ad672.png)
+![](https://user-images.githubusercontent.com/1109288/97830517-147d1500-1c82-11eb-8b20-feba732ad672.png)<img src="https://cdn.discordapp.com/attachments/790488253764730920/791146826774216744/unknown.png" height="735" />
 
-**This is a non-destructive way to produce an optimized variant of (almost) any avatar!**
+**This is a non-destructive way to instantly produce a optimized/Quest variant of (almost) any avatar!**
 
 For more information please visit the **[Bake Panel Wiki Page](https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake)**.
 
