@@ -8,6 +8,7 @@ from bpy.types import Operator
 
 from mmd_tools_local import register_wrap
 from mmd_tools_local import utils
+from mmd_tools_local.bpyutils import Props
 from mmd_tools_local.core import rigid_body
 import mmd_tools_local.core.model as mmd_model
 
@@ -202,7 +203,7 @@ class AddRigidBody(Operator):
             elif self.rigid_shape == 'CAPSULE':
                 size.x /= 3
         else:
-            size *= rig.rootObject().empty_draw_size
+            size *= getattr(rig.rootObject(), Props.empty_display_size)
 
         return rig.createRigidBody(
                 name=name_j,
@@ -465,6 +466,10 @@ class UpdateRigidBodyWorld(Operator):
         if not rbw.constraints:
             rbw.constraints = bpy.data.collections.new('RigidBodyConstraints')
             rbw.constraints.use_fake_user = True
+
+        if hasattr(bpy.context.scene.rigidbody_world, 'substeps_per_frame'):
+            bpy.context.scene.rigidbody_world.substeps_per_frame = 1
+
         return rbw.collection.objects, rbw.constraints.objects
 
     def execute(self, context):

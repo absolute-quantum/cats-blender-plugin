@@ -110,6 +110,10 @@ def menu_func_export(self, context):
 def menu_func_armature(self, context):
     self.layout.operator(operators.model.CreateMMDModelRoot.bl_idname, text='Create MMD Model', icon='OUTLINER_OB_ARMATURE')
 
+def menu_view3d_object(self, context):
+    self.layout.separator()
+    self.layout.operator('mmd_tools.clean_shape_keys')
+
 def header_view3d_pose_draw(self, context):
     obj = context.active_object
     if obj and obj.type == 'ARMATURE' and obj.mode == 'POSE':
@@ -128,6 +132,7 @@ def register():
     properties.register()
     bpy.app.handlers.load_post.append(load_handler)
     bpy.types.VIEW3D_HT_header.append(header_view3d_pose_draw)
+    bpy.types.VIEW3D_MT_object.append(menu_view3d_object)
     if bpy.app.version < (2, 80, 0):
         bpy.types.INFO_MT_file_import.append(menu_func_import)
         bpy.types.INFO_MT_file_export.append(menu_func_export)
@@ -139,7 +144,12 @@ def register():
         bpy.types.VIEW3D_MT_armature_add.append(menu_func_armature)
         #bpy.context.preferences.filepaths.use_scripts_auto_execute = True
 
+    from mmd_tools_local.m17n import translation_dict
+    bpy.app.translations.register(bl_info['name'], translation_dict)
+
 def unregister():
+    bpy.app.translations.unregister(bl_info['name'])
+
     if bpy.app.version < (2, 80, 0):
         bpy.types.INFO_MT_file_import.remove(menu_func_import)
         bpy.types.INFO_MT_file_export.remove(menu_func_export)
@@ -148,6 +158,7 @@ def unregister():
         bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
         bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
         bpy.types.VIEW3D_MT_armature_add.remove(menu_func_armature)
+    bpy.types.VIEW3D_MT_object.append(menu_view3d_object)
     bpy.types.VIEW3D_HT_header.remove(header_view3d_pose_draw)
     bpy.app.handlers.load_post.remove(load_handler)
     properties.unregister()

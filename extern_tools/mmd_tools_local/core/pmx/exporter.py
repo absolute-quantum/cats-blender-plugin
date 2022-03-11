@@ -37,10 +37,11 @@ class _Vertex:
         self.add_uvs = [None]*4 # UV1~UV4
 
 class _Face:
-    def __init__(self, vertices):
+    def __init__(self, vertices, index=-1):
         ''' Temporary Face Class
         '''
         self.vertices = vertices
+        self.index = index
 
 class _Mesh:
     def __init__(self, material_faces, shape_key_names, material_names):
@@ -922,16 +923,18 @@ class __PmxExporter:
                 vert_to_loop_id[v] = loop_id
                 loop_id += 1
 
-        loop_normals = None
+        loop_normals, face_indices = None, None
         if is_triangulated:
             loop_normals = custom_normals
         else:
             quad_method, ngon_method = (1, 1) if bpy.app.version < (2, 80, 0) else ('FIXED', 'EAR_CLIP')
             face_map = bmesh.ops.triangulate(bm, faces=bm.faces, quad_method=quad_method, ngon_method=ngon_method)['face_map']
             logging.debug(' - Remapping custom normals...')
-            loop_normals = []
+            loop_normals, face_indices = [], []
             for f in bm.faces:
-                vert_to_loop_id = face_verts_to_loop_id_map[face_map.get(f, f)]
+                f_orig = face_map.get(f, f)
+                face_indices.append(f_orig.index)
+                vert_to_loop_id = face_verts_to_loop_id_map[f_orig]
                 for v in f.verts:
                     loop_normals.append(custom_normals[vert_to_loop_id[v]])
             logging.debug('   - Done (faces:%d)', len(bm.faces))
@@ -941,7 +944,7 @@ class __PmxExporter:
         bm.free()
 
         assert(len(loop_normals) == len(mesh.loops))
-        return loop_normals
+        return loop_normals, face_indices
 
     @staticmethod
     def __get_normals(mesh, matrix):
@@ -996,7 +999,7 @@ class __PmxExporter:
             _to_mesh_clear = lambda obj, mesh: obj.to_mesh_clear()
 
         base_mesh = _to_mesh(meshObj)
-        loop_normals = self.__triangulate(base_mesh, self.__get_normals(base_mesh, normal_matrix))
+        loop_normals, face_indices = self.__triangulate(base_mesh, self.__get_normals(base_mesh, normal_matrix))
         base_mesh.transform(pmx_matrix)
 
         def _get_weight(vertex_group_index, vertex, default_weight):
@@ -1058,7 +1061,7 @@ class __PmxExporter:
         else:
             uv_data = iter(lambda: _DummyUV, None)
         face_seq = []
-        for face, uv in zip(base_mesh.polygons, uv_data):
+        for face, uv, face_index in zip(base_mesh.polygons, uv_data, face_indices or iter(lambda: -1, None)):
             if len(face.vertices) != 3:
                 raise Exception
             idx = face.index * 3
@@ -1067,12 +1070,15 @@ class __PmxExporter:
             v2 = self.__convertFaceUVToVertexUV(face.vertices[1], uv.uv2, n2, base_vertices)
             v3 = self.__convertFaceUVToVertexUV(face.vertices[2], uv.uv3, n3, base_vertices)
 
-            t = _Face([v1, v2, v3])
+            t = _Face([v1, v2, v3], face_index)
             face_seq.append(t)
             if face.material_index not in material_faces:
                 material_faces[face.material_index] = []
             material_faces[face.material_index].append(t)
 
+        if face_indices:
+            for f in material_faces.values():
+                f.sort(key=lambda x: x.index)
         _mat_name = lambda x: x.name if x else self.__getDefaultMaterial().name
         material_names = {i:_mat_name(m) for i, m in enumerate(base_mesh.materials)}
         material_names = {i:material_names.get(i, None) or _mat_name(None) for i in material_faces.keys()}

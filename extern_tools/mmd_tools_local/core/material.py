@@ -622,6 +622,10 @@ class _FnMaterialCycles(_FnMaterialBI):
         self.__update_shader_nodes()
         shader = mat.node_tree.nodes.get('mmd_shader', None)
         if shader and name in shader.inputs:
+            if hasattr(shader, 'node_tree'):
+                input_socket = shader.node_tree.inputs[name]
+                if hasattr(input_socket, 'min_value'):
+                    val = min(max(val, input_socket.min_value), input_socket.max_value)
             shader.inputs[name].default_value = val
 
     def __update_shader_nodes(self):

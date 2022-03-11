@@ -323,16 +323,16 @@ class MMDBoneOrder(_PanelBase, Panel):
             row.template_list("MMD_TOOLS_UL_ModelBones", "",
                               armature.pose, 'bones',
                               root.vertex_groups, 'active_index')
-            col.label(text='(%d) %s'%(bone_count, armature.name), icon='OUTLINER_OB_ARMATURE')
+            col.operator('mmd_tools.object_select', text='(%d) %s'%(bone_count, armature.name), icon='OUTLINER_OB_ARMATURE', emboss=False).name = armature.name
             col.label(text='No mesh object with "mmd_bone_order_override" modifier', icon='ERROR')
         else:
             row.template_list("MMD_TOOLS_UL_ModelBones", "",
                               bone_order_object, 'vertex_groups',
                               bone_order_object.vertex_groups, 'active_index')
             row = col.row()
-            row.label(text='(%d) %s'%(bone_count, armature.name), icon='OUTLINER_OB_ARMATURE')
+            row.operator('mmd_tools.object_select', text='(%d) %s'%(bone_count, armature.name), icon='OUTLINER_OB_ARMATURE', emboss=False).name = armature.name
             row.label(icon='BACK')
-            row.label(text=bone_order_object.name, icon='OBJECT_DATA')
+            row.operator('mmd_tools.object_select', text=bone_order_object.name, icon='OBJECT_DATA', emboss=False).name = bone_order_object.name
             if bone_order_object == active_obj:
                 row = row.row(align=True)
                 row.operator('object.vertex_group_move', text='', icon='TRIA_UP').direction = 'UP'

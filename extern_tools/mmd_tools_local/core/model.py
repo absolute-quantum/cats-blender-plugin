@@ -7,8 +7,7 @@ from mmd_tools_local import bpyutils
 from mmd_tools_local.core import rigid_body
 from mmd_tools_local.core.bone import FnBone
 from mmd_tools_local.core.morph import FnMorph
-from mmd_tools_local.bpyutils import matmul
-from mmd_tools_local.bpyutils import SceneOp
+from mmd_tools_local.bpyutils import matmul, Props, SceneOp
 
 import logging
 import time
@@ -69,7 +68,7 @@ class Model:
         root.mmd_type = 'ROOT'
         root.mmd_root.name = name
         root.mmd_root.name_e = name_e
-        root.empty_draw_size = scale / 0.2
+        setattr(root, Props.empty_display_size, scale/0.2)
         scene.link_object(root)
 
         armObj = armature
@@ -82,20 +81,19 @@ class Model:
             armObj.matrix_local.identity()
         else:
             arm = bpy.data.armatures.new(name=obj_name)
-            #arm.draw_type = 'STICK'
             armObj = bpy.data.objects.new(name=obj_name+'_arm', object_data=arm)
             armObj.parent = root
             scene.link_object(armObj)
         armObj.lock_rotation = armObj.lock_location = armObj.lock_scale = [True, True, True]
-        armObj.show_x_ray = True
-        armObj.draw_type = 'WIRE'
+        setattr(armObj, Props.show_in_front, True)
+        setattr(armObj, Props.display_type, 'WIRE')
 
         if add_root_bone:
             bone_name = u'全ての親'
             with bpyutils.edit_object(armObj) as data:
                 bone = data.edit_bones.new(name=bone_name)
                 bone.head = [0.0, 0.0, 0.0]
-                bone.tail = [0.0, 0.0, root.empty_draw_size]
+                bone.tail = [0.0, 0.0, getattr(root, Props.empty_display_size)]
             armObj.pose.bones[bone_name].mmd_bone.name_j = bone_name
             armObj.pose.bones[bone_name].mmd_bone.name_e = 'Root'
 
@@ -150,8 +148,7 @@ class Model:
         obj.parent = self.rigidGroupObject()
         obj.mmd_type = 'RIGID_BODY'
         obj.rotation_mode = 'YXZ'
-        obj.draw_type = 'SOLID'
-        #obj.show_wire = True
+        setattr(obj, Props.display_type, 'SOLID')
         obj.show_transparent = True
         obj.hide_render = True
         if hasattr(obj, 'display'):
@@ -246,8 +243,8 @@ class Model:
         obj.parent = self.jointGroupObject()
         obj.mmd_type = 'JOINT'
         obj.rotation_mode = 'YXZ'
-        obj.empty_draw_type = 'ARROWS'
-        obj.empty_draw_size = 0.1 * self.__root.empty_draw_size
+        setattr(obj, Props.empty_display_type, 'ARROWS')
+        setattr(obj, Props.empty_display_size, 0.1*getattr(self.__root, Props.empty_display_size))
         obj.hide_render = True
 
         if bpy.ops.rigidbody.world_add.poll():
@@ -342,16 +339,12 @@ class Model:
         obj.select = False
         return obj
 
-    def create_ik_constraint(self, bone, ik_target, threshold=0.1):
+    def create_ik_constraint(self, bone, ik_target):
         """ create IK constraint
-
-        If the distance of the ik_target head and the bone tail is greater than threashold,
-        then a dummy ik target bone is created.
 
          Args:
              bone: A pose bone to add a IK constraint
              id_target: A pose bone for IK target
-             threshold: Threshold of creating a dummy bone
 
          Returns:
              The bpy.types.KinematicConstraint object created. It is set target
@@ -359,24 +352,6 @@ class Model:
 
         """
         ik_target_name = ik_target.name
-        if 0 and (ik_target.head - bone.tail).length > threshold:
-            logging.debug('*** create a ik_target_dummy of bone %s', ik_target.name)
-            with bpyutils.edit_object(self.__arm) as data:
-                dummy_target = data.edit_bones.new(name=ik_target.name + '.ik_target_dummy')
-                dummy_target.head = bone.tail
-                dummy_target.tail = dummy_target.head + mathutils.Vector([0, 0, 1])
-                dummy_target.layers = (
-                    False, False, False, False, False, False, False, False,
-                    True, False, False, False, False, False, False, False,
-                    False, False, False, False, False, False, False, False,
-                    False, False, False, False, False, False, False, False
-                    )
-                dummy_target.parent = data.edit_bones[ik_target.name]
-                ik_target_name = dummy_target.name
-            dummy_ik_target = self.__arm.pose.bones[ik_target_name]
-            dummy_ik_target.is_mmd_shadow_bone = True
-            dummy_ik_target.mmd_shadow_bone_type = 'IK_TARGET'
-
         ik_const = bone.constraints.new('IK')
         ik_const.target = self.__arm
         ik_const.subtarget = ik_target_name
@@ -784,13 +759,11 @@ class Model:
                         fake_child.rotation_euler = r.to_euler(fake_child.rotation_mode)
 
                 if 'mmd_tools_rigid_track' not in target_bone.constraints:
-                    empty = bpy.data.objects.new(
-                        'mmd_bonetrack',
-                        None)
+                    empty = bpy.data.objects.new(name='mmd_bonetrack', object_data=None)
                     SceneOp(bpy.context).link_object(empty)
                     empty.matrix_world = target_bone.matrix
-                    empty.empty_draw_size = 0.1 * self.__root.empty_draw_size
-                    empty.empty_draw_type = 'ARROWS'
+                    setattr(empty, Props.empty_display_type, 'ARROWS')
+                    setattr(empty, Props.empty_display_size, 0.1*getattr(self.__root, Props.empty_display_size))
                     empty.mmd_type = 'TRACK_TARGET'
                     empty.hide = True
                     empty.parent = self.temporaryGroupObject()
@@ -838,8 +811,8 @@ class Model:
 
         ncc_obj = bpyutils.createObject(name='ncc', object_data=None)
         ncc_obj.location = [0, 0, 0]
-        ncc_obj.empty_draw_size = 0.5 * self.__root.empty_draw_size
-        ncc_obj.empty_draw_type = 'ARROWS'
+        setattr(ncc_obj, Props.empty_display_type, 'ARROWS')
+        setattr(ncc_obj, Props.empty_display_size, 0.5*getattr(self.__root, Props.empty_display_size))
         ncc_obj.mmd_type = 'NON_COLLISION_CONSTRAINT'
         ncc_obj.hide_render = True
         ncc_obj.parent = self.temporaryGroupObject()
@@ -903,55 +876,6 @@ class Model:
             self.updateRigid(i)
         self.__createNonCollisionConstraint(nonCollisionJointTable)
         return rigid_objects
-
-    def __makeSpring(self, target, base_obj, spring_stiffness):
-        with bpyutils.select_object(target):
-            bpy.ops.object.duplicate()
-            spring_target = SceneOp(bpy.context).active_object
-        t = spring_target.constraints.get('mmd_tools_rigid_parent')
-        if t is not None:
-            spring_target.constraints.remove(t)
-        spring_target.mmd_type = 'SPRING_GOAL'
-        spring_target.rigid_body.kinematic = True
-        spring_target.rigid_body.collision_groups = (False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False, True)
-        spring_target.parent = base_obj
-        spring_target.matrix_parent_inverse = mathutils.Matrix(base_obj.matrix_basis).inverted()
-        spring_target.hide = True
-
-        obj = bpy.data.objects.new(
-            'S.'+target.name,
-            None)
-        SceneOp(bpy.context).link_object(obj)
-        obj.location = target.location
-        obj.empty_draw_size = 0.1
-        obj.empty_draw_type = 'ARROWS'
-        obj.hide_render = True
-        obj.select = False
-        obj.hide = True
-        obj.mmd_type = 'SPRING_CONSTRAINT'
-        obj.parent = self.temporaryGroupObject()
-
-        with bpyutils.select_object(obj):
-            bpy.ops.rigidbody.constraint_add(type='GENERIC_SPRING')
-        rbc = obj.rigid_body_constraint
-        rbc.object1 = target
-        rbc.object2 = spring_target
-
-        rbc.use_spring_x = True
-        rbc.use_spring_y = True
-        rbc.use_spring_z = True
-
-        rbc.spring_stiffness_x = spring_stiffness[0]
-        rbc.spring_stiffness_y = spring_stiffness[1]
-        rbc.spring_stiffness_z = spring_stiffness[2]
-
-    def updateJoint(self, joint_obj):
-        # TODO: This process seems to be an incorrect method for creating spring constraints. Fix or delete this.
-        rbc = joint_obj.rigid_body_constraint
-        if rbc.object1.rigid_body.kinematic:
-            self.__makeSpring(rbc.object2, rbc.object1, joint_obj.mmd_joint.spring_angular)
-        if rbc.object2.rigid_body.kinematic:
-            self.__makeSpring(rbc.object1, rbc.object2, joint_obj.mmd_joint.spring_angular)
 
     def buildJoints(self):
         for i in self.joints():
