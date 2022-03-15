@@ -303,7 +303,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row.separator()
                 row.prop(context.scene, 'bake_prioritize_face', expand=True)
                 if context.scene.bake_prioritize_face:
-                    armature = Common.get_armature()
                     row = col.row(align=True)
                     row.separator()
                     row.prop(context.scene, 'bake_face_scale', expand=True)
@@ -362,7 +361,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                             if obj.name not in context.view_layer.objects:
                                 continue
                             if Common.is_hidden(obj):
-                                 continue
+                                continue
                             if any(mod.type == "MULTIRES" for mod in obj.modifiers):
                                 multires_obj_names.add(obj.name)
 

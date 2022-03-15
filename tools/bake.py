@@ -23,18 +23,18 @@
 # Code author: Feilen
 
 import os
-import bpy
-import math
-import webbrowser
-import numpy as np
 import subprocess
 import shutil
 import threading
+import math
+import webbrowser
+import numpy as np
+
+import bpy
 
 from . import common as Common
 from .register import register_wrap
 from .translations import t
-
 
 @register_wrap
 class BakeTutorialButton(bpy.types.Operator):
@@ -53,7 +53,8 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
     item.max_tris = tricount
     # Autodetect passes based on BSDF node inputs
     bsdf_nodes = []
-    objects = [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]
+    objects = [obj for obj in Common.get_meshes_objects(check=False)
+               if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]
     for obj in objects:
         for slot in obj.material_slots:
             if slot.material:
@@ -66,32 +67,32 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
                         bsdf_nodes.append(node)
 
     # Decimate if we're over the limit
-    total_tricount = sum([Common.get_tricount(obj) for obj in objects])
+    total_tricount = int(sum(Common.get_tricount(obj) for obj in objects))
     item.use_decimation = total_tricount > tricount
 
     # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
-    context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
-                                       or len(set([node.inputs["Base Color"].default_value[:] for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_diffuse = (any(node.inputs["Base Color"].is_linked for node in bsdf_nodes)
+                                       or len({node.inputs["Base Color"].default_value[:] for node in bsdf_nodes}) > 1)
 
     # Smoothness: similar to diffuse
-    context.scene.bake_pass_smoothness = (any([node.inputs["Roughness"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Roughness"].default_value for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_smoothness = (any(node.inputs["Roughness"].is_linked for node in bsdf_nodes)
+                                          or len({node.inputs["Roughness"].default_value for node in bsdf_nodes}) > 1)
 
     # Emit: similar to diffuse
-    context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
-                                    or len(set([node.inputs["Emission"].default_value[:] for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_emit = (any(node.inputs["Emission"].is_linked for node in bsdf_nodes)
+                                    or len({node.inputs["Emission"].default_value[:] for node in bsdf_nodes}) > 1)
 
     # Transparency: similar to diffuse
-    context.scene.bake_pass_alpha = (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
-                                                    or len(set([node.inputs["Alpha"].default_value for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_alpha = (any(node.inputs["Alpha"].is_linked for node in bsdf_nodes)
+                                                    or len({node.inputs["Alpha"].default_value for node in bsdf_nodes}) > 1)
 
     # Metallic: similar to diffuse
-    context.scene.bake_pass_metallic = (any([node.inputs["Metallic"].is_linked for node in bsdf_nodes])
-                                        or len(set([node.inputs["Metallic"].default_value for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_metallic = (any(node.inputs["Metallic"].is_linked for node in bsdf_nodes)
+                                        or len({node.inputs["Metallic"].default_value for node in bsdf_nodes}) > 1)
 
     # Normal: on if any normals connected or if decimating... so, always on for this preset
     context.scene.bake_pass_normal = (item.use_decimation
-                                      or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
+                                      or any(node.inputs["Normal"].is_linked for node in bsdf_nodes))
 
     if any("Target" in obj.data.uv_layers for obj in Common.get_meshes_objects(check=False)):
         context.scene.bake_uv_overlap_correction = 'MANUAL'
@@ -106,7 +107,6 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
     item.merge_twistbones = platform != "DESKTOP"
 
     # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
-    # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
     # diffuse ao: off if desktop
     item.diffuse_premultiply_ao = platform != "DESKTOP"
 
@@ -139,7 +139,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         item.translate_bone_names = "NONE"
         item.generate_prop_bones = False
         # Diffuse vertex color bake? Only if there's already no texture inputs!
-        if not any([node.inputs["Base Color"].is_linked for node in bsdf_nodes]):
+        if not any(node.inputs["Base Color"].is_linked for node in bsdf_nodes):
             item.diffuse_vertex_colors = True
 
         # alpha packs: arrange for maximum efficiency.
@@ -393,6 +393,142 @@ class BakeButton(bpy.types.Operator):
                             tree.links.new(to_socket, node.outputs["BSDF"])
 
                     tree.nodes.remove(bake_node)
+    def platform_img(platform_name, img_pass):
+        return platform_name + " " + img_pass + image_extension
+
+    def sanitized_name(orig_name):
+        #sanitizing name since everything needs to be simple characters and "_"'s
+        sanitized = ""
+        for i in orig_name.lower():
+            if i.isalnum() or i == "_":
+                sanitized += i
+            else:
+                sanitized += "_"
+        return sanitized.replace("_tga", ".tga")
+
+    # Only works between equal data types.
+    def swap_links(self, objects, input1, input2):
+        already_swapped = set()
+        def swap_links_impl(node, tree):
+            if node.type == "BSDF_PRINCIPLED":
+                dv1 = node.inputs[input1].default_value
+                dv2 = node.inputs[input2].default_value
+                node.inputs[input2].default_value = dv1
+                node.inputs[input1].default_value = dv2
+
+                alpha_input = None
+                if node.inputs[input1].is_linked:
+                    alpha_input = node.inputs[input1].links[0].from_socket
+                    tree.links.remove(node.inputs[input1].links[0])
+
+                color_input = None
+                if node.inputs[input2].is_linked:
+                    color_input = node.inputs[input2].links[0].from_socket
+                    tree.links.remove(node.inputs[input2].links[0])
+
+                if color_input:
+                    tree.links.new(node.inputs[input1], color_input)
+
+                if alpha_input:
+                    tree.links.new(node.inputs[input2], alpha_input)
+
+        # Find all Principled BSDF. Flip values for input1 and input2 (default_value and connection)
+        for obj in objects:
+            for slot in obj.material_slots:
+                if slot.material:
+                    if slot.material.name in already_swapped:
+                        continue
+                    already_swapped.add(slot.material.name)
+                    tree = slot.material.node_tree
+                    for node in tree.nodes:
+                        swap_links_impl(node, tree)
+
+        for node_tree in bpy.data.node_groups:
+            for node in node_tree.nodes:
+                swap_links_impl(node, node_tree)
+
+    def create_packed_image(context, platform_name, packed_image):
+        if platform_img(platform_name, bakename) in bpy.data.images:
+            image = bpy.data.images[platform_img(platform_name, bakename)]
+            image.user_clear()
+            bpy.data.images.remove(image)
+        bpy.ops.image.new(name=platform_img(platform_name, bakename), width=resolution,
+                          height=resolution, generated_type="BLANK", alpha=False)
+        image = bpy.data.images[platform_img(platform_name, bakename)]
+        if export_format != "GMOD":
+            image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" +
+                                              platform_img(platform_name, bakename))
+        else:
+            image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" +
+                                              sanitized_name(platform_img(platform_name, bakename)))
+        image.generated_width = resolution
+        image.generated_height = resolution
+        image.scale(resolution, resolution)
+
+        def collect_channels(channel_type, rgb_offset=0, is_multi=False):
+            in_img = bpy.data.images["SCRIPT_" + channel_type + ".png"]
+            img_buffer = np.empty(in_img.size[0] * in_img.size[1] * 4, dtype=np.float32)
+            in_img.foreach_set(img_buffer)
+            if is_multi:
+                return img_buffer.reshape(4,-1)[:3]
+            else:
+                return img_buffer.reshape(4,-1)[rgb_offset, rgb_offset+1]
+
+        def collect_grayscale(channel_type):
+            img = collect_channels(channel_type, is_multi=True)
+            img[0] *= 0.299
+            img[1] *= 0.587
+            img[2] *= 0.114
+            return img.sum(axis=0)
+
+        # initialize to an empty (but correctly shaped) array
+        packed_pixels = np.empty((0, (0,image.size[0] * image.size[1] * 4)), dtype=np.float32)
+        if not packed_image.separate_rgb:
+            # Get our base layer, whatever it may be
+            if packed_image.multichannel.c_type == "NONE":
+                packed_pixels.append(np.zeros(image.size[0] * image.size[1] * 4).reshape(3,-1))
+            elif packed_image.multichannel.c_type in ("DIFFUSE", "DIFFUSE_PREMULT_AO",
+                                                      "SPECULAR_DIFFUSE",
+                                                      "SPECULAR_DIFFUSE_PREMULT_AO"):
+                packed_pixels.append(collect_channels("DIFFUSE", is_multi=True))
+            else:
+                packed_pixels.append(collect_channels(packed_image.multichannel.c_type),
+                                     is_multi=True)
+
+            # Premultiply with AO if neccesary
+            if packed_image.multichannel.c_type in ("DIFFUSE_PREMULT_AO"
+                                                    "SMOOTHNESS_PREMULT_AO",
+                                                    "SPECULAR_DIFFUSE_PREMULT_AO"):
+                packed_pixels *= collect_channels("AO")[0]
+
+            # Create specularity if neccesary
+            if packed_image.multichannel.c_type in ("SPECULAR_DIFFUSE",
+                                                    "SPECULAR_DIFFUSE_PREMULT_AO"):
+                metallic_image = collect_channels("METALLIC")
+                packed_pixels *= 1.0 - metallic_image[0]
+            # Perform specularity mapping if neccesary
+            if packed_image.multichannel.c_type == "SPECULAR":
+                metallic_image = collect_channels("METALLIC")
+                packed_pixels *= metallic_image[0]
+                packed_pixels += .04 * (1-metallic_image[0])
+
+        for channel in packed_image.channels:
+            if channel.c_type == "NONE":
+                packed_channel = np.zeros(packed_channel.size[1])
+            elif channel.c_type in ("SMOOTHNESS", "SMOOTHNESS_PREMULT_AO"):
+                packed_channel = collect_channels("SMOOTHNESS")[0]
+            elif channel.c_type == "EMITMASK":
+                packed_channel = collect_grayscale("EMISSION")
+            elif channel.c_type == "SPECULAR":
+                diffuse_channel = collect_grayscale("DIFFUSE", is_multi=True)
+                metallic_channel = collect_channels("METALLIC")[0]
+                packed_channel = diffuse_channel * metallic_channel
+            else:
+                packed_channel = collect_channels(channel.c_type)[0]
+            packed_pixels.append(packed_channel, axis=0)
+
+        image.pixels.foreach_get(np.ravel(packed_pixels, order='F'))
+        image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
     # filter_node_create is a function which, given a tree, returns a tuple of
     # (input, output)
@@ -441,14 +577,18 @@ class BakeButton(bpy.types.Operator):
         return sharpen_node.inputs["Image"], sharpen_node.outputs["Image"]
 
     # "Bake pass" function. Run a single bake to "<bake_name>.png" against all selected objects.
-    def bake_pass(self, context, bake_name, bake_type, bake_pass_filter, objects, bake_size, bake_samples, bake_ray_distance, background_color, clear, bake_margin, bake_active=None, bake_multires=False,
-                  normal_space='TANGENT',solidmaterialcolors=dict()):
+    def bake_pass(self, context, bake_name, bake_type, bake_pass_filter, objects, bake_size,
+                  bake_samples, bake_ray_distance, background_color, clear, bake_margin,
+                  bake_active=None, bake_multires=False, normal_space='TANGENT',
+                  solidmaterialcolors=None):
+        if not solidmaterialcolors:
+            solidmaterialcolors = dict()
         bpy.ops.object.select_all(action='DESELECT')
         if bake_active is not None:
             bake_active.select_set(True)
             context.view_layer.objects.active = bake_active
 
-        print("Baking " + bake_name + " for objects: " + ",".join([obj.name for obj in objects]))
+        print("Baking " + bake_name + " for objects: " + ",".join(obj.name for obj in objects))
 
         if clear:
             if "SCRIPT_" + bake_name + ".png" in bpy.data.images:
@@ -456,8 +596,9 @@ class BakeButton(bpy.types.Operator):
                 image.user_clear()
                 bpy.data.images.remove(image)
 
-            bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_size[0], height=bake_size[1], color=background_color,
-                              generated_type="BLANK", alpha=True)
+            bpy.ops.image.new(name="SCRIPT_" + bake_name + ".png", width=bake_size[0],
+                              height=bake_size[1], color=background_color, generated_type="BLANK",
+                              alpha=True)
             image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
             image.filepath = bpy.path.abspath("//CATS Bake/" + "SCRIPT_" + bake_name + ".png")
             image.alpha_mode = "STRAIGHT"
@@ -465,9 +606,9 @@ class BakeButton(bpy.types.Operator):
             image.generated_width = bake_size[0]
             image.generated_height = bake_size[1]
             image.scale(bake_size[0], bake_size[1])
-            if bake_type == 'NORMAL' or bake_type == 'ROUGHNESS':
+            if bake_type in ('NORMAL', 'ROUGHNESS'):
                 image.colorspace_settings.name = 'Non-Color'
-            if bake_name == 'diffuse' or bake_name == 'metallic':  # For packing smoothness to alpha
+            if bake_name in ('diffuse', 'metallic'):  # For packing smoothness to alpha
                 image.alpha_mode = 'CHANNEL_PACKED'
             image.pixels[:] = background_color * bake_size[0] * bake_size[1]
         image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
@@ -522,7 +663,7 @@ class BakeButton(bpy.types.Operator):
             context.scene.render.bake.target = "VERTEX_COLORS" if "VERTEX_COLORS" in bake_pass_filter else "IMAGE_TEXTURES"
         context.scene.cycles.samples = bake_samples
         context.scene.render.bake.use_clear = clear and bake_type == 'NORMAL'
-        context.scene.render.bake.use_selected_to_active = (bake_active != None)
+        context.scene.render.bake.use_selected_to_active = bake_active is not None
         context.scene.render.bake.margin = bake_margin
         context.scene.render.use_bake_multires = bake_multires
         context.scene.render.bake.normal_space = normal_space
@@ -530,7 +671,7 @@ class BakeButton(bpy.types.Operator):
                             # pass_filter=bake_pass_filter,
                             use_clear=clear and bake_type == 'NORMAL',
                             # uv_layer="SCRIPT",
-                            use_selected_to_active=(bake_active != None),
+                            use_selected_to_active=bake_active is not None,
                             cage_extrusion=bake_ray_distance,
                             normal_space=normal_space
                             )
@@ -541,7 +682,6 @@ class BakeButton(bpy.types.Operator):
                     for node in obj.active_material.node_tree.nodes:
                         if node.type == "VALUE" and node.label == "bake_" + bake_name:
                             node.outputs["Value"].default_value = 0
-
 
         #solid material optimization making 4X4 squares of solid color for this pass - @989onan
         if context.scene.bake_optimize_solid_materials and (not any(plat.use_decimation for plat in context.scene.bake_platforms)) and (not context.scene.bake_pass_ao) and (not context.scene.bake_pass_normal):
@@ -572,8 +712,6 @@ class BakeButton(bpy.types.Operator):
                                     #since the array is one dimensional, (kinda like old minecraft schematics) we have to convert 2d cords to 1d cords, then multiply by 4 since there are 4 channels, then add current channel.
                                     old_pixels[(((y*bake_size[0])+x)*4)+channel] = rgba
             image.pixels[:] = old_pixels[:]
-
-
 
     def copy_ob(self, ob, parent, collection):
         # copy ob
@@ -607,10 +745,12 @@ class BakeButton(bpy.types.Operator):
         return recurse(ob, ob.parent, 0, ignore_hidden, view_layer=view_layer)
 
     def execute(self, context):
-        if not [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]:
+        if not [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj)
+                or not context.scene.bake_ignore_hidden]:
             self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
             return {'FINISHED'}
-        if any([obj.hide_render and not Common.is_hidden(obj) for obj in Common.get_armature().children if obj.name in context.view_layer.objects]):
+        if any(obj.hide_render and not Common.is_hidden(obj) for obj in
+               Common.get_armature().children if obj.name in context.view_layer.objects):
             self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
             return {'FINISHED'}
         if not bpy.data.is_saved:
@@ -647,7 +787,7 @@ class BakeButton(bpy.types.Operator):
 
         return {'FINISHED'}
 
-        #this samples curve to recalculate original smoothness to new smoothness
+    #this samples curve to recalculate original smoothness to new smoothness
     def sample_curve_smoothness(self,sample_val):
         samplecurve = [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000334,0.000678,0.001033,0.001400,0.001779,0.002170,0.002575,0.002993,0.003424,0.003871,0.004332,0.004808,0.005301,0.005810,0.006335,0.006878,0.007439,0.008018,0.008616,0.009233,0.009870,0.010527,0.011204,0.011903,0.012624,0.013367,0.014132,0.014920,0.015732,0.016568,0.017429,0.018314,0.019225,0.020163,0.021126,0.022117,0.023134,0.024180,0.025255,0.026358,0.027490,0.028652,0.029845,0.031068,0.032323,0.033610,0.034928,0.036280,0.037664,0.039083,0.040535,0.042022,0.043544,0.045102,0.046696,0.048327,0.049994,0.051699,0.053442,0.055224,0.057045,0.058905,0.060805,0.062745,0.064729,0.066758,0.068831,0.070948,0.073109,0.075311,0.077555,0.079841,0.082166,0.084531,0.086935,0.089377,0.091856,0.094371,0.096923,0.099510,0.102131,0.104786,0.107474,0.110195,0.112947,0.115729,0.118542,0.121385,0.124256,0.127155,0.130082,0.133035,0.136013,0.139018,0.142046,0.145098,0.148173,0.151270,0.154389,0.157529,0.160689,0.163868,0.167066,0.170282,0.173515,0.176765,0.180030,0.183310,0.186605,0.189914,0.193235,0.196569,0.199914,0.203270,0.206635,0.210011,0.213395,0.216786,0.220185,0.223591,0.227002,0.230418,0.233838,0.237263,0.240690,0.244119,0.247549,0.250980]
 
@@ -691,8 +831,6 @@ class BakeButton(bpy.types.Operator):
         apply_keys = context.scene.bake_apply_keys
         optimize_solid_materials = context.scene.bake_optimize_solid_materials
         unwrap_angle = context.scene.bake_unwrap_angle
-
-        # TODO: Option to seperate by loose parts and bake selected to active
 
         # Passes
         pass_diffuse = context.scene.bake_pass_diffuse
@@ -746,18 +884,13 @@ class BakeButton(bpy.types.Operator):
                     modifier.render_levels = modifier.total_levels
 
         # Copy default values from the largest diffuse BSDF
-        objs_size_descending = sorted([obj for obj in collection.all_objects if obj.type == "MESH"],
+        objs_size_descending = sorted((obj for obj in collection.all_objects if obj.type == "MESH"),
                                       key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
                                       reverse=True)
 
         def first_bsdf(objs):
-            for obj in objs_size_descending:
-                for slot in obj.material_slots:
-                    if slot.material:
-                        tree = slot.material.node_tree
-                        for node in tree.nodes:
-                            if node.type == "BSDF_PRINCIPLED":
-                                return node
+            return next(node for obj in objs_size_descending for slot in obj.material_slots if slot.material
+                        for node in slot.material.node_tree.nodes if node.type == "BSDF_PRINCIPLED")
 
         bsdf_original = first_bsdf(objs_size_descending)
         cats_uv_layers = []
@@ -879,7 +1012,6 @@ class BakeButton(bpy.types.Operator):
                                     print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
                                 else:
                                     print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is NOT solid!")
-                                    pass #don't put an entry, and assume if there is no entry, then it isn't solid.
 
                                 break #since we found our principled and did our stuff we can break the node scanning loop on this material.
 
@@ -914,7 +1046,8 @@ class BakeButton(bpy.types.Operator):
                             child.data.uv_layers[layer].active = True
                             Common.switch('EDIT')
                             for matindex,material in enumerate(child.data.materials):
-                                #select each material individually and unwrap. The averaging and packing will take care of overlaps. - @989onan
+                                # select each material individually and unwrap. The averaging and
+                                # packing will take care of overlaps. - @989onan
                                 bpy.ops.mesh.select_all(action='DESELECT')
                                 child.active_material_index = matindex
                                 bpy.ops.object.material_slot_select()
@@ -924,7 +1057,6 @@ class BakeButton(bpy.types.Operator):
                             Common.switch('OBJECT')
                             child.data.uv_layers.active_index = idx
                     elif uv_overlap_correction == "UNMIRROR":
-                        # TODO: issue a warning if any source images don't use 'wrap'
                         # Select all faces in +X
                         print("Un-mirroring source CATS UV data")
                         uv_layer = (child.data.uv_layers["CATS UV Super"].data if
@@ -941,11 +1073,11 @@ class BakeButton(bpy.types.Operator):
                                 if supersample_normals:
                                     child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
 
-            #PLEASE DO THIS TO PREVENT PROBLEMS WITH UV EDITING LATER ON:
+            # please do this to prevent problems with uv editing later on:
             bpy.data.scenes["CATS Scene"].tool_settings.use_uv_select_sync = False
 
             if optimize_solid_materials:
-                #go through the solid materials on all the meshes and scale their UV's down to 0 in a grid of rows of squares so that they bake on a small separate part of the image mostly in the top left -@989onan
+                # go through the solid materials on all the meshes and scale their UV's down to 0 in a grid of rows of squares so that they bake on a small separate part of the image mostly in the top left -@989onan
                 for child in collection.all_objects:
                     if child.type == "MESH":
                         for matindex,material in enumerate(child.data.materials):
@@ -955,7 +1087,7 @@ class BakeButton(bpy.types.Operator):
                                     idx = child.data.uv_layers.active_index
                                     child.data.uv_layers[layer].active = True
                                     Common.switch('EDIT')
-                                    #deselect all geometry and uv, select material that we are on that is solid, and then select all on visible UV. This will isolate the solid material UV's on this layer and object.
+                                    # deselect all geometry and uv, select material that we are on that is solid, and then select all on visible UV. This will isolate the solid material UV's on this layer and object.
 
                                     bpy.ops.mesh.select_all(action='SELECT') #select all mesh
                                     bpy.ops.uv.select_all(action='DESELECT') #deselect all UV
@@ -1265,8 +1397,8 @@ class BakeButton(bpy.types.Operator):
 
         # Reset UV
         for obj in collection.all_objects:
-             if obj.type == 'MESH' and generate_uvmap and supersample_normals:
-                  obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
+            if obj.type == 'MESH' and generate_uvmap and supersample_normals:
+                obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
         # Bake AO
         if pass_ao:
@@ -1402,18 +1534,6 @@ class BakeButton(bpy.types.Operator):
             elif platform.image_export_format == "PNG":
                 image_extension = ".png"
 
-            def platform_img(img_pass):
-                return platform_name + " " + img_pass + image_extension
-            def sanitized_name(orig_name):
-                #sanitizing name since everything needs to be simple characters and "_"'s
-                sanitized = ""
-                for i in orig_name.lower():
-                    if i.isalnum() or i == "_":
-                        sanitized += i
-                    else:
-                        sanitized += "_"
-                return sanitized.replace("_tga", ".tga")
-
             platform_name = platform.name
             merge_twistbones = platform.merge_twistbones
             diffuse_alpha_pack = platform.diffuse_alpha_pack
@@ -1471,17 +1591,17 @@ class BakeButton(bpy.types.Operator):
             ]:
                 if not bakepass:
                     continue
-                if platform_img(bakename) in bpy.data.images:
-                    image = bpy.data.images[platform_img(bakename)]
+                if platform_img(platform_name, bakename) in bpy.data.images:
+                    image = bpy.data.images[platform_img(platform_name, bakename)]
                     image.user_clear()
                     bpy.data.images.remove(image)
-                bpy.ops.image.new(name=platform_img(bakename), width=resolution, height=resolution,
+                bpy.ops.image.new(name=platform_img(platform_name, bakename), width=resolution, height=resolution,
                                   generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_img(bakename)]
+                image = bpy.data.images[platform_img(platform_name, bakename)]
                 if export_format != "GMOD":
-                    image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_img(bakename))
+                    image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_img(platform_name, bakename))
                 else:
-                    image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + sanitized_name(platform_img(bakename)))
+                    image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + sanitized_name(platform_img(platform_name, bakename)))
                 image.generated_width = resolution
                 image.generated_height = resolution
                 image.scale(resolution, resolution)
@@ -1489,7 +1609,6 @@ class BakeButton(bpy.types.Operator):
                 if bakename not in ["specular", "normal", "phong"]:
                     orig_image = bpy.data.images["SCRIPT_" + bakename+'.png']
                     image.pixels[:] = orig_image.pixels[:]
-
 
             # Create yet another output collection
             plat_collection = bpy.data.collections.new("CATS Bake " + platform_name)
@@ -1543,16 +1662,15 @@ class BakeButton(bpy.types.Operator):
                 for obj in plat_collection.objects:
                     if obj.type == "MESH":
                         orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
-                        found_vertex_groups = set()
+                        found_vertex_groups = {vgp.group for vertex in obj.data.vertices
+                                               for vgp in vertex.groups if vgp.weight > 0.00001}
                         path_strings = []
-                        for vertex in obj.data.vertices:
-                            found_vertex_groups |= set([vgp.group for vgp in vertex.groups if vgp.weight > 0.00001])
-
                         generate_bones = found_vertex_groups and len(found_vertex_groups) <= generate_prop_bone_max_influence_count
+                        vgroup_lookup = {vgp.index:vgp.name for vgp in obj.vertex_groups}
+
                         if 'generatePropBones' in obj:
                             generate_bones = obj['generatePropBones']
                         if generate_bones:
-                            vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
                             for vgp in found_vertex_groups:
                                 vgroup_name = vgroup_lookup[vgp]
                                 #if not plat_arm_copy.data.bones[vgroup_name].children:
@@ -1577,7 +1695,7 @@ class BakeButton(bpy.types.Operator):
                                 # To create en/disable animation files
                                 next_bone = prop_bone.parent
                                 path_string = prop_bone.name
-                                while next_bone != None:
+                                while next_bone is not None:
                                     path_string = next_bone.name + "/" + path_string
                                     next_bone = next_bone.parent
                                 path_string = "Armature/" + path_string
@@ -1627,21 +1745,21 @@ class BakeButton(bpy.types.Operator):
                     ao_image = bpy.data.images["SCRIPT_ao.png"]
                     ao_buffer = ao_image.pixels[:]
                     for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
+                        if idx % 4 != 3:
                             # Map range: set the black point up to 1-opacity
                             pixel_buffer[idx] = pixel_buffer[idx] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[idx]))
                 if specular_setup and pass_metallic:
                     metallic_image = bpy.data.images["SCRIPT_metallic.png"]
                     metallic_buffer = metallic_image.pixels[:]
                     for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
+                        if idx % 4 != 3:
                             # Map range: metallic blocks diffuse light
                             pixel_buffer[idx] = pixel_buffer[idx] * (1 - metallic_buffer[idx])
                 if pass_emit and diffuse_emit_overlay:
                     emit_image = bpy.data.images["SCRIPT_emission.png"]
                     emit_buffer = emit_image.pixels[:]
                     for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
+                        if idx % 4 != 3:
                             # Map range: screen the emission onto diffuse
                             pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
                 if export_format == "GMOD":
@@ -1658,7 +1776,7 @@ class BakeButton(bpy.types.Operator):
                 smoothness_buffer = smoothness_image.pixels[:]
                 ao_buffer = ao_image.pixels[:]
                 for idx in range(0, len(image.pixels)):
-                    if (idx % 4 != 3):
+                    if idx % 4 != 3:
                         # Map range: set the black point up to 1-opacity
                         pixel_buffer[idx] = smoothness_buffer[idx] * ((1.0 - smoothness_premultiply_opacity) + (smoothness_premultiply_opacity * ao_buffer[idx]))
                     else:
@@ -1747,17 +1865,17 @@ class BakeButton(bpy.types.Operator):
                         pixel_buffer[idx+2] = (diffuse_buffer[idx+1] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
                 else:
                     for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
+                        if idx % 4 != 3:
                             pixel_buffer[idx] = 0.04
                 if specular_alpha_pack == "SMOOTHNESS" and pass_smoothness:
                     alpha_image = bpy.data.images[platform_img("smoothness")]
                     alpha_image_buffer = alpha_image.pixels[:]
                     for idx in range(0, len(image.pixels)):
-                        if (idx % 4 == 3):
+                        if idx % 4 == 3:
                             pixel_buffer[idx] = alpha_image_buffer[idx - 3]
                 # for source games, screen(specular, smoothness) to create envmapmask
                 if specular_smoothness_overlay and pass_smoothness:
-                    smoothness_image = bpy.data.images[platform_img("smoothness")]
+                    smoothness_image = bpy.data.images[("smoothness")]
                     smoothness_image_buffer = smoothness_image.pixels[:]
                     for idx in range(0, len(image.pixels)):
                         if idx % 4 != 3:
@@ -2047,10 +2165,7 @@ class BakeButton(bpy.types.Operator):
                                (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.0], True, pixelmargin)
                 self.restore_bsdfs([obj for obj in plat_collection.all_objects if obj.type == "MESH"])
 
-                # TODO: If we're not baking anything else in, remove all UV maps entirely
-
                 # Update material preview
-                #tree.nodes.remove(diffusetexnode)
                 diffusevertnode = tree.nodes.new("ShaderNodeVertexColor")
                 diffusevertnode.layer_name = "Col"
                 diffusevertnode.location.x -= 300
@@ -2073,7 +2188,7 @@ class BakeButton(bpy.types.Operator):
             ]:
                 if not bakeconditions:
                     continue
-                image = bpy.data.images[platform_img(bakepass)]
+                image = bpy.data.images[platform_img(platform_name, bakepass)]
                 image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
                 if export_format == "GMOD":
                     image.filepath_raw = images_path+"materialsrc/"+sanitized_name(image.name)
@@ -2111,7 +2226,7 @@ class BakeButton(bpy.types.Operator):
                 ("Bake", ["Body", "Armature", "Static"])
             ]
             if use_physmodel:
-                    export_groups.append(("LODPhysics", ["LODPhysics", "ArmatureLODPhysics"]))
+                export_groups.append(("LODPhysics", ["LODPhysics", "ArmatureLODPhysics"]))
             if use_lods:
                 for idx, _ in enumerate(lods):
                     export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))

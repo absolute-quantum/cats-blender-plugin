@@ -8,7 +8,8 @@ from .tools import translations as Translations
 from .tools.translations import t
 
 from bpy.types import Scene, Material, PropertyGroup
-from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty, IntVectorProperty, StringProperty, FloatVectorProperty
+from bpy.props import BoolProperty, EnumProperty, FloatProperty, IntProperty, CollectionProperty
+from bpy.props import IntVectorProperty, StringProperty, FloatVectorProperty, PointerProperty
 from bpy.utils import register_class
 
 
@@ -195,6 +196,108 @@ def register():
         ],
         default='SMART'
     )
+
+    Scene.decimation_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=False
+    )
+
+    Scene.decimation_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+
+    # Bake
+    Scene.bake_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=False
+    )
+
+    Scene.bake_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    Scene.bake_loop_decimate = BoolProperty(
+        name="Loop decimation",
+        description="Use loop decimation instead of Smart decimation, for cleaner animation.",
+        default=False
+    )
+
+    class BakePackedChannel(PropertyGroup):
+        c_type: EnumProperty(
+            name=t('Scene.bake_metallic_alpha_pack.label'),
+            description=t('Scene.bake_metallic_alpha_pack.desc'),
+            items=[
+                ("NONE", "Empty", "Fills this channel with empty space"),
+                ("SMOOTHNESS", "", ""),
+                ("SMOOTHNESS_PREMULT_AO", "", ""),
+                ("TRANSPARENCY","Transparency","Transparency"),
+                ("EMITMASK","Emission Mask","Emission"),
+                ("SPECULAR", "Specular", "Specular"),
+                ("METALLIC", "Metallic", "Metallic"),
+                ("AO", "Ambient Occlusion", "Ambient Occlusion"),
+            ],
+            default="NONE"
+        )
+        invert_channel: BoolProperty(
+            name="Invert",
+            description="Invert Red channel",
+            default=False
+        )
+
+    register_class(BakePackedChannel)
+
+    class BakePackedMultiChannel(PropertyGroup):
+        c_type: EnumProperty(
+            name="RGB",
+            description="What values to pack into the RGB channels",
+            items=[
+                ("NONE", "Empty", "Fills this channel with empty space"),
+                ("DIFFUSE", "Diffuse", "Diffuse Color"),
+                ("DIFFUSE_PREMULT_AO", "Diffuse Premultiplied", "Diffuse Premultiplied w/ AO"),
+                ("SPECULAR_DIFFUSE", "Specular Diffuse", "Specular Diffuse"),
+                ("SPECULAR_DIFFUSE_PREMULT_AO", "Specular Diffuse Premultiplied", "Specular Diffuse"),
+                ("WORLD", "World Normals", "World-oriented normals. Will not animate correctly."),
+                ("TANGENT", "Tangent Normals (Platform)", "Tangent normals, as affected after decimation"),
+                ("EMIT", "Emission", "Emission (Glow)"),
+                ("SPECULAR", "Specularity","Specularity"),
+            ],
+            default="NONE"
+        )
+
+    register_class(BakePackedMultiChannel)
+
+    class BakePackedImage(PropertyGroup):
+        name: StringProperty(name="Name", default="Empty")
+        seperate_rgb: BoolProperty(
+            name="Seperate RGB",
+            description="If selected, RGB channels will be individually addressable.",
+            default=False
+        )
+        multichannel: PointerProperty(
+            type=BakePackedMultiChannel
+        )
+        channels: CollectionProperty(
+            type=BakePackedChannel
+        )
+
+    register_class(BakePackedImage)
 
     class BakePlatformPropertyGroup(PropertyGroup):
         name: StringProperty(name='Name', default="New Platform")
@@ -403,9 +506,9 @@ def register():
             default=False
         )
         gmod_model_name: StringProperty(name='Gmod Model Name', default="missing no")
-        #TODO: LODs
-
-
+        packed_images: CollectionProperty(
+            type=BakePackedImage
+        )
     register_class(BakePlatformPropertyGroup)
 
     Scene.bake_platforms = CollectionProperty(
