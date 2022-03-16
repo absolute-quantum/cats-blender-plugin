@@ -1652,8 +1652,8 @@ class BakeButton(bpy.types.Operator):
                         if (idx % 4 != 3):
                             # Map range: screen the emission onto diffuse
                             pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
-
-                vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+                if export_format == "GMOD":
+                    vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
                 image.pixels[:] = pixel_buffer
                 image.save()
 
@@ -1683,17 +1683,20 @@ class BakeButton(bpy.types.Operator):
                 alpha_image = None
                 if diffuse_alpha_pack == "SMOOTHNESS":
                     alpha_image = bpy.data.images[platform_img("smoothness")]
-                    vmtfile += "\n    \"$basealphaenvmapmask\" 1"
+                    if export_format == "GMOD":
+                        vmtfile += "\n    \"$basealphaenvmapmask\" 1"
                 elif diffuse_alpha_pack == "TRANSPARENCY":
                     alpha_image = bpy.data.images["SCRIPT_alpha.png"]
-                    vmtfile += "\n    \"$translucent\" 1"
+                    if export_format == "GMOD":
+                        vmtfile += "\n    \"$translucent\" 1"
                 elif diffuse_alpha_pack == "EMITMASK":
                     alpha_image = bpy.data.images["SCRIPT_emission.png"]
                     # "By default, $selfillum uses the alpha channel of the base texture as a mask.
                     # If the alpha channel of your base texture is used for something else, you can specify a separate $selfillummask texture."
                     # https://developer.valvesoftware.com/wiki/Glowing_Textures
                     # TODO: independent emit if transparency "\n    \"$selfillummask\" \"models/"+sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\""
-                    vmtfile += "\n    \"$selfillum\" 1"
+                    if export_format == "GMOD":                    
+                        vmtfile += "\n    \"$selfillum\" 1"
                 pixel_buffer = list(image.pixels)
                 alpha_buffer = alpha_image.pixels[:]
                 for idx in range(3, len(pixel_buffer), 4):
@@ -1782,11 +1785,13 @@ class BakeButton(bpy.types.Operator):
 
                 if pass_normal:
                     # Has to be specified first!
-                    vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(platform_img("normal")).replace(".tga","")+"\""
-                vmtfile += "\n    \"$phong\" 1"
-                vmtfile += "\n    \"$phongboost\" 1.0"
-                vmtfile += "\n    \"$phongfresnelranges\" \"[0 0.5 1.0\"]"
-                vmtfile += "\n    \"$phongexponenttexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+                    if export_format == "GMOD":
+                        vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(platform_img("normal")).replace(".tga","")+"\""
+                if export_format == "GMOD":
+                    vmtfile += "\n    \"$phong\" 1"
+                    vmtfile += "\n    \"$phongboost\" 1.0"
+                    vmtfile += "\n    \"$phongfresnelranges\" \"[0 0.5 1.0\"]"
+                    vmtfile += "\n    \"$phongexponenttexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
 
                 if pass_metallic:
                     # Use the unaltered metallic
@@ -1794,7 +1799,8 @@ class BakeButton(bpy.types.Operator):
                     metallic_buffer = metallic_image.pixels[:]
                     for idx in range(1, len(image.pixels), 4):
                         pixel_buffer[idx] = metallic_buffer[idx-1]
-                    vmtfile += "\n    \"$phongalbedotint\" 1"
+                    if export_format == "GMOD":
+                        vmtfile += "\n    \"$phongalbedotint\" 1"
 
                 image.pixels[:] = pixel_buffer
 
@@ -1901,13 +1907,15 @@ class BakeButton(bpy.types.Operator):
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
                 image.pixels[:] = normal_image.pixels[:]
-                vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+                if export_format == "GMOD":
+                    vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
                 if normal_alpha_pack != "NONE":
                     print("Packing to normal alpha")
                     if normal_alpha_pack == "SPECULAR":
                         alpha_image = bpy.data.images[platform_img("specular")]
-                        vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
-                        vmtfile += "\n    \"$envmap\" env_cubemap"
+                        if export_format == "GMOD":
+                            vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
+                            vmtfile += "\n    \"$envmap\" env_cubemap"
                     elif normal_alpha_pack == "SMOOTHNESS":
                         # 'There must be a Phong mask. The alpha channel of a bump map acts as a Phong mask by default.'
                         alpha_image = bpy.data.images[platform_img("smoothness")]
