@@ -1313,3 +1313,4 @@ def set_material_shading():
                     space.shading.studio_light = 'forest.exr'
                     space.shading.studiolight_rotate_z = 0.0
                     space.shading.studiolight_background_alpha = 0.0
+                    space.shading.render_pass = 'COMBINED'
