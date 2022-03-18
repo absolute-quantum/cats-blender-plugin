@@ -466,9 +466,10 @@ class BakeButton(bpy.types.Operator):
         image.scale(resolution, resolution)
 
         def collect_channels(channel_type, rgb_offset=0, is_multi=False):
+            # TODO: if the relevant image doesn't exist, return black (or white for alpha)
             in_img = bpy.data.images["SCRIPT_" + channel_type + ".png"]
             img_buffer = np.empty(in_img.size[0] * in_img.size[1] * 4, dtype=np.float32)
-            in_img.foreach_set(img_buffer)
+            in_img.pixels.foreach_set(img_buffer)
             if is_multi:
                 return img_buffer.reshape(4,-1)[:3]
             else:
@@ -485,48 +486,79 @@ class BakeButton(bpy.types.Operator):
         packed_pixels = np.empty((0, (0,image.size[0] * image.size[1] * 4)), dtype=np.float32)
         if not packed_image.separate_rgb:
             # Get our base layer, whatever it may be
-            if packed_image.multichannel.c_type == "NONE":
+            if packed_image.multichannel == "NONE":
                 packed_pixels.append(np.zeros(image.size[0] * image.size[1] * 4).reshape(3,-1))
-            elif packed_image.multichannel.c_type in ("DIFFUSE", "DIFFUSE_PREMULT_AO",
+            elif packed_image.multichannel in ("DIFFUSE", "DIFFUSE_PREMULT_AO",
                                                       "SPECULAR_DIFFUSE",
                                                       "SPECULAR_DIFFUSE_PREMULT_AO"):
                 packed_pixels.append(collect_channels("DIFFUSE", is_multi=True))
             else:
-                packed_pixels.append(collect_channels(packed_image.multichannel.c_type),
+                packed_pixels.append(collect_channels(packed_image.multichannel):
                                      is_multi=True)
 
             # Premultiply with AO if neccesary
-            if packed_image.multichannel.c_type in ("DIFFUSE_PREMULT_AO"
+            if packed_image.multichannel in ("DIFFUSE_PREMULT_AO"
                                                     "SMOOTHNESS_PREMULT_AO",
                                                     "SPECULAR_DIFFUSE_PREMULT_AO"):
                 packed_pixels *= collect_channels("AO")[0]
 
             # Create specularity if neccesary
-            if packed_image.multichannel.c_type in ("SPECULAR_DIFFUSE",
+            if packed_image.multichannel in ("SPECULAR_DIFFUSE",
                                                     "SPECULAR_DIFFUSE_PREMULT_AO"):
                 metallic_image = collect_channels("METALLIC")
                 packed_pixels *= 1.0 - metallic_image[0]
             # Perform specularity mapping if neccesary
-            if packed_image.multichannel.c_type == "SPECULAR":
+            if packed_image.multichannel == "SPECULAR":
                 metallic_image = collect_channels("METALLIC")
                 packed_pixels *= metallic_image[0]
                 packed_pixels += .04 * (1-metallic_image[0])
 
         for channel in packed_image.channels:
-            if channel.c_type == "NONE":
+            if channel.t == "NONE":
                 packed_channel = np.zeros(packed_channel.size[1])
-            elif channel.c_type in ("SMOOTHNESS", "SMOOTHNESS_PREMULT_AO"):
+            elif channel.t in ("SMOOTHNESS", "SMOOTHNESS_PREMULT_AO"):
                 packed_channel = collect_channels("SMOOTHNESS")[0]
-            elif channel.c_type == "EMITMASK":
+            elif channel.t == "EMITMASK":
                 packed_channel = collect_grayscale("EMISSION")
-            elif channel.c_type == "SPECULAR":
+            elif channel.t == "SPECULAR":
                 diffuse_channel = collect_grayscale("DIFFUSE", is_multi=True)
                 metallic_channel = collect_channels("METALLIC")[0]
                 packed_channel = diffuse_channel * metallic_channel
             else:
-                packed_channel = collect_channels(channel.c_type)[0]
+                packed_channel = collect_channels(channel.t)[0]
             packed_pixels.append(packed_channel, axis=0)
 
+            # TODO: If RGB is normal, set image to non-color
+
+            # TODO: Handle inversion
+
+            # TODO: Diffuse-emit: screen the emission onto diffuse
+            pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
+
+            # TODO: add these to corresponding pass information
+            vmtfile = "\"VertexlitGeneric\"\n{\n    \"$surfaceprop\" \"Flesh\""
+            if not packed_image.separate_rgb and packed_image.multichannel in ("DIFFUSE",
+                                                                               "DIFFUSE_PREMULTIPLIED_AO",
+                                                                               "SPECULAR_DIFFUSE",
+                                                                               "SPECULAR_DIFFUSE_PREMULTIPLIED_AO"):
+                vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+            vmtfile += "\n    \"$basealphaenvmapmask\" 1"
+            vmtfile += "\n    \"$translucent\" 1"
+            vmtfile += "\n    \"$selfillum\" 1"
+            vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(platform_img("normal")).replace(".tga","")+"\""
+            vmtfile += "\n    \"$phong\" 1"
+            vmtfile += "\n    \"$phongboost\" 1.0"
+            vmtfile += "\n    \"$phongfresnelranges\" \"[0 0.5 1.0\"]"
+            vmtfile += "\n    \"$phongexponenttexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+            vmtfile += "\n    \"$phongalbedotint\" 1"
+            vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+            vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
+            vmtfile += "\n    \"$envmap\" env_cubemap"
+            vmtfile += "\n}"
+            # TODO: this needs to be moved back down
+            vmtfiledir = open(target_dir+"/cats_baked_"+sanitized_platform_name+".vmt","w")
+            vmtfiledir.write(vmtfile)
+            vmtfiledir.close()
         image.pixels.foreach_get(np.ravel(packed_pixels, order='F'))
         image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
 
@@ -1536,30 +1568,17 @@ class BakeButton(bpy.types.Operator):
 
             platform_name = platform.name
             merge_twistbones = platform.merge_twistbones
-            diffuse_alpha_pack = platform.diffuse_alpha_pack
-            metallic_alpha_pack = platform.metallic_alpha_pack
-            metallic_pack_ao = platform.metallic_pack_ao
-            diffuse_premultiply_ao = platform.diffuse_premultiply_ao
-            diffuse_premultiply_opacity = platform.diffuse_premultiply_opacity
-            smoothness_premultiply_ao = platform.smoothness_premultiply_ao
-            smoothness_premultiply_opacity = platform.smoothness_premultiply_opacity
             use_decimation = platform.use_decimation
             optimize_static = platform.optimize_static
             preserve_seams = platform.preserve_seams
             diffuse_vertex_colors = platform.diffuse_vertex_colors
             translate_bone_names = platform.translate_bone_names
             export_format = platform.export_format
-            specular_setup = platform.specular_setup
-            phong_setup = platform.phong_setup
-            specular_alpha_pack = platform.specular_alpha_pack
-            specular_smoothness_overlay = platform.specular_smoothness_overlay
-            normal_alpha_pack = platform.normal_alpha_pack
-            normal_invert_g = platform.normal_invert_g
-            diffuse_emit_overlay = platform.diffuse_emit_overlay
             use_physmodel = platform.use_physmodel
             physmodel_lod = platform.physmodel_lod
             use_lods = platform.use_lods
             lods = platform.lods
+            packed_images = platform.packed_images
 
             # For GMOD
             if export_format == "GMOD":
@@ -1577,42 +1596,8 @@ class BakeButton(bpy.types.Operator):
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
 
-            # for cleanliness create platform-specific copies here
-            for (bakepass, bakename) in [
-                (pass_diffuse, 'diffuse'),
-                (pass_normal, 'normal'),
-                (pass_smoothness, 'smoothness'),
-                (pass_ao, 'ao'),
-                (pass_emit, 'emission'),
-                (pass_alpha, 'alpha'),
-                (pass_metallic, 'metallic'),
-                (specular_setup, 'specular'),
-                (phong_setup, 'phong')
-            ]:
-                if not bakepass:
-                    continue
-                if platform_img(platform_name, bakename) in bpy.data.images:
-                    image = bpy.data.images[platform_img(platform_name, bakename)]
-                    image.user_clear()
-                    bpy.data.images.remove(image)
-                bpy.ops.image.new(name=platform_img(platform_name, bakename), width=resolution, height=resolution,
-                                  generated_type="BLANK", alpha=False)
-                image = bpy.data.images[platform_img(platform_name, bakename)]
-                if export_format != "GMOD":
-                    image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + platform_img(platform_name, bakename))
-                else:
-                    image.filepath = bpy.path.abspath("//CATS Bake/" + platform_name + "/" + sanitized_name(platform_img(platform_name, bakename)))
-                image.generated_width = resolution
-                image.generated_height = resolution
-                image.scale(resolution, resolution)
-                # already completed passes
-                if bakename not in ["specular", "normal", "phong"]:
-                    orig_image = bpy.data.images["SCRIPT_" + bakename+'.png']
-                    image.pixels[:] = orig_image.pixels[:]
-
             # Create yet another output collection
             plat_collection = bpy.data.collections.new("CATS Bake " + platform_name)
-            #context.scene.collection.children.link(plat_collection)
             orig_scene.collection.children.link(plat_collection)
 
             # Tree-copy all meshes
@@ -1732,187 +1717,9 @@ class BakeButton(bpy.types.Operator):
                                 for line in infile:
                                     outfile.write(line.replace("{NAME_STRING}", newname).replace("{EDITOR_CURVES}", editor_curves).replace("{SCALE_CURVES}", scale_curves))
 
+            # GMOD export is handled separately
             if translate_bone_names == "SECONDLIFE":
                 bpy.ops.cats_manual.convert_to_secondlife()
-
-            # Blend diffuse and AO to create Quest Diffuse (if selected)
-            # Overlay emission onto diffuse, dodge metallic if specular
-            if pass_diffuse:
-                image = bpy.data.images[platform_img("diffuse")]
-                diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-                pixel_buffer = list(diffuse_image.pixels)
-                if pass_ao and diffuse_premultiply_ao:
-                    ao_image = bpy.data.images["SCRIPT_ao.png"]
-                    ao_buffer = ao_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if idx % 4 != 3:
-                            # Map range: set the black point up to 1-opacity
-                            pixel_buffer[idx] = pixel_buffer[idx] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[idx]))
-                if specular_setup and pass_metallic:
-                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if idx % 4 != 3:
-                            # Map range: metallic blocks diffuse light
-                            pixel_buffer[idx] = pixel_buffer[idx] * (1 - metallic_buffer[idx])
-                if pass_emit and diffuse_emit_overlay:
-                    emit_image = bpy.data.images["SCRIPT_emission.png"]
-                    emit_buffer = emit_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if idx % 4 != 3:
-                            # Map range: screen the emission onto diffuse
-                            pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
-                if export_format == "GMOD":
-                    vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
-                image.pixels[:] = pixel_buffer
-                image.save()
-
-            # Preultiply AO into smoothness if selected, to avoid shine in dark areas
-            if pass_smoothness and pass_ao and smoothness_premultiply_ao:
-                image = bpy.data.images[platform_img("smoothness")]
-                smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
-                ao_image = bpy.data.images["SCRIPT_ao.png"]
-                pixel_buffer = list(image.pixels)
-                smoothness_buffer = smoothness_image.pixels[:]
-                ao_buffer = ao_image.pixels[:]
-                for idx in range(0, len(image.pixels)):
-                    if idx % 4 != 3:
-                        # Map range: set the black point up to 1-opacity
-                        pixel_buffer[idx] = smoothness_buffer[idx] * ((1.0 - smoothness_premultiply_opacity) + (smoothness_premultiply_opacity * ao_buffer[idx]))
-                    else:
-                        # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
-                        pixel_buffer[idx] = 1.0
-                image.pixels[:] = pixel_buffer
-
-            # Pack to diffuse alpha (if selected)
-            if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
-                                 (diffuse_alpha_pack == "TRANSPARENCY" and pass_alpha) or
-                                 (diffuse_alpha_pack == "EMITMASK" and pass_emit)):
-                image = bpy.data.images[platform_img("diffuse")]
-                print("Packing to diffuse alpha")
-                alpha_image = None
-                if diffuse_alpha_pack == "SMOOTHNESS":
-                    alpha_image = bpy.data.images[platform_img("smoothness")]
-                    if export_format == "GMOD":
-                        vmtfile += "\n    \"$basealphaenvmapmask\" 1"
-                elif diffuse_alpha_pack == "TRANSPARENCY":
-                    alpha_image = bpy.data.images["SCRIPT_alpha.png"]
-                    if export_format == "GMOD":
-                        vmtfile += "\n    \"$translucent\" 1"
-                elif diffuse_alpha_pack == "EMITMASK":
-                    alpha_image = bpy.data.images["SCRIPT_emission.png"]
-                    # "By default, $selfillum uses the alpha channel of the base texture as a mask.
-                    # If the alpha channel of your base texture is used for something else, you can specify a separate $selfillummask texture."
-                    # https://developer.valvesoftware.com/wiki/Glowing_Textures
-                    # TODO: independent emit if transparency "\n    \"$selfillummask\" \"models/"+sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\""
-                    if export_format == "GMOD":
-                        vmtfile += "\n    \"$selfillum\" 1"
-                pixel_buffer = list(image.pixels)
-                alpha_buffer = alpha_image.pixels[:]
-                for idx in range(3, len(pixel_buffer), 4):
-                    pixel_buffer[idx] = (alpha_buffer[idx - 3] * 0.299) + (alpha_buffer[idx - 2] * 0.587) + (alpha_buffer[idx - 1] * 0.114)
-                image.pixels[:] = pixel_buffer
-
-            # Pack to metallic alpha (if selected)
-            if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
-                image = bpy.data.images[platform_img("metallic")]
-                print("Packing to metallic alpha")
-                metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                alpha_image = bpy.data.images[platform_img("smoothness")]
-                pixel_buffer = list(metallic_image.pixels)
-                alpha_buffer = alpha_image.pixels[:]
-                for idx in range(3, len(pixel_buffer), 4):
-                    pixel_buffer[idx] = alpha_buffer[idx - 3]
-                image.pixels[:] = pixel_buffer
-
-            if pass_metallic and pass_ao and metallic_pack_ao:
-                image = bpy.data.images[platform_img("metallic")]
-                green_image = bpy.data.images[platform_img("ao")]
-                pixel_buffer = list(image.pixels)
-                green_buffer = green_image.pixels[:]
-                for idx in range(len(pixel_buffer)):
-                    if idx % 4 == 1:
-                        pixel_buffer[idx] = green_buffer[idx]
-                    elif idx % 4 == 2:
-                        # Zero out B, saves space if crunching
-                        pixel_buffer[idx] = 0
-                image.pixels[:] = pixel_buffer
-            elif pass_metallic:
-                image = bpy.data.images[platform_img("metallic")]
-                pixel_buffer = list(image.pixels)
-                for idx in range(len(pixel_buffer)):
-                    if (idx % 4) == 1 or (idx % 4) == 2:
-                        # Zero out GB, saves space if crunching
-                        pixel_buffer[idx] = 0
-                image.pixels[:] = pixel_buffer
-
-            # Create specular map
-            if specular_setup:
-                # TODO: Valve has their own suggested curve ramps, which are indexed above.
-                # Add an an option to apply it for a more "source-ey" specular setup
-                image = bpy.data.images[platform_img("specular")]
-                pixel_buffer = list(image.pixels)
-                if pass_metallic:
-                    # Use the unaltered diffuse map
-                    diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-                    diffuse_buffer = diffuse_image.pixels[:]
-                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(0, len(image.pixels), 4):
-                        # Simple specularity: most nonmetallic objects have about 4% reflectiveness
-                        pixel_buffer[idx] = (diffuse_buffer[idx] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
-                        pixel_buffer[idx+1] = (diffuse_buffer[idx+1] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
-                        pixel_buffer[idx+2] = (diffuse_buffer[idx+1] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
-                else:
-                    for idx in range(0, len(image.pixels)):
-                        if idx % 4 != 3:
-                            pixel_buffer[idx] = 0.04
-                if specular_alpha_pack == "SMOOTHNESS" and pass_smoothness:
-                    alpha_image = bpy.data.images[platform_img("smoothness")]
-                    alpha_image_buffer = alpha_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if idx % 4 == 3:
-                            pixel_buffer[idx] = alpha_image_buffer[idx - 3]
-                # for source games, screen(specular, smoothness) to create envmapmask
-                if specular_smoothness_overlay and pass_smoothness:
-                    smoothness_image = bpy.data.images[("smoothness")]
-                    smoothness_image_buffer = smoothness_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if idx % 4 != 3:
-                            pixel_buffer[idx] = pixel_buffer[idx] * smoothness_image_buffer[idx]
-
-                image.pixels[:] = pixel_buffer
-
-            # Phong texture (R: smoothness, G: metallic, pack smoothness * AO to normalmap alpha as mask)
-            if phong_setup and pass_smoothness:
-                image = bpy.data.images[platform_img("phong")]
-                pixel_buffer = list(image.pixels)
-                # Use the unaltered smoothness
-                smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
-                smoothness_buffer = smoothness_image.pixels[:]
-                for idx in range(0, len(image.pixels), 4):
-                    pixel_buffer[idx] = smoothness_buffer[idx]
-
-                if pass_normal:
-                    # Has to be specified first!
-                    if export_format == "GMOD":
-                        vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(platform_img("normal")).replace(".tga","")+"\""
-                if export_format == "GMOD":
-                    vmtfile += "\n    \"$phong\" 1"
-                    vmtfile += "\n    \"$phongboost\" 1.0"
-                    vmtfile += "\n    \"$phongfresnelranges\" \"[0 0.5 1.0\"]"
-                    vmtfile += "\n    \"$phongexponenttexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
-
-                if pass_metallic:
-                    # Use the unaltered metallic
-                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(1, len(image.pixels), 4):
-                        pixel_buffer[idx] = metallic_buffer[idx-1]
-                    if export_format == "GMOD":
-                        vmtfile += "\n    \"$phongalbedotint\" 1"
-
-                image.pixels[:] = pixel_buffer
 
             # Remove old UV maps (if we created new ones)
             if generate_uvmap:
@@ -2012,32 +1819,11 @@ class BakeButton(bpy.types.Operator):
                 # Bake tangent normals
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name],
                                (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
-                image = bpy.data.images[platform_img("normal")]
-                image.colorspace_settings.name = 'Non-Color'
-                normal_image = bpy.data.images["SCRIPT_normal.png"]
-                image.pixels[:] = normal_image.pixels[:]
-                if export_format == "GMOD":
-                    vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
-                if normal_alpha_pack != "NONE":
-                    print("Packing to normal alpha")
-                    if normal_alpha_pack == "SPECULAR":
-                        alpha_image = bpy.data.images[platform_img("specular")]
-                        if export_format == "GMOD":
-                            vmtfile += "\n    \"$normalmapalphaenvmapmask\" 1"
-                            vmtfile += "\n    \"$envmap\" env_cubemap"
-                    elif normal_alpha_pack == "SMOOTHNESS":
-                        # 'There must be a Phong mask. The alpha channel of a bump map acts as a Phong mask by default.'
-                        alpha_image = bpy.data.images[platform_img("smoothness")]
-                    pixel_buffer = list(image.pixels)
-                    alpha_buffer = alpha_image.pixels[:]
-                    for idx in range(3, len(pixel_buffer), 4):
-                        pixel_buffer[idx] = (alpha_buffer[idx - 3] * 0.299) + (alpha_buffer[idx - 2] * 0.587) + (alpha_buffer[idx - 1] * 0.114)
-                    image.pixels[:] = pixel_buffer
-                if normal_invert_g:
-                    pixel_buffer = list(image.pixels)
-                    for idx in range(1, len(pixel_buffer), 4):
-                        pixel_buffer[idx] = 1.0 - pixel_buffer[idx]
-                    image.pixels[:] = pixel_buffer
+
+            for packed_image in packed_images:
+                # TODO: perform all packing here: watch out that the images aren't garbage collected
+                # in the mean time!
+                create_packed_image(context, platform_name, packed_image)
 
             # Reapply keys
             if not apply_keys:
@@ -2046,7 +1832,6 @@ class BakeButton(bpy.types.Operator):
                         for key in obj.data.shape_keys.key_blocks:
                             if key.name in shapekey_values:
                                 key.value = shapekey_values[key.name]
-
 
             # Remove CATS UV Super
             if generate_uvmap and supersample_normals:
@@ -2068,6 +1853,7 @@ class BakeButton(bpy.types.Operator):
                             bpy.ops.mesh.vertex_color_remove()
 
             # Update generated material to preview all of our passes
+            # TODO: these could be retrieved from enums of packed_images
             if pass_normal:
                 normaltexnode.image = bpy.data.images[platform_img("normal")]
                 normalmapnode.space = "TANGENT"
@@ -2152,7 +1938,7 @@ class BakeButton(bpy.types.Operator):
                 emittexnode.location.y -= 150
                 tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
 
-            # Rebake diffuse to vertex colors: Incorperates AO
+            # TODO: Modernize: Rebake diffuse to vertex colors: Incorperates AO
             if pass_diffuse and diffuse_vertex_colors:
                 for obj in plat_collection.all_objects:
                     if obj.type == "MESH":
@@ -2172,7 +1958,7 @@ class BakeButton(bpy.types.Operator):
                 diffusevertnode.location.y += 500
                 tree.links.new(bsdfnode.inputs["Base Color"], diffusevertnode.outputs["Color"])
 
-            # Try to only output what you'll end up importing into unity.
+            # TODO: Unneccessary? Try to only output what you'll end up importing into unity.
             context.scene.render.image_settings.file_format = 'TARGA' if export_format == "GMOD" else 'PNG'
             context.scene.render.image_settings.color_mode = 'RGBA'
             for (bakepass, bakeconditions) in [
@@ -2214,7 +2000,6 @@ class BakeButton(bpy.types.Operator):
                         if name[-5:] == "_bake":
                             mesh.shape_key_remove(key=mesh.data.shape_keys.key_blocks[name])
 
-
             if optimize_static:
                 for mesh in plat_collection.all_objects:
                     if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
@@ -2230,7 +2015,6 @@ class BakeButton(bpy.types.Operator):
             if use_lods:
                 for idx, _ in enumerate(lods):
                     export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
-
 
             # Create groups to export... One for the main, one each for each LOD
             for obj in plat_collection.all_objects:
@@ -2300,10 +2084,6 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.scene.delete()
 
             if export_format == "GMOD":
-                vmtfile += "\n}"
-                vmtfiledir = open(target_dir+"/cats_baked_"+sanitized_platform_name+".vmt","w")
-                vmtfiledir.write(vmtfile)
-                vmtfiledir.close()
                 collection = bpy.data.collections["CATS Bake"]
             # Move armature so we can see it
             if quick_compare and export_format != "GMOD":

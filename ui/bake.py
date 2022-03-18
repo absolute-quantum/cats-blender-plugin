@@ -214,7 +214,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.operator(Bake.BakeAddProp.bl_idname)
                     row.operator(Bake.BakeRemoveProp.bl_idname)
 
-
                 row = col.row(align=True)
                 row.prop(item, 'phong_setup', expand=True)
                 row = col.row(align=True)

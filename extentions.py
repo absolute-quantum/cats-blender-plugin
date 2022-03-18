@@ -240,13 +240,13 @@ def register():
     )
 
     class BakePackedChannel(PropertyGroup):
-        c_type: EnumProperty(
+        t: EnumProperty(
             name=t('Scene.bake_metallic_alpha_pack.label'),
             description=t('Scene.bake_metallic_alpha_pack.desc'),
             items=[
                 ("NONE", "Empty", "Fills this channel with empty space"),
-                ("SMOOTHNESS", "", ""),
-                ("SMOOTHNESS_PREMULT_AO", "", ""),
+                ("SMOOTHNESS", "Smoothness", ""),
+                ("SMOOTHNESS_PREMULT_AO", "Smoothness Premultiplied", ""),
                 ("TRANSPARENCY","Transparency","Transparency"),
                 ("EMITMASK","Emission Mask","Emission"),
                 ("SPECULAR", "Specular", "Specular"),
@@ -255,16 +255,17 @@ def register():
             ],
             default="NONE"
         )
-        invert_channel: BoolProperty(
-            name="Invert",
-            description="Invert Red channel",
-            default=False
-        )
 
     register_class(BakePackedChannel)
 
-    class BakePackedMultiChannel(PropertyGroup):
-        c_type: EnumProperty(
+    class BakePackedImage(PropertyGroup):
+        name: StringProperty(name="Name", default="Empty")
+        seperate_rgb: BoolProperty(
+            name="Seperate RGB",
+            description="If selected, RGB channels will be individually addressable.",
+            default=False
+        )
+        multichannel: EnumProperty(
             name="RGB",
             description="What values to pack into the RGB channels",
             items=[
@@ -280,21 +281,28 @@ def register():
             ],
             default="NONE"
         )
-
-    register_class(BakePackedMultiChannel)
-
-    class BakePackedImage(PropertyGroup):
-        name: StringProperty(name="Name", default="Empty")
-        seperate_rgb: BoolProperty(
-            name="Seperate RGB",
-            description="If selected, RGB channels will be individually addressable.",
-            default=False
-        )
-        multichannel: PointerProperty(
-            type=BakePackedMultiChannel
-        )
         channels: CollectionProperty(
             type=BakePackedChannel
+        )
+        invert_r: BoolProperty(
+            name="Invert",
+            description="Invert Red channel",
+            default=False
+        )
+        invert_g: BoolProperty(
+            name="Invert",
+            description="Invert Green channel",
+            default=False
+        )
+        invert_b: BoolProperty(
+            name="Invert",
+            description="Invert Blue channel",
+            default=False
+        )
+        invert_a: BoolProperty(
+            name="Invert",
+            description="Invert Alpha channel",
+            default=False
         )
 
     register_class(BakePackedImage)
