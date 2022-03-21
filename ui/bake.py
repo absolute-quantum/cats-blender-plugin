@@ -53,6 +53,57 @@ class Bake_Platform_Delete(Operator):
         return{'FINISHED'}
 
 @register_wrap
+class Bake_Packed_Image_UL_List(UIList):
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        # custom_icon = 'NONE'
+        if self.layout_type in {'DEFAULT', 'COMPACT'}:
+            layout.label(text=item.name)
+        elif self.layout_type in {'GRID'}:
+            layout.alignment = 'CENTER'
+            layout.label(text="")
+
+@register_wrap
+class Bake_Packed_Image_New(Operator):
+    bl_idname = "cats_bake.packed_image_add"
+    bl_label = "Add"
+
+    @classmethod
+    def poll(cls, context):
+        return context.scene.bake_platforms
+
+    def execute(self, context):
+        bake_platforms = context.scene.bake_platforms
+        index = context.scene.bake_platform_index
+
+        packed_images = bake_platforms[index].packed_images
+        new_image = packed_images.add()
+        for _ in range(4):
+            new_image.channels.add()
+
+        return{'FINISHED'}
+
+@register_wrap
+class Bake_Packed_Image_Delete(Operator):
+    bl_idname = "cats_bake.packed_image_remove"
+    bl_label = "Delete"
+
+    @classmethod
+    def poll(cls, context):
+        bake_platforms = context.scene.bake_platforms
+        index = context.scene.bake_platform_index
+
+        return context.scene.bake_platforms and len(bake_platforms[index].packed_images) > 1
+
+    def execute(self, context):
+        bake_platforms = context.scene.bake_platforms
+        index = context.scene.bake_platform_index
+
+        packed_images = bake_platforms[index].packed_images
+        packed_images.remove(len(packed_images) - 1)
+
+        return{'FINISHED'}
+
+@register_wrap
 class Bake_Lod_New(Operator):
     bl_idname = "cats_bake.lod_add"
     bl_label = "Add"
@@ -215,58 +266,33 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.operator(Bake.BakeRemoveProp.bl_idname)
 
                 row = col.row(align=True)
-                row.prop(item, 'phong_setup', expand=True)
+                row.label(text="Image packing:")
                 row = col.row(align=True)
-                row.prop(item, 'specular_setup', expand=True)
-                if item.specular_setup:
+                row.template_list("Bake_Packed_Image_UL_List", "The_List", item,
+                                  "packed_images", context.scene, "bake_packed_image_index")
+                row = col.row(align=True)
+                row.operator(Bake_Packed_Image_New.bl_idname)
+                row.operator(Bake_Packed_Image_Delete.bl_idname)
+                row = col.row(align=True)
+                if context.scene.bake_packed_image_index >= 0 and item.packed_images:
+                    packed_image = item.packed_images[context.scene.bake_packed_image_index]
+                    # image -> channels. always display 2 if multichannel, else 4
+                    row.prop(packed_image, 'name')
                     row = col.row(align=True)
-                    row.prop(item, 'specular_alpha_pack', expand=True)
+                    row.prop(packed_image, 'separate_rgb', expand=True)
                     row = col.row(align=True)
-                    row.prop(item, 'specular_smoothness_overlay', expand=True)
-                if context.scene.bake_pass_diffuse and context.scene.bake_pass_emit:
-                    row = col.row(align=True)
-                    row.prop(item, "diffuse_emit_overlay", expand=True)
-                if context.scene.bake_pass_diffuse and context.scene.bake_pass_ao:
-                    row = col.row(align=True)
-                    row.prop(item, "diffuse_premultiply_ao", expand=True)
-                    if item.diffuse_premultiply_ao:
+                    if not packed_image.separate_rgb:
+                        # display multichannel.
                         row = col.row(align=True)
-                        row.separator()
-                        row.prop(item, 'diffuse_premultiply_opacity', expand=True)
-                    row = col.row(align=True)
-                    row.prop(item, "smoothness_premultiply_ao", expand=True)
-                    if item.smoothness_premultiply_ao:
+                        row.prop(packed_image, 'multichannel')
                         row = col.row(align=True)
-                        row.separator()
-                        row.prop(item, 'smoothness_premultiply_opacity', expand=True)
-                if context.scene.bake_pass_diffuse:
-                    if bpy.app.version >= (2, 92, 0):
-                        row = col.row(align=True)
-                        row.prop(item, 'diffuse_vertex_colors', expand=True)
-                if context.scene.bake_pass_diffuse and (context.scene.bake_pass_smoothness or context.scene.bake_pass_alpha) and not item.diffuse_vertex_colors:
-                    row = col.row(align=True)
-                    row.label(text="Diffuse Alpha:")
-                    row.prop(item, 'diffuse_alpha_pack', expand=True)
-                    if (item.diffuse_alpha_pack == "TRANSPARENCY") and not context.scene.bake_pass_alpha:
-                        col.label(text=t('BakePanel.transparencywarning'), icon="INFO")
-                    elif (item.diffuse_alpha_pack == "SMOOTHNESS") and not context.scene.bake_pass_smoothness:
-                        col.label(text=t('BakePanel.smoothnesswarning'), icon="INFO")
-                if context.scene.bake_pass_normal and (item.specular_setup or item.phong_setup):
-                    row = col.row(align=True)
-                    row.label(text="Normal Alpha:")
-                    row.prop(item, 'normal_alpha_pack', expand=True)
-                if context.scene.bake_pass_normal:
-                    row = col.row(align=True)
-                    row.prop(item, 'normal_invert_g', expand=True)
-                if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness and not item.specular_setup and not item.phong_setup:
-                    row = col.row(align=True)
-                    row.label(text="Metallic Alpha:")
-                    row.prop(item, 'metallic_alpha_pack', expand=True)
-                    if item.diffuse_alpha_pack == "SMOOTHNESS" and item.metallic_alpha_pack == "SMOOTHNESS":
-                        col.label(text=t('BakePanel.doublepackwarning'), icon="INFO")
-                if context.scene.bake_pass_metallic and context.scene.bake_pass_ao:
-                    row = col.row(align=True)
-                    row.prop(item, 'metallic_pack_ao', expand=True)
+                        row.prop(packed_image.channels[3], 't')
+                    else:
+                        # display individual channels.
+                        for channel in packed_image.channels:
+                            row = col.row(align=True)
+                            row.prop(channel, 't')
+
                 row = col.row(align=True)
                 row.label(text="Bone Conversion:")
                 row = col.row(align=True)

@@ -241,10 +241,11 @@ def register():
 
     class BakePackedChannel(PropertyGroup):
         t: EnumProperty(
-            name=t('Scene.bake_metallic_alpha_pack.label'),
+            name="Channel",
             description=t('Scene.bake_metallic_alpha_pack.desc'),
             items=[
                 ("NONE", "Empty", "Fills this channel with empty space"),
+                ("FILL", "Fill", "Fills this channel with white space"),
                 ("SMOOTHNESS", "Smoothness", ""),
                 ("SMOOTHNESS_PREMULT_AO", "Smoothness Premultiplied", ""),
                 ("TRANSPARENCY","Transparency","Transparency"),
@@ -260,8 +261,8 @@ def register():
 
     class BakePackedImage(PropertyGroup):
         name: StringProperty(name="Name", default="Empty")
-        seperate_rgb: BoolProperty(
-            name="Seperate RGB",
+        separate_rgb: BoolProperty(
+            name="Separate RGB",
             description="If selected, RGB channels will be individually addressable.",
             default=False
         )
@@ -362,7 +363,7 @@ def register():
         )
         optimize_static: BoolProperty(
             name="Optimize Static Shapekeys",
-            description="Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",
+            description="Separate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",
             default=False
         )
         merge_twistbones: BoolProperty(
@@ -473,14 +474,14 @@ def register():
             items=[
                 ("FBX", "FBX", "FBX export format, for use with Unity"),
                 ("DAE", "DAE", "Collada DAE, for use with Second Life and older engines"),
-                ("GMOD", "GMOD", "Exports to gmod. Requires TGA image export enabled as well to work")
+                ("GMOD", "GMOD", "Exports to gmod. Requires TARGA image export enabled as well to work")
             ]
         )
         image_export_format: EnumProperty(
             name='Image export format',
             description='image type to use when exporting',
             items=[
-                ("TGA", ".tga", "targa export format, for use with Gmod"),
+                ("TARGA", ".tga", "targa export format, for use with Gmod"),
                 ("PNG", ".png", "png format, for use with most platforms.")
             ]
         )
@@ -505,12 +506,12 @@ def register():
         )
         diffuse_emit_overlay: BoolProperty(
             name='Diffuse Emission Overlay',
-            description='Blends emission into the diffuse map, for engines without a seperate emission map',
+            description='Blends emission into the diffuse map, for engines without a separate emission map',
             default=False
         )
         specular_smoothness_overlay: BoolProperty(
             name='Specular Smoothness Overlay',
-            description='Merges smoothness into the specular map, for engines without a seperate smoothness map',
+            description='Merges smoothness into the specular map, for engines without a separate smoothness map',
             default=False
         )
         gmod_model_name: StringProperty(name='Gmod Model Name', default="missing no")
@@ -523,6 +524,7 @@ def register():
         type=BakePlatformPropertyGroup
     )
     Scene.bake_platform_index = IntProperty(default=0)
+    Scene.bake_packed_image_index = IntProperty(default=0)
 
     Scene.bake_cleanup_shapekeys = BoolProperty(
         name="Cleanup Shapekeys",
