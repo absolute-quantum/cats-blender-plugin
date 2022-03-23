@@ -187,7 +187,6 @@ def register():
         name=t('Scene.decimation_mode.label'),
         description=t('Scene.decimation_mode.desc'),
         items=[
-            #("LOOP", "Loop", t('Scene.decimation_mode.smart.desc')),
             ("SMART", t('Scene.decimation_mode.smart.label'), t('Scene.decimation_mode.smart.desc')),
             ("SAFE", t('Scene.decimation_mode.safe.label'), t('Scene.decimation_mode.safe.desc')),
             ("HALF", t('Scene.decimation_mode.half.label'), t('Scene.decimation_mode.half.desc')),
@@ -195,48 +194,6 @@ def register():
             ("CUSTOM", t('Scene.decimation_mode.custom.label'), t('Scene.decimation_mode.custom.desc'))
         ],
         default='SMART'
-    )
-
-    Scene.decimation_animation_weighting = BoolProperty(
-        name=t('Scene.decimation_animation_weighting.label'),
-        description=t('Scene.decimation_animation_weighting.desc'),
-        default=False
-    )
-
-    Scene.decimation_animation_weighting_factor = FloatProperty(
-        name=t('Scene.decimation_animation_weighting_factor.label'),
-        description=t('Scene.decimation_animation_weighting_factor.desc'),
-        default=0.25,
-        min=0,
-        max=1,
-        step=0.05,
-        precision=2,
-        subtype='FACTOR'
-    )
-
-
-    # Bake
-    Scene.bake_animation_weighting = BoolProperty(
-        name=t('Scene.decimation_animation_weighting.label'),
-        description=t('Scene.decimation_animation_weighting.desc'),
-        default=False
-    )
-
-    Scene.bake_animation_weighting_factor = FloatProperty(
-        name=t('Scene.decimation_animation_weighting_factor.label'),
-        description=t('Scene.decimation_animation_weighting_factor.desc'),
-        default=0.25,
-        min=0,
-        max=1,
-        step=0.05,
-        precision=2,
-        subtype='FACTOR'
-    )
-
-    Scene.bake_loop_decimate = BoolProperty(
-        name="Loop decimation",
-        description="Use loop decimation instead of Smart decimation, for cleaner animation.",
-        default=False
     )
 
     class BakePlatformPropertyGroup(PropertyGroup):
@@ -472,7 +429,7 @@ def register():
         name=t('Scene.bake_resolution.label'),
         description=t('Scene.bake_resolution.desc'),
         default=2048,
-        min=128,
+        min=256,
         max=4096
     )
 
