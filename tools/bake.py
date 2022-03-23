@@ -627,12 +627,14 @@ class BakeButton(bpy.types.Operator):
             context.scene.cycles.device = 'CPU'
 
         # Change decimate settings, run bake, change them back
+        decimation_mode = context.scene.decimation_mode
         max_tris = context.scene.max_tris
         decimate_fingers = context.scene.decimate_fingers
         decimation_remove_doubles = context.scene.decimation_remove_doubles
 
         self.perform_bake(context)
 
+        context.scene.decimation_mode = decimation_mode
         context.scene.max_tris = max_tris
         context.scene.decimate_fingers = decimate_fingers
         context.scene.decimation_remove_doubles = decimation_remove_doubles
@@ -1461,6 +1463,9 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.scene.new(type="EMPTY") # copy keeps existing settings
             context.scene.name = "CATS Scene " + platform_name
             context.scene.collection.children.link(plat_collection)
+            context.scene.decimate_fingers = False
+            context.scene.decimation_remove_doubles = platform.remove_doubles
+            context.scene.decimation_mode = "SMART"
 
             # Make sure all armature modifiers target the new armature
             for child in plat_collection.all_objects:
@@ -1645,7 +1650,7 @@ class BakeButton(bpy.types.Operator):
                     # If the alpha channel of your base texture is used for something else, you can specify a separate $selfillummask texture."
                     # https://developer.valvesoftware.com/wiki/Glowing_Textures
                     # TODO: independent emit if transparency "\n    \"$selfillummask\" \"models/"+sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\""
-                    if export_format == "GMOD":                    
+                    if export_format == "GMOD":
                         vmtfile += "\n    \"$selfillum\" 1"
                 pixel_buffer = list(image.pixels)
                 alpha_buffer = alpha_image.pixels[:]
@@ -1778,7 +1783,7 @@ class BakeButton(bpy.types.Operator):
 
             if use_decimation:
                 # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
-                context.scene.max_tris = platform.max_tris
+                context.scene.max_tris = int(platform.max_tris)
                 bpy.ops.cats_decimation.auto_decimate(armature_name=plat_arm_copy.name, preserve_seams=preserve_seams, seperate_materials=False)
             else:
                 # join meshes here if we didn't decimate
