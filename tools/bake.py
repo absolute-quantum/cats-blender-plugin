@@ -632,6 +632,8 @@ class BakeButton(bpy.types.Operator):
         decimate_fingers = context.scene.decimate_fingers
         decimation_remove_doubles = context.scene.decimation_remove_doubles
 
+        context.scene.decimation_mode = "SMART"
+        context.scene.decimate_fingers = False
         self.perform_bake(context)
 
         context.scene.decimation_mode = decimation_mode
@@ -1463,9 +1465,6 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.scene.new(type="EMPTY") # copy keeps existing settings
             context.scene.name = "CATS Scene " + platform_name
             context.scene.collection.children.link(plat_collection)
-            context.scene.decimate_fingers = False
-            context.scene.decimation_remove_doubles = platform.remove_doubles
-            context.scene.decimation_mode = "SMART"
 
             # Make sure all armature modifiers target the new armature
             for child in plat_collection.all_objects:
@@ -1760,6 +1759,7 @@ class BakeButton(bpy.types.Operator):
                 image.pixels[:] = pixel_buffer
 
             print("Decimating")
+            context.scene.decimation_remove_doubles = platform.remove_doubles
 
             # Physmodel does a couple extra things like ensuring doubles are removed, wire display
             if use_physmodel:
