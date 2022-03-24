@@ -100,7 +100,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
 
     # Unfortunately, though it's technically faster, this makes things ineligible as Quest fallback avatars. So leave it off.
     # Sadly this is still fairly unkind to a number of lighting situations, so we'll leave it off
-    # context.scene.bake_optimize_static = platform == "DESKTOP"
+    context.scene.bake_optimize_static = platform == "DESKTOP"
 
     # Quest has no use for twistbones
     item.merge_twistbones = platform != "DESKTOP"
