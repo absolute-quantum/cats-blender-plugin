@@ -427,6 +427,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         non_node_mat_names = set()
         non_world_scale_names = set()
         empty_material_slots = set()
+        too_many_uvmaps = set()
         for obj in Common.get_meshes_objects(check=False):
             if obj.name not in context.view_layer.objects:
                 continue
@@ -447,6 +448,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 empty_material_slots.add(obj.name)
             if any(dim != 1.0 for dim in obj.scale):
                 non_world_scale_names.add(obj.name)
+            if len(obj.data.uv_layers) > 6:
+                too_many_uvmaps.add(obj.name)
 
         if non_node_mat_names:
             row = col.row(align=True)
@@ -492,4 +495,13 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.label(text=name + ": " + "{:.1f}".format(1.0/bpy.data.objects[name].scale[0]) + "x", icon="OBJECT_DATA")
+        if too_many_uvmaps:
+            row = col.row(align=True)
+            row.label(text="The following objects have too many UVMaps!", icon="ERROR")
+            row = col.row(align=True)
+            row.label(text="Bake will likely fail, you can have at most 6 maps.", icon="BLANK1")
+            for name in too_many_uvmaps:
+                row = col.row(align=True)
+                row.separator()
+                row.label(text=name + ": " + "{}".format(len(bpy.data.objects[name].data.uv_layers)), icon="OBJECT_DATA")
 

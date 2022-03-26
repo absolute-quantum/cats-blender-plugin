@@ -100,7 +100,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
 
     # Unfortunately, though it's technically faster, this makes things ineligible as Quest fallback avatars. So leave it off.
     # Sadly this is still fairly unkind to a number of lighting situations, so we'll leave it off
-    context.scene.bake_optimize_static = platform == "DESKTOP"
+    item.optimize_static = platform == "DESKTOP"
 
     # Quest has no use for twistbones
     item.merge_twistbones = platform != "DESKTOP"
@@ -1796,6 +1796,20 @@ class BakeButton(bpy.types.Operator):
 
                 image.pixels[:] = pixel_buffer
 
+            # Remove old UV maps (if we created new ones)
+            if generate_uvmap:
+                for child in plat_collection.all_objects:
+                    if child.type == "MESH":
+                        uv_layers = [layer.name for layer in child.data.uv_layers]
+                        while uv_layers:
+                            layer = uv_layers.pop()
+                            if layer != "CATS UV Super" and layer != "CATS UV" and layer != "Detail Map":
+                                print("Removing UV {}".format(layer))
+                                child.data.uv_layers.remove(child.data.uv_layers[layer])
+                for obj in plat_collection.all_objects:
+                    if obj.type == 'MESH':
+                        obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
+
             print("Decimating")
             context.scene.decimation_remove_doubles = platform.remove_doubles
 
@@ -1906,20 +1920,6 @@ class BakeButton(bpy.types.Operator):
                     for idx in range(1, len(pixel_buffer), 4):
                         pixel_buffer[idx] = 1.0 - pixel_buffer[idx]
                     image.pixels[:] = pixel_buffer
-
-            # Remove old UV maps (if we created new ones)
-            if generate_uvmap:
-                for child in plat_collection.all_objects:
-                    if child.type == "MESH":
-                        uv_layers = [layer.name for layer in child.data.uv_layers]
-                        while uv_layers:
-                            layer = uv_layers.pop()
-                            if layer != "CATS UV Super" and layer != "CATS UV" and layer != "Detail Map":
-                                print("Removing UV {}".format(layer))
-                                child.data.uv_layers.remove(child.data.uv_layers[layer])
-                for obj in plat_collection.all_objects:
-                    if obj.type == 'MESH':
-                        obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
             # Reapply keys
             if not apply_keys:
