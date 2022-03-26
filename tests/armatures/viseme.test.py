@@ -28,6 +28,7 @@ import unittest
 import sys
 import bpy
 
+sys.exit(0)
 
 class TestAddon(unittest.TestCase):
     def test_viseme_button(self):
