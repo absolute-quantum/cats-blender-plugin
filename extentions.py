@@ -451,6 +451,12 @@ def register():
         default="UNMIRROR"
     )
 
+    Scene.uvp_lock_islands = BoolProperty(
+        name="Keep Overlapping Islands (UVP)",
+        description="Experimental. Try to keep UVP's lock overlapping enabled",
+        default=False
+    )
+
     Scene.bake_device = EnumProperty(
         name='Bake Device',
         description='Device to bake on. GPU gives a significant speedup, but can cause issues depending on your graphics drivers.',

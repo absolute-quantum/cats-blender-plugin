@@ -90,13 +90,13 @@ class Bake_Lod_Delete(Operator):
         lods.remove(len(lods) - 1)
 
         return{'FINISHED'}
-    
-    
+
+
 @register_wrap
 class Open_GPU_Settings(Operator):
     bl_idname = "cats_bake.open_gpu_settings"
     bl_label = "Open GPU Settings (Top of the page)"
-    
+
     def execute(self, context):
         bpy.ops.screen.userpref_show()
         context.preferences.active_section = 'SYSTEM'
@@ -320,6 +320,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row = col.row(align=True)
                     row.separator()
                     row.prop(context.scene, 'bake_unwrap_angle', expand=True)
+                if 'uvpm3_props' in context.scene or 'uvpm2_props' in context.scene:
+                    row = col.row(align=True)
+                    row.separator()
+                    row.prop(context.scene, 'uvp_lock_islands', expand=True)
             row = col.row(align=True)
             row.scale_y = 0.85
             if not context.scene.bake_show_advanced_general_options:

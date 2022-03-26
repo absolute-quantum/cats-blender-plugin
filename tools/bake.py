@@ -706,7 +706,6 @@ class BakeButton(bpy.types.Operator):
         # Pass options
         illuminate_eyes = context.scene.bake_illuminate_eyes
         supersample_normals = context.scene.bake_pass_normal and any(plat.use_decimation for plat in context.scene.bake_platforms) and uv_overlap_correction == "UNMIRROR" # Bake the intermediate step at 2x resolution
-        overlap_aware = False # Unreliable until UVP doesn't care about the island scale.
         emit_indirect = context.scene.bake_emit_indirect
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
         cleanup_shapekeys = context.scene.bake_cleanup_shapekeys # Reverted and _old shapekeys
@@ -1008,7 +1007,7 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
                 Common.switch('OBJECT')
 
-
+            # TODO: this doesn't really need editor commands
             if prioritize_face:
                 for obj in collection.all_objects:
                     if obj.type != "MESH":
@@ -1039,6 +1038,27 @@ class BakeButton(bpy.types.Operator):
                                             uv_layer[loop].uv.x *= prioritize_factor
                                             uv_layer[loop].uv.y *= prioritize_factor
 
+            # average_islands_scale() tends to create enormous islands, which cause issues with
+            # both versions of UVPackMaster Pro. Normalize them by fitting to bounds
+            for obj in collection.all_objects:
+                if obj.type != "MESH":
+                    continue
+                for layer in cats_uv_layers:
+                    if layer in obj.data.uv_layers:
+                        uv_layer = obj.data.uv_layers[layer].data
+                        # (xmin, ymin, xmax, ymax)
+                        bounds = (100000.0, 100000.0, -100000.0, -100000.0)
+                        for poly in obj.data.polygons:
+                            for loop in poly.loop_indices:
+                                bounds = (min(bounds[0], uv_layer[loop].uv.x),
+                                          min(bounds[1], uv_layer[loop].uv.y),
+                                          max(bounds[2], uv_layer[loop].uv.x),
+                                          max(bounds[3], uv_layer[loop].uv.y))
+                        needed_scale = max(bounds[2] - bounds[0], bounds[3] - bounds[1])
+                        for poly in obj.data.polygons:
+                            for loop in poly.loop_indices:
+                                uv_layer[loop].uv.x /= needed_scale
+                                uv_layer[loop].uv.y /= needed_scale
 
             # Pack islands. Optionally use UVPackMaster if it's available
             bpy.ops.object.select_all(action='SELECT')
@@ -1050,10 +1070,11 @@ class BakeButton(bpy.types.Operator):
                 for obj in collection.all_objects:
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers[layer]
-                # TODO: this breaks overlap preservation with UVP, but without it our islands are
-                # too big and UVP breaks. Probably need to scale islands to fit within boundaries
-                # to get a healthy medium.
-                bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+
+                # have a UI-able toggle, if UVP is detected, to keep lock overlapping in place
+                # otherwise perform blender pack here
+                if not context.scene.uvp_lock_islands:
+                    bpy.ops.uv.pack_islands(rotate=True, margin=margin)
 
                 # detect if UVPackMaster installed and configured
                 if 'uvpm3_props' in context.scene:
