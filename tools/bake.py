@@ -1053,7 +1053,27 @@ class BakeButton(bpy.types.Operator):
                 # detect if UVPackMaster installed and configured
                 if not overlap_aware:
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+                    
+                if 'uvpm3_props' in context.scene.uvpm3_props.
                 try:  # UVP doesn't respect margins when called like this, find out why
+                    context.scene.uvpm3_props.normalize_islands = False
+                    context.scene.uvpm3_props.lock_overlapping_enable = True
+                    context.scene.uvpm3_props.lock_overlapping_mode = ('1' if
+                                                                      layer == 'CATS UV Super' else
+                                                                      '2')
+                    context.scene.uvpm3_props.pack_to_others = False
+                    context.scene.uvpm3_props.margin = margin
+                    context.scene.uvpm3_props.simi_threshold = 3
+                    context.scene.uvpm3_props.precision = 1000
+                    context.scene.uvpm3_props.rotation_enable = True
+                    context.scene.uvpm3_props.rotation_step = 1
+                    # Give UVP a static number of iterations to do TODO: make this configurable?
+                    for _ in range(1, 3):
+                        bpy.ops.uvpackmaster3.pack(mode_id='pack.single_tile')
+                except AttributeError:
+                    pass
+                    
+                try:
                     context.scene.uvp2_props.normalize_islands = False
                     context.scene.uvp2_props.lock_overlapping_mode = ('0' if
                                                                       layer == 'CATS UV Super' else
