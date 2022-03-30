@@ -403,7 +403,8 @@ class BakeButton(bpy.types.Operator):
     # (input, output)
     def filter_image(self, context, image, filter_create, use_linear=False, save_srgb=False):
         # This is performed in our throwaway scene, so we don't have to keep settings
-        bpy.context.scene.display_settings.display_device = 'None' if use_linear else 'sRGB'
+        context.scene.display_settings.display_device = 'None' if use_linear else 'sRGB'
+        context.scene.view_settings.view_transform = "Standard"
         orig_colorspace = bpy.data.images[image].colorspace_settings.name
         # Bizarrely, getting the pixels from a render result is extremely difficult.
         # To keep things simple, we perform a render here and then reload from disk.
@@ -2061,6 +2062,8 @@ class BakeButton(bpy.types.Operator):
                 if not bakeconditions:
                     continue
                 image = bpy.data.images[platform_img(bakepass)]
+                context.scene.display_settings.display_device = 'None' if use_linear else 'sRGB'
+                context.scene.view_settings.view_transform = "Raw" if use_linear else "Standard"
                 image.save_render(bpy.path.abspath(image.filepath), scene=context.scene)
                 if export_format == "GMOD":
                     image.filepath_raw = images_path+"materialsrc/"+sanitized_name(image.name)
@@ -2195,7 +2198,8 @@ class BakeButton(bpy.types.Operator):
         bpy.data.collections.remove(collection)
 
         #clean unused data
-        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+        if not self.is_unittest:
+            bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
         self.report({'INFO'}, t('cats_bake.info.success'))
 
         print("BAKE COMPLETE!")
