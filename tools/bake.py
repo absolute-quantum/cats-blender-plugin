@@ -1062,15 +1062,14 @@ class BakeButton(bpy.types.Operator):
 
             # Pack islands. Optionally use UVPackMaster if it's available
             bpy.ops.object.select_all(action='SELECT')
-            Common.switch('EDIT')
-            bpy.ops.mesh.reveal()
-            bpy.ops.mesh.select_all(action='SELECT')
-            bpy.ops.uv.select_all(action='SELECT')
             for layer in cats_uv_layers:
                 for obj in collection.all_objects:
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers[layer]
-
+                Common.switch('EDIT')
+                bpy.ops.mesh.reveal()
+                bpy.ops.mesh.select_all(action='SELECT')
+                bpy.ops.uv.select_all(action='SELECT')
                 # have a UI-able toggle, if UVP is detected, to keep lock overlapping in place
                 # otherwise perform blender pack here
                 if not context.scene.uvp_lock_islands:
@@ -1106,7 +1105,7 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.uvpackmaster2.uv_pack()
                 else:
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
-            Common.switch('OBJECT')
+                Common.switch('OBJECT')
 
             if optimize_solid_materials:
                 #unhide geometry from step before pack islands that fixed solid material uvs, then scale uv's to be short enough to avoid color squares at top right. - @989onan
