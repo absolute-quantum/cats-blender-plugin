@@ -52,6 +52,10 @@ class FixArmature(bpy.types.Operator):
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    is_unittest: bpy.props.BoolProperty(
+        default=False
+    )
+
     @classmethod
     def poll(cls, context):
         if not Common.get_armature():
@@ -215,7 +219,8 @@ class FixArmature(bpy.types.Operator):
                     Common.delete_hierarchy(mesh)
 
         # Reset to default
-        armature = Common.set_default_stage()
+        if not self.is_unittest:
+            armature = Common.set_default_stage()
 
         # Find 3D view
         view_area = None
@@ -331,8 +336,8 @@ class FixArmature(bpy.types.Operator):
                 if mesh.name.endswith(('.baked', '.baked0')):
                     mesh.parent = armature  # TODO ----- (edit, 989onan here, if you mean get it visually under it in the outliner I got you covered now through lines below.)
                     # unlink from old collections
-        
-        
+
+
         #Fix visual unlinkage in the outliner so the objects are under object in outliner
         #Fixes issues like random objects not under a valve character skeleton.
         for mesh in Common.get_meshes_objects():
@@ -371,7 +376,7 @@ class FixArmature(bpy.types.Operator):
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
         Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
-        
+
 
         # Apply transforms of this model
         Common.apply_transforms()
@@ -440,16 +445,16 @@ class FixArmature(bpy.types.Operator):
                     for mat_slot in mesh.material_slots:  # Fix transparency per polygon and general garbage look in blender. Asthetic purposes to fix user complaints.
                         mat_slot.material.shadow_method = "HASHED"
                         mat_slot.material.blend_method = "HASHED"
-            
+
 			# Remove empty shape keys and then save the shape key order
             Common.clean_shapekeys(mesh)
             Common.save_shapekey_order(mesh.name)
-			
+
             # Combines same materials
             if context.scene.combine_mats:
                 bpy.ops.cats_material.combine_mats()
-            
-            
+
+
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)
 
@@ -1121,11 +1126,11 @@ class FixArmature(bpy.types.Operator):
                             for child in bone_tmp.children:
                                 if not temp_list_reparent_bones.get(child.name):
                                     temp_list_reparent_bones[child.name] = bone[0]
-                        
+
                         # Add bone to delete list
                         if vg.name not in bones_to_delete:
                             bones_to_delete.append(vg.name)
-                        
+
                         # Mix and delete group
                         Common.mix_weights(mesh, vg.name, bone[0])
 
@@ -1177,7 +1182,7 @@ class FixArmature(bpy.types.Operator):
                 # Add bone to delete list
                 if vg_from.name not in bones_to_delete:
                     bones_to_delete.append(vg_from.name)
-                    
+
                 # Mix the weights
                 Common.mix_weights(mesh, vg_from.name, vg_to.name)
 

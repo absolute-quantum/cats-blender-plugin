@@ -419,12 +419,6 @@ def register():
         default=True
     )
 
-    Scene.bake_create_disable_shapekeys = BoolProperty(
-        name="Create 'Disable' Shapekeys",
-        description="Create 'Disable' shapekeys for all but the largest mesh, that cause it to shrink to nothing. Lets you keep toggleable props, without the need for additional meshes.",
-        default=False
-    )
-
     Scene.bake_resolution = IntProperty(
         name=t('Scene.bake_resolution.label'),
         description=t('Scene.bake_resolution.desc'),

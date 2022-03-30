@@ -35,6 +35,7 @@ from . import common as Common
 from .register import register_wrap
 from .translations import t
 
+from bpy.props import BoolProperty
 
 @register_wrap
 class BakeTutorialButton(bpy.types.Operator):
@@ -318,6 +319,10 @@ class BakeButton(bpy.types.Operator):
     bl_label = t('cats_bake.bake.label')
     bl_description = t('cats_bake.bake.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    is_unittest: BoolProperty(
+        default=False
+    )
 
     @classmethod
     def poll(cls, context):
@@ -705,11 +710,10 @@ class BakeButton(bpy.types.Operator):
 
         # Pass options
         illuminate_eyes = context.scene.bake_illuminate_eyes
-        supersample_normals = context.scene.bake_pass_normal and any(plat.use_decimation for plat in context.scene.bake_platforms) and uv_overlap_correction == "UNMIRROR" # Bake the intermediate step at 2x resolution
+        supersample_normals = context.scene.bake_pass_normal
         emit_indirect = context.scene.bake_emit_indirect
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
         cleanup_shapekeys = context.scene.bake_cleanup_shapekeys # Reverted and _old shapekeys
-        create_disable_shapekeys = context.scene.bake_create_disable_shapekeys
         ignore_hidden = context.scene.bake_ignore_hidden
 
         # Filters
@@ -1171,7 +1175,8 @@ class BakeButton(bpy.types.Operator):
                                       desired_input)
                 self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
                                [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 32, 0, background_color, True, pixelmargin,
+                               (resolution, resolution), 1 if self.is_unittest else 32, 0,
+                               background_color, True, pixelmargin,
                                solidmaterialcolors=solidmaterialcolors)
                 self.restore_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"])
 
@@ -1189,23 +1194,6 @@ class BakeButton(bpy.types.Operator):
                                       use_linear = use_linear)
 
         # TODO: advanced: bake detail mask from diffuse node setup
-
-        # Create 'disable' shape keys, each of which shrinks their relevant mesh down to a single point
-        if create_disable_shapekeys:
-            for obj in sorted(filter(lambda o: o.type == "MESH", collection.all_objects),
-                              key=lambda o: len(o.data.vertices))[:-1]:
-                print(obj.name)
-                bpy.ops.object.select_all(action='DESELECT')
-                obj.select_set(True)
-                context.view_layer.objects.active = obj
-                if obj.data.shape_keys is None or len(obj.data.shape_keys.key_blocks) == 0:
-                    bpy.ops.object.shape_key_add(from_mix=True)
-                    obj.data.shape_keys.key_blocks[-1].name = "Basis"
-                bpy.ops.object.shape_key_add(from_mix=True)
-                obj.data.shape_keys.key_blocks[-1].name = "Disable " + obj.name[:-4]
-                Common.switch("EDIT")
-                bpy.ops.transform.resize(value=(0,0,0))
-                Common.switch("OBJECT")
 
         Common.switch('OBJECT')
 
@@ -1260,7 +1248,7 @@ class BakeButton(bpy.types.Operator):
                          supersample_normals else
                          (resolution, resolution))
             self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           bake_size, 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
+                           bake_size, 1 if self.is_unittest else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
 
         # Reset UV
         for obj in collection.all_objects:
@@ -1892,7 +1880,7 @@ class BakeButton(bpy.types.Operator):
             if pass_normal:
                 # Bake tangent normals
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name],
-                               (resolution, resolution), 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+                               (resolution, resolution), 1 if self.is_unittest else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
                 image = bpy.data.images[platform_img("normal")]
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
