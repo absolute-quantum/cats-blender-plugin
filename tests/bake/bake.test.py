@@ -50,18 +50,32 @@ sampling_lookup = {
     },
     'SCRIPT_metallic.png': {
         (0,0): (0,0,0,255),
-        (64,87): (189,189,189,255)
+        (64,87): (190,190,190,255)
+    },
+    'SCRIPT_smoothness.png': {
+        (0,0): (0,0,0,255),
+        (64,17): (127,127,127,255),
+        (64,43): (250,250,250,255)
     },
 }
 
 class TestAddon(unittest.TestCase):
+
+    def reset_stage(self):
+        for colname in ['VRChat Desktop', 'VRChat Quest Excellent', 'VRChat Quest Good',
+                        'Second Life']:
+            bpy.data.collections.remove(bpy.data.collections["CATS Bake " + colname],
+                                        do_unlink=True)
+
+        bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+
     def test_bake_button(self):
         bpy.ops.cats_bake.preset_all()
 
         bpy.context.scene.bake_resolution = 256
         # TODO: presently, all filter_image passes save to disk as an intermediate step, which
         # can introduce an error of +/- 1 value. We should save to a better intermediate format
-        for filter_img in [True]: # TODO: this doesn't like python parameterized test cases yet
+        for filter_img in [False, True]: # TODO: this doesn't like python parameterized test cases yet
             bpy.context.scene.bake_denoise = filter_img
             bpy.context.scene.bake_sharpen = filter_img
             result = bpy.ops.cats_bake.bake(is_unittest=True)
@@ -81,7 +95,9 @@ class TestAddon(unittest.TestCase):
                         self.assertEqual(foundcolor, color)
                     else:
                         for i in range(4):
-                            self.assertTrue(color[i] - 1 <= foundcolor[i] <= color[i] + 1)
+                            # Wide margins, since sharpening actually does change it (on purpose)
+                            self.assertTrue(color[i] - 10 <= foundcolor[i] <= color[i] + 10)
+            self.reset_stage()
 
         # TODO: test each of:
         # Scene.bake_platforms = CollectionProperty(
