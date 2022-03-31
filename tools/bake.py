@@ -320,10 +320,6 @@ class BakeButton(bpy.types.Operator):
     bl_description = t('cats_bake.bake.desc')
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    is_unittest: BoolProperty(
-        default=False
-    )
-
     @classmethod
     def poll(cls, context):
         for obj in Common.get_meshes_objects(check=False):
@@ -681,9 +677,8 @@ class BakeButton(bpy.types.Operator):
         timer.cancel()
 
     def perform_bake(self, context):
+        is_unittest = context.scene.cats_is_unittest
         print('START BAKE')
-        # TODO: diffuse, emit, alpha, metallic and smoothness all have a very slight difference between sample counts
-        #       default it to something sane, but maybe add a menu later?
         # Global options
         resolution = context.scene.bake_resolution
         steam_library_path = context.scene.bake_steam_library.replace("\\", "/")
@@ -697,8 +692,6 @@ class BakeButton(bpy.types.Operator):
         apply_keys = context.scene.bake_apply_keys
         optimize_solid_materials = context.scene.bake_optimize_solid_materials
         unwrap_angle = context.scene.bake_unwrap_angle
-
-        # TODO: Option to seperate by loose parts and bake selected to active
 
         # Passes
         pass_diffuse = context.scene.bake_pass_diffuse
@@ -1043,27 +1036,6 @@ class BakeButton(bpy.types.Operator):
                                             uv_layer[loop].uv.x *= prioritize_factor
                                             uv_layer[loop].uv.y *= prioritize_factor
 
-            # average_islands_scale() tends to create enormous islands, which cause issues with
-            # both versions of UVPackMaster Pro. Normalize them by fitting to bounds
-            for obj in collection.all_objects:
-                if obj.type != "MESH":
-                    continue
-                for layer in cats_uv_layers:
-                    if layer in obj.data.uv_layers:
-                        uv_layer = obj.data.uv_layers[layer].data
-                        # (xmin, ymin, xmax, ymax)
-                        bounds = (100000.0, 100000.0, -100000.0, -100000.0)
-                        for poly in obj.data.polygons:
-                            for loop in poly.loop_indices:
-                                bounds = (min(bounds[0], uv_layer[loop].uv.x),
-                                          min(bounds[1], uv_layer[loop].uv.y),
-                                          max(bounds[2], uv_layer[loop].uv.x),
-                                          max(bounds[3], uv_layer[loop].uv.y))
-                        needed_scale = max(bounds[2] - bounds[0], bounds[3] - bounds[1])
-                        for poly in obj.data.polygons:
-                            for loop in poly.loop_indices:
-                                uv_layer[loop].uv.x /= needed_scale
-                                uv_layer[loop].uv.y /= needed_scale
 
             # Pack islands. Optionally use UVPackMaster if it's available
             bpy.ops.object.select_all(action='SELECT')
@@ -1176,7 +1148,7 @@ class BakeButton(bpy.types.Operator):
                                       desired_input)
                 self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
                                [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 1 if self.is_unittest else 32, 0,
+                               (resolution, resolution), 1 if is_unittest else 32, 0,
                                background_color, True, pixelmargin,
                                solidmaterialcolors=solidmaterialcolors)
                 self.restore_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"])
@@ -1249,7 +1221,7 @@ class BakeButton(bpy.types.Operator):
                          supersample_normals else
                          (resolution, resolution))
             self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           bake_size, 1 if self.is_unittest else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
+                           bake_size, 1 if is_unittest else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
 
         # Reset UV
         for obj in collection.all_objects:
@@ -1881,7 +1853,7 @@ class BakeButton(bpy.types.Operator):
             if pass_normal:
                 # Bake tangent normals
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name],
-                               (resolution, resolution), 1 if self.is_unittest else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+                               (resolution, resolution), 1 if is_unittest else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
                 image = bpy.data.images[platform_img("normal")]
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
@@ -2198,7 +2170,7 @@ class BakeButton(bpy.types.Operator):
         bpy.data.collections.remove(collection)
 
         #clean unused data
-        if not self.is_unittest:
+        if not is_unittest:
             bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
         self.report({'INFO'}, t('cats_bake.info.success'))
 

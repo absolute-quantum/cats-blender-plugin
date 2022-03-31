@@ -52,10 +52,6 @@ class FixArmature(bpy.types.Operator):
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    is_unittest: bpy.props.BoolProperty(
-        default=False
-    )
-
     @classmethod
     def poll(cls, context):
         if not Common.get_armature():
@@ -219,8 +215,7 @@ class FixArmature(bpy.types.Operator):
                     Common.delete_hierarchy(mesh)
 
         # Reset to default
-        if not self.is_unittest:
-            armature = Common.set_default_stage()
+        armature = Common.set_default_stage()
 
         # Find 3D view
         view_area = None
@@ -327,8 +322,9 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[2] = False
 
         # Remove empty mmd object and unused objects
-        Common.remove_empty()
-        Common.remove_unused_objects()
+        if not bpy.context.scene.cats_is_unittest:
+            Common.remove_empty()
+            Common.remove_unused_objects()
 
         # Fix VRM meshes being outside of the armature
         if is_vrm:
@@ -374,9 +370,8 @@ class FixArmature(bpy.types.Operator):
                 mesh.animation_data_clear()
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
-
-
+        if not bpy.context.scene.cats_is_unittest:
+            Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
         # Apply transforms of this model
         Common.apply_transforms()

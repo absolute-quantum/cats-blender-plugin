@@ -31,7 +31,8 @@ import bpy
 
 class TestAddon(unittest.TestCase):
     def test_material_combine(self):
-        bpy.ops.cats_armature.fix(is_unittest=True)
+        bpy.context.scene.cats_is_unittest = True
+        bpy.ops.cats_armature.fix()
         bpy.ops.cats_material.combine_mats()
 
 

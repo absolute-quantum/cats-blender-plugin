@@ -32,30 +32,30 @@ import bpy
 sampling_lookup = {
     'SCRIPT_diffuse.png': {
         (0,0): (128,128,128,255),
-        (64,113): (255,0,0,255),
-        (64,17): (0,0,255,255),
-        (64,64): (0,255,0,255),
-        (19,113): (231,0,231,255),
-        (94,113): (231,231,231,255),
-        (64,144): (0,0,0,255),
-        (192,17): (188,188,188,255),
-        (192,64): (188,188,188,255),
-        (192,113): (188,188,188,255),
-        (192,144): (188,188,188,255),
+        (215,40): (255,0,0,255),
+        (215,7): (0,0,255,255),
+        (215,24): (0,255,0,255),
+        (200,40): (231,0,231,255),
+        (232,40): (231,231,231,255),
+        (215,56): (0,0,0,255),
+        (96,32): (188,188,188,255),
+        (96,96): (188,188,188,255),
+        (96,160): (188,188,188,255),
+        (96,220): (188,188,188,255),
     },
     'SCRIPT_emission.png': {
         (0,0): (0,0,0,255),
-        (64,128): (253,253,253,255),
-        (64,166): (84,84,84,255),
+        (215,48): (252,252,252,255),
+        (215,63): (55,55,55,255),
     },
     'SCRIPT_metallic.png': {
         (0,0): (0,0,0,255),
-        (64,87): (190,190,190,255)
+        (215,32): (215,215,215,255)
     },
     'SCRIPT_smoothness.png': {
         (0,0): (0,0,0,255),
-        (64,17): (127,127,127,255),
-        (64,43): (250,250,250,255)
+        (215,24): (122,122,122,255),
+        (215,17): (234,234,234,255)
     },
 }
 
@@ -70,6 +70,7 @@ class TestAddon(unittest.TestCase):
         bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
 
     def test_bake_button(self):
+        bpy.context.scene.cats_is_unittest = True
         bpy.ops.cats_bake.preset_all()
 
         bpy.context.scene.bake_resolution = 256
@@ -78,7 +79,7 @@ class TestAddon(unittest.TestCase):
         for filter_img in [False, True]: # TODO: this doesn't like python parameterized test cases yet
             bpy.context.scene.bake_denoise = filter_img
             bpy.context.scene.bake_sharpen = filter_img
-            result = bpy.ops.cats_bake.bake(is_unittest=True)
+            result = bpy.ops.cats_bake.bake()
 
             self.assertTrue("SCRIPT_diffuse.png" in bpy.data.images)
             self.assertTrue("SCRIPT_smoothness.png" in bpy.data.images)
@@ -96,7 +97,8 @@ class TestAddon(unittest.TestCase):
                     else:
                         for i in range(4):
                             # Wide margins, since sharpening actually does change it (on purpose)
-                            self.assertTrue(color[i] - 10 <= foundcolor[i] <= color[i] + 10)
+                            self.assertTrue(color[i] - 40 <= foundcolor[i] <= color[i] + 40,
+                                            "{} != {}".format(color, foundcolor))
             self.reset_stage()
 
         # TODO: test each of:
