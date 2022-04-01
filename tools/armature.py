@@ -351,7 +351,7 @@ class FixArmature(bpy.types.Operator):
                     coll = bpy.data.collections.get(name)
                     if not coll:
                         coll = bpy.data.collections.new(name)
-                        scene.collection.children.link(coll)
+                        context.scene.collection.children.link(coll)
                     coll.objects.link(both)
             else:
                 for c in both.users_collection:
