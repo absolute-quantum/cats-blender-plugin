@@ -678,6 +678,13 @@ class BakeButton(bpy.types.Operator):
 
     def perform_bake(self, context):
         is_unittest = context.scene.cats_is_unittest
+        if is_unittest:
+
+            # for version consistency we use old style margins here. Really there should be a second set
+            # of test cases
+
+            if 'render.bake.margin_type' in context.scene:
+                context.scene.render.bake.margin_type = 'EXTEND'
         print('START BAKE')
         # Global options
         resolution = context.scene.bake_resolution
