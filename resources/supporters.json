@@ -297,10 +297,26 @@
       "info": "Was added 4 months late.",
       "disabled": true
     },{
+      "displayname": "Googie",
+      "startdate": "2018-12-27",
+      "description": "Much love to the VRChat community and the creators that make it amazing <3\n",
+      "website": "https://www.twitch.tv/googie",
+      "tier": 1
+    },{
+      "displayname": "Typo",
+      "startdate": "2022-01-28 - minimum until 2023-01-28",
+      "description": "lol",
+      "tier": 1
+    },{
       "displayname": "Tupper",
       "startdate": "2018-02-05",
       "description": "Thank you to the Cats Plugin team for making it easy to be who you want to be in VRChat, and to the VRChat community for being the best community on the internet to manage. Don't forget to atlas! (If you don't, I'll know)",
       "website": "http://dtupper.com/",
+      "tier": 1
+    },{
+      "displayname": "Tuppiest",
+      "startdate": "2022-01-28 - minimum until 2023-01-28",
+      "description": "lol",
       "tier": 1
     },{
       "displayname": "baffler",
@@ -361,10 +377,11 @@
       "startdate": "2018-12-27"
     },{
       "displayname": "Googie",
-      "startdate": "2018-12-27",
+      "startdate": "2018-12-27 - Disabled this because a copy exists in from of Tupper now.",
       "description": "Much love to the VRChat community and the creators that make it amazing <3\n",
       "website": "https://www.twitch.tv/googie",
-      "tier": 1
+      "tier": 1,
+      "disabled": true
     },{
       "displayname": "Tierson",
       "startdate": "2019-01-01",
@@ -582,6 +599,12 @@
       "description": "CREATING METAVERSE CYBERNETICS - thank you CATS team for making digital identity more easily attainable",
       "tier": 1,
       "website": "http://vianvolae.us"
+    },{
+      "displayname": "TORINYAN",
+      "startdate": "2022-01-16 - minimum until 2023-01-16",
+      "description": "yay!",
+      "tier": 1,
+      "website": "http://gumroad.com/torinyan"
     }
   ]
 }

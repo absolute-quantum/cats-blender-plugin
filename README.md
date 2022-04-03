@@ -13,7 +13,7 @@ There are a lot of perks like having your name inside the plugin!
 
 #### Download here: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
  
-## Features (Expandable)
+## Features (Click to Expand)
 - <details><summary>Optimizing model with one-two click!</summary>
   
   ## Bake

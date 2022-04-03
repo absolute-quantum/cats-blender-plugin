@@ -444,9 +444,8 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
         return ItemOp.get_by_index(morph.data, morph.active_data)
 
     def _draw_vertex_data(self, context, rig, col, morph):
-        row = col.row()
-        col = row.column()
-        row.operator('mmd_tools.morph_offset_remove', text='', icon='X').all = True
+        r = col.row()
+        col = r.column(align=True)
         for i in rig.meshes():
             shape_keys = i.data.shape_keys
             if shape_keys is None:
@@ -455,10 +454,12 @@ class MMDMorphToolsPanel(_PanelBase, Panel):
             if kb:
                 found = row = col.row(align=True)
                 row.active = not (i.show_only_shape_key or kb.mute)
-                row.label(text=i.name, icon='OBJECT_DATA')
+                row.operator('mmd_tools.object_select', text=i.name, icon='OBJECT_DATA').name = i.name
                 row.prop(kb, 'value', text=kb.name)
         if 'found' not in locals():
             col.label(text='Not found', icon='INFO')
+        else:
+            r.operator('mmd_tools.morph_offset_remove', text='', icon='X').all = True
 
     def _draw_material_data(self, context, rig, col, morph):
         col.label(text='Material Offsets (%d)'%len(morph.data))

@@ -42,28 +42,28 @@ bone_names = {
     "right_arm": ["rightarm", "armr", "rarm", "upperarmr", "rightupperarm", "uparmr", "ruparm"],
     "right_elbow": ["rightelbow", "elbowr", "relbow", "lowerarmr", "rightlowerarm", "lowerarmr", "lowarmr", "rlowarm"],
     "right_wrist": ["rightwrist", "wristr", "rwrist", "handr", "righthand", "rhand"],
-    
+
     #hand l fingers
     "pinkie_1_r": ["littlefinger1r"],
     "pinkie_2_r": ["littlefinger2r"],
     "pinkie_3_r": ["littlefinger3r"],
-    
+
     "ring_1_r": ["ringfinger1r"],
     "ring_2_r": ["ringfinger2r"],
     "ring_3_r": ["ringfinger3r"],
-    
+
     "middle_1_r": ["middlefinger1r"],
     "middle_2_r": ["middlefinger2r"],
     "middle_3_r": ["middlefinger3r"],
-    
+
     "index_1_r": ["indexfinger1r"],
     "index_2_r": ["indexfinger2r"],
     "index_3_r": ["indexfinger3r"],
-    
+
     "thumb_1_r": ['thumb0r'],
     "thumb_2_r": ['thumb1r'],
     "thumb_3_r": ['thumb2r'],
-    
+
     "right_leg": ["rightleg", "legr", "rleg", "upperlegr", "thighr","rightupperleg", "uplegr", "rupleg"],
     "right_knee": ["rightknee", "kneer", "rknee", "lowerlegr", "calfr", "rightlowerleg", "lowlegr", "rlowleg"],
     "right_ankle": ["rightankle", "ankler", "rankle", "rightfoot", "footr", "rightfoot", "rightfeet", "feetright", "rfeet", "feetr"],
@@ -73,28 +73,28 @@ bone_names = {
     "left_arm": ["leftarm", "arml", "rarm", "upperarml", "leftupperarm", "uparml", "luparm"],
     "left_elbow": ["leftelbow", "elbowl", "relbow", "lowerarml", "leftlowerarm", "lowerarml", "lowarml", "llowarm"],
     "left_wrist": ["leftwrist", "wristl", "rwrist", "handl", "lefthand", "lhand"],
-    
+
     #hand l fingers
     "pinkie_1_l": ["littlefinger1l"],
     "pinkie_2_l": ["littlefinger2l"],
     "pinkie_3_l": ["littlefinger3l"],
-    
+
     "ring_1_l": ["ringfinger1l"],
     "ring_2_l": ["ringfinger2l"],
     "ring_3_l": ["ringfinger3l"],
-    
+
     "middle_1_l": ["middlefinger1l"],
     "middle_2_l": ["middlefinger2l"],
     "middle_3_l": ["middlefinger3l"],
-    
+
     "index_1_l": ["indexfinger1l"],
     "index_2_l": ["indexfinger2l"],
     "index_3_l": ["indexfinger3l"],
-    
+
     "thumb_1_l": ['thumb0l'],
     "thumb_2_l": ['thumb1l'],
     "thumb_3_l": ['thumb2l'],
-    
+
     "left_leg": ["leftleg", "legl", "rleg", "upperlegl", "thighl","leftupperleg", "uplegl", "lupleg"],
     "left_knee": ["leftknee", "kneel", "rknee", "lowerlegl", "calfl", "leftlowerleg", 'lowlegl', 'llowleg'],
     "left_ankle": ["leftankle", "anklel", "rankle", "leftfoot", "footl", "leftfoot", "leftfeet", "feetleft", "lfeet", "feetl"],
@@ -360,7 +360,7 @@ class PoseNamePopup(bpy.types.Operator):
     def invoke(self, context, event):
         context.scene.pose_to_shapekey_name = 'Pose'
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4))
 
     def check(self, context):
         # Important for changing options
@@ -1086,11 +1086,15 @@ class OptimizeStaticShapekeys(bpy.types.Operator):
                 if not mesh.data.use_auto_smooth:
                     mesh.data.use_auto_smooth = True
                     mesh.data.auto_smooth_angle = 3.1416
+                # TODO: if autosmooth is already enabled, set sharp from edges?
 
-                bpy.ops.object.mode_set(mode = 'EDIT')
-                bpy.ops.mesh.select_mode(type="VERT")
-                bpy.ops.mesh.select_all(action = 'DESELECT')
-                bpy.ops.mesh.set_normals_from_faces(keep_sharp=True)
+                if not mesh.data.has_custom_normals:
+                    bpy.ops.object.mode_set(mode = 'EDIT')
+                    bpy.ops.mesh.select_mode(type="VERT")
+                    bpy.ops.mesh.select_all(action = 'SELECT')
+                    # TODO: un-smooth objects aren't handled correctly. A workaround is to run 'split
+                    # normals' on all un-smooth objects before baking
+                    bpy.ops.mesh.set_normals_from_faces(keep_sharp=True)
 
                 # Separate non-animating
                 bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1111,6 +1115,7 @@ class OptimizeStaticShapekeys(bpy.types.Operator):
                         # Some affected, separate
                         bpy.ops.object.mode_set(mode = 'EDIT')
                         bpy.ops.mesh.select_more()
+                        bpy.ops.mesh.split() # required or custom normals aren't preserved
                         bpy.ops.mesh.separate(type='SELECTED')
                         bpy.ops.object.mode_set(mode = 'OBJECT')
                     bpy.context.object.active_shape_key_index = 0
@@ -1936,7 +1941,7 @@ class ConvertToValveButton(bpy.types.Operator):
             'thumb_1_l': "ValveBiped.Bip01_L_Finger0",
             'thumb_2_l': "ValveBiped.Bip01_L_Finger01",
             'thumb_3_l': "ValveBiped.Bip01_L_Finger02",
-            
+
             'pinkie_1_r': "ValveBiped.Bip01_R_Finger4",
             'pinkie_2_r': "ValveBiped.Bip01_R_Finger41",
             'pinkie_3_r': "ValveBiped.Bip01_R_Finger42",

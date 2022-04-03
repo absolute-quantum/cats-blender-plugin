@@ -80,6 +80,7 @@ class PMXImporter:
         root = self.__rig.rootObject()
         mmd_root = root.mmd_root
         self.__root = root
+        self.__armObj = self.__rig.armature()
 
         root['import_folder'] = os.path.dirname(pmxModel.filepath)
 
@@ -89,10 +90,6 @@ class PMXImporter:
         txt = bpy.data.texts.new(obj_name+'_e')
         txt.from_string(pmxModel.comment_e.replace('\r', ''))
         mmd_root.comment_e_text = txt.name
-
-        self.__armObj = self.__rig.armature()
-        self.__armObj.hide = True
-        self.__armObj.select = False
 
     def __createMeshObject(self):
         model_name = self.__root.name
@@ -663,7 +660,7 @@ class PMXImporter:
             vtx_morph.name = morph.name
             vtx_morph.name_e = morph.name_e
             vtx_morph.category = categories.get(morph.category, 'OTHER')
-            for md in morph.offsets: #TODO: Why does this throw an error index out of bounds?
+            for md in morph.offsets:
                 shapeKeyPoint = shapeKey.data[md.index]
                 shapeKeyPoint.co += Vector(md.offset).xzy * self.__scale
 
@@ -886,13 +883,7 @@ class PMXImporter:
             self.__addArmatureModifier(self.__meshObj, self.__armObj)
 
         #bpy.context.scene.gravity[2] = -9.81 * 10 * self.__scale
-        root = self.__root
-        if 'ARMATURE' in types:
-            root.mmd_root.show_armature = True
-        if 'MESH' in types:
-            root.mmd_root.show_meshes = True
-        self.__targetScene.active_object = root
-        root.select = True
+        self.__targetScene.active_object = self.__root
 
         logging.info(' Finished importing the model in %f seconds.', time.time() - start_time)
         logging.info('----------------------------------------')
@@ -950,11 +941,11 @@ class _PMXCleaner:
         for i, v in enumerate(pmx_vertices):
             vertex_map[i] = [tuple(v.co)]
         if not mesh_only:
-            for m in pmx_model.morphs:
+            for i, m in enumerate(pmx_model.morphs):
                 if not isinstance(m, pmx.VertexMorph) and not isinstance(m, pmx.UVMorph):
                     continue
                 for x in m.offsets:
-                    vertex_map[x.index].append(tuple(x.offset))
+                    vertex_map[x.index].append((i,)+tuple(x.offset))
         # generate vertex merging table
         keys = {}
         for i, v in enumerate(vertex_map):

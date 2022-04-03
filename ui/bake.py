@@ -91,6 +91,18 @@ class Bake_Lod_Delete(Operator):
 
         return{'FINISHED'}
 
+
+@register_wrap
+class Open_GPU_Settings(Operator):
+    bl_idname = "cats_bake.open_gpu_settings"
+    bl_label = "Open GPU Settings (Top of the page)"
+
+    def execute(self, context):
+        bpy.ops.screen.userpref_show()
+        context.preferences.active_section = 'SYSTEM'
+
+        return{'FINISHED'}
+
 @register_wrap
 class Choose_Steam_Library(Operator, ImportHelper):
     bl_idname = "cats_bake.choose_steam_library"
@@ -137,11 +149,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         row.operator(Bake.BakePresetSecondlife.bl_idname, icon="VIEW_PAN")
         row = col.row(align=True)
         row.operator(Bake.BakePresetGmod.bl_idname, icon="EVENT_G")
+        row.operator(Bake.BakePresetGmodPhong.bl_idname, icon="EVENT_G")
         col.separator()
         row = col.row()
         col.label(text="Platforms:")
-        #row = col.row(align=True)
-        #row.prop(context.scene, 'bake_platforms', expand=True)
         row = col.row()
         row.template_list("Bake_Platform_List", "The_List", context.scene,
                           "bake_platforms", context.scene, "bake_platform_index")
@@ -176,17 +187,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.prop(item, 'remove_doubles', expand=True)
                     row = col.row(align=True)
                     row.separator()
-                    #row.prop(context.scene, 'bake_loop_decimate', expand=True)
-                    #row = col.row(align=True)
-                    #row.separator()
                     row.prop(item, 'preserve_seams', expand=True)
-                    #row = col.row(align=True)
-                    #row.separator()
-                    #row.prop(context.scene, 'bake_animation_weighting', expand=True)
-                    #if context.scene.bake_animation_weighting: #and not context.scene.bake_loop_decimate:
-                    #    row = col.row(align=True)
-                    #    row.separator()
-                    #    row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)
                 row = col.row(align=True)
                 row.prop(item, 'use_physmodel', expand=True)
                 if item.use_physmodel:
@@ -214,6 +215,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row.operator(Bake.BakeRemoveProp.bl_idname)
 
 
+                row = col.row(align=True)
+                row.prop(item, 'phong_setup', expand=True)
                 row = col.row(align=True)
                 row.prop(item, 'specular_setup', expand=True)
                 if item.specular_setup:
@@ -249,19 +252,22 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         col.label(text=t('BakePanel.transparencywarning'), icon="INFO")
                     elif (item.diffuse_alpha_pack == "SMOOTHNESS") and not context.scene.bake_pass_smoothness:
                         col.label(text=t('BakePanel.smoothnesswarning'), icon="INFO")
-                if context.scene.bake_pass_normal and item.specular_setup:
+                if context.scene.bake_pass_normal and (item.specular_setup or item.phong_setup):
                     row = col.row(align=True)
                     row.label(text="Normal Alpha:")
                     row.prop(item, 'normal_alpha_pack', expand=True)
                 if context.scene.bake_pass_normal:
                     row = col.row(align=True)
                     row.prop(item, 'normal_invert_g', expand=True)
-                if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness and not item.specular_setup:
+                if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness and not item.specular_setup and not item.phong_setup:
                     row = col.row(align=True)
                     row.label(text="Metallic Alpha:")
                     row.prop(item, 'metallic_alpha_pack', expand=True)
                     if item.diffuse_alpha_pack == "SMOOTHNESS" and item.metallic_alpha_pack == "SMOOTHNESS":
                         col.label(text=t('BakePanel.doublepackwarning'), icon="INFO")
+                if context.scene.bake_pass_metallic and context.scene.bake_pass_ao:
+                    row = col.row(align=True)
+                    row.prop(item, 'metallic_pack_ao', expand=True)
                 row = col.row(align=True)
                 row.label(text="Bone Conversion:")
                 row = col.row(align=True)
@@ -314,6 +320,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row = col.row(align=True)
                     row.separator()
                     row.prop(context.scene, 'bake_unwrap_angle', expand=True)
+                if 'uvpm3_props' in context.scene or 'uvpm2_props' in context.scene:
+                    row = col.row(align=True)
+                    row.separator()
+                    row.prop(context.scene, 'uvp_lock_islands', expand=True)
             row = col.row(align=True)
             row.scale_y = 0.85
             if not context.scene.bake_show_advanced_general_options:
@@ -328,10 +338,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row.prop(context.scene, 'bake_cleanup_shapekeys', expand=True)
                 row = col.row(align=True)
                 row.prop(context.scene, 'bake_apply_keys', expand=True)
-                #row = col.row(align=True)
-                #row.prop(context.scene, 'bake_create_disable_shapekeys', expand=True)
-                #row = col.row(align=True)
-                #row.prop(context.scene, 'bake_simplify_armature', expand=True)
                 col.separator()
                 row = col.row(align=True)
                 col.label(text=t('BakePanel.bakepasseslabel'))
@@ -403,6 +409,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         if context.preferences.addons['cycles'].preferences.compute_device_type == 'NONE' and context.scene.bake_device == 'GPU':
             row = col.row(align=True)
             row.label(text="No render device configured in Blender settings. Bake will use CPU", icon="INFO")
+            row = col.row(align=True)
+            row.operator(Open_GPU_Settings.bl_idname, icon="SETTINGS")
         if not addon_utils.check("render_auto_tile_size")[1] and Common.version_2_93_or_older():
             row = col.row(align=True)
             row.label(text="Enabling \"Auto Tile Size\" plugin reccomended!", icon="INFO")
@@ -419,6 +427,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         non_node_mat_names = set()
         non_world_scale_names = set()
         empty_material_slots = set()
+        too_many_uvmaps = set()
         for obj in Common.get_meshes_objects(check=False):
             if obj.name not in context.view_layer.objects:
                 continue
@@ -439,6 +448,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 empty_material_slots.add(obj.name)
             if any(dim != 1.0 for dim in obj.scale):
                 non_world_scale_names.add(obj.name)
+            if len(obj.data.uv_layers) > 6:
+                too_many_uvmaps.add(obj.name)
 
         if non_node_mat_names:
             row = col.row(align=True)
@@ -484,4 +495,13 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.separator()
                 row.label(text=name + ": " + "{:.1f}".format(1.0/bpy.data.objects[name].scale[0]) + "x", icon="OBJECT_DATA")
+        if too_many_uvmaps:
+            row = col.row(align=True)
+            row.label(text="The following objects have too many UVMaps!", icon="ERROR")
+            row = col.row(align=True)
+            row.label(text="Bake will likely fail, you can have at most 6 maps.", icon="BLANK1")
+            for name in too_many_uvmaps:
+                row = col.row(align=True)
+                row.separator()
+                row.label(text=name + ": " + "{}".format(len(bpy.data.objects[name].data.uv_layers)), icon="OBJECT_DATA")
 

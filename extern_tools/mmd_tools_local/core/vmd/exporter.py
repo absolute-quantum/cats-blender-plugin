@@ -129,7 +129,7 @@ class VMDExporter:
             return
 
         frame_start = min(all_frames)
-        if frame_start < self.__frame_start:
+        if frame_start != self.__frame_start:
             frame_start = self.__frame_start
             all_frames.add(frame_start)
 

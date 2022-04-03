@@ -66,8 +66,6 @@ __properties = {
 
 def __patch(properties): # temporary patching, should be removed in the future
     prop_obj = properties.setdefault(bpy.types.Object, {})
-    prop_arm = properties.setdefault(bpy.types.Armature, {})
-    prop_cam = properties.setdefault(bpy.types.Camera, {})
 
     prop_obj['select'] = bpy.props.BoolProperty(
         get=lambda prop: prop.select_get(),
@@ -76,30 +74,6 @@ def __patch(properties): # temporary patching, should be removed in the future
     prop_obj['hide'] = bpy.props.BoolProperty(
         get=lambda prop: prop.hide_get(),
         set=lambda prop, value: prop.hide_set(value) or setattr(prop, 'hide_viewport', False),
-        )
-    prop_obj['show_x_ray'] = bpy.props.BoolProperty(
-        get=lambda prop: prop.show_in_front,
-        set=lambda prop, value: setattr(prop, 'show_in_front', value),
-        )
-    prop_obj['empty_draw_size'] = bpy.props.FloatProperty(
-        get=lambda prop: prop.empty_display_size,
-        set=lambda prop, value: setattr(prop, 'empty_display_size', value),
-        )
-    prop_obj['empty_draw_type'] = bpy.props.StringProperty(
-        get=lambda prop: prop.empty_display_type,
-        set=lambda prop, value: setattr(prop, 'empty_display_type', value),
-        )
-    prop_obj['draw_type'] = bpy.props.StringProperty(
-        get=lambda prop: prop.display_type,
-        set=lambda prop, value: setattr(prop, 'display_type', value),
-        )
-    prop_arm['draw_type'] = bpy.props.StringProperty(
-        get=lambda prop: prop.display_type,
-        set=lambda prop, value: setattr(prop, 'display_type', value),
-        )
-    prop_cam['draw_size'] = bpy.props.FloatProperty(
-        get=lambda prop: prop.display_size,
-        set=lambda prop, value: setattr(prop, 'display_size', value),
         )
 
 if bpy.app.version >= (2, 80, 0):

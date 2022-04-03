@@ -10,12 +10,9 @@ from mmd_tools_local import utils
 from mmd_tools_local.bpyutils import SceneOp
 from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.sdef import FnSDEF
-from mmd_tools_local.properties.morph import BoneMorph
-from mmd_tools_local.properties.morph import MaterialMorph
-from mmd_tools_local.properties.morph import VertexMorph
-from mmd_tools_local.properties.morph import UVMorph
-from mmd_tools_local.properties.morph import GroupMorph
+from mmd_tools_local.properties.morph import MaterialMorph, UVMorph, BoneMorph, VertexMorph, GroupMorph
 import mmd_tools_local.core.model as mmd_model
+
 
 def __driver_variables(id_data, path, index=-1):
     d = id_data.driver_add(path, index)
@@ -70,38 +67,32 @@ def _toggleUsePropertyDriver(self, context):
 #===========================================
 def _toggleUseToonTexture(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
     use_toon = self.use_toon_texture
-    for i in rig.meshes():
+    for i in mmd_model.Model(root).meshes():
         for m in i.data.materials:
-            if m is None:
-                continue
-            FnMaterial(m).use_toon_texture(use_toon)
+            if m:
+                FnMaterial(m).use_toon_texture(use_toon)
 
 def _toggleUseSphereTexture(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
     use_sphere = self.use_sphere_texture
-    for i in rig.meshes():
+    for i in mmd_model.Model(root).meshes():
         for m in i.data.materials:
-            if m is None:
-                continue
-            FnMaterial(m).use_sphere_texture(use_sphere, i)
+            if m:
+                FnMaterial(m).use_sphere_texture(use_sphere, i)
 
 def _toggleUseSDEF(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
     mute_sdef = not self.use_sdef
-    for i in rig.meshes():
+    for i in mmd_model.Model(root).meshes():
         FnSDEF.mute_sdef_set(i, mute_sdef)
 
 def _toggleVisibilityOfMeshes(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
     hide = not self.show_meshes
-    for i in rig.meshes():
+    for i in mmd_model.Model(root).meshes():
         i.hide = i.hide_render = hide
-    if hide and not getattr(context, 'active_object', True):
+    if hide and context.active_object is None:
         SceneOp(context).active_object = root
 
 def _show_meshes_get(prop):
@@ -114,86 +105,76 @@ def _show_meshes_set(prop, v):
 
 def _toggleVisibilityOfRigidBodies(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
     hide = not self.show_rigid_bodies
-    for i in rig.rigidBodies():
+    for i in mmd_model.Model(root).rigidBodies():
         i.hide = hide
     if hide and context.active_object is None:
         SceneOp(context).active_object = root
 
 def _toggleVisibilityOfJoints(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
     hide = not self.show_joints
-    for i in rig.joints():
+    for i in mmd_model.Model(root).joints():
         i.hide = hide
     if hide and context.active_object is None:
         SceneOp(context).active_object = root
 
 def _toggleVisibilityOfTemporaryObjects(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
     hide = not self.show_temporary_objects
-    for i in rig.temporaryObjects(rigid_track_only=True):
+    for i in mmd_model.Model(root).temporaryObjects(rigid_track_only=True):
         i.hide = hide
     if hide and context.active_object is None:
         SceneOp(context).active_object = root
 
 def _toggleShowNamesOfRigidBodies(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
-    for i in rig.rigidBodies():
+    for i in mmd_model.Model(root).rigidBodies():
         i.show_name = root.mmd_root.show_names_of_rigid_bodies
 
 def _toggleShowNamesOfJoints(self, context):
     root = self.id_data
-    rig = mmd_model.Model(root)
-    for i in rig.joints():
+    for i in mmd_model.Model(root).joints():
         i.show_name = root.mmd_root.show_names_of_joints
 
 def _setVisibilityOfMMDRigArmature(prop, v):
-    obj = prop.id_data
-    rig = mmd_model.Model(obj)
-    arm = rig.armature()
-    if arm is None:
-        return
-    if bpy.context.active_object == arm:
-        SceneOp(bpy.context).active_object = obj
-    arm.hide = not v
+    root = prop.id_data
+    arm = mmd_model.Model(root).armature()
+    if arm:
+        if not v and bpy.context.active_object == arm:
+            SceneOp(bpy.context).active_object = root
+        arm.hide = not v
 
 def _getVisibilityOfMMDRigArmature(prop):
     if prop.id_data.mmd_type != 'ROOT':
         return False
-    rig = mmd_model.Model(prop.id_data)
-    arm = rig.armature()
-    return not (arm is None or arm.hide)
+    arm = mmd_model.Model(prop.id_data).armature()
+    return (arm and not arm.hide)
 
 def _setActiveRigidbodyObject(prop, v):
     obj = SceneOp(bpy.context).id_objects[v]
     if mmd_model.isRigidBodyObject(obj):
-        obj.hide = False
         utils.selectAObject(obj)
     prop['active_rigidbody_object_index'] = v
 
 def _getActiveRigidbodyObject(prop):
-    objects = SceneOp(bpy.context).id_objects
-    active_obj = objects.active
+    scene = SceneOp(bpy.context)
+    active_obj = scene.active_object
     if mmd_model.isRigidBodyObject(active_obj):
-        prop['active_rigidbody_object_index'] = objects.find(active_obj.name)
+        prop['active_rigidbody_object_index'] = scene.id_objects.find(active_obj.name)
     return prop.get('active_rigidbody_object_index', 0)
 
 def _setActiveJointObject(prop, v):
     obj = SceneOp(bpy.context).id_objects[v]
     if mmd_model.isJointObject(obj):
-        obj.hide = False
         utils.selectAObject(obj)
     prop['active_joint_object_index'] = v
 
 def _getActiveJointObject(prop):
-    objects = SceneOp(bpy.context).id_objects
-    active_obj = objects.active
+    scene = SceneOp(bpy.context)
+    active_obj = scene.active_object
     if mmd_model.isJointObject(active_obj):
-        prop['active_joint_object_index'] = objects.find(active_obj.name)
+        prop['active_joint_object_index'] = scene.id_objects.find(active_obj.name)
     return prop.get('active_joint_object_index', 0)
 
 def _setActiveMorph(prop, v):
@@ -209,16 +190,14 @@ def _getActiveMorph(prop):
 def _setActiveMeshObject(prop, v):
     obj = SceneOp(bpy.context).id_objects[v]
     if obj.type == 'MESH' and obj.mmd_type == 'NONE':
-        obj.hide = False
         utils.selectAObject(obj)
     prop['active_mesh_index'] = v
 
 def _getActiveMeshObject(prop):
-    objects = SceneOp(bpy.context).id_objects
-    active_obj = objects.active
-    if (active_obj and active_obj.type == 'MESH'
-            and active_obj.mmd_type == 'NONE'):
-        prop['active_mesh_index'] = objects.find(active_obj.name)
+    scene = SceneOp(bpy.context)
+    active_obj = scene.active_object
+    if active_obj and active_obj.type == 'MESH' and active_obj.mmd_type == 'NONE':
+        prop['active_mesh_index'] = scene.id_objects.find(active_obj.name)
     return prop.get('active_mesh_index', -1)
 
 #===========================================
@@ -321,6 +300,7 @@ class MMDRoot(PropertyGroup):
         #get=_show_meshes_get,
         #set=_show_meshes_set,
         update=_toggleVisibilityOfMeshes,
+        default=True,
         )
 
     show_rigid_bodies = BoolProperty(
@@ -463,7 +443,7 @@ class MMDRoot(PropertyGroup):
         )
     active_mesh_index = IntProperty(
         name='Active Mesh',
-        description='Active Mesh in this model',
+        min=0,
         set=_setActiveMeshObject,
         get=_getActiveMeshObject,
         )

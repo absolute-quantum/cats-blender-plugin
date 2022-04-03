@@ -3,7 +3,7 @@
 import bpy
 import math
 
-from mmd_tools_local.bpyutils import SceneOp
+from mmd_tools_local.bpyutils import Props, SceneOp
 
 class MMDCamera:
     def __init__(self, obj):
@@ -83,7 +83,7 @@ class MMDCamera:
         cameraObj.data.lens_unit = 'MILLIMETERS' # MILLIMETERS, FOV
         cameraObj.data.ortho_scale = 25*scale
         cameraObj.data.clip_end = 500*scale
-        cameraObj.data.draw_size = 5*scale
+        setattr(cameraObj.data, Props.display_size, 5*scale)
         cameraObj.location = (0, -45*scale, 0)
         cameraObj.rotation_mode = 'XYZ'
         cameraObj.rotation_euler = (math.radians(90), 0, 0)
@@ -95,7 +95,7 @@ class MMDCamera:
 
         empty.location = (0, 0, 10*scale)
         empty.rotation_mode = 'YXZ'
-        empty.empty_draw_size = 5*scale
+        setattr(empty, Props.empty_display_size, 5*scale)
         empty.lock_scale = (True, True, True)
         empty.mmd_type = 'CAMERA'
         empty.mmd_camera.angle = math.radians(30)

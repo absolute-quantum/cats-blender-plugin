@@ -62,7 +62,6 @@ class ConvertToMMDCamera(Operator):
             if self.camera_source == 'SCENE':
                 obj = None
             camera = MMDCamera.newMMDCameraAnimation(obj, target, self.scale, self.min_distance).camera()
-            camera.select = True
             SceneOp(context).active_object = camera
         else:
             MMDCamera.convertToMMDCamera(context.active_object, self.scale)

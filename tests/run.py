@@ -73,6 +73,13 @@ download_data = [
             'shape_key_to_basis': 'https://www.dropbox.com/s/d0efnrkauq596ng/ApplyShapeToBasisTest.blend?dl=1',
         }
     ),
+    DownloadData(
+        directory='bake',
+        file_prefix='bake.',
+        files={
+            'bakematerialtest': ''
+        }
+    ),
 ]
 
 # Download them

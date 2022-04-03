@@ -29,7 +29,7 @@ def register():
     Scene.keep_upper_chest = BoolProperty(
         name=t('Scene.keep_upper_chest.label'),
         description=t('Scene.keep_upper_chest.desc'),
-        default=False
+        default=True
     )
 
     Scene.combine_mats = BoolProperty(
@@ -187,7 +187,6 @@ def register():
         name=t('Scene.decimation_mode.label'),
         description=t('Scene.decimation_mode.desc'),
         items=[
-            #("LOOP", "Loop", t('Scene.decimation_mode.smart.desc')),
             ("SMART", t('Scene.decimation_mode.smart.label'), t('Scene.decimation_mode.smart.desc')),
             ("SAFE", t('Scene.decimation_mode.safe.label'), t('Scene.decimation_mode.safe.desc')),
             ("HALF", t('Scene.decimation_mode.half.label'), t('Scene.decimation_mode.half.desc')),
@@ -195,48 +194,6 @@ def register():
             ("CUSTOM", t('Scene.decimation_mode.custom.label'), t('Scene.decimation_mode.custom.desc'))
         ],
         default='SMART'
-    )
-
-    Scene.decimation_animation_weighting = BoolProperty(
-        name=t('Scene.decimation_animation_weighting.label'),
-        description=t('Scene.decimation_animation_weighting.desc'),
-        default=False
-    )
-
-    Scene.decimation_animation_weighting_factor = FloatProperty(
-        name=t('Scene.decimation_animation_weighting_factor.label'),
-        description=t('Scene.decimation_animation_weighting_factor.desc'),
-        default=0.25,
-        min=0,
-        max=1,
-        step=0.05,
-        precision=2,
-        subtype='FACTOR'
-    )
-
-
-    # Bake
-    Scene.bake_animation_weighting = BoolProperty(
-        name=t('Scene.decimation_animation_weighting.label'),
-        description=t('Scene.decimation_animation_weighting.desc'),
-        default=False
-    )
-
-    Scene.bake_animation_weighting_factor = FloatProperty(
-        name=t('Scene.decimation_animation_weighting_factor.label'),
-        description=t('Scene.decimation_animation_weighting_factor.desc'),
-        default=0.25,
-        min=0,
-        max=1,
-        step=0.05,
-        precision=2,
-        subtype='FACTOR'
-    )
-
-    Scene.bake_loop_decimate = BoolProperty(
-        name="Loop decimation",
-        description="Use loop decimation instead of Smart decimation, for cleaner animation.",
-        default=False
     )
 
     class BakePlatformPropertyGroup(PropertyGroup):
@@ -323,6 +280,11 @@ def register():
             ],
             default="NONE"
         )
+        metallic_pack_ao: BoolProperty(
+            name="Pack AO to Metallic Green",
+            description="Pack Ambient Occlusion to the Green channel. Saves a texture as Unity uses G for AO, R for Metallic.",
+            default=True
+        )
         diffuse_vertex_colors: BoolProperty(
             name="Bake to vertex colors",
             description="Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO.",
@@ -345,6 +307,7 @@ def register():
             items=[
                 ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
                 ("SPECULAR", "Specular", t("Scene.bake_diffuse_alpha_pack.none.desc")),
+                ("SMOOTHNESS", "Smoothness", t("Scene.bake_diffuse_alpha_pack.none.desc")),
             ],
             default="NONE"
         )
@@ -424,6 +387,11 @@ def register():
             ],
             default="NONE"
         )
+        phong_setup: BoolProperty(
+            name='Phong Setup (Source)',
+            description="For Source engine only. Provides diffuse lighting reflections for nonmetallic objects.",
+            default=False
+        )
         diffuse_emit_overlay: BoolProperty(
             name='Diffuse Emission Overlay',
             description='Blends emission into the diffuse map, for engines without a seperate emission map',
@@ -451,17 +419,11 @@ def register():
         default=True
     )
 
-    Scene.bake_create_disable_shapekeys = BoolProperty(
-        name="Create 'Disable' Shapekeys",
-        description="Create 'Disable' shapekeys for all but the largest mesh, that cause it to shrink to nothing. Lets you keep toggleable props, without the need for additional meshes.",
-        default=False
-    )
-
     Scene.bake_resolution = IntProperty(
         name=t('Scene.bake_resolution.label'),
         description=t('Scene.bake_resolution.desc'),
         default=2048,
-        min=128,
+        min=256,
         max=4096
     )
 
@@ -481,6 +443,12 @@ def register():
             ("MANUAL", "Manual", "Bake will take island information from any UVMap named 'Target' from your meshes, else it will default to the render-active one. Decimation works better when there's only one giant island per loose mesh!")
         ],
         default="UNMIRROR"
+    )
+
+    Scene.uvp_lock_islands = BoolProperty(
+        name="Keep Overlapping Islands (UVP)",
+        description="Experimental. Try to keep UVP's lock overlapping enabled",
+        default=False
     )
 
     Scene.bake_device = EnumProperty(
@@ -673,6 +641,10 @@ def register():
         default=70000,
         min=1,
         max=500000
+    )
+
+    Scene.cats_is_unittest = BoolProperty(
+        default=False
     )
 
     # Eye Tracking

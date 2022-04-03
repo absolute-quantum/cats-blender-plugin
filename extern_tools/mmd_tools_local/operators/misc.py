@@ -15,6 +15,24 @@ from mmd_tools_local.core.bone import FnBone
 
 
 @register_wrap
+class SelectObject(Operator):
+    bl_idname = 'mmd_tools.object_select'
+    bl_label = 'Select Object'
+    bl_description = 'Select the object'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    name = bpy.props.StringProperty(
+        name='Name',
+        description='The object name',
+        default='',
+        options={'HIDDEN', 'SKIP_SAVE'},
+        )
+
+    def execute(self, context):
+        utils.selectAObject(context.scene.objects[self.name])
+        return {'FINISHED'}
+
+@register_wrap
 class MoveObject(Operator, utils.ItemMoveOp):
     bl_idname = 'mmd_tools.object_move'
     bl_label = 'Move Object'
@@ -114,8 +132,8 @@ class CleanShapeKeys(Operator):
 @register_wrap
 class SeparateByMaterials(Operator):
     bl_idname = 'mmd_tools.separate_by_materials'
-    bl_label = 'Separate by Materials'
-    bl_description = 'Separate by materials'
+    bl_label = 'Separate By Materials'
+    bl_description = 'Separate By materials'
     bl_options = {'REGISTER', 'UNDO'}
 
     clean_shape_keys = bpy.props.BoolProperty(

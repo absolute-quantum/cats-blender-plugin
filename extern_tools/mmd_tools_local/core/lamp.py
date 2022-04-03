@@ -2,7 +2,7 @@
 
 import bpy
 
-from mmd_tools_local.bpyutils import SceneOp
+from mmd_tools_local.bpyutils import Props, SceneOp
 
 class MMDLamp:
     def __init__(self, obj):
@@ -34,7 +34,7 @@ class MMDLamp:
 
         empty.rotation_mode = 'XYZ'
         empty.lock_rotation = (True, True, True)
-        empty.empty_draw_size = 0.4
+        setattr(empty, Props.empty_display_size, 0.4)
         empty.scale = [10*scale] * 3
         empty.mmd_type = 'LIGHT'
         empty.location = (0, 0, 11*scale)
