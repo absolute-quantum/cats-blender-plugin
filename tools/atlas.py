@@ -25,6 +25,7 @@
 # Edits by: Hotox
 
 import bpy
+import math
 import webbrowser
 import addon_utils
 
@@ -409,7 +410,8 @@ class InstallShotariya(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5.3)
+        adjusted_width = math.floor(dpi_value * 5.3)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options

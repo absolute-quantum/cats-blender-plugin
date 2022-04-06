@@ -26,6 +26,7 @@
 import os
 import bpy
 import copy
+import math
 import zipfile
 import platform
 import webbrowser
@@ -324,7 +325,8 @@ class ZipPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6)
+        adjusted_width = math.floor(dpi_value * 6)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options
@@ -391,7 +393,8 @@ class ModelsPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3)
+        adjusted_width = math.floor(dpi_value * 3)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options
@@ -555,7 +558,8 @@ class InstallXPS(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        adjusted_width = math.floor(dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options
@@ -592,7 +596,8 @@ class InstallSource(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        adjusted_width = math.floor(dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options
@@ -629,7 +634,8 @@ class InstallVRM(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        adjusted_width = math.floor(dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options
@@ -665,7 +671,8 @@ class EnableMMD(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
+        adjusted_width = math.floor(dpi_value * 4)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options
@@ -963,7 +970,8 @@ class ErrorDisplay(bpy.types.Operator):
         self.eye_meshes_not_named_body = _eye_meshes_not_named_body
 
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1)
+        adjusted_width = math.floor(dpi_value * 6.1)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options

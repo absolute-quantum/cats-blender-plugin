@@ -25,6 +25,7 @@
 # Edits by: GiveMeAllYourCats
 
 import bpy
+import math
 
 from . import common as Common
 from . import eyetracking as Eyetracking
@@ -258,7 +259,8 @@ class PoseNamePopup(bpy.types.Operator):
     def invoke(self, context, event):
         context.scene.pose_to_shapekey_name = 'Pose'
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
+        adjusted_width = math.floor(dpi_value * 4)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def check(self, context):
         # Important for changing options

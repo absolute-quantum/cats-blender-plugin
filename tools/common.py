@@ -26,6 +26,7 @@
 
 import re
 import bpy
+import math
 import time
 import bmesh
 import platform
@@ -1667,7 +1668,8 @@ class ShowError(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
+        adjusted_width = math.floor(dpi_value * dpi_scale)
+        return context.window_manager.invoke_props_dialog(self, width=adjusted_width)
 
     def draw(self, context):
         if not error or len(error) == 0:
