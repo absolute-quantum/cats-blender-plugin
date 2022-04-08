@@ -193,7 +193,16 @@ class FixArmature(bpy.types.Operator):
             if bone.name.startswith('ValveBiped'):
                 source_engine = True
                 break
-
+        
+        #Perform "Blenda" specific operation. This is needed because Spine1 on this model represents the hips and that conflicts with other mappings.
+        for bone in armature.pose.bones:
+            if bone.name.startswith("cShrugger"):
+                for bone in armature.pose.bones:
+                    if bone.name == "Spine1":
+                        bone.name = "Hips"
+                        break
+                break
+        
         # Remove unused animation data
         if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
             armature.animation_data_clear()
