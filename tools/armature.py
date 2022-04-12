@@ -336,27 +336,28 @@ class FixArmature(bpy.types.Operator):
 
         #Fix visual unlinkage in the outliner so the objects are under object in outliner
         #Fixes issues like random objects not under a valve character skeleton.
+        parentcollectionname = None
+        try:
+            parentcollectionname = armature.users_collection[0].name
+        except:
+            collection = bpy.data.collections.new("Fixed Model Cats")
+            collection.objects.link(armature)
+            parentcollectionname = collection.name
         for mesh in Common.get_meshes_objects():
-            name = None
-            try:
-                name = armature.users_collection[0].name
-            except:
-                pass
+            
             #If the armature is in a collection put everything under it. else put everything outside the collections.
-            if name:
+            if parentcollectionname:
                 for both in [armature,mesh]:
                     for c in both.users_collection:
                         c.objects.unlink(both)
                     # make a new collection and link to it
-                    coll = bpy.data.collections.get(name)
+                    coll = bpy.data.collections.get(parentcollectionname)
                     if not coll:
-                        coll = bpy.data.collections.new(name)
+                        coll = bpy.data.collections.new(parentcollectionname)
                         scene.collection.children.link(coll)
                     coll.objects.link(both)
             else:
-                for c in both.users_collection:
-                        c.objects.unlink(o)
-
+                break
         # Check if weird FBX model
         print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
         if round(armature.scale[0], 2) == 0.01 \
