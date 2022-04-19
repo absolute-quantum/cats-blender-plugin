@@ -94,14 +94,14 @@ def register():
     )
 
     Scene.keep_merged_bones = BoolProperty(
-        name='Keep Merged Bones',
-        description='Select this to keep the bones after merging them to their parents or to the active bone',
+        name=t('keep_merged_bones'),
+        description=t('select_this_to_keep_the_bones_after_merging_them_to_their_parents_or_to_the_active_bone'),
         default=False
     )
 
     Scene.merge_visible_meshes_only = BoolProperty(
-        name='Merge Visible Meshes Only',
-        description='Select this to only merge the weights of the visible meshes',
+        name=t('merge_visible_meshes_only'),
+        description=t('select_this_to_only_merge_the_weights_of_the_visible_meshes'),
         default=False
     )
 
@@ -159,8 +159,8 @@ def register():
     )
 
     Scene.generate_twistbones_upper = BoolProperty(
-        name="Generate Upperhalf",
-        description="Generate the twistbones on the upper half of the bone. Usually used for upper legs.",
+        name=t("generate_upperhalf"),
+        description=t("generate_the_twistbones_on_the_upper_half_of_the_bone_usually_used_for_upper_legs"),
         default=False
     )
 
@@ -197,7 +197,7 @@ def register():
     )
 
     class BakePlatformPropertyGroup(PropertyGroup):
-        name: StringProperty(name='Name', default="New Platform")
+        name: StringProperty(name='name', default=t("New Platform"))
         use_decimation: BoolProperty(
             name=t('Scene.bake_use_decimation.label'),
             description=t('Scene.bake_use_decimation.desc'),
@@ -211,30 +211,30 @@ def register():
             max=70000
         )
         generate_prop_bone_max_influence_count: IntProperty(
-            name="Prop bones Max Influence Count",
-            description="Prop bones Max Influence Count",
+            name=t("prop_bones_max_influence_count"),
+            description=t("prop_bones_max_influence_count"),
             default=45,
             min=1,
             max=45
         )
         use_lods: BoolProperty(
-            name="Generate LODs",
-            description="Generate courser decimation levels for efficient rendering.",
+            name=t("generate_lods"),
+            description=t("generate_courser_decimation_levels_for_efficient_rendering"),
             default=False
         )
         lods: FloatVectorProperty(
-            name="LODs",
-            description='LOD generation levels, as a percent of the max tris',
+            name=t("lods"),
+            description=t('lod_generation_levels_as_a_percent_of_the_max_tris'),
             #min=0.0,
             #max=1.0
         )
         use_physmodel: BoolProperty(
-            name="Generate Physics Model",
-            description="Generate an additional LOD used for simplified physics interactions",
+            name=t("generate_physics_model"),
+            description=t("generate_an_additional_lod_used_for_simplified_physics_interactions"),
             default=False
         )
         physmodel_lod: FloatProperty(
-            name="Physmodel Percent",
+            name=t("physmodel_percent"),
             default=0.1,
             min=0.0,
             max=1.0
@@ -250,23 +250,23 @@ def register():
             default=False
         )
         optimize_static: BoolProperty(
-            name="Optimize Static Shapekeys",
-            description="Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",
+            name=t("optimize_static_shapekeys"),
+            description=t("seperate_vertices_unaffected_by_shape_keys_into_their_own_mesh_this_adds_a_drawcall_but_comes_with_a_significant_gpu_cost_savings_especially_on_mobile"),
             default=False
         )
         merge_twistbones: BoolProperty(
-            name="Merge Twist Bones",
-            description="Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints.",
+            name=t("merge_twist_bones"),
+            description=t("merge_any_bone_with_twist_in_the_name_useful_as_quest_does_not_support_constraints"),
             default=False
         )
         generate_prop_bones: BoolProperty(
-            name="Generate Prop Bones",
-            description="This option will detect any meshes weighted to a single bone and create a 'prop' bone you can independently scale to 0.",
+            name=t("generate_prop_bones"),
+            description=t("this_option_will_detect_any_meshes_weighted_to_a_single_bone_and_create_a_prop_bone_you_can_independently_scale_to_"),
             default=True
         )
         generate_prop_bone_max_influence_count: IntProperty(
-            name="Max Bones Per Prop",
-            description="Maximum bones a prop can be attached to to be considered a prop. More will create more toggleable props, but increase armature complexity.",
+            name=t("max_bones_per_prop"),
+            description=t("maximum_bones_a_prop_can_be_attached_to_to_be_considered_a_prop_more_will_create_more_toggleable_props_but_increase_armature_complexity"),
             default=2,
             min=1,
             max=100
@@ -281,13 +281,13 @@ def register():
             default="NONE"
         )
         metallic_pack_ao: BoolProperty(
-            name="Pack AO to Metallic Green",
-            description="Pack Ambient Occlusion to the Green channel. Saves a texture as Unity uses G for AO, R for Metallic.",
+            name=t("pack_ao_to_metallic_green"),
+            description=t("pack_ambient_occlusion_to_the_green_channel_saves_a_texture_as_unity_uses_g_for_ao_r_for_metallic"),
             default=True
         )
         diffuse_vertex_colors: BoolProperty(
-            name="Bake to vertex colors",
-            description="Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO.",
+            name=t("bake_to_vertex_colors"),
+            description=t("rebake_to_vertex_colors_after_initial_bake_avoids_an_entire_extra_texture_if_your_colors_are_simple_enough_incorperates_ao"),
             default=False
         )
         diffuse_alpha_pack: EnumProperty(
@@ -302,7 +302,7 @@ def register():
             default="NONE"
         )
         normal_alpha_pack: EnumProperty(
-            name="Normal Alpha Pack",
+            name=t("normal_alpha_pack"),
             description=t('Scene.bake_diffuse_alpha_pack.desc'),
             items=[
                 ("NONE", t("Scene.bake_diffuse_alpha_pack.none.label"), t("Scene.bake_diffuse_alpha_pack.none.desc")),
@@ -312,12 +312,12 @@ def register():
             default="NONE"
         )
         normal_invert_g: BoolProperty(
-            name="Invert green channel",
-            description="Source engine uses an inverse green channel, this fixes that on export",
+            name=t("invert_green_channel"),
+            description=t("source_engine_uses_an_inverse_green_channel_this_fixes_that_on_export"),
             default=False
         )
         diffuse_premultiply_ao: BoolProperty(
-            name="Premultiply Diffuse w/ AO",
+            name=t("premultiply_diffuse_w_ao"),
             description=t('Scene.bake_pass_questdiffuse.desc'),
             default=False
         )
@@ -332,8 +332,8 @@ def register():
             subtype='FACTOR'
         )
         smoothness_premultiply_ao: BoolProperty(
-            name="Premultiply Smoothness w/ AO",
-            description="While not technically accurate, this avoids the 'shine effect' on obscured portions of your model",
+            name=t("premultiply_smoothness_w_ao"),
+            description=t("while_not_technically_accurate_this_avoids_the_shine_effect_on_obscured_portions_of_your_model"),
             default=False
         )
         smoothness_premultiply_opacity: FloatProperty(
@@ -347,8 +347,8 @@ def register():
             subtype='FACTOR'
         )
         translate_bone_names: EnumProperty(
-            name="Translate bone names",
-            description="Target another bone naming standard when exporting. Requires standard bone names",
+            name=t("translate_bone_names"),
+            description=t("target_another_bone_naming_standard_when_exporting_requires_standard_bone_names"),
             items=[
                 ("NONE", "None", "Don't translate any bones"),
                 ("VALVE", "Valve", "Translate to Valve conventions when exporting, for use with Source Engine"),
@@ -357,8 +357,8 @@ def register():
             default="NONE"
         )
         export_format: EnumProperty(
-            name='Export format',
-            description='Model format to use when exporting',
+            name=t('export_format'),
+            description=t('model_format_to_use_when_exporting'),
             items=[
                 ("FBX", "FBX", "FBX export format, for use with Unity"),
                 ("DAE", "DAE", "Collada DAE, for use with Second Life and older engines"),
@@ -366,21 +366,21 @@ def register():
             ]
         )
         image_export_format: EnumProperty(
-            name='Image export format',
-            description='image type to use when exporting',
+            name=t('image_export_format'),
+            description=t('image_type_to_use_when_exporting'),
             items=[
                 ("TGA", ".tga", "targa export format, for use with Gmod"),
                 ("PNG", ".png", "png format, for use with most platforms.")
             ]
         )
         specular_setup: BoolProperty(
-            name='Specular Setup',
-            description="Convert Diffuse and Metallic to premultiplied Diffuse and Specular. Compatible with older engines",
+            name=t('specular_setup'),
+            description=t("convert_diffuse_and_metallic_to_premultiplied_diffuse_and_specular_compatible_with_older_engines"),
             default=False
         )
         specular_alpha_pack: EnumProperty(
-            name="Specular Alpha Channel",
-            description="What to pack to the Alpha channel of Specularity",
+            name=t("specular_alpha_channel"),
+            description=t("what_to_pack_to_the_alpha_channel_of_specularity"),
             items=[
                 ("NONE", t("Scene.bake_metallic_alpha_pack.none.label"), t("Scene.bake_metallic_alpha_pack.none.desc")),
                 ("SMOOTHNESS", t("Scene.bake_metallic_alpha_pack.smoothness.label"), "Smoothness, for use with Second Life")
@@ -388,18 +388,18 @@ def register():
             default="NONE"
         )
         phong_setup: BoolProperty(
-            name='Phong Setup (Source)',
-            description="For Source engine only. Provides diffuse lighting reflections for nonmetallic objects.",
+            name=t('phong_setup_source'),
+            description=t("for_source_engine_only_provides_diffuse_lighting_reflections_for_nonmetallic_objects"),
             default=False
         )
         diffuse_emit_overlay: BoolProperty(
-            name='Diffuse Emission Overlay',
-            description='Blends emission into the diffuse map, for engines without a seperate emission map',
+            name=t('diffuse_emission_overlay'),
+            description=t('blends_emission_into_the_diffuse_map_for_engines_without_a_seperate_emission_map'),
             default=False
         )
         specular_smoothness_overlay: BoolProperty(
-            name='Specular Smoothness Overlay',
-            description='Merges smoothness into the specular map, for engines without a seperate smoothness map',
+            name=t('specular_smoothness_overlay'),
+            description=t('merges_smoothness_into_the_specular_map_for_engines_without_a_seperate_smoothness_map'),
             default=False
         )
         gmod_model_name: StringProperty(name='Gmod Model Name', default="missing no")
@@ -414,8 +414,8 @@ def register():
     Scene.bake_platform_index = IntProperty(default=0)
 
     Scene.bake_cleanup_shapekeys = BoolProperty(
-        name="Cleanup Shapekeys",
-        description="Remove backup shapekeys in the final result, e.g. 'Key1 - Reverted' or 'blink_old'",
+        name=t("cleanup_shapekeys"),
+        description=t("remove_backup_shapekeys_in_the_final_result_eg_key__reverted_or_blinkold"),
         default=True
     )
 
@@ -446,14 +446,14 @@ def register():
     )
 
     Scene.uvp_lock_islands = BoolProperty(
-        name="Keep Overlapping Islands (UVP)",
-        description="Experimental. Try to keep UVP's lock overlapping enabled",
+        name=t("keep_overlapping_islands_uvp"),
+        description=t("experimental_try_to_keep_uvps_lock_overlapping_enabled"),
         default=False
     )
 
     Scene.bake_device = EnumProperty(
-        name='Bake Device',
-        description='Device to bake on. GPU gives a significant speedup, but can cause issues depending on your graphics drivers.',
+        name=t('bake_device'),
+        description=t('device_to_bake_on_gpu_gives_a_significant_speedup_but_can_cause_issues_depending_on_your_graphics_drivers'),
         default='GPU',
         items=[
             ('CPU', 'CPU', 'Perform bakes on CPU (Safe)'),
@@ -479,14 +479,14 @@ def register():
     )
 
     Scene.bake_sharpen = BoolProperty(
-        name="Sharpen bakes",
-        description="Sharpen resampled images after baking diffuse/smoothness/metallic. Reccomended as any sampling will cause blur.",
+        name=t("sharpen_bakes"),
+        description=t("sharpen_resampled_images_after_baking_diffusesmoothnessmetallic_reccomended_as_any_sampling_will_cause_blur"),
         default=True
     )
 
     Scene.bake_denoise = BoolProperty(
-        name="Denoise renders",
-        description="Denoise the resulting image after emit/AO. Reccomended as this will reduce the 'grainy' quality of inexpensive rendering..",
+        name=t("denoise_renders"),
+        description=t("denoise_the_resulting_image_after_emitao_reccomended_as_this_will_reduce_the_grainy_quality_of_inexpensive_rendering"),
         default=True
     )
 
@@ -521,26 +521,26 @@ def register():
     )
 
     Scene.bake_apply_keys = BoolProperty(
-        name="Apply current shapekey mix",
-        description="When selected, currently active shape keys will be applied to the basis. This is extremely beneficial to performance if your avatar is intended to 'default' to one shapekey mix, as having active shapekeys all the time is expensive. Keys ending in '_bake' are always applied to the basis and removed completely, regardless of this option.",
+        name=t("apply_current_shapekey_mix"),
+        description=t("when_selected_currently_active_shape_keys_will_be_applied_to_the_basis_this_is_extremely_beneficial_to_performance_if_your_avatar_is_intended_to_default_to_one_shapekey_mix_as_having_active_shapekeys_all_the_time_is_expensive_keys_ending_in_bake_are_always_applied_to_the_basis_and_removed_completely_regardless_of_this_option"),
         default=False
     )
 
     Scene.bake_ignore_hidden = BoolProperty(
-        name="Ignore hidden objects",
-        description="Ignore currently hidden objects when copying",
+        name=t("ignore_hidden_objects"),
+        description=t("ignore_currently_hidden_objects_when_copying"),
         default=True
     )
 
     Scene.bake_show_advanced_general_options = BoolProperty(
-        name="Show Advanced General Options",
-        description="Will show extra options related to which bake passes are performed and how.",
+        name=t("show_advanced_general_options"),
+        description=t("will_show_extra_options_related_to_which_bake_passes_are_performed_and_how"),
         default=False
     )
 
     Scene.bake_show_advanced_platform_options = BoolProperty(
-        name="Show Advanced Platform Options",
-        description="Will show extra options related to applicable bones and texture packing setups.",
+        name=t("show_advanced_platform_options"),
+        description=t("will_show_extra_options_related_to_applicable_bones_and_texture_packing_setups"),
         default=False
     )
 
@@ -557,14 +557,14 @@ def register():
     )
 
     Scene.bake_emit_indirect = BoolProperty(
-        name="Bake projected light",
-        description="Bake the effect of emission on nearby surfaces. Results in much more realistic lighting effects, but can animate less well.",
+        name=t("bake_projected_light"),
+        description=t("bake_the_effect_of_emission_on_nearby_surfaces_results_in_much_more_realistic_lighting_effects_but_can_animate_less_well"),
         default=False
     )
 
     Scene.bake_emit_exclude_eyes = BoolProperty(
-        name="Exclude eyes",
-        description="Bakes the effect of any eye glow onto surrounding objects, but not vice-versa. Improves animation when eyes are moving around..",
+        name=t("exclude_eyes"),
+        description=t("bakes_the_effect_of_any_eye_glow_onto_surrounding_objects_but_not_viceversa_improves_animation_when_eyes_are_moving_around"),
         default=True
     )
 
@@ -581,14 +581,14 @@ def register():
     )
 
     Scene.bake_optimize_solid_materials = BoolProperty(
-        name="Optimize Solid Materials",
-        description="Optimizes solid materials by making a small area for them. AO pass will nullify",
+        name=t("optimize_solid_materials"),
+        description=t("optimizes_solid_materials_by_making_a_small_area_for_them_ao_pass_will_nullify"),
         default=True
     )
 
     Scene.bake_unwrap_angle = FloatProperty(
-        name="Unwrap Angle",
-        description="The angle Reproject uses when unwrapping. Larger angles yield less islands but more stretching and smaller does opposite",
+        name=t("unwrap_angle"),
+        description=t("the_angle_reproject_uses_when_unwrapping_larger_angles_yield_less_islands_but_more_stretching_and_smaller_does_opposite"),
         default=66.0,
         min=0.1,
         max=89.9,
