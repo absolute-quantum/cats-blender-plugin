@@ -147,6 +147,10 @@ class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
     bl_label = t('EyeTrackingPanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 
+    @classmethod
+    def poll(cls, context):
+        return context.scene.show_avatar_2_tabs
+
     def draw(self, context):
         layout = self.layout
         box = layout.box()
