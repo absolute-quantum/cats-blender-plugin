@@ -339,32 +339,45 @@ class FixArmature(bpy.types.Operator):
         if is_vrm:
             for mesh in Common.get_meshes_objects(mode=2):
                 if mesh.name.endswith(('.baked', '.baked0')):
-                    mesh.parent = armature  # TODO ----- (edit, 989onan here, if you mean get it visually under it in the outliner I got you covered now through lines below.)
-                    # unlink from old collections
+                    mesh.parent = armature
 
-
-        #Fix visual unlinkage in the outliner so the objects are under object in outliner
-        #Fixes issues like random objects not under a valve character skeleton.
-        for mesh in Common.get_meshes_objects():
-            name = None
-            try:
-                name = armature.users_collection[0].name
-            except:
-                pass
-            #If the armature is in a collection put everything under it. else put everything outside the collections.
-            if name:
-                for both in [armature,mesh]:
-                    for c in both.users_collection:
-                        c.objects.unlink(both)
-                    # make a new collection and link to it
-                    coll = bpy.data.collections.get(name)
-                    if not coll:
-                        coll = bpy.data.collections.new(name)
-                        context.scene.collection.children.link(coll)
-                    coll.objects.link(both)
+        # Set the armature into only one collection and set all of its meshes into only that same collection.
+        # This ensures that meshes visually appear under the armature in the outliner and only appear once.
+        # 2.79 and older don't have collections, so this is only relevant for 2.80 and newer.
+        if not Common.version_2_79_or_older():
+            # Set the armature to only be linked inside of one collection
+            #
+            # Get the collections the armature is in
+            collections_armature_is_in = armature.users_collection
+            # The armature being in at least one collection is the expected case.
+            # Unlink the armature from all its collections except the first.
+            if collections_armature_is_in:
+                # The first collection is the one we'll make sure the armature and all its meshes are linked in
+                armature_collection = collections_armature_is_in[0]
+                # Unlink the armature from all the other collections
+                for col in collections_armature_is_in[1::]:
+                    # Unlink the armature from the collection
+                    col.objects.unlink(armature)
+            # The armature should always be in a collection if it's in the current view layer, but if it's not for some
+            # reason, link it to the scene collection.
             else:
-                for c in both.users_collection:
-                        c.objects.unlink(o)
+                # Get the scene collection
+                armature_collection = context.scene.collection
+                # Link the armature to the scene collection
+                armature_collection.objects.link(armature)
+
+            # Link all the meshes to the same collection as the armature and unlink them from all other collections
+            for mesh in Common.get_meshes_objects():
+                mesh_already_in_armature_collection = False
+                # Unlink the mesh from all collections that aren't armature_collection
+                for col in mesh.users_collection:
+                    if col == armature_collection:
+                        mesh_already_in_armature_collection = True
+                    else:
+                        col.objects.unlink(mesh)
+                # Link the mesh to armature_collection if it's not already linked to armature_collection
+                if not mesh_already_in_armature_collection:
+                    armature_collection.objects.link(mesh)
 
         # Check if weird FBX model
         print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
