@@ -788,6 +788,8 @@ class BakeButton(bpy.types.Operator):
                                 emission_color = [0.0,0.0,0.0,1.0]
                                 metallic_solid = True
                                 metallic_color = [0.0,0.0,0.0,1.0]
+                                alpha_solid = True
+                                alpha_color = [1.0,1.0,1.0,1.0]
 
                                 def check_if_tex_solid(bsdfinputname,node_prinipled,executestring):
                                     node_image = node_prinipled.inputs[bsdfinputname].links[0].from_node
@@ -872,15 +874,36 @@ class BakeButton(bpy.types.Operator):
                                             metallic_solid,metallic_color = check_if_tex_solid("Metallic",node_prinipled,"metallic_color")
                                         else:
                                             metallic_solid = False
+                                if pass_alpha:
+                                    if not node.inputs["Alpha"].is_linked:
+                                        alpha_solid = True
+                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                                        node_image.image = bpy.data.images.new("Alpha", width=8, height=8, alpha=True)
+                                        node_image.location = (1101, -500)
+                                        node_image.label = "Alpha"
 
+
+                                        #assign to image so it's baked
+                                        node_image.image.generated_color = [node.inputs["Alpha"].default_value]*4
+                                        alpha_color = [node.inputs["Alpha"].default_value]*4
+                                        node_image.image.file_format = 'PNG'
+                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Alpha'])
+                                    else:
+                                        if diffuse_solid:  #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
+                                            alpha_solid,alpha_color = check_if_tex_solid("Alpha",node_prinipled,"alpha_color")
+                                        else:
+                                            alpha_solid = False
+                                
+                                
+                                
                                 #now we check based on all the passes if our material is solid.
-                                if diffuse_solid and smoothness_solid and metallic_solid:
+                                if diffuse_solid and smoothness_solid and metallic_solid and alpha_solid:
                                     solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
-                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
+                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color,"alpha_color":alpha_color}
                                     print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
                                 elif emission_solid:
                                     solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
-                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color}
+                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color,"alpha_color":alpha_color}
                                     print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
                                 else:
                                     print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is NOT solid!")
