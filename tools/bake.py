@@ -513,6 +513,7 @@ class BakeButton(bpy.types.Operator):
 
         # Run bake.
         context.scene.cycles.bake_type = bake_type
+        context.scene.cycles.use_denoising = False # https://developer.blender.org/T94573
         context.scene.render.bake.use_pass_direct = "DIRECT" in bake_pass_filter
         context.scene.render.bake.use_pass_indirect = "INDIRECT" in bake_pass_filter
         context.scene.render.bake.use_pass_color = "COLOR" in bake_pass_filter
