@@ -522,8 +522,8 @@ def register():
         name=t('Scene.bake_face_scale.label'),
         description=t('Scene.bake_face_scale.desc'),
         default=3.0,
-        min=0.5,
-        max=4.0,
+        soft_min=0.5,
+        soft_max=4.0,
         step=0.25,
         precision=2,
         subtype='FACTOR'
