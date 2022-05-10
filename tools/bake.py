@@ -550,19 +550,23 @@ class BakeButton(bpy.types.Operator):
         if context.scene.bake_optimize_solid_materials and (not any(plat.use_decimation for plat in context.scene.bake_platforms)) and (not context.scene.bake_pass_ao) and (not context.scene.bake_pass_normal):
             #arranging old pixels and assignment to image pixels this way makes only one update per pass, so many many times faster - @989onan
             old_pixels = image.pixels[:]
-
+            old_pixels = list(old_pixels)
+            
+            #in pixels
+            #Thanks to @Sacred#9619 on discord for this one.
+            margin = int(math.ceil(0.0078125 * context.scene.bake_resolution / 2)) #has to be the same as "pixelmargin"
+            n = int( bake_size[0]/margin )
+            n2 = int( bake_size[1]/margin )
             #lastly, slap our solid squares on top of bake atlas, to make a nice solid square without interuptions from the rest of the bake - @989onan
             for child in [obj for obj in objects if obj.type == "MESH"]: #grab all mesh objects being baked
                 for matindex,material in enumerate(child.data.materials):
                     if material.name in solidmaterialcolors:
                         index = list(solidmaterialcolors.keys()).index(material.name)
-                        old_pixels = list(old_pixels)
+                        
 
+                        
                         #in pixels
                         #Thanks to @Sacred#9619 on discord for this one.
-                        margin = int(math.ceil(0.0078125 * context.scene.bake_resolution / 2)) #has to be the same as "pixelmargin"
-                        n = int( bake_size[0]/margin )
-                        n2 = int( bake_size[1]/margin )
                         X = margin/2 + margin * int( index % n )
                         Y = margin/2 + margin * int( index / n2 )
                         square_center_coord = [X,Y]
@@ -926,8 +930,8 @@ class BakeButton(bpy.types.Operator):
                         if uvmap.active_render:
                             child.data.uv_layers.active = uvmap
                             active_uv = uvmap
-                    reproject_anyway = (len(child.data.uv_layers) == 0 or
-                                        all(set(loop.uv[:]).issubset({0,1}) for loop in active_uv.data))
+                    reproject_anyway = False#(len(child.data.uv_layers) == 0 or
+                                        #all(set(loop.uv[:]).issubset({0,1}) for loop in active_uv.data))
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
                     cats_uv_layers.append('CATS UV')
@@ -991,6 +995,7 @@ class BakeButton(bpy.types.Operator):
                                     bpy.ops.mesh.select_all(action='DESELECT') #deselect all mesh
 
                                     bpy.ops.mesh.select_mode(type="FACE")
+                                    bpy.context.scene.tool_settings.uv_select_mode = 'FACE'
                                     child.active_material_index = matindex
                                     bpy.ops.object.material_slot_select() #select our material on mesh
                                     bpy.ops.uv.select_all(action='SELECT') #select all uv
@@ -1042,7 +1047,7 @@ class BakeButton(bpy.types.Operator):
                     if obj.type != "MESH":
                         continue
                     context.view_layer.objects.active = obj
-                    for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', 'RightEye', 'righteye', 'Righteye', 'Eye.R']:
+                    for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', "Eye_L", 'RightEye', 'righteye', 'Righteye', 'Eye.R', "Eye_R"]:
                         if group in obj.vertex_groups:
                             vgroup_idx = obj.vertex_groups[group].index
                             if any(any(v_group.group == vgroup_idx and v_group.weight > 0.0 for v_group in vert.groups) for vert in obj.data.vertices):
