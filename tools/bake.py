@@ -694,6 +694,7 @@ class BakeButton(bpy.types.Operator):
         prioritize_face = context.scene.bake_prioritize_face
         prioritize_factor = context.scene.bake_face_scale
         uv_overlap_correction = context.scene.bake_uv_overlap_correction
+        dont_pack_uvs = (not uv_overlap_correction == "MANUALNOPACK")
         margin = 0.0078125 # we want a 1-pixel margin around each island at 256x256, so 1/256, and since it's the space between islands we multiply it by two
         pixelmargin = int(math.ceil(margin * resolution / 2))
         quick_compare = True
@@ -717,6 +718,9 @@ class BakeButton(bpy.types.Operator):
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
         cleanup_shapekeys = context.scene.bake_cleanup_shapekeys # Reverted and _old shapekeys
         ignore_hidden = context.scene.bake_ignore_hidden
+
+        #adjusting don't pack to disable if there are things that will cause undesirable results if enabled, then invert and store to pack_uvs var
+        pack_uvs = not (dont_pack_uvs and (not emit_indirect) and (not prioritize_face) and (not pass_ao) and (not any(plat.use_decimation for plat in context.scene.bake_platforms)))
 
         # Filters
         sharpen_bakes = context.scene.bake_sharpen
@@ -1026,23 +1030,24 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.object.select_all(action='SELECT')
             for layer in cats_uv_layers:
                 Common.switch('OBJECT')
-                for obj in collection.all_objects:
-                    if obj.type == 'MESH':
-                        obj.data.uv_layers.active = obj.data.uv_layers[layer]
-                        context.view_layer.objects.active = obj
-                Common.switch('EDIT')
-                bpy.ops.mesh.select_all(action='SELECT')
-                bpy.ops.uv.select_all(action='SELECT')
-                bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
-                Common.switch('OBJECT')
+                if pack_uvs:
+                    for obj in collection.all_objects:
+                        if obj.type == 'MESH':
+                            obj.data.uv_layers.active = obj.data.uv_layers[layer]
+                            context.view_layer.objects.active = obj
+                    Common.switch('EDIT')
+                    bpy.ops.mesh.select_all(action='SELECT')
+                    bpy.ops.uv.select_all(action='SELECT')
+                    bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
+                    Common.switch('OBJECT')
 
             # TODO: this doesn't really need editor commands
-            if prioritize_face:
+            if prioritize_face and pack_uvs:
                 for obj in collection.all_objects:
                     if obj.type != "MESH":
                         continue
                     context.view_layer.objects.active = obj
-                    for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', 'RightEye', 'righteye', 'Righteye', 'Eye.R']:
+                    for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', "Eye_L", 'RightEye', 'righteye', 'Righteye', 'Eye.R', "Eye_R"]:
                         if group in obj.vertex_groups:
                             vgroup_idx = obj.vertex_groups[group].index
                             if any(any(v_group.group == vgroup_idx and v_group.weight > 0.0 for v_group in vert.groups) for vert in obj.data.vertices):
@@ -1080,39 +1085,40 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.uv.select_all(action='SELECT')
                 # have a UI-able toggle, if UVP is detected, to keep lock overlapping in place
                 # otherwise perform blender pack here
-                if not context.scene.uvp_lock_islands:
-                    bpy.ops.uv.pack_islands(rotate=True, margin=margin)
-
-                # detect if UVPackMaster installed and configured
-                if 'uvpm3_props' in context.scene:
-                    context.scene.uvpm3_props.normalize_islands = False
-                    # CATS UV Super is where we do the World normal bake, so it must be totally
-                    # non-overlapping.
-                    context.scene.uvpm3_props.lock_overlapping_enable = layer != 'CATS UV Super'
-                    context.scene.uvpm3_props.lock_overlapping_mode = '2'
-                    context.scene.uvpm3_props.pack_to_others = False
-                    context.scene.uvpm3_props.margin = margin
-                    context.scene.uvpm3_props.simi_threshold = 3
-                    context.scene.uvpm3_props.precision = 1000
-                    context.scene.uvpm3_props.rotation_enable = True
-                    context.scene.uvpm3_props.rotation_step = 90
-                    # Give UVP a static number of iterations to do TODO: make this configurable?
-                    for _ in range(1, 3):
-                        bpy.ops.uvpackmaster3.pack(mode_id='pack.single_tile')
-                elif 'uvpm2_props' in context.scene:
-                    context.scene.uvp2_props.normalize_islands = False
-                    context.scene.uvp2_props.lock_overlapping_mode = ('0' if
-                                                                      layer == 'CATS UV Super' else
-                                                                      '2')
-                    context.scene.uvp2_props.pack_to_others = False
-                    context.scene.uvp2_props.margin = margin
-                    context.scene.uvp2_props.similarity_threshold = 3
-                    context.scene.uvp2_props.precision = 1000
-                    # Give UVP a static number of iterations to do TODO: make this configurable?
-                    for _ in range(1, 3):
-                        bpy.ops.uvpackmaster2.uv_pack()
-                else:
-                    bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+                if pack_uvs:
+                    if not context.scene.uvp_lock_islands:
+                        bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+                    
+                    # detect if UVPackMaster installed and configured
+                    if 'uvpm3_props' in context.scene:
+                        context.scene.uvpm3_props.normalize_islands = False
+                        # CATS UV Super is where we do the World normal bake, so it must be totally
+                        # non-overlapping.
+                        context.scene.uvpm3_props.lock_overlapping_enable = layer != 'CATS UV Super'
+                        context.scene.uvpm3_props.lock_overlapping_mode = '2'
+                        context.scene.uvpm3_props.pack_to_others = False
+                        context.scene.uvpm3_props.margin = margin
+                        context.scene.uvpm3_props.simi_threshold = 3
+                        context.scene.uvpm3_props.precision = 1000
+                        context.scene.uvpm3_props.rotation_enable = True
+                        context.scene.uvpm3_props.rotation_step = 90
+                        # Give UVP a static number of iterations to do TODO: make this configurable?
+                        for _ in range(1, 3):
+                            bpy.ops.uvpackmaster3.pack(mode_id='pack.single_tile')
+                    elif 'uvpm2_props' in context.scene:
+                        context.scene.uvp2_props.normalize_islands = False
+                        context.scene.uvp2_props.lock_overlapping_mode = ('0' if
+                                                                          layer == 'CATS UV Super' else
+                                                                          '2')
+                        context.scene.uvp2_props.pack_to_others = False
+                        context.scene.uvp2_props.margin = margin
+                        context.scene.uvp2_props.similarity_threshold = 3
+                        context.scene.uvp2_props.precision = 1000
+                        # Give UVP a static number of iterations to do TODO: make this configurable?
+                        for _ in range(1, 3):
+                            bpy.ops.uvpackmaster2.uv_pack()
+                    else:
+                        bpy.ops.uv.pack_islands(rotate=True, margin=margin)
                 Common.switch('OBJECT')
 
             if optimize_solid_materials:

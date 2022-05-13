@@ -320,6 +320,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row = col.row(align=True)
                     row.separator()
                     row.prop(context.scene, 'bake_unwrap_angle', expand=True)
+                if context.scene.bake_uv_overlap_correction == "MANUALNOPACK" and any(plat.use_decimation for plat in context.scene.bake_platforms) and (not context.scene.bake_emit_indirect) and (not context.scene.bake_prioritize_face) and (not context.scene.bake_pass_ao):
+                    col.label(text="***Skipping the packing step will not work if one or more of your platforms has decimation active,***") #TRANSLATE PLEASE!
+                    col.label(text="***or you have either emit, priortize eyes, or ambient occlusion!!!!***")
                 if 'uvpm3_props' in context.scene or 'uvpm2_props' in context.scene:
                     row = col.row(align=True)
                     row.separator()
