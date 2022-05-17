@@ -258,13 +258,7 @@ PoseNamePopup.label,Give this shapekey a name:,このシェイプキーに名前
 PoseNamePopup.desc,Sets the shapekey name. Press anywhere outside to skip,,쉐이프키 이름을 설정합니다. 스킵하려면 아무 곳이나 누르세요.
 PoseNamePopup.success,Pose successfully saved as shape key.,,포즈가 성공적으로 쉐이프키로 저장되었습니다.
 PoseToRest.label,Apply as Rest Pose,レストポーズとして適用する,새로운 기본자세로 적용
-PoseToRest.desc,"This applies the current pose position as the new rest position.
-
-If you scale the bones equally on each axis the shape keys will be scaled correctly as well!
-WARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this",,"이것은 현재 포즈를 새로운 기본 포즈로 적용합니다.
-
-만약 당신이 뼈들의 스케일을 각 축마다 동일하게 조절했다면 쉐이프키들 또한 올바르게 적용될 것입니다!
-경고: 이것은 쉐이프키에 원치 않는 영향을 줄 수 있기 때문에, 이걸로 머리를 수정할 경우 조심하세요."
+PoseToRest.desc,This applies the current pose position as the new rest position.,,이것은 현재 포즈를 새로운 기본 포즈로 적용합니다.
 PoseToRest.success,Pose successfully applied as rest pose.,,포즈가 성공적으로 기본자세로 적용되었습니다.
 JoinMeshes.label,Join Meshes,メッシュに参加する,메쉬 통합
 JoinMeshes.desc,"Joins all meshes of this model together.
