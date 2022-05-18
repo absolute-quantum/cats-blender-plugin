@@ -2200,6 +2200,12 @@ class BakeButton(bpy.types.Operator):
         #clean unused data
         if not is_unittest:
             bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+
+        # set viewport to material preview
+        for area in context.screen.areas:
+            if area.type == "VIEW_3D":
+                area.spaces.active.shading.type = "MATERIAL"
+
         self.report({'INFO'}, t('cats_bake.info.success'))
 
         print("BAKE COMPLETE!")
