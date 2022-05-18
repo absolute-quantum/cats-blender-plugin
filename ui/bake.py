@@ -188,6 +188,13 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row = col.row(align=True)
                     row.separator()
                     row.prop(item, 'preserve_seams', expand=True)
+                    row = col.row(align=True)
+                    row.separator()
+                    row.prop(context.scene, 'bake_animation_weighting', expand=True)
+                    if context.scene.bake_animation_weighting:
+                        row = col.row(align=True)
+                        row.separator()
+                        row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)
                 row = col.row(align=True)
                 row.prop(item, 'use_physmodel', expand=True)
                 if item.use_physmodel:

@@ -458,7 +458,8 @@ class TestAddon(unittest.TestCase):
                     foundcolor = tuple(round(px*255) for px in bpy.data.images[bakename].pixels[pxoffset:pxoffset+4])
                     foundraw = tuple(px for px in bpy.data.images[bakename].pixels[pxoffset:pxoffset+4])
                     if not filter_img:
-                        self.assertEqual(foundcolor, color,
+                        for i in range(4):
+                            self.assertTrue(color[i] - 2 <= foundcolor[i] <= color[i] + 2,
                                          "{}@({}, {}): {} != {} ({})".format(bakename,
                                                                              coordinate[0],
                                                                              coordinate[1],

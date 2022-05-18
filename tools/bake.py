@@ -634,6 +634,10 @@ class BakeButton(bpy.types.Operator):
         max_tris = context.scene.max_tris
         decimate_fingers = context.scene.decimate_fingers
         decimation_remove_doubles = context.scene.decimation_remove_doubles
+        decimation_animation_weighting = context.scene.decimation_animation_weighting
+        decimation_animation_weighting_factor = context.scene.decimation_animation_weighting_factor
+        context.scene.decimation_animation_weighting = context.scene.bake_animation_weighting
+        context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
 
         context.scene.decimation_mode = "SMART"
         context.scene.decimate_fingers = False
@@ -643,6 +647,8 @@ class BakeButton(bpy.types.Operator):
         context.scene.max_tris = max_tris
         context.scene.decimate_fingers = decimate_fingers
         context.scene.decimation_remove_doubles = decimation_remove_doubles
+        context.scene.decimation_animation_weighting = decimation_animation_weighting
+        context.scene.decimation_animation_weighting_factor = decimation_animation_weighting_factor
 
         # Change render engine back to original
         context.scene.render.engine = render_engine_tmp
@@ -766,7 +772,7 @@ class BakeButton(bpy.types.Operator):
                                 return node
 
         bsdf_original = first_bsdf(objs_size_descending)
-        cats_uv_layers = []
+        cats_uv_layers = set()
 
         #first fix broken colors by adding their textures, then add the results of color only materials/solid textures to see if they need special UV treatment.
         #To detect and fix UV's for materials that are solid and don't need entire uv maps if all the textures are consistent throught. Also adds solid textures for BSDF's with default values but no texture
@@ -894,9 +900,9 @@ class BakeButton(bpy.types.Operator):
                                             alpha_solid,alpha_color = check_if_tex_solid("Alpha",node_prinipled,"alpha_color")
                                         else:
                                             alpha_solid = False
-                                
-                                
-                                
+
+
+
                                 #now we check based on all the passes if our material is solid.
                                 if diffuse_solid and smoothness_solid and metallic_solid and alpha_solid:
                                     solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
@@ -930,11 +936,11 @@ class BakeButton(bpy.types.Operator):
                                         all(set(loop.uv[:]).issubset({0,1}) for loop in active_uv.data))
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
-                    cats_uv_layers.append('CATS UV')
+                    cats_uv_layers.add('CATS UV')
                     if supersample_normals:
                         bpy.ops.mesh.uv_texture_add()
                         child.data.uv_layers[-1].name = 'CATS UV Super'
-                        cats_uv_layers.append('CATS UV Super')
+                        cats_uv_layers.add('CATS UV Super')
 
                     if uv_overlap_correction == "REPROJECT" or reproject_anyway:
                         for layer in cats_uv_layers:
@@ -1036,37 +1042,28 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.uv.average_islands_scale()  # Use blender average so we can make our own tweaks.
                 Common.switch('OBJECT')
 
-            # TODO: this doesn't really need editor commands
+            # Scale up textures most likely to be looked closer at (in this case, eyes)
             if prioritize_face:
                 for obj in collection.all_objects:
                     if obj.type != "MESH":
                         continue
-                    context.view_layer.objects.active = obj
+                    # Build set of relevant vertices
+                    affected_vertices = set()
                     for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', 'RightEye', 'righteye', 'Righteye', 'Eye.R']:
                         if group in obj.vertex_groups:
                             vgroup_idx = obj.vertex_groups[group].index
-                            if any(any(v_group.group == vgroup_idx and v_group.weight > 0.0 for v_group in vert.groups) for vert in obj.data.vertices):
-                                print("{} found in {}".format(group, obj.name))
-                                bpy.ops.object.mode_set(mode='EDIT')
-                                bpy.ops.uv.select_all(action='DESELECT')
-                                bpy.ops.mesh.select_all(action='DESELECT')
-                                # Select all vertices in it
-                                obj.vertex_groups.active = obj.vertex_groups[group]
-                                bpy.ops.object.vertex_group_select()
-                                # Synchronize
-                                bpy.ops.object.mode_set(mode='OBJECT')
-                                bpy.ops.object.mode_set(mode='EDIT')
-                                # Then select all UVs
-                                bpy.ops.uv.select_all(action='SELECT')
-                                bpy.ops.object.mode_set(mode='OBJECT')
-                                # Then for each UV (cause of the viewport thing) scale up by the selected factor
-                                uv_layer = obj.data.uv_layers["CATS UV"].data
-                                for poly in obj.data.polygons:
-                                    for loop in poly.loop_indices:
-                                        if uv_layer[loop].select:
-                                            uv_layer[loop].uv.x *= prioritize_factor
-                                            uv_layer[loop].uv.y *= prioritize_factor
+                            for vert in obj.data.vertices:
+                                if any(v_group.group == vgroup_idx and v_group.weight > 0.0 for v_group in vert.groups):
+                                    affected_vertices.add(vert.index)
 
+                    # Then for each UV (cause of the viewport thing) scale up by the selected factor
+                    for layer in cats_uv_layers:
+                        uv_layer = obj.data.uv_layers[layer].data
+                        for poly in obj.data.polygons:
+                            if all(vert_idx in affected_vertices for vert_idx in poly.vertices):
+                                for loop in poly.loop_indices:
+                                    uv_layer[loop].uv.x *= prioritize_factor
+                                    uv_layer[loop].uv.y *= prioritize_factor
 
             # Pack islands. Optionally use UVPackMaster if it's available
             bpy.ops.object.select_all(action='SELECT')

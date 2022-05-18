@@ -196,6 +196,42 @@ def register():
         default='SMART'
     )
 
+    Scene.decimation_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=False
+    )
+
+    Scene.decimation_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+
+    # Bake
+    Scene.bake_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=False
+    )
+
+    Scene.bake_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
     class BakePlatformPropertyGroup(PropertyGroup):
         name: StringProperty(name='name', default=t("New Platform"))
         use_decimation: BoolProperty(

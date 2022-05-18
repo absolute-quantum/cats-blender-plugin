@@ -149,6 +149,13 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_remove_doubles')
         row = col.row(align=True)
+        row.prop(context.scene, 'decimation_animation_weighting', expand=True)
+        if context.scene.decimation_animation_weighting: # and context.scene.decimation_mode != "LOOP":
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'decimation_animation_weighting_factor', expand=True)
+            col.separator()
+        row = col.row(align=True)
         row.operator(Decimation.AutoDecimatePresetGood.bl_idname)
         row.operator(Decimation.AutoDecimatePresetExcellent.bl_idname)
         row.operator(Decimation.AutoDecimatePresetQuest.bl_idname)
