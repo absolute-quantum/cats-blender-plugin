@@ -65,8 +65,8 @@ else:
 if not is_reloading:
     # This order is important
     import mmd_tools_local
-    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
-        import immersive_scaler.immersive_scaler as imscale
+    if find_spec("imscale") and find_spec("imscale.immersive_scaler"):
+        import imscale.immersive_scaler as imscale
     from . import updater
     from . import tools
     from . import ui
@@ -291,8 +291,8 @@ def register():
         print('mmd_tools is already registered')
 
     # Register immersive scaler if it's loaded
-    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
-        import immersive_scaler.immersive_scaler as imscale
+    if find_spec("imscale") and find_spec("imscale.immersive_scaler"):
+        import imscale.immersive_scaler as imscale
         try:
             imscale.register()
         except ModuleNotFoundError:
@@ -374,8 +374,8 @@ def unregister():
         pass
 
     # Unload immersive scaler
-    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
-        import immersive_scaler.immersive_scaler as imscale
+    if find_spec("imscale") and find_spec("imscale.immersive_scaler"):
+        import imscale.immersive_scaler as imscale
         try:
             imscale.unregister()
         except ModuleNotFoundError:
