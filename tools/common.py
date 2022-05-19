@@ -2045,6 +2045,7 @@ def add_principled_shader(mesh):
 
             # Link nodes together
             mat_slot.material.node_tree.links.new(node_image.outputs['Color'], node_principled.inputs['Base Color'])
+            mat_slot.material.node_tree.links.new(node_image.outputs['Alpha'], node_principled.inputs['Alpha'])
             mat_slot.material.node_tree.links.new(node_principled.outputs['BSDF'], node_output.inputs['Surface'])
 
 
