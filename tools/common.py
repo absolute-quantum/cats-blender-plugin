@@ -2029,14 +2029,14 @@ def add_principled_shader(mesh):
 
 
             # Create Principled BSDF node
-            node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
-            node_prinipled.label = 'Cats Export Shader'
-            node_prinipled.location = principled_shader_pos
-            node_prinipled.inputs['Specular'].default_value = 0
-            node_prinipled.inputs['Roughness'].default_value = 0
-            node_prinipled.inputs['Sheen Tint'].default_value = 0
-            node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
-            node_prinipled.inputs['IOR'].default_value = 0
+            node_principled = nodes.new(type='ShaderNodeBsdfPrincipled')
+            node_principled.label = 'Cats Export Shader'
+            node_principled.location = principled_shader_pos
+            node_principled.inputs['Specular'].default_value = 0
+            node_principled.inputs['Roughness'].default_value = 0
+            node_principled.inputs['Sheen Tint'].default_value = 0
+            node_principled.inputs['Clearcoat Roughness'].default_value = 0
+            node_principled.inputs['IOR'].default_value = 0
 
             # Create Output node for correct image exports
             node_output = nodes.new(type='ShaderNodeOutputMaterial')
@@ -2044,8 +2044,8 @@ def add_principled_shader(mesh):
             node_output.location = output_shader_pos
 
             # Link nodes together
-            mat_slot.material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
-            mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_output.inputs['Surface'])
+            mat_slot.material.node_tree.links.new(node_image.outputs['Color'], node_principled.inputs['Base Color'])
+            mat_slot.material.node_tree.links.new(node_principled.outputs['BSDF'], node_output.inputs['Surface'])
 
 
 def remove_toon_shader(mesh):
