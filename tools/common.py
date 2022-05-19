@@ -2090,9 +2090,7 @@ def fix_vrm_shader(mesh):
                     node.inputs['SphereAddTexture'].default_value = (0.0, 0.0, 0.0, 0.0)
 
                     # Support typo in old vrm importer
-                    node_input = node.inputs.get('NomalmapTexture')
-                    if not node_input:
-                        node_input = node.inputs.get('NormalmapTexture')
+                    node_input = node.inputs.get('NomalmapTexture') or node.inputs.get('NormalmapTexture')
                     node_input.default_value = (1.0, 1.0, 1.0, 1.0)
 
                     is_vrm_mat = True
