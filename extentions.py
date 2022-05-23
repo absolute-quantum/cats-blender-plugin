@@ -246,13 +246,6 @@ def register():
             min=1,
             max=70000
         )
-        generate_prop_bone_max_influence_count: IntProperty(
-            name=t("prop_bones_max_influence_count"),
-            description=t("prop_bones_max_influence_count"),
-            default=45,
-            min=1,
-            max=45
-        )
         use_lods: BoolProperty(
             name=t("generate_lods"),
             description=t("generate_courser_decimation_levels_for_efficient_rendering"),
@@ -299,13 +292,6 @@ def register():
             name=t("generate_prop_bones"),
             description=t("this_option_will_detect_any_meshes_weighted_to_a_single_bone_and_create_a_prop_bone_you_can_independently_scale_to_"),
             default=True
-        )
-        generate_prop_bone_max_influence_count: IntProperty(
-            name=t("max_bones_per_prop"),
-            description=t("maximum_bones_a_prop_can_be_attached_to_to_be_considered_a_prop_more_will_create_more_toggleable_props_but_increase_armature_complexity"),
-            default=2,
-            min=1,
-            max=100
         )
         metallic_alpha_pack: EnumProperty(
             name=t('Scene.bake_metallic_alpha_pack.label'),
