@@ -35,7 +35,6 @@ from . import common as Common
 from .register import register_wrap
 from .translations import t
 
-from bpy.props import BoolProperty
 
 @register_wrap
 class BakeTutorialButton(bpy.types.Operator):
@@ -49,6 +48,7 @@ class BakeTutorialButton(bpy.types.Operator):
 
         self.report({'INFO'}, t('cats_bake.tutorial_button.success'))
         return {'FINISHED'}
+
 
 def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
     item.max_tris = tricount
@@ -748,7 +748,6 @@ class BakeButton(bpy.types.Operator):
         orig_scene = bpy.data.scenes[orig_scene_name]
         context.scene.collection.children.link(collection)
 
-
         # Make sure all armature modifiers target the new armature
         for child in collection.all_objects:
             for modifier in child.modifiers:
@@ -756,6 +755,16 @@ class BakeButton(bpy.types.Operator):
                     modifier.object = arm_copy
                 if modifier.type == "MULTIRES":
                     modifier.render_levels = modifier.total_levels
+            # Do a little weight painting cleanup here
+            if child.type == "MESH":
+                child.select_set(True)
+                context.view_layer.objects.active = child
+                Common.switch('WEIGHT_PAINT')
+                # Unity maxes out at 4 deforms, remove here
+                bpy.ops.object.vertex_group_limit_total(group_select_mode='BONE_DEFORM')
+                # Remove insiginificant weights
+                bpy.ops.object.vertex_group_clean(group_select_mode='BONE_DEFORM', limit=0.00001)
+                Common.switch('OBJECT')
 
         # Copy default values from the largest diffuse BSDF
         objs_size_descending = sorted([obj for obj in collection.all_objects if obj.type == "MESH"],
@@ -787,18 +796,7 @@ class BakeButton(bpy.types.Operator):
                         for node in material.node_tree.nodes:
                             if node.type == "BSDF_PRINCIPLED":#For each material bsdf in every object in each material
 
-                                diffuse_solid = True
-                                diffuse_color = [0.0,0.0,0.0,1.0]
-                                smoothness_solid = True
-                                smoothness_color = [0.0,0.0,0.0,1.0]
-                                emission_solid = False
-                                emission_color = [0.0,0.0,0.0,1.0]
-                                metallic_solid = True
-                                metallic_color = [0.0,0.0,0.0,1.0]
-                                alpha_solid = True
-                                alpha_color = [1.0,1.0,1.0,1.0]
-
-                                def check_if_tex_solid(bsdfinputname,node_prinipled,executestring):
+                                def check_if_tex_solid(bsdfinputname,node_prinipled):
                                     node_image = node_prinipled.inputs[bsdfinputname].links[0].from_node
                                     if node_image.type != "TEX_IMAGE": #To catch normal maps
                                         return [False,[0.0,0.0,0.0,1.0]] #if not image then it's some type of node chain that is too complicated so return false
@@ -807,117 +805,55 @@ class BakeButton(bpy.types.Operator):
                                     if np.array_equal(solidimagepixels,old_pixels):
                                         return [True,old_pixels[0:4]]
                                     return [False,[0.0,0.0,0.0,1.0]]
+
                                 #each pass below makes solid color textures or reads the texture and checks if it's solid using numpy.
-
                                 node_prinipled = node
+                                solid_colors = {
+                                    "diffuse": [0.0,0.0,0.0,1.0],
+                                    "smoothness": [0.0,0.0,0.0,1.0],
+                                    "metallic": [0.0,0.0,0.0,1.0],
+                                    "alpha": [1.0,1.0,1.0,1.0],
+                                }
+                                for (use_pass, pass_key, pass_slot) in [
+                                        (pass_diffuse, "diffuse", "Base Color"),
+                                        (pass_emit, "emit", "Emission"),
+                                        (pass_smoothness, "smoothness", "Roughness"),
+                                        (pass_metallic, "metallic", "Metallic"),
+                                        (pass_alpha, "alpha", "Alpha"),
+                                ]:
+                                    if use_pass:
+                                        if not node.inputs[pass_slot].is_linked:
+                                            node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                                            node_image.image = bpy.data.images.new(pass_slot, width=8, height=8, alpha=True)
+                                            node_image.location = (1101, -500)
+                                            node_image.label = pass_slot
 
-                                if pass_diffuse:
-                                    if not node.inputs["Base Color"].is_linked:
-                                        diffuse_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Base Color", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Base Color"
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = node.inputs["Base Color"].default_value
-                                        diffuse_color = node.inputs["Base Color"].default_value
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
-                                    else:
-                                        diffuse_solid,diffuse_color = check_if_tex_solid("Base Color",node_prinipled,'diffuse_color')
-
-                                if pass_emit:
-                                    if not node.inputs["Emission"].is_linked:
-                                        emission_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Emission", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Emission"
-
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = node.inputs["Emission"].default_value
-                                        emission_color = node.inputs["Emission"].default_value
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Emission'])
-                                    else:
-                                        emission_solid,emission_color = check_if_tex_solid("Emission",node_prinipled,"emission_color") #emission doesn't care about other things for mat to be solid
-                                if pass_smoothness:
-                                    if not node.inputs["Roughness"].is_linked:
-                                        smoothness_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Roughness", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Roughness"
-
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = [node.inputs["Roughness"].default_value]*4
-                                        smoothness_color = [node.inputs["Roughness"].default_value]*4
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Roughness'])
-                                    else:
-                                        if diffuse_solid: #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
-                                            smoothness_solid,smoothness_color = check_if_tex_solid("Roughness",node_prinipled,"smoothness_color")
+                                            #assign to image so it's baked
+                                            node_image.image.generated_color = node.inputs[pass_slot].default_value
+                                            solid_colors[pass_key] = node.inputs[pass_slot].default_value
+                                            node_image.image.file_format = 'PNG'
+                                            material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
                                         else:
-                                            smoothness_solid = False
-                                if pass_metallic:
-                                    if not node.inputs["Metallic"].is_linked:
-                                        metallic_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Metallic", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Metallic"
-
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = [node.inputs["Metallic"].default_value]*4
-                                        metallic_color = [node.inputs["Metallic"].default_value]*4
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Metallic'])
-                                    else:
-                                        if smoothness_solid:  #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
-                                            metallic_solid,metallic_color = check_if_tex_solid("Metallic",node_prinipled,"metallic_color")
-                                        else:
-                                            metallic_solid = False
-                                if pass_alpha:
-                                    if not node.inputs["Alpha"].is_linked:
-                                        alpha_solid = True
-                                        node_image = material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                                        node_image.image = bpy.data.images.new("Alpha", width=8, height=8, alpha=True)
-                                        node_image.location = (1101, -500)
-                                        node_image.label = "Alpha"
-
-
-                                        #assign to image so it's baked
-                                        node_image.image.generated_color = [node.inputs["Alpha"].default_value]*4
-                                        alpha_color = [node.inputs["Alpha"].default_value]*4
-                                        node_image.image.file_format = 'PNG'
-                                        material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Alpha'])
-                                    else:
-                                        if diffuse_solid:  #efficency since checking if others are false is faster than always checking an entire array. Every bit counts.
-                                            alpha_solid,alpha_color = check_if_tex_solid("Alpha",node_prinipled,"alpha_color")
-                                        else:
-                                            alpha_solid = False
-
-
+                                            pass_solid,pass_color = check_if_tex_solid(pass_slot,node_prinipled)
+                                            if pass_solid:
+                                                solid_colors[pass_key] = pass_color
+                                            else:
+                                                del solid_colors[pass_key]
 
                                 #now we check based on all the passes if our material is solid.
-                                if diffuse_solid and smoothness_solid and metallic_solid and alpha_solid:
+                                if all(pass_key in solid_colors for pass_key in ["diffuse", "smoothness", "metallic", "alpha"]) or "emit" in solid_colors:
                                     solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
-                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color,"alpha_color":alpha_color}
-                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
-                                elif emission_solid:
-                                    solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
-                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":diffuse_color,"emission_color":emission_color,"smoothness_color":smoothness_color,"metallic_color":metallic_color,"alpha_color":alpha_color}
+                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":solid_colors['diffuse'],
+                                                                                                "emission_color":solid_colors.get('emit', [0.0, 0.0, 0.0, 1.0]),
+                                                                                                "smoothness_color":solid_colors['smoothness'],
+                                                                                                "metallic_color":solid_colors['metallic'],
+                                                                                                "alpha_color":solid_colors['alpha']}
                                     print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
                                 else:
                                     print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is NOT solid!")
                                     pass #don't put an entry, and assume if there is no entry, then it isn't solid.
 
                                 break #since we found our principled and did our stuff we can break the node scanning loop on this material.
-
 
         if generate_uvmap:
             bpy.ops.object.select_all(action='DESELECT')
@@ -1477,7 +1413,6 @@ class BakeButton(bpy.types.Operator):
                 if bakename not in ["specular", "normal", "phong"]:
                     orig_image = bpy.data.images["SCRIPT_" + bakename+'.png']
                     image.pixels[:] = orig_image.pixels[:]
-
 
             # Create yet another output collection
             plat_collection = bpy.data.collections.new("CATS Bake " + platform_name)
