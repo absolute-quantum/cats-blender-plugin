@@ -284,8 +284,8 @@ class BakePresetAll(bpy.types.Operator):
 @register_wrap
 class BakeAddProp(bpy.types.Operator):
     bl_idname = 'cats_bake.add_prop'
-    bl_label = "Force Prop"
-    bl_description = "Forces selected objects to generate prop setups, regardless of bone counts."
+    bl_label = "Set Prop"
+    bl_description = "Generate ~Prop bones and enable/disable animations for the selected meshes."
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -300,8 +300,8 @@ class BakeAddProp(bpy.types.Operator):
 @register_wrap
 class BakeRemoveProp(bpy.types.Operator):
     bl_idname = 'cats_bake.remove_prop'
-    bl_label = "Force Not Prop"
-    bl_description = "Forces selected objects to never generate prop setups, regardless of bone counts."
+    bl_label = "Set Not Prop"
+    bl_description = "Disables prop bone generation for the selected meshes."
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
     @classmethod
@@ -945,7 +945,6 @@ class BakeButton(bpy.types.Operator):
                                     Common.switch('OBJECT')#idk why this has to be here but it breaks without it - @989onan
                                     index = solidmaterialnames[material.name]
 
-
                                     #Thanks to @Sacred#9619 on discord for this one.
                                     squaremargin = pixelmargin
                                     n = int( resolution/squaremargin )
@@ -1376,7 +1375,6 @@ class BakeButton(bpy.types.Operator):
                 os.makedirs(target_dir,0o777,True)
 
             generate_prop_bones = platform.generate_prop_bones
-            generate_prop_bone_max_influence_count = platform.generate_prop_bone_max_influence_count
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
@@ -1465,47 +1463,46 @@ class BakeButton(bpy.types.Operator):
                 # Find any mesh that's weighted to a single bone, duplicate and rename that bone, move mesh's vertex group to the new bone
                 for obj in plat_collection.objects:
                     if obj.type == "MESH":
+                        if 'generatePropBones' not in obj or not obj['generatePropBones']:
+                            continue
+                        found_vertex_groups = set([vgp.group for vertex in obj.data.vertices
+                                                    for vgp in vertex.groups if vgp.weight > 0.00001])
+                        if len(found_vertex_groups) == 0:
+                            continue
+
                         orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
-                        found_vertex_groups = set()
                         path_strings = []
-                        for vertex in obj.data.vertices:
-                            found_vertex_groups |= set([vgp.group for vgp in vertex.groups if vgp.weight > 0.00001])
+                        vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
+                        for vgp in found_vertex_groups:
+                            vgroup_name = vgroup_lookup[vgp]
+                            #if not plat_arm_copy.data.bones[vgroup_name].children:
+                            #    #TODO: this doesn't account for props attached to something which has existing attachments
+                            #    Common.switch("OBJECT")
+                            #    print("Object " + obj.name + " already has no children, skipping")
+                            #    continue
 
-                        generate_bones = found_vertex_groups and len(found_vertex_groups) <= generate_prop_bone_max_influence_count
-                        if 'generatePropBones' in obj:
-                            generate_bones = obj['generatePropBones']
-                        if generate_bones:
-                            vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
-                            for vgp in found_vertex_groups:
-                                vgroup_name = vgroup_lookup[vgp]
-                                #if not plat_arm_copy.data.bones[vgroup_name].children:
-                                #    #TODO: this doesn't account for props attached to something which has existing attachments
-                                #    Common.switch("OBJECT")
-                                #    print("Object " + obj.name + " already has no children, skipping")
-                                #    continue
-
-                                print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
-                                # If the obj has ".001" or similar, trim it
-                                newbonename = "~" + vgroup_name + "_Prop_" + orig_obj_name
-                                obj.vertex_groups[vgroup_name].name = newbonename
-                                context.view_layer.objects.active = plat_arm_copy
-                                Common.switch("EDIT")
-                                if not vgroup_name in plat_arm_copy.data.edit_bones:
-                                    continue
-                                orig_bone = plat_arm_copy.data.edit_bones[vgroup_name]
-                                prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
-                                prop_bone.head = orig_bone.head
-                                prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
-                                prop_bone.parent = orig_bone
-                                # To create en/disable animation files
-                                next_bone = prop_bone.parent
-                                path_string = prop_bone.name
-                                while next_bone != None:
-                                    path_string = next_bone.name + "/" + path_string
-                                    next_bone = next_bone.parent
-                                path_string = "Armature/" + path_string
-                                path_strings.append(path_string)
-                                Common.switch("OBJECT")
+                            print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
+                            # If the obj has ".001" or similar, trim it
+                            newbonename = "~" + vgroup_name + "_Prop_" + orig_obj_name
+                            obj.vertex_groups[vgroup_name].name = newbonename
+                            context.view_layer.objects.active = plat_arm_copy
+                            Common.switch("EDIT")
+                            if not vgroup_name in plat_arm_copy.data.edit_bones:
+                                continue
+                            orig_bone = plat_arm_copy.data.edit_bones[vgroup_name]
+                            prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
+                            prop_bone.head = orig_bone.head
+                            prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
+                            prop_bone.parent = orig_bone
+                            # To create en/disable animation files
+                            next_bone = prop_bone.parent
+                            path_string = prop_bone.name
+                            while next_bone != None:
+                                path_string = next_bone.name + "/" + path_string
+                                next_bone = next_bone.parent
+                            path_string = "Armature/" + path_string
+                            path_strings.append(path_string)
+                            Common.switch("OBJECT")
 
                         # A bit of a hacky string manipulation, just create a curve for each bone based on the editor path. Output file is YAML
                         # {EDITOR_VALUE} = 1

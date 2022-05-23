@@ -216,8 +216,6 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row.prop(item, 'generate_prop_bones', expand=True)
                 if item.generate_prop_bones:
                     row = col.row(align=True)
-                    row.prop(item, 'generate_prop_bone_max_influence_count', expand=True)
-                    row = col.row(align=True)
                     row.operator(Bake.BakeAddProp.bl_idname)
                     row.operator(Bake.BakeRemoveProp.bl_idname)
 
