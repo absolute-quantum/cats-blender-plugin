@@ -1094,8 +1094,9 @@ class BakeButton(bpy.types.Operator):
                 if obj.type == 'MESH':
                     obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
-        if not os.path.exists(bpy.path.abspath("//CATS Bake/")):
-            os.mkdir(bpy.path.abspath("//CATS Bake/"))
+        if os.path.exists(bpy.path.abspath("//CATS Bake/")):
+            shutil.rmtree(bpy.path.abspath("//CATS Bake/"))
+        os.mkdir(bpy.path.abspath("//CATS Bake/"))
 
         # Perform 'Bake' renders: non-normal that never perform ray-tracing
         for (bake_conditions, bake_name, bake_type, bake_pass_filter, background_color,
