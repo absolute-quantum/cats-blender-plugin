@@ -1016,7 +1016,7 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
 
                 # detect if UVPackMaster installed and configured
-                if False: #'uvpm3_props' in context.scene:
+                if 'uvpm3_props' in context.scene:
                     context.scene.uvpm3_props.normalize_islands = False
                     # CATS UV Super is where we do the World normal bake, so it must be totally
                     # non-overlapping.
@@ -1485,25 +1485,33 @@ class BakeButton(bpy.types.Operator):
                             print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
                             # If the obj has ".001" or similar, trim it
                             newbonename = "~" + vgroup_name + "_Prop_" + orig_obj_name
-                            obj.vertex_groups[vgroup_name].name = newbonename
+                            if newbonename not in obj.vertex_groups:
+                                obj.vertex_groups[vgroup_name].name = newbonename
+                            else:
+                                # if newbonename already exists as a name, merge new vgroup with existing
+                                # this means "Obj" and "Obj.001" will get the same bone
+                                Common.mix_weights(obj, obj.vertex_groups[vgroup_name], obj.vertex_groups[newbonename])
+                                obj.vertex_groups.remove(vgroup_name)
+
                             context.view_layer.objects.active = plat_arm_copy
                             Common.switch("EDIT")
                             if not vgroup_name in plat_arm_copy.data.edit_bones:
                                 continue
                             orig_bone = plat_arm_copy.data.edit_bones[vgroup_name]
-                            prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
-                            prop_bone.head = orig_bone.head
-                            prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
-                            prop_bone.parent = orig_bone
-                            # To create en/disable animation files
-                            next_bone = prop_bone.parent
-                            path_string = prop_bone.name
-                            while next_bone != None:
-                                path_string = next_bone.name + "/" + path_string
-                                next_bone = next_bone.parent
-                            path_string = "Armature/" + path_string
-                            path_strings.append(path_string)
-                            Common.switch("OBJECT")
+                            if newbonename not in plat_arm_copy.data.edit_bones:
+                                prop_bone = plat_arm_copy.data.edit_bones.new(newbonename)
+                                prop_bone.head = orig_bone.head
+                                prop_bone.tail[:] = [(orig_bone.head[i] + orig_bone.tail[i]) / 2 for i in range(3)]
+                                prop_bone.parent = orig_bone
+                                # To create en/disable animation files
+                                next_bone = prop_bone.parent
+                                path_string = prop_bone.name
+                                while next_bone != None:
+                                    path_string = next_bone.name + "/" + path_string
+                                    next_bone = next_bone.parent
+                                path_string = "Armature/" + path_string
+                                path_strings.append(path_string)
+                                Common.switch("OBJECT")
 
                         # A bit of a hacky string manipulation, just create a curve for each bone based on the editor path. Output file is YAML
                         # {EDITOR_VALUE} = 1
