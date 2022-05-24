@@ -1016,7 +1016,7 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
 
                 # detect if UVPackMaster installed and configured
-                if 'uvpm3_props' in context.scene:
+                if False: #'uvpm3_props' in context.scene:
                     context.scene.uvpm3_props.normalize_islands = False
                     # CATS UV Super is where we do the World normal bake, so it must be totally
                     # non-overlapping.
@@ -1512,7 +1512,7 @@ class BakeButton(bpy.types.Operator):
                             newname = "Enable " + orig_obj_name
                             editor_curves = ""
                             scale_curves = ""
-                            for path_string in path_strings:
+                            for path_string in sorted(path_strings):
                                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_ScaleCurves.anim.part", 'r') as infilepart:
                                     scale_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{SCALE_VALUE}", "{x: 1, y: 1, z: 1}") for line in infilepart])
                                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_EditorCurves.anim.part", 'r') as infilepart:
@@ -1525,7 +1525,7 @@ class BakeButton(bpy.types.Operator):
                             newname = "Disable " + orig_obj_name
                             editor_curves = ""
                             scale_curves = ""
-                            for path_string in path_strings:
+                            for path_string in sorted(path_strings):
                                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_ScaleCurves.anim.part", 'r') as infilepart:
                                     scale_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{SCALE_VALUE}", "{x: 0, y: 0, z: 0}") for line in infilepart])
                                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_EditorCurves.anim.part", 'r') as infilepart:
