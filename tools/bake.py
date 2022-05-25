@@ -1462,6 +1462,7 @@ class BakeButton(bpy.types.Operator):
 
             if generate_prop_bones:
                 # Find any mesh that's weighted to a single bone, duplicate and rename that bone, move mesh's vertex group to the new bone
+                all_path_strings = dict()
                 for obj in plat_collection.objects:
                     if obj.type == "MESH":
                         if 'generatePropBones' not in obj or not obj['generatePropBones']:
@@ -1472,7 +1473,6 @@ class BakeButton(bpy.types.Operator):
                             continue
 
                         orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
-                        path_strings = []
                         vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
                         for vgp in found_vertex_groups:
                             vgroup_name = vgroup_lookup[vgp]
@@ -1510,38 +1510,41 @@ class BakeButton(bpy.types.Operator):
                                     path_string = next_bone.name + "/" + path_string
                                     next_bone = next_bone.parent
                                 path_string = "Armature/" + path_string
-                                path_strings.append(path_string)
+                                if orig_obj_name not in all_path_strings:
+                                    all_path_strings[orig_obj_name] = set()
+                                all_path_strings[orig_obj_name].add(path_string)
                                 Common.switch("OBJECT")
 
-                        # A bit of a hacky string manipulation, just create a curve for each bone based on the editor path. Output file is YAML
-                        # {EDITOR_VALUE} = 1
-                        # {SCALE_VALUE} = {x: 1, y: 1, z: 1}
-                        with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/enable.anim", 'r') as infile:
-                            newname = "Enable " + orig_obj_name
-                            editor_curves = ""
-                            scale_curves = ""
-                            for path_string in sorted(path_strings):
-                                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_ScaleCurves.anim.part", 'r') as infilepart:
-                                    scale_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{SCALE_VALUE}", "{x: 1, y: 1, z: 1}") for line in infilepart])
-                                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_EditorCurves.anim.part", 'r') as infilepart:
-                                    editor_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{EDITOR_VALUE}", "1") for line in infilepart])
+                for orig_obj_name, path_strings in all_path_strings.items():
+                    # A bit of a hacky string manipulation, just create a curve for each bone based on the editor path. Output file is YAML
+                    # {EDITOR_VALUE} = 1
+                    # {SCALE_VALUE} = {x: 1, y: 1, z: 1}
+                    with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/enable.anim", 'r') as infile:
+                        newname = "Enable " + orig_obj_name
+                        editor_curves = ""
+                        scale_curves = ""
+                        for path_string in sorted(path_strings):
+                            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_ScaleCurves.anim.part", 'r') as infilepart:
+                                scale_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{SCALE_VALUE}", "{x: 1, y: 1, z: 1}") for line in infilepart])
+                            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_EditorCurves.anim.part", 'r') as infilepart:
+                                editor_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{EDITOR_VALUE}", "1") for line in infilepart])
 
-                            with open(bpy.path.abspath("//CATS Bake/") + newname + ".anim", 'w') as outfile:
-                                for line in infile:
-                                    outfile.write(line.replace("{NAME_STRING}", newname).replace("{EDITOR_CURVES}", editor_curves).replace("{SCALE_CURVES}", scale_curves))
-                        with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/disable.anim", 'r') as infile:
-                            newname = "Disable " + orig_obj_name
-                            editor_curves = ""
-                            scale_curves = ""
-                            for path_string in sorted(path_strings):
-                                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_ScaleCurves.anim.part", 'r') as infilepart:
-                                    scale_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{SCALE_VALUE}", "{x: 0, y: 0, z: 0}") for line in infilepart])
-                                with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_EditorCurves.anim.part", 'r') as infilepart:
-                                    editor_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{EDITOR_VALUE}", "0") for line in infilepart])
+                        with open(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + newname + ".anim"), 'w') as outfile:
+                            for line in infile:
+                                outfile.write(line.replace("{NAME_STRING}", newname).replace("{EDITOR_CURVES}", editor_curves).replace("{SCALE_CURVES}", scale_curves))
+                    with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/disable.anim", 'r') as infile:
+                        newname = "Disable " + orig_obj_name
+                        editor_curves = ""
+                        scale_curves = ""
+                        for path_string in sorted(path_strings):
+                            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_ScaleCurves.anim.part", 'r') as infilepart:
+                                scale_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{SCALE_VALUE}", "{x: 0, y: 0, z: 0}") for line in infilepart])
+                            with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/m_EditorCurves.anim.part", 'r') as infilepart:
+                                editor_curves += "".join([line.replace("{PATH_STRING}", path_string).replace("{EDITOR_VALUE}", "0") for line in infilepart])
 
-                            with open(bpy.path.abspath("//CATS Bake/") + newname + ".anim", 'w') as outfile:
-                                for line in infile:
-                                    outfile.write(line.replace("{NAME_STRING}", newname).replace("{EDITOR_CURVES}", editor_curves).replace("{SCALE_CURVES}", scale_curves))
+                        with open(bpy.path.abspath("//CATS Bake/" + platform_name + "/" + newname + ".anim"), 'w') as outfile:
+                            for line in infile:
+                                outfile.write(line.replace("{NAME_STRING}", newname).replace("{EDITOR_CURVES}", editor_curves).replace("{SCALE_CURVES}", scale_curves))
 
             if translate_bone_names == "SECONDLIFE":
                 bpy.ops.cats_manual.convert_to_secondlife()
