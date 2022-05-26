@@ -388,6 +388,14 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 col.label(text=t('BakePanel.bakepasseslabel'))
                 row = col.row(align=True)
                 row.prop(context.scene, 'bake_pass_diffuse', expand=True)
+                if context.scene.bake_pass_diffuse:
+                    row = col.row(align=True)
+                    row.separator()
+                    row.prop(context.scene, 'bake_diffuse_indirect', expand=True)
+                    if context.scene.bake_diffuse_indirect:
+                        row = col.row(align=True)
+                        row.separator()
+                        row.prop(context.scene, 'bake_diffuse_indirect_opacity', expand=True)
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'bake_pass_normal', expand=True)
@@ -397,6 +405,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 col.separator()
                 row = col.row(align=True)
                 row.prop(context.scene, 'bake_pass_ao', expand=True)
+                # TODO: warning in UI if you don't have any AO keys
                 if context.scene.bake_pass_ao:
                     row = col.row(align=True)
                     row.separator()

@@ -629,6 +629,23 @@ def register():
         ]
     )
 
+    Scene.bake_diffuse_indirect = BoolProperty(
+        name="Bake indirect light",
+        description="Bake reflected light as if the only light source is ambient light",
+        default=False
+    )
+
+    Scene.bake_diffuse_indirect_opacity = FloatProperty(
+        name="Opacity",
+        description="How bright the indirect light will be on the diffuse layer",
+        default=0.5,
+        min=0.0,
+        max=1.0,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
     Scene.add_shape_key = EnumProperty(
         name=t('Scene.add_shape_key.label'),
         description=t('Scene.add_shape_key.desc'),

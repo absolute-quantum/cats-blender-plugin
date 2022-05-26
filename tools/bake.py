@@ -723,6 +723,8 @@ class BakeButton(bpy.types.Operator):
         emit_exclude_eyes = context.scene.bake_emit_exclude_eyes
         cleanup_shapekeys = context.scene.bake_cleanup_shapekeys # Reverted and _old shapekeys
         ignore_hidden = context.scene.bake_ignore_hidden
+        diffuse_indirect = context.scene.bake_diffuse_indirect
+        diffuse_indirect_opacity = context.scene.bake_diffuse_indirect_opacity
 
         # Filters
         sharpen_bakes = context.scene.bake_sharpen
@@ -747,6 +749,8 @@ class BakeButton(bpy.types.Operator):
         context.scene.name = "CATS Scene"
         orig_scene = bpy.data.scenes[orig_scene_name]
         context.scene.collection.children.link(collection)
+        cats_world = bpy.data.worlds.new("CATS World")
+        context.scene.world = cats_world
 
         # Make sure all armature modifiers target the new armature
         for child in collection.all_objects:
@@ -1104,7 +1108,8 @@ class BakeButton(bpy.types.Operator):
             (pass_diffuse, "diffuse", "DIFFUSE", {"COLOR"}, [0.5, 0.5, 0.5, 1.0], "Base Color", False, False),
             (pass_smoothness, "smoothness", "ROUGHNESS", set(), [1.0, 1.0, 1.0, 1.0], "Roughness", True, True),
             (pass_alpha, "alpha", "DIFFUSE", {"COLOR"}, [1, 1, 1, 1.0], "Alpha", False, False),
-            (pass_metallic, "metallic", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], "Metallic", False, True)
+            (pass_metallic, "metallic", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], "Metallic", False, True),
+            (pass_emit and not emit_indirect, "emission", "EMIT", set(), [0, 0, 0, 1.0], "Emission", False, False),
         ]:
             # TODO: Linearity will be determined by end channel. Alpha is linear, RGB is sRGB
             if bake_conditions:
@@ -1129,10 +1134,6 @@ class BakeButton(bpy.types.Operator):
                 if sharpen_bakes:
                     self.filter_image(context, "SCRIPT_" + bake_name + ".png", BakeButton.sharpen_create,
                                       use_linear = use_linear)
-
-        # TODO: advanced: bake detail mask from diffuse node setup
-
-        Common.switch('OBJECT')
 
         # Save and disable shape keys
         shapekey_values = dict()
@@ -1192,95 +1193,58 @@ class BakeButton(bpy.types.Operator):
              if obj.type == 'MESH' and generate_uvmap and supersample_normals:
                   obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
-        # Bake AO
-        if pass_ao:
-            for obj in collection.all_objects:
-                if Common.has_shapekeys(obj):
-                    for key in obj.data.shape_keys.key_blocks:
-                        if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
-                            key.value = 1.0
-            if illuminate_eyes:
-                # Add modifiers that prevent LeftEye and RightEye being baked
-                for obj in collection.all_objects:
-                    if obj.type == "MESH" and "LeftEye" in obj.vertex_groups:
-                        leyemask = obj.modifiers.new(type='MASK', name="leyemask")
-                        leyemask.mode = "VERTEX_GROUP"
-                        leyemask.vertex_group = "LeftEye"
-                        leyemask.invert_vertex_group = True
-                    if obj.type == "MESH" and "RightEye" in obj.vertex_groups:
-                        reyemask = obj.modifiers.new(type='MASK', name="reyemask")
-                        reyemask.mode = "VERTEX_GROUP"
-                        reyemask.vertex_group = "RightEye"
-                        reyemask.invert_vertex_group = True
-            self.bake_pass(context, "ao", "AO", {"AO"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           (resolution, resolution), 512, 0, [1.0, 1.0, 1.0, 1.0], True, pixelmargin)
-            if illuminate_eyes:
-                for obj in collection.all_objects:
-                    if "leyemask" in obj.modifiers:
-                        obj.modifiers.remove(obj.modifiers['leyemask'])
-                    if "reyemask" in obj.modifiers:
-                        obj.modifiers.remove(obj.modifiers['reyemask'])
-
-            for obj in collection.all_objects:
-                if Common.has_shapekeys(obj):
-                    for key in obj.data.shape_keys.key_blocks:
-                        if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
-                            key.value = 0.0
-            if denoise_bakes:
-                self.filter_image(context, "SCRIPT_ao.png", BakeButton.denoise_create)
-
-        # bake emit
-        if pass_emit:
-            if not emit_indirect:
-                self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], True, pixelmargin)
-            else:
-                # Bake indirect lighting contributions: Turn off the lights and bake all diffuse passes
-                # TODO: disable scene lights?
+        # Perform 'Indirect' renders: ray traced, at least sometimes
+        for (bake_conditions, displace_eyes,  bake_name, bake_type, bake_pass_filter,
+             background_color, world_color) in [
+            (pass_ao, illuminate_eyes, "ao", "AO", {"AO"}, [1.0, 1.0, 1.0, 1.0], None),
+            (pass_emit and emit_indirect, emit_exclude_eyes, "emission", "COMBINED",
+             {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [0.0, 0.0, 0.0, 1.0], (0,0,0)),
+            (diffuse_indirect, True, "diffuse_indirect", "DIFFUSE", {"INDIRECT"}, [0.0, 0.0, 0.0, 1.0], (1,1,1)),
+             ]:
+            if bake_conditions:
+                if world_color:
+                     cats_world.color = world_color
+                # Enable all AO keys
                 for obj in collection.all_objects:
                     if Common.has_shapekeys(obj):
                         for key in obj.data.shape_keys.key_blocks:
                             if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
                                 key.value = 1.0
-                original_color = bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value
-                bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = (0,0,0,1)
-                self.bake_pass(context, "emission", "COMBINED", {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 512, 0, [0.0, 0.0, 0.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
-                if emit_exclude_eyes:
-                    def group_relevant(obj, groupname):
-                        if obj.type == "MESH" and groupname in obj.vertex_groups:
-                            idx = obj.vertex_groups[groupname].index
-                            return any( any(group.group == idx and group.weight > 0.0 for group in vert.groups)
-                                    for vert in obj.data.vertices)
 
-                    # Bake each eye on top individually
+                # If conditions are met, move eyes up by 25m (so they don't get shadows)
+                if displace_eyes:
+                    # Add modifiers that prevent LeftEye and RightEye being baked
                     for obj in collection.all_objects:
-                        if group_relevant(obj, "LeftEye"):
-                            leyemask = obj.modifiers.new(type='MASK', name="leyemask")
-                            leyemask.mode = "VERTEX_GROUP"
+                        if obj.type == "MESH" and "LeftEye" in obj.vertex_groups:
+                            leyemask = obj.modifiers.new(type='DISPLACE', name="leyemask")
                             leyemask.vertex_group = "LeftEye"
-                            leyemask.invert_vertex_group = False
-                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if group_relevant(obj, "LeftEye")],
-                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+                            leyemask.direction = 'Z'
+                            leyemask.strength = 25
+                            leyemask.mid_level = 0
+                        if obj.type == "MESH" and "RightEye" in obj.vertex_groups:
+                            reyemask = obj.modifiers.new(type='DISPLACE', name="reyemask")
+                            reyemask.vertex_group = "RightEye"
+                            reyemask.direction = 'Z'
+                            reyemask.strength = 25
+                            reyemask.mid_level = 0
+
+                self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
+                               [obj for obj in collection.all_objects if obj.type == "MESH"],
+                               (resolution, resolution), 1 if is_unittest else 512, 0,
+                               background_color, True, pixelmargin,
+                               solidmaterialcolors=solidmaterialcolors)
+
+                if displace_eyes:
                     for obj in collection.all_objects:
                         if "leyemask" in obj.modifiers:
-                            obj.modifiers.remove(obj.modifiers["leyemask"])
-
-                    for obj in collection.all_objects:
-                        if group_relevant(obj, "RightEye"):
-                            reyemask = obj.modifiers.new(type='MASK', name="reyemask")
-                            reyemask.mode = "VERTEX_GROUP"
-                            reyemask.vertex_group = "RightEye"
-                            reyemask.invert_vertex_group = False
-                    self.bake_pass(context, "emission", "EMIT", set(), [obj for obj in collection.all_objects if group_relevant(obj, "RightEye")],
-                               (resolution, resolution), 32, 0, [0, 0, 0, 1.0], False, pixelmargin, solidmaterialcolors=solidmaterialcolors)
-                    for obj in collection.all_objects:
+                            obj.modifiers.remove(obj.modifiers['leyemask'])
                         if "reyemask" in obj.modifiers:
-                            obj.modifiers.remove(obj.modifiers["reyemask"])
+                            obj.modifiers.remove(obj.modifiers['reyemask'])
 
-                bpy.data.worlds["World"].node_tree.nodes["Background"].inputs[0].default_value = original_color
                 if denoise_bakes:
-                    self.filter_image(context, "SCRIPT_emission.png", BakeButton.denoise_create)
+                    self.filter_image(context, "SCRIPT_" + bake_name + ".png", BakeButton.denoise_create
+                                      )
+                # Disable all AO keys
                 for obj in collection.all_objects:
                     if Common.has_shapekeys(obj):
                         for key in obj.data.shape_keys.key_blocks:
@@ -1555,6 +1519,13 @@ class BakeButton(bpy.types.Operator):
                 image = bpy.data.images[platform_img("diffuse")]
                 diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
                 pixel_buffer = list(diffuse_image.pixels)
+                if diffuse_indirect:
+                    diffuse_indirect_image = bpy.data.images["SCRIPT_diffuse_indirect.png"]
+                    diffuse_indirect_buffer = diffuse_indirect_image.pixels[:]
+                    for idx in range(0, len(image.pixels)):
+                        if (idx % 4 != 3):
+                            # Map range: screen the diffuse_indirect onto diffuse
+                            pixel_buffer[idx] = 1.0 - ((1.0 - (diffuse_indirect_buffer[idx] * diffuse_indirect_opacity)) * (1.0 - pixel_buffer[idx]))
                 if pass_ao and diffuse_premultiply_ao:
                     ao_image = bpy.data.images["SCRIPT_ao.png"]
                     ao_buffer = ao_image.pixels[:]
@@ -1910,7 +1881,7 @@ class BakeButton(bpy.types.Operator):
                     multiplytexnode.inputs[2].default_value = 1.0 - diffuse_premultiply_opacity
                     multiplytexnode.location.x -= 400
                     multiplytexnode.location.y += 700
-                    if metallic_pack_ao:
+                    if pass_metallic and metallic_pack_ao:
                         tree.links.new(multiplytexnode.inputs[0], seprgbnode.outputs["G"])
                     else:
                         aotexnode = tree.nodes.new("ShaderNodeTexImage")
@@ -2033,7 +2004,6 @@ class BakeButton(bpy.types.Operator):
                         if name[-5:] == "_bake":
                             mesh.shape_key_remove(key=mesh.data.shape_keys.key_blocks[name])
 
-
             if optimize_static:
                 for mesh in plat_collection.all_objects:
                     if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
@@ -2049,7 +2019,6 @@ class BakeButton(bpy.types.Operator):
             if use_lods:
                 for idx, _ in enumerate(lods):
                     export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
-
 
             # Create groups to export... One for the main, one each for each LOD
             for obj in plat_collection.all_objects:
