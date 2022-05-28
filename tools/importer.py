@@ -379,7 +379,7 @@ def get_zip_content(self, context):
 def encode_str(s):
     try:
         s = s.encode('cp437').decode('cp932')
-    except UnicodeEncodeError:
+    except (UnicodeEncodeError, UnicodeDecodeError):
         pass
     return s
 
