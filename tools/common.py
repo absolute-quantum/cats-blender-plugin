@@ -1779,6 +1779,11 @@ def clean_material_names(mesh):
 
 
 def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, mix_mode='ADD', delete_old_vg=True):
+    """Mix the weights of two vertex groups on the mesh, optionally removing the vertex group named vg_from.
+
+    Note that as of Blender 3.0+, existing references to vertex groups become invalid when applying certain modifiers,
+    including 'VERTEX_WEIGHT_MIX'. Keeping reference to the vertex groups' attributes such as their names seems ok
+    though. More information on this issue can be found in https://developer.blender.org/T93896"""
     mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
@@ -2142,30 +2147,33 @@ def fix_twist_bones(mesh, bones_to_delete):
                 print('2. no ' + bone_parent_name)
                 vg_parent = mesh.vertex_groups.new(name=bone_parent_name)
 
-            vg_twist1 = mesh.vertex_groups.get(bone_type + 'Twist1_' + suffix)
-            vg_twist2 = mesh.vertex_groups.get(bone_type + 'Twist2_' + suffix)
-            vg_twist3 = mesh.vertex_groups.get(bone_type + 'Twist3_' + suffix)
+            vg_twist1_name = bone_type + 'Twist1_' + suffix
+            vg_twist2_name = bone_type + 'Twist2_' + suffix
+            vg_twist3_name = bone_type + 'Twist3_' + suffix
+            vg_twist1 = bool(mesh.vertex_groups.get(vg_twist1_name))
+            vg_twist2 = bool(mesh.vertex_groups.get(vg_twist2_name))
+            vg_twist3 = bool(mesh.vertex_groups.get(vg_twist3_name))
 
-            mix_weights(mesh, vg_twist.name, vg_parent.name, mix_strength=0.2, delete_old_vg=False)
-            mix_weights(mesh, vg_twist.name, vg_twist.name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
+            vg_twist_name = vg_twist.name
+            vg_parent_name = vg_parent.name
+
+            mix_weights(mesh, vg_twist_name, vg_parent_name, mix_strength=0.2, delete_old_vg=False)
+            mix_weights(mesh, vg_twist_name, vg_twist_name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
 
             if vg_twist1:
-                twistname = bone_type + 'Twist1_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.75) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist1_name)
+                mix_weights(mesh, vg_twist1_name, vg_twist_name, mix_strength=0.25, delete_old_vg=False)
+                mix_weights(mesh, vg_twist1_name, vg_parent_name, mix_strength=0.75)
 
             if vg_twist2:
-                twistname = bone_type + 'Twist2_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.5, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist2_name)
+                mix_weights(mesh, vg_twist2_name, vg_twist_name, mix_strength=0.5, delete_old_vg=False)
+                mix_weights(mesh, vg_twist2_name, vg_parent_name, mix_strength=0.5)
 
             if vg_twist3:
-                twistname = bone_type + 'Twist3_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.25, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please. (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist3_name)
+                mix_weights(mesh, vg_twist3_name, vg_twist_name, mix_strength=0.75, delete_old_vg=False)
+                mix_weights(mesh, vg_twist3_name, vg_parent_name, mix_strength=0.25)
 
 
 def fix_twist_bone_names(armature):
