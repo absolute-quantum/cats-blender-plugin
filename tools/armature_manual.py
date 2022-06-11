@@ -1021,6 +1021,7 @@ class GenerateTwistBones(bpy.types.Operator):
         saved_data = Common.SavedData()
 
         context.object.data.use_mirror_x = False
+        context.object.use_mesh_mirror_x = False
         context.object.pose.use_mirror_x = False
         generate_upper = context.scene.generate_twistbones_upper
         armature = context.object
@@ -1055,6 +1056,9 @@ class GenerateTwistBones(bpy.types.Operator):
                     continue
 
                 Common.set_active(mesh)
+                context.object.data.use_mirror_vertex_groups = False
+                context.object.data.use_mirror_x = False
+                context.object.use_mesh_mirror_x = False
 
                 mesh.vertex_groups.new(name=twist_bone_name)
 
