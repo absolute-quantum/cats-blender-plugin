@@ -338,8 +338,8 @@ class BakeButton(bpy.types.Operator):
         return context.scene.bake_platforms
 
     # For every found BSDF, duplicate it, rename the new one to '.BAKE', and set bake-able defaults
-    # Attach the links and copy the dv, but only for desired_input
-    def genericize_bsdfs(self, objects, desired_input):
+    # Attach the links and copy the dv, but only for desired_inputs
+    def genericize_bsdfs(self, objects, desired_inputs, base_black=False):
         desired_material_trees = {slot.material.node_tree for obj in objects
                                    for slot in obj.material_slots if slot.material}
         desired_material_trees |= {node_group for node_group in bpy.data.node_groups}
@@ -351,9 +351,10 @@ class BakeButton(bpy.types.Operator):
                     bake_node = tree.nodes.new("ShaderNodeBsdfPrincipled")
                     bake_node.name = node.name + ".BAKE"
                     bake_node.label = "For CATS bake: you should CTRL+Z"
-                    if node.inputs[desired_input].is_linked:
-                        tree.links.new(bake_node.inputs[desired_input],
-                                       node.inputs[desired_input].links[0].from_socket)
+                    for desired_input, connect_to in desired_inputs.items():
+                        if node.inputs[desired_input].is_linked:
+                            tree.links.new(bake_node.inputs[connect_to],
+                                           node.inputs[desired_input].links[0].from_socket)
 
                     # Make the bake BSDF take over all outputs
                     if node.outputs["BSDF"].is_linked:
@@ -363,14 +364,18 @@ class BakeButton(bpy.types.Operator):
                         for to_socket in to_sockets:
                             tree.links.new(to_socket, bake_node.outputs["BSDF"])
 
-                    bake_node.inputs["Base Color"].default_value = [1.0, 1.0, 1.0, 1.0]
+                    if base_black:
+                        bake_node.inputs["Base Color"].default_value = [0.0, 0.0, 0.0, 1.0]
+                    else:
+                        bake_node.inputs["Base Color"].default_value = [1.0, 1.0, 1.0, 1.0]
                     bake_node.inputs["Subsurface"].default_value = 0.0
                     bake_node.inputs["Metallic"].default_value = 0.0
                     bake_node.inputs["Specular"].default_value = 0.5
                     bake_node.inputs["Roughness"].default_value = 0.5
                     bake_node.inputs["Alpha"].default_value = 1.0
 
-                    bake_node.inputs[desired_input].default_value = node.inputs[desired_input].default_value
+                    for desired_input, connect_to in desired_inputs.items():
+                        bake_node.inputs[connect_to].default_value = node.inputs[desired_input].default_value
 
     # Find generated bakenodes and restore their outputs, then delete them
     def restore_bsdfs(self, objects):
@@ -547,14 +552,16 @@ class BakeButton(bpy.types.Operator):
 
 
         #solid material optimization making 4X4 squares of solid color for this pass - @989onan
-        if context.scene.bake_optimize_solid_materials and (not any(plat.use_decimation for plat in context.scene.bake_platforms)) and (not context.scene.bake_pass_ao) and (not context.scene.bake_pass_normal):
+        if (context.scene.bake_optimize_solid_materials and
+            (not any(plat.use_decimation for plat in context.scene.bake_platforms)) and
+            (not context.scene.bake_pass_ao) and (not context.scene.bake_pass_normal)):
             #arranging old pixels and assignment to image pixels this way makes only one update per pass, so many many times faster - @989onan
             old_pixels = image.pixels[:]
 
             #lastly, slap our solid squares on top of bake atlas, to make a nice solid square without interuptions from the rest of the bake - @989onan
             for child in [obj for obj in objects if obj.type == "MESH"]: #grab all mesh objects being baked
                 for matindex,material in enumerate(child.data.materials):
-                    if material.name in solidmaterialcolors:
+                    if material.name in solidmaterialcolors and (bake_name+"_color") in solidmaterialcolors[material.name]:
                         index = list(solidmaterialcolors.keys()).index(material.name)
                         old_pixels = list(old_pixels)
 
@@ -715,6 +722,7 @@ class BakeButton(bpy.types.Operator):
         pass_emit = context.scene.bake_pass_emit
         pass_alpha = context.scene.bake_pass_alpha
         pass_metallic = context.scene.bake_pass_metallic
+        pass_thickness = True
 
         # Pass options
         illuminate_eyes = context.scene.bake_illuminate_eyes
@@ -1104,17 +1112,17 @@ class BakeButton(bpy.types.Operator):
 
         # Perform 'Bake' renders: non-normal that never perform ray-tracing
         for (bake_conditions, bake_name, bake_type, bake_pass_filter, background_color,
-             desired_input, use_linear, invert) in [
-            (pass_diffuse, "diffuse", "DIFFUSE", {"COLOR"}, [0.5, 0.5, 0.5, 1.0], "Base Color", False, False),
-            (pass_smoothness, "smoothness", "ROUGHNESS", set(), [1.0, 1.0, 1.0, 1.0], "Roughness", True, True),
-            (pass_alpha, "alpha", "DIFFUSE", {"COLOR"}, [1, 1, 1, 1.0], "Alpha", False, False),
-            (pass_metallic, "metallic", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], "Metallic", False, True),
-            (pass_emit and not emit_indirect, "emission", "EMIT", set(), [0, 0, 0, 1.0], "Emission", False, False),
+             desired_inputs, use_linear, invert) in [
+                 (pass_diffuse, "diffuse", "DIFFUSE", {"COLOR"}, [0.5, 0.5, 0.5, 1.0], {"Base Color": "Base Color"}, False, False),
+                 (pass_smoothness, "smoothness", "ROUGHNESS", set(), [1.0, 1.0, 1.0, 1.0], {"Roughness": "Roughness"}, True, True),
+                 (pass_alpha, "alpha", "DIFFUSE", {"COLOR"}, [1, 1, 1, 1.0], {"Alpha": "Alpha"}, False, False),
+                 (pass_metallic, "metallic", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], {"Metallic": "Metallic"}, False, True),
+                 (pass_emit and not emit_indirect, "emission", "EMIT", set(), [0, 0, 0, 1.0], {"Emission": "Emission"}, False, False),
         ]:
             # TODO: Linearity will be determined by end channel. Alpha is linear, RGB is sRGB
             if bake_conditions:
                 self.genericize_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"],
-                                      desired_input)
+                                      desired_inputs)
                 self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
                                [obj for obj in collection.all_objects if obj.type == "MESH"],
                                (resolution, resolution), 1 if is_unittest else 32, 0,
@@ -1195,11 +1203,18 @@ class BakeButton(bpy.types.Operator):
 
         # Perform 'Indirect' renders: ray traced, at least sometimes
         for (bake_conditions, displace_eyes,  bake_name, bake_type, bake_pass_filter,
-             background_color, world_color) in [
-            (pass_ao, illuminate_eyes, "ao", "AO", {"AO"}, [1.0, 1.0, 1.0, 1.0], None),
+             background_color, world_color, desired_inputs, base_black) in [
+            (pass_ao, illuminate_eyes, "ao", "AO", {"AO"}, [1.0, 1.0, 1.0, 1.0], None, None, False),
             (pass_emit and emit_indirect, emit_exclude_eyes, "emission", "COMBINED",
-             {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [0.0, 0.0, 0.0, 1.0], (0,0,0)),
-            (diffuse_indirect, True, "diffuse_indirect", "DIFFUSE", {"INDIRECT"}, [0.0, 0.0, 0.0, 1.0], (1,1,1)),
+             {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [0.0, 0.0, 0.0, 1.0], (0,0,0), None, False),
+             # the MOST correct way to bake subsurface light only would be to set Base Color to black,
+             # multiply Base Color and Subsurface Color and plug into Subsurface Color, then bake Diffuse color
+             # then multiply by normalized thickness.
+            (diffuse_indirect, True, "diffuse_indirect", "DIFFUSE", {"INDIRECT"}, [0.0, 0.0, 0.0, 1.0], (1,1,1), None, False),
+            # bake 'thickness' by baking subsurface as albedo, normalizing, and inverting
+                 (False, True, "thickness", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], None, {"Subsurface": "Alpha"}, False),
+             # bake 'subsurface' by baking Diffuse Color when Base Color is black
+                 (False, True, "subsurface", "DIFFUSE", {"COLOR"}, [0.0, 0.0, 0.0, 1.0], None, {"Subsurface Color": "Subsurface Color", "Subsurface": "Subsurface"}, True),
              ]:
             if bake_conditions:
                 if world_color:
@@ -1233,6 +1248,8 @@ class BakeButton(bpy.types.Operator):
                                (resolution, resolution), 1 if is_unittest else 512, 0,
                                background_color, True, pixelmargin,
                                solidmaterialcolors=solidmaterialcolors)
+                if desired_inputs is not None:
+                    self.restore_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"])
 
                 if displace_eyes:
                     for obj in collection.all_objects:
@@ -1401,6 +1418,7 @@ class BakeButton(bpy.types.Operator):
             # Optionally cleanup bones if we're not going to use them
             if merge_twistbones:
                 print("merging bones")
+                context.scene.keep_merged_bones = False
                 bpy.ops.object.select_all(action='DESELECT')
                 context.view_layer.objects.active = plat_arm_copy
                 Common.switch("EDIT")
@@ -1945,7 +1963,7 @@ class BakeButton(bpy.types.Operator):
                         bpy.ops.mesh.vertex_color_add()
 
                 self.genericize_bsdfs([obj for obj in plat_collection.all_objects if obj.type == "MESH"],
-                                      "Base Color")
+                                      {"Base Color": "Base Color"})
                 self.bake_pass(context, "vertex_diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
                                (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.0], True, pixelmargin)
                 self.restore_bsdfs([obj for obj in plat_collection.all_objects if obj.type == "MESH"])
