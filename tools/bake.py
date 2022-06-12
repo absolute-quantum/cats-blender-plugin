@@ -30,6 +30,7 @@ import numpy as np
 import subprocess
 import shutil
 import threading
+import mathutils
 
 from . import common as Common
 from .register import register_wrap
@@ -1210,7 +1211,7 @@ class BakeButton(bpy.types.Operator):
              # the MOST correct way to bake subsurface light only would be to set Base Color to black,
              # multiply Base Color and Subsurface Color and plug into Subsurface Color, then bake Diffuse color
              # then multiply by normalized thickness.
-            (diffuse_indirect, True, "diffuse_indirect", "DIFFUSE", {"INDIRECT"}, [0.0, 0.0, 0.0, 1.0], (1,1,1), None, False),
+            (pass_diffuse and diffuse_indirect, True, "diffuse_indirect", "DIFFUSE", {"INDIRECT"}, [0.0, 0.0, 0.0, 1.0], (1,1,1), None, False),
             # bake 'thickness' by baking subsurface as albedo, normalizing, and inverting
                  (False, True, "thickness", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], None, {"Subsurface": "Alpha"}, False),
              # bake 'subsurface' by baking Diffuse Color when Base Color is black
@@ -2051,13 +2052,28 @@ class BakeButton(bpy.types.Operator):
 
             # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
             #exception is Gmod because Gmod needs textures to be applied to work - @989onan
-            if export_format != "GMOD":
+            if export_format not in ["GMOD", "DAE"]:
                 for obj in plat_collection.all_objects:
                     if obj.type == 'MESH':
                         context.view_layer.objects.active = obj
                         while len(obj.material_slots) > 0:
                             obj.active_material_index = 0  # select the top material
                             bpy.ops.object.material_slot_remove()
+
+                # Re-apply the old armature transforms on the new-armature, then inverse-apply to the data of the armature
+                # This prevents animations designed for the old avatar from breaking
+                plat_arm_copy.scale = armature.scale
+                plat_arm_copy.rotation_euler = armature.rotation_euler
+
+                context.view_layer.objects.active = plat_arm_copy
+                Common.switch("EDIT")
+                # Performing these changes in edit mode avoids a scene update issue, but may not be totally neccesary.
+                plat_arm_copy.data.transform(armature.matrix_basis.inverted())
+                Common.switch("OBJECT")
+                for obj in plat_collection.all_objects:
+                    if obj.type == 'MESH':
+                        obj.data.transform(armature.matrix_basis.inverted(), shape_keys=True)
+                        obj.data.update()
 
             for export_group in export_groups:
                 bpy.ops.object.select_all(action='DESELECT')
