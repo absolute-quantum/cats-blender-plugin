@@ -436,8 +436,8 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Spine_Upper_1',
     'Spine_Upper_2',
 
-    'J_SpineLower'
-    'J_SpineUpper'
+    'J_SpineLower',
+    'J_SpineUpper',
 
     'Abdomen',
 
