@@ -41,7 +41,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
-        if bpy.app.version > (3, 0, 99):
+        if bpy.app.version > (3, 2, 99):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
