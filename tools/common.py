@@ -26,6 +26,8 @@
 
 import re
 import bpy
+import bgl
+import array
 import time
 import bmesh
 import platform
@@ -1934,118 +1936,406 @@ def unify_materials():
     return {'FINISHED'}
 
 
+def np_read_pixels(image):
+    """Version-independent function for fast(er) reading of image pixels into a flat numpy ndarray. The R/G/B/A
+    components are in the same order as when iterating image.pixels normally, i.e. starting in the bottom left corner,
+    moving right until the end of the end of the row is reached and then moving up to the start of the next row,
+    repeating until the top right corner is reached.
+
+    A note about reshaping numpy ndarrays:
+        Changing .shape raises an error if the underlying data can't be viewed in the new shape, as opposed to using
+        .reshape(...), which will copy the data if it can't be viewed in the new shape.
+        If you want to change .shape but don't want to modify the shape of the original ndarray e.g. it's being used
+        somewhere else, create a view and change its .shape instead:
+            pixels_view = pixels.view()
+            pixels_view.shape = (-1, 4)
+
+    Some examples of common operations:
+        Set alpha component for all pixels:
+            pixels = np_read_pixels(image)
+            pixels.shape = (-1, 4)
+            pixels[:, 3] = new_alpha_value
+            np_write_pixels(pixels, image)
+
+        Set pixels in a rectangle to red, green, blue, alpha:
+            pixels = np_read_pixels(image)
+            pixels.shape = (image.size[1], image.size[0], 4)
+            pixels[start_y:end_y_exclusive, start_x:end_x_exclusive] = [red, green, blue, alpha]
+            np_write_pixels(pixels, image)
+
+        Set only green and blue components in a rectangle:
+            pixels = np_read_pixels(image)
+            pixels.shape = (image.size[1], image.size[0], 4)
+            pixels[start_y:end_y_exclusive, start_x:end_x_exclusive, 1:3] = [green, blue]
+            np_write_pixels(pixels, image)
+
+        Multiply all pixels by an RGB color:
+            pixels = np_read_pixels(image)
+            pixels.shape = (-1, 4)
+            pixels[:, :3] *= [0.6, 0.2, 0]
+            np_write_pixels(pixels, image)
+
+        Multiply RGB of all pixels by a value:
+            pixels = np_read_pixels(image)
+            pixels.shape = (-1, 4)
+            pixels[:, :3] *= 0.5
+            np_write_pixels(pixels, image)
+
+        View with flipped y_axis, useful when working with code that assumes (0,0) is the top left corner:
+            pixels = np_read_pixels(image)
+            pixels.shape = (image.size[1], image.size[0], 4)
+            # alternative: flipped_y_view = pixels[::-1]
+            flipped_y_view = np.flipud(pixels)
+            # Example use:
+            flipped_y_view[start_y_from_top,end_y_from_top_exclusive, start_x:end_x_exclusive] = rgba_color
+            np_write_pixels(pixels, image)
+
+        View with swapped y and x-axis, useful if you find it more intuitive to have x as the first axis:
+            pixels = np_read_pixels(image)
+            pixels.shape = (image.size[1], image.size[0], 4)
+            swapped_view = pixels.swapaxes(0, 1)
+            # Example use:
+            swapped_view[start_x:end_x_exclusive, start_y:end_y_exclusive] = [red, green, blue, alpha]
+            np_write_pixels(pixels, image)
+
+    :return:A flattened, single precision float type numpy ndarray containing the image's pixel R/G/B/A components."""
+    num_pixel_components = len(image.pixels)
+
+    # Return a zero-length array if there are no pixels, e.g. a 'FILE' source image that couldn't be loaded or when the
+    # image is the 'Render Result'.
+    if num_pixel_components == 0:
+        # We must return an empty array here, because, unlike the other methods for getting image pixels, using Open GL
+        # will not work when num_pixel_components == 0 because bgl.Buffer does not allow the creation of a zero length
+        # Buffer.
+        return np.empty(0, dtype=np.single)
+
+    # Fast access methods for bpy_prop_array types were only added in Blender 2.83
+    if bpy.app.version >= (2, 83):
+        # np.single matches the underlying C type of the pixels bpy_prop_array, it must match otherwise an error is
+        # raised
+        pixels_np = np.empty(num_pixel_components, dtype=np.single)
+        image.pixels.foreach_get(pixels_np)
+        return pixels_np
+    elif bpy.app.version >= (2, 80):
+        # Load the image pixels into a bgl.Buffer that shares the same memory as a numpy array, using OpenGL.
+        # Images loaded into OpenGL will have their colors read in scene linear colorspace with alpha matching the alpha
+        # settings of the image, these are the same settings used when accessing image.pixels directly.
+        # Runs in about 5 times the duration of foreach_get (assuming gl_free() is always called).
+        if image.bindcode:
+            # If the open gl bindcode is set, then it's been cached, so free it from open gl first otherwise we may miss
+            # any recent changes
+            image.gl_free()
+        if image.gl_load():
+            # gl_load returns the Open GL error code if set. Not sure if/when this can happen, but better to be safe
+            # than sorry.
+            # Runs in about 35 times the duration of foreach_get
+            return np.array(image.pixels[:], dtype=np.single)
+        # Set GL_TEXTURE0 as the active texture unit for consistency
+        bgl.glActiveTexture(bgl.GL_TEXTURE0)
+        # Bind the image to the active texture unit's GL_TEXTURE_2D target
+        bgl.glBindTexture(bgl.GL_TEXTURE_2D, image.bindcode)
+
+        # Create a numpy array for storing the pixel components
+        pixels_np = np.empty(num_pixel_components, dtype=np.single)
+
+        # Create a bgl.Buffer that shares the same memory as the numpy array (note that this behaviour isn't documented
+        # in Blender's Python API documentation, but was added in 2.80)
+        gl_buffer = bgl.Buffer(bgl.GL_FLOAT, pixels_np.shape, pixels_np)
+        # lod_level 0 is the base image
+        lod_level = 0
+        # Fill the buffer with the pixels of the image bound to the active texture unit's GL_TEXTURE_2D target, thus
+        # filling the numpy array with the image's pixels
+        bgl.glGetTexImage(bgl.GL_TEXTURE_2D, lod_level, bgl.GL_RGBA, bgl.GL_FLOAT, gl_buffer)
+        return pixels_np
+    else:
+        # Runs in about 35 times the duration of foreach_get
+        # This is the fastest of the naive solutions, e.g.
+        #   np.array(image.pixels, dtype=np.single)
+        #   np.fromiter(image.pixels[:], dtype=np.single)
+        #   np.fromiter(image.pixels, dtype=np.single)
+        #
+        # Note that this has high memory requirements, which can cause slowdown when the user is running low on memory
+        # or when trying to read very large images.
+        # Reading a 4k image uses about 2GB memory, the memory usage scales linearly with the number of pixels.
+        #
+        # Reading a 4k image in a slightly slower time, but with only 512MB memory needed can be done by loading the
+        # image into Open GL similarly to 2.80 and then iterating the bgl.Buffer into a numpy array:
+        # e.g. return np.fromiter(gl_buffer, dtype=np.single).
+        # but, unfortunately, Image.gl_load seems to be bugged in 2.79 and will not load images that use a float buffer
+        # internally, e.g. PNG16 or OpenEXR.
+        return np.array(image.pixels[:], dtype=np.single)
+
+
+def np_write_pixels(pixels_array, image):
+    """Version-independent function for fast(er) writing of a numpy ndarray of pixels into an image. The pixels_array's
+    dtype must be single precision float (np.single) and it must contain exactly the same number of pixel R/G/B/A
+    components as the image. The pixel_array will be viewed as flat if possible, otherwise, a flat copy will be made."""
+    if pixels_array.dtype != np.single:
+        # The array's type must exactly match the underlying C data when using the fast access methods for pixels and
+        # other bpy_prop_array instances, otherwise an error is raised.
+        raise TypeError("pixels_array must be single precision float type, but is '{}' type".format(pixels_array.dtype))
+
+    expected_num_pixel_components = len(image.pixels)
+    if pixels_array.size != expected_num_pixel_components:
+        raise ValueError("pixels_array was expected to have {} pixel components, but it had {}"
+                         .format(expected_num_pixel_components, pixels_array.size))
+
+    if expected_num_pixel_components == 0:
+        # It's fine to let the rest of the code run, but it's pointless to do so, since it will do nothing, so just
+        # return
+        return
+
+    # ravel will ensure the array is flat (1 dimensional) and contiguous. If the array is already flat or can be viewed
+    # as flat, a view will be returned, otherwise, a copy will be made.
+    pixels_array = pixels_array.ravel()
+
+    # Fast access methods for bpy_prop_array types were only added in Blender 2.83
+    if bpy.app.version >= (2, 83):
+        image.pixels.foreach_set(pixels_array)
+    else:
+        # Runs in about 13 times the duration of foreach_set
+        # Runs in about 90% the duration of and about 25% the memory usage of
+        #   img.pixels[:] = pixels_array.tolist()
+        # which is the fastest of the naive approaches, e.g.:
+        #   img.pixels[:] = pixels_array
+        #   img.pixels = pixels_array
+        #   img.pixels = pixels_array.tolist()
+
+        # Create a Python array of the correct size
+        p_array = array.array(np.sctype2char(pixels_array.dtype), [0]) * len(pixels_array)
+        # Create a numpy array that shares the same memory as the Python array
+        p_array_as_np = np.frombuffer(p_array, dtype=np.single)
+        # Directly copy the values into the Python array by using the numpy array that shares the same memory
+        p_array_as_np[:] = pixels_array
+        # Technically, we could avoid the previous steps if we'd used a Python array to start with, but then we'd have
+        # to juggle around both a Python array and numpy array all the time, and at best it only brings the duration
+        # down to about 12 times that of foreach_set.
+        #
+        # Set image.pixels to the array, which seems to be the fastest way to update pixels (Python arrays are fast to
+        # iterate and there should be minimal, if any, type conversion needed in the Blender C code)
+        image.pixels = p_array
+
+
+def bake_mmd_colors(node_base_tex, node_mmd_shader):
+    """Bake the mmd ambient color and diffuse color into the base tex or return the combined color if there is no base
+    tex. This process follows the same steps that the mmd_shader group node follows."""
+    # Input names used by mmd_shader group node from the mmd_tools addon
+    ambient_color_input_name = 'Ambient Color'
+    diffuse_color_input_name = 'Diffuse Color'
+
+    # Input type corresponding to bpy.types.NodeSocketColor
+    rgba_input_type = 'RGBA'
+
+    # Blender defined constant for sRGB colorspace
+    srgb_colorspace_name = 'sRGB'
+
+    ambient_color_input = node_mmd_shader.inputs.get(ambient_color_input_name)
+
+    if not ambient_color_input or ambient_color_input.type != rgba_input_type:
+        print("Could not find color input '{}' in {}. Is it a correct mmd_shader group node?"
+              .format(ambient_color_input_name, node_mmd_shader))
+        # The mmd_shader node does not appear to be correct, abort
+        return node_base_tex, None
+
+    diffuse_color_input = node_mmd_shader.inputs.get(diffuse_color_input_name)
+
+    if not diffuse_color_input or diffuse_color_input.type != rgba_input_type:
+        print("Could not find color input '{}' in {}. Is it a correct mmd_shader group node?"
+              .format(diffuse_color_input_name, node_mmd_shader))
+        # The mmd_shader node does not appear to be correct, abort
+        return node_base_tex, None
+
+    # We assume that the Ambient Color and Diffuse Color inputs have not been modified following the initial import of
+    # the mmd model into Blender, meaning that they are not linked to other nodes.
+    # Colors in shader nodes only use RGB, so ignore the alpha channels
+    ambient_color = np.array(ambient_color_input.default_value[:3])
+    diffuse_color = np.array(diffuse_color_input.default_value[:3])
+
+    # Add 0.6 times the Diffuse Color to the Ambient Color and clamp the result to the range [0,1]
+    # This is the first step done inside the mmd_shader group node
+    mmd_color = np.clip(ambient_color + diffuse_color * 0.6, 0, 1)
+
+    # If there's no image, we'll use a color instead
+    if not node_base_tex or not node_base_tex.image:
+        # Add alpha of 1 to the color to make it into RGBA because colors in shader nodes are RGBA, despite only RGB
+        # being used.
+        principled_base_color = np.concatenate((mmd_color, (1,)))
+        return None, principled_base_color
+    else:
+        # Multiply the base_tex by the combined diffuse and ambient color.
+        base_tex_image = node_base_tex.image
+
+        # There are other non-linear colorspaces, but they are more complicated and there are no clear conversions
+        # because it looks like Blender uses OCIO for them. Typically, only linear colorspaces and sRGB are used, so we
+        # are ignoring the other colorspaces for now.
+        if base_tex_image.colorspace_settings.name == srgb_colorspace_name:
+            # In shader nodes, the linear base_color would be multiplied by the sRGB image pixels, but we can only read
+            # and write image pixels in scene linear colorspace.
+            #
+            # We have to convert base_color (linear) to appear in sRGB as it currently appears in linear. We can do this
+            # by converting it to linear as if it was already sRGB.
+            # The conversion from linear to sRGB is then cancelled out by being viewed in sRGB colorspace.
+            #
+            # Alternatively, you can look at it mathematically, since to convert linear pixels to how they would appear
+            # if viewed in sRGB colorspace, the conversion is pretty close to RGB**2.4:
+            # Given: sRGB(pixels) * color == sRGB(baked_pixels)
+            # We can treat it as:
+            #   pixels**2.4 * color == baked_pixels**2.4
+            # to get:
+            #   pixels * color**1/2.4 == baked_pixels
+            # giving us both the input and output image pixels in linear colorspace
+            # The following is color_scene_linear_to_srgb from node_color.h in the Blender source code, rewritten for
+            # Python and numpy
+            is_small_mask = mmd_color < 0.0031308
+            small_rgb = mmd_color[is_small_mask]
+            # 0 if less than 0, otherwise multiply by 12.92
+            mmd_color[is_small_mask] = np.where(small_rgb < 0.0, 0, small_rgb * 12.92)
+
+            # Invert is_small_mask in-place, new variable name for clarity
+            is_large_mask = np.invert(is_small_mask, out=is_small_mask)
+            large_rgb = mmd_color[is_large_mask]
+            mmd_color[is_large_mask] = (large_rgb ** (1.0 / 2.4)) * 1.055 - 0.055
+
+        # Read the image pixels into a numpy array
+        pixels = np_read_pixels(base_tex_image)
+
+        # View as grouped into individual pixels, so we can easily multiply all pixels by the same amount
+        pixels.shape = (-1, 4)
+
+        # Multiply the RGB of all the pixels in-place, automatically broadcasting the basecolor array.
+        # We are currently ignoring base tex fac, treating it as if it's always 1
+        pixels[:, :3] *= np.asarray(mmd_color)
+
+        # Create new image so as not to touch the old one.
+        baked_image = bpy.data.images.new(node_base_tex.image.name + "MMDCatsBaked",
+                                          width=node_base_tex.image.size[0],
+                                          height=node_base_tex.image.size[1],
+                                          alpha=True)
+        baked_image.filepath = bpy.path.abspath("//" + node_base_tex.image.name + ".png")
+        baked_image.file_format = 'PNG'
+        # Set the colorspace to match the original image
+        baked_image.colorspace_settings.name = base_tex_image.colorspace_settings.name
+        # Replace the existing image in the node with the new, baked image
+        node_base_tex.image = baked_image
+
+        # Write the image pixels to the image
+        np_write_pixels(pixels, baked_image)
+        # Save the image to file if possible
+        if bpy.data.is_saved:
+            node_base_tex.image.save()
+        return node_base_tex, None
+
+
 def add_principled_shader(mesh):
-    # This adds a principled shader and material output node in order for
-    # Unity to automatically detect exported materials
+    # Blender's FBX exporter only exports material properties when a Principled BSDF shader is used.
+    # This adds a Principled BSDF shader and material output node in order for Unity to automatically detect exported
+    # material properties.
+    # Note that Unity's support for material properties from Blender exported FBX files is limited without additional
+    # Unity scripts, for Blender exported FBX, Unity uses CreateFromStandardMaterial in:
+    # https://github.com/Unity-Technologies/UnityCsReference/blob/master/Modules/AssetPipelineEditor/AssetPostprocessors/FBXMaterialDescriptionPreprocessor.cs
+
+    # Positions to place Cats specific nodes, this typically puts the nodes down and to the right of existing nodes
     principled_shader_pos = (501, -500)
     output_shader_pos = (801, -500)
-    mmd_texture_bake_pos = (1101, -500)
+    # Labels used to identify Cats specific nodes
     principled_shader_label = 'Cats Export Shader'
     output_shader_label = 'Cats Export'
+    # Node names and labels used by Materials created when importing an MMD model
+    mmd_base_tex_name = 'mmd_base_tex'
+    mmd_base_tex_label = 'MainTexture'
+    mmd_shader_name = 'mmd_shader'
+    # Node types. These are Blender defined constants
+    principled_bsdf_type = 'BSDF_PRINCIPLED'  # Corresponds to bpy.types.ShaderNodeBsdfPrincipled
+    material_output_type = 'OUTPUT_MATERIAL'  # Corresponds to bpy.types.ShaderNodeOutputMaterial
+    image_texture_type = 'TEX_IMAGE'  # Corresponds to bpy.types.ShaderNodeTexImage
+    group_type = 'GROUP'  # Corresponds to bpy.types.ShaderNodeGroup
 
     for mat_slot in mesh.material_slots:
-        if mat_slot.material and mat_slot.material.node_tree:
-            nodes = mat_slot.material.node_tree.nodes
-            node_image = None
-            node_image_count = 0
-            node_mmd_shader = None
-            needsmmdcolor = False
+        mat = mat_slot.material
+        if mat and mat.node_tree:
+            node_tree = mat.node_tree
+            nodes = node_tree.nodes
+            node_base_tex = nodes.get(mmd_base_tex_name)
+            if node_base_tex and node_base_tex.type != image_texture_type:
+                # If for some reason it's not an Image Texture node, we'll try and get the node by its label instead
+                node_base_tex = None
+            found_image_texture_nodes = []
+            cats_principled_bsdf = None
+            cats_material_output = None
 
-            # Check if the new nodes should be added and to which image node they should be attached to
+            # Check if the new nodes should be added and to which image node they should be linked to
+            # Remove any extra Material Output nodes that aren't the Cats one
+            # If there is more than one Material Output node or Principled BSDF node with the Cats label, remove
+            # all but the first found.
             for node in nodes:
-                # Cancel if the cats nodes are already found
-                if node.type == 'BSDF_PRINCIPLED' and node.label == principled_shader_label:
-                    node_image = None
-                    break
-                elif node.type == 'OUTPUT_MATERIAL' and node.label == output_shader_label:
-                    node_image = None
-                    break
-                elif node.type == 'OUTPUT_MATERIAL': #So that blender doesn't get confused on which to output
-                    nodes.remove(node)
-                    continue
-                if node.name == "mmd_shader":
-                    node_mmd_shader = node
-                    needsmmdcolor = True
-                    continue
+                if node.type == principled_bsdf_type and node.label == principled_shader_label:
+                    if cats_principled_bsdf:
+                        # Remove any extra principled bsdf nodes with the label
+                        nodes.remove(node)
+                    else:
+                        cats_principled_bsdf = node
+                elif node.type == material_output_type:
+                    if node.label == output_shader_label:
+                        if cats_material_output:
+                            # Remove any extra material output nodes with the label
+                            nodes.remove(node)
+                        else:
+                            cats_material_output = node
+                    else:
+                        # Remove any extra Material Output nodes so that blender doesn't get confused on which to use
+                        nodes.remove(node)
+                elif not node_base_tex and node.type == image_texture_type:
+                    # If we couldn't find the mmd_base_tex node by name initially, we'll try to find it by its expected
+                    # label instead.
+                    # Otherwise, we'll only pick an image texture node if there's only one.
+                    if node.label == mmd_base_tex_label:
+                        node_base_tex = node
+                    else:
+                        found_image_texture_nodes.append(node)
 
-                # Skip if this node is not an image node
-                if node.type != 'TEX_IMAGE':
-                    continue
-                node_image_count += 1
+            # If the Cats nodes weren't found, they need to be added
+            if not cats_principled_bsdf or not cats_material_output:
+                node_mmd_shader = nodes.get(mmd_shader_name)
 
-                # If an mmd_texture is found, link it to the principled shader later
-                if node.name == 'mmd_base_tex' or node.label == 'MainTexture':
-                    node_image = node
-                    node_image_count = 0
-                    break
+                # If there's no mmd texture, but there was only one image texture node, we'll use that one image texture
+                # node.
+                if not node_base_tex:
+                    if len(found_image_texture_nodes) == 1:
+                        node_base_tex = found_image_texture_nodes[0]
 
-                # This is an image node, so link it to the principled shader later
-                node_image = node
-            #this material doesn't have a texture and doesn't have a MMD AO+Diffuse so skip
-            if (not node_image or node_image_count > 1) and not needsmmdcolor:
-                continue
-            elif needsmmdcolor and node_mmd_shader: #this needs to implement mmd color and has a shader node
-                #bake AO and Diffuse color into pixels for MMD texture. if texture exists, multiply over
-                #Thank this guy for pixel manipulation: https://blender.stackexchange.com/a/652
+                # If there is an mmd_shader group node, copy how it combines the Ambient Color, Diffuse Color and
+                # Base Tex, and bake the result into a single texture (or color if there is no Base Tex) that can be
+                # used as the Base Color in the Principled BSDF shader node.
+                if node_mmd_shader and node_mmd_shader.type == group_type:
+                    node_base_tex, principled_base_color = bake_mmd_colors(node_base_tex, node_mmd_shader)
+                else:
+                    principled_base_color = None
 
+                # Create Principled BSDF node if it doesn't exist
+                if not cats_principled_bsdf:
+                    cats_principled_bsdf = nodes.new(type='ShaderNodeBsdfPrincipled')
+                cats_principled_bsdf.label = principled_shader_label
+                cats_principled_bsdf.location = principled_shader_pos
+                cats_principled_bsdf.inputs['Specular'].default_value = 0
+                cats_principled_bsdf.inputs['Roughness'].default_value = 0
+                cats_principled_bsdf.inputs['Sheen Tint'].default_value = 0
+                cats_principled_bsdf.inputs['Clearcoat Roughness'].default_value = 0
+                cats_principled_bsdf.inputs['IOR'].default_value = 0
 
-                basecolor = [x*0.6 for x in node_mmd_shader.inputs[1].default_value[:]] #multply color of diffuse by .6 which is MMD's addition factor
-                for rgba,num in enumerate(basecolor):
-                    basecolor[rgba] = max(0,min(1,basecolor[rgba]+node_mmd_shader.inputs[0].default_value[rgba])) #add AO to diffuse and clamp between 0-1 for each channel
+                # Create Material Output node if it doesn't exist
+                if not cats_material_output:
+                    cats_material_output = nodes.new(type='ShaderNodeOutputMaterial')
+                cats_material_output.label = output_shader_label
+                cats_material_output.location = output_shader_pos
 
-                if not node_image:
-                    node_image = mat_slot.material.node_tree.nodes.new(type="ShaderNodeTexImage")
-                    node_image.location = mmd_texture_bake_pos
-                    node_image.label = "Mmd Base Tex"
-                    node_image.name = "mmd_base_tex"
-                    node_image.image = bpy.data.images.new("MMDCatsBaked", width=8, height=8, alpha=True)
-
-                    #make pixels using AO color
-
-
-                    #assign to image so it's baked
-                    node_image.image.generated_color = basecolor
-                    node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
-                    node_image.image.file_format = 'PNG'
-                    if bpy.data.is_saved:
-                        node_image.image.save()
-                elif node_image:
-
-                    #multiply color on top of default color.
-                    pixels = np.array(node_image.image.pixels[:])
-
-                    multiply_image = np.tile(np.array(basecolor),int(len(pixels)/4))
-
-                    new_pixels = pixels*multiply_image
-
-                    #create new image as to not touch old one
-                    node_image.image = bpy.data.images.new(node_image.image.name+"MMDCatsBaked", width=node_image.image.size[0], height=node_image.image.size[1], alpha=True)
-                    node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
-                    node_image.image.file_format = 'PNG'
-
-                    node_image.image.pixels = new_pixels
-                    if bpy.data.is_saved:
-                        node_image.image.save()
-
-
-            # Create Principled BSDF node
-            node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
-            node_prinipled.label = 'Cats Export Shader'
-            node_prinipled.location = principled_shader_pos
-            node_prinipled.inputs['Specular'].default_value = 0
-            node_prinipled.inputs['Roughness'].default_value = 0
-            node_prinipled.inputs['Sheen Tint'].default_value = 0
-            node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
-            node_prinipled.inputs['IOR'].default_value = 0
-
-            # Create Output node for correct image exports
-            node_output = nodes.new(type='ShaderNodeOutputMaterial')
-            node_output.label = 'Cats Export'
-            node_output.location = output_shader_pos
-
-            # Link nodes together
-            mat_slot.material.node_tree.links.new(node_image.outputs['Color'], node_prinipled.inputs['Base Color'])
-            mat_slot.material.node_tree.links.new(node_prinipled.outputs['BSDF'], node_output.inputs['Surface'])
+                # Link base tex image texture node's color output to the principled BSDF node's Base Color input or set
+                # the Base Color input's default_value if there is no node to link
+                if node_base_tex and node_base_tex.image:
+                    node_tree.links.new(node_base_tex.outputs['Color'], cats_principled_bsdf.inputs['Base Color'])
+                elif principled_base_color is not None:
+                    cats_principled_bsdf.inputs['Base Color'].default_value = principled_base_color
+                # Link principled BSDF node's output to the material output
+                node_tree.links.new(cats_principled_bsdf.outputs['BSDF'], cats_material_output.inputs['Surface'])
 
 
 def remove_toon_shader(mesh):
