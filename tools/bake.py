@@ -1176,7 +1176,7 @@ class BakeButton(bpy.types.Operator):
 
         # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
         for obj in collection.all_objects:
-            if obj.type == "MESH":
+            if obj.type in ["MESH", "ARMATURE"]:
                 bpy.ops.object.select_all(action='DESELECT')
                 obj.select_set(True)
                 context.view_layer.objects.active = obj
