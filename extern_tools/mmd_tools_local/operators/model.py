@@ -1,23 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import bpy
-from bpy.types import Operator
-
-from mmd_tools_local import register_wrap
-from mmd_tools_local.bpyutils import SceneOp
-from mmd_tools_local.core.bone import FnBone
-from mmd_tools_local.translations import DictionaryEnum
 import mmd_tools_local.core.model as mmd_model
+from bpy.types import Operator
+from mmd_tools_local.bpyutils import SceneOp, activate_layer_collection
+from mmd_tools_local.core.bone import FnBone
 
 
-@register_wrap
 class MorphSliderSetup(Operator):
     bl_idname = 'mmd_tools.morph_slider_setup'
     bl_label = 'Morph Slider Setup'
     bl_description = 'Translate MMD morphs of selected object into format usable by Blender'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    type = bpy.props.EnumProperty(
+    type: bpy.props.EnumProperty(
         name='Type',
         description='Select type',
         items = [
@@ -31,17 +27,19 @@ class MorphSliderSetup(Operator):
     def execute(self, context):
         obj = context.active_object
         root = mmd_model.Model.findRoot(context.active_object)
-        rig = mmd_model.Model(root)
-        if self.type == 'BIND':
-            rig.morph_slider.bind()
-        elif self.type == 'UNBIND':
-            rig.morph_slider.unbind()
-        else:
-            rig.morph_slider.create()
-        SceneOp(context).active_object = obj
+
+        with activate_layer_collection(root):
+            rig = mmd_model.Model(root)
+            if self.type == 'BIND':
+                rig.morph_slider.bind()
+            elif self.type == 'UNBIND':
+                rig.morph_slider.unbind()
+            else:
+                rig.morph_slider.create()
+            SceneOp(context).active_object = obj
+
         return {'FINISHED'}
 
-@register_wrap
 class CleanRiggingObjects(Operator):
     bl_idname = 'mmd_tools.clean_rig'
     bl_label = 'Clean Rig'
@@ -55,21 +53,37 @@ class CleanRiggingObjects(Operator):
         SceneOp(context).active_object = root
         return {'FINISHED'}
 
-@register_wrap
 class BuildRig(Operator):
     bl_idname = 'mmd_tools.build_rig'
     bl_label = 'Build Rig'
     bl_description = 'Translate physics of selected object into format usable by Blender'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    non_collision_distance_scale: bpy.props.FloatProperty(
+        name='Non-Collision Distance Scale',
+        description='The distance scale for creating extra non-collision constraints while building physics',
+        min=0, soft_max=10,
+        default=1.5,
+    )
+
+    collision_margin: bpy.props.FloatProperty(
+        name='Collision Margin',
+        description='The collision margin between rigid bodies. If 0, the default value for each shape is adopted.',
+        unit='LENGTH',
+        min=0, soft_max=10,
+        default=1e-06,
+    )
+
     def execute(self, context):
         root = mmd_model.Model.findRoot(context.active_object)
-        rig = mmd_model.Model(root)
-        rig.build()
-        SceneOp(context).active_object = root
+
+        with activate_layer_collection(root):
+            rig = mmd_model.Model(root)
+            rig.build(self.non_collision_distance_scale, self.collision_margin)
+            SceneOp(context).active_object = root
+
         return {'FINISHED'}
 
-@register_wrap
 class CleanAdditionalTransformConstraints(Operator):
     bl_idname = 'mmd_tools.clean_additional_transform'
     bl_label = 'Clean Additional Transform'
@@ -84,7 +98,6 @@ class CleanAdditionalTransformConstraints(Operator):
         SceneOp(context).active_object = obj
         return {'FINISHED'}
 
-@register_wrap
 class ApplyAdditionalTransformConstraints(Operator):
     bl_idname = 'mmd_tools.apply_additional_transform'
     bl_label = 'Apply Additional Transform'
@@ -99,14 +112,13 @@ class ApplyAdditionalTransformConstraints(Operator):
         SceneOp(context).active_object = obj
         return {'FINISHED'}
 
-@register_wrap
 class SetupBoneFixedAxes(Operator):
     bl_idname = 'mmd_tools.bone_fixed_axis_setup'
     bl_label = 'Setup Bone Fixed Axis'
     bl_description = 'Setup fixed axis of selected bones'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    type = bpy.props.EnumProperty(
+    type: bpy.props.EnumProperty(
         name='Type',
         description='Select type',
         items = [
@@ -130,14 +142,13 @@ class SetupBoneFixedAxes(Operator):
             FnBone.load_bone_fixed_axis(arm, enable=(self.type=='LOAD'))
         return {'FINISHED'}
 
-@register_wrap
 class SetupBoneLocalAxes(Operator):
     bl_idname = 'mmd_tools.bone_local_axes_setup'
     bl_label = 'Setup Bone Local Axes'
     bl_description = 'Setup local axes of each bone'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    type = bpy.props.EnumProperty(
+    type: bpy.props.EnumProperty(
         name='Type',
         description='Select type',
         items = [
@@ -161,27 +172,26 @@ class SetupBoneLocalAxes(Operator):
             FnBone.load_bone_local_axes(arm, enable=(self.type=='LOAD'))
         return {'FINISHED'}
 
-@register_wrap
 class CreateMMDModelRoot(Operator):
     bl_idname = 'mmd_tools.create_mmd_model_root_object'
     bl_label = 'Create a MMD Model Root Object'
     bl_description = 'Create a MMD model root object with a basic armature'
     bl_options = {'REGISTER', 'UNDO'}
 
-    name_j = bpy.props.StringProperty(
+    name_j: bpy.props.StringProperty(
         name='Name',
         description='The name of the MMD model',
         default='New MMD Model',
         )
-    name_e = bpy.props.StringProperty(
+    name_e: bpy.props.StringProperty(
         name='Name(Eng)',
         description='The english name of the MMD model',
         default='New MMD Model',
         )
-    scale = bpy.props.FloatProperty(
+    scale: bpy.props.FloatProperty(
         name='Scale',
         description='Scale',
-        default=1.0,
+        default=0.08,
         )
 
     def execute(self, context):
@@ -193,14 +203,13 @@ class CreateMMDModelRoot(Operator):
         vm = context.window_manager
         return vm.invoke_props_dialog(self)
 
-@register_wrap
 class ConvertToMMDModel(Operator):
     bl_idname = 'mmd_tools.convert_to_mmd_model'
     bl_label = 'Convert to a MMD Model'
     bl_description = 'Convert active armature with its meshes to a MMD model (experimental)'
     bl_options = {'REGISTER', 'UNDO'}
 
-    ambient_color_source = bpy.props.EnumProperty(
+    ambient_color_source: bpy.props.EnumProperty(
         name='Ambient Color Source',
         description='Select ambient color source',
         items = [
@@ -209,7 +218,7 @@ class ConvertToMMDModel(Operator):
             ],
         default='DIFFUSE',
         )
-    edge_threshold = bpy.props.FloatProperty(
+    edge_threshold: bpy.props.FloatProperty(
         name='Edge Threshold',
         description='MMD toon edge will not be enabled if freestyle line color alpha less than this value',
         min=0,
@@ -218,7 +227,7 @@ class ConvertToMMDModel(Operator):
         step=0.1,
         default=0.1,
         )
-    edge_alpha_min = bpy.props.FloatProperty(
+    edge_alpha_min: bpy.props.FloatProperty(
         name='Minimum Edge Alpha',
         description='Minimum alpha of MMD toon edge color',
         min=0,
@@ -226,6 +235,20 @@ class ConvertToMMDModel(Operator):
         precision=3,
         step=0.1,
         default=0.5,
+        )
+    scale: bpy.props.FloatProperty(
+        name='Scale',
+        description='Scaling factor for converting the model',
+        default=0.08,
+        )
+    convert_material_nodes: bpy.props.BoolProperty(
+        name='Convert Material Nodes',
+        default=True,
+        )
+    middle_joint_bones_lock: bpy.props.BoolProperty(
+        name='Middle Joint Bones Lock',
+        description='Lock specific bones for backward compatibility.',
+        default=False,
         )
 
     @classmethod
@@ -240,7 +263,7 @@ class ConvertToMMDModel(Operator):
     def execute(self, context):
         #TODO convert some basic MMD properties
         armature = context.active_object
-        scale = 1
+        scale = self.scale
         model_name = 'New MMD Model'
 
         root = mmd_model.Model.findRoot(armature)
@@ -248,7 +271,7 @@ class ConvertToMMDModel(Operator):
             rig = mmd_model.Model.create(model_name, model_name, scale, armature=armature)
 
         self.__attach_meshes_to(armature, SceneOp(context).id_objects)
-        self.__configure_rig(mmd_model.Model(armature.parent))
+        self.__configure_rig(context, mmd_model.Model(armature.parent))
         return {'FINISHED'}
 
     def __attach_meshes_to(self, armature, objects):
@@ -277,206 +300,125 @@ class ConvertToMMDModel(Operator):
                 x_root.parent = armature
                 x_root.matrix_world = m
 
-    def __configure_rig(self, rig):
+    def __configure_rig(self, context, rig):
         root = rig.rootObject()
         armature = rig.armature()
         meshes = tuple(rig.meshes())
 
         rig.loadMorphs()
 
-        vertex_groups = {g.name for mesh in meshes for g in mesh.vertex_groups}
-        for pose_bone in armature.pose.bones:
-            if not pose_bone.parent:
-                continue
-            if not pose_bone.bone.use_connect and pose_bone.name not in vertex_groups:
-                continue
-            pose_bone.lock_location = (True, True, True)
+        if self.middle_joint_bones_lock:
+            vertex_groups = {g.name for mesh in meshes for g in mesh.vertex_groups}
+            for pose_bone in armature.pose.bones:
+                if not pose_bone.parent:
+                    continue
+                if not pose_bone.bone.use_connect and pose_bone.name not in vertex_groups:
+                    continue
+                pose_bone.lock_location = (True, True, True)
 
         from mmd_tools_local.core.material import FnMaterial
-        for m in {x for mesh in meshes for x in mesh.data.materials if x}:
-            FnMaterial.convert_to_mmd_material(m)
-            mmd_material = m.mmd_material
-            if self.ambient_color_source == 'MIRROR' and hasattr(m, 'mirror_color'):
-                mmd_material.ambient_color = m.mirror_color
-            else:
-                mmd_material.ambient_color = [0.5*c for c in mmd_material.diffuse_color]
+        FnMaterial.set_nodes_are_readonly(not self.convert_material_nodes)
+        try:
+            for m in {x for mesh in meshes for x in mesh.data.materials if x}:
+                FnMaterial.convert_to_mmd_material(m, context)
+                mmd_material = m.mmd_material
+                if self.ambient_color_source == 'MIRROR' and hasattr(m, 'mirror_color'):
+                    mmd_material.ambient_color = m.mirror_color
+                else:
+                    mmd_material.ambient_color = [0.5*c for c in mmd_material.diffuse_color]
 
-            if hasattr(m, 'line_color'): # freestyle line color
-                line_color = list(m.line_color)
-                mmd_material.enabled_toon_edge = line_color[3] >= self.edge_threshold
-                mmd_material.edge_color = line_color[:3] + [max(line_color[3], self.edge_alpha_min)]
-
+                if hasattr(m, 'line_color'): # freestyle line color
+                    line_color = list(m.line_color)
+                    mmd_material.enabled_toon_edge = line_color[3] >= self.edge_threshold
+                    mmd_material.edge_color = line_color[:3] + [max(line_color[3], self.edge_alpha_min)]
+        finally:
+            FnMaterial.set_nodes_are_readonly(False)
         from mmd_tools_local.operators.display_item import DisplayItemQuickSetup
         DisplayItemQuickSetup.load_bone_groups(root.mmd_root, armature)
         rig.initialDisplayFrames(reset=False) # ensure default frames
         DisplayItemQuickSetup.load_facial_items(root.mmd_root)
         root.mmd_root.active_display_item_frame = 0
 
-@register_wrap
-class TranslateMMDModel(Operator):
-    bl_idname = 'mmd_tools.translate_mmd_model'
-    bl_label = 'Translate a MMD Model'
-    bl_description = 'Translate Japanese names of a MMD model'
+class ResetObjectVisibility(bpy.types.Operator):
+    bl_idname = 'mmd_tools.reset_object_visibility'
+    bl_label = 'Reset Object Visivility'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    dictionary = bpy.props.EnumProperty(
-        name='Dictionary',
-        items=DictionaryEnum.get_dictionary_items,
-        description='Translate names from Japanese to English using selected dictionary',
-        )
-    types = bpy.props.EnumProperty(
-        name='Types',
-        description='Select which parts will be translated',
-        options={'ENUM_FLAG'},
-        items = [
-            ('BONE', 'Bones', 'Bones', 1),
-            ('MORPH', 'Morphs', 'Morphs', 2),
-            ('MATERIAL', 'Materials', 'Materials', 4),
-            ('DISPLAY', 'Display', 'Display frames', 8),
-            ('PHYSICS', 'Physics', 'Rigidbodies and joints', 16),
-            ('INFO', 'Information', 'Model name and comments', 32),
-            ],
-        default={'BONE', 'MORPH', 'MATERIAL', 'DISPLAY', 'PHYSICS',},
-        )
-    modes = bpy.props.EnumProperty(
-        name='Modes',
-        description='Select translation mode',
-        options={'ENUM_FLAG'},
-        items = [
-            ('MMD', 'MMD Names', 'Fill MMD English names', 1),
-            ('BLENDER', 'Blender Names', 'Translate blender names (experimental)', 2),
-            ],
-        default={'MMD'},
-        )
-    use_morph_prefix = bpy.props.BoolProperty(
-        name='Use Morph Prefix',
-        description='Add/remove prefix to English name of morph',
-        default=False,
-        )
-    overwrite = bpy.props.BoolProperty(
-        name='Overwrite',
-        description='Overwrite a translated English name',
-        default=False,
-        )
-    allow_fails = bpy.props.BoolProperty(
-        name='Allow Fails',
-        description='Allow incompletely translated names',
-        default=False,
-        )
+    @classmethod
+    def poll(cls, context: bpy.types.Context):
+        active_object: bpy.types.Object = context.active_object
+        return mmd_model.Model.findRoot(active_object) is not None
 
-    def invoke(self, context, event):
-        vm = context.window_manager
-        return vm.invoke_props_dialog(self)
+    def execute(self, context: bpy.types.Context):
+        active_object: bpy.types.Object = context.active_object
+        mmd_root_object = mmd_model.Model.findRoot(active_object)
+        mmd_root = mmd_root_object.mmd_root
 
-    def execute(self, context):
-        try:
-            self.__translator = DictionaryEnum.get_translator(self.dictionary)
-        except Exception as e:
-            self.report({'ERROR'}, 'Failed to load dictionary: %s'%e)
-            return {'CANCELLED'}
+        mmd_root_object.hide = False
 
-        obj = context.active_object
-        root = mmd_model.Model.findRoot(obj)
-        rig = mmd_model.Model(root)
+        rigid_group_object = mmd_model.FnModel.find_rigid_group(mmd_root_object)
+        if rigid_group_object:
+            rigid_group_object.hide = True
 
-        if 'MMD' in self.modes:
-            for i in self.types:
-                getattr(self, 'translate_%s'%i.lower())(rig)
+        joint_group_object = mmd_model.FnModel.find_joint_group(mmd_root_object)
+        if joint_group_object:
+            joint_group_object.hide = True
 
-        if 'BLENDER' in self.modes:
-            self.translate_blender_names(rig)
+        temporary_group_object = mmd_model.FnModel.find_temporary_group(mmd_root_object)
+        if temporary_group_object:
+            temporary_group_object.hide = True
 
-        translator = self.__translator
-        txt = translator.save_fails()
-        if translator.fails:
-            self.report({'WARNING'}, "Failed to translate %d names, see '%s' in text editor"%(len(translator.fails), txt.name))
+        mmd_root.show_meshes = True
+        mmd_root.show_armature = True
+        mmd_root.show_temporary_objects = False
+        mmd_root.show_rigid_bodies = False
+        mmd_root.show_names_of_rigid_bodies = False
+        mmd_root.show_joints = False
+        mmd_root.show_names_of_joints = False
+
         return {'FINISHED'}
 
-    def translate(self, name_j, name_e):
-        if not self.overwrite and name_e and self.__translator.is_translated(name_e):
-            return name_e
-        if self.allow_fails:
-            name_e = None
-        return self.__translator.translate(name_j, name_e)
+class AssembleAll(Operator):
+    bl_idname = 'mmd_tools.assemble_all'
+    bl_label = 'Assemble All'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    def translate_blender_names(self, rig):
-        if 'BONE' in self.types:
-            for b in rig.armature().pose.bones:
-                rig.renameBone(b.name, self.translate(b.name, b.name))
+    def execute(self, context):
+        active_object = context.active_object
+        root_object = mmd_model.Model.findRoot(active_object)
 
-        if 'MORPH' in self.types:
-            for i in (x for x in rig.meshes() if x.data.shape_keys):
-                for kb in i.data.shape_keys.key_blocks:
-                    kb.name = self.translate(kb.name, kb.name)
+        with activate_layer_collection(root_object):
+            rig = mmd_model.Model(root_object)
 
-        if 'MATERIAL' in self.types:
-            for m in (x for x in rig.materials() if x):
-                m.name = self.translate(m.name, m.name)
+            rig.applyAdditionalTransformConstraints()
+            rig.build(1.5, 1e-06)
+            rig.morph_slider.bind()
 
-        if 'DISPLAY' in self.types:
-            for g in rig.armature().pose.bone_groups:
-                g.name = self.translate(g.name, g.name)
+            bpy.ops.mmd_tools.sdef_bind({'selected_objects': [active_object]})
+            root_object.mmd_root.use_property_driver = True
 
-        if 'PHYSICS' in self.types:
-            for i in rig.rigidBodies():
-                i.name = self.translate(i.name, i.name)
+            SceneOp(context).active_object = active_object
 
-            for i in rig.joints():
-                i.name = self.translate(i.name, i.name)
+        return {'FINISHED'}
 
-        if 'INFO' in self.types:
-            objects = [rig.rootObject(), rig.armature()]
-            objects.extend(rig.meshes())
-            for i in objects:
-                i.name = self.translate(i.name, i.name)
+class DisassembleAll(Operator):
+    bl_idname = 'mmd_tools.disassemble_all'
+    bl_label = 'Disassemble All'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    def translate_info(self, rig):
-        mmd_root = rig.rootObject().mmd_root
-        mmd_root.name_e = self.translate(mmd_root.name, mmd_root.name_e)
+    def execute(self, context):
+        active_object = context.active_object
+        root_object = mmd_model.Model.findRoot(active_object)
 
-        comment_text = bpy.data.texts.get(mmd_root.comment_text, None)
-        comment_e_text = bpy.data.texts.get(mmd_root.comment_e_text, None)
-        if comment_text and comment_e_text:
-            comment_e = self.translate(comment_text.as_string(), comment_e_text.as_string())
-            comment_e_text.from_string(comment_e)
+        with activate_layer_collection(root_object):
+            rig = mmd_model.Model(root_object)
 
-    def translate_bone(self, rig):
-        bones = rig.armature().pose.bones
-        for b in bones:
-            if b.is_mmd_shadow_bone:
-                continue
-            b.mmd_bone.name_e = self.translate(b.mmd_bone.name_j, b.mmd_bone.name_e)
+            root_object.mmd_root.use_property_driver = False
+            bpy.ops.mmd_tools.sdef_unbind({'selected_objects': [active_object]})
+            rig.morph_slider.unbind()
+            rig.clean()
+            rig.cleanAdditionalTransformConstraints()
 
-    def translate_morph(self, rig):
-        mmd_root = rig.rootObject().mmd_root
-        attr_list = ('group', 'vertex', 'bone', 'uv', 'material')
-        prefix_list = ('G_', '', 'B_', 'UV_', 'M_')
-        for attr, prefix in zip(attr_list, prefix_list):
-            for m in getattr(mmd_root, attr+'_morphs', []):
-                m.name_e = self.translate(m.name, m.name_e)
-                if not prefix:
-                    continue
-                if self.use_morph_prefix:
-                    if not m.name_e.startswith(prefix):
-                        m.name_e = prefix + m.name_e
-                elif m.name_e.startswith(prefix):
-                    m.name_e = m.name_e[len(prefix):]
+            SceneOp(context).active_object = active_object
 
-    def translate_material(self, rig):
-        for m in rig.materials():
-            if m is None:
-                continue
-            m.mmd_material.name_e = self.translate(m.mmd_material.name_j, m.mmd_material.name_e)
-
-    def translate_display(self, rig):
-        mmd_root = rig.rootObject().mmd_root
-        for f in mmd_root.display_item_frames:
-            f.name_e = self.translate(f.name, f.name_e)
-
-    def translate_physics(self, rig):
-        for i in rig.rigidBodies():
-            i.mmd_rigid.name_e = self.translate(i.mmd_rigid.name_j, i.mmd_rigid.name_e)
-
-        for i in rig.joints():
-            i.mmd_joint.name_e = self.translate(i.mmd_joint.name_j, i.mmd_joint.name_e)
-
+        return {'FINISHED'}

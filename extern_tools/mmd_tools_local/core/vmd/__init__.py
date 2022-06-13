@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-import struct
 import collections
+import logging
+import struct
+
 
 class InvalidFileError(Exception):
     pass
@@ -156,11 +158,11 @@ class SelfShadowFrameKey:
         self.frame_number, = struct.unpack('<L', fin.read(4))
         self.mode, = struct.unpack('<b', fin.read(1))
         if self.mode not in range(3):
-            print(' * Invalid self shadow mode %d at frame %d'%(self.mode, self.frame_number))
+            logging.warning(' * Invalid self shadow mode %d at frame %d', self.mode, self.frame_number)
             raise struct.error
         distance, = struct.unpack('<f', fin.read(4))
         self.distance = 10000 - distance*100000
-        print('    ', self)
+        logging.info('    %s', self)
 
     def save(self, fin):
         fin.write(struct.pack('<L', self.frame_number))
@@ -217,7 +219,7 @@ class _AnimationBase(collections.defaultdict):
 
     def load(self, fin):
         count, = struct.unpack('<L', fin.read(4))
-        print('loading %s... %d'%(self.__class__.__name__, count))
+        logging.info('loading %s... %d', self.__class__.__name__, count)
         for i in range(count):
             name = _toShiftJisString(struct.unpack('<15s', fin.read(15))[0])
             cls = self.frameClass()
@@ -245,7 +247,7 @@ class _AnimationListBase(list):
 
     def load(self, fin):
         count, = struct.unpack('<L', fin.read(4))
-        print('loading %s... %d'%(self.__class__.__name__, count))
+        logging.info('loading %s... %d', self.__class__.__name__, count)
         for i in range(count):
             cls = self.frameClass()
             frameKey = cls()

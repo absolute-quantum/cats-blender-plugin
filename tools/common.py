@@ -2183,7 +2183,6 @@ def toggle_mmd_tabs_update(self, context):
 
 def toggle_mmd_tabs(shutdown_plugin=False):
     mmd_cls = [
-        mmd_tool.MMDToolsObjectPanel,
         mmd_tool.MMDDisplayItemsPanel,
         mmd_tool.MMDMorphToolsPanel,
         mmd_tool.MMDRigidbodySelectorPanel,

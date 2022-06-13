@@ -335,6 +335,17 @@ class FnBone(object):
         c = constraints.get('mmd_additional_location', None)
         TransformConstraintOp.update_min_max(c, 100, influence)
 
+class MigrationFnBone(object):
+    """Migration Functions for old MMD models broken by bugs or issues"""
+
+    @classmethod
+    def fix_mmd_ik_limit_override(cls, armature_object: bpy.types.Object):
+        pose_bone: bpy.types.PoseBone
+        for pose_bone in armature_object.pose.bones:
+            constraint: bpy.types.Constraint
+            for constraint in pose_bone.constraints:
+                if constraint.type == 'LIMIT_ROTATION' and 'mmd_ik_limit_override' in constraint.name:
+                    constraint.owner_space = 'LOCAL'
 
 class _AT_ShadowBoneRemove:
     def __init__(self, bone_name):
