@@ -200,6 +200,17 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         else:
             item.diffuse_alpha_pack = "NONE"
 
+def img_channels_as_nparray(image_name):
+    image = bpy.data.images[image_name]
+    pixel_buffer = np.empty(image.size[0] * image.size[1] * 4, dtype=np.float32)
+    image.pixels.foreach_get(pixel_buffer)
+    return pixel_buffer.reshape(4,-1, order='F')
+
+def nparray_channels_to_img(image_name, nparr):
+    image = bpy.data.images[image_name]
+    assert(nparr.shape[0] == 4)
+    assert(nparr.shape[1] == image.size[0] * image.size[1])
+    image.pixels.foreach_set(np.ravel(nparr, order='F'))
 
 @register_wrap
 class BakePresetDesktop(bpy.types.Operator):
@@ -1138,13 +1149,9 @@ class BakeButton(bpy.types.Operator):
                 self.restore_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"])
 
                 if invert:
-                    image = bpy.data.images["SCRIPT_" + bake_name + ".png"]
-                    pixel_buffer = list(image.pixels)
-                    for idx in range(0, len(image.pixels)):
-                        # invert r, g, b, but not a
-                        if (idx % 4) != 3:
-                            pixel_buffer[idx] = 1.0 - pixel_buffer[idx]
-                    image.pixels[:] = pixel_buffer
+                    pixel_buffer = img_channels_as_nparray("SCRIPT_" + bake_name + ".png")
+                    pixel_buffer[:3] -= 1.0
+                    nparray_channels_to_img("SCRIPT_" + bake_name + ".png", np.abs(pixel_buffer))
 
                 if sharpen_bakes:
                     self.filter_image(context, "SCRIPT_" + bake_name + ".png", BakeButton.sharpen_create,
@@ -1402,7 +1409,7 @@ class BakeButton(bpy.types.Operator):
                 # already completed passes
                 if bakename not in ["specular", "normal", "phong"]:
                     orig_image = bpy.data.images["SCRIPT_" + bakename+'.png']
-                    image.pixels[:] = orig_image.pixels[:]
+                    image.pixels.foreach_set(orig_image.pixels[:])
 
             # Create yet another output collection
             plat_collection = bpy.data.collections.new("CATS Bake " + platform_name)
@@ -1545,166 +1552,113 @@ class BakeButton(bpy.types.Operator):
             # Overlay emission onto diffuse, dodge metallic if specular
             if pass_diffuse:
                 image = bpy.data.images[platform_img("diffuse")]
-                diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-                pixel_buffer = list(diffuse_image.pixels)
+                pixel_buffer = img_channels_as_nparray("SCRIPT_diffuse.png")
                 if diffuse_indirect:
-                    diffuse_indirect_image = bpy.data.images["SCRIPT_diffuse_indirect.png"]
-                    diffuse_indirect_buffer = diffuse_indirect_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Map range: screen the diffuse_indirect onto diffuse
-                            pixel_buffer[idx] = 1.0 - ((1.0 - (diffuse_indirect_buffer[idx] * diffuse_indirect_opacity)) * (1.0 - pixel_buffer[idx]))
+                    diffuse_indirect_buffer = img_channels_as_nparray("SCRIPT_diffuse_indirect.png")
+                    # Map range: screen the diffuse_indirect onto diffuse
+                    pixel_buffer[:3] = 1.0 - ((1.0 - (diffuse_indirect_buffer[:3] * diffuse_indirect_opacity)) * (1.0 - pixel_buffer[:3]))
                 if pass_ao and diffuse_premultiply_ao:
-                    ao_image = bpy.data.images["SCRIPT_ao.png"]
-                    ao_buffer = ao_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Map range: set the black point up to 1-opacity
-                            pixel_buffer[idx] = pixel_buffer[idx] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[idx]))
+                    ao_buffer = img_channels_as_nparray("SCRIPT_ao.png")
+                    # Map range: set the black point up to 1-opacity
+                    pixel_buffer[:3] = pixel_buffer[:3] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[:3]))
                 if specular_setup and pass_metallic:
-                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Map range: metallic blocks diffuse light
-                            pixel_buffer[idx] = pixel_buffer[idx] * (1 - metallic_buffer[idx])
+                    metallic_buffer = img_channels_as_nparray("SCRIPT_metallic.png")
+                    # Map range: metallic blocks diffuse light
+                    pixel_buffer[:3] = pixel_buffer[:3] * (1 - metallic_buffer[:3])
                 if pass_emit and diffuse_emit_overlay:
-                    emit_image = bpy.data.images["SCRIPT_emission.png"]
-                    emit_buffer = emit_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            # Map range: screen the emission onto diffuse
-                            pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
+                    emit_buffer = img_channels_as_nparray("SCRIPT_emission.png")
+                    # Map range: screen the emission onto diffuse
+                    pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
                 if export_format == "GMOD":
                     vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
-                image.pixels[:] = pixel_buffer
+                nparray_channels_to_img(platform_img("diffuse"), pixel_buffer)
                 image.save()
 
             # Preultiply AO into smoothness if selected, to avoid shine in dark areas
             if pass_smoothness and pass_ao and smoothness_premultiply_ao:
-                image = bpy.data.images[platform_img("smoothness")]
-                smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
-                ao_image = bpy.data.images["SCRIPT_ao.png"]
-                pixel_buffer = list(image.pixels)
-                smoothness_buffer = smoothness_image.pixels[:]
-                ao_buffer = ao_image.pixels[:]
-                for idx in range(0, len(image.pixels)):
-                    if (idx % 4 != 3):
-                        # Map range: set the black point up to 1-opacity
-                        pixel_buffer[idx] = smoothness_buffer[idx] * ((1.0 - smoothness_premultiply_opacity) + (smoothness_premultiply_opacity * ao_buffer[idx]))
-                    else:
-                        # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
-                        pixel_buffer[idx] = 1.0
-                image.pixels[:] = pixel_buffer
+                pixel_buffer = img_channels_as_nparray("SCRIPT_smoothness.png")
+                ao_buffer = img_channels_as_nparray("SCRIPT_ao.png")
+                # Map range: set the black point up to 1-opacity
+                pixel_buffer[:3] *= ((1.0 - smoothness_premultiply_opacity) + (smoothness_premultiply_opacity * ao_buffer[:3]))
+                # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
+                pixel_buffer[3:] = 1.0
+                nparray_channels_to_img(platform_img("smoothness"), pixel_buffer)
 
             # Pack to diffuse alpha (if selected)
             if pass_diffuse and ((diffuse_alpha_pack == "SMOOTHNESS" and pass_smoothness) or
                                  (diffuse_alpha_pack == "TRANSPARENCY" and pass_alpha) or
                                  (diffuse_alpha_pack == "EMITMASK" and pass_emit)):
-                image = bpy.data.images[platform_img("diffuse")]
+                pixel_buffer = img_channels_as_nparray(platform_img("diffuse"))
                 print("Packing to diffuse alpha")
-                alpha_image = None
+                alpha_buffer = None
                 if diffuse_alpha_pack == "SMOOTHNESS":
-                    alpha_image = bpy.data.images[platform_img("smoothness")]
+                    alpha_buffer = img_channels_as_nparray(platform_img("smoothness"))
                     if export_format == "GMOD":
                         vmtfile += "\n    \"$basealphaenvmapmask\" 1"
                 elif diffuse_alpha_pack == "TRANSPARENCY":
-                    alpha_image = bpy.data.images["SCRIPT_alpha.png"]
+                    alpha_buffer = img_channels_as_nparray("SCRIPT_alpha.png")
                     if export_format == "GMOD":
                         vmtfile += "\n    \"$translucent\" 1"
                 elif diffuse_alpha_pack == "EMITMASK":
-                    alpha_image = bpy.data.images["SCRIPT_emission.png"]
+                    alpha_buffer = img_channels_as_nparray("SCRIPT_emission.png")
                     # "By default, $selfillum uses the alpha channel of the base texture as a mask.
-                    # If the alpha channel of your base texture is used for something else, you can specify a separate $selfillummask texture."
+                    # If the alpha channel of your base texture is used for something else, you can
+                    # specify a separate $selfillummask texture."
                     # https://developer.valvesoftware.com/wiki/Glowing_Textures
-                    # TODO: independent emit if transparency "\n    \"$selfillummask\" \"models/"+sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\""
+                    # TODO: independent emit if transparency "\n    \"$selfillummask\" \"models/"+
+                    # sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\""
                     if export_format == "GMOD":
                         vmtfile += "\n    \"$selfillum\" 1"
-                pixel_buffer = list(image.pixels)
-                alpha_buffer = alpha_image.pixels[:]
-                for idx in range(3, len(pixel_buffer), 4):
-                    pixel_buffer[idx] = (alpha_buffer[idx - 3] * 0.299) + (alpha_buffer[idx - 2] * 0.587) + (alpha_buffer[idx - 1] * 0.114)
-                image.pixels[:] = pixel_buffer
+                alpha_channel = (alpha_buffer[0] * 0.299) + (alpha_buffer[1] * 0.587) + (alpha_buffer[2] * 0.114)
+                nparray_channels_to_img(platform_img("diffuse"),
+                                        np.vstack((pixel_buffer[:3], alpha_channel)))
 
-            # Pack to metallic alpha (if selected)
-            if pass_metallic and (metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness):
-                image = bpy.data.images[platform_img("metallic")]
+            # Metallic is sampled from 'r', while ao is 'g', smoothness is 'a'
+            if pass_metallic:
                 print("Packing to metallic alpha")
-                metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                alpha_image = bpy.data.images[platform_img("smoothness")]
-                pixel_buffer = list(metallic_image.pixels)
-                alpha_buffer = alpha_image.pixels[:]
-                for idx in range(3, len(pixel_buffer), 4):
-                    pixel_buffer[idx] = alpha_buffer[idx - 3]
-                image.pixels[:] = pixel_buffer
-
-            if pass_metallic and pass_ao and metallic_pack_ao:
-                image = bpy.data.images[platform_img("metallic")]
-                green_image = bpy.data.images[platform_img("ao")]
-                pixel_buffer = list(image.pixels)
-                green_buffer = green_image.pixels[:]
-                for idx in range(len(pixel_buffer)):
-                    if idx % 4 == 1:
-                        pixel_buffer[idx] = green_buffer[idx]
-                    elif idx % 4 == 2:
-                        # Zero out B, saves space if crunching
-                        pixel_buffer[idx] = 0
-                image.pixels[:] = pixel_buffer
-            elif pass_metallic:
-                image = bpy.data.images[platform_img("metallic")]
-                pixel_buffer = list(image.pixels)
-                for idx in range(len(pixel_buffer)):
-                    if (idx % 4) == 1 or (idx % 4) == 2:
-                        # Zero out GB, saves space if crunching
-                        pixel_buffer[idx] = 0
-                image.pixels[:] = pixel_buffer
+                pixel_buffer = img_channels_as_nparray("SCRIPT_metallic.png")
+                smoothness_channel = np.ones(len(pixel_buffer[0]), dtype=np.float32)
+                if metallic_alpha_pack == "SMOOTHNESS" and pass_smoothness:
+                    smoothness_channel = img_channels_as_nparray(platform_img("smoothness"))[0]
+                ao_channel = np.zeros(len(pixel_buffer[0]), dtype=np.float32)
+                if pass_ao and metallic_pack_ao:
+                    ao_channel = img_channels_as_nparray(platform_img("ao"))[0]
+                nparray_channels_to_img(platform_img("metallic"),
+                                        np.vstack((pixel_buffer[0],
+                                                   ao_channel,
+                                                   np.zeros(len(pixel_buffer[0]), dtype=np.float32),
+                                                   smoothness_channel)))
 
             # Create specular map
             if specular_setup:
                 # TODO: Valve has their own suggested curve ramps, which are indexed above.
                 # Add an an option to apply it for a more "source-ey" specular setup
-                image = bpy.data.images[platform_img("specular")]
-                pixel_buffer = list(image.pixels)
+                pixel_buffer = img_channels_as_nparray(platform_img("specular"))
                 if pass_metallic:
                     # Use the unaltered diffuse map
-                    diffuse_image = bpy.data.images["SCRIPT_diffuse.png"]
-                    diffuse_buffer = diffuse_image.pixels[:]
-                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(0, len(image.pixels), 4):
-                        # Simple specularity: most nonmetallic objects have about 4% reflectiveness
-                        pixel_buffer[idx] = (diffuse_buffer[idx] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
-                        pixel_buffer[idx+1] = (diffuse_buffer[idx+1] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
-                        pixel_buffer[idx+2] = (diffuse_buffer[idx+1] * metallic_buffer[idx]) + (.04 * (1-metallic_buffer[idx]))
+                    diffuse_buffer = img_channels_as_nparray("SCRIPT_diffuse.png")
+                    metallic_buffer = img_channels_as_nparray("SCRIPT_metallic.png")
+                    # Simple specularity: most nonmetallic objects have about 4% reflectiveness
+                    pixel_buffer[:3] = (diffuse_buffer[:3] * metallic_buffer[:3]) + (.04 * (1-metallic_buffer[:3]))
                 else:
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 != 3):
-                            pixel_buffer[idx] = 0.04
+                    pixel_buffer[:3] = 0.04
                 if specular_alpha_pack == "SMOOTHNESS" and pass_smoothness:
-                    alpha_image = bpy.data.images[platform_img("smoothness")]
-                    alpha_image_buffer = alpha_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if (idx % 4 == 3):
-                            pixel_buffer[idx] = alpha_image_buffer[idx - 3]
+                    alpha_buffer = img_channels_as_nparray(platform_img("smoothness"))
+                    pixel_buffer[3] = alpha_buffer[0]
                 # for source games, screen(specular, smoothness) to create envmapmask
                 if specular_smoothness_overlay and pass_smoothness:
-                    smoothness_image = bpy.data.images[platform_img("smoothness")]
-                    smoothness_image_buffer = smoothness_image.pixels[:]
-                    for idx in range(0, len(image.pixels)):
-                        if idx % 4 != 3:
-                            pixel_buffer[idx] = pixel_buffer[idx] * smoothness_image_buffer[idx]
+                    smoothness_buffer = img_channels_as_nparray(platform_img("smoothness"))
+                    pixel_buffer[:3] *= smoothness_buffer[:3]
 
-                image.pixels[:] = pixel_buffer
+                nparray_channels_to_img(platform_img("specular"), pixel_buffer)
 
             # Phong texture (R: smoothness, G: metallic, pack smoothness * AO to normalmap alpha as mask)
             if phong_setup and pass_smoothness:
-                image = bpy.data.images[platform_img("phong")]
-                pixel_buffer = list(image.pixels)
                 # Use the unaltered smoothness
-                smoothness_image = bpy.data.images["SCRIPT_smoothness.png"]
-                smoothness_buffer = smoothness_image.pixels[:]
-                for idx in range(0, len(image.pixels), 4):
-                    pixel_buffer[idx] = smoothness_buffer[idx]
+                red_channel = img_channels_as_nparray("SCRIPT_smoothness.png")[0]
+                green_channel = np.zeros(len(red_channel), dtype=np.float32)
+                blue_channel = np.zeros(len(red_channel), dtype=np.float32)
+                alpha_channel = np.zeros(len(red_channel), dtype=np.float32)
 
                 if pass_normal:
                     # Has to be specified first!
@@ -1714,18 +1668,19 @@ class BakeButton(bpy.types.Operator):
                     vmtfile += "\n    \"$phong\" 1"
                     vmtfile += "\n    \"$phongboost\" 1.0"
                     vmtfile += "\n    \"$phongfresnelranges\" \"[0 0.5 1.0\"]"
-                    vmtfile += "\n    \"$phongexponenttexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+                    vmtfile += "\n    \"$phongexponenttexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(platform_img("phong")).replace(".tga","")+"\""
 
                 if pass_metallic:
                     # Use the unaltered metallic
-                    metallic_image = bpy.data.images["SCRIPT_metallic.png"]
-                    metallic_buffer = metallic_image.pixels[:]
-                    for idx in range(1, len(image.pixels), 4):
-                        pixel_buffer[idx] = metallic_buffer[idx-1]
+                    green_channel = img_channels_as_nparray("SCRIPT_metallic.png")[0]
                     if export_format == "GMOD":
                         vmtfile += "\n    \"$phongalbedotint\" 1"
 
-                image.pixels[:] = pixel_buffer
+                nparray_channels_to_img(platform_img("phong"),
+                                        np.vstack((red_channel,
+                                        green_channel,
+                                        blue_channel,
+                                        alpha_channel)))
 
             # Remove old UV maps (if we created new ones)
             if generate_uvmap:
@@ -1828,7 +1783,7 @@ class BakeButton(bpy.types.Operator):
                 image = bpy.data.images[platform_img("normal")]
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
-                image.pixels[:] = normal_image.pixels[:]
+                image.pixels.foreach_set(normal_image.pixels[:])
                 if export_format == "GMOD":
                     vmtfile += "\n    \"$bumpmap\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
                 if normal_alpha_pack != "NONE":
