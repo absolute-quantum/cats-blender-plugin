@@ -189,7 +189,7 @@ class AutoDecimateButton(bpy.types.Operator):
 
         return {'FINISHED'}
 
-    def get_animation_weighting(self, context, mesh, armature, use_bones, use_shapekeys):
+    def get_animation_weighting(self, context, mesh, armature):
         print("Performing animation weighting for {}".format(mesh.name))
         # Weight by multiplied bone weights for every pair of bones.
         # This is O(n*m^2) for n verts and m bones, generally runs relatively quickly.

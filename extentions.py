@@ -215,6 +215,12 @@ def register():
 
 
     # Bake
+    Scene.bake_use_draft_quality = BoolProperty(
+        name='Draft Quality',
+        description='Reduce the number of samples and cap resolution at 1024, speeds up iteration',
+        default=False
+    )
+
     Scene.bake_animation_weighting = BoolProperty(
         name=t('Scene.decimation_animation_weighting.label'),
         description=t('Scene.decimation_animation_weighting.desc'),

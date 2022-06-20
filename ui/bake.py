@@ -474,6 +474,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         # Bake button
         row = col.row(align=True)
         row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_use_draft_quality')
 
         # Show warnings
         if non_node_mat_names:

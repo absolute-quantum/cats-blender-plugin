@@ -697,9 +697,9 @@ class BakeButton(bpy.types.Operator):
 
             # for version consistency we use old style margins here. Really there should be a second set
             # of test cases
-
             if 'render.bake.margin_type' in context.scene:
                 context.scene.render.bake.margin_type = 'EXTEND'
+
         print('START BAKE')
         # Global options
         resolution = context.scene.bake_resolution
@@ -714,6 +714,12 @@ class BakeButton(bpy.types.Operator):
         apply_keys = context.scene.bake_apply_keys
         optimize_solid_materials = context.scene.bake_optimize_solid_materials
         unwrap_angle = context.scene.bake_unwrap_angle
+
+        # Tweaks for 'draft' quality
+        draft_quality = context.scene.bake_use_draft_quality
+        if draft_quality:
+            resolution = min(resolution, 1024)
+        draft_render = is_unittest or draft_quality
 
         # Passes
         pass_diffuse = context.scene.bake_pass_diffuse
@@ -1126,7 +1132,7 @@ class BakeButton(bpy.types.Operator):
                                       desired_inputs)
                 self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
                                [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 1 if is_unittest else 32, 0,
+                               (resolution, resolution), 1 if draft_render else 32, 0,
                                background_color, True, pixelmargin,
                                solidmaterialcolors=solidmaterialcolors)
                 self.restore_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"])
@@ -1195,7 +1201,7 @@ class BakeButton(bpy.types.Operator):
                          supersample_normals else
                          (resolution, resolution))
             self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           bake_size, 1 if is_unittest else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
+                           bake_size, 1 if draft_render else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
 
         # Reset UV
         for obj in collection.all_objects:
@@ -1249,7 +1255,7 @@ class BakeButton(bpy.types.Operator):
                                           desired_inputs, base_black=base_black)
                 self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
                                [obj for obj in collection.all_objects if obj.type == "MESH"],
-                               (resolution, resolution), 1 if is_unittest else 512, 0,
+                               (resolution, resolution), 16 if draft_render else 512, 0,
                                background_color, True, pixelmargin,
                                solidmaterialcolors=solidmaterialcolors)
                 if desired_inputs is not None:
@@ -1818,7 +1824,7 @@ class BakeButton(bpy.types.Operator):
             if pass_normal:
                 # Bake tangent normals
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name],
-                               (resolution, resolution), 1 if is_unittest else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+                               (resolution, resolution), 1 if draft_render else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
                 image = bpy.data.images[platform_img("normal")]
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
