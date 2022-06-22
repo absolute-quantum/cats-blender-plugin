@@ -168,6 +168,12 @@ def register():
         default=True
     )
 
+    Scene.merge_armatures_remove_empty_shapekeys = BoolProperty(
+        name=t('Scene.merge_armatures_remove_empty_shapekeys.label'),
+        description=t('Scene.merge_armatures_remove_empty_shapekeys.desc'),
+        default=True
+    )
+
     # Decimation
     Scene.decimation_mode = EnumProperty(
         name=t('Scene.decimation_mode.label'),

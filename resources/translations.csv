@@ -884,6 +884,11 @@ Not checking this will always apply transforms",,
 Scene.merge_armatures_remove_zero_weight_bones.label,Remove Zero Weight Bones,ゼロウェイトボーンを削除する,제로 웨이트 본 제거
 Scene.merge_armatures_remove_zero_weight_bones.desc,"Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.
 Uncheck this if bones or vertex groups that you want to keep got deleted",,
+Scene.merge_armatures_remove_empty_shapekeys.label,Remove empty shapekeys,空のシェイプキーを削除する
+Scene.merge_armatures_remove_empty_shapekeys.desc,"Remove empty shapekeys during shapekeys cleanup.
+
+If this is checked, CATS removes all empty shapekeys, including all empty visemes.
+If this is unchecked, CATS keeps all shapekeys when it merges armatures. This is useful for keeping visemes needed for the vrc avatar descriptor",,
 Scene.decimation_mode.label,Decimation Mode,単純化モード,
 Scene.decimation_mode.desc,Decimation Mode,,
 Scene.decimation_mode.smart.label,Smart,スマート,

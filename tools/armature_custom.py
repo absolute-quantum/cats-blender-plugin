@@ -331,10 +331,11 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
     armature = Common.get_armature(armature_name=base_armature_name)
 
     # Clean up shape keys
-    for mesh_base in meshes_base:
-        Common.clean_shapekeys(mesh_base)
-    for mesh_merge in meshes_merge:
-        Common.clean_shapekeys(mesh_merge)
+    if bpy.context.scene.merge_armatures_remove_empty_shapekeys:
+        for mesh_base in meshes_base:
+            Common.clean_shapekeys(mesh_base)
+        for mesh_merge in meshes_merge:
+            Common.clean_shapekeys(mesh_merge)
 
     # Join the meshes
     if bpy.context.scene.merge_armatures_join_meshes:
