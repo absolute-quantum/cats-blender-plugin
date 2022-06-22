@@ -424,20 +424,24 @@ class FixArmature(bpy.types.Operator):
 
                 Common.sort_shape_keys(mesh.name, shapekey_order)
 
-
-            # Clean material names. Combining mats would do this too
-            Common.clean_material_names(mesh)
+            if not context.scene.combine_mats:
+                # Clean material names. Combining mats would do this too
+                Common.clean_material_names(mesh)
 
             # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
             if version_2_79_or_older():
                 all_transparent = True
                 for mat_slot in mesh.material_slots:
-                    mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
-                    if mat_slot.material.alpha > 0:
-                        all_transparent = False
+                    mat = mat_slot.material
+                    if mat:
+                        mat.transparency_method = 'Z_TRANSPARENCY'
+                        if mat.alpha > 0:
+                            all_transparent = False
                 if all_transparent:
                     for mat_slot in mesh.material_slots:
-                        mat_slot.material.alpha = 1
+                        mat = mat_slot.material
+                        if mat:
+                            mat.alpha = 1
             else:
                 if context.scene.fix_materials:
                     # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
@@ -445,19 +449,14 @@ class FixArmature(bpy.types.Operator):
                     if mmd_tools_installed:
                         Common.fix_mmd_shader(mesh)
                     Common.fix_vrm_shader(mesh)
-                    Common.add_principled_shader(mesh)
                     for mat_slot in mesh.material_slots:  # Fix transparency per polygon and general garbage look in blender. Asthetic purposes to fix user complaints.
-                        mat_slot.material.shadow_method = "HASHED"
-                        mat_slot.material.blend_method = "HASHED"
+                        mat = mat_slot.material
+                        mat.shadow_method = "HASHED"
+                        mat.blend_method = "HASHED"
 
-			# Remove empty shape keys and then save the shape key order
+            # Remove empty shape keys and then save the shape key order
             Common.clean_shapekeys(mesh)
             Common.save_shapekey_order(mesh.name)
-
-            # Combines same materials
-            if context.scene.combine_mats:
-                bpy.ops.cats_material.combine_mats()
-
 
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)
@@ -477,6 +476,19 @@ class FixArmature(bpy.types.Operator):
                     if math.isnan(uv.data[vert].uv.y):
                         uv.data[vert].uv.y = 0
                         fixed_uv_coords += 1
+
+        # Combines same materials
+        # combine_mats runs on all meshes in Common.get_meshes_objects() and gathers material hashes of all the
+        # materials of those meshes before combining, so it must be run after we have fixed all the materials.
+        if context.scene.combine_mats:
+            bpy.ops.cats_material.combine_mats()
+
+        # Adding principled shader to materials must happen after same materials have been combined, otherwise
+        # mmd_shader materials that are considered duplicates will have their same diffuse and ambient colors baked
+        # to different images, making the materials no longer be considered duplicates.
+        if not version_2_79_or_older() and context.scene.fix_materials:
+            for mesh in meshes:
+                Common.add_principled_shader(mesh)
 
         # Translate bones and unhide them all
         to_translate = []

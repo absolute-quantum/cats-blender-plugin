@@ -1769,13 +1769,13 @@ def get_bone_orientations(armature):
 
 
 def clean_material_names(mesh):
-    for j, mat in enumerate(mesh.material_slots):
-        if mat.name.endswith('.001'):
-            mesh.active_material_index = j
-            mesh.active_material.name = mat.name[:-4]
-        if mat.name.endswith(('. 001', ' .001')):
-            mesh.active_material_index = j
-            mesh.active_material.name = mat.name[:-5]
+    for mat_slot in mesh.material_slots:
+        mat = mat_slot.material
+        if mat:
+            if mat.name.endswith(('. 001', ' .001')):
+                mat.name = mat.name[:-5]
+            elif mat.name.endswith('.001'):
+                mat.name = mat.name[:-4]
 
 
 def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, mix_mode='ADD', delete_old_vg=True):
