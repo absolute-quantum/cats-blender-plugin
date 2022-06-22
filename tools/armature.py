@@ -29,7 +29,7 @@
 import bpy
 import copy
 import math
-import platform
+import numpy as np
 from mathutils import Matrix
 
 from . import common as Common
@@ -391,6 +391,8 @@ class FixArmature(bpy.types.Operator):
         else:
             meshes = Common.get_meshes_objects()
 
+        # Track how many uv coordinate components we fix
+        fixed_uv_coords = 0
         for mesh in meshes:
             Common.unselect_all()
             Common.set_active(mesh)
@@ -467,15 +469,25 @@ class FixArmature(bpy.types.Operator):
                     shapekey.name = Translate.fix_jp_chars(shapekey.name)
 
             # Fix faulty UV coordinates
-            fixed_uv_coords = 0
-            for uv in mesh.data.uv_layers:
-                for vert in range(len(uv.data) - 1):
-                    if math.isnan(uv.data[vert].uv.x):
-                        uv.data[vert].uv.x = 0
-                        fixed_uv_coords += 1
-                    if math.isnan(uv.data[vert].uv.y):
-                        uv.data[vert].uv.y = 0
-                        fixed_uv_coords += 1
+            uvs = np.empty(len(mesh.data.loops) * 2, dtype=np.single)
+            uvs_is_non_finite = np.empty(uvs.shape, dtype=bool)
+            for uv_layer in mesh.data.uv_layers:
+                uv_layer.data.foreach_get('uv', uvs)
+                # Get mask of all uvs components that are finite (not Nan and not +/- infinity) and temporarily store
+                # them in uvs_is_non_finite
+                np.isfinite(uvs, out=uvs_is_non_finite)
+                # Invert uvs_is_non_finite so that it is now correctly a mask of all uv components that are non-finite
+                # (NaN or +/- infinity)
+                np.invert(uvs_is_non_finite, out=uvs_is_non_finite)
+
+                # Count how many non-finite uv components there are
+                num_non_finite = np.count_nonzero(uvs_is_non_finite)
+                if num_non_finite > 0:
+                    fixed_uv_coords += num_non_finite
+                    # Fix the non-finite uv components by setting them to zero
+                    uvs[uvs_is_non_finite] = 0
+                    # Update the uvs with the fixed values
+                    uv_layer.data.foreach_set('uv', uvs)
 
         # Combines same materials
         # combine_mats runs on all meshes in Common.get_meshes_objects() and gathers material hashes of all the
