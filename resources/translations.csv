@@ -1145,6 +1145,10 @@ Scene.bake_pass_ao.label,Ambient Occlusion,,
 Scene.bake_pass_ao.desc,"Bakes Ambient Occlusion, non-projected shadows. Adds a significant amount of detail to your model.
 Reccomended for non-toon style avatars.
 Takes a fairly long time to bake",,
+Scene.bake_pass_displacement.label,Displacement (Height),,
+Scene.bake_pass_displacement.desc,"Bakes a normalized Displacement map, according to the material displacement in Blender.
+Can add real 3d surface detail to models.
+Results are in Linear space, so make sure uncheck Color Texture in Unity.",,
 Scene.bake_pass_questdiffuse.label,Quest Diffuse (Color+AO),,
 Scene.bake_pass_questdiffuse.desc,Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.,,
 Scene.bake_pass_emit.label,Emit,,

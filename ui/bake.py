@@ -450,6 +450,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         row.separator()
                         row.prop(context.scene, 'bake_emit_exclude_eyes', expand=True)
 
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_displacement', expand=True)
+
                 row = col.row(align=True)
         ### END ADVANCED GENERAL OPTIONS
         else: # if not bake_platforms:

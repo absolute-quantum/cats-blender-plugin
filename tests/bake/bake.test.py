@@ -438,6 +438,7 @@ class TestAddon(unittest.TestCase):
     def test_bake_button(self):
         bpy.context.scene.cats_is_unittest = True
         bpy.ops.cats_bake.preset_all()
+        bpy.context.scene.bake_pass_displacement = False
 
         bpy.context.scene.bake_resolution = 256
         if 'bake.eyetest.blend' == bpy.path.basename(bpy.context.blend_data.filepath):
@@ -452,7 +453,7 @@ class TestAddon(unittest.TestCase):
             # take a random sampling of each image result, confirm it's what we expect
             self.assertTrue(bpy.path.basename(bpy.context.blend_data.filepath) in sampling_lookup)
             for (bakename, cases) in sampling_lookup[bpy.path.basename(bpy.context.blend_data.filepath)].items():
-                self.assertTrue(bakename in bpy.data.images)
+                self.assertTrue(bakename in bpy.data.images, bakename)
                 for (coordinate, color) in cases.items():
                     pxoffset = (coordinate[0] + (coordinate[1] * 256 )) * 4
                     foundcolor = tuple(round(px*255) for px in bpy.data.images[bakename].pixels[pxoffset:pxoffset+4])

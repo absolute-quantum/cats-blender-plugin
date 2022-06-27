@@ -542,6 +542,12 @@ def register():
         default=True
     )
 
+    Scene.bake_pass_displacement = BoolProperty(
+        name=t('Scene.bake_pass_displacement.label'),
+        description=t('Scene.bake_pass_displacement.desc'),
+        default=True
+    )
+
     Scene.bake_normal_apply_trans = BoolProperty(
         name=t('Scene.bake_normal_apply_trans.label'),
         description=t('Scene.bake_normal_apply_trans.desc'),

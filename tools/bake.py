@@ -55,6 +55,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
     item.max_tris = tricount
     # Autodetect passes based on BSDF node inputs
     bsdf_nodes = []
+    output_mat_nodes = []
     objects = [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]
     for obj in objects:
         for slot in obj.material_slots:
@@ -64,6 +65,8 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
                     return {'FINISHED'}
                 tree = slot.material.node_tree
                 for node in tree.nodes:
+                    if node.type == "OUTPUT_MATERIAL":
+                        output_mat_nodes.append(node)
                     if node.type == "BSDF_PRINCIPLED":
                         bsdf_nodes.append(node)
 
@@ -72,28 +75,31 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
     item.use_decimation = total_tricount > tricount
 
     # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
-    context.scene.bake_pass_diffuse = (any([node.inputs["Base Color"].is_linked for node in bsdf_nodes])
-                                       or len(set([node.inputs["Base Color"].default_value[:] for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_diffuse = (any(node.inputs["Base Color"].is_linked for node in bsdf_nodes)
+                                       or len(set(node.inputs["Base Color"].default_value[:] for node in bsdf_nodes)) > 1)
 
     # Smoothness: similar to diffuse
-    context.scene.bake_pass_smoothness = (any([node.inputs["Roughness"].is_linked for node in bsdf_nodes])
-                                          or len(set([node.inputs["Roughness"].default_value for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_smoothness = (any(node.inputs["Roughness"].is_linked for node in bsdf_nodes)
+                                          or len(set(node.inputs["Roughness"].default_value for node in bsdf_nodes)) > 1)
 
     # Emit: similar to diffuse
-    context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
-                                    or len(set([node.inputs["Emission"].default_value[:] for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_emit = (any(node.inputs["Emission"].is_linked for node in bsdf_nodes)
+                                    or len(set(node.inputs["Emission"].default_value[:] for node in bsdf_nodes)) > 1)
 
     # Transparency: similar to diffuse
-    context.scene.bake_pass_alpha = (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
-                                                    or len(set([node.inputs["Alpha"].default_value for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_alpha = (any(node.inputs["Alpha"].is_linked for node in bsdf_nodes)
+                                                    or len(set(node.inputs["Alpha"].default_value for node in bsdf_nodes)) > 1)
 
     # Metallic: similar to diffuse
-    context.scene.bake_pass_metallic = (any([node.inputs["Metallic"].is_linked for node in bsdf_nodes])
-                                        or len(set([node.inputs["Metallic"].default_value for node in bsdf_nodes])) > 1)
+    context.scene.bake_pass_metallic = (any(node.inputs["Metallic"].is_linked for node in bsdf_nodes)
+                                        or len(set(node.inputs["Metallic"].default_value for node in bsdf_nodes)) > 1)
 
     # Normal: on if any normals connected or if decimating... so, always on for this preset
     context.scene.bake_pass_normal = (item.use_decimation
-                                      or any([node.inputs["Normal"].is_linked for node in bsdf_nodes]))
+                                      or any(node.inputs["Normal"].is_linked for node in bsdf_nodes))
+
+    # Displacement: if any displacement is linked to the output for material output nodes
+    context.scene.bake_pass_diffuse = any(node.inputs["Displacement"].is_linked for node in output_mat_nodes)
 
     if any("Target" in obj.data.uv_layers for obj in Common.get_meshes_objects(check=False)):
         context.scene.bake_uv_overlap_correction = 'MANUAL'
@@ -101,15 +107,12 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         context.scene.bake_uv_overlap_correction = 'UNMIRROR'
 
     # Unfortunately, though it's technically faster, this makes things ineligible as Quest fallback avatars. So leave it off.
-    # Sadly this is still fairly unkind to a number of lighting situations, so we'll leave it off
     item.optimize_static = platform == "DESKTOP"
 
     # Quest has no use for twistbones
     item.merge_twistbones = platform != "DESKTOP"
 
     # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
-    # TODO: If mesh is manifold and non-intersecting, turn on AO. Otherwise, leave it alone
-    # diffuse ao: off if desktop
     item.diffuse_premultiply_ao = platform != "DESKTOP"
 
     # alpha packs: arrange for maximum efficiency.
@@ -139,7 +142,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         item.export_format = "FBX"
         item.image_export_format = "PNG"
         item.translate_bone_names = "NONE"
-        item.generate_prop_bones = False
+        item.generate_prop_bones = True
         # Diffuse vertex color bake? Only if there's already no texture inputs!
         if not any([node.inputs["Base Color"].is_linked for node in bsdf_nodes]):
             item.diffuse_vertex_colors = True
@@ -348,6 +351,57 @@ class BakeButton(bpy.types.Operator):
                         return False
 
         return context.scene.bake_platforms
+
+
+    # Force displacment normals to go either - or + Y, so we can bake and normalize them
+    # This will likely break if 'Normal' is already linked, but that's uncommon for typical material setups.
+    def prepare_displacement(self, objects, inverted=False, restore = False):
+        desired_material_trees = {slot.material.node_tree for obj in objects
+                                   for slot in obj.material_slots if slot.material}
+        desired_material_trees |= {node_group for node_group in bpy.data.node_groups}
+
+        for tree in desired_material_trees:
+            for node_name in [node.name for node in tree.nodes]:
+                node = tree.nodes[node_name]
+                if not restore:
+                    if node.type == "DISPLACEMENT":
+                        bake_node = tree.nodes.new("ShaderNodeCombineXYZ")
+                        bake_node.name = node.name + ".BAKE"
+                        bake_node.label = "For CATS bake: you should CTRL+Z"
+                        bake_node.inputs["Y"].default_value = 1. if not inverted else -1.
+                        tree.links.new(node.inputs["Normal"], bake_node.outputs["Vector"])
+                else:
+                    # Remove created displacement input nodes
+                    if node.type == "COMBXYZ" and node.name[-5:] == ".BAKE":
+                        # Make the bake Vector take over all outputs
+                        if node.outputs["Vector"].is_linked:
+                            while node.outputs["Vector"].is_linked:
+                                tree.links.remove(node.outputs["Vector"].links[0])
+
+                        tree.nodes.remove(node)
+
+
+    # For all output nodes, swap selected inputs
+    def swap_inputs(self, objects, desired_inputs, node_type):
+        desired_material_trees = {slot.material.node_tree for obj in objects
+                                   for slot in obj.material_slots if slot.material}
+        desired_material_trees |= {node_group for node_group in bpy.data.node_groups}
+
+        for tree in desired_material_trees:
+            for node_name in [node.name for node in tree.nodes]:
+                node = tree.nodes[node_name]
+                if node.type == node_type:
+                    for desired_input, connect_to in desired_inputs.items():
+                        desired_orig = node.inputs[desired_input].links[0].from_socket if node.inputs[desired_input].is_linked else None
+                        connect_orig = node.inputs[connect_to].links[0].from_socket if node.inputs[connect_to].is_linked else None
+                        while node.inputs[desired_input].is_linked:
+                            tree.links.remove(node.inputs[desired_input].links[0])
+                        while node.inputs[connect_to].is_linked:
+                            tree.links.remove(node.inputs[connect_to].links[0])
+                        if desired_orig:
+                            tree.links.new(node.inputs[connect_to], desired_orig)
+                        if connect_orig:
+                            tree.links.new(node.inputs[desired_input], connect_orig)
 
     # For every found BSDF, duplicate it, rename the new one to '.BAKE', and set bake-able defaults
     # Attach the links and copy the dv, but only for desired_inputs
@@ -740,7 +794,8 @@ class BakeButton(bpy.types.Operator):
         pass_emit = context.scene.bake_pass_emit
         pass_alpha = context.scene.bake_pass_alpha
         pass_metallic = context.scene.bake_pass_metallic
-        pass_thickness = True
+        pass_displacement = context.scene.bake_pass_displacement
+        pass_thickness = False
 
         # Pass options
         illuminate_eyes = context.scene.bake_illuminate_eyes
@@ -777,6 +832,9 @@ class BakeButton(bpy.types.Operator):
         context.scene.collection.children.link(collection)
         cats_world = bpy.data.worlds.new("CATS World")
         context.scene.world = cats_world
+        if draft_quality:
+            context.scene.render.use_simplify = True
+            bpy.context.scene.render.simplify_subdivision_render = 1
 
         # Make sure all armature modifiers target the new armature
         for child in collection.all_objects:
@@ -1157,6 +1215,51 @@ class BakeButton(bpy.types.Operator):
                     self.filter_image(context, "SCRIPT_" + bake_name + ".png", BakeButton.sharpen_create,
                                       use_linear = use_linear)
 
+        # Bake displacement sides A and B, make one negative, select greater magnitude, normalize from 0 to 1
+        if pass_displacement:
+            self.swap_inputs([obj for obj in collection.all_objects if obj.type == "MESH"],
+                              {"Surface": "Displacement"}, "OUTPUT_MATERIAL")
+
+            self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
+                                      inverted=False)
+            self.bake_pass(context, "displacement", "EMIT", {},
+                           [obj for obj in collection.all_objects if obj.type == "MESH"],
+                           (resolution, resolution), 1 if draft_render else 32, 0,
+                           [0.0, 0.0, 0.0, 1.0], True, pixelmargin,
+                           solidmaterialcolors=solidmaterialcolors)
+            self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
+                                      restore=True)
+
+            self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
+                                      inverted=True)
+            self.bake_pass(context, "displacement_inverse", "EMIT", {},
+                           [obj for obj in collection.all_objects if obj.type == "MESH"],
+                           (resolution, resolution), 1 if draft_render else 32, 0,
+                           [0.0, 0.0, 0.0, 1.0], True, pixelmargin,
+                           solidmaterialcolors=solidmaterialcolors)
+            self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
+                                      restore=True)
+
+            self.swap_inputs([obj for obj in collection.all_objects if obj.type == "MESH"],
+                              {"Surface": "Displacement"}, "OUTPUT_MATERIAL")
+
+            # The above creates two images with their green channels either positive or negative
+            # displacement. Here we map that back into a single image around 0.5
+            dp1 = img_channels_as_nparray("SCRIPT_displacement.png")
+            dp2 = img_channels_as_nparray("SCRIPT_displacement_inverse.png")
+            # normalize each 0 to 1 using the same magnitude
+            # always expect 'min' for each to be 0, so skip that
+            overall_max = max(dp1[1].max(), dp2[1].max())
+            if overall_max > 0.:
+                dp1[1] = dp1[1]/overall_max
+                dp2[1] = - dp2[1]/overall_max
+                # mix, then map to 0 to 1
+                dp1[1][ dp1[1] == 0.] = dp2[1][dp1[1] == 0.]
+                dp1[1] = (dp1[1] + 1.) / 2.
+
+                nparray_channels_to_img("SCRIPT_displacement.png", dp1)
+                bpy.data.images["SCRIPT_displacement.png"].save()
+
         # Save and disable shape keys
         shapekey_values = dict()
         if not apply_keys:
@@ -1226,7 +1329,7 @@ class BakeButton(bpy.types.Operator):
              # then multiply by normalized thickness.
             (pass_diffuse and diffuse_indirect, True, "diffuse_indirect", "DIFFUSE", {"INDIRECT"}, [0.0, 0.0, 0.0, 1.0], (1,1,1), None, False),
             # bake 'thickness' by baking subsurface as albedo, normalizing, and inverting
-                 (False, True, "thickness", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], None, {"Subsurface": "Alpha"}, False),
+                 (pass_thickness, True, "thickness", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], None, {"Subsurface": "Alpha"}, False),
              # bake 'subsurface' by baking Diffuse Color when Base Color is black
                  (False, True, "subsurface", "DIFFUSE", {"COLOR"}, [0.0, 0.0, 0.0, 1.0], None, {"Subsurface Color": "Subsurface Color", "Subsurface": "Subsurface"}, True),
              ]:
@@ -1564,7 +1667,7 @@ class BakeButton(bpy.types.Operator):
                 if specular_setup and pass_metallic:
                     metallic_buffer = img_channels_as_nparray("SCRIPT_metallic.png")
                     # Map range: metallic blocks diffuse light
-                    pixel_buffer[:3] = pixel_buffer[:3] * (1 - metallic_buffer[:3])
+                    pixel_buffer[:3] *= (1. - metallic_buffer[:3])
                 if pass_emit and diffuse_emit_overlay:
                     emit_buffer = img_channels_as_nparray("SCRIPT_emission.png")
                     # Map range: screen the emission onto diffuse
