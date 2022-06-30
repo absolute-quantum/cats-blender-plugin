@@ -99,7 +99,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
                                       or any(node.inputs["Normal"].is_linked for node in bsdf_nodes))
 
     # Displacement: if any displacement is linked to the output for material output nodes
-    context.scene.bake_pass_diffuse = any(node.inputs["Displacement"].is_linked for node in output_mat_nodes)
+    context.scene.bake_pass_displacement = any(node.inputs["Displacement"].is_linked for node in output_mat_nodes)
 
     if any("Target" in obj.data.uv_layers for obj in Common.get_meshes_objects(check=False)):
         context.scene.bake_uv_overlap_correction = 'MANUAL'
@@ -114,6 +114,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
 
     # AO: up to user, don't override as part of this. Possibly detect if using a toon shader in the future?
     item.diffuse_premultiply_ao = platform != "DESKTOP"
+    item.smoothness_premultiply_ao = platform != "DESKTOP"
 
     # alpha packs: arrange for maximum efficiency.
     # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
@@ -368,7 +369,7 @@ class BakeButton(bpy.types.Operator):
                         bake_node = tree.nodes.new("ShaderNodeCombineXYZ")
                         bake_node.name = node.name + ".BAKE"
                         bake_node.label = "For CATS bake: you should CTRL+Z"
-                        bake_node.inputs["Y"].default_value = 1. if not inverted else -1.
+                        bake_node.inputs["Y"].default_value = 1.0 if not inverted else -1.
                         tree.links.new(node.inputs["Normal"], bake_node.outputs["Vector"])
                 else:
                     # Remove created displacement input nodes
@@ -816,6 +817,7 @@ class BakeButton(bpy.types.Operator):
 
         # Save reference to original armature
         armature = Common.get_armature()
+        orig_armature_name = armature.name
 
         # Create an output collection
         collection = bpy.data.collections.new("CATS Bake")
@@ -869,6 +871,7 @@ class BakeButton(bpy.types.Operator):
                                 return node
 
         bsdf_original = first_bsdf(objs_size_descending)
+        orig_largest_obj_name = objs_size_descending[0].name
         cats_uv_layers = set()
 
         #first fix broken colors by adding their textures, then add the results of color only materials/solid textures to see if they need special UV treatment.
@@ -1103,8 +1106,10 @@ class BakeButton(bpy.types.Operator):
                 if not context.scene.uvp_lock_islands:
                     bpy.ops.uv.pack_islands(rotate=True, margin=margin)
 
-                # detect if UVPackMaster installed and configured
-                if 'uvpm3_props' in context.scene:
+                # detect if UVPackMaster installed and configured: apparently UVP doesn't always
+                # self-initialize? So just force it
+                # if 'uvpm3_props' in context.scene:
+                try:
                     context.scene.uvpm3_props.normalize_islands = False
                     # CATS UV Super is where we do the World normal bake, so it must be totally
                     # non-overlapping.
@@ -1119,20 +1124,23 @@ class BakeButton(bpy.types.Operator):
                     # Give UVP a static number of iterations to do TODO: make this configurable?
                     for _ in range(1, 3):
                         bpy.ops.uvpackmaster3.pack(mode_id='pack.single_tile')
-                elif 'uvpm2_props' in context.scene:
-                    context.scene.uvp2_props.normalize_islands = False
-                    context.scene.uvp2_props.lock_overlapping_mode = ('0' if
-                                                                      layer == 'CATS UV Super' else
-                                                                      '2')
-                    context.scene.uvp2_props.pack_to_others = False
-                    context.scene.uvp2_props.margin = margin
-                    context.scene.uvp2_props.similarity_threshold = 3
-                    context.scene.uvp2_props.precision = 1000
-                    # Give UVP a static number of iterations to do TODO: make this configurable?
-                    for _ in range(1, 3):
-                        bpy.ops.uvpackmaster2.uv_pack()
-                else:
-                    bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+                except:
+                    try:
+                        context.scene.uvp2_props.normalize_islands = False
+                        context.scene.uvp2_props.lock_overlapping_mode = ('0' if
+                                                                          layer == 'CATS UV Super' else
+                                                                          '2')
+                        context.scene.uvp2_props.pack_to_others = False
+                        context.scene.uvp2_props.margin = margin
+                        context.scene.uvp2_props.similarity_threshold = 3
+                        context.scene.uvp2_props.precision = 1000
+                        # Give UVP a static number of iterations to do TODO: make this configurable?
+                        for _ in range(1, 3):
+                            bpy.ops.uvpackmaster2.uv_pack()
+                    except:
+                        bpy.ops.uv.pack_islands(rotate=True, margin=margin)
+                        pass
+
                 Common.switch('OBJECT')
 
             if optimize_solid_materials:
@@ -1239,6 +1247,8 @@ class BakeButton(bpy.types.Operator):
                            solidmaterialcolors=solidmaterialcolors)
             self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
                                       restore=True)
+            # TODO: we could also account for multires displacement by adding the bake result to the
+            # above, but detaching displacements first
 
             self.swap_inputs([obj for obj in collection.all_objects if obj.type == "MESH"],
                               {"Surface": "Displacement"}, "OUTPUT_MATERIAL")
@@ -1250,12 +1260,17 @@ class BakeButton(bpy.types.Operator):
             # normalize each 0 to 1 using the same magnitude
             # always expect 'min' for each to be 0, so skip that
             overall_max = max(dp1[1].max(), dp2[1].max())
-            if overall_max > 0.:
+            with open(bpy.path.abspath("//CATS Bake/displacement.txt"), "w") as fi:
+                # The height value in the shader does (x * height) - (height/2), which means the
+                # total magnitude (min - max) is = height. overall_max is only the positive or
+                # negative component of our height (whichever is greater) so we need to double it.
+                fi.write("Height Value: {}".format(overall_max * 2.0))
+            if overall_max > 0.0:
                 dp1[1] = dp1[1]/overall_max
                 dp2[1] = - dp2[1]/overall_max
                 # mix, then map to 0 to 1
-                dp1[1][ dp1[1] == 0.] = dp2[1][dp1[1] == 0.]
-                dp1[1] = (dp1[1] + 1.) / 2.
+                dp1[1] += dp2[1]
+                dp1[1] = (dp1[1] + 1.0) / 2.
 
                 nparray_channels_to_img("SCRIPT_displacement.png", dp1)
                 bpy.data.images["SCRIPT_displacement.png"].save()
@@ -1611,7 +1626,7 @@ class BakeButton(bpy.types.Operator):
                                 while next_bone != None:
                                     path_string = next_bone.name + "/" + path_string
                                     next_bone = next_bone.parent
-                                path_string = "Armature/" + path_string
+                                path_string = orig_armature_name + "/" + path_string
                                 if orig_obj_name not in all_path_strings:
                                     all_path_strings[orig_obj_name] = set()
                                 all_path_strings[orig_obj_name].add(path_string)
@@ -1667,7 +1682,7 @@ class BakeButton(bpy.types.Operator):
                 if specular_setup and pass_metallic:
                     metallic_buffer = img_channels_as_nparray("SCRIPT_metallic.png")
                     # Map range: metallic blocks diffuse light
-                    pixel_buffer[:3] *= (1. - metallic_buffer[:3])
+                    pixel_buffer[:3] *= (1.0 - metallic_buffer[:3])
                 if pass_emit and diffuse_emit_overlay:
                     emit_buffer = img_channels_as_nparray("SCRIPT_emission.png")
                     # Map range: screen the emission onto diffuse
@@ -2098,7 +2113,7 @@ class BakeButton(bpy.types.Operator):
 
             # Export the model to the bake dir
             export_groups = [
-                ("Bake", ["Body", "Armature", "Static"])
+                ("Bake", [orig_largest_obj_name, orig_armature_name, "Static"])
             ]
             if use_physmodel:
                     export_groups.append(("LODPhysics", ["LODPhysics", "ArmatureLODPhysics"]))
@@ -2110,9 +2125,9 @@ class BakeButton(bpy.types.Operator):
             for obj in plat_collection.all_objects:
                 if not "LOD" in obj.name:
                     if obj.type == "MESH" and obj.name != "Static":
-                        obj.name = "Body"
+                        obj.name = orig_largest_obj_name
                     elif obj.type == "ARMATURE":
-                        obj.name = "Armature"
+                        obj.name = orig_armature_name
 
             # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
             #exception is Gmod because Gmod needs textures to be applied to work - @989onan

@@ -352,7 +352,7 @@ def register():
         diffuse_premultiply_opacity: FloatProperty(
             name=t('Scene.bake_questdiffuse_opacity.label'),
             description=t('Scene.bake_questdiffuse_opacity.desc'),
-            default=0.75,
+            default=1.0,
             min=0.0,
             max=1.0,
             step=0.05,
