@@ -50,14 +50,24 @@ class BakeTutorialButton(bpy.types.Operator):
         self.report({'INFO'}, t('cats_bake.tutorial_button.success'))
         return {'FINISHED'}
 
+# Convienience filter function for retrieving objects
+def get_objects(objects, filter_type=set(), filter_func = None, keep_copyonly=False):
+    return [obj for obj in objects if (len(filter_type) == 0 or obj.type in filter_type) and
+                                      (filter_func == None or filter_func(obj)) and
+                                      not_copyonly(obj)]
+
+# filter definition for 'copy only' objects
+def not_copyonly(obj):
+    return 'bakeCopyOnly' not in obj or not obj['bakeCopyOnly']
 
 def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
     item.max_tris = tricount
     # Autodetect passes based on BSDF node inputs
     bsdf_nodes = []
     output_mat_nodes = []
-    objects = [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]
-    for obj in objects:
+    objects = get_objects(Common.get_meshes_objects(check=False), filter_func=lambda obj:
+                          not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden)
+    for obj in get_objects(objects):
         for slot in obj.material_slots:
             if slot.material:
                 if not slot.material.use_nodes or not slot.material.node_tree:
@@ -71,7 +81,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
                         bsdf_nodes.append(node)
 
     # Decimate if we're over the limit
-    total_tricount = sum([Common.get_tricount(obj) for obj in objects])
+    total_tricount = sum(Common.get_tricount(obj) for obj in objects)
     item.use_decimation = total_tricount > tricount
 
     # Diffuse: on if >1 unique color input or if any has non-default base color input on bsdf
@@ -309,7 +319,7 @@ class BakeAddProp(bpy.types.Operator):
         return context.view_layer.objects.selected and any(obj.type == "MESH" for obj in context.view_layer.objects.selected)
 
     def execute(self, context):
-        for obj in context.view_layer.objects.selected:
+        for obj in get_objects(context.view_layer.objects.selected):
             obj['generatePropBones'] = True
         return {'FINISHED'}
 
@@ -325,7 +335,7 @@ class BakeRemoveProp(bpy.types.Operator):
         return context.view_layer.objects.selected and any(obj.type == "MESH" for obj in context.view_layer.objects.selected)
 
     def execute(self, context):
-        for obj in context.view_layer.objects.selected:
+        for obj in get_objects(context.view_layer.objects.selected):
             obj['generatePropBones'] = False
         return {'FINISHED'}
 
@@ -522,7 +532,7 @@ class BakeButton(bpy.types.Operator):
             bake_active.select_set(True)
             context.view_layer.objects.active = bake_active
 
-        print("Baking " + bake_name + " for objects: " + ",".join([obj.name for obj in objects]))
+        print("Baking " + bake_name + " for objects: " + ",".join(obj.name for obj in objects))
 
         if clear:
             if "SCRIPT_" + bake_name + ".png" in bpy.data.images:
@@ -551,12 +561,12 @@ class BakeButton(bpy.types.Operator):
             print("No objects selected!")
             return
 
-        for obj in objects:
+        for obj in get_objects(objects):
             obj.select_set(True)
             context.view_layer.objects.active = obj
 
         # For all materials in use, change any value node labeled "bake_<bake_name>" to 1., then back to 0..
-        for obj in objects:
+        for obj in get_objects(objects):
             for slot in obj.material_slots:
                 if slot.material:
                     for node in obj.active_material.node_tree.nodes:
@@ -564,7 +574,7 @@ class BakeButton(bpy.types.Operator):
                             node.outputs["Value"].default_value = 1
 
         # For all materials in all objects, add or repurpose an image texture node named "SCRIPT_BAKE"
-        for obj in objects:
+        for obj in get_objects(objects):
             for slot in obj.material_slots:
                 if slot.material:
                     for node in slot.material.node_tree.nodes:
@@ -610,7 +620,7 @@ class BakeButton(bpy.types.Operator):
                             normal_space=normal_space
                             )
         # For all materials in use, change any value node labeled "bake_<bake_name>" to 1., then back to 0..
-        for obj in objects:
+        for obj in get_objects(objects):
             for slot in obj.material_slots:
                 if slot.material:
                     for node in obj.active_material.node_tree.nodes:
@@ -626,8 +636,8 @@ class BakeButton(bpy.types.Operator):
             old_pixels = image.pixels[:]
 
             #lastly, slap our solid squares on top of bake atlas, to make a nice solid square without interuptions from the rest of the bake - @989onan
-            for child in [obj for obj in objects if obj.type == "MESH"]: #grab all mesh objects being baked
-                for matindex,material in enumerate(child.data.materials):
+            for obj in get_objects(objects, {"MESH"}): #grab all mesh objects being baked
+                for matindex,material in enumerate(obj.data.materials):
                     if material.name in solidmaterialcolors and (bake_name+"_color") in solidmaterialcolors[material.name]:
                         index = list(solidmaterialcolors.keys()).index(material.name)
                         old_pixels = list(old_pixels)
@@ -684,10 +694,13 @@ class BakeButton(bpy.types.Operator):
         return recurse(ob, ob.parent, 0, ignore_hidden, view_layer=view_layer)
 
     def execute(self, context):
-        if not [obj for obj in Common.get_meshes_objects(check=False) if not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden]:
+        if not get_objects(Common.get_meshes_objects(check=False), filter_func=lambda obj:
+                           not Common.is_hidden(obj) or not context.scene.bake_ignore_hidden):
             self.report({'ERROR'}, t('cats_bake.error.no_meshes'))
             return {'FINISHED'}
-        if any([obj.hide_render and not Common.is_hidden(obj) for obj in Common.get_armature().children if obj.name in context.view_layer.objects]):
+        if any(obj.hide_render and not Common.is_hidden(obj)
+               for obj in Common.get_armature().children
+               if obj.name in context.view_layer.objects):
             self.report({'ERROR'}, t('cats_bake.error.render_disabled'))
             return {'FINISHED'}
         if not bpy.data.is_saved:
@@ -839,16 +852,16 @@ class BakeButton(bpy.types.Operator):
             bpy.context.scene.render.simplify_subdivision_render = 1
 
         # Make sure all armature modifiers target the new armature
-        for child in collection.all_objects:
-            for modifier in child.modifiers:
+        for obj in get_objects(collection.all_objects, keep_copyonly=True):
+            for modifier in obj.modifiers:
                 if modifier.type == "ARMATURE":
                     modifier.object = arm_copy
                 if modifier.type == "MULTIRES":
                     modifier.render_levels = modifier.total_levels
             # Do a little weight painting cleanup here
-            if child.type == "MESH":
-                child.select_set(True)
-                context.view_layer.objects.active = child
+            if obj.type == "MESH":
+                obj.select_set(True)
+                context.view_layer.objects.active = obj
                 Common.switch('WEIGHT_PAINT')
                 # Unity maxes out at 4 deforms, remove here
                 bpy.ops.object.vertex_group_limit_total(group_select_mode='BONE_DEFORM')
@@ -857,12 +870,12 @@ class BakeButton(bpy.types.Operator):
                 Common.switch('OBJECT')
 
         # Copy default values from the largest diffuse BSDF
-        objs_size_descending = sorted([obj for obj in collection.all_objects if obj.type == "MESH"],
+        objs_size_descending = sorted(get_objects(collection.all_objects, {"MESH"}),
                                       key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
                                       reverse=True)
 
         def first_bsdf(objs):
-            for obj in objs_size_descending:
+            for obj in get_objects(objs_size_descending):
                 for slot in obj.material_slots:
                     if slot.material:
                         tree = slot.material.node_tree
@@ -881,9 +894,9 @@ class BakeButton(bpy.types.Operator):
         #to store the colors for each pass for each solid material to apply to bake atlas later.
         solidmaterialcolors = dict()
         if optimize_solid_materials:
-            for child in collection.all_objects:
-                if child.type == "MESH":
-                    for matindex,material in enumerate(child.data.materials):
+            for obj in get_objects(collection.all_objects):
+                if obj.type == "MESH":
+                    for matindex,material in enumerate(obj.data.materials):
                         for node in material.node_tree.nodes:
                             if node.type == "BSDF_PRINCIPLED":#For each material bsdf in every object in each material
 
@@ -933,15 +946,15 @@ class BakeButton(bpy.types.Operator):
 
                                 #now we check based on all the passes if our material is solid.
                                 if all(pass_key in solid_colors for pass_key in ["diffuse", "smoothness", "metallic", "alpha"]) or "emit" in solid_colors:
-                                    solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
-                                    solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":solid_colors['diffuse'],
+                                    solidmaterialnames[obj.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
+                                    solidmaterialcolors[obj.data.materials[matindex].name] = {"diffuse_color":solid_colors['diffuse'],
                                                                                                 "emission_color":solid_colors.get('emit', [0., 0., 0., 1.]),
                                                                                                 "smoothness_color":solid_colors['smoothness'],
                                                                                                 "metallic_color":solid_colors['metallic'],
                                                                                                 "alpha_color":solid_colors['alpha']}
-                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is solid!")
+                                    print("Object: \""+obj.name+"\" with Material: \""+obj.data.materials[matindex].name+"\" is solid!")
                                 else:
-                                    print("Object: \""+child.name+"\" with Material: \""+child.data.materials[matindex].name+"\" is NOT solid!")
+                                    print("Object: \""+obj.name+"\" with Material: \""+obj.data.materials[matindex].name+"\" is NOT solid!")
                                     pass #don't put an entry, and assume if there is no entry, then it isn't solid.
 
                                 break #since we found our principled and did our stuff we can break the node scanning loop on this material.
@@ -949,73 +962,73 @@ class BakeButton(bpy.types.Operator):
         if generate_uvmap:
             bpy.ops.object.select_all(action='DESELECT')
             # Make copies of the currently render-active UV layer, name "CATS UV"
-            for child in collection.all_objects:
-                if child.type == "MESH":
-                    child.select_set(True)
-                    context.view_layer.objects.active = child
+            for obj in get_objects(collection.all_objects):
+                if obj.type == "MESH":
+                    obj.select_set(True)
+                    context.view_layer.objects.active = obj
                     # make sure to copy the render-active UV only
                     active_uv = None
-                    for uvmap in child.data.uv_layers:
+                    for uvmap in obj.data.uv_layers:
                         if uvmap.active_render:
-                            child.data.uv_layers.active = uvmap
+                            obj.data.uv_layers.active = uvmap
                             active_uv = uvmap
-                    reproject_anyway = (len(child.data.uv_layers) == 0 or
+                    reproject_anyway = (len(obj.data.uv_layers) == 0 or
                                         all(set(loop.uv[:]).issubset({0,1}) for loop in active_uv.data))
                     bpy.ops.mesh.uv_texture_add()
-                    child.data.uv_layers[-1].name = 'CATS UV'
+                    obj.data.uv_layers[-1].name = 'CATS UV'
                     cats_uv_layers.add('CATS UV')
                     if supersample_normals:
                         bpy.ops.mesh.uv_texture_add()
-                        child.data.uv_layers[-1].name = 'CATS UV Super'
+                        obj.data.uv_layers[-1].name = 'CATS UV Super'
                         cats_uv_layers.add('CATS UV Super')
 
                     if uv_overlap_correction == "REPROJECT" or reproject_anyway:
                         for layer in cats_uv_layers:
-                            idx = child.data.uv_layers.active_index
+                            idx = obj.data.uv_layers.active_index
                             bpy.ops.object.select_all(action='DESELECT')
-                            child.data.uv_layers[layer].active = True
+                            obj.data.uv_layers[layer].active = True
                             Common.switch('EDIT')
-                            for matindex,material in enumerate(child.data.materials):
+                            for matindex,material in enumerate(obj.data.materials):
                                 #select each material individually and unwrap. The averaging and packing will take care of overlaps. - @989onan
                                 bpy.ops.mesh.select_all(action='DESELECT')
-                                child.active_material_index = matindex
+                                obj.active_material_index = matindex
                                 bpy.ops.object.material_slot_select()
 
                                 bpy.ops.uv.select_all(action='SELECT')
                                 bpy.ops.uv.smart_project(angle_limit=unwrap_angle, island_margin=margin)
                             Common.switch('OBJECT')
-                            child.data.uv_layers.active_index = idx
+                            obj.data.uv_layers.active_index = idx
                     elif uv_overlap_correction == "UNMIRROR":
                         # TODO: issue a warning if any source images don't use 'wrap'
                         # Select all faces in +X
                         print("Un-mirroring source CATS UV data")
-                        uv_layer = (child.data.uv_layers["CATS UV Super"].data if
+                        uv_layer = (obj.data.uv_layers["CATS UV Super"].data if
                                    supersample_normals else
-                                   child.data.uv_layers["CATS UV"].data)
-                        for poly in child.data.polygons:
+                                   obj.data.uv_layers["CATS UV"].data)
+                        for poly in obj.data.polygons:
                             if poly.center[0] > 0:
                                 for loop in poly.loop_indices:
                                     uv_layer[loop].uv.x += 1
                     elif uv_overlap_correction == "MANUAL":
-                        if "Target" in child.data.uv_layers:
-                            for idx, loop in enumerate(child.data.uv_layers["Target"].data):
-                                child.data.uv_layers["CATS UV"].data[idx].uv = loop.uv
+                        if "Target" in obj.data.uv_layers:
+                            for idx, loop in enumerate(obj.data.uv_layers["Target"].data):
+                                obj.data.uv_layers["CATS UV"].data[idx].uv = loop.uv
                                 if supersample_normals:
-                                    child.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
+                                    obj.data.uv_layers["CATS UV Super"].data[idx].uv = loop.uv
 
             #PLEASE DO THIS TO PREVENT PROBLEMS WITH UV EDITING LATER ON:
             bpy.data.scenes["CATS Scene"].tool_settings.use_uv_select_sync = False
 
             if optimize_solid_materials:
                 #go through the solid materials on all the meshes and scale their UV's down to 0 in a grid of rows of squares so that they bake on a small separate part of the image mostly in the top left -@989onan
-                for child in collection.all_objects:
-                    if child.type == "MESH":
-                        for matindex,material in enumerate(child.data.materials):
+                for obj in get_objects(collection.all_objects):
+                    if obj.type == "MESH":
+                        for matindex,material in enumerate(obj.data.materials):
                             if material.name in solidmaterialnames:
                                 for layer in cats_uv_layers:
-                                    print("processing solid material: \""+material.name+"\" on layer: \""+layer+"\" on object: \""+child.name+"\"")
-                                    idx = child.data.uv_layers.active_index
-                                    child.data.uv_layers[layer].active = True
+                                    print("processing solid material: \""+material.name+"\" on layer: \""+layer+"\" on object: \""+obj.name+"\"")
+                                    idx = obj.data.uv_layers.active_index
+                                    obj.data.uv_layers[layer].active = True
                                     Common.switch('EDIT')
                                     #deselect all geometry and uv, select material that we are on that is solid, and then select all on visible UV. This will isolate the solid material UV's on this layer and object.
 
@@ -1024,7 +1037,7 @@ class BakeButton(bpy.types.Operator):
                                     bpy.ops.mesh.select_all(action='DESELECT') #deselect all mesh
 
                                     bpy.ops.mesh.select_mode(type="FACE")
-                                    child.active_material_index = matindex
+                                    obj.active_material_index = matindex
                                     bpy.ops.object.material_slot_select() #select our material on mesh
                                     bpy.ops.uv.select_all(action='SELECT') #select all uv
 
@@ -1042,8 +1055,8 @@ class BakeButton(bpy.types.Operator):
                                     X = squaremargin/2 + squaremargin * int( index % n )
                                     Y = squaremargin/2 + squaremargin * int( index / n )
 
-                                    uv_layer = child.data.uv_layers[layer].data
-                                    for poly in child.data.polygons:
+                                    uv_layer = obj.data.uv_layers[layer].data
+                                    for poly in obj.data.polygons:
                                         for loop in poly.loop_indices:
                                             if uv_layer[loop].select: #make sure that it is selected (only visible will be selected in this case)
                                                 #Here we scale the UV's down to 0 starting at the bottom left corner and going up row by row of solid materials.
@@ -1058,7 +1071,7 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.object.select_all(action='SELECT')
             for layer in cats_uv_layers:
                 Common.switch('OBJECT')
-                for obj in collection.all_objects:
+                for obj in get_objects(collection.all_objects):
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers[layer]
                         context.view_layer.objects.active = obj
@@ -1070,7 +1083,7 @@ class BakeButton(bpy.types.Operator):
 
             # Scale up textures most likely to be looked closer at (in this case, eyes)
             if prioritize_face:
-                for obj in collection.all_objects:
+                for obj in get_objects(collection.all_objects):
                     if obj.type != "MESH":
                         continue
                     # Build set of relevant vertices
@@ -1094,7 +1107,7 @@ class BakeButton(bpy.types.Operator):
             # Pack islands. Optionally use UVPackMaster if it's available
             bpy.ops.object.select_all(action='SELECT')
             for layer in cats_uv_layers:
-                for obj in collection.all_objects:
+                for obj in get_objects(collection.all_objects):
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers[layer]
                 Common.switch('EDIT')
@@ -1145,11 +1158,11 @@ class BakeButton(bpy.types.Operator):
 
             if optimize_solid_materials:
                 #unhide geometry from step before pack islands that fixed solid material uvs, then scale uv's to be short enough to avoid color squares at top right. - @989onan
-                for child in collection.all_objects:
-                    if child.type == "MESH":
+                for obj in get_objects(collection.all_objects):
+                    if obj.type == "MESH":
                         for layer in cats_uv_layers:
-                            idx = child.data.uv_layers.active_index
-                            child.data.uv_layers[layer].active = True
+                            idx = obj.data.uv_layers.active_index
+                            obj.data.uv_layers[layer].active = True
                             Common.switch('EDIT')
 
                             bpy.ops.mesh.select_all(action='SELECT')
@@ -1168,17 +1181,17 @@ class BakeButton(bpy.types.Operator):
                             Y = squaremargin/2 + squaremargin * int( last_index / n )
 
                             Common.switch('OBJECT')#idk why this has to be here but it breaks without it - @989onan
-                            for poly in child.data.polygons:
+                            for poly in obj.data.polygons:
                                 for loop in poly.loop_indices:
-                                    uv_layer = child.data.uv_layers[layer].data
+                                    uv_layer = obj.data.uv_layers[layer].data
                                     if uv_layer[loop].select: #make sure that it is selected (only visible will be selected in this case)
                                         #scale UV upwards so square stuff below can fit for solid colors
                                         uv_layer[loop].uv = Scale2D( uv_layer[loop].uv, (1,1-((Y+(pixelmargin+squaremargin))/resolution)), (0,1) )
 
                         #unhide all mesh polygons from our material hiding for scaling
                         for layer in cats_uv_layers:
-                            idx = child.data.uv_layers.active_index
-                            child.data.uv_layers[layer].active = True
+                            idx = obj.data.uv_layers.active_index
+                            obj.data.uv_layers[layer].active = True
                             Common.switch('EDIT')
                             bpy.ops.mesh.select_all(action='SELECT')
                             bpy.ops.uv.select_all(action='SELECT')
@@ -1186,7 +1199,7 @@ class BakeButton(bpy.types.Operator):
                             Common.switch('OBJECT') #below will error if it isn't in object because of poll error
 
             #lastly make our target UV map active
-            for obj in collection.all_objects:
+            for obj in get_objects(collection.all_objects):
                 if obj.type == 'MESH':
                     obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
@@ -1205,14 +1218,14 @@ class BakeButton(bpy.types.Operator):
         ]:
             # TODO: Linearity will be determined by end channel. Alpha is linear, RGB is sRGB
             if bake_conditions:
-                self.genericize_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"],
+                self.genericize_bsdfs(get_objects(collection.all_objects, {"MESH"}),
                                       desired_inputs)
                 self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
-                               [obj for obj in collection.all_objects if obj.type == "MESH"],
+                               get_objects(collection.all_objects, {"MESH"}),
                                (resolution, resolution), 1 if draft_render else 32, 0,
                                background_color, True, pixelmargin,
                                solidmaterialcolors=solidmaterialcolors)
-                self.restore_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"])
+                self.restore_bsdfs(get_objects(collection.all_objects, {"MESH"}))
 
                 if invert:
                     pixel_buffer = img_channels_as_nparray("SCRIPT_" + bake_name + ".png")
@@ -1225,32 +1238,32 @@ class BakeButton(bpy.types.Operator):
 
         # Bake displacement sides A and B, make one negative, select greater magnitude, normalize from 0 to 1
         if pass_displacement:
-            self.swap_inputs([obj for obj in collection.all_objects if obj.type == "MESH"],
+            self.swap_inputs(get_objects(collection.all_objects, {"MESH"}),
                               {"Surface": "Displacement"}, "OUTPUT_MATERIAL")
 
-            self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
+            self.prepare_displacement(get_objects(collection.all_objects, {"MESH"}),
                                       inverted=False)
             self.bake_pass(context, "displacement", "EMIT", {},
-                           [obj for obj in collection.all_objects if obj.type == "MESH"],
+                           get_objects(collection.all_objects, {"MESH"}),
                            (resolution, resolution), 1 if draft_render else 32, 0,
                            [0., 0., 0., 1.], True, pixelmargin,
                            solidmaterialcolors=solidmaterialcolors)
-            self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
+            self.prepare_displacement(get_objects(collection.all_objects, {"MESH"}),
                                       restore=True)
 
-            self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
+            self.prepare_displacement(get_objects(collection.all_objects, {"MESH"}),
                                       inverted=True)
             self.bake_pass(context, "displacement_inverse", "EMIT", {},
-                           [obj for obj in collection.all_objects if obj.type == "MESH"],
+                           get_objects(collection.all_objects, {"MESH"}),
                            (resolution, resolution), 1 if draft_render else 32, 0,
                            [0., 0., 0., 1.], True, pixelmargin,
                            solidmaterialcolors=solidmaterialcolors)
-            self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
+            self.prepare_displacement(get_objects(collection.all_objects, {"MESH"}),
                                       restore=True)
             # TODO: we could also account for multires displacement by adding the bake result to the
             # above, but detaching displacements first
 
-            self.swap_inputs([obj for obj in collection.all_objects if obj.type == "MESH"],
+            self.swap_inputs(get_objects(collection.all_objects, {"MESH"}),
                               {"Surface": "Displacement"}, "OUTPUT_MATERIAL")
 
             # The above creates two images with their green channels either positive or negative
@@ -1278,7 +1291,7 @@ class BakeButton(bpy.types.Operator):
         # Save and disable shape keys
         shapekey_values = dict()
         if not apply_keys:
-            for obj in collection.all_objects:
+            for obj in get_objects(collection.all_objects):
                 if Common.has_shapekeys(obj):
                     # This doesn't work for keys which have different starting
                     # values... but generally that's not what you should do anyway
@@ -1306,7 +1319,7 @@ class BakeButton(bpy.types.Operator):
                     key.value = 0.0
 
         # Joining meshes causes issues with materials. Instead. apply location for all meshes, so object and world space are the same
-        for obj in collection.all_objects:
+        for obj in get_objects(collection.all_objects):
             if obj.type in ["MESH", "ARMATURE"]:
                 bpy.ops.object.select_all(action='DESELECT')
                 obj.select_set(True)
@@ -1315,7 +1328,7 @@ class BakeButton(bpy.types.Operator):
 
         # Bake normals in object coordinates
         if pass_normal:
-            for obj in collection.all_objects:
+            for obj in get_objects(collection.all_objects):
                 if obj.type == 'MESH' and generate_uvmap:
                     if supersample_normals:
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV Super"]
@@ -1325,11 +1338,11 @@ class BakeButton(bpy.types.Operator):
             bake_size = ((resolution * 2, resolution * 2) if
                          supersample_normals else
                          (resolution, resolution))
-            self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
+            self.bake_pass(context, "world", "NORMAL", set(), get_objects(collection.all_objects, {"MESH"}),
                            bake_size, 1 if draft_render else 128, 0, [0.5, 0.5, 1., 1.], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
 
         # Reset UV
-        for obj in collection.all_objects:
+        for obj in get_objects(collection.all_objects):
              if obj.type == 'MESH' and generate_uvmap and supersample_normals:
                   obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
@@ -1352,7 +1365,7 @@ class BakeButton(bpy.types.Operator):
                 if world_color:
                      cats_world.color = world_color
                 # Enable all AO keys
-                for obj in collection.all_objects:
+                for obj in get_objects(collection.all_objects):
                     if Common.has_shapekeys(obj):
                         for key in obj.data.shape_keys.key_blocks:
                             if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
@@ -1361,7 +1374,7 @@ class BakeButton(bpy.types.Operator):
                 # If conditions are met, move eyes up by 25m (so they don't get shadows)
                 if displace_eyes:
                     # Add modifiers that prevent LeftEye and RightEye being baked
-                    for obj in collection.all_objects:
+                    for obj in get_objects(collection.all_objects):
                         if obj.type == "MESH" and "LeftEye" in obj.vertex_groups:
                             leyemask = obj.modifiers.new(type='DISPLACE', name="leyemask")
                             leyemask.vertex_group = "LeftEye"
@@ -1376,18 +1389,18 @@ class BakeButton(bpy.types.Operator):
                             reyemask.mid_level = 0
 
                 if desired_inputs is not None:
-                    self.genericize_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"],
+                    self.genericize_bsdfs(get_objects(collection.all_objects, {"MESH"}),
                                           desired_inputs, base_black=base_black)
                 self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
-                               [obj for obj in collection.all_objects if obj.type == "MESH"],
+                               get_objects(collection.all_objects, {"MESH"}),
                                (resolution, resolution), 16 if draft_render else 512, 0,
                                background_color, True, pixelmargin,
                                solidmaterialcolors=solidmaterialcolors)
                 if desired_inputs is not None:
-                    self.restore_bsdfs([obj for obj in collection.all_objects if obj.type == "MESH"])
+                    self.restore_bsdfs(get_objects(collection.all_objects, {"MESH"}))
 
                 if displace_eyes:
-                    for obj in collection.all_objects:
+                    for obj in get_objects(collection.all_objects):
                         if "leyemask" in obj.modifiers:
                             obj.modifiers.remove(obj.modifiers['leyemask'])
                         if "reyemask" in obj.modifiers:
@@ -1397,14 +1410,14 @@ class BakeButton(bpy.types.Operator):
                     self.filter_image(context, "SCRIPT_" + bake_name + ".png", BakeButton.denoise_create
                                       )
                 # Disable all AO keys
-                for obj in collection.all_objects:
+                for obj in get_objects(collection.all_objects):
                     if Common.has_shapekeys(obj):
                         for key in obj.data.shape_keys.key_blocks:
                             if ('ambient' in key.name.lower() and 'occlusion' in key.name.lower()) or key.name[-3:] == '_ao':
                                 key.value = 0.0
 
         # Remove multires modifiers
-        for obj in collection.all_objects:
+        for obj in get_objects(collection.all_objects):
             mods = []
             for mod in obj.modifiers:
                 if mod.type == "MULTIRES":
@@ -1414,7 +1427,7 @@ class BakeButton(bpy.types.Operator):
 
         # Apply any masking modifiers before decimation
         print("Applying mask modifiers")
-        for obj in collection.all_objects:
+        for obj in get_objects(collection.all_objects):
             if not any(mod.type == "MASK" and mod.show_viewport for mod in obj.modifiers):
                 continue
             bpy.ops.object.select_all(action='DESELECT')
@@ -1543,8 +1556,8 @@ class BakeButton(bpy.types.Operator):
             context.scene.collection.children.link(plat_collection)
 
             # Make sure all armature modifiers target the new armature
-            for child in plat_collection.all_objects:
-                for modifier in child.modifiers:
+            for obj in get_objects(plat_collection.all_objects):
+                for modifier in obj.modifiers:
                     if modifier.type == "ARMATURE":
                         modifier.object = plat_arm_copy
                     if modifier.type == "MULTIRES":
@@ -1580,7 +1593,7 @@ class BakeButton(bpy.types.Operator):
             if generate_prop_bones:
                 # Find any mesh that's weighted to a single bone, duplicate and rename that bone, move mesh's vertex group to the new bone
                 all_path_strings = dict()
-                for obj in plat_collection.objects:
+                for obj in get_objects(plat_collection.objects):
                     if obj.type == "MESH":
                         if 'generatePropBones' not in obj or not obj['generatePropBones']:
                             continue
@@ -1802,15 +1815,15 @@ class BakeButton(bpy.types.Operator):
 
             # Remove old UV maps (if we created new ones)
             if generate_uvmap:
-                for child in plat_collection.all_objects:
-                    if child.type == "MESH":
-                        uv_layers = [layer.name for layer in child.data.uv_layers]
+                for obj in get_objects(plat_collection.all_objects):
+                    if obj.type == "MESH":
+                        uv_layers = [layer.name for layer in obj.data.uv_layers]
                         while uv_layers:
                             layer = uv_layers.pop()
                             if layer != "CATS UV Super" and layer != "CATS UV" and layer != "Detail Map":
                                 print("Removing UV {}".format(layer))
-                                child.data.uv_layers.remove(child.data.uv_layers[layer])
-                for obj in plat_collection.all_objects:
+                                obj.data.uv_layers.remove(obj.data.uv_layers[layer])
+                for obj in get_objects(plat_collection.all_objects):
                     if obj.type == 'MESH':
                         obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
 
@@ -1820,11 +1833,11 @@ class BakeButton(bpy.types.Operator):
             # Physmodel does a couple extra things like ensuring doubles are removed, wire display
             if use_physmodel:
                 new_arm = self.tree_copy(plat_arm_copy, None, plat_collection, ignore_hidden, view_layer=context.view_layer)
-                for obj in new_arm.children:
+                for obj in get_objects(new_arm.children):
                     obj.display_type = "WIRE"
                 context.scene.max_tris = int(platform.max_tris * physmodel_lod)
                 bpy.ops.cats_decimation.auto_decimate(armature_name=new_arm.name, preserve_seams=False, seperate_materials=False)
-                for obj in new_arm.children:
+                for obj in get_objects(new_arm.children):
                     obj.name = "LODPhysics"
                 new_arm.name = "ArmatureLODPhysics"
 
@@ -1833,7 +1846,7 @@ class BakeButton(bpy.types.Operator):
                     new_arm = self.tree_copy(plat_arm_copy, None, plat_collection, ignore_hidden, view_layer=context.view_layer)
                     context.scene.max_tris = int(platform.max_tris * lod)
                     bpy.ops.cats_decimation.auto_decimate(armature_name=new_arm.name, preserve_seams=preserve_seams, seperate_materials=False)
-                    for obj in new_arm.children:
+                    for obj in get_objects(new_arm.children):
                         obj.name = "LOD" + str(idx + 1)
                     new_arm.name = "ArmatureLOD" + str(idx + 1)
 
@@ -1846,7 +1859,7 @@ class BakeButton(bpy.types.Operator):
                 Common.join_meshes(armature_name=plat_arm_copy.name, repair_shape_keys=False)
 
             # Remove all other materials if we've done at least one bake pass
-            for obj in plat_collection.all_objects:
+            for obj in get_objects(plat_collection.all_objects):
                 if obj.type == 'MESH':
                     context.view_layer.objects.active = obj
                     while len(obj.material_slots) > 0:
@@ -1884,19 +1897,19 @@ class BakeButton(bpy.types.Operator):
                 tree.links.new(normalmapnode.inputs["Color"], normaltexnode.outputs["Color"])
                 tree.links.new(bsdfnode.inputs["Normal"], normalmapnode.outputs["Normal"])
 
-                for obj in plat_collection.all_objects:
+                for obj in get_objects(plat_collection.all_objects):
                     if obj.type == "MESH" and generate_uvmap:
                         if supersample_normals:
                             obj.data.uv_layers["CATS UV Super"].active_render = True
                         else:
                             obj.data.uv_layers["CATS UV"].active_render = True
-            for child in plat_collection.all_objects:
-                if child.type == "MESH":
-                    child.data.materials.append(mat)
+            for obj in get_objects(plat_collection.all_objects):
+                if obj.type == "MESH":
+                    obj.data.materials.append(mat)
 
             if pass_normal:
                 # Bake tangent normals
-                self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name],
+                self.bake_pass(context, "normal", "NORMAL", set(), get_objects(plat_collection.all_objects, filter_func=lambda obj: obj.type == "MESH" and not "LOD" in obj.name),
                                (resolution, resolution), 1 if draft_render else 128, 0, [0.5, 0.5, 1., 1.], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
                 image = bpy.data.images[platform_img("normal")]
                 image.colorspace_settings.name = 'Non-Color'
@@ -1927,7 +1940,7 @@ class BakeButton(bpy.types.Operator):
 
             # Reapply keys
             if not apply_keys:
-                for obj in plat_collection.all_objects:
+                for obj in get_objects(plat_collection.all_objects):
                     if Common.has_shapekeys(obj):
                         for key in obj.data.shape_keys.key_blocks:
                             if key.name in shapekey_values:
@@ -1936,17 +1949,17 @@ class BakeButton(bpy.types.Operator):
 
             # Remove CATS UV Super
             if generate_uvmap and supersample_normals:
-                for child in plat_collection.all_objects:
-                    if child.type == "MESH":
-                        uv_layers = [layer.name for layer in child.data.uv_layers]
+                for obj in get_objects(plat_collection.all_objects):
+                    if obj.type == "MESH":
+                        uv_layers = [layer.name for layer in obj.data.uv_layers]
                         while uv_layers:
                             layer = uv_layers.pop()
                             if layer == "CATS UV Super":
                                 print("Removing UV {}".format(layer))
-                                child.data.uv_layers.remove(child.data.uv_layers[layer])
+                                obj.data.uv_layers.remove(obj.data.uv_layers[layer])
 
             # Always remove existing vertex colors here
-            for obj in plat_collection.all_objects:
+            for obj in get_objects(plat_collection.all_objects):
                 if obj.type == "MESH":
                     if obj.data.vertex_colors is not None and len(obj.data.vertex_colors) > 0:
                         while len(obj.data.vertex_colors) > 0:
@@ -2040,16 +2053,16 @@ class BakeButton(bpy.types.Operator):
 
             # Rebake diffuse to vertex colors: Incorperates AO
             if pass_diffuse and diffuse_vertex_colors:
-                for obj in plat_collection.all_objects:
+                for obj in get_objects(plat_collection.all_objects):
                     if obj.type == "MESH":
                         context.view_layer.objects.active = obj
                         bpy.ops.mesh.vertex_color_add()
 
-                self.genericize_bsdfs([obj for obj in plat_collection.all_objects if obj.type == "MESH"],
+                self.genericize_bsdfs(get_objects(plat_collection.all_objects, {"MESH"}),
                                       {"Base Color": "Base Color"})
-                self.bake_pass(context, "vertex_diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
+                self.bake_pass(context, "vertex_diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, get_objects(plat_collection.all_objects, {"MESH"}),
                                (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.], True, pixelmargin)
-                self.restore_bsdfs([obj for obj in plat_collection.all_objects if obj.type == "MESH"])
+                self.restore_bsdfs(get_objects(plat_collection.all_objects, {"MESH"}))
 
                 # TODO: If we're not baking anything else in, remove all UV maps entirely
 
@@ -2122,7 +2135,7 @@ class BakeButton(bpy.types.Operator):
                     export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
 
             # Create groups to export... One for the main, one each for each LOD
-            for obj in plat_collection.all_objects:
+            for obj in get_objects(plat_collection.all_objects):
                 if not "LOD" in obj.name:
                     if obj.type == "MESH" and obj.name != "Static":
                         obj.name = orig_largest_obj_name
@@ -2132,7 +2145,7 @@ class BakeButton(bpy.types.Operator):
             # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
             #exception is Gmod because Gmod needs textures to be applied to work - @989onan
             if export_format not in ["GMOD", "DAE"]:
-                for obj in plat_collection.all_objects:
+                for obj in get_objects(plat_collection.all_objects):
                     if obj.type == 'MESH':
                         context.view_layer.objects.active = obj
                         while len(obj.material_slots) > 0:
@@ -2149,14 +2162,14 @@ class BakeButton(bpy.types.Operator):
                 # Performing these changes in edit mode avoids a scene update issue, but may not be totally neccesary.
                 plat_arm_copy.data.transform(armature.matrix_basis.inverted())
                 Common.switch("OBJECT")
-                for obj in plat_collection.all_objects:
+                for obj in get_objects(plat_collection.all_objects):
                     if obj.type == 'MESH':
                         obj.data.transform(armature.matrix_basis.inverted(), shape_keys=True)
                         obj.data.update()
 
             for export_group in export_groups:
                 bpy.ops.object.select_all(action='DESELECT')
-                for obj in plat_collection.all_objects:
+                for obj in get_objects(plat_collection.all_objects):
                     if obj.name in export_group[1]:
                         obj.select_set(True)
                 if export_format == "FBX":
@@ -2188,12 +2201,12 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.cats_importer.export_gmod_addon(steam_library_path=steam_library_path,gmod_model_name=gmod_model_name,platform_name=platform_name)
             # Reapply cats material
             if export_format != "GMOD":
-                for child in plat_collection.all_objects:
-                    if child.type == "MESH":
-                        if len(child.material_slots) == 0:
-                            child.data.materials.append(mat)
+                for obj in get_objects(plat_collection.all_objects):
+                    if obj.type == "MESH":
+                        if len(obj.material_slots) == 0:
+                            obj.data.materials.append(mat)
                         else:
-                            child.material_slots[0].material = mat
+                            obj.material_slots[0].material = mat
 
             if optimize_static:
                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/BakeFixer.cs", 'r') as infile:
@@ -2211,7 +2224,7 @@ class BakeButton(bpy.types.Operator):
                 collection = bpy.data.collections["CATS Bake"]
             # Move armature so we can see it
             if quick_compare and export_format != "GMOD":
-                for obj in plat_collection.objects:
+                for obj in get_objects(plat_collection.objects):
                     if obj.type == "ARMATURE":
                         obj.location.x += armature.dimensions.x * (1 + platform_number)
                 for idx, _ in enumerate(lods):
@@ -2221,7 +2234,7 @@ class BakeButton(bpy.types.Operator):
         # Delete our duplicate scene and the platform-agnostic CATS Bake
         bpy.ops.scene.delete()
 
-        for obj in collection.objects:
+        for obj in get_objects(collection.objects):
             bpy.data.objects.remove(obj, do_unlink=True)
 
         bpy.data.collections.remove(collection)
@@ -2229,6 +2242,10 @@ class BakeButton(bpy.types.Operator):
         #clean unused data
         if not is_unittest:
             bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
+
+        # return original meshes names
+        armature.name = orig_armature_name
+        objs_size_descending[0] = orig_largest_obj_name
 
         # set viewport to material preview
         for area in context.screen.areas:
