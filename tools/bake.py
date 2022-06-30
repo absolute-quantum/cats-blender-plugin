@@ -1568,7 +1568,7 @@ class BakeButton(bpy.types.Operator):
                 if pass_emit and diffuse_emit_overlay:
                     emit_buffer = img_channels_as_nparray("SCRIPT_emission.png")
                     # Map range: screen the emission onto diffuse
-                    pixel_buffer[idx] = 1.0 - ((1.0 - emit_buffer[idx]) * (1.0 - pixel_buffer[idx]))
+                    pixel_buffer[:3] = 1.0 - ((1.0 - emit_buffer[:3]) * (1.0 - pixel_buffer[:3]))
                 if export_format == "GMOD":
                     vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
                 nparray_channels_to_img(platform_img("diffuse"), pixel_buffer)
