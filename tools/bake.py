@@ -171,7 +171,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         item.use_physmodel = True
         item.physmodel_lod = 0.1
         item.use_lods = True
-        item.lods = (1.0/4, 1.0/16, 1.0/32)
+        item.lods = (1./4, 1./16, 1./32)
     elif platform == "GMOD":
         # https://developer.valvesoftware.com/wiki/Adapting_PBR_Textures_to_Source with some adjustments
         item.export_format = "GMOD"
@@ -369,7 +369,7 @@ class BakeButton(bpy.types.Operator):
                         bake_node = tree.nodes.new("ShaderNodeCombineXYZ")
                         bake_node.name = node.name + ".BAKE"
                         bake_node.label = "For CATS bake: you should CTRL+Z"
-                        bake_node.inputs["Y"].default_value = 1.0 if not inverted else -1.
+                        bake_node.inputs["Y"].default_value = 1. if not inverted else -1.
                         tree.links.new(node.inputs["Normal"], bake_node.outputs["Vector"])
                 else:
                     # Remove created displacement input nodes
@@ -432,9 +432,9 @@ class BakeButton(bpy.types.Operator):
                             tree.links.new(to_socket, bake_node.outputs["BSDF"])
 
                     if base_black:
-                        bake_node.inputs["Base Color"].default_value = [0.0, 0.0, 0.0, 1.0]
+                        bake_node.inputs["Base Color"].default_value = [0., 0., 0., 1.]
                     else:
-                        bake_node.inputs["Base Color"].default_value = [1.0, 1.0, 1.0, 1.0]
+                        bake_node.inputs["Base Color"].default_value = [1., 1., 1., 1.]
                     bake_node.inputs["Subsurface"].default_value = 0.0
                     bake_node.inputs["Metallic"].default_value = 0.0
                     bake_node.inputs["Specular"].default_value = 0.5
@@ -555,7 +555,7 @@ class BakeButton(bpy.types.Operator):
             obj.select_set(True)
             context.view_layer.objects.active = obj
 
-        # For all materials in use, change any value node labeled "bake_<bake_name>" to 1.0, then back to 0.0.
+        # For all materials in use, change any value node labeled "bake_<bake_name>" to 1., then back to 0..
         for obj in objects:
             for slot in obj.material_slots:
                 if slot.material:
@@ -609,7 +609,7 @@ class BakeButton(bpy.types.Operator):
                             cage_extrusion=bake_ray_distance,
                             normal_space=normal_space
                             )
-        # For all materials in use, change any value node labeled "bake_<bake_name>" to 1.0, then back to 0.0.
+        # For all materials in use, change any value node labeled "bake_<bake_name>" to 1., then back to 0..
         for obj in objects:
             for slot in obj.material_slots:
                 if slot.material:
@@ -890,20 +890,20 @@ class BakeButton(bpy.types.Operator):
                                 def check_if_tex_solid(bsdfinputname,node_prinipled):
                                     node_image = node_prinipled.inputs[bsdfinputname].links[0].from_node
                                     if node_image.type != "TEX_IMAGE": #To catch normal maps
-                                        return [False,[0.0,0.0,0.0,1.0]] #if not image then it's some type of node chain that is too complicated so return false
+                                        return [False,[0.,0.,0.,1.]] #if not image then it's some type of node chain that is too complicated so return false
                                     old_pixels = node_image.image.pixels[:]
                                     solidimagepixels = np.tile(old_pixels[0:4], int(len(old_pixels)/4))
                                     if np.array_equal(solidimagepixels,old_pixels):
                                         return [True,old_pixels[0:4]]
-                                    return [False,[0.0,0.0,0.0,1.0]]
+                                    return [False,[0.,0.,0.,1.]]
 
                                 #each pass below makes solid color textures or reads the texture and checks if it's solid using numpy.
                                 node_prinipled = node
                                 solid_colors = {
-                                    "diffuse": [0.0,0.0,0.0,1.0],
-                                    "smoothness": [0.0,0.0,0.0,1.0],
-                                    "metallic": [0.0,0.0,0.0,1.0],
-                                    "alpha": [1.0,1.0,1.0,1.0],
+                                    "diffuse": [0.,0.,0.,1.],
+                                    "smoothness": [0.,0.,0.,1.],
+                                    "metallic": [0.,0.,0.,1.],
+                                    "alpha": [1.,1.,1.,1.],
                                 }
                                 for (use_pass, pass_key, pass_slot) in [
                                         (pass_diffuse, "diffuse", "Base Color"),
@@ -935,7 +935,7 @@ class BakeButton(bpy.types.Operator):
                                 if all(pass_key in solid_colors for pass_key in ["diffuse", "smoothness", "metallic", "alpha"]) or "emit" in solid_colors:
                                     solidmaterialnames[child.data.materials[matindex].name] = len(solidmaterialnames) #put materials into an index order because we wanna put them into a grid
                                     solidmaterialcolors[child.data.materials[matindex].name] = {"diffuse_color":solid_colors['diffuse'],
-                                                                                                "emission_color":solid_colors.get('emit', [0.0, 0.0, 0.0, 1.0]),
+                                                                                                "emission_color":solid_colors.get('emit', [0., 0., 0., 1.]),
                                                                                                 "smoothness_color":solid_colors['smoothness'],
                                                                                                 "metallic_color":solid_colors['metallic'],
                                                                                                 "alpha_color":solid_colors['alpha']}
@@ -1079,7 +1079,7 @@ class BakeButton(bpy.types.Operator):
                         if group in obj.vertex_groups:
                             vgroup_idx = obj.vertex_groups[group].index
                             for vert in obj.data.vertices:
-                                if any(v_group.group == vgroup_idx and v_group.weight > 0.0 for v_group in vert.groups):
+                                if any(v_group.group == vgroup_idx and v_group.weight > 0. for v_group in vert.groups):
                                     affected_vertices.add(vert.index)
 
                     # Then for each UV (cause of the viewport thing) scale up by the selected factor
@@ -1197,11 +1197,11 @@ class BakeButton(bpy.types.Operator):
         # Perform 'Bake' renders: non-normal that never perform ray-tracing
         for (bake_conditions, bake_name, bake_type, bake_pass_filter, background_color,
              desired_inputs, use_linear, invert) in [
-                 (pass_diffuse, "diffuse", "DIFFUSE", {"COLOR"}, [0.5, 0.5, 0.5, 1.0], {"Base Color": "Base Color"}, False, False),
-                 (pass_smoothness, "smoothness", "ROUGHNESS", set(), [1.0, 1.0, 1.0, 1.0], {"Roughness": "Roughness"}, True, True),
-                 (pass_alpha, "alpha", "DIFFUSE", {"COLOR"}, [1, 1, 1, 1.0], {"Alpha": "Alpha"}, False, False),
-                 (pass_metallic, "metallic", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], {"Metallic": "Metallic"}, False, True),
-                 (pass_emit and not emit_indirect, "emission", "EMIT", set(), [0, 0, 0, 1.0], {"Emission": "Emission"}, False, False),
+                 (pass_diffuse, "diffuse", "DIFFUSE", {"COLOR"}, [0.5, 0.5, 0.5, 1.], {"Base Color": "Base Color"}, False, False),
+                 (pass_smoothness, "smoothness", "ROUGHNESS", set(), [1., 1., 1., 1.], {"Roughness": "Roughness"}, True, True),
+                 (pass_alpha, "alpha", "DIFFUSE", {"COLOR"}, [1, 1, 1, 1.], {"Alpha": "Alpha"}, False, False),
+                 (pass_metallic, "metallic", "DIFFUSE", {"COLOR"}, [1., 1., 1., 1.], {"Metallic": "Metallic"}, False, True),
+                 (pass_emit and not emit_indirect, "emission", "EMIT", set(), [0, 0, 0, 1.], {"Emission": "Emission"}, False, False),
         ]:
             # TODO: Linearity will be determined by end channel. Alpha is linear, RGB is sRGB
             if bake_conditions:
@@ -1233,7 +1233,7 @@ class BakeButton(bpy.types.Operator):
             self.bake_pass(context, "displacement", "EMIT", {},
                            [obj for obj in collection.all_objects if obj.type == "MESH"],
                            (resolution, resolution), 1 if draft_render else 32, 0,
-                           [0.0, 0.0, 0.0, 1.0], True, pixelmargin,
+                           [0., 0., 0., 1.], True, pixelmargin,
                            solidmaterialcolors=solidmaterialcolors)
             self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
                                       restore=True)
@@ -1243,7 +1243,7 @@ class BakeButton(bpy.types.Operator):
             self.bake_pass(context, "displacement_inverse", "EMIT", {},
                            [obj for obj in collection.all_objects if obj.type == "MESH"],
                            (resolution, resolution), 1 if draft_render else 32, 0,
-                           [0.0, 0.0, 0.0, 1.0], True, pixelmargin,
+                           [0., 0., 0., 1.], True, pixelmargin,
                            solidmaterialcolors=solidmaterialcolors)
             self.prepare_displacement([obj for obj in collection.all_objects if obj.type == "MESH"],
                                       restore=True)
@@ -1264,13 +1264,13 @@ class BakeButton(bpy.types.Operator):
                 # The height value in the shader does (x * height) - (height/2), which means the
                 # total magnitude (min - max) is = height. overall_max is only the positive or
                 # negative component of our height (whichever is greater) so we need to double it.
-                fi.write("Height Value: {}".format(overall_max * 2.0))
-            if overall_max > 0.0:
+                fi.write("Height Value: {}".format(overall_max * 2.))
+            if overall_max > 0.:
                 dp1[1] = dp1[1]/overall_max
                 dp2[1] = - dp2[1]/overall_max
                 # mix, then map to 0 to 1
                 dp1[1] += dp2[1]
-                dp1[1] = (dp1[1] + 1.0) / 2.
+                dp1[1] = (dp1[1] + 1.) / 2.
 
                 nparray_channels_to_img("SCRIPT_displacement.png", dp1)
                 bpy.data.images["SCRIPT_displacement.png"].save()
@@ -1326,7 +1326,7 @@ class BakeButton(bpy.types.Operator):
                          supersample_normals else
                          (resolution, resolution))
             self.bake_pass(context, "world", "NORMAL", set(), [obj for obj in collection.all_objects if obj.type == "MESH"],
-                           bake_size, 1 if draft_render else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
+                           bake_size, 1 if draft_render else 128, 0, [0.5, 0.5, 1., 1.], True, pixelmargin, normal_space="OBJECT",solidmaterialcolors=solidmaterialcolors)
 
         # Reset UV
         for obj in collection.all_objects:
@@ -1336,17 +1336,17 @@ class BakeButton(bpy.types.Operator):
         # Perform 'Indirect' renders: ray traced, at least sometimes
         for (bake_conditions, displace_eyes,  bake_name, bake_type, bake_pass_filter,
              background_color, world_color, desired_inputs, base_black) in [
-            (pass_ao, illuminate_eyes, "ao", "AO", {"AO"}, [1.0, 1.0, 1.0, 1.0], None, None, False),
+            (pass_ao, illuminate_eyes, "ao", "AO", {"AO"}, [1., 1., 1., 1.], None, None, False),
             (pass_emit and emit_indirect, emit_exclude_eyes, "emission", "COMBINED",
-             {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [0.0, 0.0, 0.0, 1.0], (0,0,0), None, False),
+             {"COLOR", "DIRECT", "INDIRECT", "EMIT", "AO", "DIFFUSE"}, [0., 0., 0., 1.], (0,0,0), None, False),
              # the MOST correct way to bake subsurface light only would be to set Base Color to black,
              # multiply Base Color and Subsurface Color and plug into Subsurface Color, then bake Diffuse color
              # then multiply by normalized thickness.
-            (pass_diffuse and diffuse_indirect, True, "diffuse_indirect", "DIFFUSE", {"INDIRECT"}, [0.0, 0.0, 0.0, 1.0], (1,1,1), None, False),
+            (pass_diffuse and diffuse_indirect, True, "diffuse_indirect", "DIFFUSE", {"INDIRECT"}, [0., 0., 0., 1.], (1,1,1), None, False),
             # bake 'thickness' by baking subsurface as albedo, normalizing, and inverting
-                 (pass_thickness, True, "thickness", "DIFFUSE", {"COLOR"}, [1.0, 1.0, 1.0, 1.0], None, {"Subsurface": "Alpha"}, False),
+                 (pass_thickness, True, "thickness", "DIFFUSE", {"COLOR"}, [1., 1., 1., 1.], None, {"Subsurface": "Alpha"}, False),
              # bake 'subsurface' by baking Diffuse Color when Base Color is black
-                 (False, True, "subsurface", "DIFFUSE", {"COLOR"}, [0.0, 0.0, 0.0, 1.0], None, {"Subsurface Color": "Subsurface Color", "Subsurface": "Subsurface"}, True),
+                 (False, True, "subsurface", "DIFFUSE", {"COLOR"}, [0., 0., 0., 1.], None, {"Subsurface Color": "Subsurface Color", "Subsurface": "Subsurface"}, True),
              ]:
             if bake_conditions:
                 if world_color:
@@ -1428,7 +1428,7 @@ class BakeButton(bpy.types.Operator):
             bpy.ops.mesh.select_all(action='DESELECT')
             Common.switch("OBJECT")
             for vert in obj.data.vertices:
-                vert.select = any(group.group in vgroup_idxes and group.weight > 0.0 for group in vert.groups)
+                vert.select = any(group.group in vgroup_idxes and group.weight > 0. for group in vert.groups)
 
             Common.switch("EDIT")
             bpy.ops.mesh.delete(type="VERT")
@@ -1674,19 +1674,19 @@ class BakeButton(bpy.types.Operator):
                 if diffuse_indirect:
                     diffuse_indirect_buffer = img_channels_as_nparray("SCRIPT_diffuse_indirect.png")
                     # Map range: screen the diffuse_indirect onto diffuse
-                    pixel_buffer[:3] = 1.0 - ((1.0 - (diffuse_indirect_buffer[:3] * diffuse_indirect_opacity)) * (1.0 - pixel_buffer[:3]))
+                    pixel_buffer[:3] = 1. - ((1. - (diffuse_indirect_buffer[:3] * diffuse_indirect_opacity)) * (1. - pixel_buffer[:3]))
                 if pass_ao and diffuse_premultiply_ao:
                     ao_buffer = img_channels_as_nparray("SCRIPT_ao.png")
                     # Map range: set the black point up to 1-opacity
-                    pixel_buffer[:3] = pixel_buffer[:3] * ((1.0 - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[:3]))
+                    pixel_buffer[:3] = pixel_buffer[:3] * ((1. - diffuse_premultiply_opacity) + (diffuse_premultiply_opacity * ao_buffer[:3]))
                 if specular_setup and pass_metallic:
                     metallic_buffer = img_channels_as_nparray("SCRIPT_metallic.png")
                     # Map range: metallic blocks diffuse light
-                    pixel_buffer[:3] *= (1.0 - metallic_buffer[:3])
+                    pixel_buffer[:3] *= (1. - metallic_buffer[:3])
                 if pass_emit and diffuse_emit_overlay:
                     emit_buffer = img_channels_as_nparray("SCRIPT_emission.png")
                     # Map range: screen the emission onto diffuse
-                    pixel_buffer[:3] = 1.0 - ((1.0 - emit_buffer[:3]) * (1.0 - pixel_buffer[:3]))
+                    pixel_buffer[:3] = 1. - ((1. - emit_buffer[:3]) * (1. - pixel_buffer[:3]))
                 if export_format == "GMOD":
                     vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
                 nparray_channels_to_img(platform_img("diffuse"), pixel_buffer)
@@ -1697,7 +1697,7 @@ class BakeButton(bpy.types.Operator):
                 pixel_buffer = img_channels_as_nparray("SCRIPT_smoothness.png")
                 ao_buffer = img_channels_as_nparray("SCRIPT_ao.png")
                 # Map range: set the black point up to 1-opacity
-                pixel_buffer[:3] *= ((1.0 - smoothness_premultiply_opacity) + (smoothness_premultiply_opacity * ao_buffer[:3]))
+                pixel_buffer[:3] *= ((1. - smoothness_premultiply_opacity) + (smoothness_premultiply_opacity * ao_buffer[:3]))
                 # Alpha is unused on quest, set to 1 to make sure unity doesn't keep it
                 pixel_buffer[3:] = 1.0
                 nparray_channels_to_img(platform_img("smoothness"), pixel_buffer)
@@ -1897,7 +1897,7 @@ class BakeButton(bpy.types.Operator):
             if pass_normal:
                 # Bake tangent normals
                 self.bake_pass(context, "normal", "NORMAL", set(), [obj for obj in plat_collection.all_objects if obj.type == "MESH" and not "LOD" in obj.name],
-                               (resolution, resolution), 1 if draft_render else 128, 0, [0.5, 0.5, 1.0, 1.0], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
+                               (resolution, resolution), 1 if draft_render else 128, 0, [0.5, 0.5, 1., 1.], True, pixelmargin, solidmaterialcolors=solidmaterialcolors)
                 image = bpy.data.images[platform_img("normal")]
                 image.colorspace_settings.name = 'Non-Color'
                 normal_image = bpy.data.images["SCRIPT_normal.png"]
@@ -1922,7 +1922,7 @@ class BakeButton(bpy.types.Operator):
                 if normal_invert_g:
                     pixel_buffer = list(image.pixels)
                     for idx in range(1, len(pixel_buffer), 4):
-                        pixel_buffer[idx] = 1.0 - pixel_buffer[idx]
+                        pixel_buffer[idx] = 1. - pixel_buffer[idx]
                     image.pixels[:] = pixel_buffer
 
             # Reapply keys
@@ -1979,7 +1979,7 @@ class BakeButton(bpy.types.Operator):
                     multiplytexnode = tree.nodes.new("ShaderNodeMath")
                     multiplytexnode.operation = "MULTIPLY_ADD"
                     multiplytexnode.inputs[1].default_value = diffuse_premultiply_opacity
-                    multiplytexnode.inputs[2].default_value = 1.0 - diffuse_premultiply_opacity
+                    multiplytexnode.inputs[2].default_value = 1. - diffuse_premultiply_opacity
                     multiplytexnode.location.x -= 400
                     multiplytexnode.location.y += 700
                     if pass_metallic and metallic_pack_ao:
@@ -2048,7 +2048,7 @@ class BakeButton(bpy.types.Operator):
                 self.genericize_bsdfs([obj for obj in plat_collection.all_objects if obj.type == "MESH"],
                                       {"Base Color": "Base Color"})
                 self.bake_pass(context, "vertex_diffuse", "DIFFUSE", {"COLOR", "VERTEX_COLORS"}, [obj for obj in plat_collection.all_objects if obj.type == "MESH"],
-                               (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.0], True, pixelmargin)
+                               (1, 1), 32, 0, [0.5, 0.5, 0.5, 1.], True, pixelmargin)
                 self.restore_bsdfs([obj for obj in plat_collection.all_objects if obj.type == "MESH"])
 
                 # TODO: If we're not baking anything else in, remove all UV maps entirely
@@ -2162,7 +2162,7 @@ class BakeButton(bpy.types.Operator):
                 if export_format == "FBX":
                     bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/" + export_group[0] + ".fbx"), check_existing=False, filter_glob='*.fbx',
                                              use_selection=True,
-                                             use_active_collection=False, global_scale=1.0, apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
+                                             use_active_collection=False, global_scale=1., apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
                                              bake_space_transform=False, object_types={'ARMATURE', 'MESH'},
                                              use_mesh_modifiers=False, use_mesh_modifiers_render=False, mesh_smooth_type='OFF', use_subsurf=False,
                                              use_mesh_edges=False, use_tspace=False, use_custom_props=False, add_leaf_bones=False, primary_bone_axis='Y',
