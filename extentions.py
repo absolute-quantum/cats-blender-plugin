@@ -294,11 +294,6 @@ def register():
             description=t("merge_any_bone_with_twist_in_the_name_useful_as_quest_does_not_support_constraints"),
             default=False
         )
-        generate_prop_bones: BoolProperty(
-            name=t("generate_prop_bones"),
-            description=t("this_option_will_detect_any_meshes_weighted_to_a_single_bone_and_create_a_prop_bone_you_can_independently_scale_to_"),
-            default=True
-        )
         metallic_alpha_pack: EnumProperty(
             name=t('Scene.bake_metallic_alpha_pack.label'),
             description=t('Scene.bake_metallic_alpha_pack.desc'),
@@ -431,8 +426,25 @@ def register():
             default=False
         )
         gmod_model_name: StringProperty(name='Gmod Model Name', default="missing no")
-        #TODO: LODs
-
+        prop_bone_handling: EnumProperty(
+            name="Prop objects",
+            description="What to do with objects marked as Props",
+            items=[
+                ("NONE", "None", "Treat as ordinary objects and bake in"),
+                ("GENERATE", "Generate Bones/Animations", "Generate prop bones and animations for toggling"),
+                ("REMOVE", "Remove", "Remove completely, for platforms with no animation support"),
+            ],
+            default="GENERATE"
+        )
+        copy_only_handling: EnumProperty(
+            name="Copy Only objects",
+            description="What to do with objects marked as Copy Only",
+            items=[
+                ("COPY", "Copy", "Copy and export, but do not bake in"),
+                ("REMOVE", "Remove", "Remove completely, for e.g. eye shells"),
+            ],
+            default="COPY"
+        )
 
     register_class(BakePlatformPropertyGroup)
 

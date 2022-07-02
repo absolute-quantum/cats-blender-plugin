@@ -1293,7 +1293,6 @@ generate_an_additional_lod_used_for_simplified_physics_interactions,"Generate an
 generate_courser_decimation_levels_for_efficient_rendering,"Generate courser decimation levels for efficient rendering."
 generate_lods,"Generate LODs"
 generate_physics_model,"Generate Physics Model"
-generate_prop_bones,"Generate Prop Bones"
 generate_the_twistbones_on_the_upper_half_of_the_bone_usually_used_for_upper_legs,"Generate the twistbones on the upper half of the bone. Usually used for upper legs."
 generate_upperhalf,"Generate Upperhalf"
 gmod_model_name,"Gmod Model Name"

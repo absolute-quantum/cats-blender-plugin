@@ -152,7 +152,8 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         item.export_format = "FBX"
         item.image_export_format = "PNG"
         item.translate_bone_names = "NONE"
-        item.generate_prop_bones = True
+        item.prop_bone_handling = "GENERATE"
+        item.copy_only_handling = "REMOVE"
         # Diffuse vertex color bake? Only if there's already no texture inputs!
         if not any([node.inputs["Base Color"].is_linked for node in bsdf_nodes]):
             item.diffuse_vertex_colors = True
@@ -172,6 +173,8 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         item.export_format = "DAE"
         item.image_export_format = "PNG"
         item.translate_bone_names = "SECONDLIFE"
+        item.prop_bone_handling = "REMOVE"
+        item.copy_only_handling = "COPY"
         if context.scene.bake_pass_emit:
             item.diffuse_alpha_pack = "EMITMASK"
         item.specular_setup = context.scene.bake_pass_diffuse and context.scene.bake_pass_metallic
@@ -187,7 +190,8 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         item.image_export_format = "TGA"
         item.translate_bone_names = "VALVE"
         item.gmod_model_name = "Missing No"
-        item.generate_prop_bones = False
+        item.prop_bone_handling = "REMOVE"
+        item.copy_only_handling = "REMOVE"
         if not use_phong:
             if context.scene.bake_pass_normal:
                 item.normal_alpha_pack = "SPECULAR"
@@ -307,6 +311,38 @@ class BakePresetAll(bpy.types.Operator):
         return {'FINISHED'}
 
 @register_wrap
+class BakeAddCopyOnly(bpy.types.Operator):
+    bl_idname = 'cats_bake.add_copyonly'
+    bl_label = "Set CopyOnly"
+    bl_description = "Only copy the selected meshes, make no attempt to bake them."
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.view_layer.objects.selected and any(obj.type == "MESH" for obj in context.view_layer.objects.selected)
+
+    def execute(self, context):
+        for obj in get_objects(context.view_layer.objects.selected):
+            obj['bakeCopyOnly'] = True
+        return {'FINISHED'}
+
+@register_wrap
+class BakeRemoveCopyOnly(bpy.types.Operator):
+    bl_idname = 'cats_bake.remove_copyonly'
+    bl_label = "Unset CopyOnly"
+    bl_description = "Default behavior, bake in if visible"
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.view_layer.objects.selected and any(obj.type == "MESH" for obj in context.view_layer.objects.selected)
+
+    def execute(self, context):
+        for obj in get_objects(context.view_layer.objects.selected):
+            obj['bakeCopyOnly'] = False
+        return {'FINISHED'}
+
+@register_wrap
 class BakeAddProp(bpy.types.Operator):
     bl_idname = 'cats_bake.add_prop'
     bl_label = "Set Prop"
@@ -325,7 +361,7 @@ class BakeAddProp(bpy.types.Operator):
 @register_wrap
 class BakeRemoveProp(bpy.types.Operator):
     bl_idname = 'cats_bake.remove_prop'
-    bl_label = "Set Not Prop"
+    bl_label = "Unset Prop"
     bl_description = "Disables prop bone generation for the selected meshes."
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -673,7 +709,7 @@ class BakeButton(bpy.types.Operator):
         collection.objects.link(copy)
         return copy
 
-    def tree_copy(self, ob, parent, collection, ignore_hidden, levels=3, view_layer=None):
+    def tree_copy(self, ob, parent, collection, ignore_hidden, levels=3, view_layer=None, filter_func=None):
         def recurse(ob, parent, depth, ignore_hidden, view_layer=None):
             if depth > levels:
                 return
@@ -682,6 +718,8 @@ class BakeButton(bpy.types.Operator):
             if view_layer and ob.name not in view_layer.objects:
                 return
             if not ob.data:
+                return
+            if filter_func and not filter_func(ob):
                 return
             copy = self.copy_ob(ob, parent, collection)
 
@@ -835,11 +873,20 @@ class BakeButton(bpy.types.Operator):
         collection = bpy.data.collections.new("CATS Bake")
         context.scene.collection.children.link(collection)
 
-        # Tree-copy all meshes
-        arm_copy = self.tree_copy(armature, None, collection, ignore_hidden, view_layer=context.view_layer)
+        # Make note of the original object name, then name it a placeholder
+        orig_largest_obj_name = sorted(get_objects(armature.children, {"MESH"},
+                                                   filter_func=lambda obj:
+                                                   not Common.is_hidden(obj)),
+            key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
+            reverse=True)[0].name
+
+        # Tree-copy all meshes - exclude copy-only, and copy them just before export
+        arm_copy = self.tree_copy(armature, None, collection, ignore_hidden,
+                                  view_layer=context.view_layer, filter_func=not_copyonly)
 
         # Create an extra scene to render in
         orig_scene_name = context.scene.name
+        orig_view_layer = context.view_layer
         bpy.ops.scene.new(type="EMPTY") # copy keeps existing settings
         context.scene.name = "CATS Scene"
         orig_scene = bpy.data.scenes[orig_scene_name]
@@ -870,8 +917,8 @@ class BakeButton(bpy.types.Operator):
 
         # Copy default values from the largest diffuse BSDF
         objs_size_descending = sorted(get_objects(collection.all_objects, {"MESH"}),
-                                      key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
-                                      reverse=True)
+            key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
+            reverse=True)
 
         def first_bsdf(objs):
             for obj in get_objects(objs_size_descending):
@@ -883,8 +930,8 @@ class BakeButton(bpy.types.Operator):
                                 return node
 
         bsdf_original = first_bsdf(objs_size_descending)
-        orig_largest_obj_name = objs_size_descending[0].name
         cats_uv_layers = set()
+        bpy.data.objects[orig_largest_obj_name].name = "CATS Body"
 
         #first fix broken colors by adding their textures, then add the results of color only materials/solid textures to see if they need special UV treatment.
         #To detect and fix UV's for materials that are solid and don't need entire uv maps if all the textures are consistent throught. Also adds solid textures for BSDF's with default values but no texture
@@ -1494,7 +1541,8 @@ class BakeButton(bpy.types.Operator):
                 target_dir = steam_library_path+"steamapps/common/GarrysMod/garrysmod/addons/"+sanitized_model_name+"_playermodel/materials/models/"+sanitized_model_name
                 os.makedirs(target_dir,0o777,True)
 
-            generate_prop_bones = platform.generate_prop_bones
+            copy_only_handling = platform.copy_only_handling
+            prop_bone_handling = platform.prop_bone_handling
 
             if not os.path.exists(bpy.path.abspath("//CATS Bake/" + platform_name + "/")):
                 os.mkdir(bpy.path.abspath("//CATS Bake/" + platform_name + "/"))
@@ -1580,7 +1628,7 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.cats_manual.merge_weights()
                 Common.switch("OBJECT")
 
-            if generate_prop_bones:
+            if prop_bone_handling == "GENERATE":
                 # Find any mesh that's weighted to a single bone, duplicate and rename that bone, move mesh's vertex group to the new bone
                 all_path_strings = dict()
                 for obj in get_objects(plat_collection.objects, {"MESH"}):
@@ -2117,17 +2165,24 @@ class BakeButton(bpy.types.Operator):
                 for idx, _ in enumerate(lods):
                     export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
 
+            saved_armature_name = ""
+            saved_obj_name = ""
             # Create groups to export... One for the main, one each for each LOD
-            for obj in get_objects(plat_collection.all_objects):
+            for obj in plat_collection.all_objects:
                 if not "LOD" in obj.name:
                     if obj.type == "MESH" and obj.name != "Static":
+                        # blender refuses to clobber names sometimes, so we do this
+                        saved_obj_name = obj.name
                         obj.name = orig_largest_obj_name
                     elif obj.type == "ARMATURE":
+                        saved_armature_name = obj.name
                         obj.name = orig_armature_name
+
 
             # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
             #exception is Gmod because Gmod needs textures to be applied to work - @989onan
             if export_format not in ["GMOD", "DAE"]:
+                saved_armature_name = obj.name
                 for obj in get_objects(plat_collection.all_objects):
                     if obj.type == 'MESH':
                         context.view_layer.objects.active = obj
@@ -2149,6 +2204,28 @@ class BakeButton(bpy.types.Operator):
                     if obj.type == 'MESH':
                         obj.data.transform(armature.matrix_basis.inverted(), shape_keys=True)
                         obj.data.update()
+
+            # Copy all of our 'copyonly' objects here, and add them to the export group
+            if copy_only_handling == "COPY":
+                for obj in get_objects(armature.children, {"MESH"}, filter_func=lambda obj:
+                                       not not_copyonly(obj)):
+                    orig_obj_name = obj.name
+                    new_obj = self.tree_copy(obj, plat_arm_copy, plat_collection, ignore_hidden,
+                                              view_layer=orig_view_layer)
+                    if not new_obj:
+                        continue
+                    obj.name = obj.name + ".orig"
+                    new_obj.name = orig_obj_name
+                    new_obj.parent = plat_arm_copy
+
+                    # Make sure all armature modifiers target the new armature
+                    for modifier in new_obj.modifiers:
+                        if modifier.type == "ARMATURE":
+                            modifier.object = plat_arm_copy
+                        if modifier.type == "MULTIRES":
+                            modifier.render_levels = modifier.total_levels
+
+                    export_groups[0][1].append(new_obj.name)
 
             for export_group in export_groups:
                 bpy.ops.object.select_all(action='DESELECT')
@@ -2184,7 +2261,8 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.cats_importer.export_gmod_addon(steam_library_path=steam_library_path,gmod_model_name=gmod_model_name,platform_name=platform_name)
             # Reapply cats material
             if export_format != "GMOD":
-                for obj in get_objects(plat_collection.all_objects, {"MESH"}):
+                for obj in get_objects(plat_collection.all_objects, {"MESH"},
+                                       filter_func=not_copyonly):
                     if len(obj.material_slots) == 0:
                         obj.data.materials.append(mat)
                     else:
@@ -2212,6 +2290,14 @@ class BakeButton(bpy.types.Operator):
                     if "ArmatureLOD" + str(idx + 1) in plat_collection.objects:
                         plat_collection.objects["ArmatureLOD" + str(idx + 1)].location.z += armature.dimensions.z * (1 + idx)
 
+            # Swap back original names
+            for obj in get_objects(plat_collection.objects, filter_type={"MESH"}):
+                if obj.name + ".orig" in bpy.data.objects:
+                    bpy.data.objects[obj.name + ".orig"].name = obj.name
+
+            bpy.data.objects[orig_largest_obj_name].name = saved_obj_name
+            bpy.data.objects[orig_armature_name].name = saved_armature_name
+
         # Delete our duplicate scene and the platform-agnostic CATS Bake
         bpy.ops.scene.delete()
 
@@ -2226,7 +2312,7 @@ class BakeButton(bpy.types.Operator):
 
         # return original meshes names
         armature.name = orig_armature_name
-        objs_size_descending[0] = orig_largest_obj_name
+        bpy.data.objects["CATS Body"].name = orig_largest_obj_name
 
         # set viewport to material preview
         for area in context.screen.areas:
