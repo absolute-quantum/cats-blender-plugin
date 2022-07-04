@@ -1595,7 +1595,10 @@ class BakeButton(bpy.types.Operator):
             orig_scene.collection.children.link(plat_collection)
 
             # Tree-copy all meshes
-            plat_arm_copy = self.tree_copy(arm_copy, None, plat_collection, ignore_hidden)
+            plat_arm_copy = self.tree_copy(arm_copy, None, plat_collection, ignore_hidden,
+                                           filter_func=lambda obj:
+                                           (prop_bone_handling != "REMOVE") or
+                                           'generatePropBones' not in obj or not obj['generatePropBones'])
 
             # Create an extra scene to render in
             bpy.ops.scene.new(type="EMPTY") # copy keeps existing settings
