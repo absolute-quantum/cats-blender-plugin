@@ -241,48 +241,49 @@ class AutoDecimateButton(bpy.types.Operator):
                 except KeyError:
                     newweights[v_index] = weight
 
-        s_weights = dict()
+        if context.scene.decimation_animation_weighting_include_shapekeys:
+            s_weights = dict()
 
-        # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
-        # but shape keys contain every vert (not just the ones they impact)
-        # For shape key in shape keys:
-        if mesh.data.shape_keys is not None:
-            for key_block in mesh.data.shape_keys.key_blocks[1:]:
-                # use same ignore list as the ones we clean up with cleanup_shapekeys
-                if key_block.name[-4:] == "_old" or key_block.name[-11:] == " - Reverted" or key_block.name[-5:] == "_bake":
-                    continue
-                basis = mesh.data.shape_keys.key_blocks[0]
-                s_weights[key_block.name] = dict()
+            # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
+            # but shape keys contain every vert (not just the ones they impact)
+            # For shape key in shape keys:
+            if mesh.data.shape_keys is not None:
+                for key_block in mesh.data.shape_keys.key_blocks[1:]:
+                    # use same ignore list as the ones we clean up with cleanup_shapekeys
+                    if key_block.name[-4:] == "_old" or key_block.name[-11:] == " - Reverted" or key_block.name[-5:] == "_bake":
+                        continue
+                    basis = mesh.data.shape_keys.key_blocks[0]
+                    s_weights[key_block.name] = dict()
 
-                for idx, vert in enumerate(key_block.data):
-                    s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
-                                                                    math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
-                                                                    math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
+                    for idx, vert in enumerate(key_block.data):
+                        s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
+                                                                        math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
+                                                                        math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
 
-        # normalize min/max vert movement
-        s_normalizedweights = dict()
-        for keyname, weighting in s_weights.items():
-            m_min = math.inf
-            m_max = 0
-            for _, weight in weighting.items():
-                m_min = min(m_min, weight)
-                m_max = max(m_max, weight)
+            # normalize min/max vert movement
+            s_normalizedweights = dict()
+            for keyname, weighting in s_weights.items():
+                m_min = math.inf
+                m_max = 0
+                for _, weight in weighting.items():
+                    m_min = min(m_min, weight)
+                    m_max = max(m_max, weight)
 
-            if keyname not in s_normalizedweights:
-                s_normalizedweights[keyname] = dict()
-            for v_index, weight in weighting.items():
-                try:
-                    s_normalizedweights[keyname][v_index] = (weight - m_min) / (m_max - m_min)
-                except ZeroDivisionError:
-                    s_normalizedweights[keyname][v_index] = weight
+                if keyname not in s_normalizedweights:
+                    s_normalizedweights[keyname] = dict()
+                for v_index, weight in weighting.items():
+                    try:
+                        s_normalizedweights[keyname][v_index] = (weight - m_min) / (m_max - m_min)
+                    except ZeroDivisionError:
+                        s_normalizedweights[keyname][v_index] = weight
 
-        # find max normalized movement over all shape keys
-        for pair, weighting in s_normalizedweights.items():
-            for v_index, weight in weighting.items():
-                try:
-                    newweights[v_index] = max(newweights[v_index], weight)
-                except KeyError:
-                    newweights[v_index] = weight
+            # find max normalized movement over all shape keys
+            for pair, weighting in s_normalizedweights.items():
+                for v_index, weight in weighting.items():
+                    try:
+                        newweights[v_index] = max(newweights[v_index], weight)
+                    except KeyError:
+                        newweights[v_index] = weight
 
         return newweights
 

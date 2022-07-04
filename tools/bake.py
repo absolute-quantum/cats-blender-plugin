@@ -116,6 +116,7 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         context.scene.bake_uv_overlap_correction = 'UNMIRROR'
 
     # Unfortunately, though it's technically faster, this makes things ineligible as Quest fallback avatars. So leave it off.
+    # For Quest Medium, they already can't be fallbacks, so whatever.
     item.optimize_static = platform == "DESKTOP"
 
     # Quest has no use for twistbones
@@ -256,6 +257,11 @@ class BakePresetQuest(bpy.types.Operator):
         itemgood = context.scene.bake_platforms.add()
         itemgood.name = "VRChat Quest Good"
         autodetect_passes(self, context, itemgood, 10000, "QUEST")
+        itemmedium = context.scene.bake_platforms.add()
+        itemmedium.name = "VRChat Quest Medium"
+        autodetect_passes(self, context, itemmedium, 15000, "QUEST")
+        itemmedium.optimize_static_shapekeys = True
+        context.scene.bake_animation_weighting = True
         return {'FINISHED'}
 
 @register_wrap
@@ -760,8 +766,10 @@ class BakeButton(bpy.types.Operator):
         decimation_remove_doubles = context.scene.decimation_remove_doubles
         decimation_animation_weighting = context.scene.decimation_animation_weighting
         decimation_animation_weighting_factor = context.scene.decimation_animation_weighting_factor
+        decimation_animation_weighting_include_shapekeys = context.scene.decimation_animation_weighting_include_shapekeys
         context.scene.decimation_animation_weighting = context.scene.bake_animation_weighting
         context.scene.decimation_animation_weighting_factor = context.scene.bake_animation_weighting_factor
+        context.scene.decimation_animation_weighting_include_shapekeys = context.scene.bake_animation_weighting_include_shapekeys
 
         context.scene.decimation_mode = "SMART"
         context.scene.decimate_fingers = False
@@ -773,6 +781,7 @@ class BakeButton(bpy.types.Operator):
         context.scene.decimation_remove_doubles = decimation_remove_doubles
         context.scene.decimation_animation_weighting = decimation_animation_weighting
         context.scene.decimation_animation_weighting_factor = decimation_animation_weighting_factor
+        context.scene.decimation_animation_weighting_include_shapekeys = decimation_animation_weighting_include_shapekeys
 
         # Change render engine back to original
         context.scene.render.engine = render_engine_tmp

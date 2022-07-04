@@ -231,6 +231,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         row = col.row(align=True)
                         row.separator()
                         row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)
+                        row = col.row(align=True)
+                        row.separator()
+                        row.prop(context.scene, 'bake_animation_weighting_include_shapekeys', expand=True)
                 row = col.row(align=True)
                 row.prop(item, 'use_physmodel', expand=True)
                 if item.use_physmodel:

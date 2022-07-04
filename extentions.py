@@ -199,7 +199,7 @@ def register():
     Scene.decimation_animation_weighting = BoolProperty(
         name=t('Scene.decimation_animation_weighting.label'),
         description=t('Scene.decimation_animation_weighting.desc'),
-        default=False
+        default=True
     )
 
     Scene.decimation_animation_weighting_factor = FloatProperty(
@@ -213,6 +213,11 @@ def register():
         subtype='FACTOR'
     )
 
+    Scene.decimation_animation_weighting_include_shapekeys = BoolProperty(
+        name="Include Shapekeys",
+        description="Factor shapekeys into animation weighting. Disable if your model has large body shapekeys.",
+        default=False
+    )
 
     # Bake
     Scene.bake_use_draft_quality = BoolProperty(
@@ -224,7 +229,7 @@ def register():
     Scene.bake_animation_weighting = BoolProperty(
         name=t('Scene.decimation_animation_weighting.label'),
         description=t('Scene.decimation_animation_weighting.desc'),
-        default=False
+        default=True
     )
 
     Scene.bake_animation_weighting_factor = FloatProperty(
@@ -236,6 +241,12 @@ def register():
         step=0.05,
         precision=2,
         subtype='FACTOR'
+    )
+
+    Scene.bake_animation_weighting_include_shapekeys = BoolProperty(
+        name="Include Shapekeys",
+        description="Factor shapekeys into animation weighting. Disable if your model has large body shapekeys.",
+        default=False
     )
 
     class BakePlatformPropertyGroup(PropertyGroup):
