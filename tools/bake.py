@@ -930,8 +930,8 @@ class BakeButton(bpy.types.Operator):
                         if uvmap.active_render:
                             child.data.uv_layers.active = uvmap
                             active_uv = uvmap
-                    reproject_anyway = False#(len(child.data.uv_layers) == 0 or
-                                        #all(set(loop.uv[:]).issubset({0,1}) for loop in active_uv.data))
+                    reproject_anyway = len(child.data.uv_layers) == 0 or
+                                       all(set(loop.uv[:]).issubset({0,1}) for loop in active_uv.data))
                     bpy.ops.mesh.uv_texture_add()
                     child.data.uv_layers[-1].name = 'CATS UV'
                     cats_uv_layers.append('CATS UV')
