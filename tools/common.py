@@ -2153,7 +2153,7 @@ def fix_twist_bones(mesh, bones_to_delete):
                 twistname = bone_type + 'Twist1_' + suffix
                 bones_to_delete.append(twistname)
                 mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.75) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
+                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.75, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
 
             if vg_twist2:
                 twistname = bone_type + 'Twist2_' + suffix
