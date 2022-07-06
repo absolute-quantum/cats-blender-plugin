@@ -32,6 +32,7 @@ import webbrowser
 import addon_utils
 import shutil
 import bpy_extras.io_utils
+from collections import OrderedDict
 import numpy as np
 import subprocess
 from mathutils import Matrix
@@ -417,6 +418,9 @@ class ModelsPopup(bpy.types.Operator):
         row = col.row(align=True)
         row.scale_y = 1.3
         row.operator(ImportVRM.bl_idname)
+        row = col.row(align=True)
+        row.scale_y = 1.3
+        row.operator(ImportMMDAnimation.bl_idname)
 
 
 @register_wrap
@@ -448,6 +452,124 @@ class ImportMMD(bpy.types.Operator):
             bpy.ops.mmd_tools.import_model('INVOKE_DEFAULT')
 
         return {'FINISHED'}
+
+
+
+
+
+@register_wrap
+class ImportMMDAnimation(bpy.types.Operator,bpy_extras.io_utils.ImportHelper):
+    bl_idname = 'cats_importer.import_mmd_animation'
+    bl_label = "MMD Animation"
+    bl_description = "Import a MMD Animation (.vmd)"
+    bl_options = {'INTERNAL'}
+    
+    filter_glob: bpy.props.StringProperty(
+        default="*.vmd",
+        options={'HIDDEN'}
+    )
+    
+    @classmethod
+    def poll(cls, context):
+        if Common.get_armature() is None:
+            return False
+        return True
+
+    def execute(self, context):
+        Common.remove_unused_objects()
+
+        # Make sure that the first layer is visible
+        if hasattr(context.scene, 'layers'):
+            context.scene.layers[0] = True
+
+        if not mmd_tools_installed:
+            bpy.ops.cats_importer.enable_mmd('INVOKE_DEFAULT')
+            return {'FINISHED'}
+
+        #try:
+        filename, extension = os.path.splitext(self.filepath)
+
+        if(extension == ".vmd"):
+            
+            #A dictionary to change the current model to MMD importer compatable temporarily
+            bonedict = {
+                "Chest":"UpperBody",
+                "Neck":"Neck",
+                "Head":"Head",
+                "Hips":"Center",
+                "Spine":"LowerBody",
+                
+                "Right wrist":"Wrist_R",
+                "Right elbow":"Elbow_R",
+                "Right arm":"Arm_R",
+                "Right shoulder":"Shoulder_R",
+                "Right leg":"Leg_R",
+                "Right knee":"Knee_R",
+                "Right ankle":"Ankle_R",
+                "Right toe":"Toe_R",
+                
+                
+                "Left wrist":"Wrist_L",
+                "Left elbow":"Elbow_L",
+                "Left arm":"Arm_L",
+                "Left shoulder":"Shoulder_L",
+                "Left leg":"Leg_L",
+                "Left knee":"Knee_L",
+                "Left ankle":"Ankle_L",
+                "Left toe":"Toe_L"
+                
+            }
+            
+            armature = Common.set_default_stage()
+            new_armature = armature.copy()
+            bpy.context.collection.objects.link(new_armature)
+            new_armature.data = armature.data.copy()
+            new_armature.name = "Cats MMD Rig Proxy"
+            new_armature.animation_data_clear()
+            
+            Common.unselect_all()
+            Common.set_active(new_armature)
+            Common.switch('OBJECT')
+            
+            for bone in new_armature.data.bones:
+                if bone.name in bonedict:
+                    bone.name = bonedict[bone.name]
+            
+            bpy.ops.mmd_tools.import_vmd(filepath=self.filepath,bone_mapper='RENAMED_BONES',use_underscore=True, dictionary='INTERNAL')
+            
+            #create animation for original if there isn't one.
+            if armature.animation_data == None :
+                armature.animation_data_create()
+            if armature.animation_data.action == None:
+                armature.animation_data.action = bpy.data.actions.new("MMD Animation")
+                
+                
+            #create animation for new if there isn't one.
+            if new_armature.animation_data == None :
+                new_armature.animation_data_create()
+            if new_armature.animation_data.action == None:
+                new_armature.animation_data.action = bpy.data.actions.new("EMPTY_SOURCE")
+            
+            active_obj = new_armature
+            ad = armature.animation_data
+            
+            #iterate through bones and translate them back, therefore blender API will change the animation to be correct.
+            reverse_bonedict = {v: k for k, v in bonedict.items()}
+            for bone in new_armature.data.bones:
+                if bone.name in reverse_bonedict:
+                    bone.name = reverse_bonedict[bone.name] #reverse name of bone from value in dictionary back to a key to change the animation.
+            
+            #assign animation back to original rig.
+            armature.animation_data.action = new_armature.animation_data.action
+            
+            #make sure our new armature is selected
+            Common.unselect_all()
+            Common.switch('OBJECT')
+            Common.unselect_all()
+            Common.set_active(new_armature)
+            
+            #delete active object which is armature.
+            bpy.ops.object.delete(use_global=True, confirm=False)
 
 
 @register_wrap
