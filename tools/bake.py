@@ -1731,8 +1731,7 @@ class BakeButton(bpy.types.Operator):
             # Blend diffuse and AO to create Quest Diffuse (if selected)
             # Overlay emission onto diffuse, dodge metallic if specular
             if pass_diffuse:
-                image = bpy.data.images[platform_img("diffuse")]
-                pixel_buffer = img_channels_as_nparray("SCRIPT_diffuse.png")
+                pixel_buffer = img_channels_as_nparray(platform_img("diffuse"))
                 if diffuse_indirect:
                     diffuse_indirect_buffer = img_channels_as_nparray("SCRIPT_diffuse_indirect.png")
                     # Map range: screen the diffuse_indirect onto diffuse
@@ -1750,9 +1749,8 @@ class BakeButton(bpy.types.Operator):
                     # Map range: screen the emission onto diffuse
                     pixel_buffer[:3] = 1. - ((1. - emit_buffer[:3]) * (1. - pixel_buffer[:3]))
                 if export_format == "GMOD":
-                    vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(image.name).replace(".tga","")+"\""
+                    vmtfile += "\n    \"$basetexture\" \"models/"+sanitized_model_name+"/"+sanitized_name(platform_img("diffuse")).replace(".tga","")+"\""
                 nparray_channels_to_img(platform_img("diffuse"), pixel_buffer)
-                image.save()
 
             # Preultiply AO into smoothness if selected, to avoid shine in dark areas
             if pass_smoothness and pass_ao and smoothness_premultiply_ao:
@@ -1789,9 +1787,8 @@ class BakeButton(bpy.types.Operator):
                     # sanitized_model_name+"/"+baked_emissive_image.name.replace(".tga","")+"\""
                     if export_format == "GMOD":
                         vmtfile += "\n    \"$selfillum\" 1"
-                alpha_channel = (alpha_buffer[0] * 0.299) + (alpha_buffer[1] * 0.587) + (alpha_buffer[2] * 0.114)
-                nparray_channels_to_img(platform_img("diffuse"),
-                                        np.vstack((pixel_buffer[:3], alpha_channel)))
+                pixel_buffer[3] = (alpha_buffer[0] * 0.299) + (alpha_buffer[1] * 0.587) + (alpha_buffer[2] * 0.114)
+                nparray_channels_to_img(platform_img("diffuse"), pixel_buffer)
 
             # Metallic is sampled from 'r', while ao is 'g', smoothness is 'a'
             if pass_metallic:
@@ -2193,7 +2190,7 @@ class BakeButton(bpy.types.Operator):
 
             # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
             #exception is Gmod because Gmod needs textures to be applied to work - @989onan
-            if export_format not in ["GMOD", "DAE"]:
+            if export_format not in ["GMOD"]:
                 saved_armature_name = obj.name
                 for obj in get_objects(plat_collection.all_objects):
                     if obj.type == 'MESH':
@@ -2202,8 +2199,9 @@ class BakeButton(bpy.types.Operator):
                             obj.active_material_index = 0  # select the top material
                             bpy.ops.object.material_slot_remove()
 
-                # Re-apply the old armature transforms on the new-armature, then inverse-apply to the data of the armature
-                # This prevents animations designed for the old avatar from breaking
+            # Re-apply the old armature transforms on the new-armature, then inverse-apply to the data of the armature
+            # This prevents animations designed for the old avatar from breaking
+            if export_format not in ["GMOD", "DAE"]:
                 plat_arm_copy.scale = armature.scale
                 plat_arm_copy.rotation_euler = armature.rotation_euler
 
