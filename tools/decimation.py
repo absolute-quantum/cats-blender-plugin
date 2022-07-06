@@ -189,16 +189,28 @@ class AutoDecimateButton(bpy.types.Operator):
 
         return {'FINISHED'}
 
-    def get_animation_weighting(self, context, mesh):
+    def get_animation_weighting(self, context, mesh, armature):
+        print("Performing animation weighting for {}".format(mesh.name))
         # Weight by multiplied bone weights for every pair of bones.
         # This is O(n*m^2) for n verts and m bones, generally runs relatively quickly.
+        # bones_with_children = {bone.parent.name for bone in armature.data.bones if bone.parent}
+        valid_vgroup_idxes = {group.index for group in mesh.vertex_groups
+                              if group.name in armature.data.bones and group.name in armature.data.bones}
         weights = dict()
         for vertex in mesh.data.vertices:
             v_weights = [group.weight for group in vertex.groups]
             v_mults = []
-            for idx1, w1 in enumerate(vertex.groups):
-                for idx2, w2 in enumerate(vertex.groups):
-                    if idx1 != idx2:
+            for w1 in vertex.groups:
+                if w1.weight < 0.001:
+                    continue
+                if w1.group not in valid_vgroup_idxes:
+                    continue
+                for w2 in vertex.groups:
+                    if w2.weight < 0.001:
+                        continue
+                    if w2.group not in valid_vgroup_idxes:
+                        continue
+                    if w2.group != w1.group:
                         # Weight [vgroup * vgroup] for index = <mult>
                         if (w1.group, w2.group) not in weights:
                             weights[(w1.group, w2.group)] = dict()
@@ -229,45 +241,49 @@ class AutoDecimateButton(bpy.types.Operator):
                 except KeyError:
                     newweights[v_index] = weight
 
-        s_weights = dict()
+        if context.scene.decimation_animation_weighting_include_shapekeys:
+            s_weights = dict()
 
-        # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
-        # but shape keys contain every vert (not just the ones they impact)
-        # For shape key in shape keys:
-        if mesh.data.shape_keys is not None:
-            for key_block in mesh.data.shape_keys.key_blocks[1:]:
-                basis = mesh.data.shape_keys.key_blocks[0]
-                s_weights[key_block.name] = dict()
+            # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
+            # but shape keys contain every vert (not just the ones they impact)
+            # For shape key in shape keys:
+            if mesh.data.shape_keys is not None:
+                for key_block in mesh.data.shape_keys.key_blocks[1:]:
+                    # use same ignore list as the ones we clean up with cleanup_shapekeys
+                    if key_block.name[-4:] == "_old" or key_block.name[-11:] == " - Reverted" or key_block.name[-5:] == "_bake":
+                        continue
+                    basis = mesh.data.shape_keys.key_blocks[0]
+                    s_weights[key_block.name] = dict()
 
-                for idx, vert in enumerate(key_block.data):
-                    s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
-                                                                    math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
-                                                                    math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
+                    for idx, vert in enumerate(key_block.data):
+                        s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
+                                                                        math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
+                                                                        math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
 
-        # normalize min/max vert movement
-        s_normalizedweights = dict()
-        for keyname, weighting in s_weights.items():
-            m_min = math.inf
-            m_max = 0
-            for _, weight in weighting.items():
-                m_min = min(m_min, weight)
-                m_max = max(m_max, weight)
+            # normalize min/max vert movement
+            s_normalizedweights = dict()
+            for keyname, weighting in s_weights.items():
+                m_min = math.inf
+                m_max = 0
+                for _, weight in weighting.items():
+                    m_min = min(m_min, weight)
+                    m_max = max(m_max, weight)
 
-            if keyname not in s_normalizedweights:
-                s_normalizedweights[keyname] = dict()
-            for v_index, weight in weighting.items():
-                try:
-                    s_normalizedweights[keyname][v_index] = (weight - m_min) / (m_max - m_min)
-                except ZeroDivisionError:
-                    s_normalizedweights[keyname][v_index] = weight
+                if keyname not in s_normalizedweights:
+                    s_normalizedweights[keyname] = dict()
+                for v_index, weight in weighting.items():
+                    try:
+                        s_normalizedweights[keyname][v_index] = (weight - m_min) / (m_max - m_min)
+                    except ZeroDivisionError:
+                        s_normalizedweights[keyname][v_index] = weight
 
-        # find max normalized movement over all shape keys
-        for pair, weighting in s_normalizedweights.items():
-            for v_index, weight in weighting.items():
-                try:
-                    newweights[v_index] = max(newweights[v_index], weight)
-                except KeyError:
-                    newweights[v_index] = weight
+            # find max normalized movement over all shape keys
+            for pair, weighting in s_normalizedweights.items():
+                for v_index, weight in weighting.items():
+                    try:
+                        newweights[v_index] = max(newweights[v_index], weight)
+                    except KeyError:
+                        newweights[v_index] = weight
 
         return newweights
 
@@ -282,7 +298,6 @@ class AutoDecimateButton(bpy.types.Operator):
         half_decimation = context.scene.decimation_mode == 'HALF'
         safe_decimation = context.scene.decimation_mode == 'SAFE'
         smart_decimation = context.scene.decimation_mode == 'SMART'
-        loop_decimation = context.scene.decimation_mode == "LOOP"
         save_fingers = context.scene.decimate_fingers
         animation_weighting = context.scene.decimation_animation_weighting
         animation_weighting_factor = context.scene.decimation_animation_weighting_factor
@@ -291,26 +306,21 @@ class AutoDecimateButton(bpy.types.Operator):
         current_tris_count = 0
         tris_count = 0
 
+        armature = Common.get_armature(armature_name=self.armature_name)
         meshes_obj = Common.get_meshes_objects(armature_name=self.armature_name)
 
         for mesh in meshes_obj:
             Common.set_active(mesh)
-            if not loop_decimation:
-                Common.switch('EDIT')
-                bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
-                Common.switch('OBJECT')
-            else:
-                Common.switch('EDIT')
-                bpy.ops.mesh.select_all(action="SELECT")
-                bpy.ops.mesh.tris_convert_to_quads()
-                Common.switch('OBJECT')
+            Common.switch('EDIT')
+            bpy.ops.mesh.quads_convert_to_tris(quad_method='BEAUTY', ngon_method='BEAUTY')
+            Common.switch('OBJECT')
             if context.scene.decimation_remove_doubles:
                 Common.remove_doubles(mesh, 0.00001, save_shapes=True)
             current_tris_count += Common.get_tricount(mesh.data.polygons)
 
-        if animation_weighting and not loop_decimation:
+        if animation_weighting:
             for mesh in meshes_obj:
-                newweights = self.get_animation_weighting(context, mesh)
+                newweights = self.get_animation_weighting(context, mesh, armature)
 
                 # TODO: ignore shape keys which move very little?
                 context.view_layer.objects.active = mesh
@@ -367,9 +377,6 @@ class AutoDecimateButton(bpy.types.Operator):
                         bpy.ops.object.shape_key_add(from_mix=False)
                         mesh.active_shape_key.name = "CATS Basis"
                         mesh.active_shape_key_index = 0
-                    meshes.append((mesh, tris))
-                    tris_count += tris
-                elif loop_decimation:
                     meshes.append((mesh, tris))
                     tris_count += tris
                 elif custom_decimation:
@@ -448,22 +455,25 @@ class AutoDecimateButton(bpy.types.Operator):
             print(decimation)
 
             # Apply decimation mod
-            if not smart_decimation and not loop_decimation:
+            if not smart_decimation:
                 # Original
                 mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
                 mod.ratio = decimation
                 mod.use_collapse_triangulate = True
                 if animation_weighting:
                     mod.vertex_group = "CATS Animation"
+                    # TODO: this should not work for non-smart decimation
                     mod.vertex_group_factor = animation_weighting_factor
                     mod.invert_vertex_group = True
                 Common.apply_modifier(mod)
-            elif not loop_decimation:
+            else:
                 # Smart
                 Common.switch('EDIT')
                 bpy.ops.mesh.select_mode(type="VERT")
                 bpy.ops.mesh.select_all(action="SELECT")
                 # TODO: Fix decimation calculation when pinning seams
+                # TODO: Add ability to explicitly include/exclude vertices from decimation. So you
+                # can manually preserve loops
                 if self.preserve_seams:
                     bpy.ops.mesh.select_all(action="DESELECT")
                     bpy.ops.uv.seams_from_islands()
@@ -477,114 +487,29 @@ class AutoDecimateButton(bpy.types.Operator):
 
                     Common.switch('EDIT')
                     bpy.ops.mesh.select_all(action="INVERT")
+                if animation_weighting:
+                    bpy.ops.mesh.select_all(action="DESELECT")
+                    Common.switch('OBJECT')
+                    me = mesh_obj.data
+                    vgroup_idx = mesh_obj.vertex_groups["CATS Animation"].index
+                    weight_dict = {vertex.index: group.weight for vertex in me.vertices for group in vertex.groups if group.group == vgroup_idx}
+                    # We de-select a_w_f worth of polygons, so the remaining decimation must be done in decimation/(1-a_w_f) polys
+                    selected_verts = sorted([v for v in me.vertices], key=lambda v: 0 - weight_dict.get(v.index, 0.0))[0:int(decimation * tris * animation_weighting_factor)]
+                    for v in selected_verts:
+                        v.select = True
 
-                bpy.ops.mesh.decimate(ratio=decimation,
-                                      use_vertex_group=animation_weighting,
-                                      vertex_group_factor=animation_weighting_factor,
-                                      invert_vertex_group=True,
+                    Common.switch('EDIT')
+                    bpy.ops.mesh.select_all(action="INVERT")
+
+
+                effective_ratio = decimation if not animation_weighting else (decimation * (1-animation_weighting_factor))
+                bpy.ops.mesh.decimate(ratio=effective_ratio,
+                                      #use_vertex_group=animation_weighting,
+                                      #vertex_group_factor=animation_weighting_factor,
+                                      #invert_vertex_group=True,
                                       use_symmetry=True,
                                       symmetry_axis='X')
                 Common.switch('OBJECT')
-            else:
-                # Loop
-                depsgraph = context.evaluated_depsgraph_get()
-
-                # create a dict() of vert cordinate to index
-                mod = mesh_obj.modifiers.new("Decimate", 'DECIMATE')
-                mod.use_symmetry = True
-                mod.symmetry_axis = 'X'
-                # Dark magic... encode the vert index into the 'red' channel of a vertex color map
-                # col is a float in range [0.0, 1.0], so we can encode the idx into the lower 23b
-                mesh_obj.data.vertex_colors.new(name='CATS Vert', do_init=False)
-                for vertex in mesh_obj.data.vertices:
-                    mesh_obj.data.vertex_colors['CATS Vert'].data[vertex.index].color[0] = struct.unpack('f', struct.pack('I', vertex.index))[0]
-
-                # decimate N times, n/N% each time, and observe the result to get a list of leftover verts (the ones decimated)
-                iterations = 100
-                weights = dict()
-
-                for i in range(1, iterations):
-                    mod.ratio = (i/iterations)
-                    bpy.ops.object.mode_set(mode="EDIT")
-                    bpy.ops.object.mode_set(mode="OBJECT")
-                    mesh_decimated = mesh_obj.evaluated_get(depsgraph)
-                    for vert in mesh_decimated.data.vertices:
-                        idx = struct.unpack('I', struct.pack('f',
-                                mesh_obj.data.vertex_colors['CATS Vert'].data[vert.index].color[0]))[0]
-                        if not idx in weights:
-                            weights[idx] = 1 - (i/iterations)
-                for i in range(0,len(mesh_obj.data.vertices)):
-                    if not i in weights:
-                        weights[i] = 0.0
-
-                print(weights)
-                print(len(weights))
-
-                if animation_weighting:
-                    newweights = self.get_animation_weighting(context, mesh_obj)
-                    for idx, _ in newweights.items():
-                        weights[idx] = max(weights[idx], newweights[idx])
-
-                all_edges = set(edge.index for edge in mesh_obj.data.edges[:])
-                edge_loops = []
-
-                # pop one edge out, select it, select edge loop, remove all selected edges from the set of all edges and add to the edge loops
-                # ugly ugly, and very slow (though scalable)
-                while(len(all_edges) > 0):
-                    bpy.ops.object.mode_set(mode="EDIT")
-                    bpy.ops.mesh.select_mode(type='EDGE')
-                    bpy.ops.mesh.select_all(action="DESELECT")
-                    bpy.ops.object.mode_set(mode="OBJECT")
-                    selected_edge = next(edge for edge in all_edges)
-                    mesh_obj.data.edges[selected_edge].select = True
-                    bpy.ops.object.mode_set(mode="OBJECT")
-                    bpy.ops.object.mode_set(mode="EDIT")
-                    bpy.ops.mesh.loop_multi_select(ring=False)
-                    bpy.ops.object.mode_set(mode="OBJECT")
-                    edge_loop = set(edge.index for edge in mesh_obj.data.edges if edge.select)
-                    edge_loop.add(selected_edge)
-                    edge_loops.append(edge_loop)
-                    print("Found edge loop: {}".format(edge_loop))
-                    all_edges.difference_update(edge_loop)
-                # from the new decimation vertex group, create a dict() of loops to sum of shape-importance (loops which contain texture edges put at the end)
-                # TODO: order needs to be usual -> texture boundaries -> mesh boundaries
-                bpy.ops.object.mode_set(mode="EDIT")
-                bpy.ops.uv.seams_from_islands()
-                bpy.ops.object.mode_set(mode="OBJECT")
-                edge_loops_weighted = [l for l in sorted([
-                                         (max(weights[mesh_obj.data.edges[edge].vertices[0]] +
-                                              weights[mesh_obj.data.edges[edge].vertices[1]]
-                                              for edge in edge_loop),
-                                         edge_loop)
-                                         for edge_loop in edge_loops
-                                         if not any(mesh_obj.data.edges[edge].use_seam for edge in edge_loop)
-                                      ], key=lambda v: v[0])]
-                edge_loops_weighted+= [l for l in sorted([
-                                         (max(weights[mesh_obj.data.edges[edge].vertices[0]] +
-                                              weights[mesh_obj.data.edges[edge].vertices[1]]
-                                              for edge in edge_loop),
-                                         edge_loop)
-                                         for edge_loop in edge_loops
-                                         if any(mesh_obj.data.edges[edge].use_seam for edge in edge_loop)
-                                      ], key=lambda v: v[0])]
-                # TODO: Meshes bordering the edge should be lowest decimatability
-                print(edge_loops_weighted)
-
-                # dissolve from the bottom up until target decimation is met
-                selected_edges = set()
-                while len(selected_edges) <= ((1-decimation) * Common.get_tricount(mesh_obj)/2):
-                    loop = edge_loops_weighted.pop()
-                    selected_edges.update(loop[1])
-                bpy.ops.object.mode_set(mode="EDIT")
-                bpy.ops.mesh.select_mode(type='EDGE')
-                bpy.ops.mesh.select_all(action="DESELECT")
-                bpy.ops.object.mode_set(mode="OBJECT")
-                for edge in selected_edges:
-                    mesh_obj.data.edges[edge].select = True
-                bpy.ops.object.mode_set(mode="EDIT")
-                bpy.ops.mesh.delete_edgeloop()
-                bpy.ops.mesh.select_all(action="DESELECT")
-                bpy.ops.object.mode_set(mode="OBJECT")
 
             tris_after = len(mesh_obj.data.polygons)
             print(tris)

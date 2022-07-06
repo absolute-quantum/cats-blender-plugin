@@ -20,11 +20,13 @@ def check_for_imscale():
 
     draw_imscale_ui = None
 
-    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
-        import immersive_scaler.immersive_scaler as imscale
+    # Check if using immersive scaler shipped with cats
+    if find_spec("imscale") and find_spec("imscale.immersive_scaler"):
+        import imscale.immersive_scaler as imscale
         draw_imscale_ui = imscale.ui.draw_ui
         return
 
+    # Check if it's present in blender anyway (installed separately)
     for mod in addon_utils.modules():
         if mod.bl_info['name'] == "Immersive Scaler":
             # print(mod.__name__, mod.bl_info['version'])
@@ -47,7 +49,7 @@ def check_for_imscale():
 
 @register_wrap
 class ScalingPanel(ToolPanel, bpy.types.Panel):
-    bl_idname = 'VIEW3D_PT_scale_v1'
+    bl_idname = 'VIEW3D_PT_scale_v2'
     bl_label = t('ScalingPanel.label')
     bl_options = {'DEFAULT_CLOSED'}
 

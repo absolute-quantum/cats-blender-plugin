@@ -2,48 +2,39 @@
 import re
 import os
 
-from mmd_tools_local import register_wrap
+import bpy
 from mmd_tools_local.bpyutils import SceneOp
 
 ## 指定したオブジェクトのみを選択状態かつアクティブにする
 def selectAObject(obj):
-    import bpy
     try:
         bpy.ops.object.mode_set(mode='OBJECT')
     except Exception:
         pass
     bpy.ops.object.select_all(action='DESELECT')
     SceneOp(bpy.context).active_object = obj
-    SceneOp(bpy.context).select_object(obj)
 
 ## 現在のモードを指定したオブジェクトのEdit Modeに変更する
 def enterEditMode(obj):
-    import bpy
     selectAObject(obj)
     if obj.mode != 'EDIT':
         bpy.ops.object.mode_set(mode='EDIT')
 
 def setParentToBone(obj, parent, bone_name):
-    import bpy
-    selectAObject(parent)
-    bpy.ops.object.mode_set(mode='POSE')
     selectAObject(obj)
     SceneOp(bpy.context).active_object = parent
-    parent.select = True
     bpy.ops.object.mode_set(mode='POSE')
     parent.data.bones.active = parent.data.bones[bone_name]
     bpy.ops.object.parent_set(type='BONE', xmirror=False, keep_transform=False)
     bpy.ops.object.mode_set(mode='OBJECT')
 
 def selectSingleBone(context, armature, bone_name, reset_pose=False):
-    import bpy
     try:
         bpy.ops.object.mode_set(mode='OBJECT')
     except:
         pass
     for i in context.selected_objects:
         i.select = False
-    SceneOp(context).select_object(armature)
     SceneOp(context).active_object = armature
     bpy.ops.object.mode_set(mode='POSE')
     if reset_pose:
@@ -72,6 +63,19 @@ def convertNameToLR(name, use_underscore=False):
         name = m.group(1) + m.group(2) + delimiter + 'R'
     return name
 
+__CONVERT_L_TO_NAME_REGEXP = re.compile(r'(?P<lr>(?P<separator>[._])[lL])(?P<after>($|(?P=separator)))')
+__CONVERT_R_TO_NAME_REGEXP = re.compile(r'(?P<lr>(?P<separator>[._])[rR])(?P<after>($|(?P=separator)))')
+def convertLRToName(name):
+    match = __CONVERT_L_TO_NAME_REGEXP.search(name)
+    if match:
+        return f"左{name[0:match.start()]}{match['after']}{name[match.end():]}"
+
+    match = __CONVERT_R_TO_NAME_REGEXP.search(name)
+    if match:
+        return f"右{name[0:match.start()]}{match['after']}{name[match.end():]}"
+
+    return name
+
 ## src_vertex_groupのWeightをdest_vertex_groupにaddする
 def mergeVertexGroup(meshObj, src_vertex_group_name, dest_vertex_group_name):
     mesh = meshObj.data
@@ -88,7 +92,6 @@ def mergeVertexGroup(meshObj, src_vertex_group_name, dest_vertex_group_name):
 
 def __getCustomNormalKeeper(mesh):
     if hasattr(mesh, 'has_custom_normals') and mesh.use_auto_smooth:
-        import bpy
         class _CustomNormalKeeper:
             def __init__(self, mesh):
                 mesh.calc_normals_split()
@@ -117,8 +120,8 @@ def __getCustomNormalKeeper(mesh):
 
 def separateByMaterials(meshObj):
     if len(meshObj.data.materials) < 2:
+        selectAObject(meshObj)
         return
-    import bpy
     custom_normal_keeper = __getCustomNormalKeeper(meshObj.data)
     matrix_parent_inverse = meshObj.matrix_parent_inverse.copy()
     prev_parent = meshObj.parent
@@ -141,7 +144,6 @@ def separateByMaterials(meshObj):
         bpy.data.objects.remove(dummy_parent)
 
 def clearUnusedMeshes():
-    import bpy
     meshes_to_delete = []
     for mesh in bpy.data.meshes:
         if mesh.users == 0:
@@ -154,14 +156,8 @@ def clearUnusedMeshes():
 ## Boneのカスタムプロパティにname_jが存在する場合、name_jの値を
 # それ以外の場合は通常のbone名をキーとしたpose_boneへの辞書を作成
 def makePmxBoneMap(armObj):
-    boneMap = {}
-    for i in armObj.pose.bones:
-        # Maintain backward compatibility with mmd_tools v0.4.x or older.
-        name = i.get('mmd_bone_name_j', i.get('name_j', None))
-        if name is None:
-            name = i.mmd_bone.name_j or i.name
-        boneMap[name] = i
-    return boneMap
+    # Maintain backward compatibility with mmd_tools v0.4.x or older.
+    return {(i.mmd_bone.name_j or i.get('mmd_bone_name_j', i.get('name_j', i.name))):i for i in armObj.pose.bones}
 
 def uniqueName(name, used_names):
     if name not in used_names:
@@ -248,10 +244,8 @@ class ItemOp:
         items.move(index_end, index)
         return items[index], index
 
-@register_wrap
 class ItemMoveOp:
-    import bpy
-    type = bpy.props.EnumProperty(
+    type: bpy.props.EnumProperty(
         name='Type',
         description='Move type',
         items = [

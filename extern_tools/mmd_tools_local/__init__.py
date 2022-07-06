@@ -3,156 +3,110 @@
 bl_info = {
     "name": "mmd_tools",
     "author": "sugiany",
-    "version": (0, 7, 2),
-    "blender": (2, 80, 0),
-    "location": "View3D > Tool Shelf > MMD Tools Panel",
-    "description": "Utility tools for MMD model editing. (powroupi's forked version)",
+    "version": (2, 3, 0),
+    "blender": (2, 83, 0),
+    "location": "View3D > Sidebar > MMD Tools Panel",
+    "description": "Utility tools for MMD model editing. (UuuNyaa's forked version)",
     "warning": "",
-    "doc_url": "https://github.com/powroupi/blender_mmd_tools/wiki",
-    "wiki_url": "https://github.com/powroupi/blender_mmd_tools/wiki",
-    "tracker_url": "https://github.com/powroupi/blender_mmd_tools/issues",
+    "doc_url": "https://mmd-blender.fandom.com/wiki/MMD_Tools",
+    "wiki_url": "https://mmd-blender.fandom.com/wiki/MMD_Tools",
+    "tracker_url": "https://github.com/UuuNyaa/blender_mmd_tools/issues",
     "category": "Object",
-    }
+}
 
-__bl_classes = []
-def register_wrap(cls):
-    #print('%3d'%len(__bl_classes), cls)
-    #assert(cls not in __bl_classes)
-    if __make_annotations:
-        bl_props = {k:v for k, v in cls.__dict__.items() if isinstance(v, __bpy_property)}
-        if bl_props:
-            if '__annotations__' not in cls.__dict__:
-                setattr(cls, '__annotations__', {})
-            annotations = cls.__dict__['__annotations__']
-            for k, v in bl_props.items():
-                #print('   -', k, v)
-                #assert(v.__class__.__name__ == '_PropertyDeferred' or getattr(v[0], '__module__', None) == 'bpy.props' and isinstance(v[1], dict))
-                annotations[k] = v
-                delattr(cls, k)
-    if hasattr(cls, 'bl_rna'):
-        __bl_classes.append(cls)
-    return cls
-
-if "bpy" in locals():
-    if bpy.app.version < (2, 71, 0):
-        import imp as importlib
-    else:
-        import importlib
-    importlib.reload(properties)
-    importlib.reload(operators)
-    importlib.reload(panels)
-else:
-    import bpy
-    import logging
-    from bpy.app.handlers import persistent
-
-    __make_annotations = (bpy.app.version >= (2, 80, 0))
-    __bpy_property = (bpy.props._PropertyDeferred if hasattr(bpy.props, '_PropertyDeferred') else tuple)
-    from . import properties
-    from . import operators
-    from . import panels
-
-if bpy.app.version < (2, 80, 0):
-    bl_info['blender'] = (2, 70, 0)
+import bpy
+import logging
 
 logging.basicConfig(format='%(message)s', level=logging.DEBUG)
 
+from mmd_tools_local import auto_load
+auto_load.init()
 
-@register_wrap
-class MMDToolsAddonPreferences(bpy.types.AddonPreferences):
-    # this must match the addon name, use '__package__'
-    # when defining this in a submodule of a python package.
-    bl_idname = __name__
-
-    shared_toon_folder = bpy.props.StringProperty(
-            name="Shared Toon Texture Folder",
-            description=('Directory path to toon textures. This is normally the ' +
-                         '"Data" directory within of your MikuMikuDance directory'),
-            subtype='DIR_PATH',
-            )
-    base_texture_folder = bpy.props.StringProperty(
-            name='Base Texture Folder',
-            description='Path for textures shared between models',
-            subtype='DIR_PATH',
-            )
-    dictionary_folder = bpy.props.StringProperty(
-            name='Dictionary Folder',
-            description='Path for searching csv dictionaries',
-            subtype='DIR_PATH',
-            default=__file__[:-11],
-            )
-    non_collision_threshold = bpy.props.FloatProperty(
-            name='Non-Collision Threshold',
-            description='The distance threshold for creating extra non-collision constraints while building physics',
-            min=0,
-            soft_max=10,
-            default=1.5,
-            )
-
-    def draw(self, context):
-        layout = self.layout
-        layout.prop(self, "shared_toon_folder")
-        layout.prop(self, "base_texture_folder")
-        layout.prop(self, "dictionary_folder")
-        layout.prop(self, "non_collision_threshold")
+from mmd_tools_local import operators
+from mmd_tools_local import properties
 
 
-def menu_func_import(self, context):
+def menu_func_import(self, _context):
     self.layout.operator(operators.fileio.ImportPmx.bl_idname, text='MikuMikuDance Model (.pmd, .pmx)', icon='OUTLINER_OB_ARMATURE')
     self.layout.operator(operators.fileio.ImportVmd.bl_idname, text='MikuMikuDance Motion (.vmd)', icon='ANIM')
     self.layout.operator(operators.fileio.ImportVpd.bl_idname, text='Vocaloid Pose Data (.vpd)', icon='POSE_HLT')
 
-def menu_func_export(self, context):
+def menu_func_export(self, _context):
     self.layout.operator(operators.fileio.ExportPmx.bl_idname, text='MikuMikuDance Model (.pmx)', icon='OUTLINER_OB_ARMATURE')
     self.layout.operator(operators.fileio.ExportVmd.bl_idname, text='MikuMikuDance Motion (.vmd)', icon='ANIM')
     self.layout.operator(operators.fileio.ExportVpd.bl_idname, text='Vocaloid Pose Data (.vpd)', icon='POSE_HLT')
 
-def menu_func_armature(self, context):
+def menu_func_armature(self, _context):
     self.layout.operator(operators.model.CreateMMDModelRoot.bl_idname, text='Create MMD Model', icon='OUTLINER_OB_ARMATURE')
 
-def header_view3d_pose_draw(self, context):
-    obj = context.active_object
-    if obj and obj.type == 'ARMATURE' and obj.mode == 'POSE':
-        self.layout.operator('mmd_tools.flip_pose', text='', icon='ARROW_LEFTRIGHT')
+def menu_view3d_object(self, _context):
+    self.layout.separator()
+    self.layout.operator('mmd_tools.clean_shape_keys')
 
-@persistent
-def load_handler(dummy):
+def menu_view3d_select_object(self, _context):
+    self.layout.separator()
+    self.layout.operator_context = 'EXEC_DEFAULT'
+    operator = self.layout.operator('mmd_tools.rigid_body_select', text='Select MMD Rigid Body')
+    operator.properties = set(['collision_group_number', 'shape'])
+
+def menu_view3d_pose_context_menu(self, _context):
+    self.layout.operator('mmd_tools.flip_pose', text='MMD Flip Pose', icon='ARROW_LEFTRIGHT')
+
+def panel_view3d_shading(self, context):
+    if context.space_data.shading.type != 'SOLID':
+        return
+
+    col = self.layout.column(align=True)
+    col.label(text='MMD Shading Presets')
+    row = col.row(align=True)
+    row.operator('mmd_tools.set_glsl_shading', text='GLSL')
+    row.operator('mmd_tools.set_shadeless_glsl_shading', text='Shadeless')
+    row = col.row(align=True)
+    row.operator('mmd_tools.reset_shading', text='Reset')
+
+@bpy.app.handlers.persistent
+def load_handler(_dummy):
     from mmd_tools_local.core.sdef import FnSDEF
     FnSDEF.clear_cache()
     FnSDEF.register_driver_function()
 
+    from mmd_tools_local.core.material import MigrationFnMaterial
+    MigrationFnMaterial.update_mmd_shader()
+
 def register():
-    for cls in __bl_classes:
-        bpy.utils.register_class(cls)
-    print(__name__, 'registed %d classes'%len(__bl_classes))
+    auto_load.register()
     properties.register()
     bpy.app.handlers.load_post.append(load_handler)
-    bpy.types.VIEW3D_HT_header.append(header_view3d_pose_draw)
-    if bpy.app.version < (2, 80, 0):
-        bpy.types.INFO_MT_file_import.append(menu_func_import)
-        bpy.types.INFO_MT_file_export.append(menu_func_export)
-        bpy.types.INFO_MT_armature_add.append(menu_func_armature)
-        #bpy.context.user_preferences.system.use_scripts_auto_execute = True
-    else:
-        bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
-        bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
-        bpy.types.VIEW3D_MT_armature_add.append(menu_func_armature)
-        #bpy.context.preferences.filepaths.use_scripts_auto_execute = True
+    bpy.types.VIEW3D_MT_object.append(menu_view3d_object)
+    bpy.types.VIEW3D_MT_select_object.append(menu_view3d_select_object)
+    bpy.types.VIEW3D_MT_pose.append(menu_view3d_pose_context_menu)
+    bpy.types.VIEW3D_MT_pose_context_menu.append(menu_view3d_pose_context_menu)
+    bpy.types.VIEW3D_PT_shading.append(panel_view3d_shading)
+    bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
+    bpy.types.VIEW3D_MT_armature_add.append(menu_func_armature)
+
+    from mmd_tools_local.m17n import translation_dict
+    bpy.app.translations.register(bl_info['name'], translation_dict)
+
+    operators.addon_updater.register_updater(bl_info, __file__)
 
 def unregister():
-    if bpy.app.version < (2, 80, 0):
-        bpy.types.INFO_MT_file_import.remove(menu_func_import)
-        bpy.types.INFO_MT_file_export.remove(menu_func_export)
-        bpy.types.INFO_MT_armature_add.remove(menu_func_armature)
-    else:
-        bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
-        bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
-        bpy.types.VIEW3D_MT_armature_add.remove(menu_func_armature)
-    bpy.types.VIEW3D_HT_header.remove(header_view3d_pose_draw)
+    operators.addon_updater.unregister_updater()
+
+    bpy.app.translations.unregister(bl_info['name'])
+
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
+    bpy.types.VIEW3D_MT_armature_add.remove(menu_func_armature)
+    bpy.types.VIEW3D_PT_shading.remove(panel_view3d_shading)
+    bpy.types.VIEW3D_MT_pose_context_menu.remove(menu_view3d_pose_context_menu)
+    bpy.types.VIEW3D_MT_pose.remove(menu_view3d_pose_context_menu)
+    bpy.types.VIEW3D_MT_select_object.remove(menu_view3d_select_object)
+    bpy.types.VIEW3D_MT_object.remove(menu_view3d_object)
     bpy.app.handlers.load_post.remove(load_handler)
     properties.unregister()
-    for cls in reversed(__bl_classes):
-        bpy.utils.unregister_class(cls)
+    auto_load.unregister()
 
 if __name__ == "__main__":
     register()

@@ -409,7 +409,7 @@ class InstallShotariya(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5.3)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 5.3))
 
     def check(self, context):
         # Important for changing options
@@ -472,7 +472,7 @@ class ShotariyaButton(bpy.types.Operator):
     bl_options = {'INTERNAL'}
 
     def execute(self, context):
-        webbrowser.open(t('ShotariyaButton.URL'))
+        webbrowser.open('https://github.com/Grim-es/material-combiner-addon/releases/latest')
 
         self.report({'INFO'}, 'ShotariyaButton.success')
         return {'FINISHED'}

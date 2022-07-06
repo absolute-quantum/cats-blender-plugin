@@ -41,6 +41,20 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
+        if bpy.app.version > (3, 2, 99):
+            col.separator()
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text=t('ArmaturePanel.warn.newBlender1'), icon='ERROR')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text=t('ArmaturePanel.warn.newBlender2'), icon='BLANK1')
+            row = col.row(align=True)
+            row.scale_y = 0.75
+            row.label(text=t('ArmaturePanel.warn.newBlender3'), icon='BLANK1')
+            col.separator()
+            col.separator()
+
         # if addon_updater_ops.updater.update_ready:  # TODO
         #     col.separator()
         #     row = col.row(align=True)
@@ -202,7 +216,7 @@ class ModelSettings(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3.25)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 3.25))
 
     def check(self, context):
         # Important for changing options

@@ -28,6 +28,7 @@ import bpy
 import operator
 import math
 import webbrowser
+import numpy as np
 from mathutils.geometry import intersect_point_line
 
 from . import common as Common
@@ -35,6 +36,83 @@ from . import eyetracking as Eyetracking
 from .common import version_2_79_or_older
 from .register import register_wrap
 from .translations import t
+
+# Bone names from https://github.com/triazo/immersive_scaler/
+bone_names = {
+    "right_shoulder": ["rightshoulder", "shoulderr", "rshoulder"],
+    "right_arm": ["rightarm", "armr", "rarm", "upperarmr", "rightupperarm", "uparmr", "ruparm"],
+    "right_elbow": ["rightelbow", "elbowr", "relbow", "lowerarmr", "rightlowerarm", "lowerarmr", "lowarmr", "rlowarm"],
+    "right_wrist": ["rightwrist", "wristr", "rwrist", "handr", "righthand", "rhand"],
+
+    #hand l fingers
+    "pinkie_1_r": ["littlefinger1r"],
+    "pinkie_2_r": ["littlefinger2r"],
+    "pinkie_3_r": ["littlefinger3r"],
+
+    "ring_1_r": ["ringfinger1r"],
+    "ring_2_r": ["ringfinger2r"],
+    "ring_3_r": ["ringfinger3r"],
+
+    "middle_1_r": ["middlefinger1r"],
+    "middle_2_r": ["middlefinger2r"],
+    "middle_3_r": ["middlefinger3r"],
+
+    "index_1_r": ["indexfinger1r"],
+    "index_2_r": ["indexfinger2r"],
+    "index_3_r": ["indexfinger3r"],
+
+    "thumb_1_r": ['thumb0r'],
+    "thumb_2_r": ['thumb1r'],
+    "thumb_3_r": ['thumb2r'],
+
+    "right_leg": ["rightleg", "legr", "rleg", "upperlegr", "thighr","rightupperleg", "uplegr", "rupleg"],
+    "right_knee": ["rightknee", "kneer", "rknee", "lowerlegr", "calfr", "rightlowerleg", "lowlegr", "rlowleg"],
+    "right_ankle": ["rightankle", "ankler", "rankle", "rightfoot", "footr", "rightfoot", "rightfeet", "feetright", "rfeet", "feetr"],
+    "right_toe": ["righttoe", "toeright", "toer", "rtoe", "toesr", "rtoes"],
+
+    "left_shoulder": ["leftshoulder", "shoulderl", "rshoulder"],
+    "left_arm": ["leftarm", "arml", "rarm", "upperarml", "leftupperarm", "uparml", "luparm"],
+    "left_elbow": ["leftelbow", "elbowl", "relbow", "lowerarml", "leftlowerarm", "lowerarml", "lowarml", "llowarm"],
+    "left_wrist": ["leftwrist", "wristl", "rwrist", "handl", "lefthand", "lhand"],
+
+    #hand l fingers
+    "pinkie_1_l": ["littlefinger1l"],
+    "pinkie_2_l": ["littlefinger2l"],
+    "pinkie_3_l": ["littlefinger3l"],
+
+    "ring_1_l": ["ringfinger1l"],
+    "ring_2_l": ["ringfinger2l"],
+    "ring_3_l": ["ringfinger3l"],
+
+    "middle_1_l": ["middlefinger1l"],
+    "middle_2_l": ["middlefinger2l"],
+    "middle_3_l": ["middlefinger3l"],
+
+    "index_1_l": ["indexfinger1l"],
+    "index_2_l": ["indexfinger2l"],
+    "index_3_l": ["indexfinger3l"],
+
+    "thumb_1_l": ['thumb0l'],
+    "thumb_2_l": ['thumb1l'],
+    "thumb_3_l": ['thumb2l'],
+
+    "left_leg": ["leftleg", "legl", "rleg", "upperlegl", "thighl","leftupperleg", "uplegl", "lupleg"],
+    "left_knee": ["leftknee", "kneel", "rknee", "lowerlegl", "calfl", "leftlowerleg", 'lowlegl', 'llowleg'],
+    "left_ankle": ["leftankle", "anklel", "rankle", "leftfoot", "footl", "leftfoot", "leftfeet", "feetleft", "lfeet", "feetl"],
+    "left_toe": ["lefttoe", "toeleft", "toel", "ltoe", "toesl", "ltoes"],
+
+    'hips': ["pelvis", "hips"],
+    'spine': ["torso", "spine"],
+    'chest': ["chest"],
+    'upper_chest': ["upperchest"],
+    'neck': ["neck"],
+    'head': ["head"],
+    'left_eye': ["eyeleft", "lefteye", "eyel", "leye"],
+    'right_eye': ["eyeright", "righteye", "eyer", "reye"],
+}
+
+def simplify_bonename(n):
+    return n.lower().translate(dict.fromkeys(map(ord, u" _.")))
 
 @register_wrap
 class TwistTutorialButton(bpy.types.Operator):
@@ -283,7 +361,7 @@ class PoseNamePopup(bpy.types.Operator):
     def invoke(self, context, event):
         context.scene.pose_to_shapekey_name = 'Pose'
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4))
 
     def check(self, context):
         # Important for changing options
@@ -313,103 +391,41 @@ class PoseToRest(bpy.types.Operator):
     def execute(self, context):
         saved_data = Common.SavedData()
 
-        armature = Common.get_armature()
-        Common.set_active(armature)
-        scales = {}
-
-        # Find out how much each bone is scaled
-        for bone in armature.pose.bones:
-            scale_x = bone.scale[0]
-            scale_y = bone.scale[1]
-            scale_z = bone.scale[2]
-
-            if armature.data.bones.get(bone.name).use_inherit_scale:
-                def check_parent(child, scale_x_tmp, scale_y_tmp, scale_z_tmp):
-                    if child.parent:
-                        parent = child.parent
-                        scale_x_tmp *= parent.scale[0]
-                        scale_y_tmp *= parent.scale[1]
-                        scale_z_tmp *= parent.scale[2]
-
-                        if armature.data.bones.get(parent.name).use_inherit_scale:
-                            scale_x_tmp, scale_y_tmp, scale_z_tmp = check_parent(parent, scale_x_tmp, scale_y_tmp,
-                                                                                 scale_z_tmp)
-
-                    return scale_x_tmp, scale_y_tmp, scale_z_tmp
-
-                scale_x, scale_y, scale_z = check_parent(bone, scale_x, scale_y, scale_z)
-
-            if scale_x == scale_y == scale_z != 1:
-                scales[bone.name] = scale_x
-
-        pose_to_shapekey('PoseToRest')
-
-        bpy.ops.pose.armature_apply()
-
-        for mesh in Common.get_meshes_objects():
-            Common.unselect_all()
-            Common.set_active(mesh)
-
-            mesh.active_shape_key_index = len(mesh.data.shape_keys.key_blocks) - 1
-            bpy.ops.cats_shapekey.shape_key_to_basis()
-
-            # Remove old basis shape key from shape_key_to_basis operation
-            for index in range(len(mesh.data.shape_keys.key_blocks) - 1, 0, -1):
-                mesh.active_shape_key_index = index
-                if 'PoseToRest - Reverted' in mesh.active_shape_key.name:
-                    bpy.ops.object.shape_key_remove(all=False)
-
-            mesh.active_shape_key_index = 0
-
-            # Find out which bones scale which shapekeys and set it to the highest scale
-            print('\nSCALED BONES:')
-            shapekey_scales = {}
-            for bone_name, scale in scales.items():
-                print(bone_name, scale)
-                vg = mesh.vertex_groups.get(bone_name)
-                if not vg:
-                    continue
-
-                for vertex in mesh.data.vertices:
-                    for g in vertex.groups:
-                        if g.group == vg.index and g.weight == 1:
-                            for i, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                                if i == 0:
-                                    continue
-
-                                if shapekey.data[vertex.index].co != mesh.data.shape_keys.key_blocks[0].data[
-                                    vertex.index].co:
-                                    if shapekey.name in shapekey_scales:
-                                        shapekey_scales[shapekey.name] = max(shapekey_scales[shapekey.name], scale)
-                                    else:
-                                        shapekey_scales[shapekey.name] = scale
-                            break
-
-            # Mix every shape keys with itself with the slider set to the new scale
-            for index in range(0, len(mesh.data.shape_keys.key_blocks)):
-                mesh.active_shape_key_index = index
-                shapekey = mesh.active_shape_key
-                if shapekey.name in shapekey_scales:
-                    print('Fixed shapekey', shapekey.name)
-                    shapekey.slider_max = min(shapekey_scales[shapekey.name], 10)
-                    shapekey.value = shapekey.slider_max
-                    mesh.shape_key_add(name=shapekey.name + '-New', from_mix=True)
-                    shapekey.value = 0
-
-            # Remove all the old shapekeys
-            for index in reversed(range(0, len(mesh.data.shape_keys.key_blocks))):
-                mesh.active_shape_key_index = index
-                shapekey = mesh.active_shape_key
-                if shapekey.name in shapekey_scales:
-                    bpy.ops.object.shape_key_remove(all=False)
-
-            # Fix the names of the new shapekeys
-            for index, shapekey in enumerate(mesh.data.shape_keys.key_blocks):
-                if shapekey and shapekey.name.endswith('-New'):
-                    shapekey.name = shapekey.name[:-4]
-
-            # Repair important shape key order
-            Common.repair_shapekey_order(mesh.name)
+        armature_obj = Common.get_armature()
+        mesh_objs = Common.get_meshes_objects(armature_name=armature_obj.name)
+        for mesh_obj in mesh_objs:
+            me = mesh_obj.data
+            if me:
+                if me.shape_keys and me.shape_keys.key_blocks:
+                    # The mesh has shape keys
+                    shape_keys = me.shape_keys
+                    key_blocks = shape_keys.key_blocks
+                    if len(key_blocks) == 1:
+                        # The mesh only has a basis shape key, so we can remove it and then add it back afterwards
+                        # Get basis shape key
+                        basis_shape_key = key_blocks[0]
+                        # Save the name of the basis shape key
+                        original_basis_name = basis_shape_key.name
+                        # Remove the basis shape key so there are now no shape keys
+                        mesh_obj.shape_key_remove(basis_shape_key)
+                        # Apply the pose to the mesh
+                        PoseToRest.apply_armature_to_mesh_with_no_shape_keys(armature_obj, mesh_obj)
+                        # Add the basis shape key back with the same name as before
+                        mesh_obj.shape_key_add(name=original_basis_name)
+                    else:
+                        # Apply the pose to the mesh, taking into account the shape keys
+                        PoseToRest.apply_armature_to_mesh_with_shape_keys(armature_obj, mesh_obj, context.scene)
+                else:
+                    # The mesh doesn't have shape keys, so we can easily apply the pose to the mesh
+                    PoseToRest.apply_armature_to_mesh_with_no_shape_keys(armature_obj, mesh_obj)
+        # Once the mesh and shape keys (if any) have been applied, the last step is to apply the current pose of the
+        # bones as the new rest pose.
+        #
+        # From the poll function, armature_obj must already be in pose mode, but it's possible it might not be the
+        # active object e.g., the user has multiple armatures opened in pose mode, but a different armature is currently
+        # active. We can use an operator override to tell the operator to treat armature_obj as if it's the active
+        # object even if it's not, skipping the need to actually set armature_obj as the active object.
+        bpy.ops.pose.armature_apply({'active_object': armature_obj})
 
         # Stop pose mode after operation
         bpy.ops.cats_manual.stop_pose_mode()
@@ -418,6 +434,122 @@ class PoseToRest(bpy.types.Operator):
 
         self.report({'INFO'}, t('PoseToRest.success'))
         return {'FINISHED'}
+
+    @staticmethod
+    def apply_armature_to_mesh_with_no_shape_keys(armature_obj, mesh_obj):
+        armature_mod = mesh_obj.modifiers.new('PoseToRest', 'ARMATURE')
+        armature_mod.object = armature_obj
+        # In the unlikely case that there was already a modifier with the same name as the new modifier, the new
+        # modifier will have ended up with a different name
+        mod_name = armature_mod.name
+        # Context override to let us run the modifier operators on mesh_obj, even if it's not the active object
+        context_override = {'object': mesh_obj}
+        # Moving the modifier to the first index will prevent an Info message about the applied modifier not being
+        # first and potentially having unexpected results.
+        if bpy.app.version >= (2, 90, 0):
+            # modifier_move_to_index was added in Blender 2.90
+            bpy.ops.object.modifier_move_to_index(context_override, modifier=mod_name, index=0)
+        else:
+            # The newly created modifier will be at the bottom of the list
+            armature_mod_index = len(mesh_obj.modifiers) - 1
+            # Move the modifier up until it's at the top of the list
+            for _ in range(armature_mod_index):
+                bpy.ops.object.modifier_move_up(context_override, modifier=mod_name)
+        bpy.ops.object.modifier_apply(context_override, modifier=mod_name)
+
+    @staticmethod
+    def apply_armature_to_mesh_with_shape_keys(armature_obj, mesh_obj, scene):
+        # The active shape key will be changed, so save the current active index, so it can be restored afterwards
+        old_active_shape_key_index = mesh_obj.active_shape_key_index
+
+        # Shape key pinning shows the active shape key in the viewport without blending; effectively what you see when
+        # in edit mode. Combined with an armature modifier, we can use this to figure out the correct positions for all
+        # the shape keys.
+        # Save the current value, so it can be restored afterwards.
+        old_show_only_shape_key = mesh_obj.show_only_shape_key
+        mesh_obj.show_only_shape_key = True
+
+        # Temporarily remove vertex_groups from and disable mutes on shape keys because they affect pinned shape keys
+        me = mesh_obj.data
+        shape_key_vertex_groups = []
+        shape_key_mutes = []
+        key_blocks = me.shape_keys.key_blocks
+        for shape_key in key_blocks:
+            shape_key_vertex_groups.append(shape_key.vertex_group)
+            shape_key.vertex_group = ''
+            shape_key_mutes.append(shape_key.mute)
+            shape_key.mute = False
+
+        # Temporarily disable all modifiers from showing in the viewport so that they have no effect
+        mods_to_reenable_viewport = []
+        for mod in mesh_obj.modifiers:
+            if mod.show_viewport:
+                mod.show_viewport = False
+                mods_to_reenable_viewport.append(mod)
+
+        # Temporarily add a new armature modifier
+        armature_mod = mesh_obj.modifiers.new('PoseToRest', 'ARMATURE')
+        armature_mod.object = armature_obj
+
+        # cos are xyz positions and get flattened when using the foreach_set/foreach_get functions, so the array length
+        # will be 3 times the number of vertices
+        co_length = len(me.vertices) * 3
+        # We can re-use the same array over and over
+        eval_verts_cos_array = np.empty(co_length, dtype=np.single)
+
+        if Common.version_2_79_or_older():
+            def get_eval_cos_array():
+                # Create a new mesh with modifiers and shape keys applied
+                evaluated_mesh = mesh_obj.to_mesh(scene, True, 'PREVIEW')
+
+                # Get the cos of the vertices from the evaluated mesh
+                evaluated_mesh.vertices.foreach_get('co', eval_verts_cos_array)
+                # Delete the newly created mesh
+                bpy.data.meshes.remove(evaluated_mesh)
+                return eval_verts_cos_array
+        else:
+            # depsgraph lets us evaluate objects and get their state after the effect of modifiers and shape keys
+            depsgraph = None
+            evaluated_mesh_obj = None
+
+            def get_eval_cos_array():
+                nonlocal depsgraph
+                nonlocal evaluated_mesh_obj
+                # Get the depsgraph and evaluate the mesh if we haven't done so already
+                if depsgraph is None or evaluated_mesh_obj is None:
+                    depsgraph = bpy.context.evaluated_depsgraph_get()
+                    evaluated_mesh_obj = mesh_obj.evaluated_get(depsgraph)
+                else:
+                    # If we already have the depsgraph and evaluated mesh, in order for the change to the active shape
+                    # key to take effect, the depsgraph has to be updated
+                    depsgraph.update()
+                # Get the cos of the vertices from the evaluated mesh
+                evaluated_mesh_obj.data.vertices.foreach_get('co', eval_verts_cos_array)
+                return eval_verts_cos_array
+
+        for i, shape_key in enumerate(key_blocks):
+            # As shape key pinning is enabled, when we change the active shape key, it will change the state of the mesh
+            mesh_obj.active_shape_key_index = i
+            # The cos of the vertices of the evaluated mesh include the effect of the pinned shape key and all the
+            # modifiers (in this case, only the armature modifier we added since all the other modifiers are disabled in
+            # the viewport).
+            # This combination gives the same effect as if we'd applied the armature modifier to a mesh with the same
+            # shape as the active shape key, so we can simply set the shape key to the evaluated mesh position.
+            #
+            # Get the evaluated cos
+            evaluated_cos = get_eval_cos_array()
+            # And set the shape key to those same cos
+            shape_key.data.foreach_set('co', evaluated_cos)
+
+        # Restore temporarily changed attributes and remove the added armature modifier
+        for mod in mods_to_reenable_viewport:
+            mod.show_viewport = True
+        mesh_obj.modifiers.remove(armature_mod)
+        for shape_key, vertex_group, mute in zip(me.shape_keys.key_blocks, shape_key_vertex_groups, shape_key_mutes):
+            shape_key.vertex_group = vertex_group
+            shape_key.mute = mute
+        mesh_obj.active_shape_key_index = old_active_shape_key_index
+        mesh_obj.show_only_shape_key = old_show_only_shape_key
 
 
 @register_wrap
@@ -889,6 +1021,7 @@ class GenerateTwistBones(bpy.types.Operator):
         saved_data = Common.SavedData()
 
         context.object.data.use_mirror_x = False
+        context.object.use_mesh_mirror_x = False
         context.object.pose.use_mirror_x = False
         generate_upper = context.scene.generate_twistbones_upper
         armature = context.object
@@ -923,6 +1056,9 @@ class GenerateTwistBones(bpy.types.Operator):
                     continue
 
                 Common.set_active(mesh)
+                context.object.data.use_mirror_vertex_groups = False
+                context.object.data.use_mirror_x = False
+                context.object.use_mesh_mirror_x = False
 
                 mesh.vertex_groups.new(name=twist_bone_name)
 
@@ -1009,11 +1145,15 @@ class OptimizeStaticShapekeys(bpy.types.Operator):
                 if not mesh.data.use_auto_smooth:
                     mesh.data.use_auto_smooth = True
                     mesh.data.auto_smooth_angle = 3.1416
+                # TODO: if autosmooth is already enabled, set sharp from edges?
 
-                bpy.ops.object.mode_set(mode = 'EDIT')
-                bpy.ops.mesh.select_mode(type="VERT")
-                bpy.ops.mesh.select_all(action = 'DESELECT')
-                bpy.ops.mesh.set_normals_from_faces(keep_sharp=True)
+                if not mesh.data.has_custom_normals:
+                    bpy.ops.object.mode_set(mode = 'EDIT')
+                    bpy.ops.mesh.select_mode(type="VERT")
+                    bpy.ops.mesh.select_all(action = 'SELECT')
+                    # TODO: un-smooth objects aren't handled correctly. A workaround is to run 'split
+                    # normals' on all un-smooth objects before baking
+                    bpy.ops.mesh.set_normals_from_faces(keep_sharp=True)
 
                 # Separate non-animating
                 bpy.ops.object.mode_set(mode = 'EDIT')
@@ -1034,6 +1174,7 @@ class OptimizeStaticShapekeys(bpy.types.Operator):
                         # Some affected, separate
                         bpy.ops.object.mode_set(mode = 'EDIT')
                         bpy.ops.mesh.select_more()
+                        bpy.ops.mesh.split() # required or custom normals aren't preserved
                         bpy.ops.mesh.separate(type='SELECTED')
                         bpy.ops.object.mode_set(mode = 'OBJECT')
                     bpy.context.object.active_shape_key_index = 0
@@ -1798,6 +1939,223 @@ class ConnectBonesButton(bpy.types.Operator):
         self.report({'INFO'}, 'Connected all bones!')
         return {'FINISHED'}
 
+
+@register_wrap
+class ConvertToValveButton(bpy.types.Operator):
+    bl_idname = 'cats_manual.convert_to_valve'
+    bl_label = 'Convert Bones To Valve'
+    bl_description = 'Converts all main bone names to default valve bone names.' \
+                     '\nMake sure your model has the CATS standard bone names from after using Fix Model'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+        return True
+
+    def execute(self, context):
+        translate_bone_fails = 0
+        armature = Common.get_armature()
+
+        reverse_bone_lookup = dict()
+        for (preferred_name, name_list) in bone_names.items():
+            for name in name_list:
+                reverse_bone_lookup[name] = preferred_name
+
+        valve_translations = {
+            'hips': "ValveBiped.Bip01_Pelvis",
+            'spine': "ValveBiped.Bip01_Spine",
+            'chest': "ValveBiped.Bip01_Spine1",
+            'upper_chest': "ValveBiped.Bip01_Spine2",
+            'neck': "ValveBiped.Bip01_Neck1",
+            'head': "ValveBiped.Bip01_Head1", #head1 is on purpose.
+            'left_leg': "ValveBiped.Bip01_L_Thigh",
+            'left_knee': "ValveBiped.Bip01_L_Calf",
+            'left_ankle': "ValveBiped.Bip01_L_Foot",
+            'right_leg': "ValveBiped.Bip01_R_Thigh",
+            'right_knee': "ValveBiped.Bip01_R_Calf",
+            'right_ankle': "ValveBiped.Bip01_R_Foot",
+            'left_shoulder': "ValveBiped.Bip01_L_Clavicle",
+            'left_arm': "ValveBiped.Bip01_L_UpperArm",
+            'left_elbow': "ValveBiped.Bip01_L_Forearm",
+            'left_wrist': "ValveBiped.Bip01_L_Hand",
+            'right_shoulder': "ValveBiped.Bip01_R_Clavicle",
+            'right_arm': "ValveBiped.Bip01_R_UpperArm",
+            'right_elbow': "ValveBiped.Bip01_R_Forearm",
+            'right_wrist': "ValveBiped.Bip01_R_Hand",
+            #need finger bones for Gmod Conversion Script
+            'pinkie_1_l': "ValveBiped.Bip01_L_Finger4",
+            'pinkie_2_l': "ValveBiped.Bip01_L_Finger41",
+            'pinkie_3_l': "ValveBiped.Bip01_L_Finger42",
+            'ring_1_l': "ValveBiped.Bip01_L_Finger3",
+            'ring_2_l': "ValveBiped.Bip01_L_Finger31",
+            'ring_3_l': "ValveBiped.Bip01_L_Finger32",
+            'middle_1_l': "ValveBiped.Bip01_L_Finger2",
+            'middle_2_l': "ValveBiped.Bip01_L_Finger21",
+            'middle_3_l': "ValveBiped.Bip01_L_Finger22",
+            'index_1_l': "ValveBiped.Bip01_L_Finger1",
+            'index_2_l': "ValveBiped.Bip01_L_Finger11",
+            'index_3_l': "ValveBiped.Bip01_L_Finger12",
+            'thumb_1_l': "ValveBiped.Bip01_L_Finger0",
+            'thumb_2_l': "ValveBiped.Bip01_L_Finger01",
+            'thumb_3_l': "ValveBiped.Bip01_L_Finger02",
+
+            'pinkie_1_r': "ValveBiped.Bip01_R_Finger4",
+            'pinkie_2_r': "ValveBiped.Bip01_R_Finger41",
+            'pinkie_3_r': "ValveBiped.Bip01_R_Finger42",
+            'ring_1_r': "ValveBiped.Bip01_R_Finger3",
+            'ring_2_r': "ValveBiped.Bip01_R_Finger31",
+            'ring_3_r': "ValveBiped.Bip01_R_Finger32",
+            'middle_1_r': "ValveBiped.Bip01_R_Finger2",
+            'middle_2_r': "ValveBiped.Bip01_R_Finger21",
+            'middle_3_r': "ValveBiped.Bip01_R_Finger22",
+            'index_1_r': "ValveBiped.Bip01_R_Finger1",
+            'index_2_r': "ValveBiped.Bip01_R_Finger11",
+            'index_3_r': "ValveBiped.Bip01_R_Finger12",
+            'thumb_1_r': "ValveBiped.Bip01_R_Finger0",
+            'thumb_2_r': "ValveBiped.Bip01_R_Finger01",
+            'thumb_3_r': "ValveBiped.Bip01_R_Finger02"
+        }
+
+        for bone in armature.data.bones:
+            if simplify_bonename(bone.name) in reverse_bone_lookup and reverse_bone_lookup[simplify_bonename(bone.name)] in valve_translations:
+                bone.name = valve_translations[reverse_bone_lookup[simplify_bonename(bone.name)]]
+            else:
+                translate_bone_fails += 1
+
+        if translate_bone_fails > 0:
+            self.report({'INFO'}, "Error! Failed to translate {translate_bone_fails} bones! Make sure your model has standard bone names!")
+
+        self.report({'INFO'}, 'Connected all bones!')
+        return {'FINISHED'}
+
+@register_wrap
+class ConvertToSecondlifeButton(bpy.types.Operator):
+    bl_idname = 'cats_manual.convert_to_secondlife'
+    bl_label = 'Convert Bones To Second Life'
+    bl_description = 'Converts all main bone names to second life.' \
+                     '\nMake sure your model has the CATS standard bone names from after using Fix Model'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    armature_name: bpy.props.StringProperty(
+        default=''
+    )
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+        return True
+
+    def execute(self, context):
+        armature = Common.get_armature(self.armature_name)
+
+        translate_bone_fails = 0
+        untranslated_bones = set()
+
+        reverse_bone_lookup = dict()
+        for (preferred_name, name_list) in bone_names.items():
+            for name in name_list:
+                reverse_bone_lookup[name] = preferred_name
+
+        sl_translations = {
+            'hips': "mPelvis",
+            'spine': "mTorso",
+            'chest': "mChest",
+            'neck': "mNeck",
+            'head': "mHead",
+            # SL also specifies 'mSkull', generate by averaging coords of mEyeLeft and mEyeRight
+            'left_eye': "mEyeLeft",
+            'right_eye': "mEyeRight",
+            'right_leg': "mHipRight",
+            'right_knee': "mKneeRight",
+            'right_ankle': "mAnkleRight",
+            'right_toe': 'mToeRight',
+            'right_shoulder': "mCollarRight",
+            'right_arm': "mShoulderRight",
+            'right_elbow': "mElbowRight",
+            'right_wrist': "mWristRight",
+            'left_leg': "mHipLeft",
+            'left_knee': "mKneeLeft",
+            'left_ankle': "mAnkleLeft",
+            'left_toe': 'mToeLeft',
+            'left_shoulder': "mCollarLeft",
+            'left_arm': "mShoulderLeft",
+            'left_elbow': "mElbowLeft",
+            'left_wrist': "mWristLeft"
+            #'right_foot': "mFootRight",
+            #'left_foot': "mFootLeft",
+            # Our translation names any "foot" as "ankle". Best approach is to subdivide toe and rename the upper as foot
+            # TODO: if we only have ankle and toe, subdivide toe and rename original to foot
+        }
+
+        context.view_layer.objects.active = armature
+        Common.switch('EDIT')
+        old_mirror_setting = context.object.data.use_mirror_x
+        old_merge_setting = context.scene.keep_merged_bones
+        context.object.data.use_mirror_x = False
+        context.scene.keep_merged_bones = False
+
+        Common.switch('OBJECT')
+        for bone in armature.data.bones:
+            if simplify_bonename(bone.name) in reverse_bone_lookup and reverse_bone_lookup[simplify_bonename(bone.name)] in sl_translations:
+                bone.name = sl_translations[reverse_bone_lookup[simplify_bonename(bone.name)]]
+            else:
+                untranslated_bones.add(bone.name)
+                translate_bone_fails += 1
+
+        # Better foot setup
+        Common.switch('EDIT')
+        bpy.ops.armature.select_all(action='DESELECT')
+        for bone in context.visible_bones:
+            if bone.name == "mToeLeft" or bone.name == "mToeRight":
+                bone.select = True
+        Common.switch('OBJECT')
+        Common.switch('EDIT')
+        if context.selected_editable_bones:
+            bpy.ops.armature.subdivide()
+        Common.switch('OBJECT')
+        for bone in armature.data.bones:
+            if bone.name == "mToeLeft":
+                bone.name = "mFootLeft"
+            if bone.name == "mToeRight":
+                bone.name = "mFootRight"
+        for bone in armature.data.bones:
+            if bone.name == "mToeLeft.001":
+                bone.name = "mToeLeft"
+            if bone.name == "mToeRight.001":
+                bone.name = "mToeRight"
+
+        # Merge unused or SL rejects
+        Common.switch('OBJECT')
+        Common.switch('EDIT')
+        bpy.ops.armature.select_all(action='DESELECT')
+        for bone in context.visible_bones:
+            bone.select = bone.name in untranslated_bones
+        Common.switch('OBJECT')
+        Common.switch('EDIT')
+        print(untranslated_bones)
+        if context.selected_editable_bones:
+            bpy.ops.cats_manual.merge_weights()
+
+        for bone in context.visible_bones:
+            bone.use_connect = False
+
+        for bone in context.visible_bones:
+            bone.tail[:] = bone.head[:]
+            bone.tail[0] = bone.head[0] + 0.1
+            # TODO: clear rolls
+
+        context.object.data.use_mirror_x = old_mirror_setting
+        context.scene.keep_merged_bones = old_merge_setting
+        Common.switch('OBJECT')
+
+        if translate_bone_fails > 0:
+            self.report({'INFO'}, f"Failed to translate {translate_bone_fails} bones! They will be merged to their parent bones.")
+        else:
+            self.report({'INFO'}, 'Translated all bones!')
+
+        return {'FINISHED'}
 
 @register_wrap
 class TestButton(bpy.types.Operator):

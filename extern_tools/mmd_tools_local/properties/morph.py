@@ -1,31 +1,24 @@
 # -*- coding: utf-8 -*-
+import logging
 
 import bpy
-from bpy.types import PropertyGroup
-from bpy.props import StringProperty
-from bpy.props import IntProperty
-from bpy.props import FloatVectorProperty
-from bpy.props import FloatProperty
-from bpy.props import CollectionProperty
-from bpy.props import EnumProperty
-
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.model import Model as FnModel
+from mmd_tools_local import utils
 from mmd_tools_local.core.bone import FnBone
 from mmd_tools_local.core.material import FnMaterial
+from mmd_tools_local.core.model import Model as FnModel
 from mmd_tools_local.core.morph import FnMorph
-from mmd_tools_local import utils
 
 
 def _get_name(prop):
     return prop.get('name', '')
 
+
 def _set_name(prop, value):
     mmd_root = prop.id_data.mmd_root
     #morph_type = mmd_root.active_morph_type
-    morph_type = '%s_morphs'%prop.bl_rna.identifier[:-5].lower()
-    #assert(prop.bl_rna.identifier.endswith('Morph'))
-    #print('_set_name:', prop, value, morph_type)
+    morph_type = '%s_morphs' % prop.bl_rna.identifier[:-5].lower()
+    # assert(prop.bl_rna.identifier.endswith('Morph'))
+    #logging.debug('_set_name: %s %s %s', prop, value, morph_type)
     prop_name = prop.get('name', None)
     if prop_name == value:
         return
@@ -40,7 +33,7 @@ def _set_name(prop, value):
                     kb_list.setdefault(kb.name, []).append(kb)
 
             if prop_name in kb_list:
-                value = utils.uniqueName(value, used_names|kb_list.keys())
+                value = utils.uniqueName(value, used_names | kb_list.keys())
                 for kb in kb_list[prop_name]:
                     kb.name = value
 
@@ -51,11 +44,11 @@ def _set_name(prop, value):
                     vg_list.setdefault(n, []).append(vg)
 
             if prop_name in vg_list:
-                value = utils.uniqueName(value, used_names|vg_list.keys())
+                value = utils.uniqueName(value, used_names | vg_list.keys())
                 for vg in vg_list[prop_name]:
                     vg.name = vg.name.replace(prop_name, value)
 
-        if 1:#morph_type != 'group_morphs':
+        if 1:  # morph_type != 'group_morphs':
             for m in mmd_root.group_morphs:
                 for d in m.data:
                     if d.name == prop_name and d.morph_type == morph_type:
@@ -75,31 +68,31 @@ def _set_name(prop, value):
 
     prop['name'] = value
 
-@register_wrap
+
 class _MorphBase:
-    name = StringProperty(
+    name: bpy.props.StringProperty(
         name='Name',
         description='Japanese Name',
         set=_set_name,
         get=_get_name,
-        )
-    name_e = StringProperty(
+    )
+    name_e: bpy.props.StringProperty(
         name='Name(Eng)',
         description='English Name',
         default='',
-        )
-    category = EnumProperty(
+    )
+    category: bpy.props.EnumProperty(
         name='Category',
         description='Select category',
-        items = [
+        items=[
             ('SYSTEM', 'Hidden', '', 0),
             ('EYEBROW', 'Eye Brow', '', 1),
             ('EYE', 'Eye', '', 2),
             ('MOUTH', 'Mouth', '', 3),
             ('OTHER', 'Other', '', 4),
-            ],
+        ],
         default='OTHER',
-        )
+    )
 
 
 def _get_bone(prop):
@@ -114,6 +107,7 @@ def _get_bone(prop):
         return ''
     return fnBone.pose_bone.name
 
+
 def _set_bone(prop, value):
     root = prop.id_data
     fnModel = FnModel(root)
@@ -125,6 +119,7 @@ def _set_bone(prop, value):
     fnBone = FnBone(pose_bone)
     prop['bone_id'] = fnBone.bone_id
 
+
 def _update_bone_morph_data(prop, context):
     if not prop.name.startswith('mmd_bind'):
         return
@@ -133,54 +128,55 @@ def _update_bone_morph_data(prop, context):
         bone = arm.pose.bones.get(prop.name, None)
         if bone:
             bone.location = prop.location
-            bone.rotation_quaternion = prop.rotation.__class__(*prop.rotation.to_axis_angle()) # Fix for consistency
+            bone.rotation_quaternion = prop.rotation.__class__(*prop.rotation.to_axis_angle())  # Fix for consistency
 
-@register_wrap
-class BoneMorphData(PropertyGroup):
+
+class BoneMorphData(bpy.types.PropertyGroup):
     """
     """
-    bone = StringProperty(
+    bone: bpy.props.StringProperty(
         name='Bone',
         description='Target bone',
         set=_set_bone,
         get=_get_bone,
-        )
+    )
 
-    bone_id = IntProperty(
+    bone_id: bpy.props.IntProperty(
         name='Bone ID',
-        )
+    )
 
-    location = FloatVectorProperty(
+    location: bpy.props.FloatVectorProperty(
         name='Location',
         description='Location',
         subtype='TRANSLATION',
         size=3,
         default=[0, 0, 0],
         update=_update_bone_morph_data,
-        )
+    )
 
-    rotation = FloatVectorProperty(
+    rotation: bpy.props.FloatVectorProperty(
         name='Rotation',
         description='Rotation in quaternions',
         subtype='QUATERNION',
         size=4,
         default=[1, 0, 0, 0],
         update=_update_bone_morph_data,
-        )
+    )
 
-@register_wrap
-class BoneMorph(_MorphBase, PropertyGroup):
+
+class BoneMorph(_MorphBase, bpy.types.PropertyGroup):
     """Bone Morph
     """
-    data = CollectionProperty(
+    data: bpy.props.CollectionProperty(
         name='Morph Data',
         type=BoneMorphData,
-        )
-    active_data = IntProperty(
+    )
+    active_data: bpy.props.IntProperty(
         name='Active Bone Data',
         min=0,
         default=0,
-        )
+    )
+
 
 def _get_material(prop):
     mat_id = prop.get('material_id', -1)
@@ -191,6 +187,7 @@ def _get_material(prop):
         return ''
     return fnMat.material.name
 
+
 def _set_material(prop, value):
     if value not in bpy.data.materials.keys():
         prop['material_id'] = -1
@@ -199,6 +196,7 @@ def _set_material(prop, value):
     fnMat = FnMaterial(mat)
     prop['material_id'] = fnMat.material_id
 
+
 def _set_related_mesh(prop, value):
     rig = FnModel(prop.id_data)
     if rig.findMesh(value):
@@ -206,8 +204,10 @@ def _set_related_mesh(prop, value):
     else:
         prop['related_mesh'] = ''
 
+
 def _get_related_mesh(prop):
     return prop.get('related_mesh', '')
+
 
 def _update_material_morph_data(prop, context):
     if not prop.name.startswith('mmd_bind'):
@@ -221,38 +221,38 @@ def _update_material_morph_data(prop, context):
         for mat in FnModel(prop.id_data).materials():
             _MaterialMorph.update_morph_inputs(mat, prop)
 
-@register_wrap
-class MaterialMorphData(PropertyGroup):
+
+class MaterialMorphData(bpy.types.PropertyGroup):
     """
     """
-    related_mesh = StringProperty(
+    related_mesh: bpy.props.StringProperty(
         name='Related Mesh',
         description='Stores a reference to the mesh where this morph data belongs to',
         set=_set_related_mesh,
         get=_get_related_mesh,
-        )
-    offset_type = EnumProperty(
+    )
+    offset_type: bpy.props.EnumProperty(
         name='Offset Type',
         description='Select offset type',
         items=[
             ('MULT', 'Multiply', '', 0),
             ('ADD', 'Add', '', 1)
-            ],
+        ],
         default='ADD'
-        )
-    material = StringProperty(
+    )
+    material: bpy.props.StringProperty(
         name='Material',
         description='Target material',
         get=_get_material,
         set=_set_material,
-        )
+    )
 
-    material_id = IntProperty(
+    material_id: bpy.props.IntProperty(
         name='Material ID',
         default=-1,
-        )
+    )
 
-    diffuse_color = FloatVectorProperty(
+    diffuse_color: bpy.props.FloatVectorProperty(
         name='Diffuse Color',
         description='Diffuse color',
         subtype='COLOR',
@@ -263,9 +263,9 @@ class MaterialMorphData(PropertyGroup):
         step=0.1,
         default=[0, 0, 0, 1],
         update=_update_material_morph_data,
-        )
+    )
 
-    specular_color = FloatVectorProperty(
+    specular_color: bpy.props.FloatVectorProperty(
         name='Specular Color',
         description='Specular color',
         subtype='COLOR',
@@ -276,9 +276,9 @@ class MaterialMorphData(PropertyGroup):
         step=0.1,
         default=[0, 0, 0],
         update=_update_material_morph_data,
-        )
+    )
 
-    shininess = FloatProperty(
+    shininess: bpy.props.FloatProperty(
         name='Reflect',
         description='Reflect',
         soft_min=0,
@@ -286,9 +286,9 @@ class MaterialMorphData(PropertyGroup):
         step=100.0,
         default=0.0,
         update=_update_material_morph_data,
-        )
+    )
 
-    ambient_color = FloatVectorProperty(
+    ambient_color: bpy.props.FloatVectorProperty(
         name='Ambient Color',
         description='Ambient color',
         subtype='COLOR',
@@ -299,9 +299,9 @@ class MaterialMorphData(PropertyGroup):
         step=0.1,
         default=[0, 0, 0],
         update=_update_material_morph_data,
-        )
+    )
 
-    edge_color = FloatVectorProperty(
+    edge_color: bpy.props.FloatVectorProperty(
         name='Edge Color',
         description='Edge color',
         subtype='COLOR',
@@ -312,9 +312,9 @@ class MaterialMorphData(PropertyGroup):
         step=0.1,
         default=[0, 0, 0, 1],
         update=_update_material_morph_data,
-        )
+    )
 
-    edge_weight = FloatProperty(
+    edge_weight: bpy.props.FloatProperty(
         name='Edge Weight',
         description='Edge weight',
         soft_min=0,
@@ -322,9 +322,9 @@ class MaterialMorphData(PropertyGroup):
         step=0.1,
         default=0,
         update=_update_material_morph_data,
-        )
+    )
 
-    texture_factor = FloatVectorProperty(
+    texture_factor: bpy.props.FloatVectorProperty(
         name='Texture factor',
         description='Texture factor',
         subtype='COLOR',
@@ -335,9 +335,9 @@ class MaterialMorphData(PropertyGroup):
         step=0.1,
         default=[0, 0, 0, 1],
         update=_update_material_morph_data,
-        )
+    )
 
-    sphere_texture_factor = FloatVectorProperty(
+    sphere_texture_factor: bpy.props.FloatVectorProperty(
         name='Sphere Texture factor',
         description='Sphere texture factor',
         subtype='COLOR',
@@ -348,9 +348,9 @@ class MaterialMorphData(PropertyGroup):
         step=0.1,
         default=[0, 0, 0, 1],
         update=_update_material_morph_data,
-        )
+    )
 
-    toon_texture_factor = FloatVectorProperty(
+    toon_texture_factor: bpy.props.FloatVectorProperty(
         name='Toon Texture factor',
         description='Toon texture factor',
         subtype='COLOR',
@@ -361,97 +361,97 @@ class MaterialMorphData(PropertyGroup):
         step=0.1,
         default=[0, 0, 0, 1],
         update=_update_material_morph_data,
-        )
+    )
 
-@register_wrap
-class MaterialMorph(_MorphBase, PropertyGroup):
+
+class MaterialMorph(_MorphBase, bpy.types.PropertyGroup):
     """ Material Morph
     """
-    data = CollectionProperty(
+    data: bpy.props.CollectionProperty(
         name='Morph Data',
         type=MaterialMorphData,
-        )
-    active_data = IntProperty(
+    )
+    active_data: bpy.props.IntProperty(
         name='Active Material Data',
         min=0,
         default=0,
-        )
+    )
 
-@register_wrap
-class UVMorphOffset(PropertyGroup):
+
+class UVMorphOffset(bpy.types.PropertyGroup):
     """UV Morph Offset
     """
-    index = IntProperty(
+    index: bpy.props.IntProperty(
         name='Vertex Index',
         description='Vertex index',
         min=0,
         default=0,
-        )
-    offset = FloatVectorProperty(
+    )
+    offset: bpy.props.FloatVectorProperty(
         name='UV Offset',
         description='UV offset',
         size=4,
-        #min=-1,
-        #max=1,
-        #precision=3,
+        # min=-1,
+        # max=1,
+        # precision=3,
         step=0.1,
         default=[0, 0, 0, 0],
-        )
+    )
 
-@register_wrap
-class UVMorph(_MorphBase, PropertyGroup):
+
+class UVMorph(_MorphBase, bpy.types.PropertyGroup):
     """UV Morph
     """
-    uv_index = IntProperty(
+    uv_index: bpy.props.IntProperty(
         name='UV Index',
         description='UV index (UV, UV1 ~ UV4)',
         min=0,
         max=4,
         default=0,
-        )
-    data_type = EnumProperty(
+    )
+    data_type: bpy.props.EnumProperty(
         name='Data Type',
         description='Select data type',
-        items = [
+        items=[
             ('DATA', 'Data', 'Store offset data in root object (deprecated)', 0),
             ('VERTEX_GROUP', 'Vertex Group', 'Store offset data in vertex groups', 1),
-            ],
+        ],
         default='DATA',
-        )
-    data = CollectionProperty(
+    )
+    data: bpy.props.CollectionProperty(
         name='Morph Data',
         type=UVMorphOffset,
-        )
-    active_data = IntProperty(
+    )
+    active_data: bpy.props.IntProperty(
         name='Active UV Data',
         min=0,
         default=0,
-        )
-    vertex_group_scale = FloatProperty(
+    )
+    vertex_group_scale: bpy.props.FloatProperty(
         name='Vertex Group Scale',
         description='The value scale of "Vertex Group" data type',
         precision=3,
         step=0.1,
         default=1,
-        )
+    )
 
-@register_wrap
-class GroupMorphOffset(PropertyGroup):
+
+class GroupMorphOffset(bpy.types.PropertyGroup):
     """Group Morph Offset
     """
-    morph_type = EnumProperty(
+    morph_type: bpy.props.EnumProperty(
         name='Morph Type',
         description='Select morph type',
-        items = [
+        items=[
             ('material_morphs', 'Material', 'Material Morphs', 0),
             ('uv_morphs', 'UV', 'UV Morphs', 1),
             ('bone_morphs', 'Bone', 'Bone Morphs', 2),
             ('vertex_morphs', 'Vertex', 'Vertex Morphs', 3),
             ('group_morphs', 'Group', 'Group Morphs', 4),
-            ],
+        ],
         default='vertex_morphs',
-        )
-    factor = FloatProperty(
+    )
+    factor: bpy.props.FloatProperty(
         name='Factor',
         description='Factor',
         soft_min=0,
@@ -459,24 +459,23 @@ class GroupMorphOffset(PropertyGroup):
         precision=3,
         step=0.1,
         default=0
-        )
+    )
 
-@register_wrap
-class GroupMorph(_MorphBase, PropertyGroup):
+
+class GroupMorph(_MorphBase, bpy.types.PropertyGroup):
     """Group Morph
     """
-    data = CollectionProperty(
+    data: bpy.props.CollectionProperty(
         name='Morph Data',
         type=GroupMorphOffset,
-        )
-    active_data = IntProperty(
+    )
+    active_data: bpy.props.IntProperty(
         name='Active Group Data',
         min=0,
         default=0,
-        )
+    )
 
-@register_wrap
-class VertexMorph(_MorphBase, PropertyGroup):
+
+class VertexMorph(_MorphBase, bpy.types.PropertyGroup):
     """Vertex Morph
     """
-

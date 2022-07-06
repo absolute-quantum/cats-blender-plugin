@@ -29,6 +29,7 @@ import bpy
 import time
 import bmesh
 import platform
+import numpy as np
 
 from math import degrees
 from mathutils import Vector
@@ -278,8 +279,9 @@ def set_default_stage():
                     delete(obj)
                 bpy.data.collections.remove(collection)
 
-    unhide_all()
-    unselect_all()
+    if not bpy.context.scene.cats_is_unittest:
+        unhide_all()
+        unselect_all()
 
     for obj in get_objects():
         set_active(obj)
@@ -1670,7 +1672,7 @@ class ShowError(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * dpi_scale))
 
     def draw(self, context):
         if not error or len(error) == 0:
@@ -1846,8 +1848,9 @@ def fix_bone_orientations(armature):
             # Only connect them if the other bone is a certain distance away, otherwise blender will delete them
             if dist > 0.005:
                 bone.tail = bone.children[0].head
-                if len(bone.parent.children) == 1:  # if the bone's parent bone only has one child, connect the bones (Don't connect them all because that would mess up hand/finger bones)
-                    bone.use_connect = True
+                if bone.parent:
+                    if len(bone.parent.children) == 1:  # if the bone's parent bone only has one child, connect the bones (Don't connect them all because that would mess up hand/finger bones)
+                        bone.use_connect = True
 
 
 def update_material_list(self=None, context=None):
@@ -1936,6 +1939,7 @@ def add_principled_shader(mesh):
     # Unity to automatically detect exported materials
     principled_shader_pos = (501, -500)
     output_shader_pos = (801, -500)
+    mmd_texture_bake_pos = (1101, -500)
     principled_shader_label = 'Cats Export Shader'
     output_shader_label = 'Cats Export'
 
@@ -1944,6 +1948,8 @@ def add_principled_shader(mesh):
             nodes = mat_slot.material.node_tree.nodes
             node_image = None
             node_image_count = 0
+            node_mmd_shader = None
+            needsmmdcolor = False
 
             # Check if the new nodes should be added and to which image node they should be attached to
             for node in nodes:
@@ -1951,9 +1957,16 @@ def add_principled_shader(mesh):
                 if node.type == 'BSDF_PRINCIPLED' and node.label == principled_shader_label:
                     node_image = None
                     break
-                if node.type == 'OUTPUT_MATERIAL' and node.label == output_shader_label:
+                elif node.type == 'OUTPUT_MATERIAL' and node.label == output_shader_label:
                     node_image = None
                     break
+                elif node.type == 'OUTPUT_MATERIAL': #So that blender doesn't get confused on which to output
+                    nodes.remove(node)
+                    continue
+                if node.name == "mmd_shader":
+                    node_mmd_shader = node
+                    needsmmdcolor = True
+                    continue
 
                 # Skip if this node is not an image node
                 if node.type != 'TEX_IMAGE':
@@ -1968,9 +1981,52 @@ def add_principled_shader(mesh):
 
                 # This is an image node, so link it to the principled shader later
                 node_image = node
-
-            if not node_image or node_image_count > 1:
+            #this material doesn't have a texture and doesn't have a MMD AO+Diffuse so skip
+            if (not node_image or node_image_count > 1) and not needsmmdcolor:
                 continue
+            elif needsmmdcolor and node_mmd_shader: #this needs to implement mmd color and has a shader node
+                #bake AO and Diffuse color into pixels for MMD texture. if texture exists, multiply over
+                #Thank this guy for pixel manipulation: https://blender.stackexchange.com/a/652
+
+
+                basecolor = [x*0.6 for x in node_mmd_shader.inputs[1].default_value[:]] #multply color of diffuse by .6 which is MMD's addition factor
+                for rgba,num in enumerate(basecolor):
+                    basecolor[rgba] = max(0,min(1,basecolor[rgba]+node_mmd_shader.inputs[0].default_value[rgba])) #add AO to diffuse and clamp between 0-1 for each channel
+
+                if not node_image:
+                    node_image = mat_slot.material.node_tree.nodes.new(type="ShaderNodeTexImage")
+                    node_image.location = mmd_texture_bake_pos
+                    node_image.label = "Mmd Base Tex"
+                    node_image.name = "mmd_base_tex"
+                    node_image.image = bpy.data.images.new("MMDCatsBaked", width=8, height=8, alpha=True)
+
+                    #make pixels using AO color
+
+
+                    #assign to image so it's baked
+                    node_image.image.generated_color = basecolor
+                    node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
+                    node_image.image.file_format = 'PNG'
+                    if bpy.data.is_saved:
+                        node_image.image.save()
+                elif node_image:
+
+                    #multiply color on top of default color.
+                    pixels = np.array(node_image.image.pixels[:])
+
+                    multiply_image = np.tile(np.array(basecolor),int(len(pixels)/4))
+
+                    new_pixels = pixels*multiply_image
+
+                    #create new image as to not touch old one
+                    node_image.image = bpy.data.images.new(node_image.image.name+"MMDCatsBaked", width=node_image.image.size[0], height=node_image.image.size[1], alpha=True)
+                    node_image.image.filepath = bpy.path.abspath("//"+node_image.image.name+".png")
+                    node_image.image.file_format = 'PNG'
+
+                    node_image.image.pixels = new_pixels
+                    if bpy.data.is_saved:
+                        node_image.image.save()
+
 
             # Create Principled BSDF node
             node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
@@ -2094,19 +2150,22 @@ def fix_twist_bones(mesh, bones_to_delete):
             mix_weights(mesh, vg_twist.name, vg_twist.name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
 
             if vg_twist1:
-                bones_to_delete.append(vg_twist1.name)
-                mix_weights(mesh, vg_twist1.name, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
-                mix_weights(mesh, vg_twist1.name, vg_parent.name, mix_strength=0.75)
+                twistname = bone_type + 'Twist1_' + suffix
+                bones_to_delete.append(twistname)
+                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
+                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.75) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
 
             if vg_twist2:
-                bones_to_delete.append(vg_twist2.name)
-                mix_weights(mesh, vg_twist2.name, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
-                mix_weights(mesh, vg_twist2.name, vg_parent.name, mix_strength=0.5)
+                twistname = bone_type + 'Twist2_' + suffix
+                bones_to_delete.append(twistname)
+                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
+                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.5, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
 
             if vg_twist3:
-                bones_to_delete.append(vg_twist3.name)
-                mix_weights(mesh, vg_twist3.name, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
-                mix_weights(mesh, vg_twist3.name, vg_parent.name, mix_strength=0.25)
+                twistname = bone_type + 'Twist3_' + suffix
+                bones_to_delete.append(twistname)
+                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
+                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.25, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please. (added don't delete argument) - @989onan
 
 
 def fix_twist_bone_names(armature):
@@ -2124,7 +2183,6 @@ def toggle_mmd_tabs_update(self, context):
 
 def toggle_mmd_tabs(shutdown_plugin=False):
     mmd_cls = [
-        mmd_tool.MMDToolsObjectPanel,
         mmd_tool.MMDDisplayItemsPanel,
         mmd_tool.MMDMorphToolsPanel,
         mmd_tool.MMDRigidbodySelectorPanel,

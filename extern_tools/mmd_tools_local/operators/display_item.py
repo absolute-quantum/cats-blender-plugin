@@ -5,13 +5,11 @@ from bpy.types import Operator
 
 from collections import OrderedDict
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local import utils
 from mmd_tools_local.utils import ItemOp, ItemMoveOp
 import mmd_tools_local.core.model as mmd_model
 
 
-@register_wrap
 class AddDisplayItemFrame(Operator):
     bl_idname = 'mmd_tools.display_item_frame_add'
     bl_label = 'Add Display Item Frame'
@@ -29,7 +27,6 @@ class AddDisplayItemFrame(Operator):
         mmd_root.active_display_item_frame = index
         return {'FINISHED'}
 
-@register_wrap
 class RemoveDisplayItemFrame(Operator):
     bl_idname = 'mmd_tools.display_item_frame_remove'
     bl_label = 'Remove Display Item Frame'
@@ -52,7 +49,6 @@ class RemoveDisplayItemFrame(Operator):
             mmd_root.active_display_item_frame = min(len(frames)-1, max(2, index-1))
         return {'FINISHED'}
 
-@register_wrap
 class MoveDisplayItemFrame(Operator, ItemMoveOp):
     bl_idname = 'mmd_tools.display_item_frame_move'
     bl_label = 'Move Display Item Frame'
@@ -73,7 +69,6 @@ class MoveDisplayItemFrame(Operator, ItemMoveOp):
             mmd_root.active_display_item_frame = self.move(frames, index, self.type, index_min=2)
         return {'FINISHED'}
 
-@register_wrap
 class AddDisplayItem(Operator):
     bl_idname = 'mmd_tools.display_item_add'
     bl_label = 'Add Display Item'
@@ -93,8 +88,19 @@ class AddDisplayItem(Operator):
             morph_name = morph.name if morph else 'Morph Item'
             self._add_item(frame, 'MORPH', morph_name, mmd_root.active_morph_type)
         else:
-            bone_name = context.active_bone.name if context.active_bone else 'Bone Item'
-            self._add_item(frame, 'BONE', bone_name)
+            if context.active_bone:
+                bone_names = [context.active_bone.name]
+                if context.selected_bones:
+                    bone_names += [b.name for b in context.selected_bones]
+                if context.selected_editable_bones:
+                    bone_names += [b.name for b in context.selected_editable_bones]
+                if context.selected_pose_bones:
+                    bone_names += [b.name for b in context.selected_pose_bones]
+                bone_names = sorted(list(set(bone_names)))
+                for bone_name in bone_names:
+                    self._add_item(frame, 'BONE', bone_name)
+            else:
+                self._add_item(frame, 'BONE', 'Bone Item')
         return {'FINISHED'}
 
     def _add_item(self, frame, item_type, item_name, morph_type=None):
@@ -106,14 +112,13 @@ class AddDisplayItem(Operator):
             item.morph_type = morph_type
         frame.active_item = index
 
-@register_wrap
 class RemoveDisplayItem(Operator):
     bl_idname = 'mmd_tools.display_item_remove'
     bl_label = 'Remove Display Item'
     bl_description = 'Remove display item(s) from the list'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    all = bpy.props.BoolProperty(
+    all: bpy.props.BoolProperty(
         name='All',
         description='Delete all display items',
         default=False,
@@ -135,7 +140,6 @@ class RemoveDisplayItem(Operator):
             frame.active_item = max(0, frame.active_item-1)
         return {'FINISHED'}
 
-@register_wrap
 class MoveDisplayItem(Operator, ItemMoveOp):
     bl_idname = 'mmd_tools.display_item_move'
     bl_label = 'Move Display Item'
@@ -152,14 +156,13 @@ class MoveDisplayItem(Operator, ItemMoveOp):
         frame.active_item = self.move(frame.data, frame.active_item, self.type)
         return {'FINISHED'}
 
-@register_wrap
 class FindDisplayItem(Operator):
     bl_idname = 'mmd_tools.display_item_find'
     bl_label = 'Find Display Item'
     bl_description = 'Find the display item of active bone or morph'
     bl_options = {'INTERNAL'}
 
-    type = bpy.props.EnumProperty(
+    type: bpy.props.EnumProperty(
         name='Type',
         description='Find type',
         items = [
@@ -201,7 +204,6 @@ class FindDisplayItem(Operator):
                     frame.active_item = j
                     return
 
-@register_wrap
 class SelectCurrentDisplayItem(Operator):
     bl_idname = 'mmd_tools.display_item_select_current'
     bl_label = 'Select Current Display Item'
@@ -226,17 +228,16 @@ class SelectCurrentDisplayItem(Operator):
                 mmd_root.active_morph_type = item.morph_type
                 mmd_root.active_morph = index
         else:
-            utils.selectSingleBone(context, mmd_model.Model(root).armature(), item.name)
+            utils.selectSingleBone(context, mmd_model.FnModel.find_armature(root), item.name)
         return {'FINISHED'}
 
-@register_wrap
 class DisplayItemQuickSetup(Operator):
     bl_idname = 'mmd_tools.display_item_quick_setup'
     bl_label = 'Display Item Quick Setup'
     bl_description = 'Quick setup display items'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
-    type = bpy.props.EnumProperty(
+    type: bpy.props.EnumProperty(
         name='Type',
         description='Select type',
         items = [

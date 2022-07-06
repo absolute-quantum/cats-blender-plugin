@@ -7,6 +7,7 @@ cats_updater
 tmp
 *.blend
 *.blend1
+CATS Bake
 tests/armatures/*.png
 resources/downloads
 resources/settings.json

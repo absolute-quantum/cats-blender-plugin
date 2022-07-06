@@ -5,7 +5,6 @@ import bpy
 from bpy.types import Operator
 from mathutils import Matrix
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local.bpyutils import matmul
 
 
@@ -34,49 +33,20 @@ class _SetShadingBase:
                 s.material.use_nodes = False
                 s.material.use_shadeless = use_shadeless
 
-    @staticmethod
-    def _reset_mmd_glsl_light(context, use_light=False):
-        for i in (x for x in context.scene.objects if x.is_mmd_glsl_light):
-            if use_light:
-                return
-            context.scene.objects.unlink(i)
+    def execute(self, context): #TODO
+        context.scene.render.engine = 'BLENDER_EEVEE'
 
-        if use_light:
-            light = bpy.data.objects.new('Hemi', bpy.data.lamps.new('Hemi', 'HEMI'))
-            light.is_mmd_glsl_light = True
-            context.scene.objects.link(light)
-
-
-    if bpy.app.version < (2, 80, 0):
-        def execute(self, context):
-            context.scene.render.engine = 'BLENDER_RENDER'
-
-            shading_mode = getattr(self, '_shading_mode', None)
-            self._reset_mmd_glsl_light(context, use_light=(shading_mode == 'GLSL'))
-            self._reset_material_shading(context, use_shadeless=(shading_mode == 'SHADELESS'))
-            self._reset_color_management(context, use_display_device=(shading_mode != 'SHADELESS'))
-
-            shade, context.scene.game_settings.material_mode = ('TEXTURED', 'GLSL') if shading_mode else ('SOLID', 'MULTITEXTURE')
-            for space in self._get_view3d_spaces(context):
-                space.viewport_shade = shade
-                space.show_backface_culling = True
-            return {'FINISHED'}
-    else:
-        def execute(self, context): #TODO
-            context.scene.render.engine = 'BLENDER_EEVEE'
-
-            shading_mode = getattr(self, '_shading_mode', None)
-            for space in self._get_view3d_spaces(context):
-                shading = space.shading
-                shading.type = 'SOLID'
-                shading.light = 'FLAT' if shading_mode == 'SHADELESS' else 'STUDIO'
-                shading.color_type = 'TEXTURE' if shading_mode else 'MATERIAL'
-                shading.show_object_outline = False
-                shading.show_backface_culling = True
-            return {'FINISHED'}
+        shading_mode = getattr(self, '_shading_mode', None)
+        for space in self._get_view3d_spaces(context):
+            shading = space.shading
+            shading.type = 'SOLID'
+            shading.light = 'FLAT' if shading_mode == 'SHADELESS' else 'STUDIO'
+            shading.color_type = 'TEXTURE' if shading_mode else 'MATERIAL'
+            shading.show_object_outline = False
+            shading.show_backface_culling = False
+        return {'FINISHED'}
 
 
-@register_wrap
 class SetGLSLShading(Operator, _SetShadingBase):
     bl_idname = 'mmd_tools.set_glsl_shading'
     bl_label = 'GLSL View'
@@ -84,7 +54,6 @@ class SetGLSLShading(Operator, _SetShadingBase):
 
     _shading_mode = 'GLSL'
 
-@register_wrap
 class SetShadelessGLSLShading(Operator, _SetShadingBase):
     bl_idname = 'mmd_tools.set_shadeless_glsl_shading'
     bl_label = 'Shadeless GLSL View'
@@ -92,14 +61,12 @@ class SetShadelessGLSLShading(Operator, _SetShadingBase):
 
     _shading_mode = 'SHADELESS'
 
-@register_wrap
 class ResetShading(Operator, _SetShadingBase):
     bl_idname = 'mmd_tools.reset_shading'
     bl_label = 'Reset View'
     bl_description = 'Reset to default Blender shading'
 
 
-@register_wrap
 class FlipPose(Operator):
     bl_idname = 'mmd_tools.flip_pose'
     bl_label = 'Flip Pose'

@@ -53,12 +53,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         box = layout.box()
         col = box.column(align=True)
 
-        # row = col.row(align=True)
-        # row.label(text='Auto Decimation is currently experimental.')
-        # row = col.row(align=True)
-        # row.scale_y = 0.5
-        # row.label(text='It works but it might not look good. Test for yourself.')
-        # col.separator()
         row = col.row(align=True)
         row.label(text=t('DecimationPanel.decimationMode'))
         row = col.row(align=True)
@@ -67,8 +61,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row.scale_y = 0.7
         if context.scene.decimation_mode == 'SMART':
             row.label(text=t('DecimationPanel.smartModeDesc'))
-        #elif context.scene.decimation_mode == 'LOOP':
-        #    row.label(text="Attempt to preserve loops (HQ, SLOW)")
         elif context.scene.decimation_mode == 'SAFE':
             row.label(text=t('DecimationPanel.safeModeDesc'))
         elif context.scene.decimation_mode == 'HALF':
@@ -150,32 +142,22 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 col.label(text=t('DecimationPanel.warn.correctWhitelist'), icon='INFO')
                 row = col.row(align=True)
 
-            # # row = col.row(align=True)
-            # # rows = 2
-            # # row = layout.row()
-            # # row.template_list("auto.decimate_list", "", bpy.context.scene, "auto", bpy.context.scene, "custom_index", rows=rows)
-            #
-            # obj = context.object
-            #
-            # # template_list now takes two new args.
-            # # The first one is the identifier of the registered UIList to use (if you want only the default list,
-            # # with no custom draw code, use "UI_UL_list").
-            # layout.template_list("ShapekeyList", "", ('heyho', 'heyho2'), "material_slots", ('heyho', 'heyho2'), "active_material_index")
-
         col.separator()
         col.separator()
-        #if not context.scene.decimation_mode == "LOOP":
         row = col.row(align=True)
         row.prop(context.scene, 'decimate_fingers')
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_remove_doubles')
-        #row = col.row(align=True)
-        #row.prop(context.scene, 'decimation_animation_weighting', expand=True)
-        #if context.scene.decimation_animation_weighting: # and context.scene.decimation_mode != "LOOP":
-        #    row = col.row(align=True)
-        #    row.separator()
-        #    row.prop(context.scene, 'decimation_animation_weighting_factor', expand=True)
-        #    col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'decimation_animation_weighting', expand=True)
+        if context.scene.decimation_animation_weighting: # and context.scene.decimation_mode != "LOOP":
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'decimation_animation_weighting_factor', expand=True)
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'decimation_animation_weighting_include_shapekeys', expand=True)
+            col.separator()
         row = col.row(align=True)
         row.operator(Decimation.AutoDecimatePresetGood.bl_idname)
         row.operator(Decimation.AutoDecimatePresetExcellent.bl_idname)

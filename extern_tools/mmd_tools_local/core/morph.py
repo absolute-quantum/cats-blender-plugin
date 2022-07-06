@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 
 import bpy
 from mmd_tools_local import bpyutils
-from mmd_tools_local.bpyutils import SceneOp
-from mmd_tools_local.bpyutils import ObjectOp
-from mmd_tools_local.bpyutils import TransformConstraintOp
+from mmd_tools_local.bpyutils import ObjectOp, SceneOp, TransformConstraintOp
+
 
 class FnMorph(object):
 
@@ -34,7 +34,7 @@ class FnMorph(object):
         key_blocks = obj.data.shape_keys.key_blocks
         for name in shape_key_names:
             if name not in key_blocks:
-                obj.shape_key_add(name=name)
+                obj.shape_key_add(name=name, from_mix=False)
             elif len(key_blocks) > 1:
                 __move_to_bottom(key_blocks, name)
 
@@ -81,12 +81,19 @@ class FnMorph(object):
     def load_morphs(cls, rig):
         mmd_root = rig.rootObject().mmd_root
         vertex_morphs = mmd_root.vertex_morphs
+        uv_morphs = mmd_root.uv_morphs
         for obj in rig.meshes():
             for kb in getattr(obj.data.shape_keys, 'key_blocks', ())[1:]:
                 if not kb.name.startswith('mmd_') and kb.name not in vertex_morphs:
                     item = vertex_morphs.add()
                     item.name = kb.name
                     item.name_e = kb.name
+                    cls.category_guess(item)
+            for g, name, x in FnMorph.get_uv_morph_vertex_groups(obj):
+                if name not in uv_morphs:
+                    item = uv_morphs.add()
+                    item.name = item.name_e = name
+                    item.data_type = 'VERTEX_GROUP'
                     cls.category_guess(item)
 
 
@@ -124,6 +131,39 @@ class FnMorph(object):
             override = {'object':obj, 'window':bpy.context.window, 'region':bpy.context.region}
             bpy.ops.object.vertex_group_copy(override)
             obj.vertex_groups.active.name = vg_name.replace(src_name, dest_name)
+
+    @staticmethod
+    def overwrite_bone_morphs_from_pose_library(armature_object):
+        armature = armature_object.id_data
+        pose_library = armature.pose_library
+
+        if pose_library is None:
+            return
+
+        root = armature_object.parent
+        mmd_root = root.mmd_root
+        bone_morphs = mmd_root.bone_morphs
+
+        original_mode = bpy.context.object.mode
+        bpy.ops.object.mode_set(mode='POSE')
+        try:
+            for index, pose_maker in enumerate(pose_library.pose_markers):
+                bone_morph = next(iter([m for m in bone_morphs if m.name == pose_maker.name]), None)
+                if bone_morph is None:
+                    bone_morph = bone_morphs.add()
+                    bone_morph.name = pose_maker.name
+
+                bpy.ops.pose.select_all(action='SELECT')
+                bpy.ops.pose.transforms_clear()
+                bpy.ops.poselib.apply_pose(pose_index=index)
+
+                mmd_root.active_morph = bone_morphs.find(bone_morph.name)
+                bpy.ops.mmd_tools.apply_bone_morph()
+
+            bpy.ops.pose.transforms_clear()
+
+        finally:
+            bpy.ops.object.mode_set(mode=original_mode)
 
     @staticmethod
     def clean_uv_morph_vertex_groups(obj):
@@ -226,6 +266,7 @@ class _MorphSlider:
         if obj and obj.data.shape_keys is None:
             key = obj.shape_key_add(name='--- morph sliders ---')
             key.mute = True
+            obj.active_shape_key_index = 0
         if binded and obj and obj.data.shape_keys.key_blocks[0].mute:
             return None
         return obj
@@ -242,7 +283,6 @@ class _MorphSlider:
             arm.mmd_type = 'PLACEHOLDER'
             arm.parent = obj
             SceneOp(bpy.context).link_object(arm)
-            arm.data.draw_type = 'STICK'
         return arm
 
 
@@ -263,13 +303,13 @@ class _MorphSlider:
 
     def __load(self, obj, mmd_root):
         attr_list = ('group', 'vertex', 'bone', 'uv', 'material')
-        morph_key_blocks = obj.data.shape_keys.key_blocks
+        morph_sliders = obj.data.shape_keys.key_blocks
         for m in (x for attr in attr_list for x in getattr(mmd_root, attr+'_morphs', ())):
             name = m.name
             #if name[-1] == '\\': # fix driver's bug???
             #    m.name = name = name + ' '
-            if name and name not in morph_key_blocks:
-                obj.shape_key_add(name=name)
+            if name and name not in morph_sliders:
+                obj.shape_key_add(name=name, from_mix=False)
 
 
     @staticmethod
@@ -283,7 +323,7 @@ class _MorphSlider:
     @staticmethod
     def __add_single_prop(variables, id_obj, data_path, prefix):
         var = variables.new()
-        var.name = prefix + str(len(variables))
+        var.name = f'{prefix}{len(variables)}'
         var.type = 'SINGLE_PROP'
         target = var.targets[0]
         target.id_type = 'OBJECT'
@@ -291,15 +331,41 @@ class _MorphSlider:
         target.data_path = data_path
         return var
 
+    @staticmethod
+    def __shape_key_driver_check(key_block, resolve_path=False):
+        if resolve_path:
+            try:
+                kb = key_block.id_data.path_resolve(key_block.path_from_id())
+            except ValueError as e:
+                return False
+        if not key_block.id_data.animation_data:
+            return True
+        d = key_block.id_data.animation_data.drivers.find(key_block.path_from_id('value'))
+        if isinstance(d, int): # for Blender 2.76 or older
+            data_path = key_block.path_from_id('value')
+            d = next((i for i in key_block.id_data.animation_data.drivers if i.data_path == data_path), None)
+        return (not d or d.driver.expression == ''.join(('*w','+g','v')[-1 if i < 1 else i%2]+str(i+1) for i in range(len(d.driver.variables))))
+
     def __cleanup(self, names_in_use=None):
+        from math import ceil, floor
         names_in_use = names_in_use or {}
         rig = self.__rig
+        morph_sliders = self.placeholder()
+        morph_sliders = morph_sliders.data.shape_keys.key_blocks if morph_sliders else {}
         for mesh in rig.meshes():
             for kb in getattr(mesh.data.shape_keys, 'key_blocks', ()):
-                if kb.name.startswith('mmd_bind') and kb.name not in names_in_use:
-                    kb.driver_remove('value')
-                    kb.relative_key.mute = False
-                    ObjectOp(mesh).shape_key_remove(kb)
+                if kb.name not in names_in_use:
+                    if kb.name.startswith('mmd_bind'):
+                        kb.driver_remove('value')
+                        ms = morph_sliders[kb.relative_key.name]
+                        kb.relative_key.slider_min, kb.relative_key.slider_max = min(ms.slider_min, floor(ms.value)), max(ms.slider_max, ceil(ms.value))
+                        kb.relative_key.value = ms.value
+                        kb.relative_key.mute = False
+                        ObjectOp(mesh).shape_key_remove(kb)
+                    elif kb.name in morph_sliders and self.__shape_key_driver_check(kb):
+                        ms = morph_sliders[kb.name]
+                        kb.driver_remove('value')
+                        kb.slider_min, kb.slider_max = min(ms.slider_min, floor(kb.value)), max(ms.slider_max, ceil(kb.value))
             for m in mesh.modifiers: # uv morph
                 if m.name.startswith('mmd_bind') and m.name not in names_in_use:
                     mesh.modifiers.remove(m)
@@ -347,7 +413,7 @@ class _MorphSlider:
 
         obj = self.create()
         arm = self.__dummy_armature(obj, create=True)
-        morph_key_blocks = obj.data.shape_keys.key_blocks
+        morph_sliders = obj.data.shape_keys.key_blocks
 
         # data gathering
         group_map = {}
@@ -359,14 +425,17 @@ class _MorphSlider:
             key_blocks = getattr(mesh.data.shape_keys, 'key_blocks', ())
             for kb in key_blocks:
                 kb_name = kb.name
-                if kb_name not in morph_key_blocks:
+                if kb_name not in morph_sliders:
                     continue
 
-                name_bind = 'mmd_bind%s'%hash(morph_key_blocks[kb_name])
-                if name_bind not in key_blocks:
-                    mesh.shape_key_add(name=name_bind)
-                kb_bind = key_blocks[name_bind]
-                kb_bind.relative_key = kb
+                if self.__shape_key_driver_check(kb, resolve_path=True):
+                    name_bind, kb_bind = kb_name, kb
+                else:
+                    name_bind = 'mmd_bind%s'%hash(morph_sliders[kb_name])
+                    if name_bind not in key_blocks:
+                        mesh.shape_key_add(name=name_bind, from_mix=False)
+                    kb_bind = key_blocks[name_bind]
+                    kb_bind.relative_key = kb
                 kb_bind.slider_min = -10
                 kb_bind.slider_max = 10
 
@@ -455,7 +524,7 @@ class _MorphSlider:
 
         for m in mmd_root.group_morphs:
             if len(m.data) != len(set(m.data.keys())):
-                print(' * Found duplicated morph data in Group Morph "%s"'%m.name)
+                logging.warning(' * Found duplicated morph data in Group Morph "%s"', m.name)
             morph_name = m.name.replace('"', '\\"')
             morph_path = 'data.shape_keys.key_blocks["%s"].value'%morph_name
             for d in m.data:
@@ -477,8 +546,11 @@ class _MorphSlider:
         for kb_bind, morph_data_path, groups in (i for l in shape_key_map.values() for i in l):
             driver, variables = self.__driver_variables(kb_bind, 'value')
             var = self.__add_single_prop(variables, obj, morph_data_path, 'v')
-            driver.expression = '-(%s)'%__config_groups(variables, var.name, groups)
-            kb_bind.relative_key.mute = True
+            if kb_bind.name.startswith('mmd_bind'):
+                driver.expression = '-(%s)'%__config_groups(variables, var.name, groups)
+                kb_bind.relative_key.mute = True
+            else:
+                driver.expression = '%s'%__config_groups(variables, var.name, groups)
             kb_bind.mute = False
 
         # bone morphs
@@ -547,5 +619,5 @@ class _MorphSlider:
             if mat_edge:
                 __config_material_morph(mat_edge, morph_list)
 
-        morph_key_blocks[0].mute = False
+        morph_sliders[0].mute = False
 

@@ -5,7 +5,6 @@ import re
 import bpy
 from bpy.types import Operator
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local import utils
 from mmd_tools_local.bpyutils import ObjectOp
 from mmd_tools_local.core import model as mmd_model
@@ -14,7 +13,23 @@ from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.bone import FnBone
 
 
-@register_wrap
+class SelectObject(Operator):
+    bl_idname = 'mmd_tools.object_select'
+    bl_label = 'Select Object'
+    bl_description = 'Select the object'
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    name: bpy.props.StringProperty(
+        name='Name',
+        description='The object name',
+        default='',
+        options={'HIDDEN', 'SKIP_SAVE'},
+        )
+
+    def execute(self, context):
+        utils.selectAObject(context.scene.objects[self.name])
+        return {'FINISHED'}
+
 class MoveObject(Operator, utils.ItemMoveOp):
     bl_idname = 'mmd_tools.object_move'
     bl_label = 'Move Object'
@@ -75,7 +90,6 @@ class MoveObject(Operator, utils.ItemMoveOp):
                 objects = rig.joints()
         return __MovableList(objects)
 
-@register_wrap
 class CleanShapeKeys(Operator):
     bl_idname = 'mmd_tools.clean_shape_keys'
     bl_label = 'Clean Shape Keys'
@@ -84,7 +98,10 @@ class CleanShapeKeys(Operator):
 
     @classmethod
     def poll(cls, context):
-        return len(context.selected_objects) > 0
+        for obj in context.selected_objects:
+            if obj.type == 'MESH':
+                return True
+        return False
 
     @staticmethod
     def __can_remove(key_block):
@@ -111,14 +128,12 @@ class CleanShapeKeys(Operator):
             self.__shape_key_clean(ObjectOp(ob), ob.data.shape_keys.key_blocks)
         return {'FINISHED'}
 
-@register_wrap
 class SeparateByMaterials(Operator):
     bl_idname = 'mmd_tools.separate_by_materials'
-    bl_label = 'Separate by Materials'
-    bl_description = 'Separate by materials'
+    bl_label = 'Separate By Materials'
     bl_options = {'REGISTER', 'UNDO'}
 
-    clean_shape_keys = bpy.props.BoolProperty(
+    clean_shape_keys: bpy.props.BoolProperty(
         name='Clean Shape Keys',
         description='Remove unused shape keys of separated objects',
         default=True,
@@ -159,14 +174,13 @@ class SeparateByMaterials(Operator):
         utils.clearUnusedMeshes()
         return {'FINISHED'}
 
-@register_wrap
 class JoinMeshes(Operator):
     bl_idname = 'mmd_tools.join_meshes'
     bl_label = 'Join Meshes'
     bl_description = 'Join the Model meshes into a single one'
     bl_options = {'REGISTER', 'UNDO'}
 
-    sort_shape_keys = bpy.props.BoolProperty(
+    sort_shape_keys: bpy.props.BoolProperty(
         name='Sort Shape Keys',
         description='Sort shape keys in the order of vertex morph',
         default=True,
@@ -210,50 +224,37 @@ class JoinMeshes(Operator):
         utils.clearUnusedMeshes()
         return { 'FINISHED' }
 
-@register_wrap
 class AttachMeshesToMMD(Operator):
     bl_idname = 'mmd_tools.attach_meshes'
     bl_label = 'Attach Meshes to Model'
     bl_description = 'Finds existing meshes and attaches them to the selected MMD model'
     bl_options = {'REGISTER', 'UNDO'}
 
-    def execute(self, context):
-        root = mmd_model.Model.findRoot(context.active_object)
+    add_armature_modifier: bpy.props.BoolProperty(
+        default=True
+    )
+
+    def execute(self, context: bpy.types.Context):
+        root = mmd_model.FnModel.find_root(context.active_object)
         if root is None:
             self.report({ 'ERROR' }, 'Select a MMD model')
             return { 'CANCELLED' }
 
-        rig = mmd_model.Model(root)
-        armObj = rig.armature()
+        armObj = mmd_model.FnModel.find_armature(root)
         if armObj is None:
             self.report({ 'ERROR' }, 'Model Armature not found')
             return { 'CANCELLED' }
 
-        def __get_root(mesh):
-            if mesh.parent is None:
-                return mesh
-            return __get_root(mesh.parent)
-
-        meshes_list = (o for o in context.visible_objects if o.type == 'MESH' and o.mmd_type == 'NONE')
-        for mesh in meshes_list:
-            if mmd_model.Model.findRoot(mesh) is not None:
-                # Do not attach meshes from other models
-                continue
-            mesh = __get_root(mesh)
-            m = mesh.matrix_world
-            mesh.parent_type = 'OBJECT'
-            mesh.parent = armObj
-            mesh.matrix_world = m
+        mmd_model.FnModel.attach_meshes(root, context.visible_objects, self.add_armature_modifier)
         return { 'FINISHED' }
 
-@register_wrap
 class ChangeMMDIKLoopFactor(Operator):
     bl_idname = 'mmd_tools.change_mmd_ik_loop_factor'
     bl_label = 'Change MMD IK Loop Factor'
     bl_description = "Multiplier for all bones' IK iterations in Blender"
     bl_options = {'REGISTER', 'UNDO'}
 
-    mmd_ik_loop_factor = bpy.props.IntProperty(
+    mmd_ik_loop_factor: bpy.props.IntProperty(
         name='MMD IK Loop Factor',
         description='Scaling factor of MMD IK loop',
         min=1,
@@ -276,18 +277,28 @@ class ChangeMMDIKLoopFactor(Operator):
     def execute(self, context):
         arm = context.active_object
 
-        if '_RNA_UI' not in arm:
-            arm['_RNA_UI'] = {}
-        prop = {}
-        prop['min'] = 1
-        prop['soft_min'] = 1
-        prop['soft_max'] = 10
-        prop['max'] = 100
-        prop['description'] = 'Scaling factor of MMD IK loop'
-        arm['_RNA_UI']['mmd_ik_loop_factor'] = prop
-
         old_factor = max(arm.get('mmd_ik_loop_factor', 1), 1)
         new_factor = arm['mmd_ik_loop_factor'] = self.mmd_ik_loop_factor
+
+        # Reference: https://developer.blender.org/rB8b9a3b94fc148d
+        if hasattr(arm, 'id_properties_ui'):
+            ui_data = arm.id_properties_ui('mmd_ik_loop_factor')
+            ui_data.update(
+                min=1,
+                soft_min=1,
+                soft_max=10,
+                max=100,
+                description='Scaling factor of MMD IK loop',
+                )
+        else:
+            from rna_prop_ui import rna_idprop_ui_prop_get
+            prop = rna_idprop_ui_prop_get(arm, 'mmd_ik_loop_factor', create=True)
+            prop['min'] = 1
+            prop['soft_min'] = 1
+            prop['soft_max'] = 10
+            prop['max'] = 100
+            prop['description'] = 'Scaling factor of MMD IK loop'
+
         if new_factor == old_factor:
             return { 'FINISHED' }
         for b in arm.pose.bones:
@@ -299,7 +310,6 @@ class ChangeMMDIKLoopFactor(Operator):
                 c.iterations = iterations
         return { 'FINISHED' }
 
-@register_wrap
 class RecalculateBoneRoll(Operator):
     bl_idname = 'mmd_tools.recalculate_bone_roll'
     bl_label = 'Recalculate bone roll'

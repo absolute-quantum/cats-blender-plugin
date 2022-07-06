@@ -63,6 +63,9 @@ Blender를 다시 시작하고 Cats Plugin를 다시 활성화하세요!
 ToolPanel.label,Cats Blender Plugin,Cats ブレンダープラグイン,
 ToolPanel.category,CATS,,
 ArmaturePanel.label,Model,モデル,모델
+ArmaturePanel.warn.newBlender1,Potentially unsupported Blender version detected!
+ArmaturePanel.warn.newBlender2,Some features might not work!
+ArmaturePanel.warn.newBlender3,CATS currently supports up to Blender 3.2.
 ArmaturePanel.warn.oldBlender1,Old Blender version detected!,古いブレンダーバージョンが検出されました!,이전 블렌더 버전이 발견되었습니다!
 ArmaturePanel.warn.oldBlender2,Some features might not work!,一部の機能は動作しない可能性があります!,일부 기능이 작동하지 않을 수 있습니다!
 ArmaturePanel.warn.oldBlender3,Please update to Blender 2.79!,ブレンダー2.79以上にアップデートしてください!,블렌더 2.79 버전으로 업데이트하세요!
@@ -180,7 +183,7 @@ BakePanel.alphalabel,Alpha:,,
 BakePanel.transparencywarning,Transparency isn't currently selected!,,현재 투명도가 선택되지 않았습니다!
 BakePanel.smoothnesswarning,Smoothness isn't currently selected!,,현재 부드러움이 선택되지 않았습니다!
 BakePanel.doublepackwarning,Smoothness packed in two places!,,두군데에 부드러움이 설정되었습니다!
-ScalingPanel.label,Scaling,,
+ScalingPanel.label,Model Scaling,,
 ScalingPanel.imscaleDisabled1,Immersive Scaler is not enabled!,,
 ScalingPanel.imscaleDisabled2,Enable it in your user preferences:,,
 ScalingPanel.imscaleOldVersion1,Immersive Scaler is not installed!,,
@@ -200,7 +203,8 @@ CreditsPanel.desc1,Cats Blender Plugin (,,
 CreditsPanel.desc2,Created by Hotox and GiveMeAllYourCats,HotoxとGiveMeAllYourCatsによって作成,멋진 VRChat 커뮤니티를 위해서
 CreditsPanel.desc3,For the awesome VRChat community <3,素晴らしいVRChatコミュニティのために <3,Hotox와 GiveMeAllYourCats에 의해 제작됨 <3
 CreditsPanel.desc4,Special thanks to:,特別な感謝: ShotariyaとNeitri,다음 분들께 특별한 감사를 전합니다:
-CreditsPanel.descContributors,"Feilen, Jordo, Ruubick, Shotariya and Neitri",Feilen、Jordo、Ruubick、ShotariyaとNeitri,"Feilen, Jordo, Ruubick, Shotariya와 Neitri"
+CreditsPanel.descContributors,"Feilen, Jordo, Ruubick, 989onan, triazo,","Feilen、Jordo、Ruubick、989onan、triazo、","Feilen, Jordo, Ruubick, 989onan, triazo,"
+CreditsPanel.descContributors2,"Shotariya and Neitri","ShotariyaとNeitri","Shotariya와 Neitri"
 CreditsPanel.desc5,Do you need help or found a bug?,助けが必要ですか、バグを見つけましたか?,도움이 필요하시거나 혹시 버그를 찾으셨나요?
 FixArmature.label,Fix Model,モデル修正,모델 고치기
 FixArmature.desc,"Automatically:
@@ -254,13 +258,7 @@ PoseNamePopup.label,Give this shapekey a name:,このシェイプキーに名前
 PoseNamePopup.desc,Sets the shapekey name. Press anywhere outside to skip,,쉐이프키 이름을 설정합니다. 스킵하려면 아무 곳이나 누르세요.
 PoseNamePopup.success,Pose successfully saved as shape key.,,포즈가 성공적으로 쉐이프키로 저장되었습니다.
 PoseToRest.label,Apply as Rest Pose,レストポーズとして適用する,새로운 기본자세로 적용
-PoseToRest.desc,"This applies the current pose position as the new rest position.
-
-If you scale the bones equally on each axis the shape keys will be scaled correctly as well!
-WARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this",,"이것은 현재 포즈를 새로운 기본 포즈로 적용합니다.
-
-만약 당신이 뼈들의 스케일을 각 축마다 동일하게 조절했다면 쉐이프키들 또한 올바르게 적용될 것입니다!
-경고: 이것은 쉐이프키에 원치 않는 영향을 줄 수 있기 때문에, 이걸로 머리를 수정할 경우 조심하세요."
+PoseToRest.desc,This applies the current pose position as the new rest position.,,이것은 현재 포즈를 새로운 기본 포즈로 적용합니다.
 PoseToRest.success,Pose successfully applied as rest pose.,,포즈가 성공적으로 기본자세로 적용되었습니다.
 JoinMeshes.label,Join Meshes,メッシュに参加する,메쉬 통합
 JoinMeshes.desc,"Joins all meshes of this model together.
@@ -457,9 +455,7 @@ InstallShotariya.error.version1,Material Combiner is outdated!,,
 InstallShotariya.error.version2,The latest version is required for this function.,,
 InstallShotariya.error.version3,Please download and install it manually:,,
 ShotariyaButton.label,Download Material Combiner,マテリアルコンバイナーをダウンロード,매테리얼 통합기 다운로드
-ShotariyaButton.URL,https://vrcat.club/threads/material-combiner-blender-addon-1-1-3.2255/,,
 ShotariyaButton.success,Material Combiner link opened,,
-ImmersiveScalerButton.URL,https://github.com/triazo/immersive_scaler/releases/latest,,
 ImmersiveScalerButton.success,Immersive Scaler link opened,,
 ImmersiveScalerButton.label,Download Immersive Scaler,,
 ImmersiveScalerButton.desc,Open latest Immersive Scaler release,,
@@ -709,18 +705,9 @@ DebugTranslations.error,"Errors found, response printed!!",,
 DebugTranslations.success,"No issues with Google Translations found, response printed!",,
 ShapeKeyApplier.label,Apply Selected Shapekey to Basis,選択したシェイプキーをBasisに適用,선택된 쉐이프키를 Basis에 적용
 ShapeKeyApplier.desc,Applies the selected shape key to the new Basis at it's current strength and creates a reverted shape key from the selected one,,
-ShapeKeyApplier.error.revertCustomBasis,"To revert the shape keys, please apply the ""Reverted"" shape keys in reverse order.
-Start with the shape key called ""{name}"".
-
-If you didn't change the shape key order, you can revert the shape keys from top to bottom.",,
-ShapeKeyApplier.error.revertCustomBasis.scale,7.3,,
-ShapeKeyApplier.error.revert,"To revert the shape keys, please apply the ""Reverted"" shape keys in reverse order.
-Start with the reverted shape key that uses the relative key called ""Basis"".
-
-If you didn't change the shape key order, you can revert the shape keys from top to bottom.",,
-ShapeKeyApplier.error.revert.scale,7.3,,
+ShapeKeyApplier.error.recursiveRelativeToLoop,"Shapekey ""{name}"" is recursively relative to itself, so cannot be applied to the Basis",,
 ShapeKeyApplier.successRemoved,"Successfully removed shapekey ""{name}"" from the Basis.",,
-ShapeKeyApplier.successSet,"Successfully set shapekey ""{name}"" as the new Basis.",,
+ShapeKeyApplier.successSet,"Successfully applied shapekey ""{name}"" to the Basis.",,
 addToShapekeyMenu.ShapeKeyApplier.label,Apply Selected Shapekey to Basis,選択したシェイプキーをBasisに適用,선택된 쉐이프키를 Basis에 적용
 PatreonButton.label,Become a Patron,パトロンになる,후원하기
 PatreonButton.URL,https://www.patreon.com/catsblenderplugin,,
@@ -779,7 +766,7 @@ Scene.zip_content.desc,Select the model you want to import,,불러올 모델을 
 Scene.keep_upper_chest.label,Keep Upper Chest,上部の胸の骨を保つ,Upper Chest 보존
 Scene.keep_upper_chest.desc,"VRChat now partially supports the Upper Chest bone, so deleting it is no longer necessary.
 
-WARNING: Currently this breaks Eye Tracking, so don't check this if you want Eye Tracking",,"VRChat은 이제 상단 가슴(Upper Chest) 본을 부분적으로 지원하므로 더 이상 삭제할 필요가 없습니다.
+Uncheck this if you are going to use the legacy SDK2 avatar system. Most people can leave this on.",,"VRChat은 이제 상단 가슴(Upper Chest) 본을 부분적으로 지원하므로 더 이상 삭제할 필요가 없습니다.
 
 경고: 현재 이것은 눈 추적(Eye Tracking)을 망치기 때문에, 눈 추적을 원한다면 이것을 체크하지 말아주세요."
 Scene.combine_mats.label,Combine Same Materials,同じマテリアルを組み合わせる,동일한 매테리얼 결합
@@ -901,6 +888,9 @@ Not checking this will always apply transforms",,
 Scene.merge_armatures_remove_zero_weight_bones.label,Remove Zero Weight Bones,ゼロウェイトボーンを削除する,제로 웨이트 본 제거
 Scene.merge_armatures_remove_zero_weight_bones.desc,"Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.
 Uncheck this if bones or vertex groups that you want to keep got deleted",,
+Scene.merge_armatures_cleanup_shape_keys.label,Cleanup Shape Keys,
+Scene.merge_armatures_cleanup_shape_keys.desc,"Cleans up the meshes shape keys.
+Uncheck this if shape keys you want to keep got deleted",,
 Scene.decimation_mode.label,Decimation Mode,単純化モード,
 Scene.decimation_mode.desc,Decimation Mode,,
 Scene.decimation_mode.smart.label,Smart,スマート,
@@ -1093,6 +1083,8 @@ Scene.merge_mesh.label,Mesh,メッシュ,메쉬
 Scene.merge_mesh.desc,The mesh with the bones vertex groups,,
 Scene.merge_bone.label,To Merge,マージするには,통합할 부분
 Scene.merge_bone.desc,List of bones that look like they could be merged together to reduce overall bones,,
+Scene.show_avatar_2_tabs.label,Show Avatar 2.0 tools,
+Scene.show_avatar_2_tabs.desc,Show tools specific to legacy versions of the Avatar API
 Scene.show_mmd_tabs.label,Show mmd_tools,,mmd_tools 탭 보이기
 Scene.show_mmd_tabs.desc,"Allows you to hide/show the mmd_tools tabs ""MMD"" and ""Misc""",,
 Scene.embed_textures.label,Embed Textures on Export,エクスポート時にテクスチャを埋め込む,내보낼 때 텍스처 포함
@@ -1120,9 +1112,9 @@ This will leave any map named ""Detail Map"" alone.
 Uses UVPackMaster where available for more efficient UVs, make sure the window is showing",,
 Scene.bake_uv_overlap_correction.label,Overlap correction,,중복 보정
 Scene.bake_uv_overlap_correction.desc,Method used to prevent overlaps in UVMap,,
-Scene.bake_prioritize_face.label,Prioritize Head/Eyes,,머리 / 눈 우선 순위 지정
+Scene.bake_prioritize_face.label,Prioritize Eyes,,머리 / 눈 우선 순위 지정
 Scene.bake_prioritize_face.desc,Scale any UV islands attached to the head/eyes by a given factor.,,
-Scene.bake_face_scale.label,Head/Eyes Scale,,머리 / 눈 스케일
+Scene.bake_face_scale.label,Eyes Scale,,머리 / 눈 스케일
 Scene.bake_face_scale.desc,How much to scale up the face/eyes portion of the textures.,,
 Scene.bake_quick_compare.label,Quick compare,,빠른 비교
 Scene.bake_quick_compare.desc,Move output avatar next to existing one to quickly compare,,
@@ -1153,6 +1145,10 @@ Scene.bake_pass_ao.label,Ambient Occlusion,,
 Scene.bake_pass_ao.desc,"Bakes Ambient Occlusion, non-projected shadows. Adds a significant amount of detail to your model.
 Reccomended for non-toon style avatars.
 Takes a fairly long time to bake",,
+Scene.bake_pass_displacement.label,Displacement (Height),,
+Scene.bake_pass_displacement.desc,"Bakes a normalized Displacement map, according to the material displacement in Blender.
+Can add real 3d surface detail to models.
+Results are in Linear space, so make sure uncheck Color Texture in Unity.",,
 Scene.bake_pass_questdiffuse.label,Quest Diffuse (Color+AO),,
 Scene.bake_pass_questdiffuse.desc,Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.,,
 Scene.bake_pass_emit.label,Emit,,
@@ -1173,7 +1169,7 @@ Not a native pass in Blender, results may vary",,
 Scene.bake_questdiffuse_opacity.label,AO Opacity,,
 Scene.bake_questdiffuse_opacity.desc,"The opacity of the shadows to blend onto the Diffuse map.
 This should match the unity slider for AO on the Desktop version.",,
-Scene.bake_uv_overlap_correction.none.label,None,,
+Scene.bake_uv_overlap_correction.none.label,Rearrange,,
 Scene.bake_uv_overlap_correction.none.desc,Leave islands as they are. Use if islands don't self-intersect at all,,
 Scene.bake_uv_overlap_correction.unmirror.label,Unmirror,,
 Scene.bake_uv_overlap_correction.unmirror.desc,Move all face islands with positive X values over one to un-pin mirrored UVs. Solves most UV pinning issues.,,
@@ -1276,3 +1272,81 @@ bpy.types.Scene.cats_update_action.ignore.label,Ignore this version,このバー
 bpy.types.Scene.cats_update_action.ignore.desc,This ignores this version. You will be reminded again when the next version releases,,
 bpy.types.Scene.cats_update_action.defer.label,Remind me later,後で通知する,나중에 다시보기
 bpy.types.Scene.cats_update_action.defer.desc,Hides the update notification til the next Blender restart,,
+apply_current_shapekey_mix,"Apply current shapekey mix"
+bake_device,"Bake Device"
+bake_projected_light,"Bake projected light"
+bake_the_effect_of_emission_on_nearby_surfaces_results_in_much_more_realistic_lighting_effects_but_can_animate_less_well,"Bake the effect of emission on nearby surfaces. Results in much more realistic lighting effects, but can animate less well."
+bake_to_vertex_colors,"Bake to vertex colors"
+bakes_the_effect_of_any_eye_glow_onto_surrounding_objects_but_not_viceversa_improves_animation_when_eyes_are_moving_around,"Bakes the effect of any eye glow onto surrounding objects, but not vice-versa. Improves animation when eyes are moving around.."
+blends_emission_into_the_diffuse_map_for_engines_without_a_seperate_emission_map,"Blends emission into the diffuse map, for engines without a seperate emission map"
+cleanup_shapekeys,"Cleanup Shapekeys"
+convert_diffuse_and_metallic_to_premultiplied_diffuse_and_specular_compatible_with_older_engines,"Convert Diffuse and Metallic to premultiplied Diffuse and Specular. Compatible with older engines"
+denoise_renders,"Denoise renders"
+denoise_the_resulting_image_after_emitao_reccomended_as_this_will_reduce_the_grainy_quality_of_inexpensive_rendering,"Denoise the resulting image after emit/AO. Reccomended as this will reduce the 'grainy' quality of inexpensive rendering.."
+device_to_bake_on_gpu_gives_a_significant_speedup_but_can_cause_issues_depending_on_your_graphics_drivers,"Device to bake on. GPU gives a significant speedup, but can cause issues depending on your graphics drivers."
+diffuse_emission_overlay,"Diffuse Emission Overlay"
+exclude_eyes,"Exclude eyes"
+experimental_try_to_keep_uvps_lock_overlapping_enabled,"Experimental. Try to keep UVP's lock overlapping enabled"
+export_format,"Export format"
+for_source_engine_only_provides_diffuse_lighting_reflections_for_nonmetallic_objects,"For Source engine only. Provides diffuse lighting reflections for nonmetallic objects."
+generate_an_additional_lod_used_for_simplified_physics_interactions,"Generate an additional LOD used for simplified physics interactions"
+generate_courser_decimation_levels_for_efficient_rendering,"Generate courser decimation levels for efficient rendering."
+generate_lods,"Generate LODs"
+generate_physics_model,"Generate Physics Model"
+generate_the_twistbones_on_the_upper_half_of_the_bone_usually_used_for_upper_legs,"Generate the twistbones on the upper half of the bone. Usually used for upper legs."
+generate_upperhalf,"Generate Upperhalf"
+gmod_model_name,"Gmod Model Name"
+ignore_currently_hidden_objects_when_copying,"Ignore currently hidden objects when copying"
+ignore_hidden_objects,"Ignore hidden objects"
+image_export_format,"Image export format"
+image_type_to_use_when_exporting,"image type to use when exporting"
+invert_green_channel,"Invert green channel"
+keep_merged_bones,"Keep Merged Bones"
+keep_overlapping_islands_uvp,"Keep Overlapping Islands (UVP)"
+lod_generation_levels_as_a_percent_of_the_max_tris,"LOD generation levels, as a percent of the max tris"
+lods,"LODs"
+max_bones_per_prop,"Max Bones Per Prop"
+maximum_bones_a_prop_can_be_attached_to_to_be_considered_a_prop_more_will_create_more_toggleable_props_but_increase_armature_complexity,"Maximum bones a prop can be attached to to be considered a prop. More will create more toggleable props, but increase armature complexity."
+merge_any_bone_with_twist_in_the_name_useful_as_quest_does_not_support_constraints,"Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints."
+merge_twist_bones,"Merge Twist Bones"
+merge_visible_meshes_only,"Merge Visible Meshes Only"
+merges_smoothness_into_the_specular_map_for_engines_without_a_seperate_smoothness_map,"Merges smoothness into the specular map, for engines without a seperate smoothness map"
+model_format_to_use_when_exporting,"Model format to use when exporting"
+name,"Name"
+normal_alpha_pack,"Normal Alpha Pack"
+optimize_solid_materials,"Optimize Solid Materials"
+optimize_static_shapekeys,"Optimize Static Shapekeys"
+optimizes_solid_materials_by_making_a_small_area_for_them_ao_pass_will_nullify,"Optimizes solid materials by making a small area for them. AO pass will nullify"
+pack_ambient_occlusion_to_the_green_channel_saves_a_texture_as_unity_uses_g_for_ao_r_for_metallic,"Pack Ambient Occlusion to the Green channel. Saves a texture as Unity uses G for AO, R for Metallic."
+pack_ao_to_metallic_green,"Pack AO to Metallic Green"
+phong_setup_source,"Phong Setup (Source)"
+physmodel_percent,"Physmodel Percent"
+premultiply_diffuse_w_ao,"Premultiply Diffuse w/ AO"
+premultiply_smoothness_w_ao,"Premultiply Smoothness w/ AO"
+prop_bones_max_influence_count,"Prop bones Max Influence Count"
+prop_bones_max_influence_count,"Prop bones Max Influence Count"
+rebake_to_vertex_colors_after_initial_bake_avoids_an_entire_extra_texture_if_your_colors_are_simple_enough_incorperates_ao,"Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO."
+remove_backup_shapekeys_in_the_final_result_eg_key__reverted_or_blinkold,"Remove backup shapekeys in the final result, e.g. 'Key1 - Reverted' or 'blink_old'"
+select_this_to_keep_the_bones_after_merging_them_to_their_parents_or_to_the_active_bone,"Select this to keep the bones after merging them to their parents or to the active bone"
+select_this_to_only_merge_the_weights_of_the_visible_meshes,"Select this to only merge the weights of the visible meshes"
+seperate_vertices_unaffected_by_shape_keys_into_their_own_mesh_this_adds_a_drawcall_but_comes_with_a_significant_gpu_cost_savings_especially_on_mobile,"Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile."
+sharpen_bakes,"Sharpen bakes"
+sharpen_resampled_images_after_baking_diffusesmoothnessmetallic_reccomended_as_any_sampling_will_cause_blur,"Sharpen resampled images after baking diffuse/smoothness/metallic. Reccomended as any sampling will cause blur."
+show_advanced_general_options,"Show Advanced General Options"
+show_advanced_platform_options,"Show Advanced Platform Options"
+source_engine_uses_an_inverse_green_channel_this_fixes_that_on_export,"Source engine uses an inverse green channel, this fixes that on export"
+specular_alpha_channel,"Specular Alpha Channel"
+specular_setup,"Specular Setup"
+specular_smoothness_overlay,"Specular Smoothness Overlay"
+steam_library,"Steam Library"
+target_another_bone_naming_standard_when_exporting_requires_standard_bone_names,"Target another bone naming standard when exporting. Requires standard bone names"
+the_angle_reproject_uses_when_unwrapping_larger_angles_yield_less_islands_but_more_stretching_and_smaller_does_opposite,"The angle Reproject uses when unwrapping. Larger angles yield less islands but more stretching and smaller does opposite"
+this_option_will_detect_any_meshes_weighted_to_a_single_bone_and_create_a_prop_bone_you_can_independently_scale_to_,"This option will detect any meshes weighted to a single bone and create a 'prop' bone you can independently scale to 0."
+translate_bone_names,"Translate bone names"
+unwrap_angle,"Unwrap Angle"
+what_to_pack_to_the_alpha_channel_of_specularity,"What to pack to the Alpha channel of Specularity"
+when_selected_currently_active_shape_keys_will_be_applied_to_the_basis_this_is_extremely_beneficial_to_performance_if_your_avatar_is_intended_to_default_to_one_shapekey_mix_as_having_active_shapekeys_all_the_time_is_expensive_keys_ending_in_bake_are_always_applied_to_the_basis_and_removed_completely_regardless_of_this_option,"When selected, currently active shape keys will be applied to the basis. This is extremely beneficial to performance if your avatar is intended to 'default' to one shapekey"
+mix," as having active shapekeys all the time is expensive. Keys ending in '_bake' are always applied to the basis and removed completely, regardless of this option."
+while_not_technically_accurate_this_avoids_the_shine_effect_on_obscured_portions_of_your_model,"While not technically accurate, this avoids the 'shine effect' on obscured portions of your model"
+will_show_extra_options_related_to_applicable_bones_and_texture_packing_setups,"Will show extra options related to applicable bones and texture packing setups."
+will_show_extra_options_related_to_which_bake_passes_are_performed_and_how,"Will show extra options related to which bake passes are performed and how."
