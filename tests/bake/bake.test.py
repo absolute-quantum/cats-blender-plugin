@@ -71,7 +71,7 @@ sampling_lookup = {
             (0,0): (255,255,255,255),
             (216,0): (36,36,36,255)
         },
-        'VRChat Desktop metallic.png': {
+        'VRChat Desktop Excellent metallic.png': {
             (215,17): (0,0,0,234),
             (96,220): (0,0,0,127),
             (216,0): (0,0,0,127),
@@ -89,7 +89,7 @@ sampling_lookup = {
             (215,63): (0,0,0,127),
             (215,40): (64,0,0,127),
         },
-        'VRChat Desktop diffuse.png': {
+        'VRChat Desktop Excellent diffuse.png': {
             (215,17): (0,255,0,255),
             (96,220): (188,188,188,255),
             (216,0): (0,0,255,36),
@@ -107,7 +107,7 @@ sampling_lookup = {
             (215,63): (0,0,0,255),
             (215,40): (255,0,0,255),
         },
-        'VRChat Desktop normal.png': {
+        'VRChat Desktop Excellent normal.png': {
             (215,17): (128,128,255,255),
             (96,220): (127,127,255,255),
             (98,32): (127,127,255,255),
@@ -392,8 +392,8 @@ sampling_lookup = {
 class TestAddon(unittest.TestCase):
 
     def reset_stage(self):
-        for colname in ['VRChat Desktop', 'VRChat Quest Excellent', 'VRChat Quest Good',
-                        'Second Life']:
+        for colname in ['VRChat Desktop Excellent', 'VRChat Quest Excellent', 'VRChat Quest Good',
+                        'Second Life', 'VRChat Desktop Good', 'VRChat Quest Medium']:
             bpy.data.collections.remove(bpy.data.collections["CATS Bake " + colname],
                                         do_unlink=True)
 

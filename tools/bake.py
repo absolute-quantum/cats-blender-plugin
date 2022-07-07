@@ -239,8 +239,11 @@ class BakePresetDesktop(bpy.types.Operator):
 
     def execute(self, context):
         item = context.scene.bake_platforms.add()
-        item.name = "VRChat Desktop"
+        item.name = "VRChat Desktop Excellent"
         autodetect_passes(self, context, item, 32000, "DESKTOP")
+        itemgood = context.scene.bake_platforms.add()
+        itemgood.name = "VRChat Desktop Good"
+        autodetect_passes(self, context, itemgood, 70000, "DESKTOP")
         return {'FINISHED'}
 
 @register_wrap
