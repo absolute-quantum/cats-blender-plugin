@@ -1179,6 +1179,7 @@ class OptimizeStaticShapekeys(bpy.types.Operator):
                         bpy.ops.object.mode_set(mode = 'OBJECT')
                     bpy.context.object.active_shape_key_index = 0
                     mesh.name = "Static"
+                    mesh['catsForcedExportName'] = "Static"
                     # remove all shape keys for 'Static'
                     bpy.ops.object.shape_key_remove(all=True)
 

@@ -35,7 +35,7 @@ import mathutils
 from . import common as Common
 from .register import register_wrap
 from .translations import t
-
+from . import fbx_patch as Fbx_patch
 
 @register_wrap
 class BakeTutorialButton(bpy.types.Operator):
@@ -713,6 +713,10 @@ class BakeButton(bpy.types.Operator):
     def copy_ob(self, ob, parent, collection):
         # copy ob
         copy = ob.copy()
+        if not 'catsForcedExportName' in ob:
+            copy['catsForcedExportName'] = ob.name
+        else:
+            copy['catsForcedExportName'] = ob['catsForcedExportName']
         copy.data = ob.data.copy()
         copy.parent = parent
         copy.matrix_parent_inverse = ob.matrix_parent_inverse.copy()
@@ -930,6 +934,7 @@ class BakeButton(bpy.types.Operator):
                 # Remove insiginificant weights
                 bpy.ops.object.vertex_group_clean(group_select_mode='BONE_DEFORM', limit=0.00001)
                 Common.switch('OBJECT')
+                obj['catsForcedExportName'] = orig_largest_obj_name
 
         # Copy default values from the largest diffuse BSDF
         objs_size_descending = sorted(get_objects(collection.all_objects, {"MESH"}),
@@ -947,7 +952,6 @@ class BakeButton(bpy.types.Operator):
 
         bsdf_original = first_bsdf(objs_size_descending)
         cats_uv_layers = set()
-        bpy.data.objects[orig_largest_obj_name].name = "CATS Body"
 
         #first fix broken colors by adding their textures, then add the results of color only materials/solid textures to see if they need special UV treatment.
         #To detect and fix UV's for materials that are solid and don't need entire uv maps if all the textures are consistent throught. Also adds solid textures for BSDF's with default values but no texture
@@ -1607,6 +1611,7 @@ class BakeButton(bpy.types.Operator):
                                            filter_func=lambda obj:
                                            (prop_bone_handling != "REMOVE") or
                                            'generatePropBones' not in obj or not obj['generatePropBones'])
+            plat_arm_copy.name = "CATS Armature"
 
             # Create an extra scene to render in
             bpy.ops.scene.new(type="EMPTY") # copy keeps existing settings
@@ -1659,7 +1664,7 @@ class BakeButton(bpy.types.Operator):
                     if len(found_vertex_groups) == 0:
                         continue
 
-                    orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
+                    orig_obj_name = obj['catsForcedExportName']
                     vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
                     for vgp in found_vertex_groups:
                         vgroup_name = vgroup_lookup[vgp]
@@ -1882,6 +1887,11 @@ class BakeButton(bpy.types.Operator):
             print("Decimating")
             context.scene.decimation_remove_doubles = platform.remove_doubles
 
+            # Make note of which objects are going to be exported
+            export_groups = [
+                ("Bake", ["CATS Body", "CATS Armature", "Static"])
+            ]
+
             # Physmodel does a couple extra things like ensuring doubles are removed, wire display
             if use_physmodel:
                 new_arm = self.tree_copy(plat_arm_copy, None, plat_collection, ignore_hidden, view_layer=context.view_layer)
@@ -1892,6 +1902,7 @@ class BakeButton(bpy.types.Operator):
                 for obj in get_objects(new_arm.children):
                     obj.name = "LODPhysics"
                 new_arm.name = "ArmatureLODPhysics"
+                export_groups.append(("LODPhysics", ["LODPhysics", "ArmatureLODPhysics"]))
 
             if use_lods:
                 for idx, lod in enumerate(lods):
@@ -1901,6 +1912,7 @@ class BakeButton(bpy.types.Operator):
                     for obj in get_objects(new_arm.children):
                         obj.name = "LOD" + str(idx + 1)
                     new_arm.name = "ArmatureLOD" + str(idx + 1)
+                    export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
 
             if use_decimation:
                 # Decimate. If 'preserve seams' is selected, forcibly preserve seams (seams from islands, deselect seams)
@@ -2172,34 +2184,15 @@ class BakeButton(bpy.types.Operator):
                         context.view_layer.objects.active = mesh
                         bpy.ops.cats_manual.optimize_static_shapekeys()
 
-            # Export the model to the bake dir
-            export_groups = [
-                ("Bake", [orig_largest_obj_name, orig_armature_name, "Static"])
-            ]
-            if use_physmodel:
-                    export_groups.append(("LODPhysics", ["LODPhysics", "ArmatureLODPhysics"]))
-            if use_lods:
-                for idx, _ in enumerate(lods):
-                    export_groups.append(("LOD" + str(idx + 1), ["LOD" + str(idx + 1), "ArmatureLOD" + str(idx + 1)]))
-
-            saved_armature_name = ""
-            saved_obj_name = ""
             # Create groups to export... One for the main, one each for each LOD
             for obj in plat_collection.all_objects:
                 if not "LOD" in obj.name:
                     if obj.type == "MESH" and obj.name != "Static":
-                        # blender refuses to clobber names sometimes, so we do this
-                        saved_obj_name = obj.name
-                        obj.name = orig_largest_obj_name
-                    elif obj.type == "ARMATURE":
-                        saved_armature_name = obj.name
-                        obj.name = orig_armature_name
-
+                        obj.name = "CATS Body"
 
             # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
             #exception is Gmod because Gmod needs textures to be applied to work - @989onan
             if export_format not in ["GMOD"]:
-                saved_armature_name = obj.name
                 for obj in get_objects(plat_collection.all_objects):
                     if obj.type == 'MESH':
                         context.view_layer.objects.active = obj
@@ -2227,14 +2220,12 @@ class BakeButton(bpy.types.Operator):
             if copy_only_handling == "COPY":
                 for obj in get_objects(armature.children, {"MESH"}, filter_func=lambda obj:
                                        not not_copyonly(obj)):
-                    orig_obj_name = obj.name
                     new_obj = self.tree_copy(obj, plat_arm_copy, plat_collection, ignore_hidden,
                                               view_layer=orig_view_layer)
                     if not new_obj:
                         continue
-                    obj.name = obj.name + ".orig"
-                    new_obj.name = orig_obj_name
                     new_obj.parent = plat_arm_copy
+                    new_obj['catsForcedExportName'] = obj.name
 
                     # Make sure all armature modifiers target the new armature
                     for modifier in new_obj.modifiers:
@@ -2246,11 +2237,14 @@ class BakeButton(bpy.types.Operator):
                     export_groups[0][1].append(new_obj.name)
 
             for export_group in export_groups:
+                assert(all(obj_name in plat_collection.all_objects for obj_name in export_group[1]), export_group)
                 bpy.ops.object.select_all(action='DESELECT')
                 for obj in get_objects(plat_collection.all_objects):
                     if obj.name in export_group[1]:
                         obj.select_set(True)
                 if export_format == "FBX":
+                    # Monkeypatch the FBX exporter to use 'catsForcedExportName' instead of obj.name
+                    Fbx_patch.patch_fbx_exporter()
                     bpy.ops.export_scene.fbx(filepath=bpy.path.abspath("//CATS Bake/" + platform_name + "/" + export_group[0] + ".fbx"), check_existing=False, filter_glob='*.fbx',
                                              use_selection=True,
                                              use_active_collection=False, global_scale=1., apply_unit_scale=True, apply_scale_options='FBX_SCALE_ALL',
@@ -2308,14 +2302,6 @@ class BakeButton(bpy.types.Operator):
                     if "ArmatureLOD" + str(idx + 1) in plat_collection.objects:
                         plat_collection.objects["ArmatureLOD" + str(idx + 1)].location.z += armature.dimensions.z * (1 + idx)
 
-            # Swap back original names
-            for obj in get_objects(plat_collection.objects, filter_type={"MESH"}):
-                if obj.name + ".orig" in bpy.data.objects:
-                    bpy.data.objects[obj.name + ".orig"].name = obj.name
-
-            bpy.data.objects[orig_largest_obj_name].name = saved_obj_name
-            bpy.data.objects[orig_armature_name].name = saved_armature_name
-
         # Delete our duplicate scene and the platform-agnostic CATS Bake
         bpy.ops.scene.delete()
 
@@ -2327,10 +2313,6 @@ class BakeButton(bpy.types.Operator):
         #clean unused data
         if not is_unittest:
             bpy.ops.outliner.orphans_purge(do_local_ids=True, do_linked_ids=True, do_recursive=True)
-
-        # return original meshes names
-        armature.name = orig_armature_name
-        bpy.data.objects["CATS Body"].name = orig_largest_obj_name
 
         # set viewport to material preview
         for area in context.screen.areas:
