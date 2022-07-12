@@ -408,6 +408,8 @@ def unregister():
     if file_dir in sys.path:
         sys.path.remove(file_dir)
 
+    tools.settings.stop_apply_settings_threads()
+
     print("### Unloaded CATS successfully!\n")
 
 
