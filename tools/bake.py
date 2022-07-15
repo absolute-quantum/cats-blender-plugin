@@ -163,9 +163,10 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
         # Its important to leave Diffuse alpha alone if we're not using it, as Unity will try to use 4bpp if so
         item.diffuse_alpha_pack = "NONE"
         item.metallic_alpha_pack = "NONE"
-        # If 'smoothness', we need to force metallic to bake so we can pack to it. (smoothness source is not configurable)
-        if context.scene.bake_pass_smoothness:
-            context.scene.bake_pass_metallic = True
+        # Smoothness to diffuse is only the most efficient when we don't have metallic
+        if context.scene.bake_pass_smoothness and not context.scene.bake_pass_metallic:
+            item.diffuse_alpha_pack = "SMOOTHNESS"
+        if context.scene.bake_pass_metallic and context.scene.bake_pass_smoothness:
             item.metallic_alpha_pack = "SMOOTHNESS"
         item.metallic_pack_ao = False
         item.use_lods = False
@@ -2228,7 +2229,7 @@ class BakeButton(bpy.types.Operator):
                             modifier.render_levels = modifier.total_levels
 
                 bpy.ops.object.select_all(action='DESELECT')
-                for obj in get_objects(plat_arm_copy.children_recursive, {"MESH"},
+                for obj in get_objects(Common.get_children_recursive(plat_arm_copy), {"MESH"},
                                        filter_func=lambda obj: obj['catsForcedExportName'] != "Static"):
                     obj.select_set(True)
 
@@ -2237,7 +2238,7 @@ class BakeButton(bpy.types.Operator):
                 # Common.join_meshes(armature_name=plat_arm_copy.name, repair_shape_keys=False, mode=1)
 
             # Prep export group 1
-            export_groups[0][1].extend(obj.name for obj in plat_arm_copy.children_recursive)
+            export_groups[0][1].extend(obj.name for obj in Common.get_children_recursive(plat_arm_copy))
 
             for export_group in export_groups:
                 assert(all(obj_name in plat_collection.all_objects for obj_name in export_group[1]), export_group)
