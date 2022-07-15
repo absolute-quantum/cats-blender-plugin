@@ -845,7 +845,6 @@ class BakeButton(bpy.types.Operator):
         prioritize_factor = context.scene.bake_face_scale
         uv_overlap_correction = context.scene.bake_uv_overlap_correction
         margin = 0.0078125 # we want a 1-pixel margin around each island at 256x256, so 1/256, and since it's the space between islands we multiply it by two
-        pixelmargin = int(math.ceil(margin * resolution / 2))
         quick_compare = True
         apply_keys = context.scene.bake_apply_keys
         optimize_solid_materials = context.scene.bake_optimize_solid_materials
@@ -856,6 +855,7 @@ class BakeButton(bpy.types.Operator):
         if draft_quality:
             resolution = min(resolution, 1024)
         draft_render = is_unittest or draft_quality
+        pixelmargin = int(math.ceil(margin * resolution / 2))
 
         # Passes
         pass_diffuse = context.scene.bake_pass_diffuse
@@ -1889,7 +1889,7 @@ class BakeButton(bpy.types.Operator):
 
             # Make note of which objects are going to be exported
             export_groups = [
-                ("Bake", ["CATS Body", "CATS Armature", "Static"])
+                ("Bake", [plat_arm_copy.name])
             ]
 
             # Physmodel does a couple extra things like ensuring doubles are removed, wire display
@@ -2184,21 +2184,14 @@ class BakeButton(bpy.types.Operator):
                         context.view_layer.objects.active = mesh
                         bpy.ops.cats_manual.optimize_static_shapekeys()
 
-            # Create groups to export... One for the main, one each for each LOD
-            for obj in plat_collection.all_objects:
-                if not "LOD" in obj.name:
-                    if obj.type == "MESH" and obj.name != "Static":
-                        obj.name = "CATS Body"
-
             # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
             #exception is Gmod because Gmod needs textures to be applied to work - @989onan
             if export_format not in ["GMOD"]:
                 for obj in get_objects(plat_collection.all_objects):
                     if obj.type == 'MESH':
                         context.view_layer.objects.active = obj
-                        while len(obj.material_slots) > 0:
-                            obj.active_material_index = 0  # select the top material
-                            bpy.ops.object.material_slot_remove()
+                        for slot in obj.material_slots:
+                            slot.material = None
 
             # Re-apply the old armature transforms on the new-armature, then inverse-apply to the data of the armature
             # This prevents animations designed for the old avatar from breaking
@@ -2234,7 +2227,17 @@ class BakeButton(bpy.types.Operator):
                         if modifier.type == "MULTIRES":
                             modifier.render_levels = modifier.total_levels
 
-                    export_groups[0][1].append(new_obj.name)
+                bpy.ops.object.select_all(action='DESELECT')
+                for obj in get_objects(plat_arm_copy.children_recursive, {"MESH"},
+                                       filter_func=lambda obj: obj['catsForcedExportName'] != "Static"):
+                    obj.select_set(True)
+
+                # Join to save on skinned mesh renderers
+                # Not quite working with export yet!
+                # Common.join_meshes(armature_name=plat_arm_copy.name, repair_shape_keys=False, mode=1)
+
+            # Prep export group 1
+            export_groups[0][1].extend(obj.name for obj in plat_arm_copy.children_recursive)
 
             for export_group in export_groups:
                 assert(all(obj_name in plat_collection.all_objects for obj_name in export_group[1]), export_group)
@@ -2273,12 +2276,13 @@ class BakeButton(bpy.types.Operator):
                     bpy.ops.cats_importer.export_gmod_addon(steam_library_path=steam_library_path,gmod_model_name=gmod_model_name,platform_name=platform_name)
             # Reapply cats material
             if export_format != "GMOD":
-                for obj in get_objects(plat_collection.all_objects, {"MESH"},
-                                       filter_func=not_copyonly):
+                for obj in get_objects(plat_collection.all_objects, {"MESH"}):
                     if len(obj.material_slots) == 0:
                         obj.data.materials.append(mat)
                     else:
-                        obj.material_slots[0].material = mat
+                        for slot in obj.material_slots:
+                            if slot.material == None:
+                                slot.material = mat
 
             if optimize_static:
                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/BakeFixer.cs", 'r') as infile:
