@@ -47,6 +47,7 @@ settings_file = os.path.join(resources_dir, "settings.json")
 
 settings_data = None
 settings_data_unchanged = None
+settings_threads = []
 
 # Settings name = [Default Value, Require Blender Restart]
 settings_default = OrderedDict()
@@ -205,10 +206,20 @@ def reset_settings(full_reset=False, to_reset_settings=None):
 
 
 def start_apply_settings_timer():
-    global lock_settings
+    global lock_settings, settings_threads
     lock_settings = True
     thread = Thread(target=apply_settings, args=[])
+    settings_threads.append(thread)
     thread.start()
+
+
+def stop_apply_settings_threads():
+    global settings_threads
+
+    print("Stopping settings threads...")
+    for t in settings_threads:
+        t.join()
+    print("Settings threads stopped.")
 
 
 def apply_settings():
