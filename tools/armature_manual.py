@@ -1036,12 +1036,12 @@ class GenerateTwistBones(bpy.types.Operator):
                 twist_bone = armature.data.edit_bones.new('~' + bone.name + "_Twist")
                 twist_bone.tail = bone.tail
                 twist_bone.head[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
-                twist_locations[twist_bone.name] = (twist_bone.head, twist_bone.tail)
+                twist_locations[twist_bone.name] = (twist_bone.head[:], twist_bone.tail[:])
             else:
                 twist_bone = armature.data.edit_bones.new('~' + bone.name + "_UpperTwist")
                 twist_bone.tail[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
                 twist_bone.head = bone.head
-                twist_locations[twist_bone.name] = (twist_bone.tail, twist_bone.head)
+                twist_locations[twist_bone.name] = (twist_bone.tail[:], twist_bone.head[:])
             twist_bone.parent = bone
 
             bone_pairs.append((bone.name, twist_bone.name))
