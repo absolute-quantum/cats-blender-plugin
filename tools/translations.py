@@ -84,7 +84,7 @@ def get_languages_list(self, context):
 
 
 def update_ui(self, context):
-    if settings.update_settings(None, None):
+    if settings.update_settings_core(None, None):
         reload_scripts()
 
 
