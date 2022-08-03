@@ -258,6 +258,10 @@ def settings_changed():
 
 
 def update_settings(self, context):
+    update_settings_core(self, context)
+
+
+def update_settings_core(self, context):
     # Use False and None for this variable, because Blender would complain otherwise
     # None means that the settings did change
     settings_changed_tmp = False
