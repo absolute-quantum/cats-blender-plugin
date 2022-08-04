@@ -963,7 +963,7 @@ class ErrorDisplay(bpy.types.Operator):
         self.eye_meshes_not_named_body = _eye_meshes_not_named_body
 
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 6))
 
     def check(self, context):
         # Important for changing options
