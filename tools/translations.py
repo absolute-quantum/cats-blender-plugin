@@ -32,7 +32,7 @@ def load_translations():
     # Check the settings which translation to load
     language = get_language_from_settings()
 
-    with open(translations_file, 'r', encoding="utf8") as csv_file:
+    with open(translations_file, 'r', encoding="utf-8-sig") as csv_file:
         csv_reader = csv.DictReader(csv_file, delimiter=',')
         if not csv_reader:
             return
