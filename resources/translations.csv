@@ -1,4 +1,4 @@
-name,en_US,ja_JP,ko_KR
+﻿name,en_US,ja_JP,ko_KR,zh_CN
 Main.error.restartAdmin,"
 
 Faulty CATS installation found!
@@ -7,7 +7,8 @@ To fix this restart Blender as admin!
 
 잘못 설치된 Cats Plugin이 발견되었습니다!
 이 문제를 해결하려면 Blender를 관리자로 다시 시작하세요!
-"
+","发现错误的 CATS 安装！
+要修复此问题，请以管理员身份重新启动 Blender！"
 Main.error.deleteFollowing,"
 
 Faulty CATS installation found!
@@ -16,7 +17,7 @@ To fix this delete the following files and folders inside your addons folder:
 
 잘못 설치된 Cats Plugin이 발견되었습니다!
 이 문제를 해결하려면 addons 폴더에서 다음 파일과 폴더를 삭제하세요.:
-"
+",发现错误的 CATS 安装！ 要解决此问题，请删除插件文件夹中的以下文件和文件夹：
 Main.error.installViaPreferences,"
 
 Faulty CATS installation found!
@@ -25,7 +26,8 @@ Please install CATS via User Preferences and restart Blender!
 
 잘못 설치된 Cats Plugin이 발견되었습니다!
 사용자 환경 설정(User Preferences)을 통해 CATS를 설치하고 블렌더를 다시 시작하세요!
-"
+","发现错误的 CATS 安装！
+请通过用户偏好安装 CATS 并重新启动 Blender！"
 Main.error.restartAndEnable,"
 
 Faulty CATS installation was found and fixed!
@@ -34,7 +36,8 @@ Please restart Blender and enable CATS again!
 
 잘못된 설치된 Cats Plugin 발견됐고 수정되었습니다!
 Blender를 다시 시작하고 Cats Plugin를 다시 활성화하세요!
-"
+","发现并修复了错误的 CATS 安装！
+请重新启动 Blender 并再次启用 CATS！"
 Main.error.unsupportedVersion,"
 
 Blender versions older than 2.79 are not supported by Cats.
@@ -43,7 +46,8 @@ Please use Blender 2.79 or later.
 
 2.79 이전의 블렌더 버전은 Cats에서 지원하지 않습니다.
 Blender 2.79 버전 이상을 사용하세요.
-"
+","Cats 不支持早于 2.79 的 Blender 版本。
+请使用 Blender 2.79 或更高版本。"
 Main.error.beta2.80,"
 
 You are still on the beta version of Blender 2.80!
@@ -52,161 +56,163 @@ Please update to the release version of Blender 2.80.
 
 아직 Blender 2.80 베타 버전을 사용 중입니다!
 Blender를 2.80 정식 버전으로 업데이트하세요.
-"
+","您仍在使用 Blender 2.80 的测试版！
+请更新到 Blender 2.80 的发布版本。"
 Main.error.restartAndEnable_alt,"
 
 Please restart Blender and enable CATS again!
 ",,"
 
 Blender를 다시 시작하고 Cats Plugin를 다시 활성화하세요!
-"
-ToolPanel.label,Cats Blender Plugin,Cats ブレンダープラグイン,
-ToolPanel.category,CATS,,
-ArmaturePanel.label,Model,モデル,모델
-ArmaturePanel.warn.newBlender1,Potentially unsupported Blender version detected!
-ArmaturePanel.warn.newBlender2,Some features might not work!
-ArmaturePanel.warn.newBlender3,CATS currently supports up to Blender 3.2.
-ArmaturePanel.warn.oldBlender1,Old Blender version detected!,古いブレンダーバージョンが検出されました!,이전 블렌더 버전이 발견되었습니다!
-ArmaturePanel.warn.oldBlender2,Some features might not work!,一部の機能は動作しない可能性があります!,일부 기능이 작동하지 않을 수 있습니다!
-ArmaturePanel.warn.oldBlender3,Please update to Blender 2.79!,ブレンダー2.79以上にアップデートしてください!,블렌더 2.79 버전으로 업데이트하세요!
-ArmaturePanel.warn.noDict1,Dictionary not found!,辞書が見つかりません!,사전파일(Dictionary)을 찾을 수 없습니다!
-ArmaturePanel.warn.noDict2,"Translations will work, but are not optimized.",翻訳は機能しますが、最適化されません。,번역은 되지만 최적화되지는 않습니다.
-ArmaturePanel.warn.noDict3,Reinstall Cats to fix this.,これを修正するためにCatsを再インストールします。,이 문제를 해결하려면 Cats를 다시 설치하세요.
-ArmaturePanel.ImportAnyModel.label,Import Model,モデルのインポート,모델 불러오기
-ModelSettings.label,Fix Model Settings,モデル設定の修正,모델 고치기 설정
-ModelSettings.warn.fbtFix1,The Full Body Tracking Fix,フル ボディトラッキングの修正,풀바디 트래킹 수정
-ModelSettings.warn.fbtFix2,is no longer needed for VRChat.,もはやVrChatのために必要とされていません。,VRChat에 더 이상 필요하지 않음.
-ModelSettings.warn.fbtFix3,It's still available in Model Options.,モデル オプションで引き続き使用できます。.,이것은 모델옵션에서 여전히 이용가능.
-ManualPanel.label,Model Options,モデル オプション,모델 옵션
-ManualPanel.separateBy,Separate by:,別に:,메쉬 분리:
-ManualPanel.SeparateByMaterials.label,Materials,材料,매테리얼별로
-ManualPanel.SeparateByLooseParts.label,Loose Parts,緩い部品,느슨한 부분별로
-ManualPanel.SeparateByShapekeys.label,Shapes,図形,쉐이프별로
-ManualPanel.joinMeshes,Join Meshes:,メッシュに参加する:,메쉬 통합:
-ManualPanel.JoinMeshes.label,All,すべて,모두
-ManualPanel.JoinMeshesSelected.label,Selected,選択,선택된 메쉬들
-ManualPanel.mergeWeights,Merge Weights:,ウェイトをマージする:,웨이트 통합:
-ManualPanel.MergeWeights.label,To Parents,親へ,부모 본으로
-ManualPanel.MergeWeightsToActive.label,To Active,アクティブに,활성화된 본으로
-ManualPanel.translate,Translate:,翻訳する:,일본어를 영어로 번역:
-ManualPanel.TranslateAllButton.label,All,すべて,모두
-ManualPanel.TranslateShapekeyButton.label,Shape Keys,シェイプキー,쉐이프키
-ManualPanel.TranslateObjectsButton.label,Objects,オブジェクト,오브젝트
-ManualPanel.TranslateBonesButton.label,Bones,骨,본
-ManualPanel.TranslateMaterialsButton.label,Materials,材料,매테리얼
-ManualPanel.delete,Delete:,削除:,제거:
-ManualPanel.RemoveZeroWeightBones.label,Zero Weight Bones,ゼロウェイト ボーン,제로 웨이트 본
-ManualPanel.RemoveConstraints,Constraints,制約,컨스트레이트
-ManualPanel.RemoveZeroWeightGroups,Zero Weight Vertex Groups,ゼロウェイト頂点グループ,제로 웨이트 버텍스 그룹
-ManualPanel.normals,Normals:,法線:,노말:
-ManualPanel.RecalculateNormals.label,Recalculate,再計算,재계산
-ManualPanel.FlipNormals.label,Flip,フリップ,뒤집기
-ManualPanel.fbtFix,Full Body Tracking Fix:,フル ボディ トラッキングの修正:,풀바디 트래킹 수정:
-ManualPanel.FixFBTButton.label,Add,追加,추가
-ManualPanel.RemoveFBTButton.label,Remove,削除,제거
-CustomPanel.label,Custom Model Creation,カスタム モデルの作成,커스텀 모델 제작
-CustomPanel.mergeArmatures,Merge Armatures:,マージアーマチュア:,뼈대(Armature) 통합:
-CustomPanel.warn.twoArmatures,Two armatures are required!,2つのアーマチュアが必要です!,두개의 뼈대(Armature)가 필요합니다!
-CustomPanel.mergeInto,Base,ベース,베이스로
-CustomPanel.toMerge,To Merge,マージするには,통합할 부분
-CustomPanel.attachToBone,Attach to,添付する,붙이기
-CustomPanel.armaturesCanMerge,Armatures can be merged automatically!,アーマチュアは自動的にマージすることができます!,뼈대(Armature)들은 자동으로 통합됩니다!
-CustomPanel.attachMesh1,Attach Mesh to Armature:,アーマチュアにメッシュをアタッチ:,메쉬를 뼈대(Armature)에 붙이기:
-CustomPanel.attachMesh2,Mesh,メッシュ,메쉬
-CustomPanel.warn.noArmOrMesh1,An armature and a mesh are required!,アーマチュアとメッシュが必要です!,뼈대(Armature)와 메쉬가 필요합니다!
-CustomPanel.warn.noArmOrMesh2,Make sure that the mesh has no parent.,メッシュに親が存在しないか確認します。,메쉬에 부모가 없어야 합니다.
-DecimationPanel.label,Decimation,デシメーション,버텍스 줄이기(Decimation)
-DecimationPanel.decimationMode,Decimation Mode:,デシメーションモード:,데시메이션 모드:
-DecimationPanel.safeModeDesc, Decent results - No shape key loss, まともな結果 - シェイプキーの損失はありません, 괜찮은 결과 - 쉐이프키 손실 없음
-DecimationPanel.halfModeDesc, Good results - Minimal shape key loss, 良好な結果 - 最小のシェープキー損失," 나쁘지 않은 결과, - 최소한의 쉐이프키 손실됨"
-DecimationPanel.fullModeDesc, Consistent results - Full shape key loss, 一貫した結果 - フルシェイプキー損失, 일관된 결과 - 모든 쉐이프키들이 손실됨
-DecimationPanel.smartModeDesc, Best results - Preserve shape keys, 最良の結果 - 形状キーの保存, 최고의 결과 - 쉐이프키들이 보존됨
-DecimationPanel.customSeparateMaterials,Start by Separating by Materials:,材料別に分離して開始:,매테리얼별로 분리하는 것으로 시작:
-DecimationPanel.SeparateByMaterials.label,Separate by Materials,材料別に分離,매테리얼별로 분리
-DecimationPanel.customJoinMeshes,Stop by Joining Meshes:,メッシュに参加して停止:,메쉬를 통합하여 중지:
-DecimationPanel.customWhitelist,Whitelisted:,ホワイトリストに登録:,화이트리스트:
-DecimationPanel.warn.noShapekeySelected,No shape key selected,シェイプ キーが選択されていません,선택된 쉐이프키 없음
-DecimationPanel.warn.noDecimation,Every mesh is selected. This equals no Decimation.,すべてのメッシュが選択されます。これはデシメーションなしに等しい.,모든 메쉬가 선택됨. 데시메이션이 적용되지 않습니다.
-DecimationPanel.warn.noMeshSelected,No mesh selected,メッシュが選択されていません,선택된 메쉬가 없음
-DecimationPanel.warn.emptyList,"Both lists are empty, this equals Full Decimation!",両方のリストが空で、これは完全なデシメーションに等しい!,양쪽 리스트들이 비어있어 전체 메쉬의 버텍스를 줄이는 것과 같습니다!
-DecimationPanel.warn.correctWhitelist,Both whitelists are considered during decimation,両方のホワイトリストはデシメーション中に考慮されます,양쪽 화이트리스트들은 데시메이션 중에 고려됩니다.
-DecimationPanel.preset.excellent.label,Excellent,優れた,
-DecimationPanel.preset.excellent.description,The maximum number of tris you can have for an Excellent rating.,優れた評価を得るために持つことができるトリスの最大数,당신의 아바타가 Excellent 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.
-DecimationPanel.preset.good.label,Good,良い,
-DecimationPanel.preset.good.description,The maximum number of tris you can have for a Good rating.,あなたが良い評価のために持つことができるトリスの最大数,당신의 아바타가 Good 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.
-DecimationPanel.preset.quest.label,Quest,,
+",请重新启动 Blender 并再次启用 CATS！
+ToolPanel.label,Cats Blender Plugin,Cats ブレンダープラグイン,,Cats Blender 插件
+ToolPanel.category,CATS,,,
+ArmaturePanel.label,Model,モデル,모델,模型
+ArmaturePanel.warn.newBlender1,Potentially unsupported Blender version detected!,,,检测到旧的 Blender 版本！
+ArmaturePanel.warn.newBlender2,Some features might not work!,,,某些功能可能无法使用！
+ArmaturePanel.warn.newBlender3,CATS currently supports up to Blender 3.2.,,,请更新到 Blender 2.79以上！
+ArmaturePanel.warn.oldBlender1,Old Blender version detected!,古いブレンダーバージョンが検出されました!,이전 블렌더 버전이 발견되었습니다!,
+ArmaturePanel.warn.oldBlender2,Some features might not work!,一部の機能は動作しない可能性があります!,일부 기능이 작동하지 않을 수 있습니다!,
+ArmaturePanel.warn.oldBlender3,Please update to Blender 2.79!,ブレンダー2.79以上にアップデートしてください!,블렌더 2.79 버전으로 업데이트하세요!,
+ArmaturePanel.warn.noDict1,Dictionary not found!,辞書が見つかりません!,사전파일(Dictionary)을 찾을 수 없습니다!,找不到翻译！
+ArmaturePanel.warn.noDict2,"Translations will work, but are not optimized.",翻訳は機能しますが、最適化されません。,번역은 되지만 최적화되지는 않습니다.,翻译可以工作，但没有优化。
+ArmaturePanel.warn.noDict3,Reinstall Cats to fix this.,これを修正するためにCatsを再インストールします。,이 문제를 해결하려면 Cats를 다시 설치하세요.,重新安装 Cats 以解决此问题。
+ArmaturePanel.ImportAnyModel.label,Import Model,モデルのインポート,모델 불러오기,导入模型
+ModelSettings.label,Fix Model Settings,モデル設定の修正,모델 고치기 설정,修复模型设置
+ModelSettings.warn.fbtFix1,The Full Body Tracking Fix,フル ボディトラッキングの修正,풀바디 트래킹 수정,全身追踪修复
+ModelSettings.warn.fbtFix2,is no longer needed for VRChat.,もはやVrChatのために必要とされていません。,VRChat에 더 이상 필요하지 않음.,VRChat 不再需要。
+ModelSettings.warn.fbtFix3,It's still available in Model Options.,モデル オプションで引き続き使用できます。.,이것은 모델옵션에서 여전히 이용가능.,它仍然在模型选项中可用。
+ManualPanel.label,Model Options,モデル オプション,모델 옵션,模型选项
+ManualPanel.separateBy,Separate by:,別に:,메쉬 분리:,分开：
+ManualPanel.SeparateByMaterials.label,Materials,材料,매테리얼별로,材质
+ManualPanel.SeparateByLooseParts.label,Loose Parts,緩い部品,느슨한 부분별로,散件
+ManualPanel.SeparateByShapekeys.label,Shapes,図形,쉐이프별로,形状
+ManualPanel.joinMeshes,Join Meshes:,メッシュに参加する:,메쉬 통합:,加入网格：
+ManualPanel.JoinMeshes.label,All,すべて,모두,全部
+ManualPanel.JoinMeshesSelected.label,Selected,選択,선택된 메쉬들,已选中
+ManualPanel.mergeWeights,Merge Weights:,ウェイトをマージする:,웨이트 통합:,合并权重：
+ManualPanel.MergeWeights.label,To Parents,親へ,부모 본으로,给父级
+ManualPanel.MergeWeightsToActive.label,To Active,アクティブに,활성화된 본으로,到活动
+ManualPanel.translate,Translate:,翻訳する:,일본어를 영어로 번역:,翻译：
+ManualPanel.TranslateAllButton.label,All,すべて,모두,全部
+ManualPanel.TranslateShapekeyButton.label,Shape Keys,シェイプキー,쉐이프키,形态键
+ManualPanel.TranslateObjectsButton.label,Objects,オブジェクト,오브젝트,对象
+ManualPanel.TranslateBonesButton.label,Bones,骨,본,骨头
+ManualPanel.TranslateMaterialsButton.label,Materials,材料,매테리얼,材质
+ManualPanel.delete,Delete:,削除:,제거:,删除：
+ManualPanel.RemoveZeroWeightBones.label,Zero Weight Bones,ゼロウェイト ボーン,제로 웨이트 본,零权重骨头
+ManualPanel.RemoveConstraints,Constraints,制約,컨스트레이트,约束
+ManualPanel.RemoveZeroWeightGroups,Zero Weight Vertex Groups,ゼロウェイト頂点グループ,제로 웨이트 버텍스 그룹,零权重顶点组
+ManualPanel.normals,Normals:,法線:,노말:,法线：
+ManualPanel.RecalculateNormals.label,Recalculate,再計算,재계산,重新计算
+ManualPanel.FlipNormals.label,Flip,フリップ,뒤집기,翻动
+ManualPanel.fbtFix,Full Body Tracking Fix:,フル ボディ トラッキングの修正:,풀바디 트래킹 수정:,全身追踪修复：
+ManualPanel.FixFBTButton.label,Add,追加,추가,追加
+ManualPanel.RemoveFBTButton.label,Remove,削除,제거,消除
+CustomPanel.label,Custom Model Creation,カスタム モデルの作成,커스텀 모델 제작,自定义模型创建
+CustomPanel.mergeArmatures,Merge Armatures:,マージアーマチュア:,뼈대(Armature) 통합:,合并骨架：
+CustomPanel.warn.twoArmatures,Two armatures are required!,2つのアーマチュアが必要です!,두개의 뼈대(Armature)가 필요합니다!,需要两个骨架！
+CustomPanel.mergeInto,Base,ベース,베이스로,基础
+CustomPanel.toMerge,To Merge,マージするには,통합할 부분,合并
+CustomPanel.attachToBone,Attach to,添付する,붙이기,附加到
+CustomPanel.armaturesCanMerge,Armatures can be merged automatically!,アーマチュアは自動的にマージすることができます!,뼈대(Armature)들은 자동으로 통합됩니다!,骨架可以自动合并！
+CustomPanel.attachMesh1,Attach Mesh to Armature:,アーマチュアにメッシュをアタッチ:,메쉬를 뼈대(Armature)에 붙이기:,将网格连接到骨架：
+CustomPanel.attachMesh2,Mesh,メッシュ,메쉬,网格
+CustomPanel.warn.noArmOrMesh1,An armature and a mesh are required!,アーマチュアとメッシュが必要です!,뼈대(Armature)와 메쉬가 필요합니다!,需要骨架和网格！
+CustomPanel.warn.noArmOrMesh2,Make sure that the mesh has no parent.,メッシュに親が存在しないか確認します。,메쉬에 부모가 없어야 합니다.,确保网格没有父级。
+DecimationPanel.label,Decimation,デシメーション,버텍스 줄이기(Decimation),精简
+DecimationPanel.decimationMode,Decimation Mode:,デシメーションモード:,데시메이션 모드:,精简模式：
+DecimationPanel.safeModeDesc, Decent results - No shape key loss, まともな結果 - シェイプキーの損失はありません, 괜찮은 결과 - 쉐이프키 손실 없음,体面的结果 - 没有形态键丢失
+DecimationPanel.halfModeDesc, Good results - Minimal shape key loss, 良好な結果 - 最小のシェープキー損失," 나쁘지 않은 결과, - 최소한의 쉐이프키 손실됨",良好的结果 - 最小的形态键损失
+DecimationPanel.fullModeDesc, Consistent results - Full shape key loss, 一貫した結果 - フルシェイプキー損失, 일관된 결과 - 모든 쉐이프키들이 손실됨,一致的结果 - 全形态键丢失
+DecimationPanel.smartModeDesc, Best results - Preserve shape keys, 最良の結果 - 形状キーの保存, 최고의 결과 - 쉐이프키들이 보존됨,最佳结果 - 保留形态键
+DecimationPanel.customSeparateMaterials,Start by Separating by Materials:,材料別に分離して開始:,매테리얼별로 분리하는 것으로 시작:,从按材质分离开始：
+DecimationPanel.SeparateByMaterials.label,Separate by Materials,材料別に分離,매테리얼별로 분리,按材质分开
+DecimationPanel.customJoinMeshes,Stop by Joining Meshes:,メッシュに参加して停止:,메쉬를 통합하여 중지:,通过加入网格停止：
+DecimationPanel.customWhitelist,Whitelisted:,ホワイトリストに登録:,화이트리스트:,列入白名单：
+DecimationPanel.warn.noShapekeySelected,No shape key selected,シェイプ キーが選択されていません,선택된 쉐이프키 없음,未选择形态键
+DecimationPanel.warn.noDecimation,Every mesh is selected. This equals no Decimation.,すべてのメッシュが選択されます。これはデシメーションなしに等しい.,모든 메쉬가 선택됨. 데시메이션이 적용되지 않습니다.,每个网格都被选中。 这等于没有精简。
+DecimationPanel.warn.noMeshSelected,No mesh selected,メッシュが選択されていません,선택된 메쉬가 없음,未选择网格
+DecimationPanel.warn.emptyList,"Both lists are empty, this equals Full Decimation!",両方のリストが空で、これは完全なデシメーションに等しい!,양쪽 리스트들이 비어있어 전체 메쉬의 버텍스를 줄이는 것과 같습니다!,两个列表都是空的，这等于完全精简！
+DecimationPanel.warn.correctWhitelist,Both whitelists are considered during decimation,両方のホワイトリストはデシメーション中に考慮されます,양쪽 화이트리스트들은 데시메이션 중에 고려됩니다.,在精简期间考虑两个白名单
+DecimationPanel.preset.excellent.label,Excellent,優れた,,优秀
+DecimationPanel.preset.excellent.description,The maximum number of tris you can have for an Excellent rating.,優れた評価を得るために持つことができるトリスの最大数,당신의 아바타가 Excellent 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.,获得优秀评级的最大面数。
+DecimationPanel.preset.good.label,Good,良い,,良好
+DecimationPanel.preset.good.description,The maximum number of tris you can have for a Good rating.,あなたが良い評価のために持つことができるトリスの最大数,당신의 아바타가 Good 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.,获得良好评级的最大面数。
+DecimationPanel.preset.quest.label,Quest,,,快速
 DecimationPanel.preset.quest.description,"The recommended number of tris for Quest avatars.
 A hard limit will be established in the future that will not be much more than this.","Questアバターの推奨トリス数.
 将来的には、これをはるかに超えることのない厳しい制限が設定されます。","퀘스트용 아바타들을 위해 권장되는 삼각폴리곤(Tris)의 개수입니다.
-앞으로는 이보다 심하지는 않을 엄격한 제한이 설정될 것입니다."
-DecimationPanel.warn.notIfBaking,Not reccomended if baking!,,베이킹 할 시 권장되지 않습니다!
-EyeTrackingPanel.label,Eye Tracking,アイトラッキング,눈 추적(Eye Tracking)
-EyeTrackingPanel.error.noMesh,No meshes found!,メッシュが見つかりません!,메쉬가 발견되지 않음!
-EyeTrackingPanel.error.noArm,No model found!,モデルが見つかりません!,모델이 발견되지 않음!
-EyeTrackingPanel.error.wrongNameArm1,Your armature has to be named 'Armature',アイトラッキングが機能するには,뼈대는 반드시 'Armature'로 이름을 지어야 합니다.
-EyeTrackingPanel.error.wrongNameArm2,      for Eye Tracking to work!,      アーマチュアに'Armature'という名前を付ける必要があります。,      눈 추적(Eye Tracking)이 작동하기 위해!
-EyeTrackingPanel.error.wrongNameArm3,      (currently ',      (現在は ',      (현재로서는 '
-EyeTrackingPanel.error.wrongNameBody1,The mesh containing the eyes has to be,アイトラッキングが機能するには,눈들을 포함한 메쉬는 반드시
-EyeTrackingPanel.error.wrongNameBody2,      named 'Body' for Eye Tracking to work!,      目を含むメッシュに'Body'という名前を付ける必要があります!,      눈 추적(Eye Tracking)을 위해 'Body'로 이름을 지어야 합니다.
-EyeTrackingPanel.error.wrongNameBody3,      (currently ',      (現在は ',      (현재로서는 '
-EyeTrackingPanel.warn.assignEyes1,Don't forget to assign 'LeftEye' and 'RightEye','左目'と'右目' を割り当てることを忘れないでください。,유니티에서 'LeftEye'와 'RightEye'를
-EyeTrackingPanel.warn.assignEyes2,      to the eyes in Unity!,      ユニティの目に,      적용하는 것을 잊지 마세요!
-VisemePanel.label,Visemes,バイセム,립싱크(Visemes)
-VisemePanel.error.noMesh,No meshes found!,メッシュが見つかりません!,메쉬가 발견되지 않음!
-BoneRootPanel.label,Bone Parenting,ボーンの子育て,본 부모설정
-OptimizePanel.label,Optimization,最適化,최적화
-OptimizePanel.atlasDesc,A greatly improved Atlas Generator.,アトラスジェネレータを大幅に改良。,텍스처들을 결합시켜주는 더욱 향상된 아틀라스 생성기입니다.
-OptimizePanel.atlasAuthor,Made by Shotariya,shotaryiaによって作られた,제작자: Shotariya
-OptimizePanel.matCombDisabled1,Material Combiner is not enabled!,マテリアル コンバイナーが有効になっていません!,매테리얼 통합기가 활성화되지 않았습니다!
-OptimizePanel.matCombDisabled2,Enable it in your user preferences:,ユーザー設定で有効にする:,User preferences에서 이것을 활성화하세요:
-OptimizePanel.matCombOutdated1,Your Material Combiner is outdated!,マテリアル コンバイナーが古い!,당신의 매테리얼 통합기의 버전이 낮습니다!
-OptimizePanel.matCombOutdated2,Please update to the latest version.,最新バージョンにアップデートしてください.,최신버전으로 업데이트하세요.
-OptimizePanel.matCombOutdated3,Update via the 'Updates' panel,'更新' パネルを使用して更新します。,'Updates' 패널에서 업데이트하세요.
-OptimizePanel.matCombOutdated4,in the 'MatCombiner' tab to the {location},'MatCombiner' タブの {location},'MatCombiner' 탭의 {location}
-OptimizePanel.matCombOutdated5_2.79,left.,左側にあります。。,왼쪽에 있습니다.
-OptimizePanel.matCombOutdated5_2.8,right.,右側にあります。。,오른쪽에 있습니다.
-OptimizePanel.matCombOutdated6,Or download and install it manually:,または手動でダウンロードしてインストールする:,혹은 직접 다운로드와 설치하기:
-OptimizePanel.matCombOutdated6_alt,Download and install it manually:,手動でダウンロードしてインストールする:,직접 다운로드와 설치하기:
-OptimizePanel.matCombNotInstalled,Material Combiner is not installed!,マテリアル コンバイナーがインストールされていません!,매테리얼 통합기가 설치되지 않았습니다!
-CopyProtectionPanel.label,Copy Protection,コピープロテクション,복사핵 방지
-CopyProtectionPanel.desc1,Tries to protect your avatar from Unity cache ripping.,Unity キャッシュリッピングからアバターを保護しようとします。,유니티 캐쉬뜨기로부터 당신의 아바타를 보호하세요.
-CopyProtectionPanel.desc2,This protection is not 100% safe!,この保護は100%安全ではありません!,이 방법도 100% 안전하지는 않습니다!
-CopyProtectionPanel.desc3,Before use: Read the documentation!,使用前: ドキュメントを読んでください!,사용 전에: 문서를 읽어주세요!
-BakePanel.label,Bake,焼く,베이크(Bake)
-BakePanel.versionTooOld,Only for Blender 2.80+,,Blender 2.80 버전 이상에서만 호환
-BakePanel.autodetectlabel,Autodetect:,,자동감지:
-BakePanel.generaloptionslabel,General options:,,일반 옵션:
-BakePanel.noheadfound,"No ""Head"" bone found!",,"""Head"" 본 발견되지 않음!"
-BakePanel.overlapfixlabel,Overlap fix:,,중복 수정:
-BakePanel.bakepasseslabel,Bake passes:,,베이크 패스:
-BakePanel.alphalabel,Alpha:,,
-BakePanel.transparencywarning,Transparency isn't currently selected!,,현재 투명도가 선택되지 않았습니다!
-BakePanel.smoothnesswarning,Smoothness isn't currently selected!,,현재 부드러움이 선택되지 않았습니다!
-BakePanel.doublepackwarning,Smoothness packed in two places!,,두군데에 부드러움이 설정되었습니다!
-ScalingPanel.label,Model Scaling,,
-ScalingPanel.imscaleDisabled1,Immersive Scaler is not enabled!,,
-ScalingPanel.imscaleDisabled2,Enable it in your user preferences:,,
-ScalingPanel.imscaleOldVersion1,Immersive Scaler is not installed!,,
-ScalingPanel.imscaleNotInstalled1,Immersive Scaler is not installed!,,
-ScalingPanel.imscaleNotInstalled2,Download and install it manually:,,
-UpdaterPanel.label,Settings & Updates,設定と更新,세팅 & 업데이트
-UpdaterPanel.name,Settings:,設定:,세팅:
-UpdaterPanel.requireRestart1,Restart required.,再起動が必要.,재시작이 필요합니다.
-UpdaterPanel.requireRestart2,Some changes require a Blender restart.,一部の変更では、ブレンダーの再起動が必要です.,일부 변경은 블렌더를 다시 시작해야합니다.
-SupporterPanel.label,Supporters,支持者,후원자들
-SupporterPanel.desc,Do you like this plugin and want to support us?,このプラグインが好きで、私たちをサポートしたいですか?,이 플로그인이 도움 되었나요? 저희를 후원해주신다면 정말 기쁠 것입니다!
-SupporterPanel.thanks,Thanks to our awesome supporters! <3,私たちの素晴らしいサポーターに感謝!<3,저희 멋진 후원자분들께 정말로 감사드립니다! <3
-SupporterPanel.missingName1,Is your name missing?,あなたの名前は見つかりませんか?,당신의 이름이 빠졌나요?
-SupporterPanel.missingName2,Please contact us in our discord!,私たちのDiscordで私達にお問い合わせください!,부디 우리 디스코드 서버에 연락주시기 바랍니다!
-CreditsPanel.label,Credits,クレジット,
-CreditsPanel.desc1,Cats Blender Plugin (,,
-CreditsPanel.desc2,Created by Hotox and GiveMeAllYourCats,HotoxとGiveMeAllYourCatsによって作成,멋진 VRChat 커뮤니티를 위해서
-CreditsPanel.desc3,For the awesome VRChat community <3,素晴らしいVRChatコミュニティのために <3,Hotox와 GiveMeAllYourCats에 의해 제작됨 <3
-CreditsPanel.desc4,Special thanks to:,特別な感謝: ShotariyaとNeitri,다음 분들께 특별한 감사를 전합니다:
-CreditsPanel.descContributors,"Feilen, Jordo, Ruubick, 989onan, triazo,","Feilen、Jordo、Ruubick、989onan、triazo、","Feilen, Jordo, Ruubick, 989onan, triazo,"
-CreditsPanel.descContributors2,"Shotariya and Neitri","ShotariyaとNeitri","Shotariya와 Neitri"
-CreditsPanel.desc5,Do you need help or found a bug?,助けが必要ですか、バグを見つけましたか?,도움이 필요하시거나 혹시 버그를 찾으셨나요?
-FixArmature.label,Fix Model,モデル修正,모델 고치기
+앞으로는 이보다 심하지는 않을 엄격한 제한이 설정될 것입니다.","Quest 头像的推荐面数量。
+未来将建立一个硬性限制，不会超过这个。"
+DecimationPanel.warn.notIfBaking,Not reccomended if baking!,,베이킹 할 시 권장되지 않습니다!,如果是烘焙，不建议使用！
+EyeTrackingPanel.label,Eye Tracking,アイトラッキング,눈 추적(Eye Tracking),眼睛追踪
+EyeTrackingPanel.error.noMesh,No meshes found!,メッシュが見つかりません!,메쉬가 발견되지 않음!,未找到网格！
+EyeTrackingPanel.error.noArm,No model found!,モデルが見つかりません!,모델이 발견되지 않음!,找不到型号！
+EyeTrackingPanel.error.wrongNameArm1,Your armature has to be named 'Armature',アイトラッキングが機能するには,뼈대는 반드시 'Armature'로 이름을 지어야 합니다.,"您的骨架必须命名为""Armature"""
+EyeTrackingPanel.error.wrongNameArm2,      for Eye Tracking to work!,      アーマチュアに'Armature'という名前を付ける必要があります。,      눈 추적(Eye Tracking)이 작동하기 위해!,眼睛追踪工作！
+EyeTrackingPanel.error.wrongNameArm3,      (currently ',      (現在は ',      (현재로서는 ',（目前 '
+EyeTrackingPanel.error.wrongNameBody1,The mesh containing the eyes has to be,アイトラッキングが機能するには,눈들을 포함한 메쉬는 반드시,包含眼睛的网格必须是
+EyeTrackingPanel.error.wrongNameBody2,      named 'Body' for Eye Tracking to work!,      目を含むメッシュに'Body'という名前を付ける必要があります!,      눈 추적(Eye Tracking)을 위해 'Body'로 이름을 지어야 합니다.,"为眼睛追踪工作命名为""身体""！"
+EyeTrackingPanel.error.wrongNameBody3,      (currently ',      (現在は ',      (현재로서는 ',（目前 '
+EyeTrackingPanel.warn.assignEyes1,Don't forget to assign 'LeftEye' and 'RightEye','左目'と'右目' を割り当てることを忘れないでください。,유니티에서 'LeftEye'와 'RightEye'를,"不要忘记分配""LeftEye""和""RightEye"""
+EyeTrackingPanel.warn.assignEyes2,      to the eyes in Unity!,      ユニティの目に,      적용하는 것을 잊지 마세요!,在 Unity 中的眼睛！
+VisemePanel.label,Visemes,バイセム,립싱크(Visemes),发音嘴型
+VisemePanel.error.noMesh,No meshes found!,メッシュが見つかりません!,메쉬가 발견되지 않음!,未找到网格！
+BoneRootPanel.label,Bone Parenting,ボーンの子育て,본 부모설정,骨骼父子级关系
+OptimizePanel.label,Optimization,最適化,최적화,优化
+OptimizePanel.atlasDesc,A greatly improved Atlas Generator.,アトラスジェネレータを大幅に改良。,텍스처들을 결합시켜주는 더욱 향상된 아틀라스 생성기입니다.,大大改进的 Atlas 生成器。
+OptimizePanel.atlasAuthor,Made by Shotariya,shotaryiaによって作られた,제작자: Shotariya,由Shotariya制作
+OptimizePanel.matCombDisabled1,Material Combiner is not enabled!,マテリアル コンバイナーが有効になっていません!,매테리얼 통합기가 활성화되지 않았습니다!,材质组合器未启用！
+OptimizePanel.matCombDisabled2,Enable it in your user preferences:,ユーザー設定で有効にする:,User preferences에서 이것을 활성화하세요:,在您的用户首选项中启用它：
+OptimizePanel.matCombOutdated1,Your Material Combiner is outdated!,マテリアル コンバイナーが古い!,당신의 매테리얼 통합기의 버전이 낮습니다!,您的Material Combiner已过时！
+OptimizePanel.matCombOutdated2,Please update to the latest version.,最新バージョンにアップデートしてください.,최신버전으로 업데이트하세요.,请更新到最新版本。
+OptimizePanel.matCombOutdated3,Update via the 'Updates' panel,'更新' パネルを使用して更新します。,'Updates' 패널에서 업데이트하세요.,"通过""更新""面板更新"
+OptimizePanel.matCombOutdated4,in the 'MatCombiner' tab to the {location},'MatCombiner' タブの {location},'MatCombiner' 탭의 {location},"在""MatCombiner""标签中到 {location}"
+OptimizePanel.matCombOutdated5_2.79,left.,左側にあります。。,왼쪽에 있습니다.,左边。
+OptimizePanel.matCombOutdated5_2.8,right.,右側にあります。。,오른쪽에 있습니다.,正确的。
+OptimizePanel.matCombOutdated6,Or download and install it manually:,または手動でダウンロードしてインストールする:,혹은 직접 다운로드와 설치하기:,或者手动下载安装：
+OptimizePanel.matCombOutdated6_alt,Download and install it manually:,手動でダウンロードしてインストールする:,직접 다운로드와 설치하기:,手动下载并安装：
+OptimizePanel.matCombNotInstalled,Material Combiner is not installed!,マテリアル コンバイナーがインストールされていません!,매테리얼 통합기가 설치되지 않았습니다!,Material Combiner未安装！
+CopyProtectionPanel.label,Copy Protection,コピープロテクション,복사핵 방지,复制保护
+CopyProtectionPanel.desc1,Tries to protect your avatar from Unity cache ripping.,Unity キャッシュリッピングからアバターを保護しようとします。,유니티 캐쉬뜨기로부터 당신의 아바타를 보호하세요.,尝试保护您的头像免受 Unity 缓存翻录。
+CopyProtectionPanel.desc2,This protection is not 100% safe!,この保護は100%安全ではありません!,이 방법도 100% 안전하지는 않습니다!,这种保护不是 100% 安全的！
+CopyProtectionPanel.desc3,Before use: Read the documentation!,使用前: ドキュメントを読んでください!,사용 전에: 문서를 읽어주세요!,使用前：阅读文档！
+BakePanel.label,Bake,焼く,베이크(Bake),烘焙
+BakePanel.versionTooOld,Only for Blender 2.80+,,Blender 2.80 버전 이상에서만 호환,仅适用于 Blender 2.80+
+BakePanel.autodetectlabel,Autodetect:,,자동감지:,自动侦测：
+BakePanel.generaloptionslabel,General options:,,일반 옵션:,常规选项：
+BakePanel.noheadfound,"No ""Head"" bone found!",,"""Head"" 본 발견되지 않음!","没有找到""头""骨！"
+BakePanel.overlapfixlabel,Overlap fix:,,중복 수정:,重叠修复：
+BakePanel.bakepasseslabel,Bake passes:,,베이크 패스:,烘烤通行证：
+BakePanel.alphalabel,Alpha:,,,透明：
+BakePanel.transparencywarning,Transparency isn't currently selected!,,현재 투명도가 선택되지 않았습니다!,当前未选择透明度！
+BakePanel.smoothnesswarning,Smoothness isn't currently selected!,,현재 부드러움이 선택되지 않았습니다!,当前未选择平滑度！
+BakePanel.doublepackwarning,Smoothness packed in two places!,,두군데에 부드러움이 설정되었습니다!,光滑度包装在两个地方！
+ScalingPanel.label,Model Scaling,,,
+ScalingPanel.imscaleDisabled1,Immersive Scaler is not enabled!,,,
+ScalingPanel.imscaleDisabled2,Enable it in your user preferences:,,,
+ScalingPanel.imscaleOldVersion1,Immersive Scaler is not installed!,,,
+ScalingPanel.imscaleNotInstalled1,Immersive Scaler is not installed!,,,
+ScalingPanel.imscaleNotInstalled2,Download and install it manually:,,,
+UpdaterPanel.label,Settings & Updates,設定と更新,세팅 & 업데이트,设置和更新
+UpdaterPanel.name,Settings:,設定:,세팅:,设置：
+UpdaterPanel.requireRestart1,Restart required.,再起動が必要.,재시작이 필요합니다.,需要重启。
+UpdaterPanel.requireRestart2,Some changes require a Blender restart.,一部の変更では、ブレンダーの再起動が必要です.,일부 변경은 블렌더를 다시 시작해야합니다.,某些更改需要重新启动 Blender。
+SupporterPanel.label,Supporters,支持者,후원자들,支持者
+SupporterPanel.desc,Do you like this plugin and want to support us?,このプラグインが好きで、私たちをサポートしたいですか?,이 플로그인이 도움 되었나요? 저희를 후원해주신다면 정말 기쁠 것입니다!,你喜欢这个插件并想支持我们吗？
+SupporterPanel.thanks,Thanks to our awesome supporters! <3,私たちの素晴らしいサポーターに感謝!<3,저희 멋진 후원자분들께 정말로 감사드립니다! <3,感谢我们出色的支持者！ <3
+SupporterPanel.missingName1,Is your name missing?,あなたの名前は見つかりませんか?,당신의 이름이 빠졌나요?,你的名字不见了吗？
+SupporterPanel.missingName2,Please contact us in our discord!,私たちのDiscordで私達にお問い合わせください!,부디 우리 디스코드 서버에 연락주시기 바랍니다!,请在我们的Discord中与我们联系！
+CreditsPanel.label,Credits,クレジット,,
+CreditsPanel.desc1,Cats Blender Plugin (,,,Cats Blender 插件 (
+CreditsPanel.desc2,Created by Hotox and GiveMeAllYourCats,HotoxとGiveMeAllYourCatsによって作成,멋진 VRChat 커뮤니티를 위해서,由 Hotox 和 GiveMeAllYourCats 创建
+CreditsPanel.desc3,For the awesome VRChat community <3,素晴らしいVRChatコミュニティのために <3,Hotox와 GiveMeAllYourCats에 의해 제작됨 <3,对于很棒的 VRChat 社区 <3
+CreditsPanel.desc4,Special thanks to:,特別な感謝: ShotariyaとNeitri,다음 분들께 특별한 감사를 전합니다:,特别感谢：浅醉酒花
+CreditsPanel.descContributors,"Feilen, Jordo, Ruubick, 989onan, triazo,",Feilen、Jordo、Ruubick、989onan、triazo、,"Feilen, Jordo, Ruubick, 989onan, triazo,",Feilen、Jord、Rubik、Shataria & Netri
+CreditsPanel.descContributors2,Shotariya and Neitri,ShotariyaとNeitri,Shotariya와 Neitri,您需要帮助或发现错误吗？
+CreditsPanel.desc5,Do you need help or found a bug?,助けが必要ですか、バグを見つけましたか?,도움이 필요하시거나 혹시 버그를 찾으셨나요?,
+FixArmature.label,Fix Model,モデル修正,모델 고치기,修复模型
 FixArmature.desc,"Automatically:
 - Reparents bones
 - Removes unnecessary bones, objects, groups & constraints
@@ -223,44 +229,60 @@ FixArmature.desc,"Automatically:
 - 'hips'본을 고침
 - 메쉬 통합
 - morphs를 shapes로 변환
-- 쉐이딩을 고침"
+- 쉐이딩을 고침","自动地：
+- 重生骨头
+- 删除不必要的骨骼、对象、组和约束
+- 翻译和重命名骨骼和对象
+- 合并权重涂料
+- 矫正臀部
+- 加入网格
+- 将变形转换为形状
+- 修正阴影"
 FixArmature.error.noMesh,"No mesh inside the armature found!
 If there are meshes outside of the armature,
 set the armature as the parent of the meshes.",,"뼈대(Armature) 안에 메쉬가 없습니다!
 만약 뼈대 밖에 메쉬들이 있다면,
-그 뼈대를 메쉬들의 부모로 설정하세요."
-FixArmature.error.faultyUV1,"The model was successfully fixed, but there were {uvcoord} faulty UV coordinates.",,"모델이 성공적으로 고쳐졌지만, 잘못된 UV 좌표들이 있습니다. {uvcoord}"
-FixArmature.error.faultyUV2,This could result in broken textures and you might have to fix them manually.,,이것은 텍스처를 망가뜨리는 결과를 불러올 수 있으며 당신이 그것들을 직접 손봐야할 수 있습니다.
-FixArmature.error.faultyUV3,This issue is often caused by edits in PMX editor.,,이 이슈는 자주 PMX editor에서 편집할 경우 일어날 수 있습니다.
-FixArmature.fixedSuccess,Model successfully fixed.,,모델이 성공적으로 고쳐졌습니다.
-FixArmature.bonesNotFound,The following bones were not found:,,해당 본들이 발견되지 않았습니다:
-FixArmature.cantFix1,Looks like you found a model which Cats could not fix!,,Cats Plugin이 고칠 수 없는 모델인 것 같습니다!
-FixArmature.cantFix2,If this is a non modified model we would love to make it compatible.,,이것이 수정되지 않은 모델이라면 우리는 호환되도록 만들고 싶습니다.
-FixArmature.cantFix3,"Report it to us in the forum or in our discord, links can be found in the Credits panel.",,포럼이나 디스코드에서 우리에게 신고해주세요. 링크는 크레딧 패널에 있습니다.
-FixArmature.notParent," is not parented at all, this will cause problems!",," 부모설정이 전혀 안됐다면, 이로 인해 문제가 발생할 수 있습니다!"
-FixArmature.notParentTo1, is not parented to ,, 가
-FixArmature.notParentTo2,", this will cause problems!",,"의 부모로 설정돼지 않았다면, 이로 인해 문제가 발생할 수 있습니다!"
-StartPoseMode.label,Start Pose Mode,ポーズモードを開始,포즈모드 시작
+그 뼈대를 메쉬들의 부모로 설정하세요.","未发现骨架内的网格！
+如果骨架外面有网格，
+将骨架设置为网格的父级。"
+FixArmature.error.faultyUV1,"The model was successfully fixed, but there were {uvcoord} faulty UV coordinates.",,"모델이 성공적으로 고쳐졌지만, 잘못된 UV 좌표들이 있습니다. {uvcoord}",模型已成功修复，但有 {uvcoord} 错误的 UV 坐标。
+FixArmature.error.faultyUV2,This could result in broken textures and you might have to fix them manually.,,이것은 텍스처를 망가뜨리는 결과를 불러올 수 있으며 당신이 그것들을 직접 손봐야할 수 있습니다.,这可能会导致纹理损坏，您可能必须手动修复它们。
+FixArmature.error.faultyUV3,This issue is often caused by edits in PMX editor.,,이 이슈는 자주 PMX editor에서 편집할 경우 일어날 수 있습니다.,此问题通常是由 PMX 编辑器中的编辑引起的。
+FixArmature.fixedSuccess,Model successfully fixed.,,모델이 성공적으로 고쳐졌습니다.,模型成功修复。
+FixArmature.bonesNotFound,The following bones were not found:,,해당 본들이 발견되지 않았습니다:,未找到以下骨骼：
+FixArmature.cantFix1,Looks like you found a model which Cats could not fix!,,Cats Plugin이 고칠 수 없는 모델인 것 같습니다!,看起来您找到了 Cats 无法修复的模型！
+FixArmature.cantFix2,If this is a non modified model we would love to make it compatible.,,이것이 수정되지 않은 모델이라면 우리는 호환되도록 만들고 싶습니다.,如果这是一个未修改的模型，我们很乐意使其兼容。
+FixArmature.cantFix3,"Report it to us in the forum or in our discord, links can be found in the Credits panel.",,포럼이나 디스코드에서 우리에게 신고해주세요. 링크는 크레딧 패널에 있습니다.,在论坛或我们的 discord 中向我们报告，链接可以在 Credits 面板中找到。
+FixArmature.notParent," is not parented at all, this will cause problems!",," 부모설정이 전혀 안됐다면, 이로 인해 문제가 발생할 수 있습니다!",根本没有父母，这会导致问题！
+FixArmature.notParentTo1, is not parented to ,, 가,不是父母
+FixArmature.notParentTo2,", this will cause problems!",,"의 부모로 설정돼지 않았다면, 이로 인해 문제가 발생할 수 있습니다!",，这样会出问题！
+StartPoseMode.label,Start Pose Mode,ポーズモードを開始,포즈모드 시작,开始姿势模式
 StartPoseMode.desc,"Starts the pose mode.
 This lets you test how your model will move",,"포즈모드를 시작합니다.
-이것은 당신의 모델이 어떻게 움직일지 테스트할 수 있게 해줍니다"
+이것은 당신의 모델이 어떻게 움직일지 테스트할 수 있게 해줍니다","启动姿势模式。
+这使您可以测试模型将如何移动"
 StartPoseModeNoReset.desc,"Starts the pose mode without resetting the pose.
 This lets you test how your model will move",,"포즈 재설정없이 포즈모드를 시작합니다.
-이것은 당신의 모델이 어떻게 움직일지 테스트할 수 있게 해줍니다"
-StopPoseMode.label,Stop Pose Mode,ポーズモードを停止する,포즈모드 중단
-StopPoseMode.desc,Stops the pose mode and resets the pose to normal,,포즈모드를 중단하고 포즈를 초기상태로 되돌립니다
-StopPoseModeNoReset.desc,Stops the pose mode and keeps the current pose,,포즈모드를 중단하고 현재 포즈를 유지합니다
-PoseToShape.label,Pose to Shape Key,シェイプキーへのポーズ,현재 포즈를 쉐이프키로 만들기
+이것은 당신의 모델이 어떻게 움직일지 테스트할 수 있게 해줍니다","启动姿势模式而不重置姿势。
+这使您可以测试模型将如何移动"
+StopPoseMode.label,Stop Pose Mode,ポーズモードを停止する,포즈모드 중단,停止姿势模式
+StopPoseMode.desc,Stops the pose mode and resets the pose to normal,,포즈모드를 중단하고 포즈를 초기상태로 되돌립니다,停止姿势模式并将姿势重置为正常
+StopPoseModeNoReset.desc,Stops the pose mode and keeps the current pose,,포즈모드를 중단하고 현재 포즈를 유지합니다,停止姿势模式并保持当前姿势
+PoseToShape.label,Pose to Shape Key,シェイプキーへのポーズ,현재 포즈를 쉐이프키로 만들기,对形态键构成姿势
 PoseToShape.desc,"This saves your current pose as a new shape key.
 The new shape key will be at the bottom of your shape key list of the mesh",,"이것은 당신의 현재 포즈를 새로운 쉐이프키로 만듭니다.
-새로운 쉐이프키는 메쉬의 쉐이프키 리스트의 제일 아래에 생성됩니다."
-PoseNamePopup.label,Give this shapekey a name:,このシェイプキーに名前を付ける:,쉐이프키의 이름 설정:
-PoseNamePopup.desc,Sets the shapekey name. Press anywhere outside to skip,,쉐이프키 이름을 설정합니다. 스킵하려면 아무 곳이나 누르세요.
-PoseNamePopup.success,Pose successfully saved as shape key.,,포즈가 성공적으로 쉐이프키로 저장되었습니다.
-PoseToRest.label,Apply as Rest Pose,レストポーズとして適用する,새로운 기본자세로 적용
-PoseToRest.desc,This applies the current pose position as the new rest position.,,이것은 현재 포즈를 새로운 기본 포즈로 적용합니다.
-PoseToRest.success,Pose successfully applied as rest pose.,,포즈가 성공적으로 기본자세로 적용되었습니다.
-JoinMeshes.label,Join Meshes,メッシュに参加する,메쉬 통합
+새로운 쉐이프키는 메쉬의 쉐이프키 리스트의 제일 아래에 생성됩니다.","这会将您当前的姿势保存为新的形态键。
+新的形态键将位于网格的形态键列表的底部"
+PoseNamePopup.label,Give this shapekey a name:,このシェイプキーに名前を付ける:,쉐이프키의 이름 설정:,给这个 shapekey 起个名字：
+PoseNamePopup.desc,Sets the shapekey name. Press anywhere outside to skip,,쉐이프키 이름을 설정합니다. 스킵하려면 아무 곳이나 누르세요.,设置 shapekey 名称。 按任意位置跳过。
+PoseNamePopup.success,Pose successfully saved as shape key.,,포즈가 성공적으로 쉐이프키로 저장되었습니다.,姿势成功保存为形态键。
+PoseToRest.label,Apply as Rest Pose,レストポーズとして適用する,새로운 기본자세로 적용,应用为默认位置
+PoseToRest.desc,This applies the current pose position as the new rest position.,,이것은 현재 포즈를 새로운 기본 포즈로 적용합니다.,"这会将当前姿势位置应用为新的静止位置。
+
+如果您在每个轴上平等地缩放骨骼，则形态键也将正确缩放！
+警告：这会对形态键产生不良影响，因此在使用此修改头部时要小心"
+PoseToRest.success,Pose successfully applied as rest pose.,,포즈가 성공적으로 기본자세로 적용되었습니다.,姿势成功应用为默认位置。
+JoinMeshes.label,Join Meshes,メッシュに参加する,메쉬 통합,加入网格
 JoinMeshes.desc,"Joins all meshes of this model together.
 It also:
   - Reorders all shape keys correctly
@@ -273,10 +295,16 @@ It also:
   - 모든 변환(Transforms)을 적용
   - 망가진 아마추어 모디파이어들(armature modifiers)을 고침
   - 모든 데시메이션(decimation)과 미러 모디파이어들(mirror modifiers)을 적용
-  - UV맵들을 올바르게 통합"
-JoinMeshes.failure,Meshes could not be joined!,,메쉬들이 통합될 수 없었습니다!
-JoinMeshes.success,Meshes joined.,,메쉬들이 통합됐습니다.
-JoinMeshesSelected.label,Join Selected Meshes,選択したメッシュを結合する,
+  - UV맵들을 올바르게 통합","将此模型的所有网格连接在一起。
+它也是：
+- 正确重新排序所有形态键
+- 应用所有变换
+- 修复损坏的骨架修改器
+- 应用所有精简和镜像修改器
+- 正确合并 UV 贴图"
+JoinMeshes.failure,Meshes could not be joined!,,메쉬들이 통합될 수 없었습니다!,无法加入网格！
+JoinMeshes.success,Meshes joined.,,메쉬들이 통합됐습니다.,网格加入。
+JoinMeshesSelected.label,Join Selected Meshes,選択したメッシュを結合する,,加入选定的网格
 JoinMeshesSelected.desc,"Joins all selected meshes of this model together.
 It also:
   - Reorders all shape keys correctly
@@ -289,278 +317,346 @@ It also:
   - 모든 변환(Transforms)을 적용
   - 망가진 아마추어 모디파이어들(armature modifiers)을 고침
   - 모든 데시메이션(decimation)과 미러 모디파이어들(mirror modifiers)을 적용
-  - UV맵들을 올바르게 통합"
-JoinMeshesSelected.error.noSelect,No meshes selected! Please select the meshes you want to join in the hierarchy!,,선택된 메쉬들이 없습니다! 합치고 싶은 메쉬들을 계층(Hierarchy) 창에서 선택해주세요!
-JoinMeshesSelected.error.cantJoin,Selected meshes could not be joined!,,선택된 메쉬들이 통합될 수 없었습니다!
-JoinMeshesSelected.success,Selected meshes joined.,,선택된 메쉬들이 통합됐습니다.
-SeparateByMaterials.label,Separate by Materials,材料別に分離する,매테리얼별로 분리하기
+  - UV맵들을 올바르게 통합","将此模型的所有选定网格连接在一起。
+它也是：
+- 正确重新排序所有形态键
+- 应用所有变换
+- 修复损坏的骨架修改器
+- 应用所有精简和镜像修改器
+- 正确合并 UV 贴图"
+JoinMeshesSelected.error.noSelect,No meshes selected! Please select the meshes you want to join in the hierarchy!,,선택된 메쉬들이 없습니다! 합치고 싶은 메쉬들을 계층(Hierarchy) 창에서 선택해주세요!,未选择网格！ 请选择要加入层次结构的网格！
+JoinMeshesSelected.error.cantJoin,Selected meshes could not be joined!,,선택된 메쉬들이 통합될 수 없었습니다!,无法加入选定的网格！
+JoinMeshesSelected.success,Selected meshes joined.,,선택된 메쉬들이 통합됐습니다.,选定的网格已连接。
+SeparateByMaterials.label,Separate by Materials,材料別に分離する,매테리얼별로 분리하기,按材质分开
 SeparateByMaterials.desc,"Separates selected mesh by materials.
 
 Warning: Never decimate something where you might need the shape keys later (face, mouth, eyes..)",,"선택된 메쉬를 매테리얼 별로 나눕니다.
 
-경고: 나중에 쉐이프키가 필요한 것들은 절대 데시메이트하지 마십시오. (얼굴, 입, 눈 등..)"
-SeparateByMaterials.success,Successfully separated by materials.,,성공적으로 매테리얼별로 분리됐습니다.
-SeparateByLooseParts.label,Separate by Loose Parts,ルーズパーツに分離する,느슨한 부분들로 분리하기
+경고: 나중에 쉐이프키가 필요한 것들은 절대 데시메이트하지 마십시오. (얼굴, 입, 눈 등..)","按材质分离选定的网格。
+
+警告：永远不要在以后可能需要形态键的地方（面部、嘴巴、眼睛......）"
+SeparateByMaterials.success,Successfully separated by materials.,,성공적으로 매테리얼별로 분리됐습니다.,成功按材质分离。
+SeparateByLooseParts.label,Separate by Loose Parts,ルーズパーツに分離する,느슨한 부분들로 분리하기,用松散的零件分开
 SeparateByLooseParts.desc,"Separates selected mesh by loose parts.
 This acts like separating by materials but creates more meshes for more precision",,"선택된 메쉬를 느슨한 부분들별로 나눕니다.
-이것은 매테리얼별로 분리시키는 것과 같지만 보다 높은 정확도를 위해 더 많은 메쉬들을 만듭니다"
-SeparateByLooseParts.success,Successfully separated by loose parts.,,성공적으로 느슨한 부분들로 분리됐습니다.
-SeparateByShapekeys.label,Separate by Shape Keys,シェイプキーに区切る,쉐이프키별로 분리하기
+이것은 매테리얼별로 분리시키는 것과 같지만 보다 높은 정확도를 위해 더 많은 메쉬들을 만듭니다","通过松散的部分分隔选定的网格。
+这就像按材质分离一样，但会创建更多网格以获得更高的精度"
+SeparateByLooseParts.success,Successfully separated by loose parts.,,성공적으로 느슨한 부분들로 분리됐습니다.,被松散的零件成功分离。
+SeparateByShapekeys.label,Separate by Shape Keys,シェイプキーに区切る,쉐이프키별로 분리하기,用形态键分开
 SeparateByShapekeys.desc,"Separates selected mesh into two parts,
 depending on whether it is effected by a shape key or not.
 
 Very useful for manual decimation",,"선택된 메쉬를 두 부분으로 나누는데,
 쉐이프키에 의해 영향을 받는지 여부에 따라 결정됩니다.
 
-수동으로 데시메이션을 할 시 매우 유용합니다"
-SeparateByShapekeys.success,Successfully separated by shape keys.,,성공적으로 쉐이프키별로 분리됐습니다.
-SeparateByCopyProtection.label,Separate by Copy Protection,コピープロテクションに分離する,복사핵 방지로 분리하기
+수동으로 데시메이션을 할 시 매우 유용합니다","将选定的网格分成两部分，
+取决于它是否受形态键的影响。
+
+对于手动精简非常有用"
+SeparateByShapekeys.success,Successfully separated by shape keys.,,성공적으로 쉐이프키별로 분리됐습니다.,通过形态键成功分离。
+SeparateByCopyProtection.label,Separate by Copy Protection,コピープロテクションに分離する,복사핵 방지로 분리하기,通过复制保护分开
 SeparateByCopyProtection.desc,"Separates selected mesh into two parts,
 depending on whether it is effected by the Cats Copy Protection or not.
 
 Useful if you have the Copy Protection enabled on multiple selected parts of your model",,"선택된 메쉬를 두 부분으로 나누는데,
 Cats의 복사핵 방지의 영향을 받는지 여부에 따라 결정됩니다.
 
-모델의 여러 부분에서 복사 방지를 활성화 한 경우 유용합니다."
-SeparateByCopyProtection.success,Successfully separated by shape keys.,,성공적으로 쉐이프키별로 분리됐습니다.
-SeparateByX.error.noMesh,No meshes found!,,메쉬가 발견되지 않음!
+모델의 여러 부분에서 복사 방지를 활성화 한 경우 유용합니다.","将选定的网格分成两部分，
+取决于它是否受 Cats Copy Protection 的影响。
+
+如果您在模型的多个选定部分上启用了复制保护，则很有用"
+SeparateByCopyProtection.success,Successfully separated by shape keys.,,성공적으로 쉐이프키별로 분리됐습니다.,通过形态键成功分离。
+SeparateByX.error.noMesh,No meshes found!,,메쉬가 발견되지 않음!,未找到网格！
 SeparateByX.error.multipleMesh,"Multiple meshes found!
 Please select the mesh you want to separate!",,"여러 메쉬들이 발견됨!
-나누고 싶은 메쉬를 선택해주세요!"
-SeparateByX.warn.noSeparation,No meshes had to be separated!,,메쉬를 분리 할 필요가 없습니다!
-MergeWeights.label,Merge Weights to Parent,親に重みをマージする,부모쪽으로 웨이트들을 통합
+나누고 싶은 메쉬를 선택해주세요!","找到多个网格！
+请选择您要分离的网格！"
+SeparateByX.warn.noSeparation,No meshes had to be separated!,,메쉬를 분리 할 필요가 없습니다!,无需分离网格！
+MergeWeights.label,Merge Weights to Parent,親に重みをマージする,부모쪽으로 웨이트들을 통합,将权重合并到父级
 MergeWeights.desc,"Deletes the selected bones and adds their weight to their respective parents.
 
-Only available in Edit or Pose Mode with bones selected",,
-MergeWeights.success,Deleted {number} bones and added their weights to their parents.,,
-MergeWeightsToActive.label,Merge Weights to Active,ウェイトをアクティブ にマージする,웨이트를 활성화된 본으로 통합
+Only available in Edit or Pose Mode with bones selected",,,"删除选定的骨骼并将它们的权重添加到它们各自的父级。
+
+仅在选定骨骼的编辑或姿势模式下可用"
+MergeWeights.success,Deleted {number} bones and added their weights to their parents.,,,删除了 {number} 个骨骼并将它们的权重添加到它们的父级。
+MergeWeightsToActive.label,Merge Weights to Active,ウェイトをアクティブ にマージする,웨이트를 활성화된 본으로 통합,合并权重到活动
 MergeWeightsToActive.desc,"Deletes the selected bones except the active one and adds their weights to the active bone.
 The active bone is the one you selected last.
 
-Only available in Edit or Pose Mode with bones selected",,
-MergeWeightsToActive.success,Deleted {number} bones and added their weights to the active bone.,,
-ApplyTransformations.label,Apply Transformations,変換を適用する,변환 적용
-ApplyTransformations.desc,"Applies the position, rotation and scale to the armature and it's meshes",,
-ApplyTransformations.success,Transformations applied.,,
-ApplyAllTransformations.label,Apply All Transformations,すべての変換を適用する,모든 변환 적용
-ApplyAllTransformations.desc,"Applies the position, rotation and scale of all objects",,
-ApplyAllTransformations.success,Transformations applied.,,
-RemoveZeroWeightBones.label,Remove Zero Weight Bones,ゼロ ウェイト ボーンを削除する,제로 웨이트 본 제거
+Only available in Edit or Pose Mode with bones selected",,,"删除除活动骨骼之外的选定骨骼，并将它们的权重添加到活动骨骼。
+活动骨骼是您最后选择的骨骼。
+
+仅在选定骨骼的编辑或姿势模式下可用"
+MergeWeightsToActive.success,Deleted {number} bones and added their weights to the active bone.,,,删除了 {number} 个骨骼并将它们的权重添加到活动骨骼。
+ApplyTransformations.label,Apply Transformations,変換を適用する,변환 적용,应用转换
+ApplyTransformations.desc,"Applies the position, rotation and scale to the armature and it's meshes",,,将位置、旋转和比例应用于骨架及其网格
+ApplyTransformations.success,Transformations applied.,,,应用了转换。
+ApplyAllTransformations.label,Apply All Transformations,すべての変換を適用する,모든 변환 적용,应用所有转换
+ApplyAllTransformations.desc,"Applies the position, rotation and scale of all objects",,,应用所有对象的位置、旋转和缩放
+ApplyAllTransformations.success,Transformations applied.,,,应用了转换。
+RemoveZeroWeightBones.label,Remove Zero Weight Bones,ゼロ ウェイト ボーンを削除する,제로 웨이트 본 제거,移除零权重骨骼
 RemoveZeroWeightBones.desc,"Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices
-Don't use this if you plan to use 'Fix Model'",,
-RemoveZeroWeightBones.success,Deleted {number} zero weight bones.,,
-RemoveZeroWeightGroups.label,Remove Zero Weight Vertex Groups,ゼロ ウェイトの頂点グループを削除,제로 웨이트 버텍스 그룹들 제거
-RemoveZeroWeightGroups.desc,"Cleans up the vertex groups of all meshes, deleting all groups that don't directly affect any vertices",,
-RemoveZeroWeightGroups.success,Removed {number} zero weight vertex groups.,,
-RemoveConstraints.label,Remove Bone Constraints,ボーン拘束を削除,본 컨스트레인트들 제거
-RemoveConstraints.desc,Removes constrains between bones causing specific bone movement as these are not used by VRChat,,
-RemoveConstraints.success,Removed all bone constraints.,,
-RecalculateNormals.label,Recalculate Normals,法線を再計算する,노말 재계산
+Don't use this if you plan to use 'Fix Model'",,,"清理骨骼层次，删除所有不直接影响任何顶点的骨骼
+如果您打算使用""修复模型""，请不要使用它"
+RemoveZeroWeightBones.success,Deleted {number} zero weight bones.,,,删除了 {number} 个零权重骨骼。
+RemoveZeroWeightGroups.label,Remove Zero Weight Vertex Groups,ゼロ ウェイトの頂点グループを削除,제로 웨이트 버텍스 그룹들 제거,删除零权重顶点组
+RemoveZeroWeightGroups.desc,"Cleans up the vertex groups of all meshes, deleting all groups that don't directly affect any vertices",,,清理所有网格的顶点组，删除所有不直接影响任何顶点的组
+RemoveZeroWeightGroups.success,Removed {number} zero weight vertex groups.,,,删除了 {number} 个零权重顶点组。
+RemoveConstraints.label,Remove Bone Constraints,ボーン拘束を削除,본 컨스트레인트들 제거,移除骨骼约束
+RemoveConstraints.desc,Removes constrains between bones causing specific bone movement as these are not used by VRChat,,,移除导致特定骨骼移动的骨骼之间的约束，因为 VRChat 不使用这些约束
+RemoveConstraints.success,Removed all bone constraints.,,,删除了所有骨骼约束。
+RecalculateNormals.label,Recalculate Normals,法線を再計算する,노말 재계산,重新计算法线
 RecalculateNormals.desc,"Makes normals point inside of the selected mesh.
 
 Don't use this on good looking meshes as this can screw them up.
-Use this if there are random inverted or darker faces on the mesh",,
-RecalculateNormals.success,Recalculated all normals.,,
-FlipNormals.label,Flip Normals,法線を反転,노말 뒤집기
+Use this if there are random inverted or darker faces on the mesh",,,"使法线指向选定网格的内部。
+
+不要在好看的网格上使用它，因为这会搞砸它们。
+如果网格上有随机倒置或较暗的面，请使用此选项"
+RecalculateNormals.success,Recalculated all normals.,,,重新计算所有法线。
+FlipNormals.label,Flip Normals,法線を反転,노말 뒤집기,翻转法线
 FlipNormals.desc,"Flips the direction of the faces' normals of the selected mesh.
-Use this if all normals are inverted",,
-FlipNormals.success,Flipped all normals.,,
-RemoveDoubles.label,Remove Doubles,ダブルスを削除する,이중 제거
+Use this if all normals are inverted",,,"翻转选定网格的面法线方向。
+如果所有法线都反转，请使用此选项"
+FlipNormals.success,Flipped all normals.,,,翻转所有法线。
+RemoveDoubles.label,Remove Doubles,ダブルスを削除する,이중 제거,删除重叠
 RemoveDoubles.desc,"Merges duplicated faces and vertices of the selected meshes.
 This is more safe than doing it manually:
   - leaves shape keys completely untouched
   - but removes less doubles overall",,"선택한 메시의 중복 면들(faces)과 점(vertices)을 병합합니다.
 This is more safe than doing it manually:
   - leaves shape keys completely untouched
-  - but removes less doubles overall"
-RemoveDoubles.success,Removed {number} vertices.,,
-RemoveDoublesNormal.label,Remove Doubles Normally,ダブルを通常どおりに削除する,일반적으로 이중 제거
+  - but removes less doubles overall","合并选定网格的重复面和顶点。
+这比手动操作更安全：
+- 完全保持形态键不变
+- 但总体上去除的重叠较少"
+RemoveDoubles.success,Removed {number} vertices.,,,移除了 {number} 个顶点。
+RemoveDoublesNormal.label,Remove Doubles Normally,ダブルを通常どおりに削除する,일반적으로 이중 제거,正常删除重叠
 RemoveDoublesNormal.desc,"Merges duplicated faces and vertices of the selected meshes.
 This is exactly like doing it manually",,"선택한 메시의 중복 면들(faces)과 점(vertices)을 병합합니다.
-This is exactly like doing it manually"
-RemoveDoublesNormal.success,Removed {number} vertices.,,
-FixVRMShapesButton.label,Fix Koikatsu Shapekeys,コイカツシェイプキーを修正,코이카츠 쉐이프키 고치기
-FixVRMShapesButton.desc,Fixes the shapekeys of Koikatsu models,,
-FixVRMShapesButton.warn.notDetected,No shapekeys detected!,,
-FixVRMShapesButton.success,Fixed VRM shapekeys.,,
-FixFBTButton.label,Fix Full Body Tracking,全身追跡を修正,풀바디 트래킹 적용
+This is exactly like doing it manually","合并选定网格的重复面和顶点。
+这就像手动做一样"
+RemoveDoublesNormal.success,Removed {number} vertices.,,,移除了 {number} 个顶点。
+FixVRMShapesButton.label,Fix Koikatsu Shapekeys,コイカツシェイプキーを修正,코이카츠 쉐이프키 고치기,修复 Koikatsu 形态键
+FixVRMShapesButton.desc,Fixes the shapekeys of Koikatsu models,,,修复了 Koikatsu 模型的形态键
+FixVRMShapesButton.warn.notDetected,No shapekeys detected!,,,未检测到形态键！
+FixVRMShapesButton.success,Fixed VRM shapekeys.,,,修复了 VRM 形态键。
+FixFBTButton.label,Fix Full Body Tracking,全身追跡を修正,풀바디 트래킹 적용,修复全身追踪
 FixFBTButton.desc,"WARNING: This fix is no longer needed for VRChat, you should not use it!
 
 Applies a general fix for Full Body Tracking.
-Ignore the ""Spine length zero"" warning in Unity",,
+Ignore the ""Spine length zero"" warning in Unity",,,"警告：VRChat 不再需要此修复程序，您不应使用它！
+
+对全身跟踪应用一般修复。
+忽略 Unity 中的""Spine length zero""警告"
 FixFBTButton.error.bonesNotFound,"Required bones could not be found!
 Please make sure that your armature contains the following bones:
  - Hips, Spine, Left leg, Right leg
-Exact names are required!",,
-FixFBTButton.error.alreadyApplied,Full Body Tracking Fix already applied!,,
-FixFBTButton.success,Successfully applied the Full Body Tracking fix.,,
-RemoveFBTButton.label,Remove Full Body Tracking Fix,全身追跡の修正を削除,풀바디 트래킹 적용 제거
+Exact names are required!",,,"找不到所需的骨头！
+请确保您的骨架包含以下骨骼：
+- 臀部、脊柱、左腿、右腿
+需要准确的名字！"
+FixFBTButton.error.alreadyApplied,Full Body Tracking Fix already applied!,,,全身追踪修复已应用！
+FixFBTButton.success,Successfully applied the Full Body Tracking fix.,,,成功应用全身追踪修复。
+RemoveFBTButton.label,Remove Full Body Tracking Fix,全身追跡の修正を削除,풀바디 트래킹 적용 제거,移除全身追踪修复
 RemoveFBTButton.desc,"Removes the fix for Full Body Tracking, since it is no longer advised to use it.
 
 Requires bones:
- - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2",,
+ - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2",,,"移除全身追踪的修复，因为不再建议使用它。
+
+需要骨头：
+- 臀部、脊柱、左腿、右腿、左腿 2、右腿 2"
 RemoveFBTButton.error.bonesNotFound,"Required bones could not be found!
 Please make sure that your armature contains the following bones:
  - Hips, Spine, Left leg, Right leg, Left leg 2, Right leg 2
-Exact names are required!",,
-RemoveFBTButton.error.notApplied,The Full Body Tracking Fix is not applied!,,
-RemoveFBTButton.success,Successfully removed the Full Body Tracking fix.,,
-DuplicateBonesButton.label,Duplicate Bones,ボーンの複製,본 복사
-DuplicateBonesButton.desc,Duplicates the selected bones including their weight and renames them to _L and _R,,
-DuplicateBonesButton.success,Successfully duplicated {number} bones.,,
-MergeArmature.label,Merge Armatures,マージアーマチュア,뼈대(Armatures) 통합
+Exact names are required!",,,"找不到所需的骨头！
+请确保您的骨架包含以下骨骼：
+- 臀部、脊柱、左腿、右腿、左腿 2、右腿 2
+需要准确的名字！"
+RemoveFBTButton.error.notApplied,The Full Body Tracking Fix is not applied!,,,全身追踪修复未应用！
+RemoveFBTButton.success,Successfully removed the Full Body Tracking fix.,,,成功移除全身追踪修复。
+DuplicateBonesButton.label,Duplicate Bones,ボーンの複製,본 복사,重复骨骼
+DuplicateBonesButton.desc,Duplicates the selected bones including their weight and renames them to _L and _R,,,复制选定的骨骼，包括它们的权重，并将它们重命名为 _L 和 _R
+DuplicateBonesButton.success,Successfully duplicated {number} bones.,,,成功复制 {number} 个骨骼。
+MergeArmature.label,Merge Armatures,マージアーマチュア,뼈대(Armatures) 통합,
 MergeArmature.desc,"Merges the selected merge armature into the base armature.
 You should fix both armatures with Cats first.
-Only move the mesh of the merge armature to the desired position, the bones will be moved automatically",,
-MergeArmature.error.notFound,"The armature ""{name}"" could not be found.",,
+Only move the mesh of the merge armature to the desired position, the bones will be moved automatically",,,"将选定的合并骨架合并到基础骨架中。
+您应该先用 Cats 修复两个骨架。
+仅将合并骨架的网格移动到所需位置，骨骼将自动移动"
+MergeArmature.error.notFound,"The armature ""{name}"" could not be found.",,,"找不到骨架""{name}""。"
 MergeArmature.error.checkTransforms,"Please make sure that the parent of the merge armature has the following transforms:
  - Location at 0
  - Rotation at 0
- - Scale at 1",,
+ - Scale at 1",,,
 MergeArmature.error.pleaseFix,"Please use the ""Fix Model"" feature on the selected armatures first!
 Make sure to select the armature you want to fix above the ""Fix Model"" button!
-After that please only move the mesh (not the armature!) to the desired position.",,
-MergeArmature.success,Armatures successfully joined.,,
-AttachMesh.label,Attach Mesh,メッシュをアタッチ,메쉬에 붙이기
+After that please only move the mesh (not the armature!) to the desired position.",,,
+MergeArmature.success,Armatures successfully joined.,,,骨架成功加入。
+AttachMesh.label,Attach Mesh,メッシュをアタッチ,메쉬에 붙이기,附加网格
 AttachMesh.desc,"Attaches the selected mesh to the selected bone of the selected armature.
 
 INFO: The mesh will only be assigned to the selected bone.
-E.g.: A jacket won't work, because it requires multiple bones",,
-AttachMesh.success,Mesh successfully attached to armature.,,
-CustomModelTutorialButton.label,How to use,使用方法,사용법
-CustomModelTutorialButton.URL,https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation,,
-CustomModelTutorialButton.success,Documentation opened.,Documentation,
+E.g.: A jacket won't work, because it requires multiple bones",,,
+AttachMesh.success,Mesh successfully attached to armature.,,,网格已成功连接到骨架。
+CustomModelTutorialButton.label,How to use,使用方法,사용법,使用方法
+CustomModelTutorialButton.URL,https://github.com/michaeldegroot/cats-blender-plugin#custom-model-creation,,,
+CustomModelTutorialButton.success,Documentation opened.,Documentation,,文档打开。
 merge_armatures.error.transformReset,"If you want to rotate the new part, only modify the mesh instead of the armature,
 or select ""Apply Transforms""!
 
 The transforms of the merge armature got reset and the mesh you have to modify got selected.
 Now place this selected mesh where and how you want it to be and then merge the armatures again.
-If you don't want that, undo this operation.",,
-merge_armatures.error.pleaseUndo,"Something went wrong! Please undo, check your selections and try again.",,
-EnableSMC.label,Enable Material Combiner,マテリアルコンバイナを有効にする,매테리얼 통합기 활성화
-EnableSMC.desc,Enables Material Combiner,,
-EnableSMC.success,Enabled Material Combiner!,,
-AtlasHelpButton.label,Generate Material List,材料リストを生成する,매테리얼 목록 생성
-AtlasHelpButton.desc,Open useful Atlas Tips,,
-AtlasHelpButton.URL,https://github.com/michaeldegroot/cats-blender-plugin/#texture-atlas,,
-AtlasHelpButton.success,Atlas Help opened.,,
-InstallShotariya.label,Error while loading Material Combiner:,マテリアルコンバイナ読み込み中にエラーが発生しました:,매테리얼 통합기를 로드하는 중 오류 발생:
-InstallShotariya.error.install1,Material Combiner is not installed!,,
-InstallShotariya.error.install2,The plugin 'Material Combiner' by Shotariya is required for this function.,,
-InstallShotariya.error.install3,Please download and install it manually:,,
-InstallShotariya.error.enable1,Material Combiner is not enabled!,,
-InstallShotariya.error.enable2,The plugin 'Material Combiner' by Shotariya is required for this function.,,
-InstallShotariya.error.enable3,Please enable it in your User Preferences.,,
-InstallShotariya.error.version1,Material Combiner is outdated!,,
-InstallShotariya.error.version2,The latest version is required for this function.,,
-InstallShotariya.error.version3,Please download and install it manually:,,
-ShotariyaButton.label,Download Material Combiner,マテリアルコンバイナーをダウンロード,매테리얼 통합기 다운로드
-ShotariyaButton.success,Material Combiner link opened,,
-ImmersiveScalerButton.success,Immersive Scaler link opened,,
-ImmersiveScalerButton.label,Download Immersive Scaler,,
-ImmersiveScalerButton.desc,Open latest Immersive Scaler release,,
-ImmersiveScalerHelpButton.URL,https://github.com/triazo/immersive_scaler,,
-ImmersiveScalerHelpButton.label,Immersive Scaler Help,,
-ImmersiveScalerHelpButton.desc,Open guide for Immersive Scaler,,
-ImmersiveScalerHelpButton.success,Immersive Scaler Readme opened,,
-EnableIMScale.label,Enable Immersive Scaler,,
-EnableIMScale.desc,Enable Immersive Scaler,,
-EnableIMScale.success,Enabled Immersive Scaler!,,
-BoneMergeButton.label,Merge Bones,ボーンをマージする,뼈 통합
+If you don't want that, undo this operation.",,,"如果要旋转新零件，只修改网格而不是骨架，
+或选择""应用变换""！
+
+合并骨架的变换被重置，您必须修改的网格被选中。
+现在将此选定的网格放置在您想要的位置和方式，然后再次合并骨架。
+如果您不想这样做，请撤消此操作。"
+merge_armatures.error.pleaseUndo,"Something went wrong! Please undo, check your selections and try again.",,,出问题了！ 请撤消，检查您的选择，然后重试。
+EnableSMC.label,Enable Material Combiner,マテリアルコンバイナを有効にする,매테리얼 통합기 활성화,启用材质组合器
+EnableSMC.desc,Enables Material Combiner,,,
+EnableSMC.success,Enabled Material Combiner!,,,
+AtlasHelpButton.label,Generate Material List,材料リストを生成する,매테리얼 목록 생성,生成物料清单
+AtlasHelpButton.desc,Open useful Atlas Tips,,,打开有用的 Atlas Tips
+AtlasHelpButton.URL,https://github.com/michaeldegroot/cats-blender-plugin/#texture-atlas,,,
+AtlasHelpButton.success,Atlas Help opened.,,,Atlas 帮助已打开。
+InstallShotariya.label,Error while loading Material Combiner:,マテリアルコンバイナ読み込み中にエラーが発生しました:,매테리얼 통합기를 로드하는 중 오류 발생:,加载Material Combiner时出错：
+InstallShotariya.error.install1,Material Combiner is not installed!,,,Material Combiner未安装！
+InstallShotariya.error.install2,The plugin 'Material Combiner' by Shotariya is required for this function.,,,
+InstallShotariya.error.install3,Please download and install it manually:,,,请手动下载并安装：
+InstallShotariya.error.enable1,Material Combiner is not enabled!,,,
+InstallShotariya.error.enable2,The plugin 'Material Combiner' by Shotariya is required for this function.,,,
+InstallShotariya.error.enable3,Please enable it in your User Preferences.,,,请在您的用户首选项中启用它。
+InstallShotariya.error.version1,Material Combiner is outdated!,,,材质合成器已过期
+InstallShotariya.error.version2,The latest version is required for this function.,,,此功能需要最新版本。
+InstallShotariya.error.version3,Please download and install it manually:,,,请手动下载并安装：
+ShotariyaButton.label,Download Material Combiner,マテリアルコンバイナーをダウンロード,매테리얼 통합기 다운로드,下载材质合成器
+ShotariyaButton.success,Material Combiner link opened,,,
+ImmersiveScalerButton.success,Immersive Scaler link opened,,,
+ImmersiveScalerButton.label,Download Immersive Scaler,,,
+ImmersiveScalerButton.desc,Open latest Immersive Scaler release,,,
+ImmersiveScalerHelpButton.URL,https://github.com/triazo/immersive_scaler,,,
+ImmersiveScalerHelpButton.label,Immersive Scaler Help,,,
+ImmersiveScalerHelpButton.desc,Open guide for Immersive Scaler,,,
+ImmersiveScalerHelpButton.success,Immersive Scaler Readme opened,,,
+EnableIMScale.label,Enable Immersive Scaler,,,
+EnableIMScale.desc,Enable Immersive Scaler,,,
+EnableIMScale.success,Enabled Immersive Scaler!,,,
+BoneMergeButton.label,Merge Bones,ボーンをマージする,뼈 통합,合并骨骼
 BoneMergeButton.desc,"Merges the given percentage of bones together.
-This is useful to reduce the amount of bones used by Dynamic Bones.",,
-BoneMergeButton.success,Merged bones.,,
-ShowError.label,Report: Error,レポート: エラー,
-CopyProtectionEnable.label,Enable Protection,保護を有効にする,보호 활성화
+This is useful to reduce the amount of bones used by Dynamic Bones.",,,
+BoneMergeButton.success,Merged bones.,,,合并骨头。
+ShowError.label,Report: Error,レポート: エラー,,报告：错误
+CopyProtectionEnable.label,Enable Protection,保護を有効にする,보호 활성화,启用保护
 CopyProtectionEnable.desc,"Protects your model from piracy. NOT a 100% safe protection!
-Read the documentation before use",,
-CopyProtectionEnable.success,Model secured!,,
-CopyProtectionDisable.label,Disable Protection,保護を無効にする,보호 비활성화
-CopyProtectionDisable.desc,Removes the copy protections from this model.,,
-CopyProtectionDisable.success,Model un-secured!,,
-ProtectionTutorialButton.label,Go to Documentation,ドキュメントに移動,문서로 이동
-ProtectionTutorialButton.URL,https://github.com/michaeldegroot/cats-blender-plugin#copy-protection,,
-ProtectionTutorialButton.success,Documentation,,
-ForumButton.label,Go to the Forums,フォーラムに移動する,포럼으로 가기
-ForumButton.URL,https://vrcat.club/threads/cats-blender-plugin.6/,,
-ForumButton.success,Forum opened.,,
-DiscordButton.label,Join our Discord,Discordサーバーに参加する,디스코드에 가입하기
-DiscordButton.URL,https://discord.gg/f8yZGnv,,
-DiscordButton.success,Discord opened.,,
-PatchnotesButton.label,Latest Patchnotes,最新のパッチノート,최신 패치노트
-PatchnotesButton.URL,https://github.com/michaeldegroot/cats-blender-plugin/releases,,
-PatchnotesButton.success,Patchnotes opened.,,
-ScanButton.label,Scan for decimation models,デシメーション モデルのスキャン,버텍스 줄일 모델 검색
-ScanButton.desc,Separates the mesh.,,
-AddShapeButton.label,Add,追加,
+Read the documentation before use",,,"保护您的模型免受盗版。 不是 100% 安全的保护！
+使用前阅读文档"
+CopyProtectionEnable.success,Model secured!,,,模型安全！
+CopyProtectionDisable.label,Disable Protection,保護を無効にする,보호 비활성화,禁用保护
+CopyProtectionDisable.desc,Removes the copy protections from this model.,,,删除此模型的复制保护。
+CopyProtectionDisable.success,Model un-secured!,,,模型不安全！
+ProtectionTutorialButton.label,Go to Documentation,ドキュメントに移動,문서로 이동,转到文档
+ProtectionTutorialButton.URL,https://github.com/michaeldegroot/cats-blender-plugin#copy-protection,,,
+ProtectionTutorialButton.success,Documentation,,,
+ForumButton.label,Go to the Forums,フォーラムに移動する,포럼으로 가기,前往论坛
+ForumButton.URL,https://vrcat.club/threads/cats-blender-plugin.6/,,,
+ForumButton.success,Forum opened.,,,
+DiscordButton.label,Join our Discord,Discordサーバーに参加する,디스코드에 가입하기,加入我们的Discord
+DiscordButton.URL,https://discord.gg/f8yZGnv,,,
+DiscordButton.success,Discord opened.,,,
+PatchnotesButton.label,Latest Patchnotes,最新のパッチノート,최신 패치노트,最新公告
+PatchnotesButton.URL,https://github.com/michaeldegroot/cats-blender-plugin/releases,,,
+PatchnotesButton.success,Patchnotes opened.,,,
+ScanButton.label,Scan for decimation models,デシメーション モデルのスキャン,버텍스 줄일 모델 검색,扫描精简模型
+ScanButton.desc,Separates the mesh.,,,分离网格。
+AddShapeButton.label,Add,追加,,追加
 AddShapeButton.desc,"Adds the selected shape key to the whitelist.
-This means that every mesh containing that shape key will be not decimated.",,
-AddMeshButton.label,Add,追加,
+This means that every mesh containing that shape key will be not decimated.",,,
+AddMeshButton.label,Add,追加,,追加
 AddMeshButton.desc,"Adds the selected mesh to the whitelist.
-This means that this mesh will be not decimated.",,
-RemoveShapeButton.label,Remove Shapekey,,
+This means that this mesh will be not decimated.",,,"将选定的网格添加到白名单。
+这意味着该网格不会被精简。"
+RemoveShapeButton.label,Remove Shapekey,,,移除形态建
 RemoveShapeButton.desc,"Removes the selected shape key from the whitelist.
-This means that this shape key is no longer decimation safe!",,
-RemoveMeshButton.label,Remove Mesh,,
+This means that this shape key is no longer decimation safe!",,,"从白名单中删除选定的形态键。
+这意味着这个形态键不再是精简安全的！"
+RemoveMeshButton.label,Remove Mesh,,,删除网格
 RemoveMeshButton.desc,"Removes the selected mesh from the whitelist.
-This means that this mesh will be decimated.",,
-AutoDecimateButton.label,Quick Decimation,,버텍스 줄이기(Decimation)
+This means that this mesh will be decimated.",,,"从白名单中删除选定的网格。
+这意味着该网格将被精简。"
+AutoDecimateButton.label,Quick Decimation,,버텍스 줄이기(Decimation),快速精简
 AutoDecimateButton.desc,"This will automatically decimate your model while preserving the shape keys.
-You should manually remove unimportant meshes first.",,
-AutoDecimateButton.error.noMesh,No meshes found!,,메쉬가 발견되지 않음!
-decimate.cantDecimateWithSettings,This model can not be decimated to {number} tris with the specified settings.,,
-decimate.safeTryOptions,"Try to use Custom, Half or Full Decimation.",,
-decimate.halfTryOptions,Try to use Custom or Full Decimation.,,
-decimate.customTryOptions,Select fewer shape keys and/or meshes or use Full Decimation.,,
-decimate.disableFingersOrIncrease,Disable 'Save Fingers' or increase the Tris Count.,,
-decimate.disableFingers,or disable 'Save Fingers'.,,
-decimate.noDecimationNeeded,The model already has less than {number} tris. Nothing had to be decimated.,,
-decimate.cantDecimate1,The model could not be decimated to {number} tris.,,
-decimate.cantDecimate2,It got decimated as much as possible within the limits.,,
-CreateEyesButton.label,Create Eye Tracking,アイトラッキングを作成する,눈 추적(Eye Tracking) 생성
+You should manually remove unimportant meshes first.",,,"这将在保留形状键的同时自动抽取您的模型。
+您应该首先手动删除不重要的网格。"
+AutoDecimateButton.error.noMesh,No meshes found!,,메쉬가 발견되지 않음!,未找到网格！
+decimate.cantDecimateWithSettings,This model can not be decimated to {number} tris with the specified settings.,,,使用指定的设置，此模型无法抽取到 {number} 个面。
+decimate.safeTryOptions,"Try to use Custom, Half or Full Decimation.",,,尝试使用自定义、半或全抽取。
+decimate.halfTryOptions,Try to use Custom or Full Decimation.,,,尝试使用自定义或完全抽取。
+decimate.customTryOptions,Select fewer shape keys and/or meshes or use Full Decimation.,,,选择更少的形状键和/或网格或使用完全抽取。
+decimate.disableFingersOrIncrease,Disable 'Save Fingers' or increase the Tris Count.,,,"禁用""保存手指""或增加 面 计数。"
+decimate.disableFingers,or disable 'Save Fingers'.,,,"或禁用""保存手指""。"
+decimate.noDecimationNeeded,The model already has less than {number} tris. Nothing had to be decimated.,,,该模型已经有少于 {number} 个 面。 没有什么必须被摧毁。
+decimate.cantDecimate1,The model could not be decimated to {number} tris.,,,无法将模型抽取到 {number} 个 面。
+decimate.cantDecimate2,It got decimated as much as possible within the limits.,,,它在限制范围内尽可能地被淘汰。
+CreateEyesButton.label,Create Eye Tracking,アイトラッキングを作成する,눈 추적(Eye Tracking) 생성,创建眼睛追踪
 CreateEyesButton.desc,"This will let you track someone when they come close to you and it enables blinking.
 You should do decimation before this operation.
 Test the resulting eye movement in the 'Testing' tab.",,"누군가가 가까이 왔을 때 그 사람을 추적 할 수 있고 눈 깜박임을 가능하게합니다.
 데시메이션이 필요하다면 이 작업 이전에 해야합니다.
-눈 움직임을 'Testing' 탭에서 테스트하세요."
+눈 움직임을 'Testing' 탭에서 테스트하세요.","这将让您在某人靠近您时跟踪他们并启用闪烁。
+您应该在此操作之前进行精简。
+在""测试""选项卡中测试由此产生的眼睛移动。"
 CreateEyesButton.error.noShapeSelected,"You have no shape keys selected.
 Please choose a mesh containing shape keys or check ""Disable Eye Blinking"".",,"선택된 쉐이프키가 없습니다.
-쉐이프키가 포함 된 메쉬를 선택하거나 ""눈 깜빡임 비활성화""에 체크하세요."
-CreateEyesButton.error.missingBone,"The bone ""{bone}"" does not exist.",,
+쉐이프키가 포함 된 메쉬를 선택하거나 ""눈 깜빡임 비활성화""에 체크하세요.","您没有选择任何形态键。
+请选择包含形态键的网格或选中""禁用眼睛闪烁""。"
+CreateEyesButton.error.missingBone,"The bone ""{bone}"" does not exist.",,,"骨骼""{bone}""不存在。"
 CreateEyesButton.error.noVertex,"The bone ""{bone}"" has no existing vertex group or no vertices assigned to it.
 This might be because you selected the wrong mesh or the wrong bone.
-Also make sure that the selected eye bones actually move the eyes in pose mode.",,
+Also make sure that the selected eye bones actually move the eyes in pose mode.",,,"骨骼""{bone}""没有现有的顶点组或没有分配给它的顶点。
+这可能是因为您选择了错误的网格或错误的骨骼。
+还要确保选定的眼睛骨骼在姿势模式下实际移动眼睛。"
 CreateEyesButton.error.dontUse,"Please do not use ""{eyeName}"" as the input bone.
-If you are sure that you want to use that bone please rename it to ""{eyeNameShort}"".",,
+If you are sure that you want to use that bone please rename it to ""{eyeNameShort}"".",,,"请不要使用""{eyeName}""作为输入骨骼。
+如果您确定要使用该骨骼，请将其重命名为""{eyeNameShort}""。"
 CreateEyesButton.error.hierarchy,"Eye tracking will not work unless the bone hierarchy is exactly as following: Hips > Spine > Chest > Neck > Head
-Furthermore the mesh containing the eyes has to be called ""Body"" and the armature ""Armature"".",,
-CreateEyesButton.success,Created eye tracking!,,
-StartTestingButton.label,Start Eye Testing,スタートアイテスト,눈 움직임 테스트 시작
+Furthermore the mesh containing the eyes has to be called ""Body"" and the armature ""Armature"".",,,"除非骨骼层次完全如下所示，否则眼睛追踪将不起作用：臀部 > 脊柱 > 胸部 > 颈部 > 头部
+此外，必须将包含眼睛的网格称为""Body""，将骨架称为""Armature""。"
+CreateEyesButton.success,Created eye tracking!,,,创造了眼睛追踪！
+StartTestingButton.label,Start Eye Testing,スタートアイテスト,눈 움직임 테스트 시작,开始眼睛测试
 StartTestingButton.desc,"This will let you test how the eye movement will look ingame.
 Don't forget to stop the Testing process afterwards.
-Bones ""LeftEye"" and ""RightEye"" are required.",,
-StopTestingButton.label,Stop Eye Testing,ストップアイテスト,눈 움직임 테스트 중지
-StopTestingButton.desc,Stops the testing process.,,
-StopTestingButton.error.tryAgain,Something went wrong. Please try eye testing again.,,
-ResetRotationButton.label,Reset Rotation,回転をリセットする,회전 초기화
-ResetRotationButton.desc,This resets the eye positions.,,
-AdjustEyesButton.label,Set Range,目の範囲を設定,범위 설정
+Bones ""LeftEye"" and ""RightEye"" are required.",,,"这将让您测试眼睛移动在游戏中的表现。
+之后不要忘记停止测试过程。
+骨骼""LeftEye""和""RightEye""是必需的。"
+StopTestingButton.label,Stop Eye Testing,ストップアイテスト,눈 움직임 테스트 중지,停止眼睛测试
+StopTestingButton.desc,Stops the testing process.,,,停止测试过程。
+StopTestingButton.error.tryAgain,Something went wrong. Please try eye testing again.,,,出问题了。 请再次尝试眼科测试。
+ResetRotationButton.label,Reset Rotation,回転をリセットする,회전 초기화,重置旋转
+ResetRotationButton.desc,This resets the eye positions.,,,这会重置眼睛位置。
+AdjustEyesButton.label,Set Range,目の範囲を設定,범위 설정,设置范围
 AdjustEyesButton.desc,"Lets you re-adjust the movement range of the eyes.
-This gets saved",,
+This gets saved",,,"让您重新调整眼睛的移动范围。
+这被保存了"
 AdjustEyesButton.error.noVertex,"The bone ""{bone}"" has no existing vertex group or no vertices assigned to it.
 This might be because you selected the wrong mesh or the wrong bone.
-Also make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.",,
-StartIrisHeightButton.label,Start Iris Height Adjustment,アイリスの高さの調整を開始,눈동자 높이 조정 시작
+Also make sure to join your meshes before creating eye tracking and make sure that the eye bones actually move the eyes in pose mode.",,,"骨骼""{bone}""没有现有的顶点组或没有分配给它的顶点。
+这可能是因为您选择了错误的网格或错误的骨骼。
+还要确保在创建眼睛追踪之前加入您的网格，并确保眼骨实际上在姿势模式下移动眼睛。"
+StartIrisHeightButton.label,Start Iris Height Adjustment,アイリスの高さの調整を開始,눈동자 높이 조정 시작,开始光圈高度调整
 StartIrisHeightButton.desc,"Lets you readjust the distance of the iris from the eye ball.
 Use this to fix clipping of the iris into the eye ball.
-This gets saved.",,
-TestBlinking.label,Test,テスト,테스트
-TestBlinking.desc,This lets you see how eye blinking will look in-game.,,게임 중에 눈 깜박임이 어떻게 보이는 지 확인할 수 있습니다.
-TestLowerlid.label,Test,テスト,테스트
-TestLowerlid.desc,This lets you see how lowerlids will look in-game.,,게임 중에 아래 눈꺼풀이 어떻게 보이는 지 확인할 수 있습니다.
-ResetBlinkTest.label,Reset Shapes,図形をリセットする,쉐이프 초기화
-ResetBlinkTest.desc,This resets the blink testing.,,눈깜빡임 테스트를 초기화한다.
-ImportAnyModel.label,Import Any Model,任意のモデルをインポート,아무 모델 불러오기
+This gets saved.",,,"让您调整虹膜与眼睛的距离。
+使用它可以将虹膜夹入眼睛。
+这得救了。"
+TestBlinking.label,Test,テスト,테스트,测试
+TestBlinking.desc,This lets you see how eye blinking will look in-game.,,게임 중에 눈 깜박임이 어떻게 보이는 지 확인할 수 있습니다.,这让您可以看到眨眼在游戏中的样子。
+TestLowerlid.label,Test,テスト,테스트,测试
+TestLowerlid.desc,This lets you see how lowerlids will look in-game.,,게임 중에 아래 눈꺼풀이 어떻게 보이는 지 확인할 수 있습니다.,这让您可以看到下眼睑在游戏中的外观。
+ResetBlinkTest.label,Reset Shapes,図形をリセットする,쉐이프 초기화,重置形状
+ResetBlinkTest.desc,This resets the blink testing.,,눈깜빡임 테스트를 초기화한다.,这将重置眨眼测试。
+ImportAnyModel.label,Import Any Model,任意のモデルをインポート,아무 모델 불러오기,导入任何模型
 ImportAnyModel.desc2.79,"Import a model of any supported type.
 
 Supported types:
@@ -570,7 +666,16 @@ Supported types:
 - VRM: .vrm
 - FBX .fbx
 - DAE: .dae
-- ZIP: .zip",,
+- ZIP: .zip",,,"导入任何受支持类型的模型。
+
+支持的类型：
+- MMD：.pmx/.pmd
+- XNALara: .xps/.mesh/.ascii
+- Source: .smd/.qc
+- VRM: .vrm
+- FBX .fbx 
+- DAE: .dae 
+- ZIP: .zip"
 ImportAnyModel.desc2.8,"Import a model of any supported type.
 
 Supported types:
@@ -580,196 +685,228 @@ Supported types:
 - VRM: .vrm
 - FBX: .fbx
 - DAE: .dae
-- ZIP: .zip",,
-ImportAnyModel.importantInfo.label,IMPORTANT INFO (hover here),重要な情報(ここにホバー),
+- ZIP: .zip",,,"- 导入任何受支持类型的模型。
+
+支持的类型：
+- MMD：.pmx/.pmd
+- XNALara：.xps/.mesh/.ascii
+- Source：.smd/.qc/.vta/.dmx
+- VRM：.vrm
+- FBX：.fbx
+- DAE：.dae
+- ZIP：.zip"
+ImportAnyModel.importantInfo.label,IMPORTANT INFO (hover here),重要な情報(ここにホバー),,重要信息（悬停在这里）
 ImportAnyModel.importantInfo.desc,"If you want to modify the import settings, use the button next to the Import button.
 
-",,
-ImportAnyModel.error.emptyZip,The selected zip file contains no importable models.,,
+",,,如果要修改导入设置，请使用导入按钮旁边的按钮。
+ImportAnyModel.error.emptyZip,The selected zip file contains no importable models.,,,选定的 zip 文件不包含可导入的模型。
 ImportAnyModel.error.unsupportedFBX,"The FBX file version is unsupported!
-Please use a tool such as the ""Autodesk FBX Converter"" to make it compatible.",,
-ZipPopup.label,Zip Model Selection:,圧縮モデルの選択:,Zip 모델 선택:
-ZipPopup.desc,Shows the models contained in the zip files,,zip 파일에 포함된 모델들을 보여준다
-ZipPopup.selectModel1,Select which model you want to import,,
-ZipPopup.selectModel2,Then confirm with OK,,
-get_zip_content.choose,"Import model ""{model}"" from the zip ""{zipName}?""",,
-ModelsPopup.label,Select which you want to import:,インポートする項目を選択します:,불러올 형식을 선택:
-ModelsPopup.desc,Show individual import options,,
-ImportMMD.label,MMD,,
-ImportMMD.desc,Import a MMD model (.pmx/pmd),,
-ImportXPS.label,XNALara,,
-ImportXPS.desc,Import a XNALara model (.xps/.mesh/.ascii),,
-ImportSource.label,Source,,
-ImportSource.desc,Import a Source model (.smd/.qc/.vta/.dmx),,
-ImportFBX.label,FBX,,
-ImportFBX.desc,Import a FBX model (.fbx),,
-ImportVRM.label,VRM,,
-ImportVRM.desc,Import a VRM model (.vrm),,
-InstallXPS.label,XPS Tools is not installed or enabled!,XPS ツールがインストールされていないか、有効になっていない!,
-InstallSource.label,Source Tools is not installed or enabled!,ソース ツールがインストールされていないか、有効になっていません!,
-InstallVRM.label,VRM Importer is not installed or enabled!,VRMインポーターがインストールされていないか、有効になっていません!,
-InstallX.pleaseInstall1,If it is not enabled please enable it in your User Preferences.,,
-InstallX.pleaseInstall2,If it is not installed please download and install it manually.,,
-InstallX.pleaseInstall3,Make sure to install the version for Blender {blenderVersion},,
-InstallX.pleaseInstallTesting,Currently you have to select 'Testing' in the addons settings.,,
-EnableMMD.label,Mmd_tools is not enabled!,Mmd_toolsが有効になっていません!,Mmd_tools가 활성화되지 않음!
-EnableMMD.required1,"The plugin ""mmd_tools"" is required for this function.",,
-EnableMMD.required2,Please restart Blender.,,
-XpsToolsButton.label,Download XPS Tools,XPSツールをダウンロード,XPS Tools 다운로드
-XpsToolsButton.URL,https://github.com/johnzero7/XNALaraMesh,,
-XpsToolsButton.success,XPS Tools link opened,,
-SourceToolsButton.label,Download Source Tools,ソースツールをダウンロード,Source Tools 다운로드
-SourceToolsButton.URL,https://github.com/Artfunkel/BlenderSourceTools,,
-SourceToolsButton.success,Source Tools link opened,,
-VrmToolsButton.label,Download VRM Importer,VRMインポーターをダウンロード,VRM Importer 다운로드
-VrmToolsButton.URL_2.79,https://github.com/iCyP/VRM_IMPORTER_for_Blender2_79,,
-VrmToolsButton.URL_2.8,https://github.com/saturday06/VRM_IMPORTER_for_Blender2_8,,
-VrmToolsButton.success,VRM Importer link opened,,
-ExportModel.label,Export Model,モデルのエクスポート,모델 내보내기
+Please use a tool such as the ""Autodesk FBX Converter"" to make it compatible.",,,"FBX 文件版本不受支持！
+请使用""Autodesk FBX Converter""等工具使其兼容。"
+ZipPopup.label,Zip Model Selection:,圧縮モデルの選択:,Zip 모델 선택:,zip型号选择：
+ZipPopup.desc,Shows the models contained in the zip files,,zip 파일에 포함된 모델들을 보여준다,显示 zip 文件中包含的模型
+ZipPopup.selectModel1,Select which model you want to import,,,选择您要导入的模型
+ZipPopup.selectModel2,Then confirm with OK,,,然后用 OK 确认
+get_zip_content.choose,"Import model ""{model}"" from the zip ""{zipName}?""",,,"从压缩包""{zipName}""导入模型""{model}""？"
+ModelsPopup.label,Select which you want to import:,インポートする項目を選択します:,불러올 형식을 선택:,选择要导入的：
+ModelsPopup.desc,Show individual import options,,,显示单个导入选项
+ImportMMD.label,MMD,,,
+ImportMMD.desc,Import a MMD model (.pmx/pmd),,,导入 MMD 模型 (.pmx/pmd)
+ImportXPS.label,XNALara,,,
+ImportXPS.desc,Import a XNALara model (.xps/.mesh/.ascii),,,导入 XNALara 模型 (.xps/.mesh/.ascii)
+ImportSource.label,Source,,,
+ImportSource.desc,Import a Source model (.smd/.qc/.vta/.dmx),,,导入源模型 (.smd/.qc/.vta/.dmx)
+ImportFBX.label,FBX,,,
+ImportFBX.desc,Import a FBX model (.fbx),,,导入 FBX 模型 (.fbx)
+ImportVRM.label,VRM,,,
+ImportVRM.desc,Import a VRM model (.vrm),,,导入 VRM 模型 (.vrm)
+InstallXPS.label,XPS Tools is not installed or enabled!,XPS ツールがインストールされていないか、有効になっていない!,,XPS 工具未安装或启用！
+InstallSource.label,Source Tools is not installed or enabled!,ソース ツールがインストールされていないか、有効になっていません!,,源工具未安装或启用！
+InstallVRM.label,VRM Importer is not installed or enabled!,VRMインポーターがインストールされていないか、有効になっていません!,,VRM Importer 未安装或未启用！
+InstallX.pleaseInstall1,If it is not enabled please enable it in your User Preferences.,,,如果未启用，请在您的用户首选项中启用它。
+InstallX.pleaseInstall2,If it is not installed please download and install it manually.,,,如果没有安装，请下载并手动安装。
+InstallX.pleaseInstall3,Make sure to install the version for Blender {blenderVersion},,,确保安装 Blender {blenderVersion} 的版本
+InstallX.pleaseInstallTesting,Currently you have to select 'Testing' in the addons settings.,,,"目前，您必须在插件设置中选择""测试""。"
+EnableMMD.label,Mmd_tools is not enabled!,Mmd_toolsが有効になっていません!,Mmd_tools가 활성화되지 않음!,mmd_tools 未启用！
+EnableMMD.required1,"The plugin ""mmd_tools"" is required for this function.",,,"此功能需要插件""mmd_tools""。"
+EnableMMD.required2,Please restart Blender.,,,请重新启动blender。
+XpsToolsButton.label,Download XPS Tools,XPSツールをダウンロード,XPS Tools 다운로드,下载 XPS 工具
+XpsToolsButton.URL,https://github.com/johnzero7/XNALaraMesh,,,
+XpsToolsButton.success,XPS Tools link opened,,,XPS 工具链接已打开
+SourceToolsButton.label,Download Source Tools,ソースツールをダウンロード,Source Tools 다운로드,下载源工具
+SourceToolsButton.URL,https://github.com/Artfunkel/BlenderSourceTools,,,
+SourceToolsButton.success,Source Tools link opened,,,源工具链接已打开
+VrmToolsButton.label,Download VRM Importer,VRMインポーターをダウンロード,VRM Importer 다운로드,下载 VRM 导入器
+VrmToolsButton.URL_2.79,https://github.com/iCyP/VRM_IMPORTER_for_Blender2_79,,,
+VrmToolsButton.URL_2.8,https://github.com/saturday06/VRM_IMPORTER_for_Blender2_8,,,
+VrmToolsButton.success,VRM Importer link opened,,,VRM 进口商链接已打开
+ExportModel.label,Export Model,モデルのエクスポート,모델 내보내기,导出模型
 ExportModel.desc,"Export this model as .fbx for Unity.
 
-Automatically sets the optimal export settings",,
-ExportModel.error.notEnabled,FBX Exporter not enabled! Please enable it in your User Preferences.,,
-ErrorDisplay.label,Warning:,警告:,경고:
-ErrorDisplay.polygons1,Too many polygons!,,
-ErrorDisplay.polygons2,"You have {number} tris in this model, but you shouldn't have more than 70,000!",,
-ErrorDisplay.polygons3,You should decimate before you export this model.,,
-ErrorDisplay.materials1,Model not optimized!,,
-ErrorDisplay.materials2,This model has {number} materials!,,
-ErrorDisplay.materials3,You should try to have a maximum of 4 materials on your model.,,
-ErrorDisplay.materials4,"Creating a texture atlas in CATS is very easy, so please make use of it.",,
-ErrorDisplay.meshes1,Meshes not joined!,,
-ErrorDisplay.meshes2,This model has {number} meshes!,,
-ErrorDisplay.meshes3,It is not very optimized and might cause lag for you and others!,,
-ErrorDisplay.meshes3_alt,It is extremely unoptimized and will cause laugh for you and others!,,
-ErrorDisplay.meshes4,"You should always join your meshes, it's very easy:",,
-ErrorDisplay.JoinMeshes.label,Join Meshes,メッシュに参加する,메쉬 통합
-ErrorDisplay.brokenShapekeys1,Broken shapekeys!,,
-ErrorDisplay.brokenShapekeys2,This model has {number} broken shapekey(s):,,
-ErrorDisplay.brokenShapekeys3,You will not be able to upload this model until you fix these shapekeys.,,
-ErrorDisplay.brokenShapekeys4,Either delete or repair them before export.,,
-ErrorDisplay.textures1,No textures found!,,
-ErrorDisplay.textures2,This model has no textures assigned but you have 'Embed Textures' enabled.,,
-ErrorDisplay.textures3,"Therefore, no textures will be embedded into the FBX.",,
-ErrorDisplay.textures4,"This is not an issue, but you will have to import the textures manually into Unity.",,
-ErrorDisplay.eyes1,Eyes not named 'Body'!,,
-ErrorDisplay.eyes2,The mesh '{name}' has Eye Tracking shapekeys but is not named 'Body'.,,
-ErrorDisplay.eyes2_alt,Multiple meshes have Eye Tracking shapekeys but are not named 'Body'.,,
-ErrorDisplay.eyes3,"If you want Eye Tracking to work, rename this mesh to 'Body'.",,
-ErrorDisplay.eyes3_alt,Make sure that the mesh containing the eyes is named 'Body' in order,,
-ErrorDisplay.eyes4_alt,to get Eye Tracking to work.,,
-ErrorDisplay.continue,Continue to Export,,
-OneTexPerMatButton.label,One Material Texture,1つのマテリアルテクスチャ,매테리얼당 하나의 텍스처
-OneTexPerMatButton.desc,Have all material slots ignore extra texture slots as these are not used by VRChat.,,
-OneTexPerMatOnlyButton.label,One Material Texture,1つのマテリアルテクスチャ,매테리얼당 하나의 텍스처
+Automatically sets the optimal export settings",,,"将此模型导出为 Unity 的 .fbx。
+
+自动设置最佳导出设置"
+ExportModel.error.notEnabled,FBX Exporter not enabled! Please enable it in your User Preferences.,,,FBX 导出器未启用！ 请在您的用户首选项中启用它。
+ErrorDisplay.label,Warning:,警告:,경고:,警告:
+ErrorDisplay.polygons1,Too many polygons!,,,多边形太多！
+ErrorDisplay.polygons2,"You have {number} tris in this model, but you shouldn't have more than 70,000!",,,"此模型中有 {number} 个面，但不应超过 70,000！"
+ErrorDisplay.polygons3,You should decimate before you export this model.,,,您应该在导出此模型之前进行精简。
+ErrorDisplay.materials1,Model not optimized!,,,模型未优化！
+ErrorDisplay.materials2,This model has {number} materials!,,,这个模型有 {number} 个材质！
+ErrorDisplay.materials3,You should try to have a maximum of 4 materials on your model.,,,您应该尝试在模型上最多使用 4 种材质。
+ErrorDisplay.materials4,"Creating a texture atlas in CATS is very easy, so please make use of it.",,,在 CATS 中创建纹理图集非常简单，请使用它。
+ErrorDisplay.meshes1,Meshes not joined!,,,网格未连接！
+ErrorDisplay.meshes2,This model has {number} meshes!,,,这个模型有 {number} 个网格！
+ErrorDisplay.meshes3,It is not very optimized and might cause lag for you and others!,,,它不是很优化，可能会给您和其他人造成延迟！
+ErrorDisplay.meshes3_alt,It is extremely unoptimized and will cause laugh for you and others!,,,它非常未经优化，会引起您和其他人的欢笑！
+ErrorDisplay.meshes4,"You should always join your meshes, it's very easy:",,,你应该总是加入你的网格，这很容易：
+ErrorDisplay.JoinMeshes.label,Join Meshes,メッシュに参加する,메쉬 통합,加入网格
+ErrorDisplay.brokenShapekeys1,Broken shapekeys!,,,破碎的形态键！
+ErrorDisplay.brokenShapekeys2,This model has {number} broken shapekey(s):,,,此模型有 {number} 个损坏的 shapekey：
+ErrorDisplay.brokenShapekeys3,You will not be able to upload this model until you fix these shapekeys.,,,在修复这些 shapekey 之前，您将无法上传此模型。
+ErrorDisplay.brokenShapekeys4,Either delete or repair them before export.,,,在导出前删除或修复它们。
+ErrorDisplay.textures1,No textures found!,,,没有找到纹理！
+ErrorDisplay.textures2,This model has no textures assigned but you have 'Embed Textures' enabled.,,,"该模型没有指定纹理，但您启用了""嵌入纹理""。"
+ErrorDisplay.textures3,"Therefore, no textures will be embedded into the FBX.",,,因此，不会将纹理嵌入到 FBX 中。
+ErrorDisplay.textures4,"This is not an issue, but you will have to import the textures manually into Unity.",,,这不是问题，但您必须手动将纹理导入 Unity。
+ErrorDisplay.eyes1,Eyes not named 'Body'!,,,"眼睛不叫""身体""！"
+ErrorDisplay.eyes2,The mesh '{name}' has Eye Tracking shapekeys but is not named 'Body'.,,,"网格""{name}""具有眼睛追踪 shapekey，但未命名为""身体""。"
+ErrorDisplay.eyes2_alt,Multiple meshes have Eye Tracking shapekeys but are not named 'Body'.,,,"多个网格具有眼睛追踪形态键，但未命名为""身体""。"
+ErrorDisplay.eyes3,"If you want Eye Tracking to work, rename this mesh to 'Body'.",,,"如果您希望眼睛追踪起作用，请将此网格重命名为""身体""。"
+ErrorDisplay.eyes3_alt,Make sure that the mesh containing the eyes is named 'Body' in order,,,"确保包含眼睛的网格按顺序命名为""身体"""
+ErrorDisplay.eyes4_alt,to get Eye Tracking to work.,,,让眼睛追踪工作。
+ErrorDisplay.continue,Continue to Export,,,继续出口
+OneTexPerMatButton.label,One Material Texture,1つのマテリアルテクスチャ,매테리얼당 하나의 텍스처,一种材质纹理
+OneTexPerMatButton.desc,Have all material slots ignore extra texture slots as these are not used by VRChat.,,,让所有材质插槽忽略额外的纹理插槽，因为 VRChat 不使用这些插槽。
+OneTexPerMatOnlyButton.label,One Material Texture,1つのマテリアルテクスチャ,매테리얼당 하나의 텍스처,一种材质纹理
 OneTexPerMatOnlyButton.desc,"Have all material slots ignore extra texture slots as these are not used by VRChat.
 Also removes the textures from the material instead of disabling it.
-This makes no difference, but cleans the list for the perfectionists",,
-ToolsMaterial.error.notCompatible,This function is not yet compatible with Blender 2.8!,,
-OneTexPerXButton.success,All materials have one texture now.,,
-StandardizeTextures.label,Standardize Textures,テクスチャを標準化する,텍스처들 표준화
+This makes no difference, but cleans the list for the perfectionists",,,"让所有材质插槽忽略额外的纹理插槽，因为 VRChat 不使用这些插槽。
+还会从材质中移除纹理，而不是禁用它。
+这没有什么区别，但为完美主义者清理了清单"
+ToolsMaterial.error.notCompatible,This function is not yet compatible with Blender 2.8!,,,此功能尚不兼容 Blender 2.8！
+OneTexPerXButton.success,All materials have one texture now.,,,所有材质现在都有一种纹理。
+StandardizeTextures.label,Standardize Textures,テクスチャを標準化する,텍스처들 표준화,标准化纹理
 StandardizeTextures.desc,"Enables Color and Alpha on every texture, sets the blend method to Multiply
-and changes the materials transparency to Z-Transparency",,
-StandardizeTextures.success,All textures are now standardized.,,
-CombineMaterialsButton.label,Combine Same Materials,同じマテリアルを組み合わせる,같은 매테리얼들을 통합
+and changes the materials transparency to Z-Transparency",,,"在每个纹理上启用颜色和 Alpha，将混合方法设置为正片叠底
+并将材质透明度更改为 Z-Transparency"
+StandardizeTextures.success,All textures are now standardized.,,,所有纹理现在都标准化了。
+CombineMaterialsButton.label,Combine Same Materials,同じマテリアルを組み合わせる,같은 매테리얼들을 통합,混合相同的材质
 CombineMaterialsButton.desc,"Combines similar materials into one, reducing draw calls.
 Your avatar should visibly look the same after this operation.
 This is a very important step for optimizing your avatar.
 If you have problems with this, please tell us!
-",,
-CombineMaterialsButton.error.noChanges,No materials combined.,,
-CombineMaterialsButton.success,Combined {number} materials!,,
-ConvertAllToPngButton.label,Convert Textures to PNG,テクスチャをPNGに変換,텍스처를 PNG로 변환
+",,,"将相似的材质合二为一，减少绘图调用。
+完成此操作后，您的头像应该看起来相同。
+这是优化头像的一个非常重要的步骤。
+如果您对此有任何问题，请告诉我们！"
+CombineMaterialsButton.error.noChanges,No materials combined.,,,没有混合任何材质。
+CombineMaterialsButton.success,Combined {number} materials!,,,组合 {number} 种材质！
+ConvertAllToPngButton.label,Convert Textures to PNG,テクスチャをPNGに変換,텍스처를 PNG로 변환,将纹理转换为 PNG
 ConvertAllToPngButton.desc,"Converts all texture files into PNG files.
 This helps with transparency and compatibility issues.
 
-The converted image files will be saved next to the old ones",,
-ConvertAllToPngButton.success,Converted {number} to PNG files.,,
-RootButton.label,Parent Bones,親のボーンに接続する,부모 본
+The converted image files will be saved next to the old ones",,,"将所有纹理文件转换为 PNG 文件。
+这有助于解决透明度和兼容性问题。
+
+转换后的图像文件将保存在旧文件旁边"
+ConvertAllToPngButton.success,Converted {number} to PNG files.,,,将 {number} 转换为 PNG 文件。
+RootButton.label,Parent Bones,親のボーンに接続する,부모 본,父级骨骼
 RootButton.desc,"This will duplicate the parent of the bones and reparent them to the duplicate.
-Very useful for Dynamic Bones.",,
-RootButton.success,Bones parented!,,
-RefreshRootButton.label,Refresh List,リストの更新,목록 새로고침
-RefreshRootButton.desc,"This will clear the group bones list cache and rebuild it, useful if bones have changed or your model.",,
-RefreshRootButton.success,"Root bones refreshed, check the root bones list again.",,
-RevertChangesButton.label,Revert Settings,設定を元に戻す,설정 되돌리기
-RevertChangesButton.desc,Revert the changes back to how they were on Blender start-up.,,변경 사항을 Blender 시작했을 때의 설정으로 되돌립니다.
-RevertChangesButton.success,Settings reverted.,,설정 복구됨.
-ResetGoogleDictButton.label,Clear Local Google Translations,ローカルのGoogle翻訳をクリア,로컬 Google 번역 지우기
-ResetGoogleDictButton.desc,Deletes all currently saved Google Translations. You can't undo this,,현재 저장된 모든 Google 번역을 삭제합니다. 이 작업은 취소 할 수 없습니다.
-ResetGoogleDictButton.resetInfo,Local Google Dictionary cleared!,,로컬 Google 사전이 삭제되었습니다!
-DebugTranslations.label,Debug Google Translations,Google翻訳をデバッグ,Google 번역 디버그
+Very useful for Dynamic Bones.",,,"这将复制骨骼的父级并将它们重新设置为副本。
+对于动态骨骼非常有用。"
+RootButton.success,Bones parented!,,,骨头亲子！
+RefreshRootButton.label,Refresh List,リストの更新,목록 새로고침,刷新列表
+RefreshRootButton.desc,"This will clear the group bones list cache and rebuild it, useful if bones have changed or your model.",,,这将清除组骨骼列表缓存并重建它，如果骨骼已更改或您的模型很有用。
+RefreshRootButton.success,"Root bones refreshed, check the root bones list again.",,,根骨骼刷新，再次检查根骨骼列表。
+RevertChangesButton.label,Revert Settings,設定を元に戻す,설정 되돌리기,恢复设置
+RevertChangesButton.desc,Revert the changes back to how they were on Blender start-up.,,변경 사항을 Blender 시작했을 때의 설정으로 되돌립니다.,将更改恢复到 Blender 启动时的状态。
+RevertChangesButton.success,Settings reverted.,,설정 복구됨.,设置已还原。
+ResetGoogleDictButton.label,Clear Local Google Translations,ローカルのGoogle翻訳をクリア,로컬 Google 번역 지우기,清除本地谷歌翻译
+ResetGoogleDictButton.desc,Deletes all currently saved Google Translations. You can't undo this,,현재 저장된 모든 Google 번역을 삭제합니다. 이 작업은 취소 할 수 없습니다.,删除所有当前保存的 Google 翻译。 您无法撤消此操作
+ResetGoogleDictButton.resetInfo,Local Google Dictionary cleared!,,로컬 Google 사전이 삭제되었습니다!,本地 Google 词典已清除！
+DebugTranslations.label,Debug Google Translations,Google翻訳をデバッグ,Google 번역 디버그,调试谷歌翻译
 DebugTranslations.desc,"Tests Google translations and prints the response into a file called 'google-response.txt' located in the cats addon folder > resources
-This button is only visible in the cats development version",,
-DebugTranslations.error,"Errors found, response printed!!",,
-DebugTranslations.success,"No issues with Google Translations found, response printed!",,
-ShapeKeyApplier.label,Apply Selected Shapekey to Basis,選択したシェイプキーをBasisに適用,선택된 쉐이프키를 Basis에 적용
-ShapeKeyApplier.desc,Applies the selected shape key to the new Basis at it's current strength and creates a reverted shape key from the selected one,,
-ShapeKeyApplier.error.recursiveRelativeToLoop,"Shapekey ""{name}"" is recursively relative to itself, so cannot be applied to the Basis",,
-ShapeKeyApplier.successRemoved,"Successfully removed shapekey ""{name}"" from the Basis.",,
-ShapeKeyApplier.successSet,"Successfully applied shapekey ""{name}"" to the Basis.",,
-addToShapekeyMenu.ShapeKeyApplier.label,Apply Selected Shapekey to Basis,選択したシェイプキーをBasisに適用,선택된 쉐이프키를 Basis에 적용
-PatreonButton.label,Become a Patron,パトロンになる,후원하기
-PatreonButton.URL,https://www.patreon.com/catsblenderplugin,,
-PatreonButton.success,Patreon page opened.,,
-ReloadButton.label,Reload List,リストを再読み込み,목록 새로고침
-ReloadButton.desc,Reloads the supporter list,,후원자 목록을 다시 불러옵니다
-DynamicPatronButton.label,Supporter Name,サポーター名,후원자 이름
-DynamicPatronButton.desc,This is an awesome supporter,,이것은 멋진 후원자입니다!
-register_dynamic_buttons.desc,{name} is an awesome supporter,,{name}는 멋진 후원자입니다!
-TranslateShapekeyButton.label,Translate Shape Keys,シェイプキーを翻訳する,쉐이프키 이름 번역
-TranslateShapekeyButton.desc,Translates all shape keys using the internal dictionary and Google Translate into English,Translates all shape keys using the internal dictionary and Google Translate,모든 쉐이프키들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.
-TranslateShapekeyButton.success,Translated {number} shape keys.,,{number}개의 쉐이프키들이 번역되었습니다.
-TranslateBonesButton.label,Translate Bones,ボーンを翻訳する,본 이름 번역
-TranslateBonesButton.desc,Translates all bones using the internal dictionary and Google Translate into English,Translates all bones using the internal dictionary and Google Translate,모든 본들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.
-TranslateBonesButton.success,Translated {number} bones.,,{number}개의 본들이 번역되었습니다.
-TranslateObjectsButton.label,Translate Meshes & Objects,メッシュとオブジェクトを翻訳する,메쉬와 오브젝트들 번역
-TranslateObjectsButton.desc,Translates all meshes and objects using the internal dictionary and Google Translate into English,Translates all meshes and objects using the internal dictionary and Google Translate,모든 메쉬와 오브젝트들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.
-TranslateObjectsButton.success,Translated {number} meshes and objects.,,{number}개의 메쉬들과 오브젝트들이 번역되었습니다.
-TranslateMaterialsButton.label,Translate Materials,マテリアルを翻訳する,매테리얼 번역
-TranslateMaterialsButton.desc,Translates all materials using the internal dictionary and Google Translate into English,Translates all materials using the internal dictionary and Google Translate,모든 매테리얼들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.
-TranslateMaterialsButton.success,Translated {number} materials.,,{number}개의 매테리얼들이 번역되었습니다.
-TranslateTexturesButton.label,Translate Textures,テクスチャを翻訳する,텍스처 번역
-TranslateTexturesButton.desc,Translates all textures using the internal dictionary and Google Translate into English,Translates all textures using the internal dictionary and Google Translate,모든 텍스처들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.
-TranslateTexturesButton.success_alt,Translated all textures,,모든 텍스처들이 번역되었습니다.
-TranslateTexturesButton.error.noInternet,Could not connect to Google. Please check your internet connection.,,구글에 연결하지 못했습니다. 인터넷 연결을 확인해주세요.
-TranslateTexturesButton.success,Translated {number} textures,,{number}개의 텍스처들이 번역되었습니다
-TranslateAllButton.label,Translate Everything,すべてを翻訳する,모두 번역
-TranslateAllButton.desc,Translates everything using the internal dictionary and Google Translate into English,Translates everything using the internal dictionary and Google Translate,모든 것들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.
-TranslateAllButton.success,Translated everything.,,번역이 완료되었습니다.
-TranslateX.error.wrongVersion,You need Blender 2.79 or higher for this function.,,이 기능을 사용하려면 Blender 2.79 이상의 버전이 필요합니다.
-update_dictionary.error.cantConnect,Could not connect to Google. Some parts could not be translated.,,구글에 연결하지 못했습니다. 일부분은 번역되지 못했습니다.
-update_dictionary.error.temporaryBan,It looks like you got banned from Google Translate temporarily!,,일시적으로 Google 번역에서 차단 된 것 같습니다!
+This button is only visible in the cats development version",,,"测试谷歌翻译并将响应打印到一个名为""google-response.txt""的文件中，该文件位于cats插件文件夹>资源中
+此按钮仅在猫开发版中可见"
+DebugTranslations.error,"Errors found, response printed!!",,,发现错误，打印响应！！
+DebugTranslations.success,"No issues with Google Translations found, response printed!",,,未发现 Google 翻译存在问题，已打印响应！
+ShapeKeyApplier.label,Apply Selected Shapekey to Basis,選択したシェイプキーをBasisに適用,선택된 쉐이프키를 Basis에 적용,将选定的 Shapekey 应用到基础
+ShapeKeyApplier.desc,Applies the selected shape key to the new Basis at it's current strength and creates a reverted shape key from the selected one,,,以当前强度将选定的形态键应用于新的基础，并从选定的形态键创建一个恢复的形态键
+ShapeKeyApplier.error.recursiveRelativeToLoop,"Shapekey ""{name}"" is recursively relative to itself, so cannot be applied to the Basis",,,"要恢复形态键，请以相反的顺序应用""恢复的""形态键。
+从名为""{name}""的形态键开始。
+
+如果您没有更改形态键顺序，则可以将形态键从上到下还原。"
+ShapeKeyApplier.successRemoved,"Successfully removed shapekey ""{name}"" from the Basis.",,,"已成功从基础中移除 shapekey""{name}""。"
+ShapeKeyApplier.successSet,"Successfully applied shapekey ""{name}"" to the Basis.",,,"成功将 shapekey ""{name}"" 设置为新的 Basis。"
+addToShapekeyMenu.ShapeKeyApplier.label,Apply Selected Shapekey to Basis,選択したシェイプキーをBasisに適用,선택된 쉐이프키를 Basis에 적용,将选定的 Shapekey 应用到基础
+PatreonButton.label,Become a Patron,パトロンになる,후원하기,成为赞助人
+PatreonButton.URL,https://www.patreon.com/catsblenderplugin,,,
+PatreonButton.success,Patreon page opened.,,,Patreon 页面打开。
+ReloadButton.label,Reload List,リストを再読み込み,목록 새로고침,重新加载列表
+ReloadButton.desc,Reloads the supporter list,,후원자 목록을 다시 불러옵니다,重新加载支持者列表
+DynamicPatronButton.label,Supporter Name,サポーター名,후원자 이름,支持者姓名
+DynamicPatronButton.desc,This is an awesome supporter,,이것은 멋진 후원자입니다!,这是一个了不起的支持者
+register_dynamic_buttons.desc,{name} is an awesome supporter,,{name}는 멋진 후원자입니다!,{name} 是一个很棒的支持者
+TranslateShapekeyButton.label,Translate Shape Keys,シェイプキーを翻訳する,쉐이프키 이름 번역,转换形态键
+TranslateShapekeyButton.desc,Translates all shape keys using the internal dictionary and Google Translate into English,Translates all shape keys using the internal dictionary and Google Translate,모든 쉐이프키들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.,使用内部字典和谷歌翻译将所有形态键翻译成英文
+TranslateShapekeyButton.success,Translated {number} shape keys.,,{number}개의 쉐이프키들이 번역되었습니다.,翻译的 {number} 个形态键。
+TranslateBonesButton.label,Translate Bones,ボーンを翻訳する,본 이름 번역,翻译骨骼
+TranslateBonesButton.desc,Translates all bones using the internal dictionary and Google Translate into English,Translates all bones using the internal dictionary and Google Translate,모든 본들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.,使用内部字典和谷歌翻译将所有骨骼翻译成英文
+TranslateBonesButton.success,Translated {number} bones.,,{number}개의 본들이 번역되었습니다.,翻译了 {number} 个骨骼。
+TranslateObjectsButton.label,Translate Meshes & Objects,メッシュとオブジェクトを翻訳する,메쉬와 오브젝트들 번역,翻译网格和对象
+TranslateObjectsButton.desc,Translates all meshes and objects using the internal dictionary and Google Translate into English,Translates all meshes and objects using the internal dictionary and Google Translate,모든 메쉬와 오브젝트들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.,使用内部字典和谷歌翻译将所有网格和对象翻译成英文
+TranslateObjectsButton.success,Translated {number} meshes and objects.,,{number}개의 메쉬들과 오브젝트들이 번역되었습니다.,翻译的 {number} 个网格和对象。
+TranslateMaterialsButton.label,Translate Materials,マテリアルを翻訳する,매테리얼 번역,翻译材质
+TranslateMaterialsButton.desc,Translates all materials using the internal dictionary and Google Translate into English,Translates all materials using the internal dictionary and Google Translate,모든 매테리얼들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.,使用内部词典和谷歌翻译将所有材质翻译成英文
+TranslateMaterialsButton.success,Translated {number} materials.,,{number}개의 매테리얼들이 번역되었습니다.,翻译了 {number} 个材质。
+TranslateTexturesButton.label,Translate Textures,テクスチャを翻訳する,텍스처 번역,翻译纹理
+TranslateTexturesButton.desc,Translates all textures using the internal dictionary and Google Translate into English,Translates all textures using the internal dictionary and Google Translate,모든 텍스처들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.,使用内部字典和谷歌翻译将所有纹理翻译成英文
+TranslateTexturesButton.success_alt,Translated all textures,,모든 텍스처들이 번역되었습니다.,翻译所有纹理
+TranslateTexturesButton.error.noInternet,Could not connect to Google. Please check your internet connection.,,구글에 연결하지 못했습니다. 인터넷 연결을 확인해주세요.,无法连接到 Google。 请检查您的互联网格连接。
+TranslateTexturesButton.success,Translated {number} textures,,{number}개의 텍스처들이 번역되었습니다,翻译的 {number} 个纹理
+TranslateAllButton.label,Translate Everything,すべてを翻訳する,모두 번역,翻译一切
+TranslateAllButton.desc,Translates everything using the internal dictionary and Google Translate into English,Translates everything using the internal dictionary and Google Translate,모든 것들을 내장된 사전과 구글번역을 이용해 영어로 번역합니다.,使用内部词典和谷歌翻译将所有内容翻译成英语
+TranslateAllButton.success,Translated everything.,,번역이 완료되었습니다.,翻译了一切。
+TranslateX.error.wrongVersion,You need Blender 2.79 or higher for this function.,,이 기능을 사용하려면 Blender 2.79 이상의 버전이 필요합니다.,您需要 Blender 2.79 或更高版本才能使用此功能。
+update_dictionary.error.cantConnect,Could not connect to Google. Some parts could not be translated.,,구글에 연결하지 못했습니다. 일부분은 번역되지 못했습니다.,无法连接到 Google。 有些部分无法翻译。
+update_dictionary.error.temporaryBan,It looks like you got banned from Google Translate temporarily!,,일시적으로 Google 번역에서 차단 된 것 같습니다!,您似乎被暂时禁止使用 Google 翻译！
 update_dictionary.error.catsTranslated,"
 Cats translated what it could with the local dictionary, but you will have to try again later for the Google translations.",,"
-Cats Plugin은 자체 내장된 로컬 사전으로 번역 할 수 있지만 나중에 Google 번역을 하려면 나중에 다시 시도해야합니다."
-update_dictionary.error.cantAccess,Cats was not able to access Google Translate!,,Cats는 Google 번역에 액세스 할 수 없습니다!
-update_dictionary.error.errorMsg,You got an error message from Google Translate!,,Google 번역에서 오류 메시지를 받았습니다!
+Cats Plugin은 자체 내장된 로컬 사전으로 번역 할 수 있지만 나중에 Google 번역을 하려면 나중에 다시 시도해야합니다.",Cats 使用本地词典翻译了它可以翻译的内容，但您必须稍后再试一次以获取 Google 翻译。
+update_dictionary.error.cantAccess,Cats was not able to access Google Translate!,,Cats는 Google 번역에 액세스 할 수 없습니다!,Cats 无法访问 Google 翻译！
+update_dictionary.error.errorMsg,You got an error message from Google Translate!,,Google 번역에서 오류 메시지를 받았습니다!,您收到了来自 Google 翻译的错误消息！
 update_dictionary.error.apiChanged,"Could not get translations from Google Translate!
 This means that Google changed their API and translations will no longer work until this is fixed.
 Please translate manually or wait for an CATS update.
 For updates and dicussions please join our Discord. The link can be found in the Credits panel down below.",,"Google 번역에서 번역을 가져올 수 없습니다!
 이는 Google이 API를 변경했으며 문제가 해결 될 때까지 번역이 더 이상 작동하지 않음을 의미합니다.
 수동으로 번역하거나 Cats 업데이트를 기다리십시오.
-업데이트 및 토론을 원하시면 Discord에 가입해주세요. 링크는 아래의 크레딧 패널에서 찾을 수 있습니다."
-AutoVisemeButton.label,Create Visemes,バイセムを作成する,립싱크(Visemes) 생성
+업데이트 및 토론을 원하시면 Discord에 가입해주세요. 링크는 아래의 크레딧 패널에서 찾을 수 있습니다.","无法从谷歌翻译获得翻译！
+这意味着 Google 更改了他们的 API，在此问题修复之前，翻译将不再有效。
+请手动翻译或等待 CATS 更新。
+如需更新和讨论，请加入我们的 Discord。 该链接可以在下方的 Credits 面板中找到。"
+AutoVisemeButton.label,Create Visemes,バイセムを作成する,립싱크(Visemes) 생성,创建视位
 AutoVisemeButton.desc,"This will give your avatar the ability to mimic each sound that comes from your mouth by blending between various shapes to mimic your actual voice.
 It will generate 15 shape keys from the 3 shape keys you specify",,"당신의 아바타가 다양한 쉐이프키들을 조합하여 실제 음성을 모방하여 말하는 것처럼 보이게 합니다.
-3개의 쉐이프키를 지정하여 새로운 15 종류의 쉐이프키들을 생성합니다."
-AutoVisemeButton.error.noShapekeys,This mesh has no shapekeys!,,이 메쉬는 쉐이프키가 없습니다!
-AutoVisemeButton.error.selectShapekeys,"Please select the correct mouth shapekeys instead of ""Basis""!",,"""Basis"" 대신에 올바른 입모양 쉐이프키들을 선택하여 주세요!"
-AutoVisemeButton.success,Created mouth visemes!,,입모양 쉐이프키들을 생성했습니다!
-Scene.armature.label,Armature,アーマチュア,뼈대(Armature)
-Scene.armature.desc,Select the armature which will be used by Cats,,Cats에서 쓰여질 뼈대(Armature)를 선택해주세요.
-Scene.zip_content.label,Zip Content,コンテンツを圧縮する,Zip 내용물
-Scene.zip_content.desc,Select the model you want to import,,불러올 모델을 선택해주세요
-Scene.keep_upper_chest.label,Keep Upper Chest,上部の胸の骨を保つ,Upper Chest 보존
+3개의 쉐이프키를 지정하여 새로운 15 종류의 쉐이프키들을 생성합니다.","这将使您的化身能够通过混合各种形状来模仿您的实际声音来模仿来自您嘴巴的每种声音。
+它将从您指定的 3 个形态键中生成 15 个形态键"
+AutoVisemeButton.error.noShapekeys,This mesh has no shapekeys!,,이 메쉬는 쉐이프키가 없습니다!,这个网格没有形态键！
+AutoVisemeButton.error.selectShapekeys,"Please select the correct mouth shapekeys instead of ""Basis""!",,"""Basis"" 대신에 올바른 입모양 쉐이프키들을 선택하여 주세요!","请选择正确的嘴形键而不是""基础""！"
+AutoVisemeButton.success,Created mouth visemes!,,입모양 쉐이프키들을 생성했습니다!,创造了嘴巴视位！
+Scene.armature.label,Armature,アーマチュア,뼈대(Armature),
+Scene.armature.desc,Select the armature which will be used by Cats,,Cats에서 쓰여질 뼈대(Armature)를 선택해주세요.,选择 Cats 将使用的骨架
+Scene.zip_content.label,Zip Content,コンテンツを圧縮する,Zip 내용물,压缩内容
+Scene.zip_content.desc,Select the model you want to import,,불러올 모델을 선택해주세요,选择您要导入的模型
+Scene.keep_upper_chest.label,Keep Upper Chest,上部の胸の骨を保つ,Upper Chest 보존,保持上胸
 Scene.keep_upper_chest.desc,"VRChat now partially supports the Upper Chest bone, so deleting it is no longer necessary.
 
 Uncheck this if you are going to use the legacy SDK2 avatar system. Most people can leave this on.",,"VRChat은 이제 상단 가슴(Upper Chest) 본을 부분적으로 지원하므로 더 이상 삭제할 필요가 없습니다.
 
-경고: 현재 이것은 눈 추적(Eye Tracking)을 망치기 때문에, 눈 추적을 원한다면 이것을 체크하지 말아주세요."
-Scene.combine_mats.label,Combine Same Materials,同じマテリアルを組み合わせる,동일한 매테리얼 결합
+경고: 현재 이것은 눈 추적(Eye Tracking)을 망치기 때문에, 눈 추적을 원한다면 이것을 체크하지 말아주세요.","VRChat 现在部分支持上胸部骨骼，因此不再需要删除它。
+
+警告：目前这会破坏眼睛追踪，因此如果您想要眼睛追踪，请不要勾选此项"
+Scene.combine_mats.label,Combine Same Materials,同じマテリアルを組み合わせる,동일한 매테리얼 결합,混合相同的材质
 Scene.combine_mats.desc,"Combines similar materials into one, reducing draw calls.
 
 Your avatar should visibly look the same after this operation.
@@ -780,12 +917,17 @@ If you have problems with this, uncheck this option and tell us!
 이 작업 후에도 아바타는 동일하게 보일 것입니다.
 이것은 아바타를 최적화하는 데 매우 중요한 단계입니다.
 이것에 문제가 있으면이 옵션을 선택 취소하고 우리에게 알려주세요!
-"
-Scene.remove_zero_weight.label,Remove Zero Weight Bones,ゼロウェイトボーンを削除する,제로 웨이트 본 제거
+","将相似的材质合二为一，减少绘图调用。
+
+完成此操作后，您的头像应该看起来相同。
+这是优化头像的一个非常重要的步骤。
+如果您对此有疑问，请取消选中此选项并告诉我们！"
+Scene.remove_zero_weight.label,Remove Zero Weight Bones,ゼロウェイトボーンを削除する,제로 웨이트 본 제거,移除零权重骨骼
 Scene.remove_zero_weight.desc,"Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.
 Uncheck this if bones or vertex groups that you want to keep got deleted",,"본 구조를 정리하고 어느 Vertex에도 영향을 주지 않는 모든 본들을 지웁니다.
-유지하려는 본들이나 버텍스 그룹이 지워질 경우 체크해제하세요"
-Scene.keep_end_bones.label,Keep End Bones,エンドボーンを保持,엔드 본(End Bones) 유지
+유지하려는 본들이나 버텍스 그룹이 지워질 경우 체크해제하세요","清理骨骼层次，删除所有不直接影响任何顶点的骨骼。
+如果要保留的骨骼或顶点组被删除，请取消选中此选项"
+Scene.keep_end_bones.label,Keep End Bones,エンドボーンを保持,엔드 본(End Bones) 유지,保留末梢骨头
 Scene.keep_end_bones.desc,"Saves end bones from deletion.
 
 This can improve skirt movement for dynamic bones, but increases the bone count.
@@ -794,16 +936,23 @@ Make sure to always uncheck ""Add Leaf Bones"" when exporting or use the CATS ex
 
 다이나믹본을 사용하는 스커트의 움직임을 향상시키지만 본의 개수를 늘려버립니다.
 이것은 Unity에서 부서진 손가락 뼈들과 관련된 문제를 해결할 수도 있습니다.
-내보내기 할때는 언제나 ""Add Leaf Bones""을 체크해제하거나 Cats의 내보내기(Export) 버튼을 사용하세요"
-Scene.keep_twist_bones.label,Keep Twist Bones,ツイストボーンを保持,트위스트 본 유지
+내보내기 할때는 언제나 ""Add Leaf Bones""을 체크해제하거나 Cats의 내보내기(Export) 버튼을 사용하세요","从删除中保存末端骨骼。
+
+这可以改善动态骨骼的裙子移动，但会增加骨骼数量。
+这也可以解决 Unity 中手指骨头碎裂的问题。
+确保在导出或使用 CATS 导出按钮时始终取消选中""添加叶骨"""
+Scene.keep_twist_bones.label,Keep Twist Bones,ツイストボーンを保持,트위스트 본 유지,保持扭曲骨头
 Scene.keep_twist_bones.desc,"This will keep any bone with ""Twist"" in the name.
 So if there are certain bones that you want to keep, you can add ""Twist"" to them and they won't get deleted.
 
 VRChat can now make use of twist bones, so you can use this option to keep them",,"이름에 ""Twist""가 들어간 본들을 유지합니다.
 따라서 유지하려는 특정 뼈가있는 경우 이름에 ""Twist""를 추가 할 수 있으며 삭제되지 않습니다.
 
-VRChat은 이제 트위스트 본을 사용할 수 있으므로 이 옵션을 사용하여 유지할 수 있습니다."
-Scene.fix_twist_bones.label,Fix MMD Twist Bones,MMDツイスト ボーンを修正する,MMD 트위스트 본 고치기
+VRChat은 이제 트위스트 본을 사용할 수 있으므로 이 옵션을 사용하여 유지할 수 있습니다.","这将保留名称中带有""Twist""的任何骨骼。
+因此，如果您想保留某些骨骼，您可以向它们添加""Twist""，它们不会被删除。
+
+VRChat 现在可以使用扭曲骨骼，因此您可以使用此选项来保留它们"
+Scene.fix_twist_bones.label,Fix MMD Twist Bones,MMDツイスト ボーンを修正する,MMD 트위스트 본 고치기,修复 MMD 扭曲骨头
 Scene.fix_twist_bones.desc,"This will make MMD arm twist bones usable in VRChat.
 WIll only work if the twist bones are properly named.
 Required names:
@@ -816,8 +965,14 @@ You don't need to enable ""Keep Twist Bones"" for this to work",,"VRChat에서 M
   - ArmTwist[1-3]_[L/R]
   - HandTwist[1-3]_[L/R]
 
-이 작업을 위해 ""Keep Twist Bones""를 활성화 할 필요가 없습니다."
-Scene.join_meshes.label,Join Meshes,メッシュを結合する,메쉬 통합
+이 작업을 위해 ""Keep Twist Bones""를 활성화 할 필요가 없습니다.","这将使 MMD 手臂扭曲骨骼在 VRChat 中可用。
+只有正确命名扭曲骨骼时才会起作用。
+必填名称：
+- ArmTwist[1-3]_[L/R]
+- HandTwist[1-3]_[L/R]
+
+您无需启用""保持扭曲骨骼""即可使用"
+Scene.join_meshes.label,Join Meshes,メッシュを結合する,메쉬 통합,加入网格
 Scene.join_meshes.desc,"Joins all meshes of this model together.
 It also:
   - Applies all transformations
@@ -831,46 +986,58 @@ INFO: You should always join your meshes",,"모델의 모든 메쉬들을 통합
   - 모든 변환(Transforms)을 적용
   - 망가진 아마추어 모디파이어들(armature modifiers)을 고침
   - 모든 데시메이션(decimation)과 미러 모디파이어들(mirror modifiers)을 적용
-  - UV맵들을 올바르게 통합"
-Scene.connect_bones.label,Connect Bones,ボーンを接続する,본 연결
+  - UV맵들을 올바르게 통합","将此模型的所有网格连接在一起。
+它也是：
+- 应用所有转换
+- 修复损坏的电枢修改器
+- 应用所有精简和镜像修改器
+- 正确合并 UV 贴图
+
+信息：您应该始终加入您的网格"
+Scene.connect_bones.label,Connect Bones,ボーンを接続する,본 연결,连接骨骼
 Scene.connect_bones.desc,"This connects all bones to their child bone if they have exactly one child bone.
 This will not change how the bones function in any way, it just improves the aesthetic of the armature",,"모든 본들이 정확히 하나의 자식 본을 가지고 있다면 모든 본들을 그것들의 자식 본과 연결시켜줍니다.
-뼈의 기능에는 영향을 주지 않으며 뼈대(armature)의 미관을 개선할 뿐입니다."
-Scene.fix_materials.label,Fix Materials,マテリアルを修正する,매테리얼 고치기
-Scene.fix_materials.desc,This will apply some VRChat related fixes to materials,,매테리얼에 일부 VRChat 관련 픽스가 적용됩니다.
-Scene.remove_rigidbodies_joints.label,Remove Rigidbodies and Joints,リジッドボディとジョイントを除去,Rigidbodies와 Joints 제거
+뼈의 기능에는 영향을 주지 않으며 뼈대(armature)의 미관을 개선할 뿐입니다.","如果它们只有一个子骨骼，这会将所有骨骼连接到它们的子骨骼。
+这不会以任何方式改变骨骼的功能，它只会提高骨架的美感"
+Scene.fix_materials.label,Fix Materials,マテリアルを修正する,매테리얼 고치기,修复材质
+Scene.fix_materials.desc,This will apply some VRChat related fixes to materials,,매테리얼에 일부 VRChat 관련 픽스가 적용됩니다.,这将对材质应用一些与 VRChat 相关的修复
+Scene.remove_rigidbodies_joints.label,Remove Rigidbodies and Joints,リジッドボディとジョイントを除去,Rigidbodies와 Joints 제거,移除刚体和关节
 Scene.remove_rigidbodies_joints.desc,"Rigidbodies and joints are used by MMD software to simulate physics.
 They are completely useless for VRChat, so removing them is recommended for VRChat users!",,"Rigidbodies와 joints는 MMD software에서 물리연산을 위해 사용되는 것들입니다.
-VRChat에 사용되지않으므로 VRChat 유저들에게는 이것들을 지우는 게 좋습니다!"
-Scene.use_google_only.label,Use Old Translations (not recommended),古い翻訳を使用する(推奨しません),구버전 번역을 사용 (권장되지 않음)
+VRChat에 사용되지않으므로 VRChat 유저들에게는 이것들을 지우는 게 좋습니다!","MMD 软件使用刚体和关节来模拟物理。
+它们对 VRChat 完全没用，因此建议 VRChat 用户删除它们！"
+Scene.use_google_only.label,Use Old Translations (not recommended),古い翻訳を使用する(推奨しません),구버전 번역을 사용 (권장되지 않음),使用旧翻译（不推荐）
 Scene.use_google_only.desc,"Ignores the internal dictionary and only uses the Google Translator for shape key translations.
 
 This will result in slower translation speed and worse translations, but the translations will be like in CATS version 0.9.0 and older.
 Only use this if you have animations which rely on the old translations and you don't want to convert them to the new ones",,"내장된 사전 대신에 구글 번역기를 쉐이프키 번역에 사용합니다.
 
 번역 속도가 느려지고 번역의 질이 더 나빠질 수 있지만, 번역은 CATS 0.9.0 버전 혹은 그 이전의 버전처럼 될 것이다.
-이전 번역에 의존하는 애니메이션을 새 번역으로 변환하지 않을 경우에만 이 기능을 사용하세요."
-Scene.show_more_options.label,Show More Options,その他のオプションを表示,더 많은 옵션 보기
-Scene.show_more_options.desc,Shows more model options,,더 많은 모델 옵션 보기
-Scene.merge_mode.label,Merge Mode,マージモード,통합모드
-Scene.merge_mode.desc,Mode,,
-Scene.merge_mode.armature.label,Merge Armatures,アーマチュアをマージ,뼈대(Armatures) 통합
-Scene.merge_mode.armature.desc,Here you can merge two armatures together.,,
-Scene.merge_mode.mesh.label,Attach Mesh,メッシュを取り付ける,메쉬 붙이기
-Scene.merge_mode.mesh.desc,Here you can attach a mesh to an armature.,,
-Scene.merge_armature_into.label,Base Armature,ベースアーマチュア,기본 뼈대(Armature)
+이전 번역에 의존하는 애니메이션을 새 번역으로 변환하지 않을 경우에만 이 기능을 사용하세요.","忽略内部字典，只使用谷歌翻译器进行形态键翻译。
+
+这将导致翻译速度变慢和翻译效果变差，但翻译将与 CATS 版本 0.9.0 及更早版本相同。
+仅当您的动画依赖于旧翻译并且您不想将它们转换为新翻译时才使用此选项"
+Scene.show_more_options.label,Show More Options,その他のオプションを表示,더 많은 옵션 보기,显示更多选项
+Scene.show_more_options.desc,Shows more model options,,더 많은 모델 옵션 보기,显示更多模型选项
+Scene.merge_mode.label,Merge Mode,マージモード,통합모드,合并模式
+Scene.merge_mode.desc,Mode,,,模式
+Scene.merge_mode.armature.label,Merge Armatures,アーマチュアをマージ,뼈대(Armatures) 통합,合并骨架
+Scene.merge_mode.armature.desc,Here you can merge two armatures together.,,,在这里，您可以将两个骨架合并在一起。
+Scene.merge_mode.mesh.label,Attach Mesh,メッシュを取り付ける,메쉬 붙이기,附加网格
+Scene.merge_mode.mesh.desc,Here you can attach a mesh to an armature.,,,在这里，您可以将网格附加到骨架。
+Scene.merge_armature_into.label,Base Armature,ベースアーマチュア,기본 뼈대(Armature),基础骨骼
 Scene.merge_armature_into.desc,"Select the armature into which the other armature will be merged
-",,
-Scene.merge_armature.label,Merge Armature,メッシュを取り付ける,뼈대(Armature) 통합
+",,,选择要合并其他骨架的骨架
+Scene.merge_armature.label,Merge Armature,メッシュを取り付ける,뼈대(Armature) 통합,合并骨骼
 Scene.merge_armature.desc,"Select the armature which will be merged into the selected armature above
-",,
-Scene.attach_to_bone.label,Attach to Bone,骨に取り付ける,본에 붙이기
+",,,选择将合并到上面选定的骨架中的骨架
+Scene.attach_to_bone.label,Attach to Bone,骨に取り付ける,본에 붙이기,附着在骨头上
 Scene.attach_to_bone.desc,"Select the bone to which the armature will be attached to
-",,
-Scene.attach_mesh.label,Attach Mesh,メッシュを取り付ける,메쉬 붙이기
+",,,选择骨架将附加到的骨骼
+Scene.attach_mesh.label,Attach Mesh,メッシュを取り付ける,메쉬 붙이기,附加网格
 Scene.attach_mesh.desc,"Select the mesh which will be attached to the selected bone in the selected armature
-",,
-Scene.merge_same_bones.label,Merge All Bones,すべてのボーンをマージ,모든 뼈 통합
+",,,选择将附加到选定骨架中选定骨骼的网格
+Scene.merge_same_bones.label,Merge All Bones,すべてのボーンをマージ,모든 뼈 통합,合并所有骨骼
 Scene.merge_same_bones.desc,"Merges all bones together that have the same name instead of only the base bones (Hips, Spine, etc).
 You will have to make sure that all the bones you want to merge have the same name.
 
@@ -878,30 +1045,43 @@ If this is checked, you won't need to fix the model with CATS beforehand but it 
 If this is unchecked, CATS will only merge the base bones (Hips, Spine, etc).
 
 This can have unintended side effects, so check your model afterwards!
-",,
-Scene.apply_transforms.label,Apply Transforms,変換を適用する,변환 적용
+",,,"将具有相同名称的所有骨骼合并在一起，而不仅仅是基础骨骼（臀部、脊柱等）。
+您必须确保要合并的所有骨骼都具有相同的名称。
+
+如果选中此项，则无需事先使用 CATS 修复模型，但仍建议您这样做。
+如果未选中此项，CATS 将仅合并基础骨骼（臀部、脊柱等）。
+
+这可能会产生意想不到的副作用，因此请稍后检查您的模型！"
+Scene.apply_transforms.label,Apply Transforms,変換を適用する,변환 적용,应用变换
 Scene.apply_transforms.desc,"Check this if both armatures and meshes are already at their correct positions.
-This will cause them to stay exactly where they are when merging",,
-Scene.merge_armatures_join_meshes.label,Join Meshes,メッシュを結合する,메쉬 통합
+This will cause them to stay exactly where they are when merging",,,"如果骨架和网格都已经在正确的位置，请检查此项。
+这将导致它们在合并时准确地停留在原来的位置"
+Scene.merge_armatures_join_meshes.label,Join Meshes,メッシュを結合する,메쉬 통합,加入网格
 Scene.merge_armatures_join_meshes.desc,"This will join all meshes.
-Not checking this will always apply transforms",,
-Scene.merge_armatures_remove_zero_weight_bones.label,Remove Zero Weight Bones,ゼロウェイトボーンを削除する,제로 웨이트 본 제거
+Not checking this will always apply transforms",,,"这将连接所有网格。
+不检查这将始终应用转换"
+Scene.merge_armatures_remove_zero_weight_bones.label,Remove Zero Weight Bones,ゼロウェイトボーンを削除する,제로 웨이트 본 제거,移除零权重骨骼
 Scene.merge_armatures_remove_zero_weight_bones.desc,"Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices.
-Uncheck this if bones or vertex groups that you want to keep got deleted",,
-Scene.merge_armatures_cleanup_shape_keys.label,Cleanup Shape Keys,
+Uncheck this if bones or vertex groups that you want to keep got deleted",,,"清理骨骼层次，删除所有不直接影响任何顶点的骨骼。
+如果要保留的骨骼或顶点组被删除，请取消选中此选项"
+Scene.merge_armatures_cleanup_shape_keys.label,Cleanup Shape Keys,,,清理形状键
 Scene.merge_armatures_cleanup_shape_keys.desc,"Cleans up the meshes shape keys.
-Uncheck this if shape keys you want to keep got deleted",,
-Scene.decimation_mode.label,Decimation Mode,単純化モード,
-Scene.decimation_mode.desc,Decimation Mode,,
-Scene.decimation_mode.smart.label,Smart,スマート,
+Uncheck this if shape keys you want to keep got deleted",,,"清理网格形状键。
+如果要保留的形状键被删除，请取消选中此选项"
+Scene.decimation_mode.label,Decimation Mode,単純化モード,,精简模式
+Scene.decimation_mode.desc,Decimation Mode,,,精简模式
+Scene.decimation_mode.smart.label,Smart,スマート,,智能
 Scene.decimation_mode.smart.desc,"Best results - repair shape keys after decimation
 
 This will decimate your whole model and attempt to undo the warping caused by Blender's decimation.
 This will give the best results and keep blinking and lip syncing, but may have issues on some models.",,"최고의 결과 - 데시메이션 이후 쉐이프키들을 복구함
 
 This will decimate your whole model and attempt to undo the warping caused by Blender's decimation.
-This will give the best results and keep blinking and lip syncing, but may have issues on some models."
-Scene.decimation_mode.safe.label,Safe,安全,안전
+This will give the best results and keep blinking and lip syncing, but may have issues on some models.","最佳结果 - 精简后修复形态键
+
+这将精简整个模型并尝试消除由 Blender 精简引起的扭曲。
+这将提供最佳效果并保持眨眼和口型同步，但在某些型号上可能会出现问题。"
+Scene.decimation_mode.safe.label,Safe,安全,안전,安全
 Scene.decimation_mode.safe.desc,"Decent results - no shape key loss
 
 This will only decimate meshes with no shape keys.
@@ -910,8 +1090,12 @@ Eye Tracking and Lip Syncing will be fully preserved.",,"괜찮은 결과 - 쉐�
 
 This will only decimate meshes with no shape keys.
 The results are decent and you won't lose any shape keys.
-Eye Tracking and Lip Syncing will be fully preserved."
-Scene.decimation_mode.half.label,Half,ハーフ,반
+Eye Tracking and Lip Syncing will be fully preserved.","体面的结果 - 没有形态键丢失
+
+这只会精简没有形态键的网格。
+结果不错，您不会丢失任何形态键。
+眼睛追踪和唇形同步将完全保留。"
+Scene.decimation_mode.half.label,Half,ハーフ,반,一半
 Scene.decimation_mode.half.desc,"Good results - minimal shape key loss
 
 This will only decimate meshes with less than 4 shape keys as those are often not used.
@@ -920,8 +1104,12 @@ Eye Tracking and Lip Syncing should still work.",,"나쁘지 않은 결과, - �
 
 This will only decimate meshes with less than 4 shape keys as those are often not used.
 The results are better but you will lose the shape keys in some meshes.
-Eye Tracking and Lip Syncing should still work."
-Scene.decimation_mode.full.label,Full,フル,전체
+Eye Tracking and Lip Syncing should still work.","良好的结果 - 最小的形态键损失
+
+这只会精简少于 4 个形态键的网格，因为它们通常不被使用。
+结果更好，但您会丢失某些网格中的形态键。
+眼睛追踪和唇形同步应该仍然有效。"
+Scene.decimation_mode.full.label,Full,フル,전체,满的
 Scene.decimation_mode.full.desc,"Consistent results - full shape key loss
 
 This will decimate your whole model deleting all shape keys in the process.
@@ -930,26 +1118,32 @@ Eye Tracking will still work if you disable Eye Blinking.",,"일관된 결과 - 
 
 This will decimate your whole model deleting all shape keys in the process.
 This will give consistent results but you will lose the ability to add blinking and Lip Syncing.
-Eye Tracking will still work if you disable Eye Blinking."
-Scene.decimation_mode.custom.label,Custom,カスタム,커스텀
+Eye Tracking will still work if you disable Eye Blinking.","一致的结果 - 完整的密钥丢失
+
+这将大量删除您的整个模型，并在此过程中删除所有形态键。
+这将提供一致的结果，但您将失去添加眨眼和唇形同步的能力。
+如果您禁用眨眼，眼睛追踪仍然有效。"
+Scene.decimation_mode.custom.label,Custom,カスタム,커스텀,自定义
 Scene.decimation_mode.custom.desc,"Custom results - custom shape key loss
 
 This will let you choose which meshes and shape keys should not be decimated.
 ",,"커스텀 결과 - 커스텀 쉐이프키 손실
 
 This will let you choose which meshes and shape keys should not be decimated.
-"
-Scene.selection_mode.label,Selection Mode,選択モード,선택 모드
-Scene.selection_mode.desc,Selection Mode,,
-Scene.selection_mode.shapekeys.label,Shape Keys,シェイプキー,쉐이프키
-Scene.selection_mode.shapekeys.desc,Select all the shape keys you want to preserve here.,,
-Scene.selection_mode.meshes.label,Meshes,メッシュ,메쉬
-Scene.selection_mode.meshes.desc,Select all the meshes you don't want to decimate here.,,
-Scene.add_shape_key.label,Shape,形状,쉐이프키
-Scene.add_shape_key.desc,The shape key you want to keep,,
-Scene.add_mesh.label,Mesh,メッシュ,메쉬
-Scene.add_mesh.desc,The mesh you want to leave untouched by the decimation,,
-Scene.decimate_fingers.label,Save Fingers,指を救う,손가락 유지
+","自定义结果 - 自定义形态键丢失
+
+这将让您选择不应该精简哪些网格和形态键。"
+Scene.selection_mode.label,Selection Mode,選択モード,선택 모드,选择模式
+Scene.selection_mode.desc,Selection Mode,,,选择模式
+Scene.selection_mode.shapekeys.label,Shape Keys,シェイプキー,쉐이프키,形态键
+Scene.selection_mode.shapekeys.desc,Select all the shape keys you want to preserve here.,,,在此处选择要保留的所有形态键。
+Scene.selection_mode.meshes.label,Meshes,メッシュ,메쉬,网格
+Scene.selection_mode.meshes.desc,Select all the meshes you don't want to decimate here.,,,在此处选择您不想精简的所有网格。
+Scene.add_shape_key.label,Shape,形状,쉐이프키,形状
+Scene.add_shape_key.desc,The shape key you want to keep,,,您要保留的形态键
+Scene.add_mesh.label,Mesh,メッシュ,메쉬,网格
+Scene.add_mesh.desc,The mesh you want to leave untouched by the decimation,,,您希望保留不被精简影响的网格
+Scene.decimate_fingers.label,Save Fingers,指を救う,손가락 유지,拯救手指
 Scene.decimate_fingers.desc,"Check this if you don't want to decimate your fingers!
 Results will be worse but there will be no issues with finger movement.
 This is probably only useful if you have a VR headset.
@@ -969,8 +1163,17 @@ Thumb(0-2)_(L/R)
 IndexFinger(1-3)_(L/R)
 MiddleFinger(1-3)_(L/R)
 RingFinger(1-3)_(L/R)
-LittleFinger(1-3)_(L/R)"
-Scene.decimate_hands.label,Save Hands,手を救う,손 유지
+LittleFinger(1-3)_(L/R)","如果你不想毁掉你的手指，请检查这个！
+结果会更糟，但手指移动不会有问题。
+这可能仅在您拥有 VR 耳机时才有用。
+
+此操作需要具体命名指骨：
+拇指（0-2）_（左/右）
+食指(1-3)_(L/R)
+中指(1-3)_(L/R)
+无名指(1-3)_(L/R)
+小指(1-3)_(左/右)"
+Scene.decimate_hands.label,Save Hands,手を救う,손 유지,拯救双手
 Scene.decimate_hands.desc,"Check this if you don't want to decimate your full hands!
 Results will be worse but there will be no issues with hand movement.
 This is probably only useful if you have a VR headset.
@@ -991,362 +1194,423 @@ Thumb(0-2)_(L/R)
 IndexFinger(1-3)_(L/R)
 MiddleFinger(1-3)_(L/R)
 RingFinger(1-3)_(L/R)
-LittleFinger(1-3)_(L/R)"
-Scene.decimation_remove_doubles.label,Remove Doubles,重複を削除,이중 제거
-Scene.decimation_remove_doubles.desc,Uncheck this if you get issues with this checked,Uncheck this if you got issues with with this checked,문제가 될 시 체크를 해제하세요
-Scene.decimation_animation_weighting.label,Animation weighting,,
+LittleFinger(1-3)_(L/R)","如果你不想毁掉你的全部手，请检查这个！
+结果会更糟，但手部移动不会有问题。
+这可能仅在您拥有 VR 耳机时才有用。
+
+此操作需要具体命名手指和手骨：
+左/右手腕
+拇指（0-2）_（左/右）
+食指(1-3)_(L/R)
+中指(1-3)_(L/R)
+无名指(1-3)_(L/R)
+小指(1-3)_(左/右)"
+Scene.decimation_remove_doubles.label,Remove Doubles,重複を削除,이중 제거,删除重复
+Scene.decimation_remove_doubles.desc,Uncheck this if you get issues with this checked,Uncheck this if you got issues with with this checked,문제가 될 시 체크를 해제하세요,如果您对此检查有问题，请取消选中此选项
+Scene.decimation_animation_weighting.label,Animation weighting,,,动画权重
 Scene.decimation_animation_weighting.desc,"Weight decimation based on shape keys and vertex group overlap
 Results in better animating topology by trading off overall shape accuracy
-Use if your elbows/joints end up with bad topology",,
-Scene.decimation_animation_weighting_factor.label,Factor,,
-Scene.decimation_animation_weighting_factor.desc,How much influence the animation weighting has on the overall shape,,
-Scene.max_tris.label,Tris,トリス,삼각폴리곤(Tris)
-Scene.max_tris.desc,The target amount of tris after decimation,,
-Scene.eye_mode.label,Eye Mode,アイモード,
-Scene.eye_mode.desc,Mode,,
-Scene.eye_mode.creation.label,Creation,創作,생성
-Scene.eye_mode.creation.desc,Here you can create eye tracking.,,
-Scene.eye_mode.testing.label,Testing,テスティング,테스트
-Scene.eye_mode.testing.desc,Here you can test how eye tracking will look in-game.,,
-Scene.mesh_name_eye.label,Mesh,メッシュ,메쉬
-Scene.mesh_name_eye.desc,The mesh with the eyes vertex groups,,
-Scene.head.label,Head,頭,머리
-Scene.head.desc,The head bone containing the eye bones,,
-Scene.eye_left.label,Left Eye,左目,왼쪽 눈
-Scene.eye_left.desc,The models left eye bone,,
-Scene.eye_right.label,Right Eye,右目,오른쪽 눈
-Scene.eye_right.desc,The models right eye bone,,
-Scene.wink_left.label,Blink Left,左点滅,왼쪽 깜빡임
-Scene.wink_left.desc,The shape key containing a blink with the left eye,,
-Scene.wink_right.label,Blink Right,右点滅,오른쪽 깜빡임
-Scene.wink_right.desc,The shape key containing a blink with the right eye,,
-Scene.lowerlid_left.label,Lowerlid Left,下まぶた左,왼쪽 아래 눈꺼풀
+Use if your elbows/joints end up with bad topology",,,"基于形态键和顶点组重叠的权重精简
+通过权衡整体形状精度来产生更好的动画拓扑
+如果您的肘部/关节最终出现不良拓扑结构，请使用"
+Scene.decimation_animation_weighting_factor.label,Factor,,,
+Scene.decimation_animation_weighting_factor.desc,How much influence the animation weighting has on the overall shape,,,动画权重对整体形状的影响有多大
+Scene.max_tris.label,Tris,トリス,삼각폴리곤(Tris),三角化/三边面
+Scene.max_tris.desc,The target amount of tris after decimation,,,精简后的目标面数量
+Scene.eye_mode.label,Eye Mode,アイモード,,眼睛模式
+Scene.eye_mode.desc,Mode,,,模式
+Scene.eye_mode.creation.label,Creation,創作,생성,创建
+Scene.eye_mode.creation.desc,Here you can create eye tracking.,,,在这里您可以创建眼睛追踪。
+Scene.eye_mode.testing.label,Testing,テスティング,테스트,测试
+Scene.eye_mode.testing.desc,Here you can test how eye tracking will look in-game.,,,在这里，您可以测试眼睛追踪在游戏中的外观。
+Scene.mesh_name_eye.label,Mesh,メッシュ,메쉬,网格
+Scene.mesh_name_eye.desc,The mesh with the eyes vertex groups,,,带有眼睛顶点组的网格
+Scene.head.label,Head,頭,머리,头部
+Scene.head.desc,The head bone containing the eye bones,,,包含眼部的骨头
+Scene.eye_left.label,Left Eye,左目,왼쪽 눈,左眼：eye_L
+Scene.eye_left.desc,The models left eye bone,,,模特左眼骨
+Scene.eye_right.label,Right Eye,右目,오른쪽 눈,右眼：eye_R
+Scene.eye_right.desc,The models right eye bone,,,模特右眼骨
+Scene.wink_left.label,Blink Left,左点滅,왼쪽 깜빡임,左眨眼
+Scene.wink_left.desc,The shape key containing a blink with the left eye,,,包含左眼眨眼的形态键
+Scene.wink_right.label,Blink Right,右点滅,오른쪽 깜빡임,右眨眼
+Scene.wink_right.desc,The shape key containing a blink with the right eye,,,包含右眼眨眼的形态键
+Scene.lowerlid_left.label,Lowerlid Left,下まぶた左,왼쪽 아래 눈꺼풀,左下睑
 Scene.lowerlid_left.desc,"The shape key containing a slightly raised left lower lid.
-Can be set to ""Basis"" to disable lower lid movement",,
-Scene.lowerlid_right.label,Lowerlid Right,下まぶた右,오른쪽 아래 눈꺼풀
+Can be set to ""Basis"" to disable lower lid movement",,,"包含略微凸起的左下盖的形态键。
+可以设置为""基础""以禁用下眼睑移动"
+Scene.lowerlid_right.label,Lowerlid Right,下まぶた右,오른쪽 아래 눈꺼풀,右下睑
 Scene.lowerlid_right.desc,"The shape key containing a slightly raised right lower lid.
-Can be set to ""Basis"" to disable lower lid movement",,
-Scene.disable_eye_movement.label,Disable Eye Movement,目の動きを無効にする,눈 움직임 비활성화
+Can be set to ""Basis"" to disable lower lid movement",,,"包含略微凸起的右下盖的形态键。
+可以设置为""基础""以禁用下眼睑移动"
+Scene.disable_eye_movement.label,Disable Eye Movement,目の動きを無効にする,눈 움직임 비활성화,禁用眼睛移动
 Scene.disable_eye_movement.desc,"IMPORTANT: Do your decimation first if you check this!
 
 Disables eye movement. Useful if you only want blinking.
 This creates eye bones with no movement bound to them.
-You still have to assign ""LeftEye"" and ""RightEye"" to the eyes in Unity",,
-Scene.disable_eye_blinking.label,Disable Eye Blinking,瞬きを無効にする,눈 깜빡임 비활성화
+You still have to assign ""LeftEye"" and ""RightEye"" to the eyes in Unity",,,"重要提示：如果您选中此项，请先进行精简！
+
+禁用眼睛移动。 如果您只想闪烁，则很有用。
+这会创建没有移动约束的眼骨。
+你仍然需要在 Unity 中为眼睛分配""LeftEye""和""RightEye"""
+Scene.disable_eye_blinking.label,Disable Eye Blinking,瞬きを無効にする,눈 깜빡임 비활성화,禁用眼睛眨眼
 Scene.disable_eye_blinking.desc,"Disables eye blinking. Useful if you only want eye movement.
-This will create the necessary shape keys but leaves them empty",,
-Scene.eye_distance.label,Eye Movement Range,眼球運動範囲,눈 움직임 범위
+This will create the necessary shape keys but leaves them empty",,,"禁用眼睛眨眼。 如果您只想要眼睛移动，这很有用。
+这将创建必要的形态键，但将它们留空"
+Scene.eye_distance.label,Eye Movement Range,眼球運動範囲,눈 움직임 범위,眼睛移动范围
 Scene.eye_distance.desc,"Higher = more eye movement
 Lower = less eye movement
 Warning: Too little or too much range can glitch the eyes.
 Test your results in the ""Eye Testing""-Tab!
-",,
-Scene.eye_rotation_x.label,Up - Down,上 - 下,위 - 아래
-Scene.eye_rotation_x.desc,Rotate the eye bones on the vertical axis,,
-Scene.eye_rotation_y.label,Left - Right,左 - 右,왼쪽 - 오른쪽
+",,,"更高 = 更多眼球移动
+较低 = 较少的眼球移动
+警告：太小或太大的范围都会使眼睛出现故障。
+在""眼睛测试""选项卡中测试您的结果！"
+Scene.eye_rotation_x.label,Up - Down,上 - 下,위 - 아래,上 - 下
+Scene.eye_rotation_x.desc,Rotate the eye bones on the vertical axis,,,在垂直轴上旋转眼睛骨骼
+Scene.eye_rotation_y.label,Left - Right,左 - 右,왼쪽 - 오른쪽,左 - 右
 Scene.eye_rotation_y.desc,"Rotate the eye bones on the horizontal axis.
-This is from your own point of view",,
-Scene.iris_height.label,Iris Height,アイリスの高さ,눈동자 높이
-Scene.iris_height.desc,Moves the iris away from the eye ball,,
-Scene.eye_blink_shape.label,Blink Strength,まばたきの強さ,깜빡임 강도
-Scene.eye_blink_shape.desc,Test the blinking of the eye,,
-Scene.eye_lowerlid_shape.label,Lowerlid Strength,下まぶたの強さ,아래 눈꺼풀 강도
-Scene.eye_lowerlid_shape.desc,Test the lowerlid blinking of the eye,,
-Scene.mesh_name_viseme.label,Mesh,メッシュ,메쉬
-Scene.mesh_name_viseme.desc,The mesh with the mouth shape keys,,
-Scene.mouth_a.label,Viseme AA,バイセム AA,발음 아(AA)
+This is from your own point of view",,,"在水平轴上旋转眼睛骨骼。
+这是从你自己的角度"
+Scene.iris_height.label,Iris Height,アイリスの高さ,눈동자 높이,虹膜高度
+Scene.iris_height.desc,Moves the iris away from the eye ball,,,使虹膜远离眼睛
+Scene.eye_blink_shape.label,Blink Strength,まばたきの強さ,깜빡임 강도,闪烁强度
+Scene.eye_blink_shape.desc,Test the blinking of the eye,,,测试眨眼
+Scene.eye_lowerlid_shape.label,Lowerlid Strength,下まぶたの強さ,아래 눈꺼풀 강도,下眼睑力量
+Scene.eye_lowerlid_shape.desc,Test the lowerlid blinking of the eye,,,测试下眼睑眨眼
+Scene.mesh_name_viseme.label,Mesh,メッシュ,메쉬,网格
+Scene.mesh_name_viseme.desc,The mesh with the mouth shape keys,,,带有嘴形键的网格
+Scene.mouth_a.label,Viseme AA,バイセム AA,발음 아(AA),发音（AA）あ
 Scene.mouth_a.desc,"Shape key containing mouth movement that looks like someone is saying ""aa"".
-Do not put empty shape keys like ""Basis"" in here",,
-Scene.mouth_o.label,Viseme OH,バイセム OH,발음 오(OH)
+Do not put empty shape keys like ""Basis"" in here",,,"形态键包含看起来有人在说""aa""的嘴巴动作。
+不要在这里放像""Basis""这样的空形态键"
+Scene.mouth_o.label,Viseme OH,バイセム OH,발음 오(OH),发音（OH）お
 Scene.mouth_o.desc,"Shape key containing mouth movement that looks like someone is saying ""oh"".
-Do not put empty shape keys like ""Basis"" in here",,
-Scene.mouth_ch.label,Viseme CH,バイセム CH,발음 츠(CH)
+Do not put empty shape keys like ""Basis"" in here",,,"包含看起来有人在说""哦""的嘴巴动作的形态键。
+不要在这里放像""Basis""这样的空形态键"
+Scene.mouth_ch.label,Viseme CH,バイセム CH,발음 츠(CH),发音（CH）い
 Scene.mouth_ch.desc,"Shape key containing mouth movement that looks like someone is saying ""ch"". Opened lips and clenched teeth.
-Do not put empty shape keys like ""Basis"" in here",,
-Scene.shape_intensity.label,Shape Key Mix Intensity,シェイプキーミックスの強度,쉐이프키 혼합 강도
-Scene.shape_intensity.desc,Controls the strength in the creation of the shape keys. Lower for less mouth movement strength,,
-Scene.root_bone.label,To Parent,親に,부모쪽으로
-Scene.root_bone.desc,List of bones that look like they could be parented together to a root bone,,
-Scene.optimize_mode.label,Optimize Mode,最適化モード,최적화 모드
-Scene.optimize_mode.desc,Mode,,
-Scene.optimize_mode.atlas.label,Atlas,アトラス,
-Scene.optimize_mode.atlas.desc,Allows you to make a texture atlas.,,
-Scene.optimize_mode.material.label,Material,マテリアル,매테리얼
-Scene.optimize_mode.material.desc,Some various options on material manipulation.,,
-Scene.optimize_mode.bonemerging.label,Bone Merging,骨のマージ,본 통합
-Scene.optimize_mode.bonemerging.desc,Allows child bones to be merged into their parents.,,
-Scene.merge_ratio.label,Merge Ratio,マージ率,통합 비율
+Do not put empty shape keys like ""Basis"" in here",,,"形态键包含看起来有人在说""ch""的嘴巴动作。 张开嘴唇，咬紧牙关。
+不要在这里放像""Basis""这样的空形态键"
+Scene.shape_intensity.label,Shape Key Mix Intensity,シェイプキーミックスの強度,쉐이프키 혼합 강도,形态键混合强度
+Scene.shape_intensity.desc,Controls the strength in the creation of the shape keys. Lower for less mouth movement strength,,,控制创建形态键的强度。 降低嘴巴移动强度
+Scene.root_bone.label,To Parent,親に,부모쪽으로,到父级
+Scene.root_bone.desc,List of bones that look like they could be parented together to a root bone,,,看起来可以作为根骨骼的父级的骨骼列表
+Scene.optimize_mode.label,Optimize Mode,最適化モード,최적화 모드,优化模式
+Scene.optimize_mode.desc,Mode,,,模式
+Scene.optimize_mode.atlas.label,Atlas,アトラス,,纹理集
+Scene.optimize_mode.atlas.desc,Allows you to make a texture atlas.,,,允许您制作纹理图集。
+Scene.optimize_mode.material.label,Material,マテリアル,매테리얼,材质
+Scene.optimize_mode.material.desc,Some various options on material manipulation.,,,关于材质操作的一些不同选项。
+Scene.optimize_mode.bonemerging.label,Bone Merging,骨のマージ,본 통합,骨骼合并
+Scene.optimize_mode.bonemerging.desc,Allows child bones to be merged into their parents.,,,允许子骨骼合并到它们的父骨骼中。
+Scene.merge_ratio.label,Merge Ratio,マージ率,통합 비율,合并比率
 Scene.merge_ratio.desc,"Higher = more bones will be merged
 Lower = less bones will be merged
-",,
-Scene.merge_mesh.label,Mesh,メッシュ,메쉬
-Scene.merge_mesh.desc,The mesh with the bones vertex groups,,
-Scene.merge_bone.label,To Merge,マージするには,통합할 부분
-Scene.merge_bone.desc,List of bones that look like they could be merged together to reduce overall bones,,
-Scene.show_avatar_2_tabs.label,Show Avatar 2.0 tools,
-Scene.show_avatar_2_tabs.desc,Show tools specific to legacy versions of the Avatar API
-Scene.show_mmd_tabs.label,Show mmd_tools,,mmd_tools 탭 보이기
-Scene.show_mmd_tabs.desc,"Allows you to hide/show the mmd_tools tabs ""MMD"" and ""Misc""",,
-Scene.embed_textures.label,Embed Textures on Export,エクスポート時にテクスチャを埋め込む,내보낼 때 텍스처 포함
+",,,"更高 = 更多骨骼将被合并
+较低 = 更少的骨骼将被合并"
+Scene.merge_mesh.label,Mesh,メッシュ,메쉬,网格
+Scene.merge_mesh.desc,The mesh with the bones vertex groups,,,具有骨骼顶点组的网格
+Scene.merge_bone.label,To Merge,マージするには,통합할 부분,合并
+Scene.merge_bone.desc,List of bones that look like they could be merged together to reduce overall bones,,,看起来可以合并在一起以减少整体骨骼的骨骼列表
+Scene.show_avatar_2_tabs.label,Show Avatar 2.0 tools,,,
+Scene.show_avatar_2_tabs.desc,Show tools specific to legacy versions of the Avatar API,,,显示特定于旧版 Avatar API 的工具
+Scene.show_mmd_tabs.label,Show mmd_tools,,mmd_tools 탭 보이기,显示 mmd_tools
+Scene.show_mmd_tabs.desc,"Allows you to hide/show the mmd_tools tabs ""MMD"" and ""Misc""",,,"允许您隐藏/显示 mmd_tools 选项卡""MMD""和""Misc"""
+Scene.embed_textures.label,Embed Textures on Export,エクスポート時にテクスチャを埋め込む,내보낼 때 텍스처 포함,在导出时嵌入纹理
 Scene.embed_textures.desc,"Enable this to embed the texture files into the FBX file upon export.
 Unity will automatically extract these textures and put them into a separate folder.
-This might not work for everyone and it increases the file size of the exported FBX file",,
-Scene.ui_lang.label,Cats Language,,
-Scene.ui_lang.desc,Lets you select which language the Cats interface should have,,
-Scene.use_custom_mmd_tools.label,Use Custom mmd_tools,カスタムmmd_toolsを使用する,커스텀 mmd_tools 사용
-Scene.use_custom_mmd_tools.desc,Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools,,
-Scene.debug_translations.label,Debug Google Translations,Google翻訳をデバッグ,Google 번역 디버그
-Scene.debug_translations.desc,Tests the Google Translations and prints the Google response in case of error,,
-Scene.bake_resolution.label,Resolution,,해상도
+This might not work for everyone and it increases the file size of the exported FBX file",,,"启用此选项可在导出时将纹理文件嵌入到 FBX 文件中。
+Unity 会自动提取这些纹理并将它们放入单独的文件夹中。
+这可能不适用于所有人，并且会增加导出的 FBX 文件的文件大小"
+Scene.ui_lang.label,Cats Language,,,Cats 语言选择
+Scene.ui_lang.desc,Lets you select which language the Cats interface should have,,,让您选择 Cats 界面应具有的语言
+Scene.use_custom_mmd_tools.label,Use Custom mmd_tools,カスタムmmd_toolsを使用する,커스텀 mmd_tools 사용,使用自定义 mmd_tools
+Scene.use_custom_mmd_tools.desc,Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools,,,启用它以使用您自己的 mmd_tools 版本。 这将禁用内部猫 mmd_tools
+Scene.debug_translations.label,Debug Google Translations,Google翻訳をデバッグ,Google 번역 디버그,调试谷歌翻译
+Scene.debug_translations.desc,Tests the Google Translations and prints the Google response in case of error,,,测试 Google 翻译并在出现错误时打印 Google 响应
+Scene.bake_resolution.label,Resolution,,해상도,分辨率
 Scene.bake_resolution.desc,"Output resolution for the textures.
 - 2048 is typical for desktop use.
 - 1024 is reccomended for the Quest",,"테스쳐들의 결과 해상도.
 - 2048 데스크탑 용
-- 1024 퀘스트 용"
-Scene.bake_use_decimation.label,Decimate,,버텍스 줄이기(Decimate)
-Scene.bake_use_decimation.desc,"Reduce polycount before baking, then use Normal maps to restore detail",,베이킹하기 전에 폴리 카운트를 줄인 다음 노멀 맵을 사용하여 디테일을 복원합니다.
-Scene.bake_generate_uvmap.label,Generate UVMap,,UV 맵 생성
+- 1024 퀘스트 용","纹理的输出分辨率。
+- 2048 是典型的桌面使用。
+- 建议 1024 用于 Quest"
+Scene.bake_use_decimation.label,Decimate,,버텍스 줄이기(Decimate),精简顶点
+Scene.bake_use_decimation.desc,"Reduce polycount before baking, then use Normal maps to restore detail",,베이킹하기 전에 폴리 카운트를 줄인 다음 노멀 맵을 사용하여 디테일을 복원합니다.,烘焙前减少多边形数，然后使用法线贴图恢复细节
+Scene.bake_generate_uvmap.label,Generate UVMap,,UV 맵 생성,生成 UV 贴图
 Scene.bake_generate_uvmap.desc,"Re-pack islands for your mesh to a new non-overlapping UVMap.
 Only disable if your UVs are non-overlapping already.
 This will leave any map named ""Detail Map"" alone.
-Uses UVPackMaster where available for more efficient UVs, make sure the window is showing",,
-Scene.bake_uv_overlap_correction.label,Overlap correction,,중복 보정
-Scene.bake_uv_overlap_correction.desc,Method used to prevent overlaps in UVMap,,
-Scene.bake_prioritize_face.label,Prioritize Eyes,,머리 / 눈 우선 순위 지정
-Scene.bake_prioritize_face.desc,Scale any UV islands attached to the head/eyes by a given factor.,,
-Scene.bake_face_scale.label,Eyes Scale,,머리 / 눈 스케일
-Scene.bake_face_scale.desc,How much to scale up the face/eyes portion of the textures.,,
-Scene.bake_quick_compare.label,Quick compare,,빠른 비교
-Scene.bake_quick_compare.desc,Move output avatar next to existing one to quickly compare,,
-Scene.bake_illuminate_eyes.label,Set eyes to full brightness,,눈을 최대 밝기로 설정
+Uses UVPackMaster where available for more efficient UVs, make sure the window is showing",,,"将网格的岛屿重新打包到新的非重叠 UVMap。
+仅当您的 UV 已经不重叠时才禁用。
+这将留下任何名为""详细地图""的地图。
+在可用的地方使用 UVPackMaster 以获得更有效的 UV，确保显示窗口"
+Scene.bake_uv_overlap_correction.label,Overlap correction,,중복 보정,重叠校正
+Scene.bake_uv_overlap_correction.desc,Method used to prevent overlaps in UVMap,,,用于防止 UVMap 中重叠的方法
+Scene.bake_prioritize_face.label,Prioritize Eyes,,머리 / 눈 우선 순위 지정,优先考虑头部/眼睛
+Scene.bake_prioritize_face.desc,Scale any UV islands attached to the head/eyes by a given factor.,,,按给定因子缩放连接到头部/眼睛的任何 UV 岛。
+Scene.bake_face_scale.label,Eyes Scale,,머리 / 눈 스케일,头/眼量表
+Scene.bake_face_scale.desc,How much to scale up the face/eyes portion of the textures.,,,将纹理的面部/眼睛部分放大多少。
+Scene.bake_quick_compare.label,Quick compare,,빠른 비교,快速比较
+Scene.bake_quick_compare.desc,Move output avatar next to existing one to quickly compare,,,将输出头像移动到现有头像旁边以快速比较
+Scene.bake_illuminate_eyes.label,Set eyes to full brightness,,눈을 최대 밝기로 설정,将眼睛设置为全亮度
 Scene.bake_illuminate_eyes.desc,"Relight LeftEye and RightEye to be full brightness.
 Without this, the eyes will have the shadow of the surrounding socket baked in,
-which doesn't animate well",,
-Scene.bake_pass_smoothness.label,Smoothness,,부드러움
+which doesn't animate well",,,"重新点亮 LeftEye 和 RightEye 以达到全亮度。
+没有这个，眼睛就会有周围眼窝的阴影烤进去，
+动画效果不好"
+Scene.bake_pass_smoothness.label,Smoothness,,부드러움,平滑度
 Scene.bake_pass_smoothness.desc,"Bakes Roughness and then inverts the values.
 To use this, it needs to be packed to the Alpha channel of either Diffuse or Metallic.
-Not neccesary if your mesh has a global roughness value",,
-Scene.bake_pass_diffuse.label,Diffuse (Color),,확산 (색상)
+Not neccesary if your mesh has a global roughness value",,,"烘焙粗糙度，然后反转值。
+要使用它，它需要被打包到 Diffuse 或 Metallic 的 Alpha 通道。
+如果您的网格具有全局粗糙度值，则不需要"
+Scene.bake_pass_diffuse.label,Diffuse (Color),,확산 (색상),漫反射（颜色）
 Scene.bake_pass_diffuse.desc,"Bakes diffuse, un-lighted color. Usually you will want this.
-While baking, this temporarily links ""Metallic"" to ""Anisotropic Rotation"" as metallic can cause issues.",,
-Scene.bake_preserve_seams.label,Preserve seams,,이음새 유지
+While baking, this temporarily links ""Metallic"" to ""Anisotropic Rotation"" as metallic can cause issues.",,,"烘烤漫射、未点亮的颜色。 通常你会想要这个。
+烘烤时，这会暂时将""金属""链接到""各向异性旋转""，因为金属会导致问题。"
+Scene.bake_preserve_seams.label,Preserve seams,,이음새 유지,保留接缝
 Scene.bake_preserve_seams.desc,"Forces the Decimate operation to preserve vertices making up seams, preventing hard edges along seams.
 May result in less ideal geometry.
-Use if you notice ugly edges along your texture seams.",,
-Scene.bake_pass_normal.label,Normal (Bump),,노말 (범프)
+Use if you notice ugly edges along your texture seams.",,,"强制精简操作以保留构成接缝的顶点，防止沿接缝的硬边。
+可能导致不太理想的几何形状。
+如果您发现纹理接缝处有丑陋的边缘，请使用。"
+Scene.bake_pass_normal.label,Normal (Bump),,노말 (범프),正常（凹凸）
 Scene.bake_pass_normal.desc,"Bakes a normal (bump) map. Allows you to keep the shading of a complex object with
 the geometry of a simple object. If you have selected 'Decimate', it will create a map
 that makes the low res output look like the high res input.
-Will not work well if you have self-intersecting islands",,
-Scene.bake_normal_apply_trans.label,Apply transforms,,변환 적용
+Will not work well if you have self-intersecting islands",,,"烘焙法线（凹凸）贴图。 允许您使用
+简单物体的几何形状。 如果您选择了""精简""，它将创建一个地图
+这使得低分辨率输出看起来像高分辨率输入。
+如果您有自相交的岛屿，将无法正常工作"
+Scene.bake_normal_apply_trans.label,Apply transforms,,변환 적용,应用变换
 Scene.bake_normal_apply_trans.desc,"Applies offsets while baking normals. Neccesary if your model has many materials with different normal maps
-Turn this off if applying location causes problems with your model",,
-Scene.bake_pass_ao.label,Ambient Occlusion,,
+Turn this off if applying location causes problems with your model",,,"在烘焙法线时应用偏移。 如果您的模型有许多具有不同法线贴图的材质，则这是必需的
+如果应用位置导致模型出现问题，请关闭此功能"
+Scene.bake_pass_ao.label,Ambient Occlusion,,,环境光遮蔽
 Scene.bake_pass_ao.desc,"Bakes Ambient Occlusion, non-projected shadows. Adds a significant amount of detail to your model.
 Reccomended for non-toon style avatars.
-Takes a fairly long time to bake",,
-Scene.bake_pass_displacement.label,Displacement (Height),,
+Takes a fairly long time to bake",,,"烘焙环境光遮蔽，非投影阴影。 为您的模型添加大量细节。
+推荐用于非卡通风格的头像。
+需要相当长的时间来烘烤"
+Scene.bake_pass_displacement.label,Displacement (Height),,,
 Scene.bake_pass_displacement.desc,"Bakes a normalized Displacement map, according to the material displacement in Blender.
 Can add real 3d surface detail to models.
-Results are in Linear space, so make sure uncheck Color Texture in Unity.",,
-Scene.bake_pass_questdiffuse.label,Quest Diffuse (Color+AO),,
-Scene.bake_pass_questdiffuse.desc,Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.,,
-Scene.bake_pass_emit.label,Emit,,
-Scene.bake_pass_emit.desc,"Bakes Emit, glowyness",,
-Scene.bake_diffuse_alpha_pack.label,Alpha Channel,,
-Scene.bake_diffuse_alpha_pack.desc,What to pack to the Diffuse Alpha channel,,
-Scene.bake_metallic_alpha_pack.label,Metallic Alpha Channel,,
-Scene.bake_metallic_alpha_pack.desc,What to pack to the Metallic Alpha channel,,
-Scene.bake_pass_alpha.label,Transparency,,
+Results are in Linear space, so make sure uncheck Color Texture in Unity.",,,"根据 Blender 中的材质置换，烘焙归一化的置换贴图。
+可以为模型添加真实的 3d 表面细节。
+结果在线性空间中，因此请确保取消选中 Unity 中的颜色纹理。"
+Scene.bake_pass_questdiffuse.label,Quest Diffuse (Color+AO),,,任务漫反射（颜色+AO）
+Scene.bake_pass_questdiffuse.desc,Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.,,,混合漫反射和 AO 烘焙的结果以制作与 Quest 兼容的着色。
+Scene.bake_pass_emit.label,Emit,,,发射
+Scene.bake_pass_emit.desc,"Bakes Emit, glowyness",,,烘烤发射，发光
+Scene.bake_diffuse_alpha_pack.label,Alpha Channel,,,透明通道
+Scene.bake_diffuse_alpha_pack.desc,What to pack to the Diffuse Alpha channel,,,将什么打包到 Diffuse Alpha 通道
+Scene.bake_metallic_alpha_pack.label,Metallic Alpha Channel,,,金属 Alpha 通道
+Scene.bake_metallic_alpha_pack.desc,What to pack to the Metallic Alpha channel,,,将什么打包到 Metallic Alpha 通道
+Scene.bake_pass_alpha.label,Transparency,,,透明度
 Scene.bake_pass_alpha.desc,"Bakes transparency by connecting the last Principled BSDF Alpha input
 to the Base Color input and baking Diffuse.
 Not a native pass in Blender, results may vary
-Unused if you are baking to Quest",,
-Scene.bake_pass_metallic.label,Metallic,,
+Unused if you are baking to Quest",,,"通过连接最后一个 Principled BSDF Alpha 输入来烘焙透明度
+到基础颜色输入和烘焙漫反射。
+不是 Blender 中的原生通道，结果可能会有所不同
+如果您正在烘焙到 Quest，则未使用"
+Scene.bake_pass_metallic.label,Metallic,,,金属的
 Scene.bake_pass_metallic.desc,"Bakes metallic by connecting the last Principled BSDF Metallic input
 to the Base Color input and baking Diffuse.
-Not a native pass in Blender, results may vary",,
-Scene.bake_questdiffuse_opacity.label,AO Opacity,,
+Not a native pass in Blender, results may vary",,,"通过连接最后一个 Principled BSDF Metallic 输入来烘烤金属
+到基础颜色输入和烘焙漫反射。
+不是 Blender 中的原生通道，结果可能会有所不同"
+Scene.bake_questdiffuse_opacity.label,AO Opacity,,,AO不透明度
 Scene.bake_questdiffuse_opacity.desc,"The opacity of the shadows to blend onto the Diffuse map.
-This should match the unity slider for AO on the Desktop version.",,
-Scene.bake_uv_overlap_correction.none.label,Rearrange,,
-Scene.bake_uv_overlap_correction.none.desc,Leave islands as they are. Use if islands don't self-intersect at all,,
-Scene.bake_uv_overlap_correction.unmirror.label,Unmirror,,
-Scene.bake_uv_overlap_correction.unmirror.desc,Move all face islands with positive X values over one to un-pin mirrored UVs. Solves most UV pinning issues.,,
-Scene.bake_uv_overlap_correction.reproject.label,Reproject,,
-Scene.bake_uv_overlap_correction.reproject.desc,Use blender's Smart UV Project to come up with an entirely new island layout. Tends to reduce quality.,,
-Scene.bake_diffuse_alpha_pack.none.label,None,,
-Scene.bake_diffuse_alpha_pack.none.desc,No alpha channel,,
-Scene.bake_diffuse_alpha_pack.transparency.label,Transparency,,
-Scene.bake_diffuse_alpha_pack.transparency.desc,Pack Transparency,,
-Scene.bake_diffuse_alpha_pack.smoothness.label,Smoothness,,
-Scene.bake_diffuse_alpha_pack.smoothness.desc,Pack Smoothness. Most efficient if you don't have transparency or metallic textures.,,
-Scene.bake_metallic_alpha_pack.none.label,None,,
-Scene.bake_metallic_alpha_pack.none.desc,No alpha channel,,
-Scene.bake_metallic_alpha_pack.smoothness.label,Smoothness,,
-Scene.bake_metallic_alpha_pack.smoothness.desc,Pack Smoothness. Use this if your Diffuse alpha channel is already populated with Transparency,,
-cats_bake.warn_missing_nodes,"A material in use isn't using Nodes, fix this in the Shading tab.",,
-cats_bake.preset_desktop.label,Desktop,,
+This should match the unity slider for AO on the Desktop version.",,,"混合到漫反射贴图上的阴影的不透明度。
+这应该与桌面版 AO 的统一滑块相匹配。"
+Scene.bake_uv_overlap_correction.none.label,Rearrange,,,无
+Scene.bake_uv_overlap_correction.none.desc,Leave islands as they are. Use if islands don't self-intersect at all,,,让岛屿保持原样。 如果岛屿根本不自相交，则使用
+Scene.bake_uv_overlap_correction.unmirror.label,Unmirror,,,取消镜像
+Scene.bake_uv_overlap_correction.unmirror.desc,Move all face islands with positive X values over one to un-pin mirrored UVs. Solves most UV pinning issues.,,,将所有具有正 X 值的面岛移动到 1 以取消固定镜像 UV。 解决了大多数 UV 固定问题。
+Scene.bake_uv_overlap_correction.reproject.label,Reproject,,,重新投影
+Scene.bake_uv_overlap_correction.reproject.desc,Use blender's Smart UV Project to come up with an entirely new island layout. Tends to reduce quality.,,,使用blender的智能紫外线项目来设计一个全新的岛屿布局。 倾向于降低质量。
+Scene.bake_diffuse_alpha_pack.none.label,None,,,无
+Scene.bake_diffuse_alpha_pack.none.desc,No alpha channel,,,没有透明通道
+Scene.bake_diffuse_alpha_pack.transparency.label,Transparency,,,透明度
+Scene.bake_diffuse_alpha_pack.transparency.desc,Pack Transparency,,,包装透明度
+Scene.bake_diffuse_alpha_pack.smoothness.label,Smoothness,,,平滑度
+Scene.bake_diffuse_alpha_pack.smoothness.desc,Pack Smoothness. Most efficient if you don't have transparency or metallic textures.,,,包平滑度。 如果您没有透明度或金属纹理，则最有效。
+Scene.bake_metallic_alpha_pack.none.label,None,,,无
+Scene.bake_metallic_alpha_pack.none.desc,No alpha channel,,,没有透明通道
+Scene.bake_metallic_alpha_pack.smoothness.label,Smoothness,,,平滑度
+Scene.bake_metallic_alpha_pack.smoothness.desc,Pack Smoothness. Use this if your Diffuse alpha channel is already populated with Transparency,,,包平滑度。 如果您的漫反射 alpha 通道已经填充了透明度，请使用此选项
+cats_bake.warn_missing_nodes,"A material in use isn't using Nodes, fix this in the Shading tab.",,,"正在使用的材质未使用节点，请在""着色""选项卡中修复此问题。"
+cats_bake.preset_desktop.label,Desktop,,,桌面
 cats_bake.preset_desktop.desc,"Preset for producing an Excellent-rated Desktop avatar, not accounting for bones.
-This will try to automatically detect which bake passes are relevant to your model",,
-cats_bake.preset_quest.label,Quest,,
+This will try to automatically detect which bake passes are relevant to your model",,,"用于制作优秀桌面头像的预设，不考虑骨骼。
+这将尝试自动检测哪些烘焙通道与您的模型相关"
+cats_bake.preset_quest.label,Quest,,,快速
 cats_bake.preset_quest.desc,"Preset for producing an Excellent-rated Quest avatar, not accounting for bones.
-This will try to automatically detect which bake passes are relevant to your model",,
-cats_bake.bake.label,Copy and Bake (SLOW!),,
+This will try to automatically detect which bake passes are relevant to your model",,,"用于制作优秀 Quest 头像的预设，不考虑骨骼。
+这将尝试自动检测哪些烘焙通道与您的模型相关"
+cats_bake.bake.label,Copy and Bake (SLOW!),,,复制和烘烤（慢！）
 cats_bake.bake.desc,"Perform the bake. Warning, this performs an actual render!
 This will create a copy of your avatar to leave the original alone.
 Depending on your machine and model, this could take an hour or more.
 For each pass, any Value node in your materials labeled bake_<bakename> will be
-set to 1.0, for more granular customization.",,
-cats_bake.error.no_meshes,No meshes found!,,메쉬가 발견되지 않음!
-cats_bake.error.render_engine,You need to set your render engine to Cycles first!,,
-cats_bake.error.render_disabled,One or more of your armature's meshes have rendering disabled!,,
-cats_bake.info.success,Success! Textures and model saved to 'CATS Bake' folder next to your .blend file.,,
-cats_bake.tutorial_button.label,How to use,,사용법
-cats_bake.tutorial_button.desc,This will open the Cats wiki page for the Bake panel,,
-cats_bake.tutorial_button.URL,https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake,,
-cats_bake.tutorial_button.success,Bake Tutorial opened.,,
-CheckForUpdateButton.label,Check now for Update,今すぐアップデートを確認,업데이트 체크
-CheckForUpdateButton.desc,Checks if a new update is available for CATS,,
-UpdateToLatestButton.label,Update Now,今すぐアップデート,지금 업데이트
-UpdateToLatestButton.desc,Update CATS to the latest version,,
-UpdateToSelectedButton.label,Update to Selected version,選択したバージョンに更新,선택된 버전으로 업데이트
-UpdateToSelectedButton.desc,Update CATS to the selected version,,
-UpdateToDevButton.label,Update to Development version,開発版に更新,개발버전으로 업데이트
-UpdateToDevButton.desc,Update CATS to the Development version,,
-RemindMeLaterButton.label,Remind me later,後で通知する,나중에 다시보기
-RemindMeLaterButton.desc,This hides the update notification 'til the next Blender restart,,
-RemindMeLaterButton.success,You will be reminded later,,
-IgnoreThisVersionButton.label,Ignore this version,このバージョンを無視,이 버전은 무시하기
-IgnoreThisVersionButton.desc,This ignores this version. You will be reminded again when the next version releases,,
-IgnoreThisVersionButton.success,Version {name} will be ignored.,,
-ShowPatchnotesPanel.label,Patchnotes,パッチノート,패치노트
-ShowPatchnotesPanel.desc,Shows the patchnotes of the selected version,,
-ShowPatchnotesPanel.releaseDate,Released: {date},,
-ConfirmUpdatePanel.label,Confirm Update,アップデートを確認,업데이트 확인
-ConfirmUpdatePanel.desc,This shows you a panel in which you have to confirm your update choice,,
-ConfirmUpdatePanel.warn.dev1,Warning:,,
-ConfirmUpdatePanel.warn.dev2, The development version of CATS is the place where,,
-ConfirmUpdatePanel.warn.dev3, we test new features and bug fixes.,,
-ConfirmUpdatePanel.warn.dev4, This version might be very unstable and some features,,
-ConfirmUpdatePanel.warn.dev5, might not work correctly.,,
-ConfirmUpdatePanel.ShowPatchnotesPanel.label,Show Patchnotes,,패치노트 보기
-ConfirmUpdatePanel.updateNow,Update now:,,
-UpdateCompletePanel.label,Installation Report,インストールレポート,설치 보고
-UpdateCompletePanel.desc,The update is now complete,,
-UpdateCompletePanel.success1,CATS was successfully updated.,,
-UpdateCompletePanel.success2,Restart Blender to complete the update.,,
-UpdateCompletePanel.failure1,Update failed.,,
-UpdateCompletePanel.failure2,See Updater Panel for more info.,,
-UpdateNotificationPopup.label,Update available,アップデートが利用可能です,업데이트 가능
-UpdateNotificationPopup.desc,This shows you that an update is available,,
-UpdateNotificationPopup.newUpdate,CATS v{name} available!,,
-UpdateNotificationPopup.ShowPatchnotesPanel.label,Show Patchnotes,パッチノートを見る,패치노트 보기
-check_for_update.cantCheck,"Could not check for updates, try again later",,
-download_file.cantConnect,Could not connect to Github,,
-download_file.cantFindZip,Could not find the downloaded zip,,
-download_file.cantFindCATS,Could not find CATS in the downloaded zip,,
-draw_update_notification_panel.success,Restart Blender to complete update!,,
-draw_update_notification_panel.newUpdate,CATS v{name} available!,,
-draw_update_notification_panel.UpdateToLatestButton.label,Update Now,今すぐアップデート,지금 업데이트
-draw_update_notification_panel.RemindMeLaterButton.label,Remind me later,後で通知する,나중에 다시보기
-draw_update_notification_panel.IgnoreThisVersionButton.label,Ignore this version,このバージョンを無視,이 버전은 무시하기
-draw_updater_panel.updateLabel,Updates:,,
-draw_updater_panel.updateLabel_alt,CATS Updater:,,
-draw_updater_panel.success,Restart Blender to complete update!,,
-draw_updater_panel.CheckForUpdateButton.label,Checking..,チェック中..,확인 중..
-draw_updater_panel.UpdateToLatestButton.label,Update now to {name},今すぐ{name}に更新する,{name}로 업데이트
-draw_updater_panel.CheckForUpdateButton.label_alt,Check now for Update,今すぐアップデートを確認,업데이트 확인하기
-draw_updater_panel.UpdateToLatestButton.label_alt,Up to Date!,最新の!,현재 최신 버전입니다!
-draw_updater_panel.UpdateToSelectedButton.label,Install version:,インストールバージョン:,설치버전:
-draw_updater_panel.UpdateToDevButton.label,Install Development Version,開発バージョンのインストール,개발버전 설치
-draw_updater_panel.currentVersion,Current version: {name},,현재 버전: {name}
-bpy.types.Scene.cats_updater_version_list.label,Version,バージョン,버전
+set to 1.0, for more granular customization.",,,"执行烘烤。 警告，这将执行实际渲染！
+这将创建您的头像的副本，以保留原始头像。
+根据您的机器和型号，这可能需要一个小时或更长时间。
+对于每个通道，您的材质中标记为 bake_<bakename> 的任何值节点都将是
+设置为 1.0，以获得更精细的自定义。"
+cats_bake.error.no_meshes,No meshes found!,,메쉬가 발견되지 않음!,未找到网格！
+cats_bake.error.render_engine,You need to set your render engine to Cycles first!,,,您需要先将渲染引擎设置为 Cycles！
+cats_bake.error.render_disabled,One or more of your armature's meshes have rendering disabled!,,,您的一个或多个骨架网格体已禁用渲染！
+cats_bake.info.success,Success! Textures and model saved to 'CATS Bake' folder next to your .blend file.,,,"成功！纹理和模型保存在 .blend 文件旁边的""CATS Bake""文件夹中。"
+cats_bake.tutorial_button.label,How to use,,사용법,教你如何使用
+cats_bake.tutorial_button.desc,This will open the Cats wiki page for the Bake panel,,,这将打开烘焙面板的 Cats wiki 教程页面
+cats_bake.tutorial_button.URL,https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake,,,
+cats_bake.tutorial_button.success,Bake Tutorial opened.,,,烘焙教程已打开。
+CheckForUpdateButton.label,Check now for Update,今すぐアップデートを確認,업데이트 체크,立即检查更新
+CheckForUpdateButton.desc,Checks if a new update is available for CATS,,,检查是否有适用于 CATS 的新更新
+UpdateToLatestButton.label,Update Now,今すぐアップデート,지금 업데이트,现在更新
+UpdateToLatestButton.desc,Update CATS to the latest version,,,将 CATS 更新到最新版本
+UpdateToSelectedButton.label,Update to Selected version,選択したバージョンに更新,선택된 버전으로 업데이트,更新到选定版本
+UpdateToSelectedButton.desc,Update CATS to the selected version,,,将 CATS 更新到所选版本
+UpdateToDevButton.label,Update to Development version,開発版に更新,개발버전으로 업데이트,更新到开发版本
+UpdateToDevButton.desc,Update CATS to the Development version,,,将 CATS 更新到开发版本
+RemindMeLaterButton.label,Remind me later,後で通知する,나중에 다시보기,稍后提醒我
+RemindMeLaterButton.desc,This hides the update notification 'til the next Blender restart,,,这会隐藏更新通知，直到下一次 Blender 重新启动
+RemindMeLaterButton.success,You will be reminded later,,,稍后会提醒您
+IgnoreThisVersionButton.label,Ignore this version,このバージョンを無視,이 버전은 무시하기,忽略这个版本
+IgnoreThisVersionButton.desc,This ignores this version. You will be reminded again when the next version releases,,,这忽略了这个版本。下一个版本发布时会再次提醒您
+IgnoreThisVersionButton.success,Version {name} will be ignored.,,,版本 {name} 将被忽略。
+ShowPatchnotesPanel.label,Patchnotes,パッチノート,패치노트,补丁说明
+ShowPatchnotesPanel.desc,Shows the patchnotes of the selected version,,,显示所选版本的补丁说明
+ShowPatchnotesPanel.releaseDate,Released: {date},,,发布时间：{日期}
+ConfirmUpdatePanel.label,Confirm Update,アップデートを確認,업데이트 확인,确认更新
+ConfirmUpdatePanel.desc,This shows you a panel in which you have to confirm your update choice,,,这将向您显示一个面板，您必须在其中确认您的更新选择
+ConfirmUpdatePanel.warn.dev1,Warning:,,,警告：
+ConfirmUpdatePanel.warn.dev2, The development version of CATS is the place where,,, CATS 的开发版本是
+ConfirmUpdatePanel.warn.dev3, we test new features and bug fixes.,,, 我们测试新功能和错误修复。
+ConfirmUpdatePanel.warn.dev4, This version might be very unstable and some features,,, 此版本可能非常不稳定且某些功能
+ConfirmUpdatePanel.warn.dev5, might not work correctly.,,, 可能无法正常工作。
+ConfirmUpdatePanel.ShowPatchnotesPanel.label,Show Patchnotes,,패치노트 보기,显示补丁说明
+ConfirmUpdatePanel.updateNow,Update now:,,,现在更新：
+UpdateCompletePanel.label,Installation Report,インストールレポート,설치 보고,安装报告
+UpdateCompletePanel.desc,The update is now complete,,,更新现已完成
+UpdateCompletePanel.success1,CATS was successfully updated.,,,CATS 已成功更新。
+UpdateCompletePanel.success2,Restart Blender to complete the update.,,,重新启动 Blender 以完成更新。
+UpdateCompletePanel.failure1,Update failed.,,,更新失败。
+UpdateCompletePanel.failure2,See Updater Panel for more info.,,,有关详细信息，请参阅更新程序面板。
+UpdateNotificationPopup.label,Update available,アップデートが利用可能です,업데이트 가능,可用更新
+UpdateNotificationPopup.desc,This shows you that an update is available,,,这表明您有可用的更新
+UpdateNotificationPopup.newUpdate,CATS v{name} available!,,,CATS v{name} 可用！
+UpdateNotificationPopup.ShowPatchnotesPanel.label,Show Patchnotes,パッチノートを見る,패치노트 보기,显示补丁说明
+check_for_update.cantCheck,"Could not check for updates, try again later",,,无法检查更新，请稍后再试
+download_file.cantConnect,Could not connect to Github,,,无法连接到 Github
+download_file.cantFindZip,Could not find the downloaded zip,,,找不到下载的 zip
+download_file.cantFindCATS,Could not find CATS in the downloaded zip,,,在下载的 zip 中找不到 CATS
+draw_update_notification_panel.success,Restart Blender to complete update!,,,重新启动 Blender 以完成更新！
+draw_update_notification_panel.newUpdate,CATS v{name} available!,,,CATS v{name} 可用！
+draw_update_notification_panel.UpdateToLatestButton.label,Update Now,今すぐアップデート,지금 업데이트,现在更新
+draw_update_notification_panel.RemindMeLaterButton.label,Remind me later,後で通知する,나중에 다시보기,稍后提醒我
+draw_update_notification_panel.IgnoreThisVersionButton.label,Ignore this version,このバージョンを無視,이 버전은 무시하기,忽略这个版本
+draw_updater_panel.updateLabel,Updates:,,,更新：
+draw_updater_panel.updateLabel_alt,CATS Updater:,,,CATS 更新程序：
+draw_updater_panel.success,Restart Blender to complete update!,,,重新启动 Blender 以完成更新！
+draw_updater_panel.CheckForUpdateButton.label,Checking..,チェック中..,확인 중..,检查..
+draw_updater_panel.UpdateToLatestButton.label,Update now to {name},今すぐ{name}に更新する,{name}로 업데이트,立即更新为 {name}
+draw_updater_panel.CheckForUpdateButton.label_alt,Check now for Update,今すぐアップデートを確認,업데이트 확인하기,立即检查更新
+draw_updater_panel.UpdateToLatestButton.label_alt,Up to Date!,最新の!,현재 최신 버전입니다!,最新！
+draw_updater_panel.UpdateToSelectedButton.label,Install version:,インストールバージョン:,설치버전:,安装版本：
+draw_updater_panel.UpdateToDevButton.label,Install Development Version,開発バージョンのインストール,개발버전 설치,安装开发版本
+draw_updater_panel.currentVersion,Current version: {name},,현재 버전: {name},当前版本：{name}
+bpy.types.Scene.cats_updater_version_list.label,Version,バージョン,버전,版本
 bpy.types.Scene.cats_updater_version_list.desc,"Select the version you want to install
-",,
-bpy.types.Scene.cats_update_action.label,Choose action,アクションを選択,액션 선택
-bpy.types.Scene.cats_update_action.desc,Action,,
-bpy.types.Scene.cats_update_action.update.label,Update Now,今すぐアップデート,지금 업데이트
-bpy.types.Scene.cats_update_action.update.desc,Updates now to the latest version,,
-bpy.types.Scene.cats_update_action.ignore.label,Ignore this version,このバージョンを無視,이 버전은 무시하기
-bpy.types.Scene.cats_update_action.ignore.desc,This ignores this version. You will be reminded again when the next version releases,,
-bpy.types.Scene.cats_update_action.defer.label,Remind me later,後で通知する,나중에 다시보기
-bpy.types.Scene.cats_update_action.defer.desc,Hides the update notification til the next Blender restart,,
-apply_current_shapekey_mix,"Apply current shapekey mix"
-bake_device,"Bake Device"
-bake_projected_light,"Bake projected light"
-bake_the_effect_of_emission_on_nearby_surfaces_results_in_much_more_realistic_lighting_effects_but_can_animate_less_well,"Bake the effect of emission on nearby surfaces. Results in much more realistic lighting effects, but can animate less well."
-bake_to_vertex_colors,"Bake to vertex colors"
-bakes_the_effect_of_any_eye_glow_onto_surrounding_objects_but_not_viceversa_improves_animation_when_eyes_are_moving_around,"Bakes the effect of any eye glow onto surrounding objects, but not vice-versa. Improves animation when eyes are moving around.."
-blends_emission_into_the_diffuse_map_for_engines_without_a_seperate_emission_map,"Blends emission into the diffuse map, for engines without a seperate emission map"
-cleanup_shapekeys,"Cleanup Shapekeys"
-convert_diffuse_and_metallic_to_premultiplied_diffuse_and_specular_compatible_with_older_engines,"Convert Diffuse and Metallic to premultiplied Diffuse and Specular. Compatible with older engines"
-denoise_renders,"Denoise renders"
-denoise_the_resulting_image_after_emitao_reccomended_as_this_will_reduce_the_grainy_quality_of_inexpensive_rendering,"Denoise the resulting image after emit/AO. Reccomended as this will reduce the 'grainy' quality of inexpensive rendering.."
-device_to_bake_on_gpu_gives_a_significant_speedup_but_can_cause_issues_depending_on_your_graphics_drivers,"Device to bake on. GPU gives a significant speedup, but can cause issues depending on your graphics drivers."
-diffuse_emission_overlay,"Diffuse Emission Overlay"
-exclude_eyes,"Exclude eyes"
-experimental_try_to_keep_uvps_lock_overlapping_enabled,"Experimental. Try to keep UVP's lock overlapping enabled"
-export_format,"Export format"
-for_source_engine_only_provides_diffuse_lighting_reflections_for_nonmetallic_objects,"For Source engine only. Provides diffuse lighting reflections for nonmetallic objects."
-generate_an_additional_lod_used_for_simplified_physics_interactions,"Generate an additional LOD used for simplified physics interactions"
-generate_courser_decimation_levels_for_efficient_rendering,"Generate courser decimation levels for efficient rendering."
-generate_lods,"Generate LODs"
-generate_physics_model,"Generate Physics Model"
-generate_the_twistbones_on_the_upper_half_of_the_bone_usually_used_for_upper_legs,"Generate the twistbones on the upper half of the bone. Usually used for upper legs."
-generate_upperhalf,"Generate Upperhalf"
-gmod_model_name,"Gmod Model Name"
-ignore_currently_hidden_objects_when_copying,"Ignore currently hidden objects when copying"
-ignore_hidden_objects,"Ignore hidden objects"
-image_export_format,"Image export format"
-image_type_to_use_when_exporting,"image type to use when exporting"
-invert_green_channel,"Invert green channel"
-keep_merged_bones,"Keep Merged Bones"
-keep_overlapping_islands_uvp,"Keep Overlapping Islands (UVP)"
-lod_generation_levels_as_a_percent_of_the_max_tris,"LOD generation levels, as a percent of the max tris"
-lods,"LODs"
-max_bones_per_prop,"Max Bones Per Prop"
-maximum_bones_a_prop_can_be_attached_to_to_be_considered_a_prop_more_will_create_more_toggleable_props_but_increase_armature_complexity,"Maximum bones a prop can be attached to to be considered a prop. More will create more toggleable props, but increase armature complexity."
-merge_any_bone_with_twist_in_the_name_useful_as_quest_does_not_support_constraints,"Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints."
-merge_twist_bones,"Merge Twist Bones"
-merge_visible_meshes_only,"Merge Visible Meshes Only"
-merges_smoothness_into_the_specular_map_for_engines_without_a_seperate_smoothness_map,"Merges smoothness into the specular map, for engines without a seperate smoothness map"
-model_format_to_use_when_exporting,"Model format to use when exporting"
-name,"Name"
-normal_alpha_pack,"Normal Alpha Pack"
-optimize_solid_materials,"Optimize Solid Materials"
-optimize_static_shapekeys,"Optimize Static Shapekeys"
-optimizes_solid_materials_by_making_a_small_area_for_them_ao_pass_will_nullify,"Optimizes solid materials by making a small area for them. AO pass will nullify"
-pack_ambient_occlusion_to_the_green_channel_saves_a_texture_as_unity_uses_g_for_ao_r_for_metallic,"Pack Ambient Occlusion to the Green channel. Saves a texture as Unity uses G for AO, R for Metallic."
-pack_ao_to_metallic_green,"Pack AO to Metallic Green"
-phong_setup_source,"Phong Setup (Source)"
-physmodel_percent,"Physmodel Percent"
-premultiply_diffuse_w_ao,"Premultiply Diffuse w/ AO"
-premultiply_smoothness_w_ao,"Premultiply Smoothness w/ AO"
-prop_bones_max_influence_count,"Prop bones Max Influence Count"
-prop_bones_max_influence_count,"Prop bones Max Influence Count"
-rebake_to_vertex_colors_after_initial_bake_avoids_an_entire_extra_texture_if_your_colors_are_simple_enough_incorperates_ao,"Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO."
-remove_backup_shapekeys_in_the_final_result_eg_key__reverted_or_blinkold,"Remove backup shapekeys in the final result, e.g. 'Key1 - Reverted' or 'blink_old'"
-select_this_to_keep_the_bones_after_merging_them_to_their_parents_or_to_the_active_bone,"Select this to keep the bones after merging them to their parents or to the active bone"
-select_this_to_only_merge_the_weights_of_the_visible_meshes,"Select this to only merge the weights of the visible meshes"
-seperate_vertices_unaffected_by_shape_keys_into_their_own_mesh_this_adds_a_drawcall_but_comes_with_a_significant_gpu_cost_savings_especially_on_mobile,"Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile."
-sharpen_bakes,"Sharpen bakes"
-sharpen_resampled_images_after_baking_diffusesmoothnessmetallic_reccomended_as_any_sampling_will_cause_blur,"Sharpen resampled images after baking diffuse/smoothness/metallic. Reccomended as any sampling will cause blur."
-show_advanced_general_options,"Show Advanced General Options"
-show_advanced_platform_options,"Show Advanced Platform Options"
-source_engine_uses_an_inverse_green_channel_this_fixes_that_on_export,"Source engine uses an inverse green channel, this fixes that on export"
-specular_alpha_channel,"Specular Alpha Channel"
-specular_setup,"Specular Setup"
-specular_smoothness_overlay,"Specular Smoothness Overlay"
-steam_library,"Steam Library"
-target_another_bone_naming_standard_when_exporting_requires_standard_bone_names,"Target another bone naming standard when exporting. Requires standard bone names"
-the_angle_reproject_uses_when_unwrapping_larger_angles_yield_less_islands_but_more_stretching_and_smaller_does_opposite,"The angle Reproject uses when unwrapping. Larger angles yield less islands but more stretching and smaller does opposite"
-this_option_will_detect_any_meshes_weighted_to_a_single_bone_and_create_a_prop_bone_you_can_independently_scale_to_,"This option will detect any meshes weighted to a single bone and create a 'prop' bone you can independently scale to 0."
-translate_bone_names,"Translate bone names"
-unwrap_angle,"Unwrap Angle"
-what_to_pack_to_the_alpha_channel_of_specularity,"What to pack to the Alpha channel of Specularity"
-when_selected_currently_active_shape_keys_will_be_applied_to_the_basis_this_is_extremely_beneficial_to_performance_if_your_avatar_is_intended_to_default_to_one_shapekey_mix_as_having_active_shapekeys_all_the_time_is_expensive_keys_ending_in_bake_are_always_applied_to_the_basis_and_removed_completely_regardless_of_this_option,"When selected, currently active shape keys will be applied to the basis. This is extremely beneficial to performance if your avatar is intended to 'default' to one shapekey"
-mix," as having active shapekeys all the time is expensive. Keys ending in '_bake' are always applied to the basis and removed completely, regardless of this option."
-while_not_technically_accurate_this_avoids_the_shine_effect_on_obscured_portions_of_your_model,"While not technically accurate, this avoids the 'shine effect' on obscured portions of your model"
-will_show_extra_options_related_to_applicable_bones_and_texture_packing_setups,"Will show extra options related to applicable bones and texture packing setups."
-will_show_extra_options_related_to_which_bake_passes_are_performed_and_how,"Will show extra options related to which bake passes are performed and how."
+",,,选择你要安装的版本
+bpy.types.Scene.cats_update_action.label,Choose action,アクションを選択,액션 선택,选择行动
+bpy.types.Scene.cats_update_action.desc,Action,,,行动
+bpy.types.Scene.cats_update_action.update.label,Update Now,今すぐアップデート,지금 업데이트,现在更新
+bpy.types.Scene.cats_update_action.update.desc,Updates now to the latest version,,,现在更新到最新版本
+bpy.types.Scene.cats_update_action.ignore.label,Ignore this version,このバージョンを無視,이 버전은 무시하기,忽略这个版本
+bpy.types.Scene.cats_update_action.ignore.desc,This ignores this version. You will be reminded again when the next version releases,,,这忽略了这个版本。 下一个版本发布时会再次提醒您
+bpy.types.Scene.cats_update_action.defer.label,Remind me later,後で通知する,나중에 다시보기,稍后提醒我
+bpy.types.Scene.cats_update_action.defer.desc,Hides the update notification til the next Blender restart,,,隐藏更新通知，直到下次 Blender 重新启动
+apply_current_shapekey_mix,Apply current shapekey mix,,,应用当前 shapekey 组合
+bake_device,Bake Device,,,烘烤装置
+bake_projected_light,Bake projected light,,,烘焙投射光
+bake_the_effect_of_emission_on_nearby_surfaces_results_in_much_more_realistic_lighting_effects_but_can_animate_less_well,"Bake the effect of emission on nearby surfaces. Results in much more realistic lighting effects, but can animate less well.",,,在附近的表面上烘焙发射效果。 产生更逼真的照明效果，但动画效果较差。
+bake_to_vertex_colors,Bake to vertex colors,,,烘焙到顶点颜色
+bakes_the_effect_of_any_eye_glow_onto_surrounding_objects_but_not_viceversa_improves_animation_when_eyes_are_moving_around,"Bakes the effect of any eye glow onto surrounding objects, but not vice-versa. Improves animation when eyes are moving around..",,,将任何眼睛发光的效果烘焙到周围的物体上，但反之则不行。 改善眼睛四处移动时的动画效果。
+blends_emission_into_the_diffuse_map_for_engines_without_a_seperate_emission_map,"Blends emission into the diffuse map, for engines without a seperate emission map",,,将排放混合到漫反射贴图中，用于没有单独排放贴图的引擎
+cleanup_shapekeys,Cleanup Shapekeys,,,清理 Shapekeys
+convert_diffuse_and_metallic_to_premultiplied_diffuse_and_specular_compatible_with_older_engines,Convert Diffuse and Metallic to premultiplied Diffuse and Specular. Compatible with older engines,,,将漫反射和金属转换为预乘漫反射和镜面反射。 与旧引擎兼容
+denoise_renders,Denoise renders,,,降噪渲染
+denoise_the_resulting_image_after_emitao_reccomended_as_this_will_reduce_the_grainy_quality_of_inexpensive_rendering,Denoise the resulting image after emit/AO. Reccomended as this will reduce the 'grainy' quality of inexpensive rendering..,,,"在发射/AO 之后对生成的图像进行去噪。 推荐，因为这会降低廉价渲染的""颗粒状""质量。"
+device_to_bake_on_gpu_gives_a_significant_speedup_but_can_cause_issues_depending_on_your_graphics_drivers,"Device to bake on. GPU gives a significant speedup, but can cause issues depending on your graphics drivers.",,,要烘烤的设备。 GPU 提供了显着的加速，但根据您的图形驱动程序可能会导致问题。
+diffuse_emission_overlay,Diffuse Emission Overlay,,,漫反射叠加
+exclude_eyes,Exclude eyes,,,排除眼睛
+experimental_try_to_keep_uvps_lock_overlapping_enabled,Experimental. Try to keep UVP's lock overlapping enabled,,,实验性的。 尝试保持启用 UVP 的锁定重叠
+export_format,Export format,,,导出格式
+for_source_engine_only_provides_diffuse_lighting_reflections_for_nonmetallic_objects,For Source engine only. Provides diffuse lighting reflections for nonmetallic objects.,,,仅适用于 Source 引擎。 为非金属物体提供漫反射照明。
+generate_an_additional_lod_used_for_simplified_physics_interactions,Generate an additional LOD used for simplified physics interactions,,,生成用于简化物理交互的附加 LOD
+generate_courser_decimation_levels_for_efficient_rendering,Generate courser decimation levels for efficient rendering.,,,生成更粗的抽取级别以实现高效渲染。
+generate_lods,Generate LODs,,,生成 LOD
+generate_physics_model,Generate Physics Model,,,生成物理模型
+generate_the_twistbones_on_the_upper_half_of_the_bone_usually_used_for_upper_legs,Generate the twistbones on the upper half of the bone. Usually used for upper legs.,,,在骨骼的上半部分生成扭曲骨骼。 通常用于大腿。
+generate_upperhalf,Generate Upperhalf,,,生成上半部分
+gmod_model_name,Gmod Model Name,,,Gmod 模型名称
+ignore_currently_hidden_objects_when_copying,Ignore currently hidden objects when copying,,,复制时忽略当前隐藏的对象
+ignore_hidden_objects,Ignore hidden objects,,,忽略隐藏的对象
+image_export_format,Image export format,,,图像导出格式
+image_type_to_use_when_exporting,image type to use when exporting,,,导出时使用的图像类型
+invert_green_channel,Invert green channel,,,反转绿色通道
+keep_merged_bones,Keep Merged Bones,,,保留合并的骨骼
+keep_overlapping_islands_uvp,Keep Overlapping Islands (UVP),,,保持重叠岛屿 (UVP)
+lod_generation_levels_as_a_percent_of_the_max_tris,"LOD generation levels, as a percent of the max tris",,,LOD 生成级别，作为最大 tris 的百分比
+lods,LODs,,,
+max_bones_per_prop,Max Bones Per Prop,,,每个道具的最大骨骼数
+maximum_bones_a_prop_can_be_attached_to_to_be_considered_a_prop_more_will_create_more_toggleable_props_but_increase_armature_complexity,"Maximum bones a prop can be attached to to be considered a prop. More will create more toggleable props, but increase armature complexity.",,,道具可以附加到的最大骨骼被视为道具。 更多将创建更多可切换的道具，但会增加骨架复杂性。
+merge_any_bone_with_twist_in_the_name_useful_as_quest_does_not_support_constraints,Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints.,,,"合并名称中带有""Twist""的任何骨骼。 有用，因为 Quest 不支持约束。"
+merge_twist_bones,Merge Twist Bones,,,合并扭曲骨骼
+merge_visible_meshes_only,Merge Visible Meshes Only,,,仅合并可见网格
+merges_smoothness_into_the_specular_map_for_engines_without_a_seperate_smoothness_map,"Merges smoothness into the specular map, for engines without a seperate smoothness map",,,将平滑度合并到高光贴图中，用于没有单独平滑度贴图的引擎
+model_format_to_use_when_exporting,Model format to use when exporting,,,导出时使用的模型格式
+name,Name,,,
+normal_alpha_pack,Normal Alpha Pack,,,普通 Alpha 包
+optimize_solid_materials,Optimize Solid Materials,,,优化固体材料
+optimize_static_shapekeys,Optimize Static Shapekeys,,,优化静态 Shapekeys
+optimizes_solid_materials_by_making_a_small_area_for_them_ao_pass_will_nullify,Optimizes solid materials by making a small area for them. AO pass will nullify,,,通过为固体材料制作小面积来优化固体材料。 AO 通行证将失效
+pack_ambient_occlusion_to_the_green_channel_saves_a_texture_as_unity_uses_g_for_ao_r_for_metallic,"Pack Ambient Occlusion to the Green channel. Saves a texture as Unity uses G for AO, R for Metallic.",,,将 Ambient Occlusion 打包到绿色通道。 保存纹理，因为 Unity 使用 G 表示 AO，R 表示金属。
+pack_ao_to_metallic_green,Pack AO to Metallic Green,,,将 AO 包装成金属绿
+phong_setup_source,Phong Setup (Source),,,
+physmodel_percent,Physmodel Percent,,,
+premultiply_diffuse_w_ao,Premultiply Diffuse w/ AO,,,
+premultiply_smoothness_w_ao,Premultiply Smoothness w/ AO,,,
+prop_bones_max_influence_count,Prop bones Max Influence Count,,,
+prop_bones_max_influence_count,Prop bones Max Influence Count,,,
+rebake_to_vertex_colors_after_initial_bake_avoids_an_entire_extra_texture_if_your_colors_are_simple_enough_incorperates_ao,"Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO.",,,初始烘焙后重新烘焙到顶点颜色。 如果您的颜色足够简单，可以避免整个额外的纹理。 包含AO。
+remove_backup_shapekeys_in_the_final_result_eg_key__reverted_or_blinkold,"Remove backup shapekeys in the final result, e.g. 'Key1 - Reverted' or 'blink_old'",,,在最终结果中删除备份 shapekey，例如 'Key1 - Reverted' 或 'blink_old'
+select_this_to_keep_the_bones_after_merging_them_to_their_parents_or_to_the_active_bone,Select this to keep the bones after merging them to their parents or to the active bone,,,选择此项以在将骨骼合并到其父级或活动骨骼后保留骨骼
+select_this_to_only_merge_the_weights_of_the_visible_meshes,Select this to only merge the weights of the visible meshes,,,选择此项仅合并可见网格的权重
+seperate_vertices_unaffected_by_shape_keys_into_their_own_mesh_this_adds_a_drawcall_but_comes_with_a_significant_gpu_cost_savings_especially_on_mobile,"Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile.",,,将不受形状键影响的顶点分离到它们自己的网格中。 这增加了一次绘图调用，但显着节省了 GPU 成本，尤其是在移动设备上。
+sharpen_bakes,Sharpen bakes,,,
+sharpen_resampled_images_after_baking_diffusesmoothnessmetallic_reccomended_as_any_sampling_will_cause_blur,Sharpen resampled images after baking diffuse/smoothness/metallic. Reccomended as any sampling will cause blur.,,,烘焙漫反射/平滑/金属后锐化重新采样的图像。 推荐，因为任何采样都会导致模糊。
+show_advanced_general_options,Show Advanced General Options,,,显示高级常规选项
+show_advanced_platform_options,Show Advanced Platform Options,,,显示高级平台选项
+source_engine_uses_an_inverse_green_channel_this_fixes_that_on_export,"Source engine uses an inverse green channel, this fixes that on export",,,源引擎使用反向绿色通道，这修复了导出时的问题
+specular_alpha_channel,Specular Alpha Channel,,,
+specular_setup,Specular Setup,,,
+specular_smoothness_overlay,Specular Smoothness Overlay,,,
+steam_library,Steam Library,,,
+target_another_bone_naming_standard_when_exporting_requires_standard_bone_names,Target another bone naming standard when exporting. Requires standard bone names,,,导出时以另一个骨骼命名标准为目标。 需要标准骨骼名称
+the_angle_reproject_uses_when_unwrapping_larger_angles_yield_less_islands_but_more_stretching_and_smaller_does_opposite,The angle Reproject uses when unwrapping. Larger angles yield less islands but more stretching and smaller does opposite,,,展开时 Reproject 使用的角度。 更大的角度产生更少的岛屿，但更多的拉伸和更小的相反
+this_option_will_detect_any_meshes_weighted_to_a_single_bone_and_create_a_prop_bone_you_can_independently_scale_to_,This option will detect any meshes weighted to a single bone and create a 'prop' bone you can independently scale to 0.,,,"此选项将检测任何加权到单个骨骼的网格并创建一个可以独立缩放到 0 的""道具""骨骼。"
+translate_bone_names,Translate bone names,,,
+unwrap_angle,Unwrap Angle,,,
+what_to_pack_to_the_alpha_channel_of_specularity,What to pack to the Alpha channel of Specularity,,,将什么打包到 Specularity 的 Alpha 通道
+when_selected_currently_active_shape_keys_will_be_applied_to_the_basis_this_is_extremely_beneficial_to_performance_if_your_avatar_is_intended_to_default_to_one_shapekey_mix_as_having_active_shapekeys_all_the_time_is_expensive_keys_ending_in_bake_are_always_applied_to_the_basis_and_removed_completely_regardless_of_this_option,"When selected, currently active shape keys will be applied to the basis. This is extremely beneficial to performance if your avatar is intended to 'default' to one shapekey",,,"选中后，当前活动的形状键将应用于基础。 如果您的头像打算""默认""为一个 shapekey，这对性能非常有利"
+mix," as having active shapekeys all the time is expensive. Keys ending in '_bake' are always applied to the basis and removed completely, regardless of this option.",,,"因为一直有活动的 shapekey 是很昂贵的。 无论此选项如何，以""_bake""结尾的键始终应用于基础并完全删除。"
+while_not_technically_accurate_this_avoids_the_shine_effect_on_obscured_portions_of_your_model,"While not technically accurate, this avoids the 'shine effect' on obscured portions of your model",,,"虽然技术上不准确，但这避免了模型模糊部分的""光泽效应"""
+will_show_extra_options_related_to_applicable_bones_and_texture_packing_setups,Will show extra options related to applicable bones and texture packing setups.,,,将显示与适用的骨骼和纹理打包设置相关的额外选项。
+will_show_extra_options_related_to_which_bake_passes_are_performed_and_how,Will show extra options related to which bake passes are performed and how.,,,将显示与执行哪些烘焙通道以及如何执行相关的额外选项。
