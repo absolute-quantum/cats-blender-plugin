@@ -1667,7 +1667,7 @@ class ShowError(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * dpi_scale)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * dpi_scale))
 
     def draw(self, context):
         if not error or len(error) == 0:

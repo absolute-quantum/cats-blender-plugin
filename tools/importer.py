@@ -44,6 +44,7 @@ from .translations import t
 mmd_tools_installed = False
 try:
     import mmd_tools_local
+
     mmd_tools_installed = True
 except:
     pass
@@ -72,7 +73,8 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
     files = bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
     directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
 
-    filter_glob = bpy.props.StringProperty(default=formats_279 if version_2_79_or_older() else formats, options={'HIDDEN'})
+    filter_glob = bpy.props.StringProperty(default=formats_279 if version_2_79_or_older() else formats,
+                                           options={'HIDDEN'})
     text1 = bpy.props.BoolProperty(
         name=t('ImportAnyModel.importantInfo.label'),
         description=t('ImportAnyModel.importantInfo.desc'),
@@ -207,8 +209,10 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
                 bpy.ops.cats_importer.install_vrm('INVOKE_DEFAULT')
                 return
 
-            post_import_armatures = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_armatures]
-            post_import_meshes = [obj for obj in bpy.data.objects if obj.type == 'MESH' and obj not in pre_import_meshes]
+            post_import_armatures = [obj for obj in bpy.data.objects if
+                                     obj.type == 'ARMATURE' and obj not in pre_import_armatures]
+            post_import_meshes = [obj for obj in bpy.data.objects if
+                                  obj.type == 'MESH' and obj not in pre_import_meshes]
 
             if len(post_import_armatures) != 1:
                 return
@@ -288,7 +292,8 @@ def fix_bone_orientations(armature):
 
 
 def fix_armatures_post_import(pre_import_objects):
-    arm_added_during_import = [obj for obj in bpy.data.objects if obj.type == 'ARMATURE' and obj not in pre_import_objects]
+    arm_added_during_import = [obj for obj in bpy.data.objects if
+                               obj.type == 'ARMATURE' and obj not in pre_import_objects]
     for armature in arm_added_during_import:
         print('Added: ', armature.name)
         bpy.context.scene.armature = armature.name
@@ -324,7 +329,7 @@ class ZipPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 6))
 
     def check(self, context):
         # Important for changing options
@@ -391,7 +396,7 @@ class ModelsPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 3)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 3))
 
     def check(self, context):
         # Important for changing options
@@ -555,7 +560,7 @@ class InstallXPS(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4.5))
 
     def check(self, context):
         # Important for changing options
@@ -592,7 +597,7 @@ class InstallSource(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4.5))
 
     def check(self, context):
         # Important for changing options
@@ -629,7 +634,7 @@ class InstallVRM(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4.5))
 
     def check(self, context):
         # Important for changing options
@@ -665,7 +670,7 @@ class EnableMMD(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 4))
 
     def check(self, context):
         # Important for changing options
@@ -875,7 +880,7 @@ class ExportModel(bpy.types.Operator):
                     or _tris_count > max_tris \
                     or len(_mat_list) > max_mats \
                     or len(_broken_shapes) > 0 \
-                    or not _textures_found and Settings.get_embed_textures()\
+                    or not _textures_found and Settings.get_embed_textures() \
                     or len(_eye_meshes_not_named_body) > 0:
                 bpy.ops.cats_importer.display_error('INVOKE_DEFAULT')
                 return {'FINISHED'}
@@ -963,7 +968,7 @@ class ErrorDisplay(bpy.types.Operator):
         self.eye_meshes_not_named_body = _eye_meshes_not_named_body
 
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 6.1)
+        return context.window_manager.invoke_props_dialog(self, width=int(dpi_value * 6.1))
 
     def check(self, context):
         # Important for changing options
@@ -1051,7 +1056,8 @@ class ErrorDisplay(bpy.types.Operator):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 1
-            row.operator(armature_manual.JoinMeshes.bl_idname, text=t('ErrorDisplay.JoinMeshes.label'), icon='AUTOMERGE_ON')
+            row.operator(armature_manual.JoinMeshes.bl_idname, text=t('ErrorDisplay.JoinMeshes.label'),
+                         icon='AUTOMERGE_ON')
             col.separator()
             col.separator()
             col.separator()
@@ -1113,7 +1119,7 @@ class ErrorDisplay(bpy.types.Operator):
             row.label(text=t('ErrorDisplay.eyes2', naéme=self.eye_meshes_not_named_body[0]))
             row = col.row(align=True)
             row.scale_y = 0.75
-            row.label(text=t( 'ErrorDisplay.eyes3'))
+            row.label(text=t('ErrorDisplay.eyes3'))
             col.separator()
             col.separator()
             col.separator()
