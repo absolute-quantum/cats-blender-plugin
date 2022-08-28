@@ -1435,19 +1435,15 @@ class BakeButton(bpy.types.Operator):
                 # If conditions are met, move eyes up by 25m (so they don't get shadows)
                 if displace_eyes:
                     # Add modifiers that prevent LeftEye and RightEye being baked
-                    for obj in get_objects(collection.all_objects):
-                        if obj.type == "MESH" and "LeftEye" in obj.vertex_groups:
-                            leyemask = obj.modifiers.new(type='DISPLACE', name="leyemask")
-                            leyemask.vertex_group = "LeftEye"
-                            leyemask.direction = 'Z'
-                            leyemask.strength = 25
-                            leyemask.mid_level = 0
-                        if obj.type == "MESH" and "RightEye" in obj.vertex_groups:
-                            reyemask = obj.modifiers.new(type='DISPLACE', name="reyemask")
-                            reyemask.vertex_group = "RightEye"
-                            reyemask.direction = 'Z'
-                            reyemask.strength = 25
-                            reyemask.mid_level = 0
+                    for obj in get_objects(collection.all_objects, {"MESH"}):
+                        for group in ['LeftEye', 'lefteye', 'Lefteye', 'Eye.L', "Eye_L",
+                                      'RightEye', 'righteye', 'Righteye', 'Eye.R', "Eye_R"]:
+                            if group in obj.vertex_groups:
+                                bakeeyemask = obj.modifiers.new(type='DISPLACE', name="bakeeyemask")
+                                bakeeyemask.vertex_group = group
+                                bakeeyemask.direction = 'Z'
+                                bakeeyemask.strength = 25
+                                bakeeyemask.mid_level = 0
 
                 if desired_inputs is not None:
                     self.genericize_bsdfs(get_objects(collection.all_objects, {"MESH"}),
@@ -1462,10 +1458,9 @@ class BakeButton(bpy.types.Operator):
 
                 if displace_eyes:
                     for obj in get_objects(collection.all_objects):
-                        if "leyemask" in obj.modifiers:
-                            obj.modifiers.remove(obj.modifiers['leyemask'])
-                        if "reyemask" in obj.modifiers:
-                            obj.modifiers.remove(obj.modifiers['reyemask'])
+                        for modifier_name in [mod.name for mod in obj.modifiers]:
+                            if 'bakeeyemask' in modifier_name:
+                                obj.modifiers.remove(obj.modifiers[modifier_name])
 
                 if denoise_bakes:
                     self.filter_image(context, "SCRIPT_" + bake_name + ".png", BakeButton.denoise_create
