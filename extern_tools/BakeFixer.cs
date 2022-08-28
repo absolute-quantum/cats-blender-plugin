@@ -1,3 +1,5 @@
+#if !BAKEFIXER_{IFDEFNAME}
+#define BAKEFIXER_{IFDEFNAME}
 #if UNITY_EDITOR
 using System.Text;
 using System.Threading;
@@ -8,12 +10,12 @@ using System;
 using System.IO;
 
 [InitializeOnLoad]
-public class BakeFixer : ScriptableObject
+public class BakeFixer_{BODYNAME} : ScriptableObject
 {
-    static BakeFixer()
+    static BakeFixer_{BODYNAME}()
     {
         EditorApplication.hierarchyChanged += Update;
-        Debug.Log("BakeFixer loaded");
+        Debug.Log("BakeFixer loaded for {BODYNAME}");
     }
 
     static void Update()
@@ -23,15 +25,15 @@ public class BakeFixer : ScriptableObject
         var game_obj = scene.GetRootGameObjects();
         foreach (var obj in game_obj)
         {
-            // For each armature on the scene who owns "Armature", "Static" and "Body",
+            // For each armature on the scene who owns "{ARMATURENAME}", "Static" and "{BODYNAME}",
             // get their SkinnedMeshRenderer components and edit the anchor point
-            if (obj.transform.Find("Armature") != null &&
-                    obj.transform.Find("Body") != null &&
+            if (obj.transform.Find("{ARMATURENAME}") != null &&
+                    obj.transform.Find("{BODYNAME}") != null &&
                     obj.transform.Find("Static") != null)
             {
-                var body = obj.transform.Find("Body");
+                var body = obj.transform.Find("{BODYNAME}");
                 var stat = obj.transform.Find("Static");
-                var arm = obj.transform.Find("Armature");
+                var arm = obj.transform.Find("{ARMATURENAME}");
                 var smr_body = (SkinnedMeshRenderer)body.GetComponent(typeof(SkinnedMeshRenderer));
                 var smr_stat = (SkinnedMeshRenderer)stat.GetComponent(typeof(SkinnedMeshRenderer));
 
@@ -43,8 +45,9 @@ public class BakeFixer : ScriptableObject
                     smr_body.probeAnchor = hips;
                     smr_stat.probeAnchor = hips;
                 }
-            }	
+            }
         }
     }
 }
-#endif
+#endif // UNITY_EDITOR
+#endif // BAKEFIXER_{BODYNAME}

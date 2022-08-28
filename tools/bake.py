@@ -715,7 +715,7 @@ class BakeButton(bpy.types.Operator):
         # copy ob
         copy = ob.copy()
         if not 'catsForcedExportName' in ob:
-            copy['catsForcedExportName'] = ob.name
+            copy['catsForcedExportName'] = ob.name[:-4] if ob.name[-4] == '.' else ob.name
         else:
             copy['catsForcedExportName'] = ob['catsForcedExportName']
         copy.data = ob.data.copy()
@@ -900,6 +900,8 @@ class BakeButton(bpy.types.Operator):
                                                    not Common.is_hidden(obj)),
             key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
             reverse=True)[0].name
+        if orig_largest_obj_name[-4] == '.':
+            orig_largest_obj_name = orig_largest_obj_name[:-4]
 
         # Tree-copy all meshes - exclude copy-only, and copy them just before export
         arm_copy = self.tree_copy(armature, None, collection, ignore_hidden,
@@ -1665,7 +1667,7 @@ class BakeButton(bpy.types.Operator):
                     if len(found_vertex_groups) == 0:
                         continue
 
-                    orig_obj_name = obj['catsForcedExportName']
+                    orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
                     vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
                     for vgp in found_vertex_groups:
                         vgroup_name = vgroup_lookup[vgp]
@@ -2289,7 +2291,9 @@ class BakeButton(bpy.types.Operator):
                 with open(os.path.dirname(os.path.abspath(__file__)) + "/../extern_tools/BakeFixer.cs", 'r') as infile:
                     with open(bpy.path.abspath("//CATS Bake/" + platform_name + "/") + "BakeFixer.cs", 'w') as outfile:
                         for line in infile:
-                            outfile.write(line)
+                            outfile.write(line.replace("{BODYNAME}", orig_largest_obj_name)
+                                          .replace("{IFDEFNAME}", orig_largest_obj_name.upper().replace(" ", "_"))
+                                          .replace("{ARMATURENAME}", plat_arm_copy['catsForcedExportName']))
             # Delete our duplicate scene
             bpy.ops.scene.delete()
 
