@@ -2184,7 +2184,7 @@ class BakeButton(bpy.types.Operator):
 
             # Remove all materials for export - blender will try to embed materials but it doesn't work with our setup
             #exception is Gmod because Gmod needs textures to be applied to work - @989onan
-            if export_format not in ["GMOD"]:
+            if export_format not in ["GMOD"] and copy_only_handling != "COPY":
                 for obj in get_objects(plat_collection.all_objects):
                     if obj.type == 'MESH':
                         context.view_layer.objects.active = obj
@@ -2231,8 +2231,10 @@ class BakeButton(bpy.types.Operator):
                     obj.select_set(True)
 
                 # Join to save on skinned mesh renderers
-                # Not quite working with export yet!
-                # Common.join_meshes(armature_name=plat_arm_copy.name, repair_shape_keys=False, mode=1)
+                Common.join_meshes(armature_name=plat_arm_copy.name, repair_shape_keys=False, mode=1)
+                for obj in get_objects(Common.get_children_recursive(plat_arm_copy), {"MESH"},
+                                       filter_func=lambda obj: obj['catsForcedExportName'] != "Static"):
+                    obj['catsForcedExportName'] = orig_largest_obj_name
 
             # Prep export group 1
             export_groups[0][1].extend(obj.name for obj in Common.get_children_recursive(plat_arm_copy))
