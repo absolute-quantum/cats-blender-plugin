@@ -403,9 +403,10 @@ class TestAddon(unittest.TestCase):
         bpy.context.scene.cats_is_unittest = True
         bpy.ops.cats_bake.preset_all()
         bpy.context.scene.bake_pass_displacement = False
+        test_name = bpy.path.basename(bpy.context.blend_data.filepath)
 
         bpy.context.scene.bake_resolution = 256
-        if 'bake.eyetest.blend' == bpy.path.basename(bpy.context.blend_data.filepath):
+        if 'bake.eyetest.blend' == test_name:
             bpy.context.scene.bake_uv_overlap_correction = 'NONE'
         # TODO: presently, all filter_image passes save to disk as an intermediate step, which
         # can introduce an error of +/- 1 value. We should save to a better intermediate format
@@ -415,8 +416,8 @@ class TestAddon(unittest.TestCase):
             result = bpy.ops.cats_bake.bake()
 
             # take a random sampling of each image result, confirm it's what we expect
-            self.assertTrue(bpy.path.basename(bpy.context.blend_data.filepath) in sampling_lookup)
-            for (bakename, cases) in sampling_lookup[bpy.path.basename(bpy.context.blend_data.filepath)].items():
+            self.assertTrue(test_name in sampling_lookup)
+            for (bakename, cases) in sampling_lookup[test_name].items():
                 self.assertTrue(bakename in bpy.data.images, bakename)
                 for (coordinate, color) in cases.items():
                     pxoffset = (coordinate[0] + (coordinate[1] * 256 )) * 4
@@ -435,6 +436,27 @@ class TestAddon(unittest.TestCase):
                             # Wide margins, since sharpening actually does change it (on purpose)
                             self.assertTrue(color[i] - 40 <= foundcolor[i] <= color[i] + 40,
                                             "{} != {} ({})".format(color, foundcolor, foundraw))
+            test_collection_names = {
+                'bake.bakematerialtest.blend': [
+                    'CATS Bake Second Life',
+                    'CATS Bake VRChat Desktop Excellent',
+                    'CATS Bake VRChat Desktop Good',
+                    'CATS Bake VRChat Quest Excellent',
+                    'CATS Bake VRChat Quest Good',
+                    'CATS Bake VRChat Quest Medium',
+                    'Collection',
+                ],
+                'bake.eyetest.blend': [
+                    'CATS Bake Second Life',
+                    'CATS Bake VRChat Desktop Excellent',
+                    'CATS Bake VRChat Desktop Good',
+                    'CATS Bake VRChat Quest Excellent',
+                    'CATS Bake VRChat Quest Good',
+                    'CATS Bake VRChat Quest Medium',
+                    'Collection',
+                ]
+            }
+            self.assertEqual([o.name for o in bpy.data.collections], test_collection_names[test_name])
             self.reset_stage()
         # TODO: test each of:
         # Scene.bake_cleanup_shapekeys = BoolProperty(
@@ -445,6 +467,21 @@ class TestAddon(unittest.TestCase):
         # Scene.bake_normal_apply_trans = BoolProperty(
         # Scene.bake_uv_overlap_correction = EnumProperty(
         # Scene.bake_generate_uvmap = BoolProperty(
+        test_object_names = {
+            'bake.bakematerialtest.blend': [
+                'Armature',
+                'Cube',
+                'Cube.001'
+            ],
+            'bake.eyetest.blend': [
+                'Armature',
+                'CubeHead',
+                'CubeHips',
+                'CubeLeftEye',
+                'CubeRightEye'
+            ]
+        }
+        self.assertEqual([o.name for o in bpy.data.objects], test_object_names[test_name])
 
         # TODO: custom normal tests
         self.assertTrue(result == {'FINISHED'})
