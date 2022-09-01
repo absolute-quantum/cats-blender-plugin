@@ -693,7 +693,7 @@ class BakeButton(bpy.types.Operator):
         # copy ob
         copy = ob.copy()
         if not 'catsForcedExportName' in ob:
-            copy['catsForcedExportName'] = ob.name[:-4] if ob.name[-4] == '.' else ob.name
+            copy['catsForcedExportName'] = ob.name[:-4] if len(ob.name) >= 4 and ob.name[-4] == '.' else ob.name
         else:
             copy['catsForcedExportName'] = ob['catsForcedExportName']
         copy.data = ob.data.copy()
@@ -882,7 +882,7 @@ class BakeButton(bpy.types.Operator):
                                                    not Common.is_hidden(obj)),
             key=lambda obj: obj.dimensions.x * obj.dimensions.y * obj.dimensions.z,
             reverse=True)[0].name
-        if orig_largest_obj_name[-4] == '.':
+        if len(orig_largest_obj_name) >= 4 and orig_largest_obj_name[-4] == '.':
             orig_largest_obj_name = orig_largest_obj_name[:-4]
 
         # Tree-copy all meshes - exclude copy-only, and copy them just before export
@@ -1644,7 +1644,7 @@ class BakeButton(bpy.types.Operator):
                     if len(found_vertex_groups) == 0:
                         continue
 
-                    orig_obj_name = obj.name[:-4] if obj.name[-4] == '.' else obj.name
+                    orig_obj_name = obj.name[:-4] if len(obj.name) >= 4 and obj.name[-4] == '.' else obj.name
                     vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
                     for vgp in found_vertex_groups:
                         vgroup_name = vgroup_lookup[vgp]
