@@ -29,7 +29,7 @@
 import bpy
 import copy
 import math
-import platform
+import numpy as np
 from mathutils import Matrix
 
 from . import common as Common
@@ -391,6 +391,8 @@ class FixArmature(bpy.types.Operator):
         else:
             meshes = Common.get_meshes_objects()
 
+        # Track how many uv coordinate components we fix
+        fixed_uv_coords = 0
         for mesh in meshes:
             Common.unselect_all()
             Common.set_active(mesh)
@@ -424,20 +426,24 @@ class FixArmature(bpy.types.Operator):
 
                 Common.sort_shape_keys(mesh.name, shapekey_order)
 
-
-            # Clean material names. Combining mats would do this too
-            Common.clean_material_names(mesh)
+            if not context.scene.combine_mats:
+                # Clean material names. Combining mats would do this too
+                Common.clean_material_names(mesh)
 
             # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
             if version_2_79_or_older():
                 all_transparent = True
                 for mat_slot in mesh.material_slots:
-                    mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
-                    if mat_slot.material.alpha > 0:
-                        all_transparent = False
+                    mat = mat_slot.material
+                    if mat:
+                        mat.transparency_method = 'Z_TRANSPARENCY'
+                        if mat.alpha > 0:
+                            all_transparent = False
                 if all_transparent:
                     for mat_slot in mesh.material_slots:
-                        mat_slot.material.alpha = 1
+                        mat = mat_slot.material
+                        if mat:
+                            mat.alpha = 1
             else:
                 if context.scene.fix_materials:
                     # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
@@ -445,19 +451,14 @@ class FixArmature(bpy.types.Operator):
                     if mmd_tools_installed:
                         Common.fix_mmd_shader(mesh)
                     Common.fix_vrm_shader(mesh)
-                    Common.add_principled_shader(mesh)
                     for mat_slot in mesh.material_slots:  # Fix transparency per polygon and general garbage look in blender. Asthetic purposes to fix user complaints.
-                        mat_slot.material.shadow_method = "HASHED"
-                        mat_slot.material.blend_method = "HASHED"
+                        mat = mat_slot.material
+                        mat.shadow_method = "HASHED"
+                        mat.blend_method = "HASHED"
 
-			# Remove empty shape keys and then save the shape key order
+            # Remove empty shape keys and then save the shape key order
             Common.clean_shapekeys(mesh)
             Common.save_shapekey_order(mesh.name)
-
-            # Combines same materials
-            if context.scene.combine_mats:
-                bpy.ops.cats_material.combine_mats()
-
 
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)
@@ -468,15 +469,38 @@ class FixArmature(bpy.types.Operator):
                     shapekey.name = Translate.fix_jp_chars(shapekey.name)
 
             # Fix faulty UV coordinates
-            fixed_uv_coords = 0
-            for uv in mesh.data.uv_layers:
-                for vert in range(len(uv.data) - 1):
-                    if math.isnan(uv.data[vert].uv.x):
-                        uv.data[vert].uv.x = 0
-                        fixed_uv_coords += 1
-                    if math.isnan(uv.data[vert].uv.y):
-                        uv.data[vert].uv.y = 0
-                        fixed_uv_coords += 1
+            uvs = np.empty(len(mesh.data.loops) * 2, dtype=np.single)
+            uvs_is_non_finite = np.empty(uvs.shape, dtype=bool)
+            for uv_layer in mesh.data.uv_layers:
+                uv_layer.data.foreach_get('uv', uvs)
+                # Get mask of all uvs components that are finite (not Nan and not +/- infinity) and temporarily store
+                # them in uvs_is_non_finite
+                np.isfinite(uvs, out=uvs_is_non_finite)
+                # Invert uvs_is_non_finite so that it is now correctly a mask of all uv components that are non-finite
+                # (NaN or +/- infinity)
+                np.invert(uvs_is_non_finite, out=uvs_is_non_finite)
+
+                # Count how many non-finite uv components there are
+                num_non_finite = np.count_nonzero(uvs_is_non_finite)
+                if num_non_finite > 0:
+                    fixed_uv_coords += num_non_finite
+                    # Fix the non-finite uv components by setting them to zero
+                    uvs[uvs_is_non_finite] = 0
+                    # Update the uvs with the fixed values
+                    uv_layer.data.foreach_set('uv', uvs)
+
+        # Combines same materials
+        # combine_mats runs on all meshes in Common.get_meshes_objects() and gathers material hashes of all the
+        # materials of those meshes before combining, so it must be run after we have fixed all the materials.
+        if context.scene.combine_mats:
+            bpy.ops.cats_material.combine_mats()
+
+        # Adding principled shader to materials must happen after same materials have been combined, otherwise
+        # mmd_shader materials that are considered duplicates will have their same diffuse and ambient colors baked
+        # to different images, making the materials no longer be considered duplicates.
+        if not version_2_79_or_older() and context.scene.fix_materials:
+            for mesh in meshes:
+                Common.add_principled_shader(mesh)
 
         # Translate bones and unhide them all
         to_translate = []

@@ -918,15 +918,16 @@ class ExportGmodPlayermodel(bpy.types.Operator):
             objname = obj.name
             if bpy.data.objects[objname].type == "MESH":
                 print("lowercasing material name for gmod for object "+objname)
-                for material in bpy.data.objects[objname].material_slots:
-                    mat = material.material
-                    sanitized_material_name = ""
-                    for i in mat.name.lower():
-                        if i.isalnum() or i == "_":
-                            sanitized_material_name += i
-                        else:
-                            sanitized_material_name += "_"
-                    mat.name = sanitized_material_name
+                for mat_slot in bpy.data.objects[objname].material_slots:
+                    mat = mat_slot.material
+                    if mat:
+                        sanitized_material_name = ""
+                        for i in mat.name.lower():
+                            if i.isalnum() or i == "_":
+                                sanitized_material_name += i
+                            else:
+                                sanitized_material_name += "_"
+                        mat.name = sanitized_material_name
         
         
         print("zeroing transforms and then scaling to gmod scale, then applying transforms.")
