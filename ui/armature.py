@@ -41,7 +41,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
             col.separator()
             col.separator()
 
-        if bpy.app.version > (3, 2, 99):
+        if bpy.app.version > (3, 3, 99):
             col.separator()
             row = col.row(align=True)
             row.scale_y = 0.75
@@ -169,12 +169,29 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
         split = col.row(align=True)
         row = split.row(align=True)
         row.scale_y = 1.5
-        row.operator(Armature.FixArmature.bl_idname, icon=globs.ICON_FIX_MODEL)
-        row = split.row(align=True)
-        row.alignment = 'RIGHT'
-        row.scale_y = 1.5
-        row.operator(ModelSettings.bl_idname, text="", icon='MODIFIER')
 
+        col.row(align=True).operator(ModelSettings.bl_idname, icon='MODIFIER')
+
+        col.separator()
+        col.separator()
+
+        col.row(align=True).label(text="Fix model has now been replaced with the buttons below.")
+        col.row(align=True).label(text="This is due to the issues fix model caused in the past.")
+        col.row(align=True).label(text="Thank you for your understanding.")
+        col.row(align=True).operator(Armature.Fix_UnmovableBones.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Turn_MMDMorphs_Shapekeys.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Fix_View_Issues.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Fix_Remove_RigidBodies.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Delete_OtherLayers_And_NonMeshes.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Delete_Empties_And_Unused.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Quick_Collection_Parenting_Fix.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Try_Fix_Bone_Names.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Try_Fix_Mesh_Issues.bl_idname, icon='MODIFIER')
+        col.row(align=True).operator(Armature.Translate_Bones.bl_idname, icon='MODIFIER')
+        
+
+        col.row(align=True).operator(Armature.Report_Mesh_And_UV_Issues.bl_idname, icon='MODIFIER')
+        
         col.separator()
         col.separator()
 
@@ -209,7 +226,7 @@ class ArmaturePanel(ToolPanel, bpy.types.Panel):
 @register_wrap
 class ModelSettings(bpy.types.Operator):
     bl_idname = "cats_armature.settings"
-    bl_label = t('ModelSettings.label')
+    bl_label = t('ModelSettings.label')+" (Will be replaced soon)"
 
     def execute(self, context):
         return {'FINISHED'}

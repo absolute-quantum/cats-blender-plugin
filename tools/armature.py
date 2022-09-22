@@ -44,11 +44,375 @@ from mmd_tools_local.operators import morph as Morph
 mmd_tools_installed = True
 
 
+
 @register_wrap
-class FixArmature(bpy.types.Operator):
-    bl_idname = 'cats_armature.fix'
-    bl_label = t('FixArmature.label')
-    bl_description = t('FixArmature.desc')
+class Fix_UnmovableBones(bpy.types.Operator):
+
+    bl_idname = 'cats_armature.fix_unmovable_bones'
+    bl_label = "Fix Uneditable Bones"
+    bl_description = "Does what title says. Have a bone(s) that you can't move? Use this."
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        armature = Common.set_default_stage()
+        # Unlock all transforms
+        for i in range(0, 3):
+            armature.lock_location[i] = False
+            armature.lock_rotation[i] = False
+            armature.lock_scale[i] = False
+        
+        # Unlock all bone transforms
+        for bone in armature.pose.bones:
+            bone.lock_location[0] = False
+            bone.lock_location[1] = False
+            bone.lock_location[2] = False
+            bone.lock_rotation[0] = False
+            bone.lock_rotation[1] = False
+            bone.lock_rotation[2] = False
+            bone.lock_scale[0] = False
+            bone.lock_scale[1] = False
+            bone.lock_scale[2] = False
+        return {'FINISHED'}
+@register_wrap
+class Turn_MMDMorphs_Shapekeys(bpy.types.Operator):
+    bl_idname = 'cats_armature.convert_mmd_morphs'
+    bl_label = "Convert MMD Morphs To Shapekeys"
+    bl_description = "Does what button says."
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+        is_vrm = False
+        if len(Common.get_meshes_objects()) == 0:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
+                return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
+        
+        if mmd_tools_installed:
+                mmd_root = None
+                try:
+                    mmd_root = armature.parent.mmd_root
+                except AttributeError:
+                    pass
+
+                # Perform mmd specific operations
+                if mmd_root:
+
+                    # Set correct mmd shading
+                    mmd_root.use_toon_texture = False
+                    mmd_root.use_sphere_texture = False
+
+                    # Convert mmd bone morphs into shape keys
+                    if hasattr(mmd_root, 'bone_morphs') and len(mmd_root.bone_morphs) > 0:
+
+                        current_step = 0
+                        wm.progress_begin(current_step, len(mmd_root.bone_morphs))
+
+                        armature.data.pose_position = 'POSE'
+                        for index, morph in enumerate(mmd_root.bone_morphs):
+                            current_step += 1
+                            wm.progress_update(current_step)
+
+                            armature.parent.mmd_root.active_morph = index
+                            Morph.ViewBoneMorph.execute(None, context)
+
+                            mesh = Common.get_meshes_objects()[0]
+                            Common.set_active(mesh)
+
+                            mod = mesh.modifiers.new(morph.name, 'ARMATURE')
+                            mod.object = armature
+                            Common.apply_modifier(mod, as_shapekey=True)
+                        wm.progress_end()
+        return {'FINISHED'}
+
+@register_wrap
+class Fix_View_Issues(bpy.types.Operator):
+
+    bl_idname = 'cats_armature.fix_viewport'
+    bl_label = "Fix Viewport Display"
+    bl_description = """To put it simply, does what the button says. 
+It improves the view of the model and trys to make look more like what it would in Unity. 
+Won't fix materials or edit things and is more a viewport settings fixer than anything."""
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        def set_material_shading():
+            # Set shading to 3D view
+            for area in bpy.context.screen.areas:  # iterate through areas in current screen
+                if area.type == 'VIEW_3D':
+                    for space in area.spaces:  # iterate through spaces in current VIEW_3D area
+                        if space.type == 'VIEW_3D':  # check if space is a 3D view
+                            space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
+                            space.shading.studio_light = 'forest.exr'
+                            space.shading.studiolight_rotate_z = 0.0
+                            space.shading.studiolight_background_alpha = 0.0
+                            if bpy.app.version >= (2, 82):
+                                space.shading.render_pass = 'COMBINED'
+
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+        is_vrm = False
+        if len(Common.get_meshes_objects()) == 0:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
+                return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
+        view_area = None
+        for area in bpy.context.screen.areas:
+            if area.type == 'VIEW_3D':
+                view_area = area.spaces[0]
+                break
+
+        if view_area:
+            view_area.clip_start = 0.01
+            view_area.clip_end = 300
+        
+        if not source_engine:
+            try:
+                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
+                if not version_2_79_or_older():
+                    set_material_shading()
+            except RuntimeError:
+                pass
+        
+        if version_2_79_or_older():
+            # Set better bone view
+            armature.data.draw_type = 'OCTAHEDRAL'
+            armature.draw_type = 'WIRE'
+            armature.show_x_ray = True
+            armature.data.show_bone_custom_shapes = False
+            armature.layers[0] = True
+
+            # Disable backface culling
+            area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
+            space = next(space for space in area.spaces if space.type == 'VIEW_3D')
+            space.show_backface_culling = True  # set the viewport shading
+        else:
+            armature.data.display_type = 'OCTAHEDRAL'
+            if hasattr(armature, 'draw_type'):
+                armature.draw_type = 'WIRE'
+            armature.show_in_front = True
+            armature.data.show_bone_custom_shapes = False
+            # context.space_data.overlay.show_transparent_bones = True
+            if view_area:
+                view_area.shading.show_backface_culling = True
+
+            # Set the Color Management View Transform to "Standard" instead of the Blender default "Filmic"
+            try:
+                context.scene.view_settings.view_transform = 'Standard'
+            except TypeError:
+                print('Color Management View Transform "Standard" not found!')
+
+            # Set shading to 3D view
+            set_material_shading()
+        return {'FINISHED'}
+
+@register_wrap
+class Fix_Remove_RigidBodies(bpy.types.Operator):
+    bl_idname = 'cats_armature.remove_rigidbodies_and_joints'
+    bl_label = "Remove RigidBodies And Joints"
+    bl_description = "Does what button says."
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    # Remove Rigidbodies and joints
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+        is_vrm = False
+        if len(Common.get_meshes_objects()) == 0:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
+                return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
+        to_delete = []
+        for child in Common.get_top_parent(armature).children:
+            if 'rigidbodies' in child.name or 'joints' in child.name and child.name not in to_delete:
+                to_delete.append(child.name)
+                continue
+            for child2 in child.children:
+                if 'rigidbodies' in child2.name or 'joints' in child2.name and child2.name not in to_delete:
+                    to_delete.append(child2.name)
+                    continue
+        for obj_name in to_delete:
+            Common.delete_hierarchy(Common.get_objects()[obj_name])
+
+        if source_engine:
+            # Delete unused physics meshes (like rigidbodies)
+            for mesh in Common.get_meshes_objects():
+                if len(Common.get_meshes_objects()) == 1:
+                    break
+                if mesh.name.endswith(('_physics', '_lod1', '_lod2', '_lod3', '_lod4', '_lod5', '_lod6')):
+                    Common.delete_hierarchy(mesh)
+        return {'FINISHED'}
+@register_wrap
+class Delete_OtherLayers_And_NonMeshes(bpy.types.Operator):
+
+    bl_idname = 'cats_armature.delete_other_layers_and_nonmeshes'
+    bl_label = "Delete Other Layers and NonMeshes"
+    bl_description = "Does what button says."
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+        is_vrm = False
+        if len(Common.get_meshes_objects()) == 0:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
+                return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
+        # Remove objects from different layers and things that are not meshes
+        get_current_layers = []
+        if hasattr(bpy.context.scene, 'layers'):
+            for i, layer in enumerate(bpy.context.scene.layers):
+                if layer:
+                    get_current_layers.append(i)
+
+        if len(armature.children) > 1:
+            for child in armature.children:
+                for child2 in child.children:
+                    if child2.type != 'MESH':
+                        Common.delete(child2)
+                        continue
+                    in_layer = False
+                    for i in get_current_layers:
+                        if child2.layers[i]:
+                            in_layer = True
+                    if not in_layer:
+                        Common.delete(child2)
+
+                if child.type != 'MESH':
+                    Common.delete(child)
+                    continue
+                in_layer = False
+                for i in get_current_layers:
+                    if child.layers[i]:
+                        in_layer = True
+                if not in_layer and hasattr(bpy.context.scene, 'layers'):
+                    Common.delete(child)
+        return {'FINISHED'}
+
+@register_wrap
+class Delete_Empties_And_Unused(bpy.types.Operator):
+
+    bl_idname = 'cats_armature.delete_unused'
+    bl_label = "Delete Unused Objects and Empties"
+    bl_description = "Does what button says."
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+        Common.remove_empty()
+        Common.remove_unused_objects()
+        return {'FINISHED'}
+@register_wrap
+class Quick_Collection_Parenting_Fix(bpy.types.Operator):
+    bl_idname = 'cats_armature.reparent_objects'
+    bl_label = "Reparent Meshes Under Armature"
+    bl_description = "Does what button says."
 
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
@@ -63,21 +427,8 @@ class FixArmature(bpy.types.Operator):
         return True
 
     def execute(self, context):
-        # Todo: Remove this
-        # armature = Common.get_armature()
-        # Common.switch('EDIT')
-        #
-        # for bone in armature.data.edit_bones:
-        #     bone.tail = bone.head
-        #     bone.tail[2] += 0.1
-        #
-        # Common.switch('OBJECT')
-        #
-        #
-        # return {'FINISHED'}
-
-        saved_data = Common.SavedData()
-
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
         is_vrm = False
         if len(Common.get_meshes_objects()) == 0:
             for mesh in Common.get_meshes_objects(mode=2):
@@ -86,14 +437,124 @@ class FixArmature(bpy.types.Operator):
             if not is_vrm:
                 Common.show_error(3.8, t('FixArmature.error.noMesh'))
                 return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
 
-        print('\nFixing Model:\n')
+        # MYSTERYM's CODE FROM ANOTHER COMMIT!!!!!
+        
+        # Set the armature into only one collection and set all of its meshes into only that same collection.
+        # This ensures that meshes visually appear under the armature in the outliner and only appear once.
+        # 2.79 and older don't have collections, so this is only relevant for 2.80 and newer.
+        if not Common.version_2_79_or_older():
+            # Set the armature to only be linked inside of one collection
+            #
+            # Get the collections the armature is in
+            collections_armature_is_in = armature.users_collection
+            # The armature being in at least one collection is the expected case.
+            # Unlink the armature from all its collections except the first.
+            if collections_armature_is_in:
+                # The first collection is the one we'll make sure the armature and all its meshes are linked in
+                armature_collection = collections_armature_is_in[0]
+                # Unlink the armature from all the other collections
+                for col in collections_armature_is_in[1::]:
+                    # Unlink the armature from the collection
+                    col.objects.unlink(armature)
+            # The armature should always be in a collection if it's in the current view layer, but if it's not for some
+            # reason, link it to the scene collection.
+                            # Get the scene collection
+                armature_collection = context.scene.collection
+                # Link the armature to the scene collection
+                armature_collection.objects.link(armature)
 
+            # Link all the meshes to the same collection as the armature and unlink them from all other collections
+            for mesh in Common.get_meshes_objects():
+                mesh_already_in_armature_collection = False
+                # Unlink the mesh from all collections that aren't armature_collection
+                for col in mesh.users_collection:
+                    if col == armature_collection:
+                        mesh_already_in_armature_collection = True
+                    else:
+                        col.objects.unlink(mesh)
+                # Link the mesh to armature_collection if it's not already linked to armature_collection
+                if not mesh_already_in_armature_collection:
+                    armature_collection.objects.link(mesh)
+        return {'FINISHED'}
+@register_wrap
+
+class Try_Fix_Bone_Names(bpy.types.Operator):
+
+    bl_idname = 'cats_armature.fix_bones'
+    bl_label = "Try to fix bone names and remove unnessary bones"
+    bl_description = "Tries to fix bone names and removes unnessary bones. Also does other fixes like adding missing chest, and straightening head bone."
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    
+    
+    def execute(self, context):
         wm = bpy.context.window_manager
         armature = Common.set_default_stage()
+        is_vrm = False
+        if len(Common.get_meshes_objects()) == 0:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
+                return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
+        # Armature should be selected
+        Common.set_default_stage()
+        Common.unselect_all()
+        Common.set_active(armature)
 
-        # Check if bone matrix == world matrix, important for xps models
-        x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(armature)
+        # Reset pose position
+        Common.switch('POSE')
+        bpy.ops.pose.rot_clear()
+        bpy.ops.pose.scale_clear()
+        bpy.ops.pose.transforms_clear()
+
+        # Enter edit mode
+        Common.switch('EDIT')
+
+        # Show all hidden verts and faces
+        if bpy.ops.mesh.reveal.poll():
+            bpy.ops.mesh.reveal()
+
+        # Remove Bone Groups
+        for group in armature.pose.bone_groups:
+            armature.pose.bone_groups.remove(group)
+
+        # Bone constraints should be deleted
+        # if context.scene.remove_constraints:
+        Common.delete_bone_constraints()
+
+        # Model should be in rest position
+        # armature.data.pose_position = 'REST'
+
+        # Count steps for loading bar again and reset the layers
 
         # Add rename bones to reweight bones
         temp_rename_bones = copy.deepcopy(Bones.bone_rename)
@@ -149,374 +610,9 @@ class FixArmature(bpy.types.Operator):
                     print(key + " | " + name)
         print('DOUBLES END')
 
-        # Check if model is mmd model
-        if mmd_tools_installed:
-            mmd_root = None
-            try:
-                mmd_root = armature.parent.mmd_root
-            except AttributeError:
-                pass
+        x_cord, y_cord, z_cord, fbx = Common.get_bone_orientations(armature)
+        Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
-            # Perform mmd specific operations
-            if mmd_root:
-
-                # Set correct mmd shading
-                mmd_root.use_toon_texture = False
-                mmd_root.use_sphere_texture = False
-
-                # Convert mmd bone morphs into shape keys
-                if hasattr(mmd_root, 'bone_morphs') and len(mmd_root.bone_morphs) > 0:
-
-                    current_step = 0
-                    wm.progress_begin(current_step, len(mmd_root.bone_morphs))
-
-                    armature.data.pose_position = 'POSE'
-                    for index, morph in enumerate(mmd_root.bone_morphs):
-                        current_step += 1
-                        wm.progress_update(current_step)
-
-                        armature.parent.mmd_root.active_morph = index
-                        Morph.ViewBoneMorph.execute(None, context)
-
-                        mesh = Common.get_meshes_objects()[0]
-                        Common.set_active(mesh)
-
-                        mod = mesh.modifiers.new(morph.name, 'ARMATURE')
-                        mod.object = armature
-                        Common.apply_modifier(mod, as_shapekey=True)
-                    wm.progress_end()
-
-        # Perform source engine specific operations
-        # Check if model is source engine model
-        source_engine = False
-        for bone in armature.pose.bones:
-            if bone.name.startswith('ValveBiped'):
-                source_engine = True
-                break
-        
-        #Perform "Blenda" specific operation. This is needed because Spine1 on this model represents the hips and that conflicts with other mappings.
-        for bone in armature.pose.bones:
-            if bone.name.startswith("cShrugger"):
-                for bone in armature.pose.bones:
-                    if bone.name == "Spine1":
-                        bone.name = "Hips"
-                        break
-                break
-        
-        # Remove unused animation data
-        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
-            armature.animation_data_clear()
-            source_engine = True
-
-        # Delete unused VTA mesh
-        for mesh in Common.get_meshes_objects(mode=1):
-            if mesh.name == 'VTA vertices':
-                Common.delete_hierarchy(mesh)
-                source_engine = True
-                break
-
-        if source_engine:
-            # Delete unused physics meshes (like rigidbodies)
-            for mesh in Common.get_meshes_objects():
-                if len(Common.get_meshes_objects()) == 1:
-                    break
-                if mesh.name.endswith(('_physics', '_lod1', '_lod2', '_lod3', '_lod4', '_lod5', '_lod6')):
-                    Common.delete_hierarchy(mesh)
-
-        # Reset to default
-        armature = Common.set_default_stage()
-
-        # Find 3D view
-        view_area = None
-        for area in bpy.context.screen.areas:
-            if area.type == 'VIEW_3D':
-                view_area = area.spaces[0]
-                break
-
-        if view_area:
-            view_area.clip_start = 0.01
-            view_area.clip_end = 300
-
-        if version_2_79_or_older():
-            # Set better bone view
-            armature.data.draw_type = 'OCTAHEDRAL'
-            armature.draw_type = 'WIRE'
-            armature.show_x_ray = True
-            armature.data.show_bone_custom_shapes = False
-            armature.layers[0] = True
-
-            # Disable backface culling
-            area = next(area for area in bpy.context.screen.areas if area.type == 'VIEW_3D')
-            space = next(space for space in area.spaces if space.type == 'VIEW_3D')
-            space.show_backface_culling = True  # set the viewport shading
-        else:
-            armature.data.display_type = 'OCTAHEDRAL'
-            if hasattr(armature, 'draw_type'):
-                armature.draw_type = 'WIRE'
-            armature.show_in_front = True
-            armature.data.show_bone_custom_shapes = False
-            # context.space_data.overlay.show_transparent_bones = True
-            if view_area:
-                view_area.shading.show_backface_culling = True
-
-            # Set the Color Management View Transform to "Standard" instead of the Blender default "Filmic"
-            try:
-                context.scene.view_settings.view_transform = 'Standard'
-            except TypeError:
-                print('Color Management View Transform "Standard" not found!')
-
-            # Set shading to 3D view
-            set_material_shading()
-
-        # Remove Rigidbodies and joints
-        if context.scene.remove_rigidbodies_joints:
-            to_delete = []
-            for child in Common.get_top_parent(armature).children:
-                if 'rigidbodies' in child.name or 'joints' in child.name and child.name not in to_delete:
-                    to_delete.append(child.name)
-                    continue
-                for child2 in child.children:
-                    if 'rigidbodies' in child2.name or 'joints' in child2.name and child2.name not in to_delete:
-                        to_delete.append(child2.name)
-                        continue
-            for obj_name in to_delete:
-                Common.delete_hierarchy(Common.get_objects()[obj_name])
-
-        # Remove objects from different layers and things that are not meshes
-        get_current_layers = []
-        if hasattr(bpy.context.scene, 'layers'):
-            for i, layer in enumerate(bpy.context.scene.layers):
-                if layer:
-                    get_current_layers.append(i)
-
-        if len(armature.children) > 1:
-            for child in armature.children:
-                for child2 in child.children:
-                    if child2.type != 'MESH':
-                        Common.delete(child2)
-                        continue
-                    in_layer = False
-                    for i in get_current_layers:
-                        if child2.layers[i]:
-                            in_layer = True
-                    if not in_layer:
-                        Common.delete(child2)
-
-                if child.type != 'MESH':
-                    Common.delete(child)
-                    continue
-                in_layer = False
-                for i in get_current_layers:
-                    if child.layers[i]:
-                        in_layer = True
-                if not in_layer and hasattr(bpy.context.scene, 'layers'):
-                    Common.delete(child)
-
-        # Unlock all transforms
-        for i in range(0, 3):
-            armature.lock_location[i] = False
-            armature.lock_rotation[i] = False
-            armature.lock_scale[i] = False
-
-        # Unlock all bone transforms
-        for bone in armature.pose.bones:
-            bone.lock_location[0] = False
-            bone.lock_location[1] = False
-            bone.lock_location[2] = False
-            bone.lock_rotation[0] = False
-            bone.lock_rotation[1] = False
-            bone.lock_rotation[2] = False
-            bone.lock_scale[0] = False
-            bone.lock_scale[1] = False
-            bone.lock_scale[2] = False
-
-        # Remove empty mmd object and unused objects
-        if not bpy.context.scene.cats_is_unittest:
-            Common.remove_empty()
-            Common.remove_unused_objects()
-
-        # Fix VRM meshes being outside of the armature
-        if is_vrm:
-            for mesh in Common.get_meshes_objects(mode=2):
-                if mesh.name.endswith(('.baked', '.baked0')):
-                    mesh.parent = armature  # TODO ----- (edit, 989onan here, if you mean get it visually under it in the outliner I got you covered now through lines below.)
-                    # unlink from old collections
-
-
-        #Fix visual unlinkage in the outliner so the objects are under object in outliner
-        #Fixes issues like random objects not under a valve character skeleton.
-        for mesh in Common.get_meshes_objects():
-            name = None
-            try:
-                name = armature.users_collection[0].name
-            except:
-                pass
-            #If the armature is in a collection put everything under it. else put everything outside the collections.
-            if name:
-                for both in [armature,mesh]:
-                    for c in both.users_collection:
-                        c.objects.unlink(both)
-                    # make a new collection and link to it
-                    coll = bpy.data.collections.get(name)
-                    if not coll:
-                        coll = bpy.data.collections.new(name)
-                        context.scene.collection.children.link(coll)
-                    coll.objects.link(both)
-            else:
-                for c in both.users_collection:
-                        c.objects.unlink(o)
-
-        # Check if weird FBX model
-        print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
-        if round(armature.scale[0], 2) == 0.01 \
-                and round(armature.scale[1], 2) == 0.01 \
-                and round(armature.scale[2], 2) == 0.01:
-
-            # Delete keyframes
-            Common.set_active(armature)
-            armature.animation_data_clear()
-            for mesh in Common.get_meshes_objects():
-                mesh.animation_data_clear()
-
-        # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        if not bpy.context.scene.cats_is_unittest:
-            Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
-
-        # Apply transforms of this model
-        Common.apply_transforms()
-
-        # Puts all meshes into a list and joins them if selected
-        if context.scene.join_meshes:
-            meshes = [Common.join_meshes()]
-        else:
-            meshes = Common.get_meshes_objects()
-
-        for mesh in meshes:
-            Common.unselect_all()
-            Common.set_active(mesh)
-
-            # Unlock all mesh transforms
-            for i in range(0, 3):
-                mesh.lock_location[i] = False
-                mesh.lock_rotation[i] = False
-                mesh.lock_scale[i] = False
-
-            # Set layer of mesh to 0
-            if hasattr(mesh, 'layers'):
-                mesh.layers[0] = True
-
-            # Fix Source Shapekeys
-            if source_engine and Common.has_shapekeys(mesh):
-                mesh.data.shape_keys.key_blocks[0].name = "Basis"
-
-            # Fix VRM shapekeys
-            if is_vrm and Common.has_shapekeys(mesh):
-                shapekeys = mesh.data.shape_keys.key_blocks
-                for shapekey in shapekeys:
-                    shapekey.name = shapekey.name.replace('_', ' ').replace('Face.M F00 000 Fcl ', '').replace('Face.M F00 000 00 Fcl ', '')
-
-                # Sort shapekeys in categories
-                shapekey_order = []
-                for categorie in ['MTH', 'EYE', 'BRW', 'ALL', 'HA']:
-                    for shapekey in shapekeys:
-                        if shapekey.name.startswith(categorie):
-                            shapekey_order.append(shapekey.name)
-
-                Common.sort_shape_keys(mesh.name, shapekey_order)
-
-
-            # Clean material names. Combining mats would do this too
-            Common.clean_material_names(mesh)
-
-            # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
-            if version_2_79_or_older():
-                all_transparent = True
-                for mat_slot in mesh.material_slots:
-                    mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
-                    if mat_slot.material.alpha > 0:
-                        all_transparent = False
-                if all_transparent:
-                    for mat_slot in mesh.material_slots:
-                        mat_slot.material.alpha = 1
-            else:
-                if context.scene.fix_materials:
-                    # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
-                    # Common.remove_toon_shader(mesh)
-                    if mmd_tools_installed:
-                        Common.fix_mmd_shader(mesh)
-                    Common.fix_vrm_shader(mesh)
-                    Common.add_principled_shader(mesh)
-                    for mat_slot in mesh.material_slots:  # Fix transparency per polygon and general garbage look in blender. Asthetic purposes to fix user complaints.
-                        mat_slot.material.shadow_method = "HASHED"
-                        mat_slot.material.blend_method = "HASHED"
-
-			# Remove empty shape keys and then save the shape key order
-            Common.clean_shapekeys(mesh)
-            Common.save_shapekey_order(mesh.name)
-
-            # Combines same materials
-            if context.scene.combine_mats:
-                bpy.ops.cats_material.combine_mats()
-
-
-            # Reorders vrc shape keys to the correct order
-            Common.sort_shape_keys(mesh.name)
-
-            # Fix all shape key names of half jp chars
-            if Common.has_shapekeys(mesh):
-                for shapekey in mesh.data.shape_keys.key_blocks:
-                    shapekey.name = Translate.fix_jp_chars(shapekey.name)
-
-            # Fix faulty UV coordinates
-            fixed_uv_coords = 0
-            for uv in mesh.data.uv_layers:
-                for vert in range(len(uv.data) - 1):
-                    if math.isnan(uv.data[vert].uv.x):
-                        uv.data[vert].uv.x = 0
-                        fixed_uv_coords += 1
-                    if math.isnan(uv.data[vert].uv.y):
-                        uv.data[vert].uv.y = 0
-                        fixed_uv_coords += 1
-
-        # Translate bones and unhide them all
-        to_translate = []
-        for bone in armature.data.bones:
-            bone.hide = False
-            to_translate.append(bone.name)
-        Translate.update_dictionary(to_translate)
-        for bone in armature.data.bones:
-            bone.name, translated = Translate.translate(bone.name)
-
-        # Armature should be selected
-        Common.set_default_stage()
-        Common.unselect_all()
-        Common.set_active(armature)
-
-        # Reset pose position
-        Common.switch('POSE')
-        bpy.ops.pose.rot_clear()
-        bpy.ops.pose.scale_clear()
-        bpy.ops.pose.transforms_clear()
-
-        # Enter edit mode
-        Common.switch('EDIT')
-
-        # Show all hidden verts and faces
-        if bpy.ops.mesh.reveal.poll():
-            bpy.ops.mesh.reveal()
-
-        # Remove Bone Groups
-        for group in armature.pose.bone_groups:
-            armature.pose.bone_groups.remove(group)
-
-        # Bone constraints should be deleted
-        # if context.scene.remove_constraints:
-        Common.delete_bone_constraints()
-
-        # Model should be in rest position
-        # armature.data.pose_position = 'REST'
-
-        # Count steps for loading bar again and reset the layers
         steps += len(armature.data.edit_bones)
         for bone in armature.data.edit_bones:
             if bone.name in Bones.bone_list or bone.name.startswith(tuple(Bones.bone_list_with)):
@@ -978,7 +1074,7 @@ class FixArmature(bpy.types.Operator):
                 rot_x_neg180 = Matrix.Rotation(-math.pi, 4, 'X')
                 armature.matrix_world = Common.matmul(rot_x_neg180, armature.matrix_world)
 
-                for mesh in meshes:
+                for mesh in Common.get_meshes_objects():
                     mesh.rotation_euler = (math.radians(180), 0, 0)
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
@@ -988,7 +1084,7 @@ class FixArmature(bpy.types.Operator):
         bones_to_delete = []
 
         # Mixing the weights
-        for mesh in meshes:
+        for mesh in Common.get_meshes_objects():
             Common.unselect_all()
             Common.switch('OBJECT')
             Common.set_active(mesh)
@@ -1233,7 +1329,396 @@ class FixArmature(bpy.types.Operator):
         # Connect all bones with their children if they have exactly one
         if context.scene.connect_bones:
             Common.fix_bone_orientations(armature)
+        return {'FINISHED'}
 
+
+@register_wrap
+class Try_Fix_Mesh_Issues(bpy.types.Operator):
+    bl_idname = 'cats_armature.fix_meshes'
+    bl_label = "Try to Fix Meshes"
+    bl_description = "Will Try to clean materials, make things shade better, and correct shape key naming. Won't do much else. Also combines same materials."
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+        is_vrm = False
+        if len(Common.get_meshes_objects()) == 0:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
+                return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
+        # Delete unused VTA mesh
+        for mesh in Common.get_meshes_objects(mode=1):
+            if mesh.name == 'VTA vertices':
+                Common.delete_hierarchy(mesh)
+                source_engine = True
+                break
+
+        for mesh in Common.get_meshes_objects(mode=1):
+                Common.unselect_all()
+                Common.set_active(mesh)
+
+                # Unlock all mesh transforms
+                for i in range(0, 3):
+                    mesh.lock_location[i] = False
+                    mesh.lock_rotation[i] = False
+                    mesh.lock_scale[i] = False
+
+                # Set layer of mesh to 0
+                if hasattr(mesh, 'layers'):
+                    mesh.layers[0] = True
+
+                # Fix Source Shapekeys
+                if source_engine and Common.has_shapekeys(mesh):
+                    mesh.data.shape_keys.key_blocks[0].name = "Basis"
+
+                # Fix VRM shapekeys
+                if is_vrm and Common.has_shapekeys(mesh):
+                    shapekeys = mesh.data.shape_keys.key_blocks
+                    for shapekey in shapekeys:
+                        shapekey.name = shapekey.name.replace('_', ' ').replace('Face.M F00 000 Fcl ', '').replace('Face.M F00 000 00 Fcl ', '')
+
+                    # Sort shapekeys in categories
+                    shapekey_order = []
+                    for categorie in ['MTH', 'EYE', 'BRW', 'ALL', 'HA']:
+                        for shapekey in shapekeys:
+                            if shapekey.name.startswith(categorie):
+                                shapekey_order.append(shapekey.name)
+
+                    Common.sort_shape_keys(mesh.name, shapekey_order)
+
+
+                # Clean material names. Combining mats would do this too
+                Common.clean_material_names(mesh)
+
+                # If all materials are transparent, make them visible. Also set transparency always to Z-Transparency
+                if version_2_79_or_older():
+                    all_transparent = True
+                    for mat_slot in mesh.material_slots:
+                        mat_slot.material.transparency_method = 'Z_TRANSPARENCY'
+                        if mat_slot.material.alpha > 0:
+                            all_transparent = False
+                    if all_transparent:
+                        for mat_slot in mesh.material_slots:
+                            mat_slot.material.alpha = 1
+                else:
+                    if context.scene.fix_materials:
+                        # Make materials exportable in Blender 2.80 and remove glossy mmd shader look
+                        # Common.remove_toon_shader(mesh)
+                        if mmd_tools_installed:
+                            Common.fix_mmd_shader(mesh)
+                        Common.fix_vrm_shader(mesh)
+                        Common.add_principled_shader(mesh)
+                        for mat_slot in mesh.material_slots:  # Fix transparency per polygon and general garbage look in blender. Asthetic purposes to fix user complaints.
+                            mat_slot.material.shadow_method = "HASHED"
+                            mat_slot.material.blend_method = "HASHED"
+
+                # Remove empty shape keys and then save the shape key order
+                Common.clean_shapekeys(mesh)
+                Common.save_shapekey_order(mesh.name)
+
+                # Combines same materials
+                if context.scene.combine_mats:
+                    bpy.ops.cats_material.combine_mats()
+
+
+                # Reorders vrc shape keys to the correct order
+                Common.sort_shape_keys(mesh.name)
+
+                # Fix all shape key names of half jp chars
+                if Common.has_shapekeys(mesh):
+                    for shapekey in mesh.data.shape_keys.key_blocks:
+                        shapekey.name = Translate.fix_jp_chars(shapekey.name)
+
+        return {'FINISHED'}
+
+@register_wrap
+class Translate_Bones(bpy.types.Operator):
+    bl_idname = 'cats_armature.translate_bones'
+    bl_label = "Translate Bones"
+    bl_description = "Translate bones fix."
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+        is_vrm = False
+        if len(Common.get_meshes_objects()) == 0:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
+                return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
+        # Translate bones and unhide them all
+        to_translate = []
+        for bone in armature.data.bones:
+            bone.hide = False
+            to_translate.append(bone.name)
+        Translate.update_dictionary(to_translate)
+        for bone in armature.data.bones:
+            bone.name, translated = Translate.translate(bone.name)
+        return {'FINISHED'}
+
+@register_wrap
+class Report_Mesh_And_UV_Issues(bpy.types.Operator):
+    bl_idname = 'cats_armature.report'
+    bl_label = "Report Mesh and UV issues"
+    bl_description = "Report issues with meshes And UV's"
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+    
+    @classmethod
+    def poll(cls, context):
+        if not Common.get_armature():
+            return False
+
+        if len(Common.get_armature_objects()) == 0:
+            return False
+
+        return True
+    def execute(self, context):
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+        is_vrm = False
+        if len(Common.get_meshes_objects()) == 0:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                    is_vrm = True  # TODO
+            if not is_vrm:
+                Common.show_error(3.8, t('FixArmature.error.noMesh'))
+                return {'CANCELLED'}
+        source_engine = False
+        for bone in armature.pose.bones:
+            if bone.name.startswith('ValveBiped'):
+                source_engine = True
+                break
+        
+
+
+
+        def check_hierarchy(check_parenting, correct_hierarchy_array):
+            armature = Common.set_default_stage()
+
+            missing_bones = []
+            missing2 = [t('FixArmature.bonesNotFound'), '']
+
+            for correct_hierarchy in correct_hierarchy_array:  # For each hierarchy array
+                line = ' - '
+
+                for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
+                    if bone not in missing_bones and bone not in armature.data.bones:
+                        missing_bones.append(bone)
+                        if len(line) > 3:
+                            line += ', '
+                        line += bone
+
+                if len(line) > 3:
+                    missing2.append(line)
+
+            if len(missing2) > 2 and not check_parenting:
+                missing2.append('')
+                missing2.append(t('FixArmature.cantFix1'))
+                missing2.append(t('FixArmature.cantFix2'))
+                missing2.append(t('FixArmature.cantFix3'))
+
+                Common.show_error(6.4, missing2)
+                return {'result': True, 'message': ''}
+
+            if check_parenting:
+                for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
+                    previous = None
+                    for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
+                        if index > 0:
+                            previous = correct_hierarchy[index - 1]
+
+                        if bone in armature.data.bones:
+                            bone = armature.data.bones[bone]
+
+                            # If a previous item was found
+                            if previous is not None:
+                                # And there is no parent, then we have a problem mkay
+                                if bone.parent is None:
+                                    return {'result': False, 'message': bone.name + t('FixArmature.notParent')}
+                                # Previous needs to be the parent of the current item
+                                if previous != bone.parent.name:
+                                    return {'result': False, 'message': bone.name + t('FixArmature.notParentTo1') + previous + t('FixArmature.notParentTo2')}
+
+            return {'result': True}
+        if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
+            armature.animation_data_clear()
+            source_engine = True
+        fixed_uv_coords = 0
+        for mesh in Common.get_meshes_objects(mode=1):
+            # Fix faulty UV coordinates
+            for uv in mesh.data.uv_layers:
+                for vert in range(len(uv.data) - 1):
+                    if math.isnan(uv.data[vert].uv.x):
+                        uv.data[vert].uv.x = 0
+                        fixed_uv_coords += 1
+                    if math.isnan(uv.data[vert].uv.y):
+                        uv.data[vert].uv.y = 0
+                        fixed_uv_coords += 1
+        hierarchy_check_hips = check_hierarchy(False, [
+            ['Hips', 'Spine', 'Chest', 'Neck', 'Head'],
+            ['Hips', 'Left leg', 'Left knee', 'Left ankle'],
+            ['Hips', 'Right leg', 'Right knee', 'Right ankle'],
+            ['Chest', 'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist'],
+            ['Chest', 'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist']
+        ])
+
+        if not hierarchy_check_hips['result']:
+            self.report({'ERROR'}, hierarchy_check_hips['message'])
+            saved_data.load()
+            return {'FINISHED'}
+
+        if fixed_uv_coords:
+            saved_data.load()
+            Common.show_error(6.2, [t('FixArmature.error.faultyUV1', uvcoord=str(fixed_uv_coords)),
+                                        t('FixArmature.error.faultyUV2'),
+                                        t('FixArmature.error.faultyUV3')])
+            return {'FINISHED'}
+        return {'FINISHED'}
+
+    
+
+
+
+#### We're trying to phase this out! Take what you need, but don't bring this back! It caused more issues than it solved.
+""" @register_wrap
+class FixArmature(bpy.types.Operator):
+    bl_idname = 'cats_armature.fix'
+    bl_label = t('FixArmature.label')
+    bl_description = t('FixArmature.desc')
+
+    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
+
+    
+
+    def execute(self, context):
+        # Todo: Remove this
+        # armature = Common.get_armature()
+        # Common.switch('EDIT')
+        #
+        # for bone in armature.data.edit_bones:
+        #     bone.tail = bone.head
+        #     bone.tail[2] += 0.1
+        #
+        # Common.switch('OBJECT')
+        #
+        #
+        # return {'FINISHED'}
+
+        saved_data = Common.SavedData()
+
+        
+
+        print('\nFixing Model:\n')
+
+        wm = bpy.context.window_manager
+        armature = Common.set_default_stage()
+
+        # Check if bone matrix == world matrix, important for xps models
+        
+        
+
+        # Check if model is mmd model
+        
+
+        # check model types
+        
+        
+        #Perform "Blenda" specific operation. This is needed because Spine1 on this model represents the hips and that conflicts with other mappings.
+        for bone in armature.pose.bones:
+            if bone.name.startswith("cShrugger"):
+                for bone in armature.pose.bones:
+                    if bone.name == "Spine1":
+                        bone.name = "Hips"
+                        break
+                break
+        
+
+        # Reset to default
+        armature = Common.set_default_stage()
+
+        # Remove empty mmd object and unused objects
+        if not bpy.context.scene.cats_is_unittest:
+            
+
+        # Fix VRM meshes being outside of the armature
+        if is_vrm:
+            for mesh in Common.get_meshes_objects(mode=2):
+                if mesh.name.endswith(('.baked', '.baked0')):
+                                        mesh.parent = armature
+        
+        # Check if weird FBX model
+        print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
+        if round(armature.scale[0], 2) == 0.01 \
+                and round(armature.scale[1], 2) == 0.01 \
+                and round(armature.scale[2], 2) == 0.01:
+
+            # Delete keyframes
+            Common.set_active(armature)
+            armature.animation_data_clear()
+            for mesh in Common.get_meshes_objects():
+                mesh.animation_data_clear()
+
+        # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
+        if not bpy.context.scene.cats_is_unittest:
+            Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
+
+        # Apply transforms of this model
+        Common.apply_transforms()
+
+        # Puts all meshes into a list and joins them if selected
+        if context.scene.join_meshes:
+            meshes = [Common.join_meshes()]
+        else:
+            meshes = Common.get_meshes_objects()
+
+        
+
+        
+
+        
         # # This is code for testing
         # print('LOOKING FOR BONES!')
         # if 'Head' in Common.get_armature().pose.bones:
@@ -1245,107 +1730,27 @@ class FixArmature(bpy.types.Operator):
         # At this point, everything should be fixed and now we validate and give errors if needed
 
         # The bone hierarchy needs to be validated
-        hierarchy_check_hips = check_hierarchy(False, [
-            ['Hips', 'Spine', 'Chest', 'Neck', 'Head'],
-            ['Hips', 'Left leg', 'Left knee', 'Left ankle'],
-            ['Hips', 'Right leg', 'Right knee', 'Right ankle'],
-            ['Chest', 'Left shoulder', 'Left arm', 'Left elbow', 'Left wrist'],
-            ['Chest', 'Right shoulder', 'Right arm', 'Right elbow', 'Right wrist']
-        ])
+        
 
         # Armature should be named correctly (has to be at the end because of multiple armatures)
         Common.fix_armature_names()
 
         # Fix shading (check for runtime error because of ci tests)
-        if not source_engine:
-            try:
-                bpy.ops.mmd_tools.set_shadeless_glsl_shading()
-                if not version_2_79_or_older():
-                    set_material_shading()
-            except RuntimeError:
-                pass
+        
 
         Common.reset_context_scenes()
 
         wm.progress_end()
 
-        if not hierarchy_check_hips['result']:
-            self.report({'ERROR'}, hierarchy_check_hips['message'])
-            saved_data.load()
-            return {'FINISHED'}
-
-        if fixed_uv_coords:
-            saved_data.load()
-            Common.show_error(6.2, [t('FixArmature.error.faultyUV1', uvcoord=str(fixed_uv_coords)),
-                                          t('FixArmature.error.faultyUV2'),
-                                          t('FixArmature.error.faultyUV3')])
-            return {'FINISHED'}
+        
 
         saved_data.load()
 
         self.report({'INFO'}, t('FixArmature.fixedSuccess'))
-        return {'FINISHED'}
+        return {'FINISHED'} """
 
 
-def check_hierarchy(check_parenting, correct_hierarchy_array):
-    armature = Common.set_default_stage()
-
-    missing_bones = []
-    missing2 = [t('FixArmature.bonesNotFound'), '']
-
-    for correct_hierarchy in correct_hierarchy_array:  # For each hierarchy array
-        line = ' - '
-
-        for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
-            if bone not in missing_bones and bone not in armature.data.bones:
-                missing_bones.append(bone)
-                if len(line) > 3:
-                    line += ', '
-                line += bone
-
-        if len(line) > 3:
-            missing2.append(line)
-
-    if len(missing2) > 2 and not check_parenting:
-        missing2.append('')
-        missing2.append(t('FixArmature.cantFix1'))
-        missing2.append(t('FixArmature.cantFix2'))
-        missing2.append(t('FixArmature.cantFix3'))
-
-        Common.show_error(6.4, missing2)
-        return {'result': True, 'message': ''}
-
-    if check_parenting:
-        for correct_hierarchy in correct_hierarchy_array:  # For each hierachy array
-            previous = None
-            for index, bone in enumerate(correct_hierarchy):  # For each hierarchy bone item
-                if index > 0:
-                    previous = correct_hierarchy[index - 1]
-
-                if bone in armature.data.bones:
-                    bone = armature.data.bones[bone]
-
-                    # If a previous item was found
-                    if previous is not None:
-                        # And there is no parent, then we have a problem mkay
-                        if bone.parent is None:
-                            return {'result': False, 'message': bone.name + t('FixArmature.notParent')}
-                        # Previous needs to be the parent of the current item
-                        if previous != bone.parent.name:
-                            return {'result': False, 'message': bone.name + t('FixArmature.notParentTo1') + previous + t('FixArmature.notParentTo2')}
-
-    return {'result': True}
 
 
-def set_material_shading():
-    # Set shading to 3D view
-    for area in bpy.context.screen.areas:  # iterate through areas in current screen
-        if area.type == 'VIEW_3D':
-            for space in area.spaces:  # iterate through spaces in current VIEW_3D area
-                if space.type == 'VIEW_3D':  # check if space is a 3D view
-                    space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
-                    space.shading.studio_light = 'forest.exr'
-                    space.shading.studiolight_rotate_z = 0.0
-                    space.shading.studiolight_background_alpha = 0.0
-                    if bpy.app.version >= (2, 82):
-                        space.shading.render_pass = 'COMBINED'
+
+
