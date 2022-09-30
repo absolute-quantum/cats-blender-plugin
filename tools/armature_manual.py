@@ -1949,6 +1949,8 @@ class ConvertToValveButton(bpy.types.Operator):
                      '\nMake sure your model has the CATS standard bone names from after using Fix Model'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    armature_name = bpy.props.StringProperty(default = "")
+
     @classmethod
     def poll(cls, context):
         if not Common.get_armature():
@@ -1957,7 +1959,10 @@ class ConvertToValveButton(bpy.types.Operator):
 
     def execute(self, context):
         translate_bone_fails = 0
-        armature = Common.get_armature()
+        if self.armature_name == "":
+            armature = Common.get_armature()
+        else:
+            armature = bpy.data.objects[self.armature_name]
 
         reverse_bone_lookup = dict()
         for (preferred_name, name_list) in bone_names.items():

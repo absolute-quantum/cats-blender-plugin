@@ -2273,7 +2273,7 @@ class BakeButton(bpy.types.Operator):
                                               limit_precision=False, keep_bind_info=False)
                 elif export_format == "GMOD":
                     #compile model. (TAKES JUST AS LONG AS BAKE OR MORE)
-                    bpy.ops.cats_importer.export_gmod_addon(steam_library_path=steam_library_path,gmod_model_name=gmod_model_name,platform_name=platform_name)
+                    bpy.ops.cats_importer.export_gmod_addon(steam_library_path=steam_library_path,gmod_model_name=gmod_model_name,platform_name=platform_name,armature_name=plat_arm_copy.name)
             # Reapply cats material
             if export_format != "GMOD":
                 for obj in get_objects(plat_collection.all_objects, {"MESH"}):
