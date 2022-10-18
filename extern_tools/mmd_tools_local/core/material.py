@@ -2,9 +2,10 @@
 
 import logging
 import os
+from typing import Optional
 
 import bpy
-from mmd_tools_local.bpyutils import addon_preferences, select_object
+from mmd_tools_local.bpyutils import addon_preferences
 from mmd_tools_local.core.exceptions import MaterialNotFoundError
 from mmd_tools_local.core.shader import _NodeGroupUtils
 
@@ -13,14 +14,23 @@ SPHERE_MODE_MULT   = 1
 SPHERE_MODE_ADD    = 2
 SPHERE_MODE_SUBTEX = 3
 
+# SUPPORT_UNTIL: 3.3LTS
 class _FnMaterialBI:
     __BASE_TEX_SLOT = 0
     __TOON_TEX_SLOT = 1
     __SPHERE_TEX_SLOT = 2
     __SPHERE_ALPHA_SLOT = 5
 
+    __NODES_ARE_READONLY = False
+
     def __init__(self, material=None):
         self.__material = material
+        self._nodes_are_readonly = _FnMaterialBI.__NODES_ARE_READONLY
+
+    # SUPPORT_UNTIL: 3.3LTS
+    @classmethod
+    def set_nodes_are_readonly(cls, nodes_are_readonly):
+        _FnMaterialBI.__NODES_ARE_READONLY = nodes_are_readonly
 
     @classmethod
     def from_material_id(cls, material_id):
@@ -168,6 +178,8 @@ class _FnMaterialBI:
         return texture_slot
 
     def remove_texture(self):
+        if self._nodes_are_readonly:
+            return
         self.__remove_texture(self.__BASE_TEX_SLOT)
 
     def __remove_texture(self, index):
@@ -175,14 +187,14 @@ class _FnMaterialBI:
         if texture_slot:
             tex = texture_slot.texture
             self.__material.texture_slots.clear(index)
-            #print('clear texture: %s  users: %d'%(tex.name, tex.users))
+            #logging.debug('clear texture: %s  users: %d', tex.name, tex.users)
             if tex and tex.users < 1 and tex.type == 'IMAGE':
-                #print(' - remove texture: '+tex.name)
+                #logging.debug(' - remove texture: %s', tex.name)
                 img = tex.image
                 tex.image = None
                 bpy.data.textures.remove(tex)
                 if img and img.users < 1:
-                    #print('    - remove image: '+img.name)
+                    #logging.debug('    - remove image: %s', img.name)
                     bpy.data.images.remove(img)
 
 
@@ -190,6 +202,8 @@ class _FnMaterialBI:
         return self.__get_texture(self.__SPHERE_TEX_SLOT)
 
     def use_sphere_texture(self, use_sphere, obj=None):
+        if self._nodes_are_readonly:
+            return
         if use_sphere:
             self.update_sphere_texture_type(obj)
         else:
@@ -213,6 +227,9 @@ class _FnMaterialBI:
         return texture_slot
 
     def update_sphere_texture_type(self, obj=None):
+        if self._nodes_are_readonly:
+            return
+
         texture_slot = self.__material.texture_slots[self.__SPHERE_TEX_SLOT]
         if not texture_slot:
             self.__remove_texture(self.__SPHERE_ALPHA_SLOT)
@@ -250,6 +267,8 @@ class _FnMaterialBI:
         alpha_slot.uv_layer = texture_slot.uv_layer
 
     def remove_sphere_texture(self):
+        if self._nodes_are_readonly:
+            return
         self.__remove_texture(self.__SPHERE_TEX_SLOT)
         self.__remove_texture(self.__SPHERE_ALPHA_SLOT)
 
@@ -258,6 +277,8 @@ class _FnMaterialBI:
         return self.__get_texture(self.__TOON_TEX_SLOT)
 
     def use_toon_texture(self, use_toon):
+        if self._nodes_are_readonly:
+            return
         self.__use_texture(self.__TOON_TEX_SLOT, use_toon)
 
     def create_toon_texture(self, filepath):
@@ -278,6 +299,8 @@ class _FnMaterialBI:
         return texture_slot
 
     def update_toon_texture(self):
+        if self._nodes_are_readonly:
+            return
         mmd_mat = self.__material.mmd_material
         if mmd_mat.is_shared_toon_texture:
             shared_toon_folder = addon_preferences('shared_toon_folder', '')
@@ -289,6 +312,8 @@ class _FnMaterialBI:
             self.remove_toon_texture()
 
     def remove_toon_texture(self):
+        if self._nodes_are_readonly:
+            return
         self.__remove_texture(self.__TOON_TEX_SLOT)
 
 
@@ -298,15 +323,21 @@ class _FnMaterialBI:
         return [min(1.0,0.5*r+ar), min(1.0,0.5*g+ag), min(1.0,0.5*b+ab)]
 
     def update_ambient_color(self):
+        if self._nodes_are_readonly:
+            return
         self.update_diffuse_color()
 
     def update_diffuse_color(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.__material
         mmd_mat = mat.mmd_material
         mat.diffuse_color[:3] = self._mixDiffuseAndAmbient(mmd_mat)
         mat.diffuse_intensity = 0.8
 
     def update_alpha(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.__material
         mmd_mat = mat.mmd_material
         mat.alpha = mmd_mat.alpha
@@ -317,6 +348,8 @@ class _FnMaterialBI:
         self.update_self_shadow_map()
 
     def update_specular_color(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.__material
         mmd_mat = mat.mmd_material
         mat.specular_color = mmd_mat.specular_color
@@ -324,12 +357,16 @@ class _FnMaterialBI:
         mat.specular_intensity = 0.8
 
     def update_shininess(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.__material
         mmd_mat = mat.mmd_material
         shininess = mmd_mat.shininess
         mat.specular_hardness = shininess
 
     def update_is_double_sided(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.__material
         mmd_mat = mat.mmd_material
         mat.game_settings.use_backface_culling = not mmd_mat.is_double_sided
@@ -338,6 +375,8 @@ class _FnMaterialBI:
         pass
 
     def update_self_shadow_map(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.__material
         mmd_mat = mat.mmd_material
         cast_shadows = mmd_mat.enabled_self_shadow_map if mat.alpha > 1e-3 else False
@@ -348,15 +387,21 @@ class _FnMaterialBI:
             mat.use_cast_shadows = cast_shadows
 
     def update_self_shadow(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.__material
         mmd_mat = mat.mmd_material
         mat.use_shadows = mmd_mat.enabled_self_shadow
         mat.use_transparent_shadows = mmd_mat.enabled_self_shadow
 
     def update_enabled_toon_edge(self):
+        if self._nodes_are_readonly:
+            return
         self.update_edge_color()
 
     def update_edge_color(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.__material
         mmd_mat = mat.mmd_material
         color, alpha = mmd_mat.edge_color[:3], mmd_mat.edge_color[3]
@@ -380,7 +425,7 @@ class _FnMaterialBI:
         pass
 
     @staticmethod
-    def convert_to_mmd_material(material):
+    def convert_to_mmd_material(material, context=bpy.context):
         m, mmd_material = material, material.mmd_material
 
         map_diffuse = next((s.blend_type for s in m.texture_slots if s and s.use_map_color_diffuse), None)
@@ -421,6 +466,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         return _DummyTextureSlot(texture.image)
 
     def remove_texture(self):
+        if self._nodes_are_readonly:
+            return
         self.__remove_texture_node('mmd_base_tex')
 
 
@@ -428,6 +475,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         return self.__get_texture_node('mmd_sphere_tex', use_dummy=True)
 
     def use_sphere_texture(self, use_sphere, obj=None):
+        if self._nodes_are_readonly:
+            return
         if use_sphere:
             self.update_sphere_texture_type(obj)
         else:
@@ -439,6 +488,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         return _DummyTextureSlot(texture.image)
 
     def update_sphere_texture_type(self, obj=None):
+        if self._nodes_are_readonly:
+            return
         sphere_texture_type = int(self.material.mmd_material.sphere_texture_type)
         is_sph_add = (sphere_texture_type == 2)
 
@@ -464,12 +515,14 @@ class _FnMaterialCycles(_FnMaterialBI):
                         next(uv_layers, None) # skip base UV
                         subtex_uv = getattr(next(uv_layers, None), 'name', '')
                         if subtex_uv != 'UV1':
-                            print(' * material(%s): object "%s" use UV "%s" for SubTex'%(mat.name, obj.name, subtex_uv))
+                            logging.info(' * material(%s): object "%s" use UV "%s" for SubTex', mat.name, obj.name, subtex_uv)
                     links.new(nodes['mmd_tex_uv'].outputs['SubTex UV'], texture.inputs['Vector'])
                 else:
                     links.new(nodes['mmd_tex_uv'].outputs['Sphere UV'], texture.inputs['Vector'])
 
     def remove_sphere_texture(self):
+        if self._nodes_are_readonly:
+            return
         self.__remove_texture_node('mmd_sphere_tex')
 
 
@@ -477,6 +530,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         return self.__get_texture_node('mmd_toon_tex', use_dummy=True)
 
     def use_toon_texture(self, use_toon):
+        if self._nodes_are_readonly:
+            return
         self.__update_shader_input('Toon Tex Fac', use_toon)
 
     def create_toon_texture(self, filepath):
@@ -484,6 +539,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         return _DummyTextureSlot(texture.image)
 
     def remove_toon_texture(self):
+        if self._nodes_are_readonly:
+            return
         self.__remove_texture_node('mmd_toon_tex')
 
 
@@ -517,18 +574,24 @@ class _FnMaterialCycles(_FnMaterialBI):
 
 
     def update_ambient_color(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.material
         mmd_mat = mat.mmd_material
         mat.diffuse_color[:3] = self._mixDiffuseAndAmbient(mmd_mat)
         self.__update_shader_input('Ambient Color', mmd_mat.ambient_color[:]+(1,))
 
     def update_diffuse_color(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.material
         mmd_mat = mat.mmd_material
         mat.diffuse_color[:3] = self._mixDiffuseAndAmbient(mmd_mat)
         self.__update_shader_input('Diffuse Color', mmd_mat.diffuse_color[:]+(1,))
 
     def update_alpha(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.material
         mmd_mat = mat.mmd_material
         if hasattr(mat, 'blend_method'):
@@ -546,12 +609,16 @@ class _FnMaterialCycles(_FnMaterialBI):
         self.update_self_shadow_map()
 
     def update_specular_color(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.material
         mmd_mat = mat.mmd_material
         mat.specular_color = mmd_mat.specular_color
         self.__update_shader_input('Specular Color', mmd_mat.specular_color[:]+(1,))
 
     def update_shininess(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.material
         mmd_mat = mat.mmd_material
         mat.roughness = 1/pow(max(mmd_mat.shininess, 1), 0.37)
@@ -562,6 +629,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         self.__update_shader_input('Reflect', mmd_mat.shininess)
 
     def update_is_double_sided(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.material
         mmd_mat = mat.mmd_material
         if hasattr(mat, 'game_settings'):
@@ -571,6 +640,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         self.__update_shader_input('Double Sided', mmd_mat.is_double_sided)
 
     def update_self_shadow_map(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.material
         mmd_mat = mat.mmd_material
         cast_shadows = mmd_mat.enabled_self_shadow_map if mmd_mat.alpha > 1e-3 else False
@@ -578,16 +649,48 @@ class _FnMaterialCycles(_FnMaterialBI):
             mat.shadow_method = 'HASHED' if cast_shadows else 'NONE'
 
     def update_self_shadow(self):
+        if self._nodes_are_readonly:
+            return
         mat = self.material
         mmd_mat = mat.mmd_material
         self.__update_shader_input('Self Shadow', mmd_mat.enabled_self_shadow)
 
     @staticmethod
-    def convert_to_mmd_material(material):
+    def convert_to_mmd_material(material, context=bpy.context):
         m, mmd_material = material, material.mmd_material
 
         if m.use_nodes and next((n for n in m.node_tree.nodes if n.name.startswith('mmd_')), None) is None:
-            tex_node = next((n for n in m.node_tree.nodes if n.bl_idname == 'ShaderNodeTexImage'), None)
+            def search_tex_image_node(node: bpy.types.ShaderNode):
+                if node.type == 'TEX_IMAGE':
+                    return node
+                for input in node.inputs:
+                    if not input.is_linked:
+                        continue
+                    child = search_tex_image_node(input.links[0].from_node)
+                    if child is not None:
+                        return child
+                return None
+
+            active_render_engine = context.engine
+            preferred_output_node_target = {
+                'CYCLES': 'CYCLES',
+                'BLENDER_EEVEE': 'EEVEE',
+            }.get(active_render_engine, 'ALL')
+
+            tex_node = None
+            for target in [preferred_output_node_target, 'ALL']:
+                output_node = m.node_tree.get_output_node(target)
+                if output_node is None:
+                    continue
+
+                if not output_node.inputs[0].is_linked:
+                    continue
+
+                tex_node = search_tex_image_node(output_node.inputs[0].links[0].from_node)
+                break
+
+            if tex_node is None:
+                tex_node = next((n for n in m.node_tree.nodes if n.bl_idname == 'ShaderNodeTexImage'), None)
             if tex_node:
                 tex_node.name = 'mmd_base_tex'
 
@@ -622,6 +725,10 @@ class _FnMaterialCycles(_FnMaterialBI):
         self.__update_shader_nodes()
         shader = mat.node_tree.nodes.get('mmd_shader', None)
         if shader and name in shader.inputs:
+            if hasattr(shader, 'node_tree'):
+                input_socket = shader.node_tree.inputs[name]
+                if hasattr(input_socket, 'min_value'):
+                    val = min(max(val, input_socket.min_value), input_socket.max_value)
             shader.inputs[name].default_value = val
 
     def __update_shader_nodes(self):
@@ -659,7 +766,7 @@ class _FnMaterialCycles(_FnMaterialBI):
             node_uv.location = node_shader.location + Vector((-5*210, -2.5*220))
             node_uv.node_tree = self.__get_shader_uv()
 
-        if not node_shader.outputs['Shader'].is_linked:
+        if not (node_shader.outputs['Shader'].is_linked or node_shader.outputs['Color'].is_linked or node_shader.outputs['Alpha'].is_linked):
             node_output = next((n for n in nodes if isinstance(n, bpy.types.ShaderNodeOutputMaterial) and n.is_active_output), None)
             if node_output is None:
                 node_output = nodes.new('ShaderNodeOutputMaterial')
@@ -809,6 +916,8 @@ class _FnMaterialCycles(_FnMaterialBI):
         links.new(node_input.outputs['Sphere Tex'], node_spa.inputs['Color2'])
 
         ng.new_output_socket('Shader', shader_alpha_mix.outputs['Shader'])
+        ng.new_output_socket('Color', node_sphere.outputs['Color'])
+        ng.new_output_socket('Alpha', node_alpha.outputs['Value'])
 
         return shader
 
@@ -816,3 +925,22 @@ FnMaterial = _FnMaterialCycles
 if bpy.app.version < (2, 80, 0):
     FnMaterial = _FnMaterialBI
 
+class MigrationFnMaterial:
+    @staticmethod
+    def update_mmd_shader():
+        mmd_shader_node_tree: Optional[bpy.types.NodeTree] = bpy.data.node_groups.get('MMDShaderDev')
+        if mmd_shader_node_tree is None:
+            return
+
+        if 'Color' in mmd_shader_node_tree.outputs:
+            return
+
+        ng = _NodeGroupUtils(mmd_shader_node_tree)
+        shader_diffuse: bpy.types.ShaderNodeBsdfDiffuse = [n for n in mmd_shader_node_tree.nodes if n.type == 'BSDF_DIFFUSE'][0]
+        node_sphere: bpy.types.ShaderNodeMixRGB = shader_diffuse.inputs['Color'].links[0].from_node
+        node_output: bpy.types.NodeGroupOutput = ng.node_output
+        shader_alpha_mix: bpy.types.ShaderNodeMixShader = node_output.inputs['Shader'].links[0].from_node
+        node_alpha: bpy.types.ShaderNodeMath = shader_alpha_mix.inputs['Fac'].links[0].from_node
+
+        ng.new_output_socket('Color', node_sphere.outputs['Color'])
+        ng.new_output_socket('Alpha', node_alpha.outputs['Value'])

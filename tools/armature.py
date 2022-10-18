@@ -193,7 +193,16 @@ class FixArmature(bpy.types.Operator):
             if bone.name.startswith('ValveBiped'):
                 source_engine = True
                 break
-
+        
+        #Perform "Blenda" specific operation. This is needed because Spine1 on this model represents the hips and that conflicts with other mappings.
+        for bone in armature.pose.bones:
+            if bone.name.startswith("cShrugger"):
+                for bone in armature.pose.bones:
+                    if bone.name == "Spine1":
+                        bone.name = "Hips"
+                        break
+                break
+        
         # Remove unused animation data
         if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
             armature.animation_data_clear()
@@ -322,14 +331,40 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[2] = False
 
         # Remove empty mmd object and unused objects
-        Common.remove_empty()
-        Common.remove_unused_objects()
+        if not bpy.context.scene.cats_is_unittest:
+            Common.remove_empty()
+            Common.remove_unused_objects()
 
         # Fix VRM meshes being outside of the armature
         if is_vrm:
             for mesh in Common.get_meshes_objects(mode=2):
                 if mesh.name.endswith(('.baked', '.baked0')):
-                    mesh.parent = armature  # TODO
+                    mesh.parent = armature  # TODO ----- (edit, 989onan here, if you mean get it visually under it in the outliner I got you covered now through lines below.)
+                    # unlink from old collections
+
+
+        #Fix visual unlinkage in the outliner so the objects are under object in outliner
+        #Fixes issues like random objects not under a valve character skeleton.
+        for mesh in Common.get_meshes_objects():
+            name = None
+            try:
+                name = armature.users_collection[0].name
+            except:
+                pass
+            #If the armature is in a collection put everything under it. else put everything outside the collections.
+            if name:
+                for both in [armature,mesh]:
+                    for c in both.users_collection:
+                        c.objects.unlink(both)
+                    # make a new collection and link to it
+                    coll = bpy.data.collections.get(name)
+                    if not coll:
+                        coll = bpy.data.collections.new(name)
+                        context.scene.collection.children.link(coll)
+                    coll.objects.link(both)
+            else:
+                for c in both.users_collection:
+                        c.objects.unlink(o)
 
         # Check if weird FBX model
         print('CHECK TRANSFORMS:', armature.scale[0], armature.scale[1], armature.scale[2])
@@ -344,11 +379,8 @@ class FixArmature(bpy.types.Operator):
                 mesh.animation_data_clear()
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
-
-        # Combines same materials
-        if context.scene.combine_mats:
-            bpy.ops.cats_material.combine_mats()
+        if not bpy.context.scene.cats_is_unittest:
+            Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
         # Apply transforms of this model
         Common.apply_transforms()
@@ -392,9 +424,6 @@ class FixArmature(bpy.types.Operator):
 
                 Common.sort_shape_keys(mesh.name, shapekey_order)
 
-            # Remove empty shape keys and then save the shape key order
-            Common.clean_shapekeys(mesh)
-            Common.save_shapekey_order(mesh.name)
 
             # Clean material names. Combining mats would do this too
             Common.clean_material_names(mesh)
@@ -417,6 +446,18 @@ class FixArmature(bpy.types.Operator):
                         Common.fix_mmd_shader(mesh)
                     Common.fix_vrm_shader(mesh)
                     Common.add_principled_shader(mesh)
+                    for mat_slot in mesh.material_slots:  # Fix transparency per polygon and general garbage look in blender. Asthetic purposes to fix user complaints.
+                        mat_slot.material.shadow_method = "HASHED"
+                        mat_slot.material.blend_method = "HASHED"
+
+			# Remove empty shape keys and then save the shape key order
+            Common.clean_shapekeys(mesh)
+            Common.save_shapekey_order(mesh.name)
+
+            # Combines same materials
+            if context.scene.combine_mats:
+                bpy.ops.cats_material.combine_mats()
+
 
             # Reorders vrc shape keys to the correct order
             Common.sort_shape_keys(mesh.name)
@@ -1023,12 +1064,12 @@ class FixArmature(bpy.types.Operator):
                             if not temp_list_reparent_bones.get(child.name):
                                 temp_list_reparent_bones[child.name] = bone_parent.name
 
-                    # Mix the weights
-                    Common.mix_weights(mesh, bone_child.name, bone_parent.name)
-
                     # Add bone to delete list
                     if bone_child.name not in bones_to_delete:
                         bones_to_delete.append(bone_child.name)
+
+                    # Mix the weights
+                    Common.mix_weights(mesh, bone_child.name, bone_parent.name)
 
             # Merge weights
             for bone_new, bones_old in temp_reweight_bones.items():
@@ -1090,12 +1131,12 @@ class FixArmature(bpy.types.Operator):
                                 if not temp_list_reparent_bones.get(child.name):
                                     temp_list_reparent_bones[child.name] = bone[0]
 
-                        # print(vg.name + " to " + bone[0])
-                        Common.mix_weights(mesh, vg.name, bone[0])
-
                         # Add bone to delete list
                         if vg.name not in bones_to_delete:
                             bones_to_delete.append(vg.name)
+
+                        # Mix and delete group
+                        Common.mix_weights(mesh, vg.name, bone[0])
 
             # Old mixing weights. Still important
             for key, value in temp_list_reweight_bones.items():
@@ -1142,13 +1183,12 @@ class FixArmature(bpy.types.Operator):
                     print('BUG: ' + vg_to.name + ' tried to mix weights with itself!')
                     continue
 
-                # Mix the weights
-                # print(vg_from.name, 'into', vg_to.name)
-                Common.mix_weights(mesh, vg_from.name, vg_to.name)
-
                 # Add bone to delete list
                 if vg_from.name not in bones_to_delete:
                     bones_to_delete.append(vg_from.name)
+
+                # Mix the weights
+                Common.mix_weights(mesh, vg_from.name, vg_to.name)
 
             # Put back armature modifier
             mod = mesh.modifiers.new("Armature", 'ARMATURE')
@@ -1307,3 +1347,5 @@ def set_material_shading():
                     space.shading.studio_light = 'forest.exr'
                     space.shading.studiolight_rotate_z = 0.0
                     space.shading.studiolight_background_alpha = 0.0
+                    if bpy.app.version >= (2, 82):
+                        space.shading.render_pass = 'COMBINED'

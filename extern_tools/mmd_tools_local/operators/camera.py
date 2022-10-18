@@ -5,30 +5,28 @@ from bpy.props import BoolProperty
 from bpy.props import EnumProperty
 from bpy.types import Operator
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local.core.camera import MMDCamera
 
-@register_wrap
 class ConvertToMMDCamera(Operator):
     bl_idname = 'mmd_tools.convert_to_mmd_camera'
     bl_label = 'Convert to MMD Camera'
     bl_description = 'Create a camera rig for MMD'
     bl_options = {'REGISTER', 'UNDO'}
 
-    scale = FloatProperty(
+    scale: FloatProperty(
         name='Scale',
         description='Scaling factor for initializing the camera',
-        default=1.0,
+        default=0.08,
         )
 
-    bake_animation = BoolProperty(
+    bake_animation: BoolProperty(
         name='Bake Animation',
         description='Bake camera animation to a new MMD camera rig',
         default=False,
         options={'SKIP_SAVE'},
         )
 
-    camera_source = EnumProperty(
+    camera_source: EnumProperty(
         name='Camera Source',
         description='Select camera source to bake animation (camera target is the selected or DoF object)',
         items = [
@@ -38,7 +36,7 @@ class ConvertToMMDCamera(Operator):
         default='CURRENT',
         )
 
-    min_distance = FloatProperty(
+    min_distance: FloatProperty(
         name='Min Distance',
         description='Minimum distance to camera target when baking animation',
         default=0.1,
@@ -62,7 +60,6 @@ class ConvertToMMDCamera(Operator):
             if self.camera_source == 'SCENE':
                 obj = None
             camera = MMDCamera.newMMDCameraAnimation(obj, target, self.scale, self.min_distance).camera()
-            camera.select = True
             SceneOp(context).active_object = camera
         else:
             MMDCamera.convertToMMDCamera(context.active_object, self.scale)

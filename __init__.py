@@ -36,7 +36,7 @@ bl_info = {
     'tracker_url': 'https://github.com/michaeldegroot/cats-blender-plugin/issues',
     'warning': '',
 }
-dev_branch = False
+dev_branch = True
 
 import os
 import sys
@@ -49,6 +49,8 @@ if file_dir not in sys.path:
 import shutil
 import pathlib
 import requests
+
+from importlib.util import find_spec
 
 from . import globs
 
@@ -63,6 +65,8 @@ else:
 if not is_reloading:
     # This order is important
     import mmd_tools_local
+    if find_spec("imscale") and find_spec("imscale.immersive_scaler"):
+        import imscale.immersive_scaler as imscale
     from . import updater
     from . import tools
     from . import ui
@@ -71,6 +75,8 @@ else:
     import importlib
     importlib.reload(updater)
     importlib.reload(mmd_tools_local)
+    if 'imscale' in vars():
+        importlib.reload(imscale)
     importlib.reload(tools)
     importlib.reload(ui)
     importlib.reload(extentions)
@@ -284,6 +290,14 @@ def register():
     except ValueError:
         print('mmd_tools is already registered')
 
+    # Register immersive scaler if it's loaded
+    if find_spec("imscale") and find_spec("imscale.immersive_scaler"):
+        import imscale.immersive_scaler as imscale
+        try:
+            imscale.register()
+        except ModuleNotFoundError:
+            pass
+
     # Register all classes
     count = 0
     tools.register.order_classes()
@@ -359,6 +373,14 @@ def unregister():
         print('mmd_tools was not registered')
         pass
 
+    # Unload immersive scaler
+    if find_spec("imscale") and find_spec("imscale.immersive_scaler"):
+        import imscale.immersive_scaler as imscale
+        try:
+            imscale.unregister()
+        except ModuleNotFoundError:
+            pass
+
     # Unload all classes in reverse order
     count = 0
     for cls in reversed(tools.register.__bl_ordered_classes):
@@ -385,6 +407,8 @@ def unregister():
     # Remove folder from sys path
     if file_dir in sys.path:
         sys.path.remove(file_dir)
+
+    tools.settings.stop_apply_settings_threads()
 
     print("### Unloaded CATS successfully!\n")
 

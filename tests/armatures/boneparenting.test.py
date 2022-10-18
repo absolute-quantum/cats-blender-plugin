@@ -30,15 +30,12 @@ import bpy
 
 
 class TestAddon(unittest.TestCase):
-    def test_armature(self):
-        bpy.context.scene.remove_zero_weight = True
-        result = bpy.ops.cats_armature.fix()
-        self.assertTrue(result == {'FINISHED'})
+    def test_boneparenting(self):
+        bpy.context.scene.cats_is_unittest = True
+        bpy.ops.cats_armature.fix()
+        bpy.ops.cats_root.refresh_root_list()
+        bpy.ops.cats_root.create_root()
 
-    def test_armature_with_zero_weights_off(self):
-        bpy.context.scene.remove_zero_weight = False
-        result = bpy.ops.cats_armature.fix()
-        self.assertTrue(result == {'FINISHED'})
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

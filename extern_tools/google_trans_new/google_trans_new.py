@@ -149,21 +149,28 @@ class google_translator:
                 decoded_line = line.decode('utf-8')
                 if "MkEWBc" in decoded_line:
                     try:
-                        response = (decoded_line + ']')
+                        # print("RESPONSE 1:", response)
+                        # response = (decoded_line + ']')
+                        response = decoded_line
+                        # print("RESPONSE 2:", response)
                         response = json.loads(response)
-                        print("DEBUG1", response)
+
+                        # print("RESPONSE 3:", response)
                         response = list(response)
+
+                        # print("RESPONSE 4:", response)
                         response = json.loads(response[0][2])
+
+                        # print("RESPONSE 5:", response)
                         response_ = list(response)
+                        # print("RESPONSE 6:", response)
                         response = response_[1][0]
-                        print("DEBUG2", response)
+                        # print("RESPONSE 7:", response)
                         if len(response) == 1:
                             if len(response[0]) > 5:
                                 sentences = response[0][5]
-                                print("DEBUG3", sentences)
                             else:  # only url
                                 sentences = response[0][0]
-                                print("DEBUG4", sentences)
                                 if pronounce == False:
                                     return sentences
                                 elif pronounce == True:
@@ -180,6 +187,7 @@ class google_translator:
                             translate_text = translations[0]
 
                             if pronounce == False:
+                                # print(f"Translation: {text} -> {translate_text}")
                                 return translate_text
                             elif pronounce == True:
                                 pronounce_src = (response_[0][0])

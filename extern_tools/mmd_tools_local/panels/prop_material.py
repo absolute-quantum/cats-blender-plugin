@@ -3,7 +3,6 @@
 import bpy
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local.core.material import FnMaterial
 
 
@@ -12,7 +11,6 @@ if bpy.app.version < (2, 80, 0):
     ICON_FILE_FOLDER = 'FILESEL'
 
 
-@register_wrap
 class MMDMaterialPanel(Panel):
     bl_idname = 'MATERIAL_PT_mmd_tools_material'
     bl_label = 'MMD Material'
@@ -72,7 +70,6 @@ class MMDMaterialPanel(Panel):
         r.prop(mmd_material, 'edge_color')
         r.prop(mmd_material, 'edge_weight', slider=True)
 
-@register_wrap
 class MMDTexturePanel(Panel):
     bl_idname = 'MATERIAL_PT_mmd_tools_texture'
     bl_label = 'MMD Texture'

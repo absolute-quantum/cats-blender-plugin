@@ -116,7 +116,11 @@ class AutoVisemeButton(bpy.types.Operator):
                 [(shape_ch), (0.7)]
             ]
         }
-        shapekey_data['vrc.v_e'] = {
+        # Note 2022-07-16: 'ih' and 'e' were originally swapped, due to early VRChat viseme
+        # refs being slightly incorrect. See:
+        # https://github.com/absolute-quantum/cats-blender-plugin/issues/505
+        # https://developer.oculus.com/documentation/unreal/audio-ovrlipsync-viseme-reference/
+        shapekey_data['vrc.v_ih'] = {
             'mix': [
                 [(shape_ch), (0.7)],
                 [(shape_o), (0.3)]
@@ -128,7 +132,7 @@ class AutoVisemeButton(bpy.types.Operator):
                 [(shape_ch), (0.4)]
             ]
         }
-        shapekey_data['vrc.v_ih'] = {
+        shapekey_data['vrc.v_e'] = {
             'mix': [
                 [(shape_a), (0.5)],
                 [(shape_ch), (0.2)]

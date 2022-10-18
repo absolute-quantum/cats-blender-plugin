@@ -30,9 +30,11 @@ import bpy
 
 
 class TestAddon(unittest.TestCase):
-    def test_material_combine(self):
+    def test_bonemerging(self):
+        bpy.context.scene.cats_is_unittest = True
         bpy.ops.cats_armature.fix()
-        bpy.ops.cats_material.combine_mats()
+        bpy.ops.cats_root.refresh_root_list()
+        bpy.ops.cats_bonemerge.merge_bones()
 
 
 suite = unittest.defaultTestLoader.loadTestsFromTestCase(TestAddon)

@@ -80,6 +80,7 @@ class PMXImporter:
         root = self.__rig.rootObject()
         mmd_root = root.mmd_root
         self.__root = root
+        self.__armObj = self.__rig.armature()
 
         root['import_folder'] = os.path.dirname(pmxModel.filepath)
 
@@ -89,10 +90,6 @@ class PMXImporter:
         txt = bpy.data.texts.new(obj_name+'_e')
         txt.from_string(pmxModel.comment_e.replace('\r', ''))
         mmd_root.comment_e_text = txt.name
-
-        self.__armObj = self.__rig.armature()
-        self.__armObj.hide = True
-        self.__armObj.select = False
 
     def __createMeshObject(self):
         model_name = self.__root.name
@@ -405,7 +402,7 @@ class PMXImporter:
                 c = bone.constraints.new(type='LIMIT_ROTATION')
                 c.mute = not is_valid_ik
                 c.name = 'mmd_ik_limit_override'
-                c.owner_space = 'POSE' # WORLD/POSE/LOCAL
+                c.owner_space = 'LOCAL'
                 c.max_x, c.max_y, c.max_z = maximum
                 c.min_x, c.min_y, c.min_z = minimum
                 c.use_limit_x = bone.ik_max_x != c.max_x or bone.ik_min_x != c.min_x
@@ -639,19 +636,26 @@ class PMXImporter:
         # For Cycles, users have to offset or delete those z-fighting faces to fix it manually.
         check = {}
         mi_skip = -1
-        def _rounded_co(co): return tuple(round(v, 6) for v in co)
+        _vi_cache = {}
+        def _rounded_co_vi(vi):
+            if vi not in _vi_cache:
+                vco = vertices[vi].co
+                _vi_cache[vi] = (round(vco[0], 6), round(vco[1], 6), round(vco[2], 6))
+            return _vi_cache[vi]
+
         assert(len(loop_indices) == len(material_indices)*3)
         for i, mi in enumerate(material_indices):
-            if mi > mi_skip:
-                si = 3*i
-                verts = tuple(sorted(_rounded_co(vertices[vi].co) for vi in loop_indices[si:si+3]))
-                if verts not in check:
-                    check[verts] = mi
-                elif check[verts] < mi:
-                    logging.debug(' >> fix blend method of material: %s', materials[mi].name)
-                    materials[mi].blend_method = 'BLEND'
-                    materials[mi].show_transparent_back = False
-                    mi_skip = mi
+            if mi <= mi_skip:
+                continue
+            si = 3*i
+            verts = tuple(sorted((_rounded_co_vi(loop_indices[si]), _rounded_co_vi(loop_indices[si+1]), _rounded_co_vi(loop_indices[si+2]))))
+            if verts not in check:
+                check[verts] = mi
+            elif check[verts] < mi:
+                logging.debug(' >> fix blend method of material: %s', materials[mi].name)
+                materials[mi].blend_method = 'BLEND'
+                materials[mi].show_transparent_back = False
+                mi_skip = mi
 
     def __importVertexMorphs(self):
         mmd_root = self.__root.mmd_root
@@ -770,6 +774,7 @@ class PMXImporter:
         DisplayItemQuickSetup.apply_bone_groups(root.mmd_root, self.__armObj)
 
     def __addArmatureModifier(self, meshObj, armObj):
+        # TODO: move to model.py
         armModifier = meshObj.modifiers.new(name='Armature', type='ARMATURE')
         armModifier.object = armObj
         armModifier.use_vertex_groups = True
@@ -886,13 +891,7 @@ class PMXImporter:
             self.__addArmatureModifier(self.__meshObj, self.__armObj)
 
         #bpy.context.scene.gravity[2] = -9.81 * 10 * self.__scale
-        root = self.__root
-        if 'ARMATURE' in types:
-            root.mmd_root.show_armature = True
-        if 'MESH' in types:
-            root.mmd_root.show_meshes = True
-        self.__targetScene.active_object = root
-        root.select = True
+        self.__targetScene.active_object = self.__root
 
         logging.info(' Finished importing the model in %f seconds.', time.time() - start_time)
         logging.info('----------------------------------------')
@@ -950,11 +949,11 @@ class _PMXCleaner:
         for i, v in enumerate(pmx_vertices):
             vertex_map[i] = [tuple(v.co)]
         if not mesh_only:
-            for m in pmx_model.morphs:
+            for i, m in enumerate(pmx_model.morphs):
                 if not isinstance(m, pmx.VertexMorph) and not isinstance(m, pmx.UVMorph):
                     continue
                 for x in m.offsets:
-                    vertex_map[x.index].append(tuple(x.offset))
+                    vertex_map[x.index].append((i,)+tuple(x.offset))
         # generate vertex merging table
         keys = {}
         for i, v in enumerate(vertex_map):

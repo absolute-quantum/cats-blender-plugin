@@ -395,6 +395,7 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Mixamorig_Spine4',
 
     # 3DMax?
+	#whoever made comment above, this applies to Valve_Biped and some others.
     'Bip_Spine',
     'Bip_Spine0',
     'Bip_Spine1',
@@ -435,8 +436,8 @@ bone_rename['Spine'] = [  # This is a list of all the spine and chest bones. The
     'Spine_Upper_1',
     'Spine_Upper_2',
 
-    'J_SpineLower'
-    'J_SpineUpper'
+    'J_SpineLower',
+    'J_SpineUpper',
 
     'Abdomen',
 
@@ -652,6 +653,7 @@ bone_rename['\Left arm'] = [
     '\Left_Arm',
     '\LeftArm',
     'Arm_\L',
+    'cShrugger.\L',
     '\LArm',
     '\LArmA',
     'ArmTC_\L',
@@ -794,6 +796,7 @@ bone_rename['\Left leg'] = [
     '\Left_Leg',
     '\Left_Foot',
     '\LeftLeg',
+    'Hip.\L',
     'Leg_\L',
     'Leg_\L_001',
     'Leg\L1',

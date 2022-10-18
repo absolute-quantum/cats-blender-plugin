@@ -14,6 +14,7 @@ from mmd_tools_local.core import pmx
 from mmd_tools_local.core.bone import FnBone
 from mmd_tools_local.core.material import FnMaterial
 from mmd_tools_local.core.morph import FnMorph
+from mmd_tools_local.core.translations import FnTranslations
 from mmd_tools_local.core.sdef import FnSDEF
 from mmd_tools_local.core.vmd.importer import BoneConverter, BoneConverterPoseMode
 from mmd_tools_local import bpyutils
@@ -37,10 +38,11 @@ class _Vertex:
         self.add_uvs = [None]*4 # UV1~UV4
 
 class _Face:
-    def __init__(self, vertices):
+    def __init__(self, vertices, index=-1):
         ''' Temporary Face Class
         '''
         self.vertices = vertices
+        self.index = index
 
 class _Mesh:
     def __init__(self, material_faces, shape_key_names, material_names):
@@ -79,6 +81,8 @@ class __PmxExporter:
         self.__exported_vertices = []
         self.__default_material = None
         self.__vertex_order_map = None # used for controlling vertex order
+        self.__overwrite_bone_morphs_from_pose_library = False
+        self.__translate_in_presets = False
         self.__disable_specular = False
         self.__add_uv_count = 0
 
@@ -666,13 +670,34 @@ class __PmxExporter:
         self.__model.faces = sorted_faces
 
     def __export_bone_morphs(self, root):
+        if self.__overwrite_bone_morphs_from_pose_library:
+            FnMorph.overwrite_bone_morphs_from_pose_library(self.__armature)
+
         mmd_root = root.mmd_root
         if len(mmd_root.bone_morphs) == 0:
             return
         categories = self.CATEGORIES
         pose_bones = self.__armature.pose.bones
-        use_pose_mode = mmd_root.is_built and self.__armature.data.pose_position != 'REST'
-        bone_util_cls = BoneConverterPoseMode if use_pose_mode else BoneConverter
+        matrix_world = self.__armature.matrix_world
+        bone_util_cls = BoneConverterPoseMode if self.__armature.data.pose_position != 'REST' else BoneConverter
+
+        class _RestBone:
+            def __init__(self, b):
+                self.matrix_local = matmul(matrix_world, b.bone.matrix_local)
+
+        class _PoseBone: # world space
+            def __init__(self, b):
+                self.bone = _RestBone(b)
+                self.matrix = matmul(matrix_world, b.matrix)
+                self.matrix_basis = b.matrix_basis
+                self.location = b.location
+
+        converter_cache = {}
+        def _get_converter(b):
+            if b not in converter_cache:
+                converter_cache[b] = bone_util_cls(_PoseBone(blender_bone), self.__scale, invert=True)
+            return converter_cache[b]
+
         for morph in mmd_root.bone_morphs:
             bone_morph = pmx.BoneMorph(
                 name=morph.name,
@@ -689,7 +714,7 @@ class __PmxExporter:
                 if blender_bone is None:
                     logging.warning('Bone Morph (%s): Bone "%s" was not found.', morph.name, data.bone)
                     continue
-                converter = bone_util_cls(blender_bone, self.__scale, invert=True)
+                converter = _get_converter(blender_bone)
                 morph_data.location_offset = converter.convert_location(data.location)
                 rw, rx, ry, rz = data.rotation
                 rw, rx, ry, rz = converter.convert_rotation([rx, ry, rz, rw])
@@ -922,16 +947,18 @@ class __PmxExporter:
                 vert_to_loop_id[v] = loop_id
                 loop_id += 1
 
-        loop_normals = None
+        loop_normals, face_indices = None, None
         if is_triangulated:
             loop_normals = custom_normals
         else:
             quad_method, ngon_method = (1, 1) if bpy.app.version < (2, 80, 0) else ('FIXED', 'EAR_CLIP')
             face_map = bmesh.ops.triangulate(bm, faces=bm.faces, quad_method=quad_method, ngon_method=ngon_method)['face_map']
             logging.debug(' - Remapping custom normals...')
-            loop_normals = []
+            loop_normals, face_indices = [], []
             for f in bm.faces:
-                vert_to_loop_id = face_verts_to_loop_id_map[face_map.get(f, f)]
+                f_orig = face_map.get(f, f)
+                face_indices.append(f_orig.index)
+                vert_to_loop_id = face_verts_to_loop_id_map[f_orig]
                 for v in f.verts:
                     loop_normals.append(custom_normals[vert_to_loop_id[v]])
             logging.debug('   - Done (faces:%d)', len(bm.faces))
@@ -941,7 +968,7 @@ class __PmxExporter:
         bm.free()
 
         assert(len(loop_normals) == len(mesh.loops))
-        return loop_normals
+        return loop_normals, face_indices
 
     @staticmethod
     def __get_normals(mesh, matrix):
@@ -996,7 +1023,7 @@ class __PmxExporter:
             _to_mesh_clear = lambda obj, mesh: obj.to_mesh_clear()
 
         base_mesh = _to_mesh(meshObj)
-        loop_normals = self.__triangulate(base_mesh, self.__get_normals(base_mesh, normal_matrix))
+        loop_normals, face_indices = self.__triangulate(base_mesh, self.__get_normals(base_mesh, normal_matrix))
         base_mesh.transform(pmx_matrix)
 
         def _get_weight(vertex_group_index, vertex, default_weight):
@@ -1058,7 +1085,7 @@ class __PmxExporter:
         else:
             uv_data = iter(lambda: _DummyUV, None)
         face_seq = []
-        for face, uv in zip(base_mesh.polygons, uv_data):
+        for face, uv, face_index in zip(base_mesh.polygons, uv_data, face_indices or iter(lambda: -1, None)):
             if len(face.vertices) != 3:
                 raise Exception
             idx = face.index * 3
@@ -1067,12 +1094,15 @@ class __PmxExporter:
             v2 = self.__convertFaceUVToVertexUV(face.vertices[1], uv.uv2, n2, base_vertices)
             v3 = self.__convertFaceUVToVertexUV(face.vertices[2], uv.uv3, n3, base_vertices)
 
-            t = _Face([v1, v2, v3])
+            t = _Face([v1, v2, v3], face_index)
             face_seq.append(t)
             if face.material_index not in material_faces:
                 material_faces[face.material_index] = []
             material_faces[face.material_index].append(t)
 
+        if face_indices:
+            for f in material_faces.values():
+                f.sort(key=lambda x: x.index)
         _mat_name = lambda x: x.name if x else self.__getDefaultMaterial().name
         material_names = {i:_mat_name(m) for i, m in enumerate(base_mesh.materials)}
         material_names = {i:material_names.get(i, None) or _mat_name(None) for i in material_faces.keys()}
@@ -1120,10 +1150,12 @@ class __PmxExporter:
             shape_key_name = kb.name
             logging.info(' - processing shape key: %s', shape_key_name)
             kb_mute, kb.mute = kb.mute, False
+            kb_value, kb.value = kb.value, 1.0
             meshObj.active_shape_key_index = i
             mesh = _to_mesh(meshObj)
             mesh.transform(pmx_matrix)
             kb.mute = kb_mute
+            kb.value = kb_value
             if len(mesh.vertices) != len(base_vertices):
                 logging.warning('   * Error! vertex count mismatch!')
                 continue
@@ -1168,7 +1200,6 @@ class __PmxExporter:
 
     def __loadMeshData(self, meshObj, bone_map):
         show_only_shape_key = meshObj.show_only_shape_key
-        meshObj.show_only_shape_key = True
         active_shape_key_index = meshObj.active_shape_key_index
         meshObj.active_shape_key_index = 0
         uv_textures = getattr(meshObj.data, 'uv_textures', meshObj.data.uv_layers)
@@ -1185,6 +1216,7 @@ class __PmxExporter:
 
         try:
             logging.info('Loading mesh: %s', meshObj.name)
+            meshObj.show_only_shape_key = bool(muted_modifiers)
             return self.__doLoadMeshData(meshObj, bone_map)
         finally:
             meshObj.show_only_shape_key = show_only_shape_key
@@ -1193,6 +1225,13 @@ class __PmxExporter:
             for m, show in muted_modifiers:
                 m.show_viewport = show
 
+    def __translate_armature(self, root_object: bpy.types.Object):
+        FnTranslations.clear_data(root_object.mmd_root.translation)
+        FnTranslations.collect_data(root_object.mmd_root.translation)
+        FnTranslations.update_query(root_object.mmd_root.translation)
+        FnTranslations.execute_translation_batch(root_object)
+        FnTranslations.apply_translations(root_object)
+        FnTranslations.clear_data(root_object.mmd_root.translation)
 
     def execute(self, filepath, **args):
         root = args.get('root', None)
@@ -1222,6 +1261,12 @@ class __PmxExporter:
         sort_vertices = args.get('sort_vertices', 'NONE')
         if sort_vertices != 'NONE':
             self.__vertex_order_map = {'method':sort_vertices}
+
+        self.__overwrite_bone_morphs_from_pose_library = args.get('overwrite_bone_morphs_from_pose_library', False)
+        self.__translate_in_presets = args.get('translate_in_presets', False)
+
+        if self.__translate_in_presets:
+            self.__translate_armature(root)
 
         nameMap = self.__exportBones(meshes)
 

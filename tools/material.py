@@ -185,42 +185,48 @@ class CombineMaterialsButton(bpy.types.Operator):
 
         for ob in objs:
             if ob.type == 'MESH':
-                mats = ob.material_slots.keys()
+                Common.set_active(ob)
+                bpy.ops.object.material_slot_remove_unused()
+                
+                #Why do all below when you can just do what is above? - @989onan 
+                
+                
+#                mats = ob.material_slots.keys()
 
-                usedMatIndex = []
-                faceMats = []
-                me = ob.data
-                for f in me.polygons:
-                    faceindex = f.material_index
-                    if faceindex >= len(mats):
-                        continue
+#                usedMatIndex = []
+#                faceMats = []
+#                me = ob.data
+#                for f in me.polygons:
+#                    faceindex = f.material_index
+#                    if faceindex >= len(mats):
+#                        continue
 
-                    currentfacemat = mats[faceindex]
-                    faceMats.append(currentfacemat)
+#                    currentfacemat = mats[faceindex]
+#                    faceMats.append(currentfacemat)
 
-                    found = 0
-                    for m in usedMatIndex:
-                        if m == faceindex:
-                            found = 1
+#                    found = False
+#                    for m in usedMatIndex:
+#                        if m == faceindex:
+#                            found = True
 
-                    if found == 0:
-                        usedMatIndex.append(faceindex)
+#                    if found == False:
+#                        usedMatIndex.append(faceindex)
 
-                ml = []
-                mnames = []
-                for u in usedMatIndex:
-                    ml.append(mats[u])
-                    mnames.append(mats[u])
+#                ml = []
+#                mnames = []
+#                for u in usedMatIndex:
+#                    ml.append(mats[u])
+#                    mnames.append(mats[u])
 
-                self.assignmatslots(ob, ml)
+#                self.assignmatslots(ob, ml)
 
-                i = 0
-                for f in me.polygons:
-                    if i >= len(faceMats):
-                        continue
-                    matindex = mnames.index(faceMats[i])
-                    f.material_index = matindex
-                    i += 1
+#                i = 0
+#                for f in me.polygons:
+#                    if i >= len(faceMats):
+#                        continue
+#                    matindex = mnames.index(faceMats[i])
+#                    f.material_index = matindex
+#                    i += 1
 
     # Iterates over each material slot and hashes combined image filepaths and material settings
     # Then uses this hash as the dict keys and material data as values
@@ -259,13 +265,9 @@ class CombineMaterialsButton(bpy.types.Operator):
                         for node in nodes:
 
                             # Skip certain known nodes
-                            ignore_this_node = False
-                            for name in ignore_nodes:
-                                if name in node.name or name in node.label:
-                                    ignore_this_node = True
-                                    break
-                            if ignore_this_node:
+                            if node.name in ignore_nodes or node.label in ignore_nodes:
                                 continue
+                            
                             # Add images to hash and skip toon and shpere textures
                             if node.type == 'TEX_IMAGE':
                                 image = node.image

@@ -1,48 +1,58 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import math
 import re
+from typing import List, Optional, Set
 
 import bpy
-import math
 import mathutils
-
 from mmd_tools_local.core import vmd
 from mmd_tools_local.core.camera import MMDCamera
 from mmd_tools_local.core.lamp import MMDLamp
-
 from mmd_tools_local.core.vmd.importer import _FnBezier
 
 
 class _FCurve:
+    @staticmethod
+    def __x_co_0(x: bpy.types.Keyframe):
+        return x.co[0]
 
     def __init__(self, default_value):
         self.__default_value = default_value
-        self.__fcurve = None
+        self.__fcurve: Optional[bpy.types.FCurve] = None
+        self.__sorted_keyframe_points: Optional[List[bpy.types.Keyframe]] = None
 
-    def setFCurve(self, fcurve):
+    def setFCurve(self, fcurve: bpy.types.FCurve):
         assert(fcurve.is_valid and self.__fcurve is None)
         self.__fcurve = fcurve
+        self.__sorted_keyframe_points: List[bpy.types.Keyframe] = sorted(self.__fcurve.keyframe_points, key=self.__x_co_0)
 
-    @staticmethod
-    def __get_keys(keyframe_points):
-        kp0 = None
-        for kp1 in sorted(keyframe_points, key=lambda x: x.co[0]):
-            yield int(kp1.co[0]+0.5)
-            if kp0 and kp0.interpolation != 'LINEAR' and kp1.co.x - kp0.co.x > 2.5:
+    def frameNumbers(self):
+        sorted_keyframe_points = self.__sorted_keyframe_points
+        result: Set[int] = set()
+        if sorted_keyframe_points is None:
+            return result
+
+        if len(sorted_keyframe_points) == 0:
+            return result
+
+        kp1 = sorted_keyframe_points[0]
+        result.add(int(kp1.co[0]+0.5))
+
+        kp0 = kp1
+        for kp1 in sorted_keyframe_points[1:]:
+            result.add(int(kp1.co[0]+0.5))
+            if kp0.interpolation != 'LINEAR' and kp1.co.x - kp0.co.x > 2.5:
                 if kp0.interpolation == 'CONSTANT':
-                    yield int(kp1.co[0]-0.5)
+                    result.add(int(kp1.co[0]-0.5))
                 elif kp0.interpolation == 'BEZIER':
                     bz = _FnBezier.from_fcurve(kp0, kp1)
                     for t in bz.find_critical():
-                        yield int(bz.evaluate(t).x+0.5)
+                        result.add(int(bz.evaluate(t).x+0.5))
             kp0 = kp1
 
-    def frameNumbers(self):
-        if self.__fcurve is None:
-            return set()
-        #return {int(kp.co[0]+0.5) for kp in self.__fcurve.keyframe_points}
-        return set(self.__get_keys(self.__fcurve.keyframe_points))
+        return result
 
     @staticmethod
     def getVMDControlPoints(kp0, kp1):
@@ -66,19 +76,20 @@ class _FCurve:
         y2 = max(0, min(127, int(0.5 + y2*127.0/dy)))
         return ((x1, y1), (x2, y2))
 
-    def sampleFrames(self, frame_numbers):
+    def sampleFrames(self, frame_numbers: List[int]):
         # assume set(frame_numbers) & set(self.frameNumbers()) == set(self.frameNumbers())
         fcurve = self.__fcurve
-        if fcurve is None or len(fcurve.keyframe_points) < 1: # no key frames
-            for i in frame_numbers:
-                yield [self.__default_value, ((20, 20), (107, 107))]
-            return
+        if fcurve is None or len(fcurve.keyframe_points) == 0: # no key frames
+            return [[self.__default_value, ((20, 20), (107, 107))] for _ in frame_numbers]
+
+        result = list()
 
         evaluate = fcurve.evaluate
         frame_iter = iter(frame_numbers)
         prev_kp = None
         prev_i = None
-        for kp in sorted(fcurve.keyframe_points, key=lambda x: x.co[0]):
+        kp: bpy.types.Keyframe
+        for kp in self.__sorted_keyframe_points:
             i = int(kp.co[0]+0.5)
             if i == prev_i:
                 prev_kp = kp
@@ -93,22 +104,24 @@ class _FCurve:
             assert(len(frames) >= 1 and frames[-1] == i)
             if prev_kp is None:
                 for f in frames: # starting key frames
-                    yield [kp.co[1], ((20, 20), (107, 107))]
+                    result.append([kp.co[1], ((20, 20), (107, 107))])
             elif len(frames) == 1:
-                yield [kp.co[1], self.getVMDControlPoints(prev_kp, kp)]
+                result.append([kp.co[1], self.getVMDControlPoints(prev_kp, kp)])
             elif prev_kp.interpolation == 'BEZIER':
                 bz = _FnBezier.from_fcurve(prev_kp, kp)
                 for f in frames[:-1]:
                     b1, bz, pt = bz.split_by_x(f)
-                    yield [pt.y, self.__toVMDControlPoints(b1)]
-                yield [bz.points[-1].y, self.__toVMDControlPoints(bz)]
+                    result.append([pt.y, self.__toVMDControlPoints(b1)])
+                result.append([bz.points[-1].y, self.__toVMDControlPoints(bz)])
             else:
                 for f in frames:
-                    yield [evaluate(f), ((20, 20), (107, 107))]
+                    result.append([evaluate(f), ((20, 20), (107, 107))])
             prev_kp = kp
 
-        for f in frame_iter: # ending key frames
-            yield [prev_kp.co[1], ((20, 20), (107, 107))]
+        prev_kp_co_1 = prev_kp.co[1]
+        result.extend([[prev_kp_co_1, ((20, 20), (107, 107))] for _ in frame_iter])
+        
+        return result
 
 
 class VMDExporter:
@@ -120,16 +133,16 @@ class VMDExporter:
         self.__bone_converter_cls = vmd.importer.BoneConverter
         self.__ik_fcurves = {}
 
-    def __allFrameKeys(self, curves):
+    def __allFrameKeys(self, curves: List[_FCurve]):
         all_frames = set()
         for i in curves:
             all_frames |= i.frameNumbers()
 
-        if len(all_frames) < 1:
+        if len(all_frames) == 0:
             return
 
         frame_start = min(all_frames)
-        if frame_start < self.__frame_start:
+        if frame_start != self.__frame_start:
             frame_start = self.__frame_start
             all_frames.add(frame_start)
 
@@ -255,7 +268,9 @@ class VMDExporter:
 
         for bone, bone_curves in anim_bones.items():
             key_name = bone.mmd_bone.name_j or bone.name
-            assert(key_name not in vmd_bone_anim) # VMD bone name collision
+            if key_name in vmd_bone_anim:
+                raise ValueError(f'VMD bone name {key_name} collision')
+
             frame_keys = vmd_bone_anim[key_name]
 
             get_xyzw = self.__xyzw_from_rotation_mode(bone.rotation_mode)

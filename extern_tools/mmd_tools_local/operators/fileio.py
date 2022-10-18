@@ -11,7 +11,6 @@ from bpy.types import Operator
 from bpy.types import OperatorFileListElement
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local import auto_scene_setup
 from mmd_tools_local.utils import makePmxBoneMap
 from mmd_tools_local.core.camera import MMDCamera
@@ -60,20 +59,19 @@ def _update_types(cls, prop):
     if types != cls.types:
         cls.types = types # trigger update
 
-@register_wrap
 class ImportPmx(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_model'
     bl_label = 'Import Model File (.pmd, .pmx)'
     bl_description = 'Import model file(s) (.pmd, .pmx)'
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
-    files = bpy.props.CollectionProperty(type=OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
-    directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
+    files: bpy.props.CollectionProperty(type=OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
+    directory: bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
 
     filename_ext = '.pmx'
-    filter_glob = bpy.props.StringProperty(default='*.pmx;*.pmd', options={'HIDDEN'})
+    filter_glob: bpy.props.StringProperty(default='*.pmx;*.pmd', options={'HIDDEN'})
 
-    types = bpy.props.EnumProperty(
+    types: bpy.props.EnumProperty(
         name='Types',
         description='Select which parts will be imported',
         options={'ENUM_FLAG'},
@@ -87,68 +85,68 @@ class ImportPmx(Operator, ImportHelper):
         default={'MESH', 'ARMATURE', 'PHYSICS', 'DISPLAY', 'MORPHS',},
         update=_update_types,
         )
-    scale = bpy.props.FloatProperty(
+    scale: bpy.props.FloatProperty(
         name='Scale',
         description='Scaling factor for importing the model',
-        default=1.0,
+        default=0.08,
         )
-    clean_model = bpy.props.BoolProperty(
+    clean_model: bpy.props.BoolProperty(
         name='Clean Model',
         description='Remove unused vertices and duplicated/invalid faces',
         default=True,
         )
-    remove_doubles = bpy.props.BoolProperty(
+    remove_doubles: bpy.props.BoolProperty(
         name='Remove Doubles',
         description='Merge duplicated vertices and faces',
         default=False,
         )
-    fix_IK_links = bpy.props.BoolProperty(
+    fix_IK_links: bpy.props.BoolProperty(
         name='Fix IK Links',
         description='Fix IK links to be blender suitable',
         default=False,
         )
-    apply_bone_fixed_axis = bpy.props.BoolProperty(
+    apply_bone_fixed_axis: bpy.props.BoolProperty(
         name='Apply Bone Fixed Axis',
         description="Apply bone's fixed axis to be blender suitable",
         default=False,
         )
-    rename_bones = bpy.props.BoolProperty(
+    rename_bones: bpy.props.BoolProperty(
         name='Rename Bones - L / R Suffix',
         description='Use Blender naming conventions for Left / Right paired bones',
         default=True,
         )
-    use_underscore = bpy.props.BoolProperty(
+    use_underscore: bpy.props.BoolProperty(
         name="Rename Bones - Use Underscore",
         description='Will not use dot, e.g. if renaming bones, will use _R instead of .R',
         default=False,
         )
-    dictionary = bpy.props.EnumProperty(
+    dictionary: bpy.props.EnumProperty(
         name='Rename Bones To English',
         items=DictionaryEnum.get_dictionary_items,
         description='Translate bone names from Japanese to English using selected dictionary',
         )
-    use_mipmap = bpy.props.BoolProperty(
+    use_mipmap: bpy.props.BoolProperty(
         name='use MIP maps for UV textures',
         description='Specify if mipmaps will be generated',
         default=True,
         )
-    sph_blend_factor = bpy.props.FloatProperty(
+    sph_blend_factor: bpy.props.FloatProperty(
         name='influence of .sph textures',
         description='The diffuse color factor of texture slot for .sph textures',
         default=1.0,
         )
-    spa_blend_factor = bpy.props.FloatProperty(
+    spa_blend_factor: bpy.props.FloatProperty(
         name='influence of .spa textures',
         description='The diffuse color factor of texture slot for .spa textures',
         default=1.0,
         )
-    log_level = bpy.props.EnumProperty(
+    log_level: bpy.props.EnumProperty(
         name='Log level',
         description='Select log level',
         items=LOG_LEVEL_ITEMS,
         default='DEBUG',
         )
-    save_log = bpy.props.BoolProperty(
+    save_log: bpy.props.BoolProperty(
         name='Create a log file',
         description='Create a log file',
         default=False,
@@ -205,7 +203,6 @@ class ImportPmx(Operator, ImportHelper):
 
         return {'FINISHED'}
 
-@register_wrap
 class ImportVmd(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_vmd'
     bl_label = 'Import VMD File (.vmd)'
@@ -213,20 +210,20 @@ class ImportVmd(Operator, ImportHelper):
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
     filename_ext = '.vmd'
-    filter_glob = bpy.props.StringProperty(default='*.vmd', options={'HIDDEN'})
+    filter_glob: bpy.props.StringProperty(default='*.vmd', options={'HIDDEN'})
 
-    scale = bpy.props.FloatProperty(
+    scale: bpy.props.FloatProperty(
         name='Scale',
         description='Scaling factor for importing the motion',
-        default=1.0,
+        default=0.08,
         )
-    margin = bpy.props.IntProperty(
+    margin: bpy.props.IntProperty(
         name='Margin',
         description='How many frames added before motion starting',
         min=0,
         default=5,
         )
-    bone_mapper = bpy.props.EnumProperty(
+    bone_mapper: bpy.props.EnumProperty(
         name='Bone Mapper',
         description='Select bone mapper',
         items=[
@@ -236,36 +233,41 @@ class ImportVmd(Operator, ImportHelper):
             ],
         default='PMX',
         )
-    rename_bones = bpy.props.BoolProperty(
+    rename_bones: bpy.props.BoolProperty(
         name='Rename Bones - L / R Suffix',
         description='Use Blender naming conventions for Left / Right paired bones',
         default=True,
         )
-    use_underscore = bpy.props.BoolProperty(
+    use_underscore: bpy.props.BoolProperty(
         name="Rename Bones - Use Underscore",
         description='Will not use dot, e.g. if renaming bones, will use _R instead of .R',
         default=False,
         )
-    dictionary = bpy.props.EnumProperty(
+    dictionary: bpy.props.EnumProperty(
         name='Rename Bones To English',
         items=DictionaryEnum.get_dictionary_items,
         description='Translate bone names from Japanese to English using selected dictionary',
         )
-    use_pose_mode = bpy.props.BoolProperty(
+    use_pose_mode: bpy.props.BoolProperty(
         name='Treat Current Pose as Rest Pose',
         description='You can pose the model to fit the original pose of a motion data, such as T-Pose or A-Pose',
         default=False,
         options={'SKIP_SAVE'},
         )
-    use_mirror = bpy.props.BoolProperty(
+    use_mirror: bpy.props.BoolProperty(
         name='Mirror Motion',
         description='Import the motion by using X-Axis mirror',
         default=False,
         )
-    update_scene_settings = bpy.props.BoolProperty(
+    update_scene_settings: bpy.props.BoolProperty(
         name='Update scene settings',
         description='Update frame range and frame rate (30 fps)',
         default=True,
+        )
+    use_NLA: bpy.props.BoolProperty(
+        name='Use NLA',
+        description='Import the motion as NLA strips',
+        default=False,
         )
 
     @classmethod
@@ -276,6 +278,7 @@ class ImportVmd(Operator, ImportHelper):
         layout = self.layout
         layout.prop(self, 'scale')
         layout.prop(self, 'margin')
+        layout.prop(self, 'use_NLA')
 
         layout.prop(self, 'bone_mapper')
         if self.bone_mapper == 'RENAMED_BONES':
@@ -315,6 +318,7 @@ class ImportVmd(Operator, ImportHelper):
             use_pose_mode=self.use_pose_mode,
             frame_margin=self.margin,
             use_mirror=self.use_mirror,
+            use_NLA=self.use_NLA,
             )
 
         for i in selected_objects:
@@ -327,25 +331,24 @@ class ImportVmd(Operator, ImportHelper):
         context.scene.frame_set(context.scene.frame_current)
         return {'FINISHED'}
 
-@register_wrap
 class ImportVpd(Operator, ImportHelper):
     bl_idname = 'mmd_tools.import_vpd'
     bl_label = 'Import VPD File (.vpd)'
     bl_description = "Import VPD file(s) to selected rig's pose library (.vpd)"
     bl_options = {'REGISTER', 'UNDO', 'PRESET'}
 
-    files = bpy.props.CollectionProperty(type=OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
-    directory = bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
+    files: bpy.props.CollectionProperty(type=OperatorFileListElement, options={'HIDDEN', 'SKIP_SAVE'})
+    directory: bpy.props.StringProperty(maxlen=1024, subtype='FILE_PATH', options={'HIDDEN', 'SKIP_SAVE'})
 
     filename_ext = '.vpd'
-    filter_glob = bpy.props.StringProperty(default='*.vpd', options={'HIDDEN'})
+    filter_glob: bpy.props.StringProperty(default='*.vpd', options={'HIDDEN'})
 
-    scale = bpy.props.FloatProperty(
+    scale: bpy.props.FloatProperty(
         name='Scale',
         description='Scaling factor for importing the pose',
-        default=1.0,
+        default=0.08,
         )
-    bone_mapper = bpy.props.EnumProperty(
+    bone_mapper: bpy.props.EnumProperty(
         name='Bone Mapper',
         description='Select bone mapper',
         items=[
@@ -355,22 +358,22 @@ class ImportVpd(Operator, ImportHelper):
             ],
         default='PMX',
         )
-    rename_bones = bpy.props.BoolProperty(
+    rename_bones: bpy.props.BoolProperty(
         name='Rename Bones - L / R Suffix',
         description='Use Blender naming conventions for Left / Right paired bones',
         default=True,
         )
-    use_underscore = bpy.props.BoolProperty(
+    use_underscore: bpy.props.BoolProperty(
         name="Rename Bones - Use Underscore",
         description='Will not use dot, e.g. if renaming bones, will use _R instead of .R',
         default=False,
         )
-    dictionary = bpy.props.EnumProperty(
+    dictionary: bpy.props.EnumProperty(
         name='Rename Bones To English',
         items=DictionaryEnum.get_dictionary_items,
         description='Translate bone names from Japanese to English using selected dictionary',
         )
-    use_pose_mode = bpy.props.BoolProperty(
+    use_pose_mode: bpy.props.BoolProperty(
         name='Treat Current Pose as Rest Pose',
         description='You can pose the model to fit the original pose of a pose data, such as T-Pose or A-Pose',
         default=False,
@@ -423,7 +426,6 @@ class ImportVpd(Operator, ImportHelper):
                 importer.assign(i)
         return {'FINISHED'}
 
-@register_wrap
 class ExportPmx(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_pmx'
     bl_label = 'Export PMX File (.pmx)'
@@ -431,19 +433,19 @@ class ExportPmx(Operator, ExportHelper):
     bl_options = {'PRESET'}
 
     filename_ext = '.pmx'
-    filter_glob = bpy.props.StringProperty(default='*.pmx', options={'HIDDEN'})
+    filter_glob: bpy.props.StringProperty(default='*.pmx', options={'HIDDEN'})
 
-    scale = bpy.props.FloatProperty(
+    scale: bpy.props.FloatProperty(
         name='Scale',
         description='Scaling factor for exporting the model',
-        default=1.0,
+        default=12.5,
         )
-    copy_textures = bpy.props.BoolProperty(
+    copy_textures: bpy.props.BoolProperty(
         name='Copy textures',
         description='Copy textures',
         default=True,
         )
-    sort_materials = bpy.props.BoolProperty(
+    sort_materials: bpy.props.BoolProperty(
         name='Sort Materials',
         description=('Sort materials for alpha blending. '
                      'WARNING: Will not work if you have ' +
@@ -451,17 +453,27 @@ class ExportPmx(Operator, ExportHelper):
                      'E.g. blush meshes'),
         default=False,
         )
-    disable_specular = bpy.props.BoolProperty(
+    disable_specular: bpy.props.BoolProperty(
         name='Disable SPH/SPA',
         description='Disables all the Specular Map textures. It is required for some MME Shaders.',
         default=False,
         )
-    visible_meshes_only = bpy.props.BoolProperty(
+    visible_meshes_only: bpy.props.BoolProperty(
         name='Visible Meshes Only',
         description='Export visible meshes only',
         default=False,
         )
-    sort_vertices = bpy.props.EnumProperty(
+    overwrite_bone_morphs_from_pose_library: bpy.props.BoolProperty(
+        name='Overwrite Bone Morphs',
+        description='Overwrite the bone morphs from active pose library before exporting.',
+        default=False,
+        )
+    translate_in_presets: bpy.props.BoolProperty(
+        name='(Experimental) Translate in Presets',
+        description='Translate in presets before exporting.',
+        default=False,
+        )
+    sort_vertices: bpy.props.EnumProperty(
         name='Sort Vertices',
         description='Choose the method to sort vertices',
         items=[
@@ -471,13 +483,13 @@ class ExportPmx(Operator, ExportHelper):
             ],
         default='NONE',
         )
-    log_level = bpy.props.EnumProperty(
+    log_level: bpy.props.EnumProperty(
         name='Log level',
         description='Select log level',
         items=LOG_LEVEL_ITEMS,
         default='DEBUG',
         )
-    save_log = bpy.props.BoolProperty(
+    save_log: bpy.props.BoolProperty(
         name='Create a log file',
         description='Create a log file',
         default=False,
@@ -540,6 +552,8 @@ class ExportPmx(Operator, ExportHelper):
                 rigid_bodies=rig.rigidBodies(),
                 joints=rig.joints(),
                 copy_textures=self.copy_textures,
+                overwrite_bone_morphs_from_pose_library=self.overwrite_bone_morphs_from_pose_library,
+                translate_in_presets=self.translate_in_presets,
                 sort_materials=self.sort_materials,
                 sort_vertices=self.sort_vertices,
                 disable_specular=self.disable_specular,
@@ -557,7 +571,6 @@ class ExportPmx(Operator, ExportHelper):
 
         return {'FINISHED'}
 
-@register_wrap
 class ExportVmd(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_vmd'
     bl_label = 'Export VMD File (.vmd)'
@@ -565,20 +578,20 @@ class ExportVmd(Operator, ExportHelper):
     bl_options = {'PRESET'}
 
     filename_ext = '.vmd'
-    filter_glob = bpy.props.StringProperty(default='*.vmd', options={'HIDDEN'})
+    filter_glob: bpy.props.StringProperty(default='*.vmd', options={'HIDDEN'})
 
-    scale = bpy.props.FloatProperty(
+    scale: bpy.props.FloatProperty(
         name='Scale',
         description='Scaling factor for exporting the motion',
-        default=1.0,
+        default=12.5,
         )
-    use_pose_mode = bpy.props.BoolProperty(
+    use_pose_mode: bpy.props.BoolProperty(
         name='Treat Current Pose as Rest Pose',
         description='You can pose the model to export a motion data to different pose base, such as T-Pose or A-Pose',
         default=False,
         options={'SKIP_SAVE'},
         )
-    use_frame_range = bpy.props.BoolProperty(
+    use_frame_range: bpy.props.BoolProperty(
         name='Use Frame Range',
         description = 'Export frames only in the frame range of context scene',
         default = False,
@@ -637,7 +650,6 @@ class ExportVmd(Operator, ExportHelper):
 
         return {'FINISHED'}
 
-@register_wrap
 class ExportVpd(Operator, ExportHelper):
     bl_idname = 'mmd_tools.export_vpd'
     bl_label = 'Export VPD File (.vpd)'
@@ -646,14 +658,14 @@ class ExportVpd(Operator, ExportHelper):
     bl_options = {'PRESET'}
 
     filename_ext = '.vpd'
-    filter_glob = bpy.props.StringProperty(default='*.vpd', options={'HIDDEN'})
+    filter_glob: bpy.props.StringProperty(default='*.vpd', options={'HIDDEN'})
 
-    scale = bpy.props.FloatProperty(
+    scale: bpy.props.FloatProperty(
         name='Scale',
         description='Scaling factor for exporting the pose',
-        default=1.0,
+        default=12.5,
         )
-    pose_type = bpy.props.EnumProperty(
+    pose_type: bpy.props.EnumProperty(
         name='Pose Type',
         description='Choose the pose type to export',
         items=[
@@ -663,7 +675,7 @@ class ExportVpd(Operator, ExportHelper):
             ],
         default='CURRENT',
         )
-    use_pose_mode = bpy.props.BoolProperty(
+    use_pose_mode: bpy.props.BoolProperty(
         name='Treat Current Pose as Rest Pose',
         description='You can pose the model to export a pose data to different pose base, such as T-Pose or A-Pose',
         default=False,

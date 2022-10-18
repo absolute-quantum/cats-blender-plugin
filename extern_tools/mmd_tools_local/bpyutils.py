@@ -1,8 +1,24 @@
 # -*- coding: utf-8 -*-
 
+from typing import Optional, Union
 import bpy
 
 matmul = (lambda a, b: a*b) if bpy.app.version < (2, 80, 0) else (lambda a, b: a.__matmul__(b))
+
+class Props: # For API changes of only name changed properties
+    if bpy.app.version < (2, 80, 0):
+        show_in_front = 'show_x_ray'
+        display_type = 'draw_type'
+        display_size = 'draw_size'
+        empty_display_type = 'empty_draw_type'
+        empty_display_size = 'empty_draw_size'
+    else:
+        show_in_front = 'show_in_front'
+        display_type = 'display_type'
+        display_size = 'display_size'
+        empty_display_type = 'empty_display_type'
+        empty_display_size = 'empty_display_size'
+
 
 class __EditMode:
     def __init__(self, obj):
@@ -11,7 +27,7 @@ class __EditMode:
         self.__prevMode = obj.mode
         self.__obj = obj
         self.__obj_select = obj.select
-        with select_object(obj) as act_obj:
+        with select_object(obj):
             if obj.mode != 'EDIT':
                 bpy.ops.object.mode_set(mode='EDIT')
 
@@ -37,7 +53,7 @@ class __SelectObjects:
             i.select = False
 
         self.__active_object = active_object
-        self.__selected_objects = [active_object]+selected_objects
+        self.__selected_objects = tuple(set(selected_objects)|set([active_object]))
 
         self.__hides = []
         scene = SceneOp(bpy.context)
@@ -53,6 +69,44 @@ class __SelectObjects:
         for i, j in zip(self.__selected_objects, self.__hides):
             i.hide = j
 
+def find_user_layer_collection(target_object: bpy.types.Object) -> Optional[bpy.types.LayerCollection]:
+    context: bpy.types.Context = bpy.context
+    scene_layer_collection: bpy.types.LayerCollection = context.view_layer.layer_collection
+
+    def find_layer_collection_by_name(layer_collection: bpy.types.LayerCollection, name: str) -> Optional[bpy.types.LayerCollection]:
+        if layer_collection.name == name:
+            return layer_collection
+
+        child_layer_collection: bpy.types.LayerCollection
+        for child_layer_collection in layer_collection.children:
+            found = find_layer_collection_by_name(child_layer_collection, name)
+            if found is not None:
+                return found
+
+        return None
+
+    user_collection: bpy.types.Collection
+    for user_collection in target_object.users_collection:
+        found = find_layer_collection_by_name(scene_layer_collection, user_collection.name)
+        if found is not None:
+            return found
+    
+    return None
+
+class __ActivateLayerCollection:
+    def __init__(self, target_layer_collection: Optional[bpy.types.LayerCollection]):
+        self.__original_layer_collection = bpy.context.view_layer.active_layer_collection
+        self.__target_layer_collection = target_layer_collection if target_layer_collection else self.__original_layer_collection
+
+    def __enter__(self):
+        if bpy.context.view_layer.active_layer_collection.name != self.__target_layer_collection.name:
+            bpy.context.view_layer.active_layer_collection = self.__target_layer_collection
+        return self.__target_layer_collection
+
+    def __exit__(self, _type, _value, _traceback):
+        if bpy.context.view_layer.active_layer_collection.name != self.__original_layer_collection.name:
+            bpy.context.view_layer.active_layer_collection = self.__original_layer_collection
+
 def addon_preferences(attrname, default=None):
     if hasattr(bpy.context, 'preferences'):
         addon = bpy.context.preferences.addons.get(__package__, None)
@@ -61,27 +115,15 @@ def addon_preferences(attrname, default=None):
     return getattr(addon.preferences, attrname, default) if addon else default
 
 def setParent(obj, parent):
-    ho = obj.hide
-    hp = parent.hide
-    obj.hide = False
-    parent.hide = False
-    select_object(parent)
-    obj.select = True
-    bpy.ops.object.parent_set(type='OBJECT', xmirror=False, keep_transform=False)
-    obj.hide = ho
-    parent.hide = hp
+    with select_object(parent, objects=[parent, obj]):
+        bpy.ops.object.parent_set(type='OBJECT', xmirror=False, keep_transform=False)
 
 def setParentToBone(obj, parent, bone_name):
-    import bpy
-    select_object(parent)
-    bpy.ops.object.mode_set(mode='POSE')
-    select_object(obj)
-    SceneOp(bpy.context).active_object = parent
-    parent.select = True
-    bpy.ops.object.mode_set(mode='POSE')
-    parent.data.bones.active = parent.data.bones[bone_name]
-    bpy.ops.object.parent_set(type='BONE', xmirror=False, keep_transform=False)
-    bpy.ops.object.mode_set(mode='OBJECT')
+    with select_object(parent, objects=[parent, obj]):
+        bpy.ops.object.mode_set(mode='POSE')
+        parent.data.bones.active = parent.data.bones[bone_name]
+        bpy.ops.object.parent_set(type='BONE', xmirror=False, keep_transform=False)
+        bpy.ops.object.mode_set(mode='OBJECT')
 
 def edit_object(obj):
     """ Set the object interaction mode to 'EDIT'
@@ -103,6 +145,16 @@ def select_object(obj, objects=[]):
             some functions...
     """
     return __SelectObjects(obj, objects)
+
+def activate_layer_collection(target: Union[bpy.types.Object, bpy.types.LayerCollection, None]):
+    if isinstance(target,  bpy.types.Object):
+        layer_collection = find_user_layer_collection(target)
+    elif isinstance(target,  bpy.types.LayerCollection):
+        layer_collection = target
+    else:
+        layer_collection = None
+
+    return __ActivateLayerCollection(layer_collection)
 
 def duplicateObject(obj, total_len):
     for i in bpy.context.selected_objects:
@@ -182,7 +234,6 @@ def createObject(name='Object', object_data=None, target_scene=None):
     obj = bpy.data.objects.new(name=name, object_data=object_data)
     target_scene.link_object(obj)
     target_scene.active_object = obj
-    obj.select = True
     return obj
 
 def makeSphere(segment=8, ring_count=5, radius=1.0, target_object=None):
@@ -192,12 +243,21 @@ def makeSphere(segment=8, ring_count=5, radius=1.0, target_object=None):
 
     mesh = target_object.data
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(
-        bm,
-        u_segments=segment,
-        v_segments=ring_count,
-        diameter=radius,
-        )
+    if bpy.app.version >= (3, 0, 0):
+        bmesh.ops.create_uvsphere(
+            bm,
+            u_segments=segment,
+            v_segments=ring_count,
+            radius=radius,
+            )
+    else:
+        # SUPPORT_UNTIL: 3.3 LTS
+        bmesh.ops.create_uvsphere(
+            bm,
+            u_segments=segment,
+            v_segments=ring_count,
+            diameter=radius,
+            )
     for f in bm.faces:
         f.smooth = True
     bm.to_mesh(mesh)
@@ -376,13 +436,23 @@ class TransformConstraintOp:
 
 if bpy.app.version < (2, 80, 0):
     class SceneOp:
-        def __init__(self, context):
+        def __init__(self, context=None):
             self.__context = context or bpy.context
             self.__scene = self.__context.scene
 
-        def select_object(self, obj):
+        def __ensure_selectable(self, obj):
             obj.hide = obj.hide_select = False
-            obj.select = obj.layers[self.__scene.active_layer] = True
+            if obj not in self.__context.selectable_objects:
+                selected_objects = self.__context.selected_objects
+                self.__scene.layers[next(i for i, enabled in enumerate(obj.layers) if enabled)] = True
+                if len(self.__context.selected_objects) != len(selected_objects):
+                    for i in self.__context.selected_objects:
+                        if i not in selected_objects:
+                            i.select = False
+
+        def select_object(self, obj):
+            self.__ensure_selectable(obj)
+            obj.select = True
 
         def link_object(self, obj):
             self.__scene.objects.link(obj)
@@ -393,7 +463,7 @@ if bpy.app.version < (2, 80, 0):
 
         @active_object.setter
         def active_object(self, obj):
-            obj.layers[self.__scene.active_layer] = True
+            self.select_object(obj)
             self.__scene.objects.active = obj
 
         @property
@@ -405,14 +475,38 @@ if bpy.app.version < (2, 80, 0):
             return self.__scene.objects
 else:
     class SceneOp:
-        def __init__(self, context):
+        def __init__(self, context=None):
             self.__context = context or bpy.context
+            self.__scene = self.__context.scene
             self.__collection = self.__context.collection
             self.__view_layer = self.__context.view_layer
 
+        def __ensure_selectable(self, obj):
+            obj.hide_viewport = obj.hide_select = False
+            obj.hide_set(False)
+            if obj not in self.__context.selectable_objects:
+                def __unhide(lc):
+                    lc.hide_viewport = lc.collection.hide_viewport = lc.collection.hide_select = False
+                    return True
+                def __layer_check(layer_collection):
+                    for lc in layer_collection.children:
+                        if __layer_check(lc):
+                            return __unhide(lc)
+                    if obj in layer_collection.collection.objects.values():
+                        if layer_collection.exclude:
+                            layer_collection.exclude = False
+                        return True
+                    return False
+                selected_objects = self.__context.selected_objects
+                __layer_check(self.__view_layer.layer_collection)
+                if len(self.__context.selected_objects) != len(selected_objects):
+                    for i in self.__context.selected_objects:
+                        if i not in selected_objects:
+                            i.select_set(False)
+
         def select_object(self, obj):
-            obj.hide = obj.hide_select = False
-            obj.select = True
+            self.__ensure_selectable(obj)
+            obj.select_set(True)
 
         def link_object(self, obj):
             self.__collection.objects.link(obj)
@@ -423,13 +517,14 @@ else:
 
         @active_object.setter
         def active_object(self, obj):
+            self.select_object(obj)
             self.__view_layer.objects.active = obj
 
         @property
         def id_scene(self):
-            return self.__view_layer
+            return self.__scene
 
         @property
         def id_objects(self):
-            return self.__view_layer.objects
+            return self.__scene.objects
 

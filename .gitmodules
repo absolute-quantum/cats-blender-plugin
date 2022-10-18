@@ -1,0 +1,3 @@
+[submodule "extern_tools/immersive_scaler"]
+	path = extern_tools/imscale
+	url = git@github.com:triazo/immersive_scaler.git
