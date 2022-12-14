@@ -12,7 +12,6 @@ if "bpy" not in locals():
     from . import bone_root
     from . import optimization
     from . import scale
-    from . import bake
     from . import eye_tracking
     from . import copy_protection
     from . import settings_updates
@@ -30,7 +29,6 @@ else:
     importlib.reload(bone_root)
     importlib.reload(optimization)
     importlib.reload(scale)
-    importlib.reload(bake)
     importlib.reload(eye_tracking)
     importlib.reload(copy_protection)
     importlib.reload(settings_updates)

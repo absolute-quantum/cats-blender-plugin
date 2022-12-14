@@ -7,7 +7,6 @@ from io_scene_fbx import fbx_utils
 
 if Common.version_2_79_or_older():
     import bpy
-    import time
     import array
     from threading import Thread
     from mathutils import Vector

@@ -4,7 +4,6 @@ import re
 import bpy
 import time
 import bmesh
-import platform
 import numpy as np
 
 from math import degrees

@@ -2,10 +2,8 @@
 
 import bpy
 import operator
-import math
 import webbrowser
 import numpy as np
-from mathutils.geometry import intersect_point_line
 
 from . import common as Common
 from . import eyetracking as Eyetracking
@@ -41,7 +39,7 @@ bone_names = {
     "thumb_2_r": ['thumb1r'],
     "thumb_3_r": ['thumb2r'],
 
-    "right_leg": ["rightleg", "legr", "rleg", "upperlegr", "thighr","rightupperleg", "uplegr", "rupleg"],
+    "right_leg": ["rightleg", "legr", "rleg", "upperlegr", "thighr", "rightupperleg", "uplegr", "rupleg"],
     "right_knee": ["rightknee", "kneer", "rknee", "lowerlegr", "calfr", "rightlowerleg", "lowlegr", "rlowleg"],
     "right_ankle": ["rightankle", "ankler", "rankle", "rightfoot", "footr", "rightfoot", "rightfeet", "feetright", "rfeet", "feetr"],
     "right_toe": ["righttoe", "toeright", "toer", "rtoe", "toesr", "rtoes"],
@@ -89,17 +87,6 @@ bone_names = {
 
 def simplify_bonename(n):
     return n.lower().translate(dict.fromkeys(map(ord, u" _.")))
-
-@register_wrap
-class TwistTutorialButton(bpy.types.Operator):
-    bl_idname = 'cats_manual.twist_tutorial'
-    bl_label = t('cats_bake.tutorial_button.label')
-    bl_description = "This will open a basic tutorial on how to setup and use these constraints. You can skip to the Unity section."
-    bl_options = {'INTERNAL'}
-
-    def execute(self, context):
-        webbrowser.open("https://web.archive.org/web/20211014084533/https://vrcat.club/threads/tutorial-guide-twist-bones-what-are-they-and-how-do-you-use-them.3622/")
-        return {'FINISHED'}
 
 @register_wrap
 class DigitigradeTutorialButton(bpy.types.Operator):
@@ -986,84 +973,6 @@ class RemoveZeroWeightGroups(bpy.types.Operator):
     #     return {'FINISHED'}
 
 @register_wrap
-class GenerateTwistBones(bpy.types.Operator):
-    bl_idname = 'cats_manual.generate_twist_bones'
-    bl_label = "Generate Twist Bones"
-    bl_description = "Attempt to generate twistbones for the selected bones"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    @classmethod
-    def poll(cls, context):
-        if not Common.get_armature():
-            return False
-        return context.selected_editable_bones
-
-    def execute(self, context):
-        saved_data = Common.SavedData()
-
-        context.object.data.use_mirror_x = False
-        context.object.use_mesh_mirror_x = False
-        context.object.pose.use_mirror_x = False
-        generate_upper = context.scene.generate_twistbones_upper
-        armature = context.object
-        # For each bone...
-        bone_pairs = []
-        twist_locations = dict()
-        editable_bone_names = [bone.name for bone in context.selected_editable_bones]
-        for bone_name in editable_bone_names:
-            # Add '<bone>_Twist' and move the head halfway to the tail
-            bone = armature.data.edit_bones[bone_name]
-            if not generate_upper:
-                twist_bone = armature.data.edit_bones.new('~' + bone.name + "_Twist")
-                twist_bone.tail = bone.tail
-                twist_bone.head[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
-                twist_locations[twist_bone.name] = (twist_bone.head[:], twist_bone.tail[:])
-            else:
-                twist_bone = armature.data.edit_bones.new('~' + bone.name + "_UpperTwist")
-                twist_bone.tail[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
-                twist_bone.head = bone.head
-                twist_locations[twist_bone.name] = (twist_bone.tail[:], twist_bone.head[:])
-            twist_bone.parent = bone
-
-            bone_pairs.append((bone.name, twist_bone.name))
-
-        Common.switch('OBJECT')
-        for bone_name, twist_bone_name in bone_pairs:
-            twist_bone_head_tail = twist_locations[twist_bone_name]
-            print(twist_bone_head_tail[0])
-            print(twist_bone_head_tail[1])
-            for mesh in Common.get_meshes_objects(armature_name=armature.name):
-                if not bone_name in mesh.vertex_groups:
-                    continue
-
-                Common.set_active(mesh)
-                context.object.data.use_mirror_vertex_groups = False
-                context.object.data.use_mirror_x = False
-                context.object.use_mesh_mirror_x = False
-
-                mesh.vertex_groups.new(name=twist_bone_name)
-
-                # twist bone weights are a linear(?) gradient from head to tail, 0-1 * orig weight
-                group_idx = mesh.vertex_groups[bone_name].index
-                for vertex in mesh.data.vertices:
-                    if any(group.group == group_idx for group in vertex.groups):
-                        # calculate
-
-                        _, dist = intersect_point_line(vertex.co, twist_bone_head_tail[0], twist_bone_head_tail[1])
-                        clamped_dist = max(0.0, min(1.0, dist))
-                        # orig bone weights are their original weight minus the twist weight
-                        twist_weight = mesh.vertex_groups[bone_name].weight(vertex.index) * clamped_dist
-                        untwist_weight = mesh.vertex_groups[bone_name].weight(vertex.index) * (1.0 - clamped_dist)
-                        mesh.vertex_groups[twist_bone_name].add([vertex.index], twist_weight, "REPLACE")
-                        mesh.vertex_groups[bone_name].add([vertex.index], untwist_weight, "REPLACE")
-
-        Common.set_default_stage()
-
-        saved_data.load()
-        self.report({'INFO'}, t('RemoveConstraints.success'))
-        return {'FINISHED'}
-
-@register_wrap
 class RemoveConstraints(bpy.types.Operator):
     bl_idname = 'cats_manual.remove_constraints'
     bl_label = t('RemoveConstraints.label')
@@ -1086,90 +995,6 @@ class RemoveConstraints(bpy.types.Operator):
         saved_data.load()
         self.report({'INFO'}, t('RemoveConstraints.success'))
         return {'FINISHED'}
-
-@register_wrap
-class OptimizeStaticShapekeys(bpy.types.Operator):
-    bl_idname = 'cats_manual.optimize_static_shapekeys'
-    bl_label = 'Optimize Static Shapekeys'
-    bl_description = "Move all shapekey-affected geometry into its own mesh, significantly decreasing GPU cost"
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    @classmethod
-    def poll(cls, context):
-        obj = context.active_object
-        if obj and obj.type == 'MESH':
-            return True
-
-        meshes = Common.get_meshes_objects(check=False)
-        return meshes
-
-    def execute(self, context):
-        saved_data = Common.SavedData()
-
-        objs = [context.active_object]
-        if not objs[0] or (objs[0] and (objs[0].type != 'MESH' or objs[0].data.shape_keys is None)):
-            Common.unselect_all()
-            meshes = Common.get_meshes_objects()
-            if len(meshes) == 0:
-                saved_data.load()
-                return {'FINISHED'}
-            objs = meshes
-
-        if len([obj for obj in objs if obj.type == 'MESH']) > 1:
-            self.report({'ERROR'}, "Meshes must first be combined for this to be beneficial.")
-
-        for mesh in objs:
-            if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
-                context.view_layer.objects.active = mesh
-
-                # Ensure auto-smooth is enabled, set custom normals from faces
-                if not mesh.data.use_auto_smooth:
-                    mesh.data.use_auto_smooth = True
-                    mesh.data.auto_smooth_angle = 3.1416
-                # TODO: if autosmooth is already enabled, set sharp from edges?
-
-                if not mesh.data.has_custom_normals:
-                    bpy.ops.object.mode_set(mode = 'EDIT')
-                    bpy.ops.mesh.select_mode(type="VERT")
-                    bpy.ops.mesh.select_all(action = 'SELECT')
-                    # TODO: un-smooth objects aren't handled correctly. A workaround is to run 'split
-                    # normals' on all un-smooth objects before baking
-                    bpy.ops.mesh.set_normals_from_faces(keep_sharp=True)
-
-                # Separate non-animating
-                bpy.ops.object.mode_set(mode = 'EDIT')
-                bpy.ops.mesh.select_mode(type="VERT")
-                bpy.ops.mesh.select_all(action = 'DESELECT')
-                bpy.ops.object.mode_set(mode = 'OBJECT')
-                for key_block in mesh.data.shape_keys.key_blocks[1:]:
-                    basis = mesh.data.shape_keys.key_blocks[0]
-
-                    for idx, vert in enumerate(key_block.data):
-                        if (math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
-                        math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
-                        math.pow(basis.data[idx].co[2] - vert.co[2], 2.0)) > 0.0001):
-                            mesh.data.vertices[idx].select = True
-
-                if not all(v.select for v in mesh.data.vertices):
-                    if any(v.select for v in mesh.data.vertices):
-                        # Some affected, separate
-                        bpy.ops.object.mode_set(mode = 'EDIT')
-                        bpy.ops.mesh.select_more()
-                        bpy.ops.mesh.split() # required or custom normals aren't preserved
-                        bpy.ops.mesh.separate(type='SELECTED')
-                        bpy.ops.object.mode_set(mode = 'OBJECT')
-                    bpy.context.object.active_shape_key_index = 0
-                    mesh.name = "Static"
-                    mesh['catsForcedExportName'] = "Static"
-                    # remove all shape keys for 'Static'
-                    bpy.ops.object.shape_key_remove(all=True)
-
-        Common.set_default_stage()
-
-        saved_data.load()
-        self.report({'INFO'}, "Separation complete.")
-        return {'FINISHED'}
-
 
 @register_wrap
 class RepairShapekeys(bpy.types.Operator):
@@ -2017,133 +1842,6 @@ class ConvertToValveButton(bpy.types.Operator):
             self.report({'INFO'}, "Error! Failed to translate {translate_bone_fails} bones! Make sure your model has standard bone names!")
 
         self.report({'INFO'}, 'Connected all bones!')
-        return {'FINISHED'}
-
-@register_wrap
-class ConvertToSecondlifeButton(bpy.types.Operator):
-    bl_idname = 'cats_manual.convert_to_secondlife'
-    bl_label = 'Convert Bones To Second Life'
-    bl_description = 'Converts all main bone names to second life.' \
-                     '\nMake sure your model has the CATS standard bone names from after using Fix Model'
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-    armature_name: bpy.props.StringProperty(
-        default=''
-    )
-
-    @classmethod
-    def poll(cls, context):
-        if not Common.get_armature():
-            return False
-        return True
-
-    def execute(self, context):
-        armature = Common.get_armature(self.armature_name)
-
-        translate_bone_fails = 0
-        untranslated_bones = set()
-
-        reverse_bone_lookup = dict()
-        for (preferred_name, name_list) in bone_names.items():
-            for name in name_list:
-                reverse_bone_lookup[name] = preferred_name
-
-        sl_translations = {
-            'hips': "mPelvis",
-            'spine': "mTorso",
-            'chest': "mChest",
-            'neck': "mNeck",
-            'head': "mHead",
-            # SL also specifies 'mSkull', generate by averaging coords of mEyeLeft and mEyeRight
-            'left_eye': "mEyeLeft",
-            'right_eye': "mEyeRight",
-            'right_leg': "mHipRight",
-            'right_knee': "mKneeRight",
-            'right_ankle': "mAnkleRight",
-            'right_toe': 'mToeRight',
-            'right_shoulder': "mCollarRight",
-            'right_arm': "mShoulderRight",
-            'right_elbow': "mElbowRight",
-            'right_wrist': "mWristRight",
-            'left_leg': "mHipLeft",
-            'left_knee': "mKneeLeft",
-            'left_ankle': "mAnkleLeft",
-            'left_toe': 'mToeLeft',
-            'left_shoulder': "mCollarLeft",
-            'left_arm': "mShoulderLeft",
-            'left_elbow': "mElbowLeft",
-            'left_wrist': "mWristLeft"
-            #'right_foot': "mFootRight",
-            #'left_foot': "mFootLeft",
-            # Our translation names any "foot" as "ankle". Best approach is to subdivide toe and rename the upper as foot
-            # TODO: if we only have ankle and toe, subdivide toe and rename original to foot
-        }
-
-        context.view_layer.objects.active = armature
-        Common.switch('EDIT')
-        old_mirror_setting = context.object.data.use_mirror_x
-        old_merge_setting = context.scene.keep_merged_bones
-        context.object.data.use_mirror_x = False
-        context.scene.keep_merged_bones = False
-
-        Common.switch('OBJECT')
-        for bone in armature.data.bones:
-            if simplify_bonename(bone.name) in reverse_bone_lookup and reverse_bone_lookup[simplify_bonename(bone.name)] in sl_translations:
-                bone.name = sl_translations[reverse_bone_lookup[simplify_bonename(bone.name)]]
-            else:
-                untranslated_bones.add(bone.name)
-                translate_bone_fails += 1
-
-        # Better foot setup
-        Common.switch('EDIT')
-        bpy.ops.armature.select_all(action='DESELECT')
-        for bone in context.visible_bones:
-            if bone.name == "mToeLeft" or bone.name == "mToeRight":
-                bone.select = True
-        Common.switch('OBJECT')
-        Common.switch('EDIT')
-        if context.selected_editable_bones:
-            bpy.ops.armature.subdivide()
-        Common.switch('OBJECT')
-        for bone in armature.data.bones:
-            if bone.name == "mToeLeft":
-                bone.name = "mFootLeft"
-            if bone.name == "mToeRight":
-                bone.name = "mFootRight"
-        for bone in armature.data.bones:
-            if bone.name == "mToeLeft.001":
-                bone.name = "mToeLeft"
-            if bone.name == "mToeRight.001":
-                bone.name = "mToeRight"
-
-        # Merge unused or SL rejects
-        Common.switch('OBJECT')
-        Common.switch('EDIT')
-        bpy.ops.armature.select_all(action='DESELECT')
-        for bone in context.visible_bones:
-            bone.select = bone.name in untranslated_bones
-        Common.switch('OBJECT')
-        Common.switch('EDIT')
-        print(untranslated_bones)
-        if context.selected_editable_bones:
-            bpy.ops.cats_manual.merge_weights()
-
-        for bone in context.visible_bones:
-            bone.use_connect = False
-
-        for bone in context.visible_bones:
-            bone.tail[:] = bone.head[:]
-            bone.tail[0] = bone.head[0] + 0.1
-            # TODO: clear rolls
-
-        context.object.data.use_mirror_x = old_mirror_setting
-        context.scene.keep_merged_bones = old_merge_setting
-        Common.switch('OBJECT')
-
-        if translate_bone_fails > 0:
-            self.report({'INFO'}, f"Failed to translate {translate_bone_fails} bones! They will be merged to their parent bones.")
-        else:
-            self.report({'INFO'}, 'Translated all bones!')
-
         return {'FINISHED'}
 
 @register_wrap

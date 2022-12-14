@@ -19,7 +19,6 @@ if "bpy" not in locals():
     from . import importer
     from . import material
     from . import rootbone
-    from . import bake
     from . import settings
     from . import scale
     from . import shapekey
@@ -46,7 +45,6 @@ else:
     importlib.reload(importer)
     importlib.reload(material)
     importlib.reload(rootbone)
-    importlib.reload(bake)
     importlib.reload(settings)
     importlib.reload(scale)
     importlib.reload(shapekey)
