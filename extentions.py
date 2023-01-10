@@ -34,7 +34,7 @@ def register():
     Scene.combine_mats = BoolProperty(
         name=t('Scene.combine_mats.label'),
         description=t('Scene.combine_mats.desc'),
-        default=True
+        default=False
     )
 
     Scene.remove_zero_weight = BoolProperty(
