@@ -555,7 +555,7 @@ class InstallXPS(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5)
 
     def check(self, context):
         # Important for changing options
@@ -592,7 +592,7 @@ class InstallSource(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5)
 
     def check(self, context):
         # Important for changing options
@@ -629,7 +629,7 @@ class InstallVRM(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = Common.get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.5)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5)
 
     def check(self, context):
         # Important for changing options

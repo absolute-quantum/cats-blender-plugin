@@ -167,7 +167,7 @@ class ShowPatchnotesPanel(bpy.types.Operator):
         global used_updater_panel
         used_updater_panel = True
         dpi_value = get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 8.2)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 8)
 
     def check(self, context):
         # Important for changing options
@@ -216,7 +216,7 @@ class ConfirmUpdatePanel(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.1)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
 
     def check(self, context):
         # Important for changing options
@@ -280,7 +280,7 @@ class UpdateCompletePanel(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.1)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4)
 
     def check(self, context):
         # Important for changing options
@@ -329,7 +329,7 @@ class UpdateNotificationPopup(bpy.types.Operator):
 
     def invoke(self, context, event):
         dpi_value = get_user_preferences().system.dpi
-        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 4.6)
+        return context.window_manager.invoke_props_dialog(self, width=dpi_value * 5)
 
     # def invoke(self, context, event):
     #     return context.window_manager.invoke_props_dialog(self)
