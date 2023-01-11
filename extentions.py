@@ -254,7 +254,7 @@ def register():
         description=t('Scene.bake_resolution.desc'),
         default=2048,
         min=128,
-        max=4096
+        max=8192
     )
 
     Scene.bake_use_decimation = BoolProperty(
