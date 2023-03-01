@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats, Hotox
+# GPL License
 
 bl_info = {
     'name': 'Cats Blender Plugin',
@@ -85,10 +61,10 @@ from .tools import translations
 from .tools.translations import t
 
 
-# How to update mmd_tools: (outdated, no longer used)
+# How to update mmd_tools:
 # Delete mmd_tools_local folder
-# Paste mmd_tools folder into project
-# Refactor folder name "mmd_tools" to "mmd_tools_local"
+# Paste updated mmd_tools folder into root of project
+# Refactor folder name "mmd_tools" to "mmd_tools_local" and update all references
 # Move mmd_tools_local folder into extern_tools folder
 # Search for "show_backface_culling" and set it to False in view.py
 # Done

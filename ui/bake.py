@@ -1,3 +1,5 @@
+# GPL License
+
 import bpy
 import addon_utils
 

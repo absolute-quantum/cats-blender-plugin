@@ -1,3 +1,5 @@
+# GPL License
+
 import bpy
 
 from .main import ToolPanel

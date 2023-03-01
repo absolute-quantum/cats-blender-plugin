@@ -1,3 +1,5 @@
+# GPL License
+
 # Thanks to https://www.thegrove3d.com/learn/how-to-translate-a-blender-addon/ for the idea
 
 import os

@@ -1,3 +1,5 @@
+# GPL License
+
 from ..tools.common import version_2_79_or_older
 from ..tools.translations import t
 

@@ -1,3 +1,5 @@
+# GPL License
+
 from .tools import common as Common
 from .tools import atlas as Atlas
 from .tools import eyetracking as Eyetracking
