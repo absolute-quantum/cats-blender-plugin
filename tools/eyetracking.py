@@ -142,6 +142,15 @@ class CreateEyesButton(bpy.types.Operator):
         fix_eye_position(context, old_eye_left, new_left_eye, head, False)
         fix_eye_position(context, old_eye_right, new_right_eye, head, True)
 
+        # The names may be needed later, but references to edit bones become invalid once EDIT mode has been left, so
+        # the names need to be assigned to variables before switching to OBJECT mode
+        new_right_eye_name = new_right_eye.name
+        old_eye_left_name = old_eye_left.name
+        old_eye_right_name = old_eye_right.name
+        head_name = head.name
+        # Delete the variables that are about to become invalid to guarantee that they aren't accidentally still used
+        del new_right_eye, new_left_eye, old_eye_right, old_eye_left, head
+
         # Switch to mesh
         Common.set_active(self.mesh)
         Common.switch('OBJECT')
@@ -151,8 +160,8 @@ class CreateEyesButton(bpy.types.Operator):
 
         # Copy the existing eye vertex group to the new one if eye movement is activated
         if not context.scene.disable_eye_movement:
-            self.copy_vertex_group(old_eye_left.name, 'LeftEye')
-            self.copy_vertex_group(old_eye_right.name, 'RightEye')
+            self.copy_vertex_group(old_eye_left_name, 'LeftEye')
+            self.copy_vertex_group(old_eye_right_name, 'RightEye')
         else:
             # Remove the vertex groups if no blink is enabled
             bones = ['LeftEye', 'RightEye']
@@ -187,9 +196,9 @@ class CreateEyesButton(bpy.types.Operator):
         Common.sort_shape_keys(mesh_name)
 
         # Reset the scenes in case they were changed
-        context.scene.head = head.name
-        context.scene.eye_left = old_eye_left.name
-        context.scene.eye_right = old_eye_right.name
+        context.scene.head = head_name
+        context.scene.eye_left = old_eye_left_name
+        context.scene.eye_right = old_eye_right_name
         context.scene.wink_left = shapes[0]
         context.scene.wink_right = shapes[1]
         context.scene.lowerlid_left = shapes[2]
@@ -210,8 +219,8 @@ class CreateEyesButton(bpy.types.Operator):
             repair_shapekeys_mouth(mesh_name)
             # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
         else:
-            # print('Repair normal "' + new_right_eye.name + '".')
-            repair_shapekeys(mesh_name, new_right_eye.name)
+            # print('Repair normal "' + new_right_eye_name + '".')
+            repair_shapekeys(mesh_name, new_right_eye_name)
 
         # deleted = []
         # # deleted = checkshapekeys()
