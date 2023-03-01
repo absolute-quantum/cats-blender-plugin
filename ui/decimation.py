@@ -161,6 +161,8 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
             row.prop(context.scene, 'decimation_animation_weighting_include_shapekeys', expand=True)
             col.separator()
         row = col.row(align=True)
+        row.prop(context.scene, 'decimation_retain_separated_meshes', expand=True)
+        row = col.row(align=True)
         row.operator(Decimation.AutoDecimatePresetGood.bl_idname)
         row.operator(Decimation.AutoDecimatePresetExcellent.bl_idname)
         row.operator(Decimation.AutoDecimatePresetQuest.bl_idname)
