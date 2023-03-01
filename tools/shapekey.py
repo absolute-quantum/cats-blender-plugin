@@ -442,6 +442,12 @@ class ShapeKeyApplier(bpy.types.Operator):
                 key_block.data.foreach_get('co', temp_co_array)
                 key_block.data.foreach_set('co', np.add(temp_co_array, temp_co_array2, out=temp_co_array))
 
+        # Update mesh vertices to avoid basis shape key and mesh vertices being desynced until Edit mode has been
+        # entered and exited, which can cause odd behaviour when creating shape keys with from_mix=False or when
+        # removing all shape keys.
+        data.shape_keys.reference_key.data.foreach_get('co', temp_co_array)
+        data.vertices.foreach_set('co', temp_co_array)
+
 
 def addToShapekeyMenu(self, context):
     self.layout.separator()

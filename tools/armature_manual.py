@@ -516,6 +516,11 @@ class PoseToRest(bpy.types.Operator):
             evaluated_cos = get_eval_cos_array()
             # And set the shape key to those same cos
             shape_key.data.foreach_set('co', evaluated_cos)
+            # If it's the basis shape key, we also have to set the mesh vertices to match, otherwise the two will be
+            # desynced until Edit mode has been entered and exited, which can cause odd behaviour when creating shape
+            # keys with from_mix=False or when removing all shape keys.
+            if i == 0:
+                mesh_obj.data.vertices.foreach_set('co', evaluated_cos)
 
         # Restore temporarily changed attributes and remove the added armature modifier
         for mod in mods_to_reenable_viewport:
