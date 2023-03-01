@@ -858,8 +858,8 @@ class BakeButton(bpy.types.Operator):
         diffuse_indirect = context.scene.bake_diffuse_indirect
         diffuse_indirect_opacity = context.scene.bake_diffuse_indirect_opacity
 
-        #adjusting don't pack to disable if there are things that will cause undesirable results if enabled, then invert and store to pack_uvs var
-        pack_uvs = not (dont_pack_uvs and (not emit_indirect) and (not prioritize_face) and (not pass_ao) and (not any(plat.use_decimation for plat in context.scene.bake_platforms)))
+        #helper var - @989onan
+        pack_uvs = not (dont_pack_uvs)
 
         # Filters
         sharpen_bakes = context.scene.bake_sharpen
