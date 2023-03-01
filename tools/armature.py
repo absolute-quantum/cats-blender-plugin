@@ -1,30 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: Shotariya
-# Repo: https://github.com/Grim-es/shotariya
-# Code author: Neitri
-# Repo: https://github.com/netri/blender_neitri_tools
-# Edits by: GiveMeAllYourCats, Hotox
+# GPL License
 
 import bpy
 import copy
@@ -360,7 +334,7 @@ class FixArmature(bpy.types.Operator):
                     coll = bpy.data.collections.get(name)
                     if not coll:
                         coll = bpy.data.collections.new(name)
-                        scene.collection.children.link(coll)
+                        context.scene.collection.children.link(coll)
                     coll.objects.link(both)
             else:
                 for c in both.users_collection:
@@ -1347,4 +1321,5 @@ def set_material_shading():
                     space.shading.studio_light = 'forest.exr'
                     space.shading.studiolight_rotate_z = 0.0
                     space.shading.studiolight_background_alpha = 0.0
-                    space.shading.render_pass = 'COMBINED'
+                    if bpy.app.version >= (2, 82):
+                        space.shading.render_pass = 'COMBINED'

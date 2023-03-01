@@ -3,7 +3,6 @@
 import bpy
 from bpy.types import Panel, UIList
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local.bpyutils import SceneOp
 from mmd_tools_local.core.model import Model
 from mmd_tools_local.panels.tool import TRIA_UP_BAR, TRIA_DOWN_BAR
@@ -16,7 +15,6 @@ if bpy.app.version < (2, 71, 0):
     ICON_APPEND_MOVE, ICON_APPEND_ROT, ICON_APPEND_MOVE_ROT = 'NDOF_TRANS', 'NDOF_TURN', 'FORCE_MAGNETIC'
 
 
-@register_wrap
 class MMD_TOOLS_UL_Materials(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if self.layout_type in {'DEFAULT'}:
@@ -36,7 +34,6 @@ class MMD_TOOLS_UL_Materials(UIList):
     def draw_filter(self, context, layout):
         layout.label(text="Use the arrows to sort", icon='INFO')
 
-@register_wrap
 class MMDMaterialSorter(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_material_sorter'
     bl_label = 'Material Sorter'
@@ -61,7 +58,6 @@ class MMDMaterialSorter(_PanelBase, Panel):
         tb1.operator('mmd_tools.move_material_up', text='', icon='TRIA_UP')
         tb1.operator('mmd_tools.move_material_down', text='', icon='TRIA_DOWN')
 
-@register_wrap
 class MMD_TOOLS_UL_ModelMeshes(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
         if self.layout_type in {'DEFAULT'}:
@@ -96,7 +92,6 @@ class MMD_TOOLS_UL_ModelMeshes(UIList):
 
         return flt_flags, flt_neworder
 
-@register_wrap
 class MMDMeshSorter(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_meshes_sorter'
     bl_label = 'Meshes Sorter'
@@ -129,7 +124,6 @@ class _DummyVertexGroup:
     def __init__(self, index):
         self.index = index
 
-@register_wrap
 class MMD_TOOLS_UL_ModelBones(UIList):
     _IK_MAP = {}
     _IK_BONES = {}
@@ -294,7 +288,6 @@ class MMD_TOOLS_UL_ModelBones(UIList):
             layout.alignment = 'CENTER'
             layout.label(text="", icon_value=icon)
 
-@register_wrap
 class MMDBoneOrder(_PanelBase, Panel):
     bl_idname = 'OBJECT_PT_mmd_tools_bone_order'
     bl_label = 'Bone Order'
@@ -337,4 +330,3 @@ class MMDBoneOrder(_PanelBase, Panel):
                 row = row.row(align=True)
                 row.operator('object.vertex_group_move', text='', icon='TRIA_UP').direction = 'UP'
                 row.operator('object.vertex_group_move', text='', icon='TRIA_DOWN').direction = 'DOWN'
-

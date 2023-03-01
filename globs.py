@@ -1,3 +1,5 @@
+# GPL License
+
 import bpy
 
 # for bone root parenting

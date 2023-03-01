@@ -1,3 +1,5 @@
+# GPL License
+
 import bpy
 
 from .. import globs
@@ -148,6 +150,18 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'decimate_fingers')
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_remove_doubles')
+        row = col.row(align=True)
+        row.prop(context.scene, 'decimation_animation_weighting', expand=True)
+        if context.scene.decimation_animation_weighting: # and context.scene.decimation_mode != "LOOP":
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'decimation_animation_weighting_factor', expand=True)
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'decimation_animation_weighting_include_shapekeys', expand=True)
+            col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'decimation_retain_separated_meshes', expand=True)
         row = col.row(align=True)
         row.operator(Decimation.AutoDecimatePresetGood.bl_idname)
         row.operator(Decimation.AutoDecimatePresetExcellent.bl_idname)

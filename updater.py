@@ -1,3 +1,5 @@
+# GPL License
+
 import os
 import ssl
 import bpy

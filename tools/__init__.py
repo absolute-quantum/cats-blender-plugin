@@ -1,3 +1,5 @@
+# GPL License
+
 if "bpy" not in locals():
     # print('STARTUP TOOLS!!')
     import bpy

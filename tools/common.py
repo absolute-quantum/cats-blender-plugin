@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats, Hotox
+# GPL License
 
 import re
 import bpy
@@ -1417,6 +1393,19 @@ def removeZeroVerts(obj, thres=0):
         for r in z:
             obj.vertex_groups[g.group].remove([v.index])
 
+def get_children_recursive(parent):
+    if bpy.app.version < (3, 1):
+        objs = []
+        def get_child_names(obj):
+            for child in obj.children:
+                objs.append(child)
+                if child.children:
+                    get_child_names(child)
+
+        get_child_names(parent)
+        return objs
+    else:
+        return parent.children_recursive
 
 def delete_hierarchy(parent):
     unselect_all()
@@ -1779,6 +1768,11 @@ def clean_material_names(mesh):
 
 
 def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, mix_mode='ADD', delete_old_vg=True):
+    """Mix the weights of two vertex groups on the mesh, optionally removing the vertex group named vg_from.
+
+    Note that as of Blender 3.0+, existing references to vertex groups become invalid when applying certain modifiers,
+    including 'VERTEX_WEIGHT_MIX'. Keeping reference to the vertex groups' attributes such as their names seems ok
+    though. More information on this issue can be found in https://developer.blender.org/T93896"""
     mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
@@ -2142,30 +2136,33 @@ def fix_twist_bones(mesh, bones_to_delete):
                 print('2. no ' + bone_parent_name)
                 vg_parent = mesh.vertex_groups.new(name=bone_parent_name)
 
-            vg_twist1 = mesh.vertex_groups.get(bone_type + 'Twist1_' + suffix)
-            vg_twist2 = mesh.vertex_groups.get(bone_type + 'Twist2_' + suffix)
-            vg_twist3 = mesh.vertex_groups.get(bone_type + 'Twist3_' + suffix)
+            vg_twist1_name = bone_type + 'Twist1_' + suffix
+            vg_twist2_name = bone_type + 'Twist2_' + suffix
+            vg_twist3_name = bone_type + 'Twist3_' + suffix
+            vg_twist1 = bool(mesh.vertex_groups.get(vg_twist1_name))
+            vg_twist2 = bool(mesh.vertex_groups.get(vg_twist2_name))
+            vg_twist3 = bool(mesh.vertex_groups.get(vg_twist3_name))
 
-            mix_weights(mesh, vg_twist.name, vg_parent.name, mix_strength=0.2, delete_old_vg=False)
-            mix_weights(mesh, vg_twist.name, vg_twist.name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
+            vg_twist_name = vg_twist.name
+            vg_parent_name = vg_parent.name
+
+            mix_weights(mesh, vg_twist_name, vg_parent_name, mix_strength=0.2, delete_old_vg=False)
+            mix_weights(mesh, vg_twist_name, vg_twist_name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
 
             if vg_twist1:
-                twistname = bone_type + 'Twist1_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.75) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist1_name)
+                mix_weights(mesh, vg_twist1_name, vg_twist_name, mix_strength=0.25, delete_old_vg=False)
+                mix_weights(mesh, vg_twist1_name, vg_parent_name, mix_strength=0.75)
 
             if vg_twist2:
-                twistname = bone_type + 'Twist2_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.5, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist2_name)
+                mix_weights(mesh, vg_twist2_name, vg_twist_name, mix_strength=0.5, delete_old_vg=False)
+                mix_weights(mesh, vg_twist2_name, vg_parent_name, mix_strength=0.5)
 
             if vg_twist3:
-                twistname = bone_type + 'Twist3_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.25, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please. (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist3_name)
+                mix_weights(mesh, vg_twist3_name, vg_twist_name, mix_strength=0.75, delete_old_vg=False)
+                mix_weights(mesh, vg_twist3_name, vg_parent_name, mix_strength=0.25)
 
 
 def fix_twist_bone_names(armature):
@@ -2183,7 +2180,6 @@ def toggle_mmd_tabs_update(self, context):
 
 def toggle_mmd_tabs(shutdown_plugin=False):
     mmd_cls = [
-        mmd_tool.MMDToolsObjectPanel,
         mmd_tool.MMDDisplayItemsPanel,
         mmd_tool.MMDMorphToolsPanel,
         mmd_tool.MMDRigidbodySelectorPanel,

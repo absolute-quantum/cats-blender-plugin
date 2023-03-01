@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 
 import bpy
 from mmd_tools_local import bpyutils
-from mmd_tools_local.bpyutils import SceneOp
-from mmd_tools_local.bpyutils import ObjectOp
-from mmd_tools_local.bpyutils import TransformConstraintOp
+from mmd_tools_local.bpyutils import ObjectOp, SceneOp, TransformConstraintOp
+
 
 class FnMorph(object):
 
@@ -131,6 +131,39 @@ class FnMorph(object):
             override = {'object':obj, 'window':bpy.context.window, 'region':bpy.context.region}
             bpy.ops.object.vertex_group_copy(override)
             obj.vertex_groups.active.name = vg_name.replace(src_name, dest_name)
+
+    @staticmethod
+    def overwrite_bone_morphs_from_pose_library(armature_object):
+        armature = armature_object.id_data
+        pose_library = armature.pose_library
+
+        if pose_library is None:
+            return
+
+        root = armature_object.parent
+        mmd_root = root.mmd_root
+        bone_morphs = mmd_root.bone_morphs
+
+        original_mode = bpy.context.object.mode
+        bpy.ops.object.mode_set(mode='POSE')
+        try:
+            for index, pose_maker in enumerate(pose_library.pose_markers):
+                bone_morph = next(iter([m for m in bone_morphs if m.name == pose_maker.name]), None)
+                if bone_morph is None:
+                    bone_morph = bone_morphs.add()
+                    bone_morph.name = pose_maker.name
+
+                bpy.ops.pose.select_all(action='SELECT')
+                bpy.ops.pose.transforms_clear()
+                bpy.ops.poselib.apply_pose(pose_index=index)
+
+                mmd_root.active_morph = bone_morphs.find(bone_morph.name)
+                bpy.ops.mmd_tools.apply_bone_morph()
+
+            bpy.ops.pose.transforms_clear()
+
+        finally:
+            bpy.ops.object.mode_set(mode=original_mode)
 
     @staticmethod
     def clean_uv_morph_vertex_groups(obj):
@@ -290,7 +323,7 @@ class _MorphSlider:
     @staticmethod
     def __add_single_prop(variables, id_obj, data_path, prefix):
         var = variables.new()
-        var.name = prefix + str(len(variables))
+        var.name = f'{prefix}{len(variables)}'
         var.type = 'SINGLE_PROP'
         target = var.targets[0]
         target.id_type = 'OBJECT'
@@ -314,7 +347,7 @@ class _MorphSlider:
         return (not d or d.driver.expression == ''.join(('*w','+g','v')[-1 if i < 1 else i%2]+str(i+1) for i in range(len(d.driver.variables))))
 
     def __cleanup(self, names_in_use=None):
-        from math import floor, ceil
+        from math import ceil, floor
         names_in_use = names_in_use or {}
         rig = self.__rig
         morph_sliders = self.placeholder()
@@ -324,6 +357,9 @@ class _MorphSlider:
                 if kb.name not in names_in_use:
                     if kb.name.startswith('mmd_bind'):
                         kb.driver_remove('value')
+                        ms = morph_sliders[kb.relative_key.name]
+                        kb.relative_key.slider_min, kb.relative_key.slider_max = min(ms.slider_min, floor(ms.value)), max(ms.slider_max, ceil(ms.value))
+                        kb.relative_key.value = ms.value
                         kb.relative_key.mute = False
                         ObjectOp(mesh).shape_key_remove(kb)
                     elif kb.name in morph_sliders and self.__shape_key_driver_check(kb):
@@ -488,7 +524,7 @@ class _MorphSlider:
 
         for m in mmd_root.group_morphs:
             if len(m.data) != len(set(m.data.keys())):
-                print(' * Found duplicated morph data in Group Morph "%s"'%m.name)
+                logging.warning(' * Found duplicated morph data in Group Morph "%s"', m.name)
             morph_name = m.name.replace('"', '\\"')
             morph_path = 'data.shape_keys.key_blocks["%s"].value'%morph_name
             for d in m.data:

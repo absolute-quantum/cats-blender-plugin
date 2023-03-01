@@ -1,3 +1,5 @@
+# GPL License
+
 # (global-set-key (kbd "C-c m") (lambda () (interactive) (shell-command "zip -r ../../cats-dev.zip ../../cats-blender-plugin")))
 
 import bpy
@@ -20,11 +22,13 @@ def check_for_imscale():
 
     draw_imscale_ui = None
 
-    if find_spec("immersive_scaler") and find_spec("immersive_scaler.immersive_scaler"):
-        import immersive_scaler.immersive_scaler as imscale
+    # Check if using immersive scaler shipped with cats
+    if find_spec("imscale") and find_spec("imscale.immersive_scaler"):
+        import imscale.immersive_scaler as imscale
         draw_imscale_ui = imscale.ui.draw_ui
         return
 
+    # Check if it's present in blender anyway (installed separately)
     for mod in addon_utils.modules():
         if mod.bl_info['name'] == "Immersive Scaler":
             # print(mod.__name__, mod.bl_info['version'])

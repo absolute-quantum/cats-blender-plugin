@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats, Hotox
+# GPL License
 
 import bpy
 from . import common as Common
@@ -116,7 +92,11 @@ class AutoVisemeButton(bpy.types.Operator):
                 [(shape_ch), (0.7)]
             ]
         }
-        shapekey_data['vrc.v_e'] = {
+        # Note 2022-07-16: 'ih' and 'e' were originally swapped, due to early VRChat viseme
+        # refs being slightly incorrect. See:
+        # https://github.com/absolute-quantum/cats-blender-plugin/issues/505
+        # https://developer.oculus.com/documentation/unreal/audio-ovrlipsync-viseme-reference/
+        shapekey_data['vrc.v_ih'] = {
             'mix': [
                 [(shape_ch), (0.7)],
                 [(shape_o), (0.3)]
@@ -128,7 +108,7 @@ class AutoVisemeButton(bpy.types.Operator):
                 [(shape_ch), (0.4)]
             ]
         }
-        shapekey_data['vrc.v_ih'] = {
+        shapekey_data['vrc.v_e'] = {
             'mix': [
                 [(shape_a), (0.5)],
                 [(shape_ch), (0.2)]

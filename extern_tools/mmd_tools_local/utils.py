@@ -3,7 +3,6 @@ import re
 import os
 
 import bpy
-from mmd_tools_local import register_wrap
 from mmd_tools_local.bpyutils import SceneOp
 
 ## 指定したオブジェクトのみを選択状態かつアクティブにする
@@ -62,6 +61,19 @@ def convertNameToLR(name, use_underscore=False):
     m = __CONVERT_NAME_TO_R_REGEXP.match(name)
     if m:
         name = m.group(1) + m.group(2) + delimiter + 'R'
+    return name
+
+__CONVERT_L_TO_NAME_REGEXP = re.compile(r'(?P<lr>(?P<separator>[._])[lL])(?P<after>($|(?P=separator)))')
+__CONVERT_R_TO_NAME_REGEXP = re.compile(r'(?P<lr>(?P<separator>[._])[rR])(?P<after>($|(?P=separator)))')
+def convertLRToName(name):
+    match = __CONVERT_L_TO_NAME_REGEXP.search(name)
+    if match:
+        return f"左{name[0:match.start()]}{match['after']}{name[match.end():]}"
+
+    match = __CONVERT_R_TO_NAME_REGEXP.search(name)
+    if match:
+        return f"右{name[0:match.start()]}{match['after']}{name[match.end():]}"
+
     return name
 
 ## src_vertex_groupのWeightをdest_vertex_groupにaddする
@@ -232,9 +244,8 @@ class ItemOp:
         items.move(index_end, index)
         return items[index], index
 
-@register_wrap
 class ItemMoveOp:
-    type = bpy.props.EnumProperty(
+    type: bpy.props.EnumProperty(
         name='Type',
         description='Move type',
         items = [

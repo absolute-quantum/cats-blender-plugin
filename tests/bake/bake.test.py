@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats
+# GPL License
 
 import unittest
 import sys
@@ -71,7 +47,7 @@ sampling_lookup = {
             (0,0): (255,255,255,255),
             (216,0): (36,36,36,255)
         },
-        'VRChat Desktop metallic.png': {
+        'VRChat Desktop Excellent metallic.png': {
             (215,17): (0,0,0,234),
             (96,220): (0,0,0,127),
             (216,0): (0,0,0,127),
@@ -89,46 +65,10 @@ sampling_lookup = {
             (215,63): (0,0,0,127),
             (215,40): (64,0,0,127),
         },
-        'VRChat Desktop alpha.png': {
-            (215,17): (255,255,255,255),
-            (96,220): (255,255,255,255),
-            (216,0): (36,36,36,255),
-            (215,32): (255,255,255,255),
-            (96,32): (255,255,255,255),
-            (96,96): (255,255,255,255),
-            (96,160): (255,255,255,255),
-            (215,24): (255,255,255,255),
-            (232,40): (255,255,255,255),
-            (200,40): (255,255,255,255),
-            (215,56): (255,255,255,255),
-            (215,7): (180,180,180,255),
-            (0,0): (255,255,255,255),
-            (215,48): (255,255,255,255),
-            (215,63): (255,255,255,255),
-            (215,40): (255,255,255,255),
-        },
-        'VRChat Desktop smoothness.png': {
-            (215,17): (234,234,234,255),
-            (96,220): (127,127,127,255),
-            (216,0): (127,127,127,255),
-            (215,32): (127,127,127,255),
-            (96,32): (127,127,127,255),
-            (96,96): (127,127,127,255),
-            (96,160): (127,127,127,255),
-            (215,24): (122,122,122,255),
-            (232,40): (127,127,127,255),
-            (200,40): (127,127,127,255),
-            (215,56): (127,127,127,255),
-            (215,7): (127,127,127,255),
-            (0,0): (0,0,0,255),
-            (215,48): (127,127,127,255),
-            (215,63): (127,127,127,255),
-            (215,40): (127,127,127,255),
-        },
-        'VRChat Desktop diffuse.png': {
+        'VRChat Desktop Excellent diffuse.png': {
             (215,17): (0,255,0,255),
             (96,220): (188,188,188,255),
-            (216,0): (0,0,255,255),
+            (216,0): (0,0,255,36),
             (215,32): (255,0,0,255),
             (96,32): (188,188,188,255),
             (96,96): (188,188,188,255),
@@ -137,13 +77,13 @@ sampling_lookup = {
             (232,40): (231,231,231,255),
             (200,40): (231,0,231,255),
             (215,56): (0,0,0,255),
-            (215,7): (0,0,255,255),
+            (215,7): (0,0,255,180),
             (0,0): (128,128,128,255),
             (215,48): (0,0,0,255),
             (215,63): (0,0,0,255),
             (215,40): (255,0,0,255),
         },
-        'VRChat Desktop normal.png': {
+        'VRChat Desktop Excellent normal.png': {
             (215,17): (128,128,255,255),
             (96,220): (127,127,255,255),
             (98,32): (127,127,255,255),
@@ -390,21 +330,21 @@ sampling_lookup = {
             (215,40): (127,127,127,255),
         },
         'Second Life diffuse.png': {
-            (215,17): (0,255,0,255),
-            (96,220): (188,188,188,255),
-            (216,0): (0,0,255,255),
-            (215,32): (40,0,0,255),
-            (96,32): (188,188,188,255),
-            (96,96): (188,188,188,255),
-            (96,160): (188,188,188,255),
-            (215,24): (0,255,0,255),
-            (232,40): (231,231,231,255),
-            (200,40): (231,0,231,255),
-            (215,7): (0,0,255,255),
-            (0,0): (128,128,128,255),
-            (215,48): (252,252,252,255),
-            (215,63): (55,55,55,255),
-            (215,40): (191,0,0,255),
+            (215,17): (0,255,0,0),
+            (96,220): (188,188,188,0),
+            (216,0): (0,0,255,0),
+            (215,32): (40,0,0,0),
+            (96,32): (188,188,188,0),
+            (96,96): (188,188,188,0),
+            (96,160): (188,188,188,0),
+            (215,24): (0,255,0,0),
+            (232,40): (231,231,231,0),
+            (200,40): (231,0,231,0),
+            (215,7): (0,0,255,0),
+            (0,0): (128,128,128,0),
+            (215,48): (252,252,252,252),
+            (215,63): (55,55,55,55),
+            (215,40): (191,0,0,0),
         },
         'Second Life normal.png': {
             (215,17): (128,128,255,255),
@@ -428,8 +368,8 @@ sampling_lookup = {
 class TestAddon(unittest.TestCase):
 
     def reset_stage(self):
-        for colname in ['VRChat Desktop', 'VRChat Quest Excellent', 'VRChat Quest Good',
-                        'Second Life']:
+        for colname in ['VRChat Desktop Excellent', 'VRChat Quest Excellent', 'VRChat Quest Good',
+                        'Second Life', 'VRChat Desktop Good', 'VRChat Quest Medium']:
             bpy.data.collections.remove(bpy.data.collections["CATS Bake " + colname],
                                         do_unlink=True)
 
@@ -438,9 +378,11 @@ class TestAddon(unittest.TestCase):
     def test_bake_button(self):
         bpy.context.scene.cats_is_unittest = True
         bpy.ops.cats_bake.preset_all()
+        bpy.context.scene.bake_pass_displacement = False
+        test_name = bpy.path.basename(bpy.context.blend_data.filepath)
 
         bpy.context.scene.bake_resolution = 256
-        if 'bake.eyetest.blend' == bpy.path.basename(bpy.context.blend_data.filepath):
+        if 'bake.eyetest.blend' == test_name:
             bpy.context.scene.bake_uv_overlap_correction = 'NONE'
         # TODO: presently, all filter_image passes save to disk as an intermediate step, which
         # can introduce an error of +/- 1 value. We should save to a better intermediate format
@@ -450,15 +392,16 @@ class TestAddon(unittest.TestCase):
             result = bpy.ops.cats_bake.bake()
 
             # take a random sampling of each image result, confirm it's what we expect
-            self.assertTrue(bpy.path.basename(bpy.context.blend_data.filepath) in sampling_lookup)
-            for (bakename, cases) in sampling_lookup[bpy.path.basename(bpy.context.blend_data.filepath)].items():
-                self.assertTrue(bakename in bpy.data.images)
+            self.assertTrue(test_name in sampling_lookup)
+            for (bakename, cases) in sampling_lookup[test_name].items():
+                self.assertTrue(bakename in bpy.data.images, bakename)
                 for (coordinate, color) in cases.items():
                     pxoffset = (coordinate[0] + (coordinate[1] * 256 )) * 4
                     foundcolor = tuple(round(px*255) for px in bpy.data.images[bakename].pixels[pxoffset:pxoffset+4])
                     foundraw = tuple(px for px in bpy.data.images[bakename].pixels[pxoffset:pxoffset+4])
                     if not filter_img:
-                        self.assertEqual(foundcolor, color,
+                        for i in range(4):
+                            self.assertTrue(color[i] - 2 <= foundcolor[i] <= color[i] + 2,
                                          "{}@({}, {}): {} != {} ({})".format(bakename,
                                                                              coordinate[0],
                                                                              coordinate[1],
@@ -469,6 +412,27 @@ class TestAddon(unittest.TestCase):
                             # Wide margins, since sharpening actually does change it (on purpose)
                             self.assertTrue(color[i] - 40 <= foundcolor[i] <= color[i] + 40,
                                             "{} != {} ({})".format(color, foundcolor, foundraw))
+            test_collection_names = {
+                'bake.bakematerialtest.blend': [
+                    'CATS Bake Second Life',
+                    'CATS Bake VRChat Desktop Excellent',
+                    'CATS Bake VRChat Desktop Good',
+                    'CATS Bake VRChat Quest Excellent',
+                    'CATS Bake VRChat Quest Good',
+                    'CATS Bake VRChat Quest Medium',
+                    'Collection',
+                ],
+                'bake.eyetest.blend': [
+                    'CATS Bake Second Life',
+                    'CATS Bake VRChat Desktop Excellent',
+                    'CATS Bake VRChat Desktop Good',
+                    'CATS Bake VRChat Quest Excellent',
+                    'CATS Bake VRChat Quest Good',
+                    'CATS Bake VRChat Quest Medium',
+                    'Collection',
+                ]
+            }
+            self.assertEqual([o.name for o in bpy.data.collections], test_collection_names[test_name])
             self.reset_stage()
         # TODO: test each of:
         # Scene.bake_cleanup_shapekeys = BoolProperty(
@@ -479,6 +443,21 @@ class TestAddon(unittest.TestCase):
         # Scene.bake_normal_apply_trans = BoolProperty(
         # Scene.bake_uv_overlap_correction = EnumProperty(
         # Scene.bake_generate_uvmap = BoolProperty(
+        test_object_names = {
+            'bake.bakematerialtest.blend': [
+                'Armature',
+                'Cube',
+                'Cube.001'
+            ],
+            'bake.eyetest.blend': [
+                'Armature',
+                'CubeHead',
+                'CubeHips',
+                'CubeLeftEye',
+                'CubeRightEye'
+            ]
+        }
+        self.assertEqual([o.name for o in bpy.data.objects], test_object_names[test_name])
 
         # TODO: custom normal tests
         self.assertTrue(result == {'FINISHED'})

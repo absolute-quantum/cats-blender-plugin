@@ -65,7 +65,7 @@ ToolPanel.category,CATS,,
 ArmaturePanel.label,Model,モデル,모델
 ArmaturePanel.warn.newBlender1,Potentially unsupported Blender version detected!
 ArmaturePanel.warn.newBlender2,Some features might not work!
-ArmaturePanel.warn.newBlender3,CATS currently supports up to Blender 3.0.
+ArmaturePanel.warn.newBlender3,CATS currently supports up to Blender 3.2.
 ArmaturePanel.warn.oldBlender1,Old Blender version detected!,古いブレンダーバージョンが検出されました!,이전 블렌더 버전이 발견되었습니다!
 ArmaturePanel.warn.oldBlender2,Some features might not work!,一部の機能は動作しない可能性があります!,일부 기능이 작동하지 않을 수 있습니다!
 ArmaturePanel.warn.oldBlender3,Please update to Blender 2.79!,ブレンダー2.79以上にアップデートしてください!,블렌더 2.79 버전으로 업데이트하세요!
@@ -258,13 +258,7 @@ PoseNamePopup.label,Give this shapekey a name:,このシェイプキーに名前
 PoseNamePopup.desc,Sets the shapekey name. Press anywhere outside to skip,,쉐이프키 이름을 설정합니다. 스킵하려면 아무 곳이나 누르세요.
 PoseNamePopup.success,Pose successfully saved as shape key.,,포즈가 성공적으로 쉐이프키로 저장되었습니다.
 PoseToRest.label,Apply as Rest Pose,レストポーズとして適用する,새로운 기본자세로 적용
-PoseToRest.desc,"This applies the current pose position as the new rest position.
-
-If you scale the bones equally on each axis the shape keys will be scaled correctly as well!
-WARNING: This can have unwanted effects on shape keys, so be careful when modifying the head with this",,"이것은 현재 포즈를 새로운 기본 포즈로 적용합니다.
-
-만약 당신이 뼈들의 스케일을 각 축마다 동일하게 조절했다면 쉐이프키들 또한 올바르게 적용될 것입니다!
-경고: 이것은 쉐이프키에 원치 않는 영향을 줄 수 있기 때문에, 이걸로 머리를 수정할 경우 조심하세요."
+PoseToRest.desc,This applies the current pose position as the new rest position.,,이것은 현재 포즈를 새로운 기본 포즈로 적용합니다.
 PoseToRest.success,Pose successfully applied as rest pose.,,포즈가 성공적으로 기본자세로 적용되었습니다.
 JoinMeshes.label,Join Meshes,メッシュに参加する,메쉬 통합
 JoinMeshes.desc,"Joins all meshes of this model together.
@@ -1006,6 +1000,8 @@ Results in better animating topology by trading off overall shape accuracy
 Use if your elbows/joints end up with bad topology",,
 Scene.decimation_animation_weighting_factor.label,Factor,,
 Scene.decimation_animation_weighting_factor.desc,How much influence the animation weighting has on the overall shape,,
+Scene.decimation_retain_separated_meshes.label,Retain Separated Meshes,,
+Scene.decimation_retain_separated_meshes.desc,Experimental option. Keep existing meshes as separate objects throughout decimation,,
 Scene.max_tris.label,Tris,トリス,삼각폴리곤(Tris)
 Scene.max_tris.desc,The target amount of tris after decimation,,
 Scene.eye_mode.label,Eye Mode,アイモード,
@@ -1151,6 +1147,10 @@ Scene.bake_pass_ao.label,Ambient Occlusion,,
 Scene.bake_pass_ao.desc,"Bakes Ambient Occlusion, non-projected shadows. Adds a significant amount of detail to your model.
 Reccomended for non-toon style avatars.
 Takes a fairly long time to bake",,
+Scene.bake_pass_displacement.label,Displacement (Height),,
+Scene.bake_pass_displacement.desc,"Bakes a normalized Displacement map, according to the material displacement in Blender.
+Can add real 3d surface detail to models.
+Results are in Linear space, so make sure uncheck Color Texture in Unity.",,
 Scene.bake_pass_questdiffuse.label,Quest Diffuse (Color+AO),,
 Scene.bake_pass_questdiffuse.desc,Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.,,
 Scene.bake_pass_emit.label,Emit,,
@@ -1295,7 +1295,6 @@ generate_an_additional_lod_used_for_simplified_physics_interactions,"Generate an
 generate_courser_decimation_levels_for_efficient_rendering,"Generate courser decimation levels for efficient rendering."
 generate_lods,"Generate LODs"
 generate_physics_model,"Generate Physics Model"
-generate_prop_bones,"Generate Prop Bones"
 generate_the_twistbones_on_the_upper_half_of_the_bone_usually_used_for_upper_legs,"Generate the twistbones on the upper half of the bone. Usually used for upper legs."
 generate_upperhalf,"Generate Upperhalf"
 gmod_model_name,"Gmod Model Name"

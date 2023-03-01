@@ -2,10 +2,8 @@
 
 from bpy.types import Operator
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local import auto_scene_setup
 
-@register_wrap
 class SetFrameRange(Operator):
     bl_idname = 'mmd_tools.set_frame_range'
     bl_label = 'Set Frame Range'

@@ -1,3 +1,5 @@
+# GPL License
+
 # Thanks to https://www.thegrove3d.com/learn/how-to-translate-a-blender-addon/ for the idea
 
 import os
@@ -84,7 +86,7 @@ def get_languages_list(self, context):
 
 
 def update_ui(self, context):
-    if settings.update_settings(None, None):
+    if settings.update_settings_core(None, None):
         reload_scripts()
 
 

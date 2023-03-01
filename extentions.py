@@ -1,3 +1,5 @@
+# GPL License
+
 from .tools import common as Common
 from .tools import atlas as Atlas
 from .tools import eyetracking as Eyetracking
@@ -196,6 +198,59 @@ def register():
         default='SMART'
     )
 
+    Scene.decimation_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=True
+    )
+
+    Scene.decimation_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    Scene.decimation_animation_weighting_include_shapekeys = BoolProperty(
+        name="Include Shapekeys",
+        description="Factor shapekeys into animation weighting. Disable if your model has large body shapekeys.",
+        default=False
+    )
+
+    # Bake
+    Scene.bake_use_draft_quality = BoolProperty(
+        name='Draft Quality',
+        description='Reduce the number of samples and cap resolution at 1024, speeds up iteration',
+        default=False
+    )
+
+    Scene.bake_animation_weighting = BoolProperty(
+        name=t('Scene.decimation_animation_weighting.label'),
+        description=t('Scene.decimation_animation_weighting.desc'),
+        default=True
+    )
+
+    Scene.bake_animation_weighting_factor = FloatProperty(
+        name=t('Scene.decimation_animation_weighting_factor.label'),
+        description=t('Scene.decimation_animation_weighting_factor.desc'),
+        default=0.25,
+        min=0,
+        max=1,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
+    )
+
+    Scene.bake_animation_weighting_include_shapekeys = BoolProperty(
+        name="Include Shapekeys",
+        description="Factor shapekeys into animation weighting. Disable if your model has large body shapekeys.",
+        default=False
+    )
+
     class BakePlatformPropertyGroup(PropertyGroup):
         name: StringProperty(name='name', default=t("New Platform"))
         use_decimation: BoolProperty(
@@ -209,13 +264,6 @@ def register():
             default=7500,
             min=1,
             max=70000
-        )
-        generate_prop_bone_max_influence_count: IntProperty(
-            name=t("prop_bones_max_influence_count"),
-            description=t("prop_bones_max_influence_count"),
-            default=45,
-            min=1,
-            max=45
         )
         use_lods: BoolProperty(
             name=t("generate_lods"),
@@ -258,18 +306,6 @@ def register():
             name=t("merge_twist_bones"),
             description=t("merge_any_bone_with_twist_in_the_name_useful_as_quest_does_not_support_constraints"),
             default=False
-        )
-        generate_prop_bones: BoolProperty(
-            name=t("generate_prop_bones"),
-            description=t("this_option_will_detect_any_meshes_weighted_to_a_single_bone_and_create_a_prop_bone_you_can_independently_scale_to_"),
-            default=True
-        )
-        generate_prop_bone_max_influence_count: IntProperty(
-            name=t("max_bones_per_prop"),
-            description=t("maximum_bones_a_prop_can_be_attached_to_to_be_considered_a_prop_more_will_create_more_toggleable_props_but_increase_armature_complexity"),
-            default=2,
-            min=1,
-            max=100
         )
         metallic_alpha_pack: EnumProperty(
             name=t('Scene.bake_metallic_alpha_pack.label'),
@@ -324,7 +360,7 @@ def register():
         diffuse_premultiply_opacity: FloatProperty(
             name=t('Scene.bake_questdiffuse_opacity.label'),
             description=t('Scene.bake_questdiffuse_opacity.desc'),
-            default=0.75,
+            default=1.0,
             min=0.0,
             max=1.0,
             step=0.05,
@@ -403,8 +439,25 @@ def register():
             default=False
         )
         gmod_model_name: StringProperty(name='Gmod Model Name', default="missing no")
-        #TODO: LODs
-
+        prop_bone_handling: EnumProperty(
+            name="Prop objects",
+            description="What to do with objects marked as Props",
+            items=[
+                ("NONE", "None", "Treat as ordinary objects and bake in"),
+                ("GENERATE", "Generate Bones/Animations", "Generate prop bones and animations for toggling"),
+                ("REMOVE", "Remove", "Remove completely, for platforms with no animation support"),
+            ],
+            default="GENERATE"
+        )
+        copy_only_handling: EnumProperty(
+            name="Copy Only objects",
+            description="What to do with objects marked as Copy Only",
+            items=[
+                ("COPY", "Copy", "Copy and export, but do not bake in"),
+                ("REMOVE", "Remove", "Remove completely, for e.g. eye shells"),
+            ],
+            default="COPY"
+        )
 
     register_class(BakePlatformPropertyGroup)
 
@@ -472,8 +525,8 @@ def register():
         name=t('Scene.bake_face_scale.label'),
         description=t('Scene.bake_face_scale.desc'),
         default=3.0,
-        min=0.5,
-        max=4.0,
+        soft_min=0.5,
+        soft_max=4.0,
         step=0.25,
         precision=2,
         subtype='FACTOR'
@@ -512,6 +565,12 @@ def register():
     Scene.bake_pass_normal = BoolProperty(
         name=t('Scene.bake_pass_normal.label'),
         description=t('Scene.bake_pass_normal.desc'),
+        default=True
+    )
+
+    Scene.bake_pass_displacement = BoolProperty(
+        name=t('Scene.bake_pass_displacement.label'),
+        description=t('Scene.bake_pass_displacement.desc'),
         default=True
     )
 
@@ -606,6 +665,23 @@ def register():
             ("SHAPES", t('Scene.selection_mode.shapekeys.label'), t('Scene.selection_mode.shapekeys.desc')),
             ("MESHES", t('Scene.selection_mode.meshes.label'), t('Scene.selection_mode.meshes.desc'))
         ]
+    )
+
+    Scene.bake_diffuse_indirect = BoolProperty(
+        name="Bake indirect light",
+        description="Bake reflected light as if the only light source is ambient light",
+        default=False
+    )
+
+    Scene.bake_diffuse_indirect_opacity = FloatProperty(
+        name="Opacity",
+        description="How bright the indirect light will be on the diffuse layer",
+        default=0.5,
+        min=0.0,
+        max=1.0,
+        step=0.05,
+        precision=2,
+        subtype='FACTOR'
     )
 
     Scene.add_shape_key = EnumProperty(
