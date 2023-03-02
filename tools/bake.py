@@ -1430,9 +1430,6 @@ class BakeButton(bpy.types.Operator):
                                 bakeeyemask.strength = 25
                                 bakeeyemask.mid_level = 0
 
-                if desired_inputs is not None:
-                    self.genericize_bsdfs(get_objects(collection.all_objects, {"MESH"}),
-                                          desired_inputs, base_black=base_black)
                 self.bake_pass(context, bake_name, bake_type, bake_pass_filter,
                                get_objects(collection.all_objects, {"MESH"}),
                                (resolution, resolution), 16 if draft_render else 512, 0,
