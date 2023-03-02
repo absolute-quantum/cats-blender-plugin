@@ -24,10 +24,7 @@ class ScanButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.add_shape_key == "":
-            return False
-
-        return True
+        return Common.is_enum_non_empty(context.scene.add_shape_key)
 
     def execute(self, context):
         shape = context.scene.add_shape_key
@@ -51,9 +48,7 @@ class AddShapeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.add_shape_key == "":
-            return False
-        return True
+        return Common.is_enum_non_empty(context.scene.add_shape_key)
 
     def execute(self, context):
         shape = context.scene.add_shape_key
@@ -77,9 +72,7 @@ class AddMeshButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.add_mesh == "":
-            return False
-        return True
+        return Common.is_enum_non_empty(context.scene.add_mesh)
 
     def execute(self, context):
         ignore_meshes.append(context.scene.add_mesh)

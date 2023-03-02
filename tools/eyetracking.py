@@ -31,9 +31,9 @@ class CreateEyesButton(bpy.types.Operator):
         if not Common.get_meshes_objects(check=False):
             return False
 
-        if not context.scene.head \
-                or not context.scene.eye_left \
-                or not context.scene.eye_right:
+        if Common.is_enum_empty(context.scene.head) \
+                or Common.is_enum_empty(context.scene.eye_left) \
+                or Common.is_enum_empty(context.scene.eye_right):
             return False
 
         # if not context.scene.disable_eye_blinking:
@@ -63,10 +63,10 @@ class CreateEyesButton(bpy.types.Operator):
         old_eye_right = armature.data.edit_bones.get(context.scene.eye_right)
 
         # Check for errors
-        if not context.scene.disable_eye_blinking and (context.scene.wink_left == ""
-                                                       or context.scene.wink_right == ""
-                                                       or context.scene.lowerlid_left == ""
-                                                       or context.scene.lowerlid_right == ""):
+        if not context.scene.disable_eye_blinking and (Common.is_enum_empty(context.scene.wink_left)
+                                                       or Common.is_enum_empty(context.scene.wink_right)
+                                                       or Common.is_enum_empty(context.scene.lowerlid_left)
+                                                       or Common.is_enum_empty(context.scene.lowerlid_right)):
             saved_data.load()
             self.report({'ERROR'}, t('CreateEyesButton.error.noShapeSelected'))
             return {'CANCELLED'}

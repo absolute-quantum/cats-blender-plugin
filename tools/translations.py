@@ -81,8 +81,7 @@ def get_languages_list(self, context):
         # 3. will be shown in the hover description (below description)
         choices.append((language, language, language))
 
-    bpy.types.Object.Enum = choices
-    return bpy.types.Object.Enum
+    return choices
 
 
 def update_ui(self, context):

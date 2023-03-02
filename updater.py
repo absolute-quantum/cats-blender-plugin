@@ -14,6 +14,7 @@ from threading import Thread
 from collections import OrderedDict
 from bpy.app.handlers import persistent
 from .tools.translations import t
+from .tools.common import wrap_dynamic_enum_items
 
 no_ver_check = False
 fake_update = False
@@ -746,8 +747,7 @@ def get_version_list(self, context):
         for version in version_list.keys():
             choices.append((version, version, version))
 
-    bpy.types.Object.Enum = choices
-    return bpy.types.Object.Enum
+    return choices
 
 
 def get_user_preferences():
@@ -946,7 +946,7 @@ def register(bl_info, dev_branch, version_str):
     bpy.types.Scene.cats_updater_version_list = bpy.props.EnumProperty(
         name=t('bpy.types.Scene.cats_updater_version_list.label'),
         description=t('bpy.types.Scene.cats_updater_version_list.desc'),
-        items=get_version_list
+        items=wrap_dynamic_enum_items(get_version_list, 'cats_updater_version_list', sort=False)
     )
     bpy.types.Scene.cats_update_action = bpy.props.EnumProperty(
         name=t('bpy.types.Scene.cats_update_action.label'),

@@ -119,7 +119,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 row.operator(Decimation.AddMeshButton.bl_idname, icon=globs.ICON_ADD)
                 col.separator()
 
-                if context.scene.add_mesh == '':
+                if Common.is_enum_empty(context.scene.add_mesh):
                     row = col.row(align=True)
                     col.label(text=t('DecimationPanel.warn.noDecimation'), icon='ERROR')
 

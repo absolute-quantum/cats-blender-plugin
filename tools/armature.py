@@ -1252,8 +1252,6 @@ class FixArmature(bpy.types.Operator):
             except RuntimeError:
                 pass
 
-        Common.reset_context_scenes()
-
         wm.progress_end()
 
         if not hierarchy_check_hips['result']:

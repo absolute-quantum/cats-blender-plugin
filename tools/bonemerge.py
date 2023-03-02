@@ -22,9 +22,7 @@ class BoneMergeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.merge_mesh == "" or context.scene.merge_bone == "":
-            return False
-        return True
+        return Common.is_enum_non_empty(context.scene.merge_mesh) and Common.is_enum_non_empty(context.scene.merge_bone)
 
     def execute(self, context):
         saved_data = Common.SavedData()
