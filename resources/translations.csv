@@ -73,7 +73,7 @@ ArmaturePanel.warn.noDict1,Dictionary not found!,辞書が見つかりません!
 ArmaturePanel.warn.noDict2,"Translations will work, but are not optimized.",翻訳は機能しますが、最適化されません。,번역은 되지만 최적화되지는 않습니다.
 ArmaturePanel.warn.noDict3,Reinstall Cats to fix this.,これを修正するためにCatsを再インストールします。,이 문제를 해결하려면 Cats를 다시 설치하세요.
 ArmaturePanel.ImportAnyModel.label,Import Model,モデルのインポート,모델 불러오기
-ModelSettings.label,Fix Model Settings,モデル設定の修正,모델 고치기 설정
+ModelSettings.label,Standardize Model Settings,モデル設定の修正,모델 고치기 설정
 ModelSettings.warn.fbtFix1,The Full Body Tracking Fix,フル ボディトラッキングの修正,풀바디 트래킹 수정
 ModelSettings.warn.fbtFix2,is no longer needed for VRChat.,もはやVrChatのために必要とされていません。,VRChat에 더 이상 필요하지 않음.
 ModelSettings.warn.fbtFix3,It's still available in Model Options.,モデル オプションで引き続き使用できます。.,이것은 모델옵션에서 여전히 이용가능.
@@ -206,7 +206,7 @@ CreditsPanel.desc4,Special thanks to:,特別な感謝: ShotariyaとNeitri,다음
 CreditsPanel.descContributors,"Feilen, Jordo, Ruubick, 989onan, triazo,","Feilen、Jordo、Ruubick、989onan、triazo、","Feilen, Jordo, Ruubick, 989onan, triazo,"
 CreditsPanel.descContributors2,"Shotariya and Neitri","ShotariyaとNeitri","Shotariya와 Neitri"
 CreditsPanel.desc5,Do you need help or found a bug?,助けが必要ですか、バグを見つけましたか?,도움이 필요하시거나 혹시 버그를 찾으셨나요?
-FixArmature.label,Fix Model,モデル修正,모델 고치기
+FixArmature.label,Standardize Model,モデル修正,모델 고치기
 FixArmature.desc,"Automatically:
 - Reparents bones
 - Removes unnecessary bones, objects, groups & constraints
@@ -229,12 +229,12 @@ If there are meshes outside of the armature,
 set the armature as the parent of the meshes.",,"뼈대(Armature) 안에 메쉬가 없습니다!
 만약 뼈대 밖에 메쉬들이 있다면,
 그 뼈대를 메쉬들의 부모로 설정하세요."
-FixArmature.error.faultyUV1,"The model was successfully fixed, but there were {uvcoord} faulty UV coordinates.",,"모델이 성공적으로 고쳐졌지만, 잘못된 UV 좌표들이 있습니다. {uvcoord}"
+FixArmature.error.faultyUV1,"The model was successfully standardized, but there were {uvcoord} faulty UV coordinates.",,"모델이 성공적으로 고쳐졌지만, 잘못된 UV 좌표들이 있습니다. {uvcoord}"
 FixArmature.error.faultyUV2,This could result in broken textures and you might have to fix them manually.,,이것은 텍스처를 망가뜨리는 결과를 불러올 수 있으며 당신이 그것들을 직접 손봐야할 수 있습니다.
 FixArmature.error.faultyUV3,This issue is often caused by edits in PMX editor.,,이 이슈는 자주 PMX editor에서 편집할 경우 일어날 수 있습니다.
-FixArmature.fixedSuccess,Model successfully fixed.,,모델이 성공적으로 고쳐졌습니다.
+FixArmature.fixedSuccess,Model successfully standardized.,,모델이 성공적으로 고쳐졌습니다.
 FixArmature.bonesNotFound,The following bones were not found:,,해당 본들이 발견되지 않았습니다:
-FixArmature.cantFix1,Looks like you found a model which Cats could not fix!,,Cats Plugin이 고칠 수 없는 모델인 것 같습니다!
+FixArmature.cantFix1,Looks like you found a model which Cats could not standardize!,,Cats Plugin이 고칠 수 없는 모델인 것 같습니다!
 FixArmature.cantFix2,If this is a non modified model we would love to make it compatible.,,이것이 수정되지 않은 모델이라면 우리는 호환되도록 만들고 싶습니다.
 FixArmature.cantFix3,"Report it to us in the forum or in our discord, links can be found in the Credits panel.",,포럼이나 디스코드에서 우리에게 신고해주세요. 링크는 크레딧 패널에 있습니다.
 FixArmature.notParent," is not parented at all, this will cause problems!",," 부모설정이 전혀 안됐다면, 이로 인해 문제가 발생할 수 있습니다!"
@@ -347,7 +347,7 @@ ApplyAllTransformations.desc,"Applies the position, rotation and scale of all ob
 ApplyAllTransformations.success,Transformations applied.,,
 RemoveZeroWeightBones.label,Remove Zero Weight Bones,ゼロ ウェイト ボーンを削除する,제로 웨이트 본 제거
 RemoveZeroWeightBones.desc,"Cleans up the bones hierarchy, deleting all bones that don't directly affect any vertices
-Don't use this if you plan to use 'Fix Model'",,
+Don't use this if you plan to use 'Standardize Model'",,
 RemoveZeroWeightBones.success,Deleted {number} zero weight bones.,,
 RemoveZeroWeightGroups.label,Remove Zero Weight Vertex Groups,ゼロ ウェイトの頂点グループを削除,제로 웨이트 버텍스 그룹들 제거
 RemoveZeroWeightGroups.desc,"Cleans up the vertex groups of all meshes, deleting all groups that don't directly affect any vertices",,
@@ -410,15 +410,15 @@ DuplicateBonesButton.desc,Duplicates the selected bones including their weight a
 DuplicateBonesButton.success,Successfully duplicated {number} bones.,,
 MergeArmature.label,Merge Armatures,マージアーマチュア,뼈대(Armatures) 통합
 MergeArmature.desc,"Merges the selected merge armature into the base armature.
-You should fix both armatures with Cats first.
+You should standardize both armatures with Cats first.
 Only move the mesh of the merge armature to the desired position, the bones will be moved automatically",,
 MergeArmature.error.notFound,"The armature ""{name}"" could not be found.",,
 MergeArmature.error.checkTransforms,"Please make sure that the parent of the merge armature has the following transforms:
  - Location at 0
  - Rotation at 0
  - Scale at 1",,
-MergeArmature.error.pleaseFix,"Please use the ""Fix Model"" feature on the selected armatures first!
-Make sure to select the armature you want to fix above the ""Fix Model"" button!
+MergeArmature.error.pleaseFix,"Please use the ""Standardize Model"" feature on the selected armatures first!
+Make sure to select the armature you want to standardize above the ""Standardize Model"" button!
 After that please only move the mesh (not the armature!) to the desired position.",,
 MergeArmature.success,Armatures successfully joined.,,
 AttachMesh.label,Attach Mesh,メッシュをアタッチ,메쉬에 붙이기
