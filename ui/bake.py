@@ -1,3 +1,5 @@
+# GPL License
+
 import bpy
 import addon_utils
 
@@ -143,6 +145,7 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         non_bsdf_mat_names = set()
         multi_bsdf_mat_names = set()
         current_props = set()
+        current_copyonlys = set()
         non_node_mat_names = set()
         non_world_scale_names = set()
         empty_material_slots = set()
@@ -171,6 +174,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 too_many_uvmaps.add(obj.name)
             if 'generatePropBones' in obj and obj['generatePropBones']:
                 current_props.add(obj.name)
+            if 'bakeCopyOnly' in obj and obj['bakeCopyOnly']:
+                current_copyonlys.add(obj.name)
 
         col.label(text=t('BakePanel.autodetectlabel'))
         row = col.row(align=True)
@@ -228,6 +233,9 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         row = col.row(align=True)
                         row.separator()
                         row.prop(context.scene, 'bake_animation_weighting_factor', expand=True)
+                        row = col.row(align=True)
+                        row.separator()
+                        row.prop(context.scene, 'bake_animation_weighting_include_shapekeys', expand=True)
                 row = col.row(align=True)
                 row.prop(item, 'use_physmodel', expand=True)
                 if item.use_physmodel:
@@ -246,19 +254,31 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                 row = col.row(align=True)
                 row.prop(item, 'merge_twistbones', expand=True)
                 row = col.row(align=True)
-                row.prop(item, 'generate_prop_bones', expand=True)
-                if item.generate_prop_bones:
+                row.prop(item, 'prop_bone_handling')
+                row = col.row(align=True)
+                row.operator(Bake.BakeAddProp.bl_idname)
+                row.operator(Bake.BakeRemoveProp.bl_idname)
+                if current_props:
                     row = col.row(align=True)
-                    row.operator(Bake.BakeAddProp.bl_idname)
-                    row.operator(Bake.BakeRemoveProp.bl_idname)
-                    if current_props:
+                    row.separator()
+                    row.label(text="Current props:")
+                    for name in current_props:
                         row = col.row(align=True)
                         row.separator()
-                        row.label(text="Current props:")
-                        for name in current_props:
-                            row = col.row(align=True)
-                            row.separator()
-                            row.label(text=name, icon="OBJECT_DATA")
+                        row.label(text=name, icon="OBJECT_DATA")
+                row = col.row(align=True)
+                row.prop(item, 'copy_only_handling')
+                row = col.row(align=True)
+                row.operator(Bake.BakeAddCopyOnly.bl_idname)
+                row.operator(Bake.BakeRemoveCopyOnly.bl_idname)
+                if current_copyonlys:
+                    row = col.row(align=True)
+                    row.separator()
+                    row.label(text="Current 'Copy Only's:")
+                    for name in current_copyonlys:
+                        row = col.row(align=True)
+                        row.separator()
+                        row.label(text=name, icon="OBJECT_DATA")
 
                 row = col.row(align=True)
                 row.prop(item, 'phong_setup', expand=True)
@@ -365,6 +385,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                     row = col.row(align=True)
                     row.separator()
                     row.prop(context.scene, 'bake_unwrap_angle', expand=True)
+                if context.scene.bake_uv_overlap_correction == "MANUALNOPACK" and any(plat.use_decimation for plat in context.scene.bake_platforms) and (not context.scene.bake_emit_indirect) and (not context.scene.bake_prioritize_face) and (not context.scene.bake_pass_ao):
+                    col.label(text="Warning: may have unexpected results if you have overlapping islands.") #TRANSLATE PLEASE!
                 if 'uvpm3_props' in context.scene or 'uvpm2_props' in context.scene:
                     row = col.row(align=True)
                     row.separator()
@@ -450,6 +472,10 @@ class BakePanel(ToolPanel, bpy.types.Panel):
                         row.separator()
                         row.prop(context.scene, 'bake_emit_exclude_eyes', expand=True)
 
+                col.separator()
+                row = col.row(align=True)
+                row.prop(context.scene, 'bake_pass_displacement', expand=True)
+
                 row = col.row(align=True)
         ### END ADVANCED GENERAL OPTIONS
         else: # if not bake_platforms:
@@ -474,6 +500,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
         # Bake button
         row = col.row(align=True)
         row.operator(Bake.BakeButton.bl_idname, icon='RENDER_STILL')
+        row = col.row(align=True)
+        row.prop(context.scene, 'bake_use_draft_quality')
 
         # Show warnings
         if non_node_mat_names:

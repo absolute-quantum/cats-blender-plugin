@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from typing import Optional, Union
 import bpy
 
 matmul = (lambda a, b: a*b) if bpy.app.version < (2, 80, 0) else (lambda a, b: a.__matmul__(b))
@@ -68,6 +69,44 @@ class __SelectObjects:
         for i, j in zip(self.__selected_objects, self.__hides):
             i.hide = j
 
+def find_user_layer_collection(target_object: bpy.types.Object) -> Optional[bpy.types.LayerCollection]:
+    context: bpy.types.Context = bpy.context
+    scene_layer_collection: bpy.types.LayerCollection = context.view_layer.layer_collection
+
+    def find_layer_collection_by_name(layer_collection: bpy.types.LayerCollection, name: str) -> Optional[bpy.types.LayerCollection]:
+        if layer_collection.name == name:
+            return layer_collection
+
+        child_layer_collection: bpy.types.LayerCollection
+        for child_layer_collection in layer_collection.children:
+            found = find_layer_collection_by_name(child_layer_collection, name)
+            if found is not None:
+                return found
+
+        return None
+
+    user_collection: bpy.types.Collection
+    for user_collection in target_object.users_collection:
+        found = find_layer_collection_by_name(scene_layer_collection, user_collection.name)
+        if found is not None:
+            return found
+    
+    return None
+
+class __ActivateLayerCollection:
+    def __init__(self, target_layer_collection: Optional[bpy.types.LayerCollection]):
+        self.__original_layer_collection = bpy.context.view_layer.active_layer_collection
+        self.__target_layer_collection = target_layer_collection if target_layer_collection else self.__original_layer_collection
+
+    def __enter__(self):
+        if bpy.context.view_layer.active_layer_collection.name != self.__target_layer_collection.name:
+            bpy.context.view_layer.active_layer_collection = self.__target_layer_collection
+        return self.__target_layer_collection
+
+    def __exit__(self, _type, _value, _traceback):
+        if bpy.context.view_layer.active_layer_collection.name != self.__original_layer_collection.name:
+            bpy.context.view_layer.active_layer_collection = self.__original_layer_collection
+
 def addon_preferences(attrname, default=None):
     if hasattr(bpy.context, 'preferences'):
         addon = bpy.context.preferences.addons.get(__package__, None)
@@ -106,6 +145,16 @@ def select_object(obj, objects=[]):
             some functions...
     """
     return __SelectObjects(obj, objects)
+
+def activate_layer_collection(target: Union[bpy.types.Object, bpy.types.LayerCollection, None]):
+    if isinstance(target,  bpy.types.Object):
+        layer_collection = find_user_layer_collection(target)
+    elif isinstance(target,  bpy.types.LayerCollection):
+        layer_collection = target
+    else:
+        layer_collection = None
+
+    return __ActivateLayerCollection(layer_collection)
 
 def duplicateObject(obj, total_len):
     for i in bpy.context.selected_objects:
@@ -202,6 +251,7 @@ def makeSphere(segment=8, ring_count=5, radius=1.0, target_object=None):
             radius=radius,
             )
     else:
+        # SUPPORT_UNTIL: 3.3 LTS
         bmesh.ops.create_uvsphere(
             bm,
             u_segments=segment,

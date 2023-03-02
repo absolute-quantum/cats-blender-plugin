@@ -1,3 +1,5 @@
+# GPL License
+
 import bpy
 
 from .. import globs
@@ -117,7 +119,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
                 row.operator(Decimation.AddMeshButton.bl_idname, icon=globs.ICON_ADD)
                 col.separator()
 
-                if context.scene.add_mesh == '':
+                if Common.is_enum_empty(context.scene.add_mesh):
                     row = col.row(align=True)
                     col.label(text=t('DecimationPanel.warn.noDecimation'), icon='ERROR')
 
@@ -154,7 +156,12 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.separator()
             row.prop(context.scene, 'decimation_animation_weighting_factor', expand=True)
+            row = col.row(align=True)
+            row.separator()
+            row.prop(context.scene, 'decimation_animation_weighting_include_shapekeys', expand=True)
             col.separator()
+        row = col.row(align=True)
+        row.prop(context.scene, 'decimation_retain_separated_meshes', expand=True)
         row = col.row(align=True)
         row.operator(Decimation.AutoDecimatePresetGood.bl_idname)
         row.operator(Decimation.AutoDecimatePresetExcellent.bl_idname)

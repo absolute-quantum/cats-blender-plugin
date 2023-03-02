@@ -1,3 +1,5 @@
+# GPL License
+
 ###
 # Rather than being a full implementation, this links pulls from
 # immersive scaler upstream so that updates are simply worked in.

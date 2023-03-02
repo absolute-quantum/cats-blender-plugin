@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats, Hotox
+# GPL License
 
 import bpy
 from difflib import SequenceMatcher
@@ -42,9 +18,7 @@ class RootButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.root_bone == "":
-            return False
-        return True
+        return Common.is_enum_non_empty(context.scene.root_bone)
 
     def execute(self, context):
         saved_data = Common.SavedData()
@@ -86,8 +60,7 @@ def get_parent_root_bones(self, context):
     choices = []
 
     if armature is None:
-        bpy.types.Object.Enum = choices
-        return bpy.types.Object.Enum
+        return choices
     armature = armature.data
 
     # Get cache if exists
@@ -156,13 +129,11 @@ def get_parent_root_bones(self, context):
             choices.append((rootbone, rootbone.replace('_R', '').replace('_L', '') + ' (' + str(len(bone_groups[rootbone])) + ' bones)', rootbone))
             bone_groups_tmp[rootbone] = bone_groups[rootbone]
 
-    bpy.types.Object.Enum = choices
-
     # set cache
     globs.root_bones = bone_groups_tmp
     globs.root_bones_choices = choices
 
-    return bpy.types.Object.Enum
+    return choices
 
 
 @register_wrap

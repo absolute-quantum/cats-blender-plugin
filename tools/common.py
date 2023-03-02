@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats, Hotox
+# GPL License
 
 import re
 import bpy
@@ -45,6 +21,7 @@ from . import armature_bones as Bones
 from . import settings as Settings
 from .register import register_wrap
 from .translations import t
+from sys import intern
 
 from mmd_tools_local import utils
 from mmd_tools_local.panels import tool as mmd_tool
@@ -135,7 +112,7 @@ def get_armature(armature_name=None):
         armature_name = bpy.context.scene.armature
     for obj in get_objects():
         if obj.type == 'ARMATURE':
-            if (armature_name and obj.name == armature_name) or not armature_name:
+            if obj.name == armature_name or Common.is_enum_empty(armature_name):
                 return obj
     return None
 
@@ -298,10 +275,6 @@ def set_default_stage():
         if version_2_79_or_older():
             armature.layers[0] = True
 
-    # Fix broken armatures
-    if not bpy.context.scene.armature:
-        bpy.context.scene.armature = armature.name
-
     return armature
 
 
@@ -439,8 +412,7 @@ def get_meshes(self, context):
     for mesh in get_meshes_objects(mode=0, check=False):
         choices.append((mesh.name, mesh.name, mesh.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
-    return bpy.types.Object.Enum
+    return _sort_enum_choices_by_identifier_lower(choices)
 
 
 def get_top_meshes(self, context):
@@ -449,18 +421,17 @@ def get_top_meshes(self, context):
     for mesh in get_meshes_objects(mode=1, check=False):
         choices.append((mesh.name, mesh.name, mesh.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
-    return bpy.types.Object.Enum
+    return choices
 
 
+# currently unused
 def get_all_meshes(self, context):
     choices = []
 
     for mesh in get_meshes_objects(mode=2, check=False):
         choices.append((mesh.name, mesh.name, mesh.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
-    return bpy.types.Object.Enum
+    return _sort_enum_choices_by_identifier_lower(choices)
 
 
 def get_armature_list(self, context):
@@ -477,11 +448,7 @@ def get_armature_list(self, context):
         # 3. will be shown in the hover description (below description)
         choices.append((armature.name, name, armature.name))
 
-    if len(choices) == 0:
-        choices.append(('None', 'None', 'None'))
-
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
-    return bpy.types.Object.Enum
+    return choices
 
 
 def get_armature_merge_list(self, context):
@@ -500,11 +467,7 @@ def get_armature_merge_list(self, context):
             # 3. will be shown in the hover description (below description)
             choices.append((armature.name, name, armature.name))
 
-    if len(choices) == 0:
-        choices.append(('None', 'None', 'None'))
-
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
-    return bpy.types.Object.Enum
+    return choices
 
 
 def get_meshes_decimation(self, context):
@@ -520,8 +483,7 @@ def get_meshes_decimation(self, context):
                 # 3. will be shown in the hover description (below description)
                 choices.append((object.name, object.name, object.name))
 
-    bpy.types.Object.Enum = sorted(choices, key=lambda x: tuple(x[0].lower()))
-    return bpy.types.Object.Enum
+    return choices
 
 
 def get_bones_head(self, context):
@@ -551,8 +513,7 @@ def get_bones(names=None, armature_name=None, check_list=False):
     armature = get_armature(armature_name=armature_name)
 
     if not armature:
-        bpy.types.Object.Enum = choices
-        return bpy.types.Object.Enum
+        return choices
 
     # print("")
     # print("START DEBUG UNICODE")
@@ -567,7 +528,7 @@ def get_bones(names=None, armature_name=None, check_list=False):
         except UnicodeDecodeError:
             print("ERROR", bone.name)
 
-    choices.sort(key=lambda x: tuple(x[0].lower()))
+    _sort_enum_choices_by_identifier_lower(choices)
 
     choices2 = []
     for name in names:
@@ -578,9 +539,7 @@ def get_bones(names=None, armature_name=None, check_list=False):
         for choice in choices:
             choices2.append(choice)
 
-    bpy.types.Object.Enum = choices2
-
-    return bpy.types.Object.Enum
+    return choices2
 
 
 def get_shapekeys_mouth_ah(self, context):
@@ -638,13 +597,11 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
         else:
             meshes = [get_objects().get(context.scene.mesh_name_eye)]
     else:
-        bpy.types.Object.Enum = choices
-        return bpy.types.Object.Enum
+        return choices
 
     for mesh in meshes:
         if not mesh or not has_shapekeys(mesh):
-            bpy.types.Object.Enum = choices
-            return bpy.types.Object.Enum
+            return choices
 
         for shapekey in mesh.data.shape_keys.key_blocks:
             name = shapekey.name
@@ -660,7 +617,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
             choices.append((name, name, name))
             choices_simple.append(name)
 
-    choices.sort(key=lambda x: tuple(x[0].lower()))
+    _sort_enum_choices_by_identifier_lower(choices)
 
     choices2 = []
     for name in names:
@@ -669,10 +626,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
                 continue
             choices2.append((name, name, name))
 
-    for choice in choices:
-        choices2.append(choice)
-
-    bpy.types.Object.Enum = choices2
+    choices2.extend(choices)
 
     if return_list:
         shape_list = []
@@ -680,7 +634,7 @@ def get_shapekeys(context, names, is_mouth, no_basis, decimation, return_list):
             shape_list.append(choice[0])
         return shape_list
 
-    return bpy.types.Object.Enum
+    return choices2
 
 
 def fix_armature_names(armature_name=None):
@@ -716,13 +670,12 @@ def fix_armature_names(armature_name=None):
 
 
 def get_texture_sizes(self, context):
-    bpy.types.Object.Enum = [
+    # Format is (identifier, name, description)
+    return [
         ("1024", "1024 (low)", "1024"),
         ("2048", "2048 (medium)", "2048"),
         ("4096", "4096 (high)", "4096")
     ]
-
-    return bpy.types.Object.Enum
 
 
 def get_meshes_objects(armature_name=None, mode=0, check=True, visible_only=False):
@@ -800,7 +753,6 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
     # Get meshes to join
     meshes_to_join = get_meshes_objects(armature_name=armature_name, mode=3 if mode == 1 else 0)
     if not meshes_to_join:
-        reset_context_scenes()
         return None
 
     set_default_stage()
@@ -876,8 +828,6 @@ def join_meshes(armature_name=None, mode=0, apply_transformations=True, repair_s
 
         if repair_shape_keys:
             repair_shapekey_order(mesh.name)
-
-    reset_context_scenes()
 
     # Update the material list of the Material Combiner
     update_material_list()
@@ -1180,24 +1130,6 @@ def separate_by_verts():
         bpy.ops.object.mode_set(mode='OBJECT')
 
 
-def reset_context_scenes():
-    head_bones = get_bones_head(None, bpy.context)
-    if len(head_bones) > 0:
-        bpy.context.scene.head = head_bones[0][0]
-        bpy.context.scene.eye_left = get_bones_eye_l(None, bpy.context)[0][0]
-        bpy.context.scene.eye_right = get_bones_eye_r(None, bpy.context)[0][0]
-
-    meshes = get_meshes(None, bpy.context)
-    if len(meshes) > 0:
-        mesh = meshes[0][0]
-        if not bpy.context.scene.mesh_name_eye:
-            bpy.context.scene.mesh_name_eye = mesh
-        if not bpy.context.scene.mesh_name_viseme:
-            bpy.context.scene.mesh_name_viseme = mesh
-        if not bpy.context.scene.merge_mesh:
-            bpy.context.scene.merge_mesh = mesh
-
-
 def save_shapekey_order(mesh_name):
     mesh = get_objects()[mesh_name]
     armature = get_armature()
@@ -1417,6 +1349,19 @@ def removeZeroVerts(obj, thres=0):
         for r in z:
             obj.vertex_groups[g.group].remove([v.index])
 
+def get_children_recursive(parent):
+    if bpy.app.version < (3, 1):
+        objs = []
+        def get_child_names(obj):
+            for child in obj.children:
+                objs.append(child)
+                if child.children:
+                    get_child_names(child)
+
+        get_child_names(parent)
+        return objs
+    else:
+        return parent.children_recursive
 
 def delete_hierarchy(parent):
     unselect_all()
@@ -1779,6 +1724,11 @@ def clean_material_names(mesh):
 
 
 def mix_weights(mesh, vg_from, vg_to, mix_strength=1.0, mix_mode='ADD', delete_old_vg=True):
+    """Mix the weights of two vertex groups on the mesh, optionally removing the vertex group named vg_from.
+
+    Note that as of Blender 3.0+, existing references to vertex groups become invalid when applying certain modifiers,
+    including 'VERTEX_WEIGHT_MIX'. Keeping reference to the vertex groups' attributes such as their names seems ok
+    though. More information on this issue can be found in https://developer.blender.org/T93896"""
     mesh.active_shape_key_index = 0
     mod = mesh.modifiers.new("VertexWeightMix", 'VERTEX_WEIGHT_MIX')
     mod.vertex_group_a = vg_to
@@ -2141,30 +2091,33 @@ def fix_twist_bones(mesh, bones_to_delete):
                 print('2. no ' + bone_parent_name)
                 vg_parent = mesh.vertex_groups.new(name=bone_parent_name)
 
-            vg_twist1 = mesh.vertex_groups.get(bone_type + 'Twist1_' + suffix)
-            vg_twist2 = mesh.vertex_groups.get(bone_type + 'Twist2_' + suffix)
-            vg_twist3 = mesh.vertex_groups.get(bone_type + 'Twist3_' + suffix)
+            vg_twist1_name = bone_type + 'Twist1_' + suffix
+            vg_twist2_name = bone_type + 'Twist2_' + suffix
+            vg_twist3_name = bone_type + 'Twist3_' + suffix
+            vg_twist1 = bool(mesh.vertex_groups.get(vg_twist1_name))
+            vg_twist2 = bool(mesh.vertex_groups.get(vg_twist2_name))
+            vg_twist3 = bool(mesh.vertex_groups.get(vg_twist3_name))
 
-            mix_weights(mesh, vg_twist.name, vg_parent.name, mix_strength=0.2, delete_old_vg=False)
-            mix_weights(mesh, vg_twist.name, vg_twist.name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
+            vg_twist_name = vg_twist.name
+            vg_parent_name = vg_parent.name
+
+            mix_weights(mesh, vg_twist_name, vg_parent_name, mix_strength=0.2, delete_old_vg=False)
+            mix_weights(mesh, vg_twist_name, vg_twist_name, mix_strength=0.2, mix_mode='SUB', delete_old_vg=False)
 
             if vg_twist1:
-                twistname = bone_type + 'Twist1_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.25, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.75) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist1_name)
+                mix_weights(mesh, vg_twist1_name, vg_twist_name, mix_strength=0.25, delete_old_vg=False)
+                mix_weights(mesh, vg_twist1_name, vg_parent_name, mix_strength=0.75)
 
             if vg_twist2:
-                twistname = bone_type + 'Twist2_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.5, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.5, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist2_name)
+                mix_weights(mesh, vg_twist2_name, vg_twist_name, mix_strength=0.5, delete_old_vg=False)
+                mix_weights(mesh, vg_twist2_name, vg_parent_name, mix_strength=0.5)
 
             if vg_twist3:
-                twistname = bone_type + 'Twist3_' + suffix
-                bones_to_delete.append(twistname)
-                mix_weights(mesh, twistname, vg_twist.name, mix_strength=0.75, delete_old_vg=False)
-                mix_weights(mesh, twistname, vg_parent.name, mix_strength=0.25, delete_old_vg=False) #if we are adding to bones to delete, then don't delete prematurely please. (added don't delete argument) - @989onan
+                bones_to_delete.append(vg_twist3_name)
+                mix_weights(mesh, vg_twist3_name, vg_twist_name, mix_strength=0.75, delete_old_vg=False)
+                mix_weights(mesh, vg_twist3_name, vg_parent_name, mix_strength=0.25)
 
 
 def fix_twist_bone_names(armature):
@@ -2182,7 +2135,6 @@ def toggle_mmd_tabs_update(self, context):
 
 def toggle_mmd_tabs(shutdown_plugin=False):
     mmd_cls = [
-        mmd_tool.MMDToolsObjectPanel,
         mmd_tool.MMDDisplayItemsPanel,
         mmd_tool.MMDMorphToolsPanel,
         mmd_tool.MMDRigidbodySelectorPanel,
@@ -2276,6 +2228,264 @@ def html_to_text(html):
     except:  # HTMLParseError: No good replacement?
         pass
     return parser.get_text()
+
+
+# Default sorting for dynamic EnumProperty items
+def _sort_enum_choices_by_identifier_lower(choices, in_place=True):
+    """Sort a list of enum choices (items) by the lowercase of their identifier.
+
+    Sorting is performed in-place by default, but can be changed by setting in_place=False.
+
+    Returns the sorted list of enum choices."""
+
+    def identifier_lower(choice):
+        return choice[0].lower()
+
+    if in_place:
+        choices.sort(key=identifier_lower)
+    else:
+        choices = sorted(choices, key=identifier_lower)
+    return choices
+
+
+# Identifier to indicate that an EnumProperty is empty
+# This is the default identifier used when a wrapped items function returns an empty list
+# This identifier needs to be something that should never normally be used, so as to avoid the possibility of
+# conflicting with an enum value that exists.
+_empty_enum_identifier = 'Cats_empty_enum_identifier'
+
+
+def _ensure_enum_choices_not_empty(choices, in_place=True):
+    if not in_place:
+        choices = choices.copy()
+
+    num_choices = len(choices)
+    if num_choices == 0:
+        # An EnumProperty should always have at least one choice since enum properties work based on indices. If there
+        # aren't any choices, Blender falls back to '' as the returned value (the identifier), but choices that have ''
+        # as the identifier (or any other falsey value in the case of trying to use a subclass of str) get ignored for
+        # some reason, so we have to use a different identifier.
+        # format is (identifier, name, description)
+        choices.append((_empty_enum_identifier, 'None', '(auto-generated)'))
+
+    return choices
+
+
+# Cache used to ensure that all strings used by an EnumProperty maintain a reference in Python
+# Dict of {str: set(str)} where the keys are property paths and the values are sets of strings being cached
+_enum_string_cache = {}
+
+
+# Note: Assumes all properties belong to a scene and therefore only one instance of each property_path will exist at a
+#       time due to the fact that only one scene is active at a time.
+# Note: A CollectionProperty containing an EnumProperty will result in strings being left in the cache when elements in
+#       the CollectionProperty get deleted.
+#       These have a property_path like 'my_collection_prop[<index>].my_enum_prop' so if the number of indices decreases
+#       then some strings will get left in the cache.
+def _ensure_python_references(choices, property_path, in_place=True):
+    # Blender docs for EnumProperty:
+    #   "There is a known bug with using a callback, Python must keep a reference to the strings returned by the callback
+    #   or Blender will misbehave or even crash."
+    # This issue is much more visible in UI if you use row.props_enum(<property owner>, <property name>) instead of
+    # row.prop(<property owner>, <property name>) with an EnumProperty
+    # We'll make sure Python has its own references by interning all the strings and then putting them in a cache. Both
+    # steps are necessary as each step only covers some cases where the issue appears.
+    new_cache = set()
+
+    def keep_string_reference(element):
+        if isinstance(element, str):
+            element = intern(element)
+            new_cache.add(element)
+        return element
+
+    if in_place:
+        for i, choice in enumerate(choices):
+            choices[i] = tuple(map(keep_string_reference, choice))
+    else:
+        choices = [tuple(map(keep_string_reference, choice)) for choice in choices]
+
+    # When updating the cache, it's important that we don't temporarily remove any strings that are still in use,
+    # because UI may still be referencing and using those strings during the very brief time window where we've removed
+    # them in preparation of updating the cache
+    object_name_cache = _enum_string_cache.setdefault(property_path, set())
+    # Add all the new values
+    object_name_cache.update(new_cache)
+    # Remove any values no longer being used
+    object_name_cache.intersection_update(new_cache)
+    return choices
+
+
+# Keeps track of whether an enum property for a specific scene is scheduled to have its current choice fixed because
+# the current choice is invalid.
+# This is only used when the current choice is detected as being invalid while drawing UI, since UI drawing code cannot
+# modify properties.
+# Dictionary of {str: set(str)} where the keys are the scene name and the set elements are the property paths to be
+# fixed
+_enum_choice_fix_scheduled = {}
+
+
+# Check for, and fix out of bounds enum choices, settings the index to the last choice and adding temporary duplicate
+# choices so the index remains within the bounds for this call
+def _fix_out_of_bounds_enum_choices(property_holder, scene, choices, property_name, property_path, in_place=True):
+    """Check for and fix an EnumProperty if its index is out of bounds.
+
+    If it isn't possible to change the index immediately, because this is being called as part of a UI drawing method,
+    a task to change the active choice will be scheduled to run as soon as possible.
+
+    Adds duplicates of the last choice to 'choices' to prevent warnings until the invalid choices are fixed.
+
+    property_holder is the holder of the property, in an EnumProperty's items function, this is the 'self' argument
+
+    scene is the scene that owns the property, either directly or held in a PropertyGroup or PropertyCollection. It must
+    be the .id_data of the property.
+
+    choices is the list of choices returned by the EnumProperty's items function.
+
+    property_name is the name of the EnumProperty on the property_holder to be checked against whether the choices are
+    valid.
+
+    property_path is the full path from the owner of the EnumProperty (scene) to the EnumProperty itself. This can be
+    retrieved with property_holder.path_from_id(property_name).
+
+    By default, the passed in 'choices' argument is modified, this can be disabled by setting in_place=False.
+
+    Returns 'choices' with enough extra elements to avoid warnings of the property's index being out of bounds."""
+
+    if not in_place:
+        choices = choices.copy()
+
+    num_choices = len(choices)
+
+    # Getting property_holder.property_name isn't possible since it will cause infinite recursion, but we can get the
+    # index without issue
+    current_choice_index = property_holder.get(property_name)
+    # If the property is not yet initialised, it should get set to a valid index automatically, so we only care
+    # if it has already been initialised
+    is_initialised = current_choice_index is not None
+    if is_initialised and current_choice_index >= num_choices:
+        # If the index is out of bounds, the last choice is suitable
+        replacement_idx = num_choices - 1
+        replacement_choice = choices[replacement_idx]
+
+        # Setting the current choice index won't affect the current process of getting the property value, e.g.
+        # if current_choice_index was 5, setting scene[property_name] will have no affect until attempting to
+        # get the property a second time.
+        # What we can do is temporarily add duplicates of the replacement choice until there is a choice at the current,
+        # invalid index.
+        # Adding extra choices will prevent the console from being spammed with warnings about no enum existing for the
+        # current, invalid index.
+        # Note that Blender 2.79 would return the first choice when the index is out of bounds while newer versions
+        # return '', so this is slightly different behaviour.
+        num_extra_to_add = current_choice_index - num_choices + 1
+        # print(f"Current index of {property_name} is {current_choice_index}, but there are only {num_choices} values. Temporarily adding {num_extra_to_add} extra choices")
+        extra_choices = [replacement_choice, ] * num_extra_to_add
+        choices.extend(extra_choices)
+
+        try:
+            # If possible, set the current choice index to a valid one, this will raise an Attribute error if called
+            # when drawing UI.
+            property_holder[property_name] = replacement_idx
+            # print(f"Detected '{property_path}' enum in '{scene.name}' with an invalid value, it has been fixed automatically")
+        except AttributeError:
+            # bpy.app.timers is 2.80+
+            # For older Blender versions, it is possible to use a Thread to run the task until it works, but this
+            # would result in EnumProperty update functions being called from a separate Thread which does not
+            # sound like a good idea. It also might not be safe in general to get a scene and update one if its
+            # properties from a separate Thread, e.g., what if the scene is deleted in the time between getting the
+            # scene and updating the property's value?
+            # Without the scheduled task on 2.79, if the index is out of bounds, the temporary duplicates will
+            # be added every time the items function is called, until the EnumProperty is updated or retrieved
+            # outside of UI drawing. This causes the temporary duplicates to be visible in the UI. Though, selecting
+            # any of the temporary duplicates poses no problem as it causes the property to be updated outside of UI
+            # drawing, thus fixing the out-of-bounds index and causing the temporary duplicates to disappear.
+            if not version_2_79_or_older():
+                # No modification is allowed when called as part of drawing UI, so we must schedule a task instead
+                # First check if a fix has not already been scheduled, otherwise around 4 or 5 tasks could get scheduled
+                # before the first one fixes the invalid choice
+                scene_name = scene.name
+                # _enum_choice_fix_scheduled is a global variable
+                scheduled_property_set = _enum_choice_fix_scheduled.setdefault(scene_name, set())
+                if property_path not in scheduled_property_set:
+                    replacement_identifier = replacement_choice[0]
+
+                    scheduled_property_set.add(property_path)
+
+                    # Closure task to fix the property
+                    def fix_out_of_bounds_enum_choice_task():
+                        scene_by_name = bpy.data.scenes.get(scene_name)
+                        # It's unlikely, but it is possible that the scene could have been deleted or renamed by the
+                        # time the task executes. If it was renamed, another task would end up getting scheduled with
+                        # the new name, so no problems there.
+                        if scene_by_name:
+                            # False argument to not coerce into a Python object (the value of the property) and instead
+                            # return the prop itself
+                            prop = scene_by_name.path_resolve(property_path, False)
+                            # .id_data is the owner of the property, the scene in this case, and .data is the holder of
+                            # the property
+                            prop_holder = prop.data
+                            # Setting the index
+                            #   prop_holder[property_name] = replacement_idx
+                            # doesn't cause UI to update the list of items.
+                            # However, setting the property itself does, and since this is scheduled and called
+                            # separately, there's no issue of causing infinite recursion.
+                            # This will result in fix_invalid_enum_choices getting called again, but that will only fix
+                            # the index and not cause the UI to update.
+                            # Equivalent to: scene_by_name.property = replacement_identifier
+                            setattr(prop_holder, property_name, replacement_identifier)
+                            # print(f"Fixed '{property_path}' EnumProperty in '{scene_name}'")
+                        else:
+                            print("An EnumProperty fix was scheduled to set '{}.{}' to '{}', but the scene '{}' could not be found."
+                                  .format(scene_name, property_path, replacement_identifier, scene_name))
+                        scheduled_property_set.remove(property_path)
+                        # Returning None indicates that the timer should be removed after being executed; here for
+                        # clarity.
+                        return None
+
+                    # Schedule the task to immediately execute when possible (this will be after UI drawing has
+                    # finished)
+                    bpy.app.timers.register(fix_out_of_bounds_enum_choice_task)
+                    # print(f"Detected '{property_path}' enum in '{scene_name}' with an invalid value during UI drawing, a fix has been scheduled")
+
+    return choices
+
+
+def is_enum_empty(string):
+    """Returns True only if the tested string is the string that signifies that an EnumProperty is empty.
+
+    Returns False in all other cases."""
+    return _empty_enum_identifier == string
+
+
+# This function isn't needed since you can 'not is_enum_empty(string)', but is included for code clarity and readability
+def is_enum_non_empty(string):
+    """Returns False only if the tested string is not the string that signifies that an EnumProperty is empty.
+
+    Returns True in all other cases."""
+    return _empty_enum_identifier != string
+
+
+def wrap_dynamic_enum_items(items_func, property_name, sort=True, in_place=True):
+    """Wrap an EnumProperty items function to automatically fix the property when it goes out of bounds of the items list.
+    Automatically adds at least one choice if the items function returns an empty list.
+    By default, sorts the items by the lowercase of the identifiers, this can be disabled by setting sort=False.
+    Interns and caches all strings in the items to avoid a known Blender UI bug.
+    Only works for properties whose owner is a scene."""
+    def wrapped_items_func(self, context):
+        nonlocal in_place
+        items = items_func(self, context)
+        if sort:
+            items = _sort_enum_choices_by_identifier_lower(items, in_place=in_place)
+            if not in_place:
+                # Sorting has already created a new list in this case, so the rest can be done in place
+                in_place = True
+        items = _ensure_enum_choices_not_empty(items, in_place=in_place)
+        property_path = self.path_from_id(property_name)
+        # If ensuring the list wasn't empty wasn't done in place, then a new list has been created and the rest can
+        # be done in place
+        items = _ensure_python_references(items, property_path)
+        return _fix_out_of_bounds_enum_choices(self, context.scene, items, property_name, property_path)
+
+    return wrapped_items_func
 
 
 """ === THIS CODE COULD BE USEFUL === """

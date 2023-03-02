@@ -1,3 +1,5 @@
+# GPL License
+
 import bpy
 
 from .main import ToolPanel
@@ -91,15 +93,18 @@ class VisemePanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.scale_y = 1.1
         row.label(text=t('Scene.mouth_a.label')+":")
-        row.operator(SearchMenuOperatorMouthA.bl_idname, text = context.scene.mouth_a, icon='SHAPEKEY_DATA')
+        mouth_a_text = 'None' if Common.is_enum_empty(context.scene.mouth_a) else context.scene.mouth_a
+        row.operator(SearchMenuOperatorMouthA.bl_idname, text=mouth_a_text, icon='SHAPEKEY_DATA')
         row = col.row(align=True)
         row.scale_y = 1.1
         row.label(text=t('Scene.mouth_o.label')+":")
-        row.operator(SearchMenuOperatorMouthO.bl_idname, text = context.scene.mouth_o, icon='SHAPEKEY_DATA')
+        mouth_o_text = 'None' if Common.is_enum_empty(context.scene.mouth_o) else context.scene.mouth_o
+        row.operator(SearchMenuOperatorMouthO.bl_idname, text=mouth_o_text, icon='SHAPEKEY_DATA')
         row = col.row(align=True)
         row.scale_y = 1.1
         row.label(text=t('Scene.mouth_ch.label')+":")
-        row.operator(SearchMenuOperatorMouthCH.bl_idname, text = context.scene.mouth_ch, icon='SHAPEKEY_DATA')
+        mouth_ch_text = 'None' if Common.is_enum_empty(context.scene.mouth_ch) else context.scene.mouth_ch
+        row.operator(SearchMenuOperatorMouthCH.bl_idname, text=mouth_ch_text, icon='SHAPEKEY_DATA')
 
         col.separator()
         row = col.row(align=True)

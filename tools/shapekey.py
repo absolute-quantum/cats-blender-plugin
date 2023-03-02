@@ -1,29 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: Mysteryem
-# Original implementation by: Hotox
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# GPL License
 
 import bpy
 import numpy as np
@@ -466,6 +441,12 @@ class ShapeKeyApplier(bpy.types.Operator):
             for key_block in keys_relative_recursive_to_new_basis:
                 key_block.data.foreach_get('co', temp_co_array)
                 key_block.data.foreach_set('co', np.add(temp_co_array, temp_co_array2, out=temp_co_array))
+
+        # Update mesh vertices to avoid basis shape key and mesh vertices being desynced until Edit mode has been
+        # entered and exited, which can cause odd behaviour when creating shape keys with from_mix=False or when
+        # removing all shape keys.
+        data.shape_keys.reference_key.data.foreach_get('co', temp_co_array)
+        data.vertices.foreach_set('co', temp_co_array)
 
 
 def addToShapekeyMenu(self, context):

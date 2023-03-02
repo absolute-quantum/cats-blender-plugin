@@ -2,9 +2,7 @@
 
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
 
-@register_wrap
 class MMDBonePanel(Panel):
     bl_idname = 'BONE_PT_mmd_tools_bone'
     bl_label = 'MMD Bone Tools'

@@ -1,27 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: Hotox
-# Edits by: Hotox
+# GPL License
 
 import os
 import bpy
@@ -47,6 +24,7 @@ settings_file = os.path.join(resources_dir, "settings.json")
 
 settings_data = None
 settings_data_unchanged = None
+settings_threads = []
 
 # Settings name = [Default Value, Require Blender Restart]
 settings_default = OrderedDict()
@@ -205,10 +183,20 @@ def reset_settings(full_reset=False, to_reset_settings=None):
 
 
 def start_apply_settings_timer():
-    global lock_settings
+    global lock_settings, settings_threads
     lock_settings = True
     thread = Thread(target=apply_settings, args=[])
+    settings_threads.append(thread)
     thread.start()
+
+
+def stop_apply_settings_threads():
+    global settings_threads
+
+    print("Stopping settings threads...")
+    for t in settings_threads:
+        t.join()
+    print("Settings threads stopped.")
 
 
 def apply_settings():
@@ -247,6 +235,10 @@ def settings_changed():
 
 
 def update_settings(self, context):
+    update_settings_core(self, context)
+
+
+def update_settings_core(self, context):
     # Use False and None for this variable, because Blender would complain otherwise
     # None means that the settings did change
     settings_changed_tmp = False

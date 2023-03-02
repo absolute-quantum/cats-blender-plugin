@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2018 Hotox
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: Hotox
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by:
+# GPL License
 
 import bpy
 import math
@@ -48,10 +24,7 @@ class ScanButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.add_shape_key == "":
-            return False
-
-        return True
+        return Common.is_enum_non_empty(context.scene.add_shape_key)
 
     def execute(self, context):
         shape = context.scene.add_shape_key
@@ -75,9 +48,7 @@ class AddShapeButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.add_shape_key == "":
-            return False
-        return True
+        return Common.is_enum_non_empty(context.scene.add_shape_key)
 
     def execute(self, context):
         shape = context.scene.add_shape_key
@@ -101,9 +72,7 @@ class AddMeshButton(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if context.scene.add_mesh == "":
-            return False
-        return True
+        return Common.is_enum_non_empty(context.scene.add_mesh)
 
     def execute(self, context):
         ignore_meshes.append(context.scene.add_mesh)
@@ -177,19 +146,21 @@ class AutoDecimateButton(bpy.types.Operator):
         saved_data = Common.SavedData()
 
         if context.scene.decimation_mode != 'CUSTOM':
-            mesh = Common.join_meshes(repair_shape_keys=False, armature_name=self.armature_name)
+            if not context.scene.decimation_retain_separated_meshes:
+                mesh = Common.join_meshes(repair_shape_keys=False, armature_name=self.armature_name)
             if self.seperate_materials:
                 Common.separate_by_materials(context, mesh)
 
         self.decimate(context)
 
-        Common.join_meshes(armature_name=self.armature_name)
+        if not context.scene.decimation_retain_separated_meshes:
+            Common.join_meshes(armature_name=self.armature_name)
 
         saved_data.load()
 
         return {'FINISHED'}
 
-    def get_animation_weighting(self, context, mesh, armature, use_bones, use_shapekeys):
+    def get_animation_weighting(self, context, mesh, armature):
         print("Performing animation weighting for {}".format(mesh.name))
         # Weight by multiplied bone weights for every pair of bones.
         # This is O(n*m^2) for n verts and m bones, generally runs relatively quickly.
@@ -241,48 +212,49 @@ class AutoDecimateButton(bpy.types.Operator):
                 except KeyError:
                     newweights[v_index] = weight
 
-        s_weights = dict()
+        if context.scene.decimation_animation_weighting_include_shapekeys:
+            s_weights = dict()
 
-        # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
-        # but shape keys contain every vert (not just the ones they impact)
-        # For shape key in shape keys:
-        if mesh.data.shape_keys is not None:
-            for key_block in mesh.data.shape_keys.key_blocks[1:]:
-                # use same ignore list as the ones we clean up with cleanup_shapekeys
-                if key_block.name[-4:] == "_old" or key_block.name[-11:] == " - Reverted" or key_block.name[-5:] == "_bake":
-                    continue
-                basis = mesh.data.shape_keys.key_blocks[0]
-                s_weights[key_block.name] = dict()
+            # Weight by relative shape key movement. This is kind of slow, but not too bad. It's O(n*m) for n verts and m shape keys,
+            # but shape keys contain every vert (not just the ones they impact)
+            # For shape key in shape keys:
+            if mesh.data.shape_keys is not None:
+                for key_block in mesh.data.shape_keys.key_blocks[1:]:
+                    # use same ignore list as the ones we clean up with cleanup_shapekeys
+                    if key_block.name[-4:] == "_old" or key_block.name[-11:] == " - Reverted" or key_block.name[-5:] == "_bake":
+                        continue
+                    basis = mesh.data.shape_keys.key_blocks[0]
+                    s_weights[key_block.name] = dict()
 
-                for idx, vert in enumerate(key_block.data):
-                    s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
-                                                                    math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
-                                                                    math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
+                    for idx, vert in enumerate(key_block.data):
+                        s_weights[key_block.name][idx] = math.sqrt(math.pow(basis.data[idx].co[0] - vert.co[0], 2.0) +
+                                                                        math.pow(basis.data[idx].co[1] - vert.co[1], 2.0) +
+                                                                        math.pow(basis.data[idx].co[2] - vert.co[2], 2.0))
 
-        # normalize min/max vert movement
-        s_normalizedweights = dict()
-        for keyname, weighting in s_weights.items():
-            m_min = math.inf
-            m_max = 0
-            for _, weight in weighting.items():
-                m_min = min(m_min, weight)
-                m_max = max(m_max, weight)
+            # normalize min/max vert movement
+            s_normalizedweights = dict()
+            for keyname, weighting in s_weights.items():
+                m_min = math.inf
+                m_max = 0
+                for _, weight in weighting.items():
+                    m_min = min(m_min, weight)
+                    m_max = max(m_max, weight)
 
-            if keyname not in s_normalizedweights:
-                s_normalizedweights[keyname] = dict()
-            for v_index, weight in weighting.items():
-                try:
-                    s_normalizedweights[keyname][v_index] = (weight - m_min) / (m_max - m_min)
-                except ZeroDivisionError:
-                    s_normalizedweights[keyname][v_index] = weight
+                if keyname not in s_normalizedweights:
+                    s_normalizedweights[keyname] = dict()
+                for v_index, weight in weighting.items():
+                    try:
+                        s_normalizedweights[keyname][v_index] = (weight - m_min) / (m_max - m_min)
+                    except ZeroDivisionError:
+                        s_normalizedweights[keyname][v_index] = weight
 
-        # find max normalized movement over all shape keys
-        for pair, weighting in s_normalizedweights.items():
-            for v_index, weight in weighting.items():
-                try:
-                    newweights[v_index] = max(newweights[v_index], weight)
-                except KeyError:
-                    newweights[v_index] = weight
+            # find max normalized movement over all shape keys
+            for pair, weighting in s_normalizedweights.items():
+                for v_index, weight in weighting.items():
+                    try:
+                        newweights[v_index] = max(newweights[v_index], weight)
+                    except KeyError:
+                        newweights[v_index] = weight
 
         return newweights
 
@@ -300,6 +272,7 @@ class AutoDecimateButton(bpy.types.Operator):
         save_fingers = context.scene.decimate_fingers
         animation_weighting = context.scene.decimation_animation_weighting
         animation_weighting_factor = context.scene.decimation_animation_weighting_factor
+        retain_separated_meshes = context.scene.decimation_retain_separated_meshes
         max_tris = context.scene.max_tris
         meshes = []
         current_tris_count = 0
@@ -328,6 +301,7 @@ class AutoDecimateButton(bpy.types.Operator):
                 for idx, weight in newweights.items():
                     mesh.vertex_groups[-1].add([idx], weight, "REPLACE")
 
+        finger_pairs = []
         if save_fingers:
             for mesh in meshes_obj:
                 if len(mesh.vertex_groups) > 0:
@@ -341,10 +315,13 @@ class AutoDecimateButton(bpy.types.Operator):
                         vgs = [mesh.vertex_groups.get(finger + 'L'), mesh.vertex_groups.get(finger + 'R')]
                         for vg in vgs:
                             if vg:
+                                Common.unselect_all()
                                 bpy.ops.object.vertex_group_set_active(group=vg.name)
                                 bpy.ops.object.vertex_group_select()
                                 try:
                                     bpy.ops.mesh.separate(type='SELECTED')
+                                    if retain_separated_meshes:
+                                        finger_pairs.append((mesh.name, context.selected_objects[-1].name))
                                 except RuntimeError:
                                     pass
 
@@ -527,6 +504,17 @@ class AutoDecimateButton(bpy.types.Operator):
                 mesh_obj.active_shape_key_index = 0
 
             Common.unselect_all()
+
+        if len(finger_pairs) > 0:
+            Common.switch('OBJECT')
+            for (orig_name, finger_name) in finger_pairs:
+                orig = bpy.data.objects[orig_name]
+                finger = bpy.data.objects[finger_name]
+                finger.select_set(True)
+                orig.select_set(True)
+                bpy.context.view_layer.objects.active = orig
+                bpy.ops.object.join()
+                Common.unselect_all()
 
         # # Check if decimated correctly
         # if decimation < 0:

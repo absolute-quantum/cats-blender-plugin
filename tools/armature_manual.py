@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: Hotox
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats
+# GPL License
 
 import bpy
 import operator
@@ -540,6 +516,11 @@ class PoseToRest(bpy.types.Operator):
             evaluated_cos = get_eval_cos_array()
             # And set the shape key to those same cos
             shape_key.data.foreach_set('co', evaluated_cos)
+            # If it's the basis shape key, we also have to set the mesh vertices to match, otherwise the two will be
+            # desynced until Edit mode has been entered and exited, which can cause odd behaviour when creating shape
+            # keys with from_mix=False or when removing all shape keys.
+            if i == 0:
+                mesh_obj.data.vertices.foreach_set('co', evaluated_cos)
 
         # Restore temporarily changed attributes and remove the added armature modifier
         for mod in mods_to_reenable_viewport:
@@ -1036,12 +1017,12 @@ class GenerateTwistBones(bpy.types.Operator):
                 twist_bone = armature.data.edit_bones.new('~' + bone.name + "_Twist")
                 twist_bone.tail = bone.tail
                 twist_bone.head[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
-                twist_locations[twist_bone.name] = (twist_bone.head, twist_bone.tail)
+                twist_locations[twist_bone.name] = (twist_bone.head[:], twist_bone.tail[:])
             else:
                 twist_bone = armature.data.edit_bones.new('~' + bone.name + "_UpperTwist")
                 twist_bone.tail[:] = [(bone.head[i] + bone.tail[i]) / 2 for i in range(3)]
                 twist_bone.head = bone.head
-                twist_locations[twist_bone.name] = (twist_bone.tail, twist_bone.head)
+                twist_locations[twist_bone.name] = (twist_bone.tail[:], twist_bone.head[:])
             twist_bone.parent = bone
 
             bone_pairs.append((bone.name, twist_bone.name))
@@ -1179,6 +1160,7 @@ class OptimizeStaticShapekeys(bpy.types.Operator):
                         bpy.ops.object.mode_set(mode = 'OBJECT')
                     bpy.context.object.active_shape_key_index = 0
                     mesh.name = "Static"
+                    mesh['catsForcedExportName'] = "Static"
                     # remove all shape keys for 'Static'
                     bpy.ops.object.shape_key_remove(all=True)
 
@@ -1948,6 +1930,8 @@ class ConvertToValveButton(bpy.types.Operator):
                      '\nMake sure your model has the CATS standard bone names from after using Fix Model'
     bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
 
+    armature_name = bpy.props.StringProperty(default = "")
+
     @classmethod
     def poll(cls, context):
         if not Common.get_armature():
@@ -1956,7 +1940,10 @@ class ConvertToValveButton(bpy.types.Operator):
 
     def execute(self, context):
         translate_bone_fails = 0
-        armature = Common.get_armature()
+        if self.armature_name == "":
+            armature = Common.get_armature()
+        else:
+            armature = bpy.data.objects[self.armature_name]
 
         reverse_bone_lookup = dict()
         for (preferred_name, name_list) in bone_names.items():
@@ -1973,9 +1960,11 @@ class ConvertToValveButton(bpy.types.Operator):
             'left_leg': "ValveBiped.Bip01_L_Thigh",
             'left_knee': "ValveBiped.Bip01_L_Calf",
             'left_ankle': "ValveBiped.Bip01_L_Foot",
+            'left_toe': "ValveBiped.Bip01_L_Toe0",
             'right_leg': "ValveBiped.Bip01_R_Thigh",
             'right_knee': "ValveBiped.Bip01_R_Calf",
             'right_ankle': "ValveBiped.Bip01_R_Foot",
+            'right_toe': "ValveBiped.Bip01_R_Toe0",
             'left_shoulder': "ValveBiped.Bip01_L_Clavicle",
             'left_arm': "ValveBiped.Bip01_L_UpperArm",
             'left_elbow': "ValveBiped.Bip01_L_Forearm",

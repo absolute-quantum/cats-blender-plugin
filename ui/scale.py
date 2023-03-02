@@ -1,3 +1,5 @@
+# GPL License
+
 # (global-set-key (kbd "C-c m") (lambda () (interactive) (shell-command "zip -r ../../cats-dev.zip ../../cats-blender-plugin")))
 
 import bpy

@@ -1,23 +1,27 @@
 # -*- coding: utf-8 -*-
+# SUPPORT_UNTIL: 3.3 LTS
 
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
-from mmd_tools_local.core.model import Model
+from mmd_tools_local import bpyutils
+from mmd_tools_local.core.model import Model, FnModel
 from mmd_tools_local.core.sdef import FnSDEF
 
 class _PanelBase(object):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
 
-@register_wrap
-class MMDModelObjectDisplayPanel(_PanelBase, Panel):
+    @classmethod
+    def poll(cls, _context):
+        return bpyutils.addon_preferences('enable_mmd_model_production_features', True)
+
+class MMDModelObjectDisplayPanel(_PanelBase):
     bl_idname = 'OBJECT_PT_mmd_tools_root_object_display'
     bl_label = 'MMD Display'
 
     @classmethod
     def poll(cls, context):
-        return Model.findRoot(context.active_object)
+        return super().poll(cls) and Model.findRoot(context.active_object)
 
     def draw(self, context):
         layout = self.layout
@@ -47,7 +51,7 @@ class MMDModelObjectDisplayPanel(_PanelBase, Panel):
 
         layout.prop(root.mmd_root, 'use_property_driver', text='Property Drivers', icon='DRIVER')
 
-        self.__draw_IK_toggle(Model(root).armature() or root)
+        self.__draw_IK_toggle(FnModel.find_armature(root) or root)
 
     def __draw_IK_toggle(self, armature):
         bones = getattr(armature.pose, 'bones', ())
@@ -67,8 +71,7 @@ class MMDModelObjectDisplayPanel(_PanelBase, Panel):
                     ic = 'ERROR' if ik_map[ik][-1] else 'NONE'
                     row.prop(ik, 'mmd_ik_toggle', text=ik.name, toggle=True, icon=ic)
 
-@register_wrap
-class MMDViewPanel(_PanelBase, Panel):
+class MMDViewPanel(_PanelBase):
     bl_idname = 'OBJECT_PT_mmd_tools_view'
     bl_label = 'MMD Shading'
 
@@ -82,8 +85,7 @@ class MMDViewPanel(_PanelBase, Panel):
         r = c.row(align=True)
         r.operator('mmd_tools.reset_shading', text='Reset')
 
-@register_wrap
-class MMDSDEFPanel(_PanelBase, Panel):
+class MMDSDEFPanel(_PanelBase):
     bl_idname = 'OBJECT_PT_mmd_tools_sdef'
     bl_label = 'MMD SDEF Driver'
 

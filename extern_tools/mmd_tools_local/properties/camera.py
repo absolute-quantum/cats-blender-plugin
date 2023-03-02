@@ -3,12 +3,7 @@
 import math
 
 import bpy
-from bpy.types import PropertyGroup
-from bpy.props import FloatProperty, BoolProperty
-
-from mmd_tools_local import register_wrap
 import mmd_tools_local.core.camera as mmd_camera
-
 
 if bpy.app.version < (2, 80, 0):
     def __get_camera(empty):
@@ -37,9 +32,11 @@ def _getMMDCameraAngle(prop):
     cam = __get_camera(prop.id_data)
     return math.atan(cam.data.sensor_height/cam.data.lens/2) * 2
 
+
 def _setMMDCameraAngle(prop, value):
     cam = __get_camera(prop.id_data)
     cam.data.lens = cam.data.sensor_height/math.tan(value/2)/2
+
 
 def _getIsPerspective(prop):
     if not mmd_camera.MMDCamera.isMMDCamera(prop.id_data):
@@ -47,14 +44,14 @@ def _getIsPerspective(prop):
     cam = __get_camera(prop.id_data)
     return cam.data.type == 'PERSP'
 
+
 def _setIsPerspective(prop, value):
     cam = __get_camera(prop.id_data)
     cam.data.type = 'PERSP' if value else 'ORTHO'
 
 
-@register_wrap
-class MMDCamera(PropertyGroup):
-    angle = FloatProperty(
+class MMDCamera(bpy.types.PropertyGroup):
+    angle: bpy.props.FloatProperty(
         name='Angle',
         description='Camera lens field of view',
         subtype='ANGLE',
@@ -64,12 +61,12 @@ class MMDCamera(PropertyGroup):
         max=math.radians(180),
         soft_max=math.radians(125),
         step=100.0,
-        )
+    )
 
-    is_perspective = BoolProperty(
+    is_perspective: bpy.props.BoolProperty(
         name='Perspective',
         description='Is perspective',
         default=True,
         get=_getIsPerspective,
         set=_setIsPerspective,
-        )
+    )

@@ -1,28 +1,4 @@
-# MIT License
-
-# Copyright (c) 2017 GiveMeAllYourCats
-
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the 'Software'), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-
-# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-# Code author: GiveMeAllYourCats
-# Repo: https://github.com/michaeldegroot/cats-blender-plugin
-# Edits by: GiveMeAllYourCats, Hotox
+# GPL License
 
 import bpy
 import copy
@@ -55,9 +31,9 @@ class CreateEyesButton(bpy.types.Operator):
         if not Common.get_meshes_objects(check=False):
             return False
 
-        if not context.scene.head \
-                or not context.scene.eye_left \
-                or not context.scene.eye_right:
+        if Common.is_enum_empty(context.scene.head) \
+                or Common.is_enum_empty(context.scene.eye_left) \
+                or Common.is_enum_empty(context.scene.eye_right):
             return False
 
         # if not context.scene.disable_eye_blinking:
@@ -87,10 +63,10 @@ class CreateEyesButton(bpy.types.Operator):
         old_eye_right = armature.data.edit_bones.get(context.scene.eye_right)
 
         # Check for errors
-        if not context.scene.disable_eye_blinking and (context.scene.wink_left == ""
-                                                       or context.scene.wink_right == ""
-                                                       or context.scene.lowerlid_left == ""
-                                                       or context.scene.lowerlid_right == ""):
+        if not context.scene.disable_eye_blinking and (Common.is_enum_empty(context.scene.wink_left)
+                                                       or Common.is_enum_empty(context.scene.wink_right)
+                                                       or Common.is_enum_empty(context.scene.lowerlid_left)
+                                                       or Common.is_enum_empty(context.scene.lowerlid_right)):
             saved_data.load()
             self.report({'ERROR'}, t('CreateEyesButton.error.noShapeSelected'))
             return {'CANCELLED'}
@@ -166,6 +142,15 @@ class CreateEyesButton(bpy.types.Operator):
         fix_eye_position(context, old_eye_left, new_left_eye, head, False)
         fix_eye_position(context, old_eye_right, new_right_eye, head, True)
 
+        # The names may be needed later, but references to edit bones become invalid once EDIT mode has been left, so
+        # the names need to be assigned to variables before switching to OBJECT mode
+        new_right_eye_name = new_right_eye.name
+        old_eye_left_name = old_eye_left.name
+        old_eye_right_name = old_eye_right.name
+        head_name = head.name
+        # Delete the variables that are about to become invalid to guarantee that they aren't accidentally still used
+        del new_right_eye, new_left_eye, old_eye_right, old_eye_left, head
+
         # Switch to mesh
         Common.set_active(self.mesh)
         Common.switch('OBJECT')
@@ -175,8 +160,8 @@ class CreateEyesButton(bpy.types.Operator):
 
         # Copy the existing eye vertex group to the new one if eye movement is activated
         if not context.scene.disable_eye_movement:
-            self.copy_vertex_group(old_eye_left.name, 'LeftEye')
-            self.copy_vertex_group(old_eye_right.name, 'RightEye')
+            self.copy_vertex_group(old_eye_left_name, 'LeftEye')
+            self.copy_vertex_group(old_eye_right_name, 'RightEye')
         else:
             # Remove the vertex groups if no blink is enabled
             bones = ['LeftEye', 'RightEye']
@@ -211,9 +196,9 @@ class CreateEyesButton(bpy.types.Operator):
         Common.sort_shape_keys(mesh_name)
 
         # Reset the scenes in case they were changed
-        context.scene.head = head.name
-        context.scene.eye_left = old_eye_left.name
-        context.scene.eye_right = old_eye_right.name
+        context.scene.head = head_name
+        context.scene.eye_left = old_eye_left_name
+        context.scene.eye_right = old_eye_right_name
         context.scene.wink_left = shapes[0]
         context.scene.wink_right = shapes[1]
         context.scene.lowerlid_left = shapes[2]
@@ -234,8 +219,8 @@ class CreateEyesButton(bpy.types.Operator):
             repair_shapekeys_mouth(mesh_name)
             # repair_shapekeys_mouth(mesh_name, context.scene.wink_left)  # TODO
         else:
-            # print('Repair normal "' + new_right_eye.name + '".')
-            repair_shapekeys(mesh_name, new_right_eye.name)
+            # print('Repair normal "' + new_right_eye_name + '".')
+            repair_shapekeys(mesh_name, new_right_eye_name)
 
         # deleted = []
         # # deleted = checkshapekeys()

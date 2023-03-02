@@ -2,16 +2,14 @@
 
 from bpy.types import Panel
 
-from mmd_tools_local import register_wrap
 from mmd_tools_local.core.lamp import MMDLamp
 
-@register_wrap
 class MMDLampPanel(Panel):
-    bl_idname = 'OBJECT_PT_mmd_tools_lamp'
-    bl_label = 'MMD Lamp Tools'
+    bl_idname = 'OBJECT_PT_mmd_tools_light'
+    bl_label = 'MMD Light Tools'
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
-    bl_context = 'object'
+    bl_context = 'data'
 
     @classmethod
     def poll(cls, context):
