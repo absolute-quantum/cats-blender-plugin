@@ -617,6 +617,12 @@ def register():
         default=False
     )
 
+    Scene.bake_pass_detail = BoolProperty(
+        name="Detail",
+        description="Detail map. Requires manually using Value nodes with the name 'bake_detail' and outputting to Emit.",
+        default=False
+    )
+
     Scene.bake_emit_indirect = BoolProperty(
         name=t("bake_projected_light"),
         description=t("bake_the_effect_of_emission_on_nearby_surfaces_results_in_much_more_realistic_lighting_effects_but_can_animate_less_well"),

@@ -88,6 +88,8 @@ def autodetect_passes(self, context, item, tricount, platform, use_phong=False):
     # Displacement: if any displacement is linked to the output for material output nodes
     context.scene.bake_pass_displacement = any(node.inputs["Displacement"].is_linked for node in output_mat_nodes)
 
+    context.scene.bake_pass_detail = False
+
     if any("Target" in obj.data.uv_layers for obj in Common.get_meshes_objects(check=False)):
         context.scene.bake_uv_overlap_correction = 'MANUAL'
     elif any(plat.use_decimation for plat in context.scene.bake_platforms) and context.scene.bake_pass_normal:
@@ -846,6 +848,7 @@ class BakeButton(bpy.types.Operator):
         pass_alpha = context.scene.bake_pass_alpha
         pass_metallic = context.scene.bake_pass_metallic
         pass_displacement = context.scene.bake_pass_displacement
+        pass_detail = context.scene.bake_pass_detail
         pass_thickness = False
 
         # Pass options
@@ -1262,6 +1265,7 @@ class BakeButton(bpy.types.Operator):
                  (pass_alpha, "alpha", "DIFFUSE", {"COLOR"}, [1, 1, 1, 1.], {"Alpha": "Alpha"}, False, False),
                  (pass_metallic, "metallic", "DIFFUSE", {"COLOR"}, [1., 1., 1., 1.], {"Metallic": "Metallic"}, False, True),
                  (pass_emit and not emit_indirect, "emission", "EMIT", set(), [0, 0, 0, 1.], {"Emission": "Emission"}, False, False),
+                 (pass_detail, "detail", "EMIT", set(), [0, 0, 0, 1.], {"Emission": "Emission"}, False, False),
         ]:
             # TODO: Linearity will be determined by end channel. Alpha is linear, RGB is sRGB
             if bake_conditions:
@@ -1858,11 +1862,19 @@ class BakeButton(bpy.types.Operator):
                     uv_layers = [layer.name for layer in obj.data.uv_layers]
                     while uv_layers:
                         layer = uv_layers.pop()
-                        if layer != "CATS UV Super" and layer != "CATS UV" and layer != "Detail Map":
+                        if layer != "CATS UV Super" and layer != "CATS UV" and (not pass_detail or layer != "Detail Map"):
                             print("Removing UV {}".format(layer))
                             obj.data.uv_layers.remove(obj.data.uv_layers[layer])
                 for obj in get_objects(plat_collection.all_objects, {"MESH"}):
                     obj.data.uv_layers.active = obj.data.uv_layers["CATS UV"]
+                # Ensure 'Detail Map' is at the end, if it exists here
+                for obj in get_objects(plat_collection.all_objects, {"MESH"}):
+                    if "Detail Map" in obj.data.uv_layers:
+                        context.view_layer.objects.active = obj
+                        obj.data.uv_layers["Detail Map"].active = True
+                        bpy.ops.mesh.uv_texture_add()
+                        obj.data.uv_layers.remove(obj.data.uv_layers["Detail Map"])
+                        obj.data.uv_layers[-1].name = 'Detail Map'
 
             print("Decimating")
             context.scene.decimation_remove_doubles = platform.remove_doubles
@@ -2005,7 +2017,10 @@ class BakeButton(bpy.types.Operator):
                 if obj.data.vertex_colors is not None and len(obj.data.vertex_colors) > 0:
                     while len(obj.data.vertex_colors) > 0:
                         context.view_layer.objects.active = obj
-                        bpy.ops.mesh.vertex_color_remove()
+                        if bpy.app.version < (3, 4, 0):
+                            bpy.ops.mesh.vertex_color_remove()
+                        else:
+                            bpy.ops.geometry.color_attribute_remove()
 
             # Update generated material to preview all of our passes
             if pass_normal:
