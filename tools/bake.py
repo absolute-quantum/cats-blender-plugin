@@ -825,7 +825,7 @@ class BakeButton(bpy.types.Operator):
         prioritize_face = context.scene.bake_prioritize_face
         prioritize_factor = context.scene.bake_face_scale
         uv_overlap_correction = context.scene.bake_uv_overlap_correction
-        dont_pack_uvs = (not uv_overlap_correction == "MANUALNOPACK")
+        pack_uvs = (not uv_overlap_correction == "MANUALNOPACK")
         margin = 0.0078125 # we want a 1-pixel margin around each island at 256x256, so 1/256, and since it's the space between islands we multiply it by two
         quick_compare = True
         apply_keys = context.scene.bake_apply_keys
@@ -860,9 +860,6 @@ class BakeButton(bpy.types.Operator):
         ignore_hidden = context.scene.bake_ignore_hidden
         diffuse_indirect = context.scene.bake_diffuse_indirect
         diffuse_indirect_opacity = context.scene.bake_diffuse_indirect_opacity
-
-        #helper var - @989onan
-        pack_uvs = not (dont_pack_uvs)
 
         # Filters
         sharpen_bakes = context.scene.bake_sharpen
@@ -1166,7 +1163,7 @@ class BakeButton(bpy.types.Operator):
                 bpy.ops.uv.select_all(action='SELECT')
                 # have a UI-able toggle, if UVP is detected, to keep lock overlapping in place
                 # otherwise perform blender pack here
-                
+
                 if pack_uvs:
                     if not context.scene.uvp_lock_islands:
                         bpy.ops.uv.pack_islands(rotate=True, margin=margin)
@@ -1205,7 +1202,7 @@ class BakeButton(bpy.types.Operator):
                         except:
                             bpy.ops.uv.pack_islands(rotate=True, margin=margin)
                             pass
-                            
+
                 Common.switch('OBJECT')
 
             if optimize_solid_materials:
