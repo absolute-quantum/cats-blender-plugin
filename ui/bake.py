@@ -173,7 +173,8 @@ class BakePanel(ToolPanel, bpy.types.Panel):
             if len(obj.data.uv_layers) > 6:
                 too_many_uvmaps.add(obj.name)
             if 'generatePropBones' in obj and obj['generatePropBones']:
-                current_props.add(obj.name)
+                orig_obj_name = obj.name[:-4] if len(obj.name) >= 4 and obj.name[-4] == '.' else obj.name
+                current_props.add(orig_obj_name)
             if 'bakeCopyOnly' in obj and obj['bakeCopyOnly']:
                 current_copyonlys.add(obj.name)
 

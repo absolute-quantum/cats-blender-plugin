@@ -1638,32 +1638,63 @@ class BakeButton(bpy.types.Operator):
                 Common.switch("OBJECT")
 
             if prop_bone_handling == "GENERATE":
-                # Find any mesh that's weighted to a single bone, duplicate and rename that bone, move mesh's vertex group to the new bone
+                # For any mesh selected as a 'prop' bone, duplicate bones and parent to the originals,
+                # then move all its weights to the new bone
                 all_path_strings = dict()
+                vgroup_deforms_meshes = dict()
+                mesh_has_vertex_groups = dict()
+                for obj in get_objects(plat_collection.objects, {"MESH"}):
+                    # Create a dict of vgroup: [meshnames..]
+                    orig_obj_name = obj.name[:-4] if len(obj.name) >= 4 and obj.name[-4] == '.' else obj.name
+                    found_vertex_groups = set([vgp.group for vertex in obj.data.vertices
+                                                for vgp in vertex.groups if vgp.weight > 0.00001])
+
+                    vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
+
+                    if orig_obj_name not in mesh_has_vertex_groups:
+                        mesh_has_vertex_groups[orig_obj_name] = set()
+                    mesh_has_vertex_groups[orig_obj_name].update(found_vertex_groups)
+
+                    for idx in found_vertex_groups:
+                        if vgroup_lookup[idx] not in vgroup_deforms_meshes:
+                            vgroup_deforms_meshes[vgroup_lookup[idx]] = set()
+                        vgroup_deforms_meshes[vgroup_lookup[idx]].add(orig_obj_name)
+
                 for obj in get_objects(plat_collection.objects, {"MESH"}):
                     if 'generatePropBones' not in obj or not obj['generatePropBones']:
                         continue
-                    found_vertex_groups = set([vgp.group for vertex in obj.data.vertices
-                                                for vgp in vertex.groups if vgp.weight > 0.00001])
+                    orig_obj_name = obj.name[:-4] if len(obj.name) >= 4 and obj.name[-4] == '.' else obj.name
+                    found_vertex_groups = mesh_has_vertex_groups[orig_obj_name]
                     if len(found_vertex_groups) == 0:
                         continue
 
-                    orig_obj_name = obj.name[:-4] if len(obj.name) >= 4 and obj.name[-4] == '.' else obj.name
                     vgroup_lookup = dict([(vgp.index, vgp.name) for vgp in obj.vertex_groups])
                     for vgp in found_vertex_groups:
+                        if vgp not in vgroup_lookup:
+                            continue
                         vgroup_name = vgroup_lookup[vgp]
+                        if vgroup_name not in vgroup_deforms_meshes:
+                            continue
                         #if not plat_arm_copy.data.bones[vgroup_name].children:
                         #    #TODO: this doesn't account for props attached to something which has existing attachments
                         #    Common.switch("OBJECT")
                         #    print("Object " + obj.name + " already has no children, skipping")
                         #    continue
 
-                        print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
+                        # if the prop is the ONLY mesh weighted to that bone, don't create a duplicate, just create the animations
+                        only_deformed_mesh_for_bone = len(vgroup_deforms_meshes[vgroup_name]) == 1
+
                         # If the obj has ".001" or similar, trim it
-                        newbonename = "~" + vgroup_name + "_Prop_" + orig_obj_name
+                        if only_deformed_mesh_for_bone:
+                            print("Object " + obj.name + " is an eligible prop on " + vgroup_name + " and is the sole deformed mesh.")
+                            newbonename = vgroup_name
+                        else:
+                            print("Object " + obj.name + " is an eligible prop on " + vgroup_name + "! Creating prop bone...")
+                            newbonename = "~" + vgroup_name + "_Prop_" + orig_obj_name
+
                         if newbonename not in obj.vertex_groups:
                             obj.vertex_groups[vgroup_name].name = newbonename
-                        else:
+                        elif not only_deformed_mesh_for_bone:
                             # if newbonename already exists as a name, merge new vgroup with existing
                             # this means "Obj" and "Obj.001" will get the same bone
                             Common.mix_weights(obj, obj.vertex_groups[vgroup_name], obj.vertex_groups[newbonename])
