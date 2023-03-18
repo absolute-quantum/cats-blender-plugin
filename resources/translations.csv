@@ -1000,8 +1000,6 @@ Results in better animating topology by trading off overall shape accuracy
 Use if your elbows/joints end up with bad topology",,
 Scene.decimation_animation_weighting_factor.label,Factor,,
 Scene.decimation_animation_weighting_factor.desc,How much influence the animation weighting has on the overall shape,,
-Scene.decimation_retain_separated_meshes.label,Retain Separated Meshes,,
-Scene.decimation_retain_separated_meshes.desc,Experimental option. Keep existing meshes as separate objects throughout decimation,,
 Scene.max_tris.label,Tris,トリス,삼각폴리곤(Tris)
 Scene.max_tris.desc,The target amount of tris after decimation,,
 Scene.eye_mode.label,Eye Mode,アイモード,

@@ -146,15 +146,13 @@ class AutoDecimateButton(bpy.types.Operator):
         saved_data = Common.SavedData()
 
         if context.scene.decimation_mode != 'CUSTOM':
-            if not context.scene.decimation_retain_separated_meshes:
-                mesh = Common.join_meshes(repair_shape_keys=False, armature_name=self.armature_name)
+            mesh = Common.join_meshes(repair_shape_keys=False, armature_name=self.armature_name)
             if self.seperate_materials:
                 Common.separate_by_materials(context, mesh)
 
         self.decimate(context)
 
-        if not context.scene.decimation_retain_separated_meshes:
-            Common.join_meshes(armature_name=self.armature_name)
+        Common.join_meshes(armature_name=self.armature_name)
 
         saved_data.load()
 
@@ -272,7 +270,6 @@ class AutoDecimateButton(bpy.types.Operator):
         save_fingers = context.scene.decimate_fingers
         animation_weighting = context.scene.decimation_animation_weighting
         animation_weighting_factor = context.scene.decimation_animation_weighting_factor
-        retain_separated_meshes = context.scene.decimation_retain_separated_meshes
         max_tris = context.scene.max_tris
         meshes = []
         current_tris_count = 0
@@ -301,7 +298,6 @@ class AutoDecimateButton(bpy.types.Operator):
                 for idx, weight in newweights.items():
                     mesh.vertex_groups[-1].add([idx], weight, "REPLACE")
 
-        finger_pairs = []
         if save_fingers:
             for mesh in meshes_obj:
                 if len(mesh.vertex_groups) > 0:
@@ -315,13 +311,10 @@ class AutoDecimateButton(bpy.types.Operator):
                         vgs = [mesh.vertex_groups.get(finger + 'L'), mesh.vertex_groups.get(finger + 'R')]
                         for vg in vgs:
                             if vg:
-                                Common.unselect_all()
                                 bpy.ops.object.vertex_group_set_active(group=vg.name)
                                 bpy.ops.object.vertex_group_select()
                                 try:
                                     bpy.ops.mesh.separate(type='SELECTED')
-                                    if retain_separated_meshes:
-                                        finger_pairs.append((mesh.name, context.selected_objects[-1].name))
                                 except RuntimeError:
                                     pass
 
@@ -504,17 +497,6 @@ class AutoDecimateButton(bpy.types.Operator):
                 mesh_obj.active_shape_key_index = 0
 
             Common.unselect_all()
-
-        if len(finger_pairs) > 0:
-            Common.switch('OBJECT')
-            for (orig_name, finger_name) in finger_pairs:
-                orig = bpy.data.objects[orig_name]
-                finger = bpy.data.objects[finger_name]
-                finger.select_set(True)
-                orig.select_set(True)
-                bpy.context.view_layer.objects.active = orig
-                bpy.ops.object.join()
-                Common.unselect_all()
 
         # # Check if decimated correctly
         # if decimation < 0:
