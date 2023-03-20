@@ -241,10 +241,6 @@ def register():
         max=500000
     )
 
-    Scene.cats_is_unittest = BoolProperty(
-        default=False
-    )
-
     # Eye Tracking
     Scene.eye_mode = EnumProperty(
         name=t('Scene.eye_mode.label'),

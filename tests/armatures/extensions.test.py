@@ -10,7 +10,6 @@ from bpy.utils import register_class
 
 class TestAddon(unittest.TestCase):
     def test_extensions(self):
-        bpy.context.scene.cats_is_unittest = True
         bpy.context.scene.debug_translations = True
         bpy.context.scene.use_custom_mmd_tools = True
         bpy.context.scene.embed_textures = True

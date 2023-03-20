@@ -304,9 +304,8 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[2] = False
 
         # Remove empty mmd object and unused objects
-        if not bpy.context.scene.cats_is_unittest:
-            Common.remove_empty()
-            Common.remove_unused_objects()
+        Common.remove_empty()
+        Common.remove_unused_objects()
 
         # Fix VRM meshes being outside of the armature
         if is_vrm:
@@ -365,8 +364,7 @@ class FixArmature(bpy.types.Operator):
                 mesh.animation_data_clear()
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        if not bpy.context.scene.cats_is_unittest:
-            Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
+        Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
         # Apply transforms of this model
         Common.apply_transforms()

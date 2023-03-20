@@ -255,9 +255,8 @@ def set_default_stage():
                     delete(obj)
                 bpy.data.collections.remove(collection)
 
-    if not bpy.context.scene.cats_is_unittest:
-        unhide_all()
-        unselect_all()
+    unhide_all()
+    unselect_all()
 
     for obj in get_objects():
         set_active(obj)
@@ -1347,20 +1346,6 @@ def removeZeroVerts(obj, thres=0):
                 z.append(g)
         for r in z:
             obj.vertex_groups[g.group].remove([v.index])
-
-def get_children_recursive(parent):
-    if bpy.app.version < (3, 1):
-        objs = []
-        def get_child_names(obj):
-            for child in obj.children:
-                objs.append(child)
-                if child.children:
-                    get_child_names(child)
-
-        get_child_names(parent)
-        return objs
-    else:
-        return parent.children_recursive
 
 def delete_hierarchy(parent):
     unselect_all()

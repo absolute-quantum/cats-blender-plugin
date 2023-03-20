@@ -81,8 +81,6 @@ There are a lot of perks like having your name inside the plugin!
 
  - <details><summary>Optimizing materials by creating an atlas</summary>
 
-   If this feature does not work at any point for you, :star:Use Bake!:star: Bake is a more streamlined and better alternative. Use this feature only if you have a specific reason to or if it happens to work for you out of the box.
-
    ## Texture atlas
 
    ![](https://i.imgur.com/XcoF0Ek.png)
@@ -274,7 +272,7 @@ Join our Discord to report errors, suggestions and make comments!
 ## Requirements
  - Blender **2.79** or **2.80** or above (run as administrator is recommended)
    - mmd_tools is **not required**! Cats comes pre-installed with it!
- - If you have custom Python installed which Blender might use, you need to have Numpy installed
+     - If you have custom Python installed which Blender might use, you need to have Numpy installed
 
 ## Installation
  - Download the plugin: **[Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)**
@@ -304,7 +302,6 @@ Skip the step where he installs "mmd_tools" in the video below, it's not needed 
  - Kiraver
  - Jordo
  - Ruubick
- - feilen
  - 989onan
 
 ---
