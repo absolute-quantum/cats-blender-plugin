@@ -1,0 +1,60 @@
+# This workflow will install Python dependencies, install all of the supported Blender versions and run tests against all of them
+
+name: Run CATS-Blender-Plugin tests
+
+on:
+  push:
+    branches: [ "master", "development", "forked_development" ]
+  pull_request:
+    branches: [ "master", "development", "forked_development" ]
+  schedule:
+    - cron: "0 4 * * 1"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Blender versions with snap
+      run: |
+        sudo snap set system experimental.parallel-instances=true
+        sudo snap install blender_293 --channel 2.93lts/stable --classic
+        sudo snap install blender_30 --channel 3.0/stable --classic
+        sudo snap install blender_31 --channel 3.1/stable --classic
+        sudo snap install blender_32 --channel 3.2/stable --classic
+        sudo snap install blender_33 --channel 3.3lts/stable --classic
+        sudo snap install blender_34 --channel 3.4/stable --classic
+        sudo snap install blender_stable --stable --classic
+    - name: install cats plugin for various versions
+      run: |
+        mkdir -p ${HOME}/.config/blender/{2.93,3.0,3.1,3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9}/scripts/addons
+        ln -s ${PWD} ${HOME}/.config/blender/2.93/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.0/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.1/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.2/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.3/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.4/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.5/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.6/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.7/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.8/scripts/addons/cats
+        ln -s ${PWD} ${HOME}/.config/blender/3.9/scripts/addons/cats
+    - name: run unit tests for all versions
+      run: |
+        python3 ./tests/run.py --blend=blender_293 -c True || exit 1
+        python3 ./tests/run.py --blend=blender_30 -c True || exit 1
+        python3 ./tests/run.py --blend=blender_31 -c True || exit 1
+        python3 ./tests/run.py --blend=blender_32 -c True || exit 1
+        python3 ./tests/run.py --blend=blender_33 -c True || exit 1
+        python3 ./tests/run.py --blend=blender_34 -c True || exit 1
+        python3 ./tests/run.py --blend=blender_stable -c True || exit 1
