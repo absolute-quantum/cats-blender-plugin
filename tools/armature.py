@@ -253,7 +253,9 @@ class FixArmature(bpy.types.Operator):
                         to_delete.append(child2.name)
                         continue
             for obj_name in to_delete:
-                Common.delete_hierarchy(Common.get_objects()[obj_name])
+                Common.switch('EDIT')
+                Common.switch('OBJECT')
+                Common.delete_hierarchy(bpy.data.objects[obj_name])
 
         # Remove objects from different layers and things that are not meshes
         get_current_layers = []
@@ -304,6 +306,8 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[2] = False
 
         # Remove empty mmd object and unused objects
+        Common.switch('EDIT')
+        Common.switch('OBJECT')
         Common.remove_empty()
         Common.remove_unused_objects()
 
