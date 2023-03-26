@@ -133,6 +133,7 @@ def get_top_parent(child):
 def unhide_all_unnecessary():
     # TODO: Documentation? What does "unnecessary" mean?
     try:
+        switch('OBJECT')
         bpy.ops.object.hide_view_clear()
     except RuntimeError:
         pass

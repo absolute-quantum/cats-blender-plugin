@@ -1141,3 +1141,12 @@ bpy.types.Scene.cats_update_action.ignore.label,Ignore this version,このバー
 bpy.types.Scene.cats_update_action.ignore.desc,This ignores this version. You will be reminded again when the next version releases,,
 bpy.types.Scene.cats_update_action.defer.label,Remind me later,後で通知する,나중에 다시보기
 bpy.types.Scene.cats_update_action.defer.desc,Hides the update notification til the next Blender restart,,
+DecimationPanel.preset.excellent.label,Excellent,優れた,
+DecimationPanel.preset.excellent.description,The maximum number of tris you can have for an Excellent rating.,優れた評価を得るために持つことができるトリスの最大数,당신의 아바타가 Excellent 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.
+DecimationPanel.preset.good.label,Good,良い,
+DecimationPanel.preset.good.description,The maximum number of tris you can have for a Good rating.,あなたが良い評価のために持つことができるトリスの最大数,당신의 아바타가 Good 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.
+DecimationPanel.preset.quest.label,Quest,,
+DecimationPanel.preset.quest.description,"The recommended number of tris for Quest avatars.
+merge_visible_meshes_only,"Merge Visible Meshes Only"
+select_this_to_keep_the_bones_after_merging_them_to_their_parents_or_to_the_active_bone,"Select this to keep the bones after merging them to their parents or to the active bone"
+select_this_to_only_merge_the_weights_of_the_visible_meshes,"Select this to only merge the weights of the visible meshes"
