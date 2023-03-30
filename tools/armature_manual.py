@@ -879,6 +879,13 @@ def merge_weights(armature, parenting_list):
     if not bpy.context.scene.keep_merged_bones:
         for bone in parenting_list.keys():
             armature.data.edit_bones.remove(armature.data.edit_bones.get(bone))
+    if bpy.context.scene.merge_bone_gaps and (not bpy.context.scene.keep_merged_bones):
+        for bone in parenting_list.values():
+            parentbone = armature.data.edit_bones.get(bone)
+            if parentbone:
+                if len(parentbone.children) == 1:
+                    parentbone.tail = parentbone.children[0].head
+                    parentbone.children[0].use_connect = True
 
 
 @register_wrap

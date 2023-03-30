@@ -50,6 +50,9 @@ class ManualPanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'keep_merged_bones')
         row = col.row(align=True)
         row.scale_y = 0.75
+        row.prop(context.scene, 'merge_bone_gaps')
+        row = col.row(align=True)
+        row.scale_y = 0.75
         row.prop(context.scene, 'merge_visible_meshes_only')
 
         # Translate
