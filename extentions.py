@@ -102,6 +102,12 @@ def register():
         default=False
     )
 
+    Scene.merge_bone_gaps = BoolProperty(
+        name=t('merge_bone_gaps'),
+        description=t('select_this_to_merge_the_gap_in_bones_after_deleting_to_their_children'),
+        default=False
+    )
+
     Scene.merge_visible_meshes_only = BoolProperty(
         name=t('merge_visible_meshes_only'),
         description=t('select_this_to_only_merge_the_weights_of_the_visible_meshes'),
