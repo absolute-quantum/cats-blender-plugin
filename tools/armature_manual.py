@@ -885,6 +885,7 @@ def merge_weights(armature, parenting_list):
             if parentbone:
                 if len(parentbone.children) == 1:
                     parentbone.tail = parentbone.children[0].head
+                    parentbone.children[0].use_connect = True
 
 
 @register_wrap
