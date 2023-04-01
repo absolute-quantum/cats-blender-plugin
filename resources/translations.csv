@@ -1150,3 +1150,5 @@ DecimationPanel.preset.quest.description,"The recommended number of tris for Que
 merge_visible_meshes_only,"Merge Visible Meshes Only"
 select_this_to_keep_the_bones_after_merging_them_to_their_parents_or_to_the_active_bone,"Select this to keep the bones after merging them to their parents or to the active bone"
 select_this_to_only_merge_the_weights_of_the_visible_meshes,"Select this to only merge the weights of the visible meshes"
+keep_merged_bones,"Keep Merged Bones"
+merge_visible_meshes_only,"Merge Visible Meshes Only"
