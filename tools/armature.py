@@ -3,7 +3,6 @@
 import bpy
 import copy
 import math
-import platform
 from mathutils import Matrix
 
 from . import common as Common
@@ -167,7 +166,7 @@ class FixArmature(bpy.types.Operator):
             if bone.name.startswith('ValveBiped'):
                 source_engine = True
                 break
-        
+
         #Perform "Blenda" specific operation. This is needed because Spine1 on this model represents the hips and that conflicts with other mappings.
         for bone in armature.pose.bones:
             if bone.name.startswith("cShrugger"):
@@ -176,7 +175,7 @@ class FixArmature(bpy.types.Operator):
                         bone.name = "Hips"
                         break
                 break
-        
+
         # Remove unused animation data
         if armature.animation_data and armature.animation_data.action and armature.animation_data.action.name == 'ragdoll':
             armature.animation_data_clear()
@@ -254,7 +253,9 @@ class FixArmature(bpy.types.Operator):
                         to_delete.append(child2.name)
                         continue
             for obj_name in to_delete:
-                Common.delete_hierarchy(Common.get_objects()[obj_name])
+                Common.switch('EDIT')
+                Common.switch('OBJECT')
+                Common.delete_hierarchy(bpy.data.objects[obj_name])
 
         # Remove objects from different layers and things that are not meshes
         get_current_layers = []
@@ -305,9 +306,10 @@ class FixArmature(bpy.types.Operator):
             bone.lock_scale[2] = False
 
         # Remove empty mmd object and unused objects
-        if not bpy.context.scene.cats_is_unittest:
-            Common.remove_empty()
-            Common.remove_unused_objects()
+        Common.switch('EDIT')
+        Common.switch('OBJECT')
+        Common.remove_empty()
+        Common.remove_unused_objects()
 
         # Fix VRM meshes being outside of the armature
         if is_vrm:
@@ -366,8 +368,7 @@ class FixArmature(bpy.types.Operator):
                 mesh.animation_data_clear()
 
         # Fixes bones disappearing, prevents bones from having their tail and head at the exact same position
-        if not bpy.context.scene.cats_is_unittest:
-            Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
+        Common.fix_zero_length_bones(armature, x_cord, y_cord, z_cord)
 
         # Apply transforms of this model
         Common.apply_transforms()

@@ -4,14 +4,11 @@ import os
 import bpy
 import copy
 import zipfile
-import platform
 import webbrowser
 import addon_utils
 import shutil
 import bpy_extras.io_utils
 import time
-from collections import OrderedDict
-import numpy as np
 import subprocess
 from mathutils import Matrix
 from math import sqrt

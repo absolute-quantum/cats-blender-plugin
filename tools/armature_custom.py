@@ -44,7 +44,7 @@ class MergeArmature(bpy.types.Operator):
             return {'CANCELLED'}
 
         merge_parent = merge_armature.parent
-        base_parent  = base_armature.parent
+        base_parent = base_armature.parent
         if merge_parent or base_parent:
             if context.scene.merge_same_bones:
                 if merge_parent:
@@ -166,56 +166,6 @@ class AttachMesh(bpy.types.Operator):
         saved_data.load()
 
         self.report({'INFO'}, t('AttachMesh.success'))
-        return {'FINISHED'}
-
-@register_wrap
-class FitClothes(bpy.types.Operator):
-    bl_idname = 'cats_custom.fit_clothes'
-    bl_label = 'Attach to selected'
-    bl_description = 'Auto-rig all selected clothes to the active body. Should have next to no clipping, but its a good idea to delete internal geometry anyway'
-    bl_options = {'REGISTER', 'UNDO', 'INTERNAL'}
-
-    @classmethod
-    def poll(cls, context):
-        return context.view_layer.objects.active and context.view_layer.objects.selected
-
-    def execute(self, context):
-        active = context.view_layer.objects.active
-        armature = next(mod for mod in active.modifiers if mod.type == 'ARMATURE').object
-
-        for obj in context.view_layer.objects.selected:
-            # skip the target
-            if obj.name == active.name:
-                continue
-            if obj.type != "MESH":
-                continue
-
-            # Ensure the object is parented to the same armature as the active
-            obj.parent = armature
-
-            # Create empty vertex groups
-            for bone_name in [bone.name for bone in armature.data.bones]:
-                if bone_name not in obj.vertex_groups:
-                    obj.vertex_groups.new(name=bone_name)
-
-            # Copy vertex weights, by projected face
-            trans_modifier = obj.modifiers.new(type='DATA_TRANSFER', name="DataTransfer")
-            trans_modifier.object = active
-            trans_modifier.use_vert_data = True
-            trans_modifier.data_types_verts = {'VGROUP_WEIGHTS'}
-            trans_modifier.vert_mapping = 'POLYINTERP_NEAREST'
-            context.view_layer.objects.active = obj
-            Common.apply_modifier(trans_modifier)
-
-            # Setup armature
-            for mod_name in [mod.name for mod in obj.modifiers]:
-                if obj.modifiers[mod_name].type == 'ARMATURE':
-                    obj.modifiers.remove(obj.modifiers[mod_name])
-            arm_modifier = obj.modifiers.new(type='ARMATURE', name='Armature')
-            arm_modifier.object = armature
-
-
-        self.report({'INFO'}, 'Clothes rigged!')
         return {'FINISHED'}
 
 @register_wrap

@@ -130,16 +130,9 @@ DecimationPanel.warn.noDecimation,Every mesh is selected. This equals no Decimat
 DecimationPanel.warn.noMeshSelected,No mesh selected,メッシュが選択されていません,선택된 메쉬가 없음
 DecimationPanel.warn.emptyList,"Both lists are empty, this equals Full Decimation!",両方のリストが空で、これは完全なデシメーションに等しい!,양쪽 리스트들이 비어있어 전체 메쉬의 버텍스를 줄이는 것과 같습니다!
 DecimationPanel.warn.correctWhitelist,Both whitelists are considered during decimation,両方のホワイトリストはデシメーション中に考慮されます,양쪽 화이트리스트들은 데시메이션 중에 고려됩니다.
-DecimationPanel.preset.excellent.label,Excellent,優れた,
-DecimationPanel.preset.excellent.description,The maximum number of tris you can have for an Excellent rating.,優れた評価を得るために持つことができるトリスの最大数,당신의 아바타가 Excellent 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.
-DecimationPanel.preset.good.label,Good,良い,
-DecimationPanel.preset.good.description,The maximum number of tris you can have for a Good rating.,あなたが良い評価のために持つことができるトリスの最大数,당신의 아바타가 Good 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.
-DecimationPanel.preset.quest.label,Quest,,
-DecimationPanel.preset.quest.description,"The recommended number of tris for Quest avatars.
 A hard limit will be established in the future that will not be much more than this.","Questアバターの推奨トリス数.
 将来的には、これをはるかに超えることのない厳しい制限が設定されます。","퀘스트용 아바타들을 위해 권장되는 삼각폴리곤(Tris)의 개수입니다.
 앞으로는 이보다 심하지는 않을 엄격한 제한이 설정될 것입니다."
-DecimationPanel.warn.notIfBaking,Not reccomended if baking!,,베이킹 할 시 권장되지 않습니다!
 EyeTrackingPanel.label,Eye Tracking,アイトラッキング,눈 추적(Eye Tracking)
 EyeTrackingPanel.error.noMesh,No meshes found!,メッシュが見つかりません!,메쉬가 발견되지 않음!
 EyeTrackingPanel.error.noArm,No model found!,モデルが見つかりません!,모델이 발견되지 않음!
@@ -172,17 +165,6 @@ CopyProtectionPanel.label,Copy Protection,コピープロテクション,복사�
 CopyProtectionPanel.desc1,Tries to protect your avatar from Unity cache ripping.,Unity キャッシュリッピングからアバターを保護しようとします。,유니티 캐쉬뜨기로부터 당신의 아바타를 보호하세요.
 CopyProtectionPanel.desc2,This protection is not 100% safe!,この保護は100%安全ではありません!,이 방법도 100% 안전하지는 않습니다!
 CopyProtectionPanel.desc3,Before use: Read the documentation!,使用前: ドキュメントを読んでください!,사용 전에: 문서를 읽어주세요!
-BakePanel.label,Bake,焼く,베이크(Bake)
-BakePanel.versionTooOld,Only for Blender 2.80+,,Blender 2.80 버전 이상에서만 호환
-BakePanel.autodetectlabel,Autodetect:,,자동감지:
-BakePanel.generaloptionslabel,General options:,,일반 옵션:
-BakePanel.noheadfound,"No ""Head"" bone found!",,"""Head"" 본 발견되지 않음!"
-BakePanel.overlapfixlabel,Overlap fix:,,중복 수정:
-BakePanel.bakepasseslabel,Bake passes:,,베이크 패스:
-BakePanel.alphalabel,Alpha:,,
-BakePanel.transparencywarning,Transparency isn't currently selected!,,현재 투명도가 선택되지 않았습니다!
-BakePanel.smoothnesswarning,Smoothness isn't currently selected!,,현재 부드러움이 선택되지 않았습니다!
-BakePanel.doublepackwarning,Smoothness packed in two places!,,두군데에 부드러움이 설정되었습니다!
 ScalingPanel.label,Model Scaling,,
 ScalingPanel.imscaleDisabled1,Immersive Scaler is not enabled!,,
 ScalingPanel.imscaleDisabled2,Enable it in your user preferences:,,
@@ -994,12 +976,6 @@ RingFinger(1-3)_(L/R)
 LittleFinger(1-3)_(L/R)"
 Scene.decimation_remove_doubles.label,Remove Doubles,重複を削除,이중 제거
 Scene.decimation_remove_doubles.desc,Uncheck this if you get issues with this checked,Uncheck this if you got issues with with this checked,문제가 될 시 체크를 해제하세요
-Scene.decimation_animation_weighting.label,Animation weighting,,
-Scene.decimation_animation_weighting.desc,"Weight decimation based on shape keys and vertex group overlap
-Results in better animating topology by trading off overall shape accuracy
-Use if your elbows/joints end up with bad topology",,
-Scene.decimation_animation_weighting_factor.label,Factor,,
-Scene.decimation_animation_weighting_factor.desc,How much influence the animation weighting has on the overall shape,,
 Scene.decimation_retain_separated_meshes.label,Retain Separated Meshes,,
 Scene.decimation_retain_separated_meshes.desc,Experimental option. Keep existing meshes as separate objects throughout decimation,,
 Scene.max_tris.label,Tris,トリス,삼각폴리곤(Tris)
@@ -1099,115 +1075,6 @@ Scene.use_custom_mmd_tools.label,Use Custom mmd_tools,カスタムmmd_toolsを�
 Scene.use_custom_mmd_tools.desc,Enable this to use your own version of mmd_tools. This will disable the internal cats mmd_tools,,
 Scene.debug_translations.label,Debug Google Translations,Google翻訳をデバッグ,Google 번역 디버그
 Scene.debug_translations.desc,Tests the Google Translations and prints the Google response in case of error,,
-Scene.bake_resolution.label,Resolution,,해상도
-Scene.bake_resolution.desc,"Output resolution for the textures.
-- 2048 is typical for desktop use.
-- 1024 is reccomended for the Quest",,"테스쳐들의 결과 해상도.
-- 2048 데스크탑 용
-- 1024 퀘스트 용"
-Scene.bake_use_decimation.label,Decimate,,버텍스 줄이기(Decimate)
-Scene.bake_use_decimation.desc,"Reduce polycount before baking, then use Normal maps to restore detail",,베이킹하기 전에 폴리 카운트를 줄인 다음 노멀 맵을 사용하여 디테일을 복원합니다.
-Scene.bake_generate_uvmap.label,Generate UVMap,,UV 맵 생성
-Scene.bake_generate_uvmap.desc,"Re-pack islands for your mesh to a new non-overlapping UVMap.
-Only disable if your UVs are non-overlapping already.
-This will leave any map named ""Detail Map"" alone.
-Uses UVPackMaster where available for more efficient UVs, make sure the window is showing",,
-Scene.bake_uv_overlap_correction.label,Overlap correction,,중복 보정
-Scene.bake_uv_overlap_correction.desc,Method used to prevent overlaps in UVMap,,
-Scene.bake_prioritize_face.label,Prioritize Eyes,,머리 / 눈 우선 순위 지정
-Scene.bake_prioritize_face.desc,Scale any UV islands attached to the head/eyes by a given factor.,,
-Scene.bake_face_scale.label,Eyes Scale,,머리 / 눈 스케일
-Scene.bake_face_scale.desc,How much to scale up the face/eyes portion of the textures.,,
-Scene.bake_quick_compare.label,Quick compare,,빠른 비교
-Scene.bake_quick_compare.desc,Move output avatar next to existing one to quickly compare,,
-Scene.bake_illuminate_eyes.label,Set eyes to full brightness,,눈을 최대 밝기로 설정
-Scene.bake_illuminate_eyes.desc,"Relight LeftEye and RightEye to be full brightness.
-Without this, the eyes will have the shadow of the surrounding socket baked in,
-which doesn't animate well",,
-Scene.bake_pass_smoothness.label,Smoothness,,부드러움
-Scene.bake_pass_smoothness.desc,"Bakes Roughness and then inverts the values.
-To use this, it needs to be packed to the Alpha channel of either Diffuse or Metallic.
-Not neccesary if your mesh has a global roughness value",,
-Scene.bake_pass_diffuse.label,Diffuse (Color),,확산 (색상)
-Scene.bake_pass_diffuse.desc,"Bakes diffuse, un-lighted color. Usually you will want this.
-While baking, this temporarily links ""Metallic"" to ""Anisotropic Rotation"" as metallic can cause issues.",,
-Scene.bake_preserve_seams.label,Preserve seams,,이음새 유지
-Scene.bake_preserve_seams.desc,"Forces the Decimate operation to preserve vertices making up seams, preventing hard edges along seams.
-May result in less ideal geometry.
-Use if you notice ugly edges along your texture seams.",,
-Scene.bake_pass_normal.label,Normal (Bump),,노말 (범프)
-Scene.bake_pass_normal.desc,"Bakes a normal (bump) map. Allows you to keep the shading of a complex object with
-the geometry of a simple object. If you have selected 'Decimate', it will create a map
-that makes the low res output look like the high res input.
-Will not work well if you have self-intersecting islands",,
-Scene.bake_normal_apply_trans.label,Apply transforms,,변환 적용
-Scene.bake_normal_apply_trans.desc,"Applies offsets while baking normals. Neccesary if your model has many materials with different normal maps
-Turn this off if applying location causes problems with your model",,
-Scene.bake_pass_ao.label,Ambient Occlusion,,
-Scene.bake_pass_ao.desc,"Bakes Ambient Occlusion, non-projected shadows. Adds a significant amount of detail to your model.
-Reccomended for non-toon style avatars.
-Takes a fairly long time to bake",,
-Scene.bake_pass_displacement.label,Displacement (Height),,
-Scene.bake_pass_displacement.desc,"Bakes a normalized Displacement map, according to the material displacement in Blender.
-Can add real 3d surface detail to models.
-Results are in Linear space, so make sure uncheck Color Texture in Unity.",,
-Scene.bake_pass_questdiffuse.label,Quest Diffuse (Color+AO),,
-Scene.bake_pass_questdiffuse.desc,Blends the result of the Diffuse and AO bakes to make Quest-compatible shading.,,
-Scene.bake_pass_emit.label,Emit,,
-Scene.bake_pass_emit.desc,"Bakes Emit, glowyness",,
-Scene.bake_diffuse_alpha_pack.label,Alpha Channel,,
-Scene.bake_diffuse_alpha_pack.desc,What to pack to the Diffuse Alpha channel,,
-Scene.bake_metallic_alpha_pack.label,Metallic Alpha Channel,,
-Scene.bake_metallic_alpha_pack.desc,What to pack to the Metallic Alpha channel,,
-Scene.bake_pass_alpha.label,Transparency,,
-Scene.bake_pass_alpha.desc,"Bakes transparency by connecting the last Principled BSDF Alpha input
-to the Base Color input and baking Diffuse.
-Not a native pass in Blender, results may vary
-Unused if you are baking to Quest",,
-Scene.bake_pass_metallic.label,Metallic,,
-Scene.bake_pass_metallic.desc,"Bakes metallic by connecting the last Principled BSDF Metallic input
-to the Base Color input and baking Diffuse.
-Not a native pass in Blender, results may vary",,
-Scene.bake_questdiffuse_opacity.label,AO Opacity,,
-Scene.bake_questdiffuse_opacity.desc,"The opacity of the shadows to blend onto the Diffuse map.
-This should match the unity slider for AO on the Desktop version.",,
-Scene.bake_uv_overlap_correction.none.label,Rearrange,,
-Scene.bake_uv_overlap_correction.none.desc,Leave islands as they are. Use if islands don't self-intersect at all,,
-Scene.bake_uv_overlap_correction.unmirror.label,Unmirror,,
-Scene.bake_uv_overlap_correction.unmirror.desc,Move all face islands with positive X values over one to un-pin mirrored UVs. Solves most UV pinning issues.,,
-Scene.bake_uv_overlap_correction.reproject.label,Reproject,,
-Scene.bake_uv_overlap_correction.reproject.desc,Use blender's Smart UV Project to come up with an entirely new island layout. Tends to reduce quality.,,
-Scene.bake_diffuse_alpha_pack.none.label,None,,
-Scene.bake_diffuse_alpha_pack.none.desc,No alpha channel,,
-Scene.bake_diffuse_alpha_pack.transparency.label,Transparency,,
-Scene.bake_diffuse_alpha_pack.transparency.desc,Pack Transparency,,
-Scene.bake_diffuse_alpha_pack.smoothness.label,Smoothness,,
-Scene.bake_diffuse_alpha_pack.smoothness.desc,Pack Smoothness. Most efficient if you don't have transparency or metallic textures.,,
-Scene.bake_metallic_alpha_pack.none.label,None,,
-Scene.bake_metallic_alpha_pack.none.desc,No alpha channel,,
-Scene.bake_metallic_alpha_pack.smoothness.label,Smoothness,,
-Scene.bake_metallic_alpha_pack.smoothness.desc,Pack Smoothness. Use this if your Diffuse alpha channel is already populated with Transparency,,
-cats_bake.warn_missing_nodes,"A material in use isn't using Nodes, fix this in the Shading tab.",,
-cats_bake.preset_desktop.label,Desktop,,
-cats_bake.preset_desktop.desc,"Preset for producing an Excellent-rated Desktop avatar, not accounting for bones.
-This will try to automatically detect which bake passes are relevant to your model",,
-cats_bake.preset_quest.label,Quest,,
-cats_bake.preset_quest.desc,"Preset for producing an Excellent-rated Quest avatar, not accounting for bones.
-This will try to automatically detect which bake passes are relevant to your model",,
-cats_bake.bake.label,Copy and Bake (SLOW!),,
-cats_bake.bake.desc,"Perform the bake. Warning, this performs an actual render!
-This will create a copy of your avatar to leave the original alone.
-Depending on your machine and model, this could take an hour or more.
-For each pass, any Value node in your materials labeled bake_<bakename> will be
-set to 1.0, for more granular customization.",,
-cats_bake.error.no_meshes,No meshes found!,,메쉬가 발견되지 않음!
-cats_bake.error.render_engine,You need to set your render engine to Cycles first!,,
-cats_bake.error.render_disabled,One or more of your armature's meshes have rendering disabled!,,
-cats_bake.info.success,Success! Textures and model saved to 'CATS Bake' folder next to your .blend file.,,
-cats_bake.tutorial_button.label,How to use,,사용법
-cats_bake.tutorial_button.desc,This will open the Cats wiki page for the Bake panel,,
-cats_bake.tutorial_button.URL,https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake,,
-cats_bake.tutorial_button.success,Bake Tutorial opened.,,
 CheckForUpdateButton.label,Check now for Update,今すぐアップデートを確認,업데이트 체크
 CheckForUpdateButton.desc,Checks if a new update is available for CATS,,
 UpdateToLatestButton.label,Update Now,今すぐアップデート,지금 업데이트
@@ -1274,81 +1141,14 @@ bpy.types.Scene.cats_update_action.ignore.label,Ignore this version,このバー
 bpy.types.Scene.cats_update_action.ignore.desc,This ignores this version. You will be reminded again when the next version releases,,
 bpy.types.Scene.cats_update_action.defer.label,Remind me later,後で通知する,나중에 다시보기
 bpy.types.Scene.cats_update_action.defer.desc,Hides the update notification til the next Blender restart,,
-apply_current_shapekey_mix,"Apply current shapekey mix"
-bake_device,"Bake Device"
-bake_projected_light,"Bake projected light"
-bake_the_effect_of_emission_on_nearby_surfaces_results_in_much_more_realistic_lighting_effects_but_can_animate_less_well,"Bake the effect of emission on nearby surfaces. Results in much more realistic lighting effects, but can animate less well."
-bake_to_vertex_colors,"Bake to vertex colors"
-bakes_the_effect_of_any_eye_glow_onto_surrounding_objects_but_not_viceversa_improves_animation_when_eyes_are_moving_around,"Bakes the effect of any eye glow onto surrounding objects, but not vice-versa. Improves animation when eyes are moving around.."
-blends_emission_into_the_diffuse_map_for_engines_without_a_seperate_emission_map,"Blends emission into the diffuse map, for engines without a seperate emission map"
-cleanup_shapekeys,"Cleanup Shapekeys"
-convert_diffuse_and_metallic_to_premultiplied_diffuse_and_specular_compatible_with_older_engines,"Convert Diffuse and Metallic to premultiplied Diffuse and Specular. Compatible with older engines"
-denoise_renders,"Denoise renders"
-denoise_the_resulting_image_after_emitao_reccomended_as_this_will_reduce_the_grainy_quality_of_inexpensive_rendering,"Denoise the resulting image after emit/AO. Reccomended as this will reduce the 'grainy' quality of inexpensive rendering.."
-device_to_bake_on_gpu_gives_a_significant_speedup_but_can_cause_issues_depending_on_your_graphics_drivers,"Device to bake on. GPU gives a significant speedup, but can cause issues depending on your graphics drivers."
-diffuse_emission_overlay,"Diffuse Emission Overlay"
-exclude_eyes,"Exclude eyes"
-experimental_try_to_keep_uvps_lock_overlapping_enabled,"Experimental. Try to keep UVP's lock overlapping enabled"
-export_format,"Export format"
-for_source_engine_only_provides_diffuse_lighting_reflections_for_nonmetallic_objects,"For Source engine only. Provides diffuse lighting reflections for nonmetallic objects."
-generate_an_additional_lod_used_for_simplified_physics_interactions,"Generate an additional LOD used for simplified physics interactions"
-generate_courser_decimation_levels_for_efficient_rendering,"Generate courser decimation levels for efficient rendering."
-generate_lods,"Generate LODs"
-generate_physics_model,"Generate Physics Model"
-generate_the_twistbones_on_the_upper_half_of_the_bone_usually_used_for_upper_legs,"Generate the twistbones on the upper half of the bone. Usually used for upper legs."
-generate_upperhalf,"Generate Upperhalf"
-gmod_model_name,"Gmod Model Name"
-ignore_currently_hidden_objects_when_copying,"Ignore currently hidden objects when copying"
-ignore_hidden_objects,"Ignore hidden objects"
-image_export_format,"Image export format"
-image_type_to_use_when_exporting,"image type to use when exporting"
-invert_green_channel,"Invert green channel"
-keep_merged_bones,"Keep Merged Bones"
-keep_overlapping_islands_uvp,"Keep Overlapping Islands (UVP)"
-lod_generation_levels_as_a_percent_of_the_max_tris,"LOD generation levels, as a percent of the max tris"
-lods,"LODs"
-max_bones_per_prop,"Max Bones Per Prop"
-maximum_bones_a_prop_can_be_attached_to_to_be_considered_a_prop_more_will_create_more_toggleable_props_but_increase_armature_complexity,"Maximum bones a prop can be attached to to be considered a prop. More will create more toggleable props, but increase armature complexity."
-merge_any_bone_with_twist_in_the_name_useful_as_quest_does_not_support_constraints,"Merge any bone with 'Twist' in the name. Useful as Quest does not support constraints."
-merge_twist_bones,"Merge Twist Bones"
+DecimationPanel.preset.excellent.label,Excellent,優れた,
+DecimationPanel.preset.excellent.description,The maximum number of tris you can have for an Excellent rating.,優れた評価を得るために持つことができるトリスの最大数,당신의 아바타가 Excellent 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.
+DecimationPanel.preset.good.label,Good,良い,
+DecimationPanel.preset.good.description,The maximum number of tris you can have for a Good rating.,あなたが良い評価のために持つことができるトリスの最大数,당신의 아바타가 Good 등급을 받을 수 있는 최대 삼각폴리곤(Tris) 개수입니다.
+DecimationPanel.preset.quest.label,Quest,,
+DecimationPanel.preset.quest.description,"The recommended number of tris for Quest avatars.
 merge_visible_meshes_only,"Merge Visible Meshes Only"
-merges_smoothness_into_the_specular_map_for_engines_without_a_seperate_smoothness_map,"Merges smoothness into the specular map, for engines without a seperate smoothness map"
-model_format_to_use_when_exporting,"Model format to use when exporting"
-name,"Name"
-normal_alpha_pack,"Normal Alpha Pack"
-optimize_solid_materials,"Optimize Solid Materials"
-optimize_static_shapekeys,"Optimize Static Shapekeys"
-optimizes_solid_materials_by_making_a_small_area_for_them_ao_pass_will_nullify,"Optimizes solid materials by making a small area for them. AO pass will nullify"
-pack_ambient_occlusion_to_the_green_channel_saves_a_texture_as_unity_uses_g_for_ao_r_for_metallic,"Pack Ambient Occlusion to the Green channel. Saves a texture as Unity uses G for AO, R for Metallic."
-pack_ao_to_metallic_green,"Pack AO to Metallic Green"
-phong_setup_source,"Phong Setup (Source)"
-physmodel_percent,"Physmodel Percent"
-premultiply_diffuse_w_ao,"Premultiply Diffuse w/ AO"
-premultiply_smoothness_w_ao,"Premultiply Smoothness w/ AO"
-prop_bones_max_influence_count,"Prop bones Max Influence Count"
-prop_bones_max_influence_count,"Prop bones Max Influence Count"
-rebake_to_vertex_colors_after_initial_bake_avoids_an_entire_extra_texture_if_your_colors_are_simple_enough_incorperates_ao,"Rebake to vertex colors after initial bake. Avoids an entire extra texture, if your colors are simple enough. Incorperates AO."
-remove_backup_shapekeys_in_the_final_result_eg_key__reverted_or_blinkold,"Remove backup shapekeys in the final result, e.g. 'Key1 - Reverted' or 'blink_old'"
 select_this_to_keep_the_bones_after_merging_them_to_their_parents_or_to_the_active_bone,"Select this to keep the bones after merging them to their parents or to the active bone"
 select_this_to_only_merge_the_weights_of_the_visible_meshes,"Select this to only merge the weights of the visible meshes"
-seperate_vertices_unaffected_by_shape_keys_into_their_own_mesh_this_adds_a_drawcall_but_comes_with_a_significant_gpu_cost_savings_especially_on_mobile,"Seperate vertices unaffected by shape keys into their own mesh. This adds a drawcall, but comes with a significant GPU cost savings, especially on mobile."
-sharpen_bakes,"Sharpen bakes"
-sharpen_resampled_images_after_baking_diffusesmoothnessmetallic_reccomended_as_any_sampling_will_cause_blur,"Sharpen resampled images after baking diffuse/smoothness/metallic. Reccomended as any sampling will cause blur."
-show_advanced_general_options,"Show Advanced General Options"
-show_advanced_platform_options,"Show Advanced Platform Options"
-source_engine_uses_an_inverse_green_channel_this_fixes_that_on_export,"Source engine uses an inverse green channel, this fixes that on export"
-specular_alpha_channel,"Specular Alpha Channel"
-specular_setup,"Specular Setup"
-specular_smoothness_overlay,"Specular Smoothness Overlay"
-steam_library,"Steam Library"
-target_another_bone_naming_standard_when_exporting_requires_standard_bone_names,"Target another bone naming standard when exporting. Requires standard bone names"
-the_angle_reproject_uses_when_unwrapping_larger_angles_yield_less_islands_but_more_stretching_and_smaller_does_opposite,"The angle Reproject uses when unwrapping. Larger angles yield less islands but more stretching and smaller does opposite"
-this_option_will_detect_any_meshes_weighted_to_a_single_bone_and_create_a_prop_bone_you_can_independently_scale_to_,"This option will detect any meshes weighted to a single bone and create a 'prop' bone you can independently scale to 0."
-translate_bone_names,"Translate bone names"
-unwrap_angle,"Unwrap Angle"
-what_to_pack_to_the_alpha_channel_of_specularity,"What to pack to the Alpha channel of Specularity"
-when_selected_currently_active_shape_keys_will_be_applied_to_the_basis_this_is_extremely_beneficial_to_performance_if_your_avatar_is_intended_to_default_to_one_shapekey_mix_as_having_active_shapekeys_all_the_time_is_expensive_keys_ending_in_bake_are_always_applied_to_the_basis_and_removed_completely_regardless_of_this_option,"When selected, currently active shape keys will be applied to the basis. This is extremely beneficial to performance if your avatar is intended to 'default' to one shapekey"
-mix," as having active shapekeys all the time is expensive. Keys ending in '_bake' are always applied to the basis and removed completely, regardless of this option."
-while_not_technically_accurate_this_avoids_the_shine_effect_on_obscured_portions_of_your_model,"While not technically accurate, this avoids the 'shine effect' on obscured portions of your model"
-will_show_extra_options_related_to_applicable_bones_and_texture_packing_setups,"Will show extra options related to applicable bones and texture packing setups."
-will_show_extra_options_related_to_which_bake_passes_are_performed_and_how,"Will show extra options related to which bake passes are performed and how."
+keep_merged_bones,"Keep Merged Bones"
+merge_visible_meshes_only,"Merge Visible Meshes Only"

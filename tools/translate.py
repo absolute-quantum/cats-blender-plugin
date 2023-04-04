@@ -6,7 +6,6 @@ import bpy
 import copy
 import json
 import pathlib
-import platform
 import traceback
 import collections
 import requests.exceptions

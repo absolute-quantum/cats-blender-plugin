@@ -20,12 +20,12 @@ class SearchMenuOperator_merge_armature_into(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name=t('Scene.merge_armature_into.label'), description=t('Scene.merge_armature_into.desc'), items=Common.get_armature_list)
-    
+
     def execute(self, context):
         context.scene.merge_armature_into = self.my_enum
         print(context.scene.root_bone)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
@@ -39,17 +39,17 @@ class SearchMenuOperator_merge_armature(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name=t('Scene.merge_armature.label'), description= t('Scene.merge_armature.desc'), items=Common.get_armature_merge_list)
-    
+
     def execute(self, context):
         context.scene.merge_armature = self.my_enum
         print(context.scene.root_bone)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
         return {'FINISHED'}
-        
+
 @register_wrap
 class SearchMenuOperator_attach_to_bone(bpy.types.Operator):
     bl_description = t('Scene.attach_to_bone.desc')
@@ -58,17 +58,17 @@ class SearchMenuOperator_attach_to_bone(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name=t('Scene.attach_to_bone.label'), description= t('Scene.attach_to_bone.desc'), items=Common.get_bones_merge)
-    
+
     def execute(self, context):
         context.scene.attach_to_bone = self.my_enum
         print(context.scene.root_bone)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
         return {'FINISHED'}
-        
+
 @register_wrap
 class SearchMenuOperator_attach_mesh(bpy.types.Operator):
     bl_description = t('Scene.attach_mesh.desc')
@@ -77,12 +77,12 @@ class SearchMenuOperator_attach_mesh(bpy.types.Operator):
     bl_property = "my_enum"
 
     my_enum: bpy.props.EnumProperty(name=t('Scene.attach_mesh.label'), description= t('Scene.attach_mesh.desc'), items=Common.get_top_meshes)
-    
+
     def execute(self, context):
         context.scene.attach_mesh = self.my_enum
         print(context.scene.root_bone)
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         wm = context.window_manager
         wm.invoke_search_popup(self)
@@ -140,7 +140,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 0.95
             row.prop(context.scene, 'merge_armatures_remove_zero_weight_bones')
-            
+
             row = col.row(align=True)
             row.scale_y = 0.95
             row.prop(context.scene, 'merge_armatures_cleanup_shape_keys')
@@ -153,7 +153,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row.scale_y = 1.05
             row.label(text=t('CustomPanel.toMerge'))
             row.operator(SearchMenuOperator_merge_armature.bl_idname,text = context.scene.merge_armature, icon_value=Supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id)
-            
+
             if not context.scene.merge_same_bones:
                 found = False
                 base_armature = Common.get_armature(armature_name=context.scene.merge_armature_into)
@@ -167,7 +167,7 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
                     row = col.row(align=True)
                     row.scale_y = 1.05
                     row.label(text=t('CustomPanel.attachToBone'))
-                    row.operator(SearchMenuOperator_attach_to_bone.bl_idname, text=context.scene.attach_to_bone, icon='BONE_DATA') 
+                    row.operator(SearchMenuOperator_attach_to_bone.bl_idname, text=context.scene.attach_to_bone, icon='BONE_DATA')
                 else:
                     row = col.row(align=True)
                     row.scale_y = 1.05
@@ -203,34 +203,13 @@ class CustomPanel(ToolPanel, bpy.types.Panel):
             row = col.row(align=True)
             row.scale_y = 1.05
             row.label(text=t('CustomPanel.attachMesh2'))
-            row.operator(SearchMenuOperator_attach_mesh.bl_idname, text=context.scene.attach_mesh, icon_value=Supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id) 
+            row.operator(SearchMenuOperator_attach_mesh.bl_idname, text=context.scene.attach_mesh, icon_value=Supporter.preview_collections["custom_icons"]["UP_ARROW"].icon_id)
 
             row = col.row(align=True)
             row.scale_y = 1.05
             row.label(text=t('CustomPanel.attachToBone'))
-            row.operator(SearchMenuOperator_attach_to_bone.bl_idname, text=context.scene.attach_to_bone, icon='BONE_DATA') 
+            row.operator(SearchMenuOperator_attach_to_bone.bl_idname, text=context.scene.attach_to_bone, icon='BONE_DATA')
 
             row = col.row(align=True)
             row.scale_y = 1.2
             row.operator(Armature_custom.AttachMesh.bl_idname, icon='ARMATURE_DATA')
-        elif context.scene.merge_mode == "CLOTHES":
-            row = col.row(align=True)
-            row.scale_y = 1.05
-            row.label(text="Attach Clothes to Body")
-
-            if len(context.view_layer.objects.selected) <= 1 or not context.view_layer.objects.active or not 'Armature' in context.view_layer.objects.active.modifiers:
-                row = col.row(align=True)
-                row.scale_y = 1.05
-                col.label(text='An already rigged body and other meshes required!', icon='INFO')
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Make sure the body is the one highlighted.", icon='BLANK1')
-                row = col.row(align=True)
-                row.scale_y = 0.75
-                row.label(text="Works with any mesh that conforms closely to the body.", icon='BLANK1')
-                return
-
-            row = col.row(align=True)
-            row.scale_y = 1.2
-            row.operator(Armature_custom.FitClothes.bl_idname, icon='MOD_CLOTH')
-

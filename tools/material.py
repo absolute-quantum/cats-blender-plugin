@@ -160,10 +160,10 @@ class CombineMaterialsButton(bpy.types.Operator):
             if ob.type == 'MESH':
                 Common.set_active(ob)
                 bpy.ops.object.material_slot_remove_unused()
-                
-                #Why do all below when you can just do what is above? - @989onan 
-                
-                
+
+                #Why do all below when you can just do what is above? - @989onan
+
+
 #                mats = ob.material_slots.keys()
 
 #                usedMatIndex = []
@@ -240,7 +240,7 @@ class CombineMaterialsButton(bpy.types.Operator):
                             # Skip certain known nodes
                             if node.name in ignore_nodes or node.label in ignore_nodes:
                                 continue
-                            
+
                             # Add images to hash and skip toon and shpere textures
                             if node.type == 'TEX_IMAGE':
                                 image = node.image

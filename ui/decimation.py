@@ -61,9 +61,7 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row.prop(context.scene, 'decimation_mode', expand=True)
         row = col.row(align=True)
         row.scale_y = 0.7
-        if context.scene.decimation_mode == 'SMART':
-            row.label(text=t('DecimationPanel.smartModeDesc'))
-        elif context.scene.decimation_mode == 'SAFE':
+        if context.scene.decimation_mode == 'SAFE':
             row.label(text=t('DecimationPanel.safeModeDesc'))
         elif context.scene.decimation_mode == 'HALF':
             row.label(text=t('DecimationPanel.halfModeDesc'))
@@ -151,16 +149,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'decimation_remove_doubles')
         row = col.row(align=True)
-        row.prop(context.scene, 'decimation_animation_weighting', expand=True)
-        if context.scene.decimation_animation_weighting: # and context.scene.decimation_mode != "LOOP":
-            row = col.row(align=True)
-            row.separator()
-            row.prop(context.scene, 'decimation_animation_weighting_factor', expand=True)
-            row = col.row(align=True)
-            row.separator()
-            row.prop(context.scene, 'decimation_animation_weighting_include_shapekeys', expand=True)
-            col.separator()
-        row = col.row(align=True)
         row.prop(context.scene, 'decimation_retain_separated_meshes', expand=True)
         row = col.row(align=True)
         row.operator(Decimation.AutoDecimatePresetGood.bl_idname)
@@ -169,7 +157,6 @@ class DecimationPanel(ToolPanel, bpy.types.Panel):
         row = col.row(align=True)
         row.prop(context.scene, 'max_tris')
         col.separator()
-        col.label(text=t('DecimationPanel.warn.notIfBaking'), icon='INFO')
         row = col.row(align=True)
         row.scale_y = 1.2
         row.operator(Decimation.AutoDecimateButton.bl_idname, icon='MOD_DECIM')
