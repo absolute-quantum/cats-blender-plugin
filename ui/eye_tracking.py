@@ -143,6 +143,47 @@ class SearchMenuOperatorShapekeyLowerLidRight(bpy.types.Operator):
         wm.invoke_search_popup(self)
         return {'FINISHED'}
 
+
+@register_wrap
+class Av3EyeTrackingPanel(ToolPanel, bpy.types.Panel):
+    """Avatars 3.0 version of the Eye Tracking Panel
+
+    Contains an operator to reorient eye bones so that they're pointing directly up and have zero roll."""
+    bl_idname = 'VIEW3D_PT_av3_eyetracking'
+    bl_label = t('EyeTrackingPanel.label')
+    bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return not context.scene.show_avatar_2_tabs
+
+    def draw(self, context):
+        scene = context.scene
+        layout = self.layout
+        box = layout.box()
+        col = box.column(align=True)
+
+        sub = col.column(align=True)
+        sub.scale_y = 0.75
+        sub.label(text=t("Av3EyeTrackingPanel.info1"), icon='INFO')
+        sub.label(text=t("Av3EyeTrackingPanel.info2"), icon='BLANK1')
+
+        row = col.row(align=True)
+        row.scale_y = 1.1
+        row.label(text=t('Scene.eye_left.label') + ":")
+        row.operator(SearchMenuOperatorBoneEyeLeft.bl_idname,
+                     text=layout.enum_item_name(scene, "eye_left", scene.eye_left), icon='BONE_DATA')
+        row = col.row(align=True)
+        row.scale_y = 1.1
+        row.label(text=t('Scene.eye_right.label') + ":")
+        row.operator(SearchMenuOperatorBoneEyeRight.bl_idname,
+                     text=layout.enum_item_name(scene, "eye_right", scene.eye_right), icon='BONE_DATA')
+
+        col = box.column(align=True)
+        row = col.row(align=True)
+        row.operator(Eyetracking.RotateEyeBonesForAv3Button.bl_idname, icon='CON_ROTLIMIT')
+
+
 @register_wrap
 class EyeTrackingPanel(ToolPanel, bpy.types.Panel):
     bl_idname = 'VIEW3D_PT_eye_v3'
