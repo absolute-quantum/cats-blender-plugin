@@ -20,3 +20,7 @@ resources/icons/supporters/**
 resources/supporters.json
 .coverage
 mmd_tools_local2
+/.vs/VSWorkspaceState.json
+/.vs/slnx.sqlite
+/.vs/Cats-Blender-Plugin/FileContentIndex
+*.wsuo
