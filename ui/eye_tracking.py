@@ -17,7 +17,10 @@ class SearchMenuOperatorBoneHead(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_bones_head)
+    my_enum: bpy.props.EnumProperty(
+        name="shapekeys",
+        items=Common.wrap_dynamic_enum_items(Common.get_bones_head, bl_idname, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.head = self.my_enum
@@ -36,7 +39,10 @@ class SearchMenuOperatorBoneEyeLeft(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_bones_eye_l)
+    my_enum: bpy.props.EnumProperty(
+        name="shapekeys",
+        items=Common.wrap_dynamic_enum_items(Common.get_bones_eye_l, bl_idname, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.eye_left = self.my_enum
@@ -55,7 +61,10 @@ class SearchMenuOperatorBoneEyeRight(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_bones_eye_r)
+    my_enum: bpy.props.EnumProperty(
+        name="shapekeys",
+        items=Common.wrap_dynamic_enum_items(Common.get_bones_eye_r, bl_idname, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.eye_right = self.my_enum
@@ -74,7 +83,10 @@ class SearchMenuOperatorShapekeyWinkLeft(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_shapekeys_eye_blink_l)
+    my_enum: bpy.props.EnumProperty(
+        name="shapekeys",
+        items=Common.wrap_dynamic_enum_items(Common.get_shapekeys_eye_blink_l, bl_idname, sort=False, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.wink_left = self.my_enum
@@ -93,7 +105,10 @@ class SearchMenuOperatorShapekeyWinkRight(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_shapekeys_eye_blink_r)
+    my_enum: bpy.props.EnumProperty(
+        name="shapekeys",
+        items=Common.wrap_dynamic_enum_items(Common.get_shapekeys_eye_blink_r, bl_idname, sort=False, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.wink_right = self.my_enum
@@ -112,7 +127,10 @@ class SearchMenuOperatorShapekeyLowerLidLeft(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_shapekeys_eye_low_l)
+    my_enum: bpy.props.EnumProperty(
+        name="shapekeys",
+        items=Common.wrap_dynamic_enum_items(Common.get_shapekeys_eye_low_l, bl_idname, sort=False, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.lowerlid_left = self.my_enum
@@ -131,7 +149,10 @@ class SearchMenuOperatorShapekeyLowerLidRight(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name="shapekeys", items=Common.get_shapekeys_eye_low_r)
+    my_enum: bpy.props.EnumProperty(
+        name="shapekeys",
+        items=Common.wrap_dynamic_enum_items(Common.get_shapekeys_eye_low_r, bl_idname, sort=False, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.lowerlid_right = self.my_enum

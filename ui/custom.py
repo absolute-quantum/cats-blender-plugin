@@ -19,7 +19,11 @@ class SearchMenuOperator_merge_armature_into(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name=t('Scene.merge_armature_into.label'), description=t('Scene.merge_armature_into.desc'), items=Common.get_armature_list)
+    my_enum: bpy.props.EnumProperty(
+        name=t('Scene.merge_armature_into.label'),
+        description=t('Scene.merge_armature_into.desc'),
+        items=Common.wrap_dynamic_enum_items(Common.get_armature_list, bl_idname, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.merge_armature_into = self.my_enum
@@ -38,7 +42,11 @@ class SearchMenuOperator_merge_armature(bpy.types.Operator):
     bl_label = t('Scene.root_bone.label')
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name=t('Scene.merge_armature.label'), description= t('Scene.merge_armature.desc'), items=Common.get_armature_merge_list)
+    my_enum: bpy.props.EnumProperty(
+        name=t('Scene.merge_armature.label'),
+        description=t('Scene.merge_armature.desc'),
+        items=Common.wrap_dynamic_enum_items(Common.get_armature_merge_list, bl_idname, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.merge_armature = self.my_enum
@@ -57,7 +65,12 @@ class SearchMenuOperator_attach_to_bone(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name=t('Scene.attach_to_bone.label'), description= t('Scene.attach_to_bone.desc'), items=Common.get_bones_merge)
+    my_enum: bpy.props.EnumProperty(
+        name=t('Scene.attach_to_bone.label'),
+        description=
+        t('Scene.attach_to_bone.desc'),
+        items=Common.wrap_dynamic_enum_items(Common.get_bones_merge, bl_idname, sort=False, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.attach_to_bone = self.my_enum
@@ -76,7 +89,12 @@ class SearchMenuOperator_attach_mesh(bpy.types.Operator):
     bl_label = ""
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name=t('Scene.attach_mesh.label'), description= t('Scene.attach_mesh.desc'), items=Common.get_top_meshes)
+    my_enum: bpy.props.EnumProperty(
+        name=t('Scene.attach_mesh.label'),
+        description=
+        t('Scene.attach_mesh.desc'),
+        items=Common.wrap_dynamic_enum_items(Common.get_top_meshes, bl_idname, is_holder=False),
+    )
 
     def execute(self, context):
         context.scene.attach_mesh = self.my_enum

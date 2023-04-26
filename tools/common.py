@@ -2449,12 +2449,16 @@ def is_enum_non_empty(string):
     return _empty_enum_identifier != string
 
 
-def wrap_dynamic_enum_items(items_func, property_name, sort=True, in_place=True):
+def wrap_dynamic_enum_items(items_func, property_name, sort=True, in_place=True, is_holder=True):
     """Wrap an EnumProperty items function to automatically fix the property when it goes out of bounds of the items list.
     Automatically adds at least one choice if the items function returns an empty list.
     By default, sorts the items by the lowercase of the identifiers, this can be disabled by setting sort=False.
     Interns and caches all strings in the items to avoid a known Blender UI bug.
-    Only works for properties whose owner is a scene."""
+    Only works for properties whose owner is a scene.
+
+    By setting is_holder=False, fixing out of bounds values will be disabled and the property_name will be treated as
+    the unique path to cache items under, this is mainly used for search operators since they are not the owner of the
+    property."""
     def wrapped_items_func(self, context):
         nonlocal in_place
         items = items_func(self, context)
@@ -2464,11 +2468,14 @@ def wrap_dynamic_enum_items(items_func, property_name, sort=True, in_place=True)
                 # Sorting has already created a new list in this case, so the rest can be done in place
                 in_place = True
         items = _ensure_enum_choices_not_empty(items, in_place=in_place)
-        property_path = self.path_from_id(property_name)
+        property_path = self.path_from_id(property_name) if is_holder else property_name
         # If ensuring the list wasn't empty wasn't done in place, then a new list has been created and the rest can
         # be done in place
         items = _ensure_python_references(items, property_path)
-        return _fix_out_of_bounds_enum_choices(self, context.scene, items, property_name, property_path)
+        if is_holder:
+            return _fix_out_of_bounds_enum_choices(self, context.scene, items, property_name, property_path)
+        else:
+            return items
 
     return wrapped_items_func
 

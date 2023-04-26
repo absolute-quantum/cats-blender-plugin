@@ -6,6 +6,7 @@ from .main import ToolPanel
 from ..tools import rootbone as Rootbone
 from ..tools.register import register_wrap
 from ..tools.translations import t
+from ..tools.common import wrap_dynamic_enum_items
 
 
 @register_wrap
@@ -15,7 +16,14 @@ class SearchMenuOperator_root_bone(bpy.types.Operator):
     bl_label = ""#t('Scene.root_bone.label')
     bl_property = "my_enum"
 
-    my_enum: bpy.props.EnumProperty(name=t('Scene.root_bone.label'),description= t('Scene.root_bone.desc'), items=Rootbone.get_parent_root_bones)
+    my_enum: bpy.props.EnumProperty(
+        name=t('Scene.root_bone.label'),
+        description=t('Scene.root_bone.desc'),
+        # get_parent_root_bones caches results so the wrapper cannot run in-place
+        items=wrap_dynamic_enum_items(
+            Rootbone.get_parent_root_bones, bl_idname, sort=False, in_place=False, is_holder=False
+        ),
+    )
     
     def execute(self, context):
         context.scene.root_bone = self.my_enum
