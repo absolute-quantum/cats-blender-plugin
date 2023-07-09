@@ -1349,7 +1349,6 @@ def removeZeroVerts(obj, thres=0):
             obj.vertex_groups[g.group].remove([v.index])
 
 def delete_hierarchy(parent):
-    unselect_all()
     to_delete = []
 
     def get_child_names(obj):
