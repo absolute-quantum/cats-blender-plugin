@@ -42,6 +42,9 @@ def version_2_93_or_older():
     return bpy.app.version < (2, 90)
 
 
+version_3_6_or_older = bpy.app.version < (4, 0)
+
+
 def get_objects():
     return bpy.context.scene.objects if version_2_79_or_older() else bpy.context.view_layer.objects
 

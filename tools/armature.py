@@ -494,8 +494,12 @@ class FixArmature(bpy.types.Operator):
             bpy.ops.mesh.reveal()
 
         # Remove Bone Groups
-        for group in armature.pose.bone_groups:
-            armature.pose.bone_groups.remove(group)
+        # Replaced in 4.0 with Bone Collections (Armature.collections), which also subsumed Armature.layers. Bone colors
+        # are now defined per-bone, Bone.color.palette and PoseBone.color.palette
+        if Common.version_3_6_or_older:
+            bone_groups = armature.pose.bone_groups
+            for group in bone_groups:
+                bone_groups.remove(group)
 
         # Bone constraints should be deleted
         # if context.scene.remove_constraints:
