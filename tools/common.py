@@ -11,6 +11,7 @@ from mathutils import Vector
 from datetime import datetime
 from html.parser import HTMLParser
 from html.entities import name2codepoint
+from typing import Optional, Set, Dict, Any
 
 from . import common as Common
 from . import supporter as Supporter
@@ -2474,6 +2475,41 @@ def wrap_dynamic_enum_items(items_func, property_name, sort=True, in_place=True)
         return _fix_out_of_bounds_enum_choices(self, context.scene, items, property_name, property_path)
 
     return wrapped_items_func
+
+
+if bpy.app.version >= (3, 2):
+    # Passing in context_override as a positional-only argument is deprecated as of Blender 3.2, replaced with
+    # Context.temp_override
+    def op_override(operator, context_override: dict[str, Any], context: Optional[bpy.types.Context] = None,
+                    execution_context: Optional[str] = None,
+                    undo: Optional[bool] = None, **operator_args) -> set[str]:
+        """Call an operator with a context override"""
+        args = []
+        if execution_context is not None:
+            args.append(execution_context)
+        if undo is not None:
+            args.append(undo)
+
+        if context is None:
+            context = bpy.context
+        with context.temp_override(**context_override):
+            return operator(*args, **operator_args)
+else:
+    def op_override(operator, context_override: Dict[str, Any], context: Optional[bpy.types.Context] = None,
+                    execution_context: Optional[str] = None,
+                    undo: Optional[bool] = None, **operator_args) -> Set[str]:
+        """Call an operator with a context override"""
+        if context is not None:
+            context_base = context.copy()
+            context_base.update(context_override)
+            context_override = context_base
+        args = [context_override]
+        if execution_context is not None:
+            args.append(execution_context)
+        if undo is not None:
+            args.append(undo)
+
+        return operator(*args, **operator_args)
 
 
 """ === THIS CODE COULD BE USEFUL === """

@@ -388,7 +388,7 @@ class PoseToRest(bpy.types.Operator):
         # active object e.g., the user has multiple armatures opened in pose mode, but a different armature is currently
         # active. We can use an operator override to tell the operator to treat armature_obj as if it's the active
         # object even if it's not, skipping the need to actually set armature_obj as the active object.
-        bpy.ops.pose.armature_apply({'active_object': armature_obj})
+        Common.op_override(bpy.ops.pose.armature_apply, {'active_object': armature_obj})
 
         # Stop pose mode after operation
         bpy.ops.cats_manual.stop_pose_mode()
@@ -411,14 +411,14 @@ class PoseToRest(bpy.types.Operator):
         # first and potentially having unexpected results.
         if bpy.app.version >= (2, 90, 0):
             # modifier_move_to_index was added in Blender 2.90
-            bpy.ops.object.modifier_move_to_index(context_override, modifier=mod_name, index=0)
+            Common.op_override(bpy.ops.object.modifier_move_to_index, context_override, modifier=mod_name, index=0)
         else:
             # The newly created modifier will be at the bottom of the list
             armature_mod_index = len(mesh_obj.modifiers) - 1
             # Move the modifier up until it's at the top of the list
             for _ in range(armature_mod_index):
-                bpy.ops.object.modifier_move_up(context_override, modifier=mod_name)
-        bpy.ops.object.modifier_apply(context_override, modifier=mod_name)
+                Common.op_override(bpy.ops.object.modifier_move_up, context_override, modifier=mod_name)
+        Common.op_override(bpy.ops.object.modifier_apply, context_override, modifier=mod_name)
 
     @staticmethod
     def apply_armature_to_mesh_with_shape_keys(armature_obj, mesh_obj, scene):
