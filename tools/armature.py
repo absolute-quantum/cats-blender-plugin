@@ -9,6 +9,7 @@ from . import common as Common
 from . import translate as Translate
 from . import armature_bones as Bones
 from .common import version_2_79_or_older
+from .common import version_3_6_or_older
 from .register import register_wrap
 from .translations import t
 
@@ -493,9 +494,13 @@ class FixArmature(bpy.types.Operator):
         if bpy.ops.mesh.reveal.poll():
             bpy.ops.mesh.reveal()
 
-        # Remove Bone Groups
-        for group in armature.pose.bone_groups:
-            armature.pose.bone_groups.remove(group)
+        # Remove Bone Groups or Collections
+        if version_3_6_or_older():
+            for group in armature.pose.bone_groups:
+                armature.pose.bone_groups.remove(group)
+        else:
+            for collection in armature.data.collections:
+                armature.data.collections.remove(collection)
 
         # Bone constraints should be deleted
         # if context.scene.remove_constraints:
@@ -512,7 +517,8 @@ class FixArmature(bpy.types.Operator):
                     steps += 1
                 else:
                     steps -= 1
-            bone.layers[0] = True
+            if version_3_6_or_older():
+                bone.layers[0] = True
 
         # Start loading bar
         current_step = 0
