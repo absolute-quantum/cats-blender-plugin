@@ -91,6 +91,9 @@ def register_dynamic_buttons():
         name = supporter.get('displayname')
         idname = 'support.' + ''.join(filter(str.isalpha, name.lower()))
 
+        # Fix special characters
+        idname = idname.replace('ä', 'ae').replace("ö", 'oe').replace('ü', 'ue').replace('ß', 'ss')
+
         description = t('register_dynamic_buttons.desc', name=name)
         if supporter.get('description'):
             # description = name + ' says:\n\n' + supporter.get('description') + '\n'
