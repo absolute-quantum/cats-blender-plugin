@@ -65,7 +65,7 @@ ToolPanel.category,CATS,,
 ArmaturePanel.label,Model,モデル,모델
 ArmaturePanel.warn.newBlender1,Potentially unsupported Blender version detected!
 ArmaturePanel.warn.newBlender2,Some features might not work!
-ArmaturePanel.warn.newBlender3,CATS currently supports up to Blender 3.5.
+ArmaturePanel.warn.newBlender3,CATS currently supports up to Blender 3.6.
 ArmaturePanel.warn.oldBlender1,Old Blender version detected!,古いブレンダーバージョンが検出されました!,이전 블렌더 버전이 발견되었습니다!
 ArmaturePanel.warn.oldBlender2,Some features might not work!,一部の機能は動作しない可能性があります!,일부 기능이 작동하지 않을 수 있습니다!
 ArmaturePanel.warn.oldBlender3,Please update to Blender 2.79!,ブレンダー2.79以上にアップデートしてください!,블렌더 2.79 버전으로 업데이트하세요!
