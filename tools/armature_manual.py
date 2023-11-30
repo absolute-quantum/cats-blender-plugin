@@ -779,6 +779,9 @@ class MergeWeights(bpy.types.Operator):
 
         Common.switch('EDIT')
 
+        armature.data.use_mirror_x = False #<- fixes merge bones issues - @989onan
+        armature.pose.use_mirror_x = False #<- fixes merge bones issues - @989onan
+
         # Find which bones to work on and put their name and their parent in a list
         parenting_list = {}
         for bone in context.selected_editable_bones:
@@ -825,6 +828,9 @@ class MergeWeightsToActive(bpy.types.Operator):
         armature = bpy.context.object
 
         Common.switch('EDIT')
+
+        armature.data.use_mirror_x = False #<- fixes merge bones issues - @989onan
+        armature.pose.use_mirror_x = False #<- fixes merge bones issues - @989onan
 
         # Find which bones to work on and put their name and their parent in a list and parent the bones to the active one
         parenting_list = {}

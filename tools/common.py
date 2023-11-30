@@ -271,6 +271,8 @@ def set_default_stage():
     armature = get_armature()
     if armature:
         set_active(armature)
+        armature.data.use_mirror_x = False #<- fixes merge bones issues - @989onan
+        armature.pose.use_mirror_x = False #<- fixes merge bones issues - @989onan
         if version_2_79_or_older():
             armature.layers[0] = True
 
