@@ -542,6 +542,14 @@ TestLowerlid.label,Test,テスト,테스트
 TestLowerlid.desc,This lets you see how lowerlids will look in-game.,,게임 중에 아래 눈꺼풀이 어떻게 보이는 지 확인할 수 있습니다.
 ResetBlinkTest.label,Reset Shapes,図形をリセットする,쉐이프 초기화
 ResetBlinkTest.desc,This resets the blink testing.,,눈깜빡임 테스트를 초기화한다.
+Av3EyeTrackingPanel.info1,Eye tracking is set up in Unity,,
+Av3EyeTrackingPanel.info2,Rotate eyes up to simplify setup,,
+Av3EyeTrackingRotateEyeBones.label,Rotate eye bones,,
+Av3EyeTrackingRotateEyeBones.desc,Rotate eye bones to point straight up with zero roll. This simplifies setting up VRChat Avatars 3.0 eye tracking in Unity,,
+Av3EyeTrackingRotateEyeBones.poll.noBones,No bones,,
+Av3EyeTrackingRotateEyeBones.poll.notInCurrentEditMode,"{armature} is not in the current Edit mode, either exit the current Edit mode or open {armature} in Edit mode",,
+Av3EyeTrackingRotateEyeBones.info.noChanges,"Eye bones are already rotated for VRChat, no changes were made.",,
+Av3EyeTrackingRotateEyeBones.success,Eye bones rotated.,,
 ImportAnyModel.label,Import Any Model,任意のモデルをインポート,아무 모델 불러오기
 ImportAnyModel.desc2.79,"Import a model of any supported type.
 

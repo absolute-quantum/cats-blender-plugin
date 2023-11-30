@@ -8,7 +8,17 @@ __bl_ordered_classes = []
 __make_annotations = (not bpy.app.version < (2, 79, 9))
 
 
+def _dummy_operator_poll_message_set(message, *args):
+    """Operator.poll_message_set was added in Blender 3.0. We add this function to Operator subclasses when it's not
+    present so that code that wants to use poll_message_set won't cause errors on older Blender versions"""
+    pass
+
+
 def register_wrap(cls):
+    if issubclass(cls, bpy.types.Operator) and not hasattr(cls, "poll_message_set"):
+        # poll_message_set was added in Blender 3.0. To be able to use it on 3.0+, without causing errors on older
+        # Blender versions, we need to add a dummy function under the same attribute name to the class.
+        cls.poll_message_set = _dummy_operator_poll_message_set
     if hasattr(cls, 'bl_rna'):
         __bl_classes.append(cls)
     cls = make_annotations(cls)
