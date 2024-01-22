@@ -298,7 +298,7 @@ class PoseToRest(bpy.types.Operator):
             scale_y = bone.scale[1]
             scale_z = bone.scale[2]
 
-            if armature.data.bones.get(bone.name).use_inherit_scale:
+            if armature.data.bones.get(bone.name).inherit_scale:
                 def check_parent(child, scale_x_tmp, scale_y_tmp, scale_z_tmp):
                     if child.parent:
                         parent = child.parent
@@ -306,7 +306,7 @@ class PoseToRest(bpy.types.Operator):
                         scale_y_tmp *= parent.scale[1]
                         scale_z_tmp *= parent.scale[2]
 
-                        if armature.data.bones.get(parent.name).use_inherit_scale:
+                        if armature.data.bones.get(parent.name).inherit_scale:
                             scale_x_tmp, scale_y_tmp, scale_z_tmp = check_parent(parent, scale_x_tmp, scale_y_tmp,
                                                                                  scale_z_tmp)
 
