@@ -379,12 +379,14 @@ def merge_armatures(base_armature_name, merge_armature_name, mesh_only, mesh_nam
                 vg_base = mesh_merged.vertex_groups.get(bone_base)
                 vg_merge = mesh_merged.vertex_groups.get(bone_merge)
 
-                if not vg_base:
+                if vg_merge:
+                    if not vg_base:
+                        vg_merge.name = bone_base
+                    else:
+                        Common.mix_weights(mesh_merged, bone_merge, bone_base)
+                elif not vg_base:
                     mesh_merged.vertex_groups.new(name=bone_base)
-                if not vg_merge:
-                    mesh_merged.vertex_groups.new(name=bone_merge)
 
-                Common.mix_weights(mesh_merged, bone_merge, bone_base)
             to_delete.append(bone_merge)
 
         Common.set_active(armature)
