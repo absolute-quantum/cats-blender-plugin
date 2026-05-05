@@ -316,7 +316,13 @@ def register():
     else:
         pass  # From 2.83 on this is no longer needed
     tools.common.get_user_preferences().filepaths.use_file_compression = True
-    bpy.context.window_manager.addon_support = {'OFFICIAL', 'COMMUNITY', 'TESTING'}
+    
+    
+    # Updated to avoid future issues with this api changing and causing it not to work
+    try:
+        bpy.context.window_manager.addon_support = {'OFFICIAL', 'COMMUNITY'}
+    except Exception:
+        pass
 
     # Add shapekey button to shapekey menu
     if hasattr(bpy.types, 'MESH_MT_shape_key_specials'):  # pre 2.80
