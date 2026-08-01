@@ -405,7 +405,8 @@ class _MorphSlider:
             edit_bones = data.edit_bones
             def __get_bone(name, layer, parent):
                 b = edit_bones.get(name, None) or edit_bones.new(name=name)
-                b.layers = [x == layer for x in range(len(b.layers))]
+                if hasattr(b, 'layers'):
+                    b.layers = [x == layer for x in range(len(b.layers))]
                 b.head = (0, 0, 0)
                 b.tail = (0, 0, 1)
                 b.use_deform = False
@@ -548,4 +549,3 @@ class _MorphSlider:
                 __config_material_morph(mat_edge, morph_list)
 
         morph_key_blocks[0].mute = False
-

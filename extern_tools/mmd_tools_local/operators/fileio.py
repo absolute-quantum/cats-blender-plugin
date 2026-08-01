@@ -176,7 +176,7 @@ class ImportPmx(Operator, ImportHelper):
             logger.addHandler(handler)
         try:
             importer_cls = pmx_importer.PMXImporter
-            if re.search('\.pmd$', self.filepath, flags=re.I):
+            if re.search('\\.pmd$', self.filepath, flags=re.I):
                 importer_cls = pmd_importer.PMDImporter
 
             importer_cls().execute(

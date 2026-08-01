@@ -75,26 +75,43 @@ class _NodeGroupUtils(_NodeTreeUtils):
                     s.hide = not s.is_linked
 
     def new_input_socket(self, io_name, socket, default_val=None, min_max=None):
-        self.__new_io(self.shader.inputs, self.node_input.outputs, io_name, socket, default_val, min_max)
+        self.__new_io('INPUT', self.node_input.outputs, io_name, socket, default_val, min_max)
 
     def new_output_socket(self, io_name, socket, default_val=None, min_max=None):
-        self.__new_io(self.shader.outputs, self.node_output.inputs, io_name, socket, default_val, min_max)
+        self.__new_io('OUTPUT', self.node_output.inputs, io_name, socket, default_val, min_max)
 
-    def __new_io(self, shader_io, io_sockets, io_name, socket, default_val=None, min_max=None):
+    def __new_io(self, in_out, io_sockets, io_name, socket, default_val=None, min_max=None):
+        if hasattr(self.shader, 'interface'):
+            shader_socket = next((
+                item for item in self.shader.interface.items_tree
+                if getattr(item, 'item_type', None) == 'SOCKET'
+                and item.in_out == in_out and item.name == io_name
+            ), None)
+            if shader_socket is None:
+                shader_socket = self.shader.interface.new_socket(
+                    name=io_name,
+                    in_out=in_out,
+                    socket_type=socket.bl_idname,
+                )
+        else:
+            shader_io = self.shader.inputs if in_out == 'INPUT' else self.shader.outputs
+            shader_socket = shader_io.get(io_name)
+            if shader_socket is None:
+                shader_socket = shader_io.new(type=socket.bl_idname, name=io_name)
+
         if io_name not in io_sockets:
-            shader_io.new(type=socket.bl_idname, name=io_name)
             if not min_max:
                 idname = socket.bl_idname
                 if idname.endswith('Factor') or io_name.endswith('Alpha'):
-                    shader_io[io_name].min_value, shader_io[io_name].max_value = 0, 1
+                    shader_socket.min_value, shader_socket.max_value = 0, 1
                 elif idname.endswith('Float') or idname.endswith('Vector'):
-                    shader_io[io_name].min_value, shader_io[io_name].max_value = -10, 10
+                    shader_socket.min_value, shader_socket.max_value = -10, 10
 
         self.links.new(io_sockets[io_name], socket)
         if default_val is not None:
-            shader_io[io_name].default_value = default_val
+            shader_socket.default_value = default_val
         if min_max is not None:
-            shader_io[io_name].min_value, shader_io[io_name].max_value = min_max
+            shader_socket.min_value, shader_socket.max_value = min_max
 
 
 class _MaterialMorph:
@@ -354,4 +371,3 @@ class _MaterialMorph:
 
         ng.hide_nodes()
         return ng.shader
-

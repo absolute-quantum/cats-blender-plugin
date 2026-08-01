@@ -9,6 +9,7 @@ import pathlib
 import zipfile
 import addon_utils
 from threading import Thread
+from queue import Empty, SimpleQueue
 from collections import OrderedDict
 from bpy.app.handlers import persistent
 from .tools.translations import t
@@ -32,6 +33,7 @@ is_ignored_version = False
 confirm_update_to = ''
 
 show_error = ''
+_update_result_queue = SimpleQueue()
 
 main_dir = os.path.dirname(__file__)
 downloads_dir = os.path.join(main_dir, "downloads")
@@ -371,7 +373,10 @@ def check_for_update_background(check_on_startup=False):
 
     is_checking_for_update = True
 
+    if not bpy.app.timers.is_registered(_process_update_result):
+        bpy.app.timers.register(_process_update_result, first_interval=0.1)
     thread = Thread(target=check_for_update, args=[])
+    thread.daemon = True
     thread.start()
 
 
@@ -380,7 +385,7 @@ def check_for_update():
 
     # Get all releases from Github
     if not get_github_releases('Darkblader24') and not get_github_releases('GiveMeAllYourCats'):
-        finish_update_checking(error=t('check_for_update.cantCheck'))
+        _update_result_queue.put(t('check_for_update.cantCheck'))
         return
 
     # Check if an update is needed
@@ -388,16 +393,24 @@ def check_for_update():
     update_needed = check_for_update_available()
     is_ignored_version = check_ignored_version()
 
-    # Update needed, show the notification popup if it wasn't checked through the UI
+    _update_result_queue.put('')
+
+
+def _process_update_result():
+    """Apply network-thread results through Blender's main-thread timer."""
+    try:
+        error = _update_result_queue.get_nowait()
+    except Empty:
+        return 0.1 if is_checking_for_update else None
+
     if update_needed:
         print('Update found!')
         if not used_updater_panel and not is_ignored_version:
             prepare_to_show_update_notification()
     else:
         print('No update found.')
-
-    # Finish update checking, update the UI
-    finish_update_checking()
+    finish_update_checking(error=error)
+    return None
 
 
 def get_github_releases(repo):
@@ -499,25 +512,19 @@ def get_update_post():
 
 
 def prepare_to_show_update_notification():
-    # This is necessary to show a popup directly after startup
-    # You will get a nasty error otherwise
-    # This will add the function to the scene_update_post and it will be executed every frame. that's why it needs to be removed again asap
-    # print('PREPARE TO SHOW UI')
-    if show_update_notification not in get_update_post():
-        get_update_post().append(show_update_notification)
+    if not bpy.app.timers.is_registered(show_update_notification):
+        bpy.app.timers.register(show_update_notification, first_interval=0.1)
 
 
-@persistent
-def show_update_notification(scene):  # One argument in necessary for some reason
-    # print('SHOWING UI NOW!!!!')
-
-    # # Immediately remove this from handlers again
-    if show_update_notification in get_update_post():
-        get_update_post().remove(show_update_notification)
-
-    # Show notification popup
+def show_update_notification():
+    if not bpy.context.window_manager.windows:
+        return 0.5
     atr = UpdateNotificationPopup.bl_idname.split(".")
-    getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
+    try:
+        getattr(getattr(bpy.ops, atr[0]), atr[1])('INVOKE_DEFAULT')
+    except RuntimeError:
+        return 0.5
+    return None
 
 
 def update_now(version=None, latest=False, dev=False):
@@ -970,6 +977,10 @@ def register(bl_info, dev_branch, version_str):
 
 
 def unregister():
+    for timer in (_process_update_result, show_update_notification):
+        if bpy.app.timers.is_registered(timer):
+            bpy.app.timers.unregister(timer)
+
     # Unregister all Updater classes
     for cls in reversed(to_register):
         try:

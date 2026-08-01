@@ -27,10 +27,8 @@ import os
 import bpy
 import json
 import copy
-import time
 import pathlib
 import collections
-from threading import Thread
 from datetime import datetime, timezone
 from collections import OrderedDict
 
@@ -207,36 +205,38 @@ def reset_settings(full_reset=False, to_reset_settings=None):
 def start_apply_settings_timer():
     global lock_settings
     lock_settings = True
-    thread = Thread(target=apply_settings, args=[])
-    thread.start()
+    if not bpy.app.timers.is_registered(apply_settings):
+        bpy.app.timers.register(apply_settings, first_interval=0.0)
+
+
+def stop_apply_settings_timer():
+    global lock_settings
+    if bpy.app.timers.is_registered(apply_settings):
+        bpy.app.timers.unregister(apply_settings)
+    lock_settings = False
 
 
 def apply_settings():
-    applied = False
-    while not applied:
-        if hasattr(bpy.context, 'scene'):
-            try:
-                settings_to_reset = []
-                for setting in settings_default.keys():
-                    try:
-                        setattr(bpy.context.scene, setting, settings_data.get(setting))
-                    except TypeError:
-                        settings_to_reset.append(setting)
-                if settings_to_reset:
-                    reset_settings(to_reset_settings=settings_to_reset)
-                    print("RESET SETTING ON TIMER:", setting)
-            except AttributeError:
-                time.sleep(0.3)
-                continue
+    # Blender's Python API may only be used from the main thread. Returning a
+    # delay asks bpy.app.timers to retry on the main thread once a scene exists.
+    scene = getattr(bpy.context, 'scene', None)
+    if scene is None:
+        return 0.3
 
-            applied = True
-            # print('Refreshed Settings!')
-        else:
-            time.sleep(0.3)
+    settings_to_reset = []
+    for setting in settings_default.keys():
+        try:
+            setattr(scene, setting, settings_data.get(setting))
+        except (AttributeError, TypeError):
+            settings_to_reset.append(setting)
+    if settings_to_reset:
+        reset_settings(to_reset_settings=settings_to_reset)
+        print("RESET SETTINGS ON TIMER:", ", ".join(settings_to_reset))
 
     # Unlock settings
     global lock_settings
     lock_settings = False
+    return None
 
 
 def settings_changed():
@@ -247,11 +247,10 @@ def settings_changed():
 
 
 def update_settings(self, context):
-    # Use False and None for this variable, because Blender would complain otherwise
-    # None means that the settings did change
+    called_as_property_update = self is not None or context is not None
     settings_changed_tmp = False
     if lock_settings:
-        return settings_changed_tmp
+        return None if called_as_property_update else settings_changed_tmp
 
     for setting in settings_default.keys():
         old = settings_data[setting]
@@ -263,7 +262,9 @@ def update_settings(self, context):
     if settings_changed_tmp:
         save_settings()
 
-    return settings_changed_tmp
+    # Blender property update callbacks must return None. Internal callers use
+    # the boolean result to decide whether translations need refreshing.
+    return None if called_as_property_update else settings_changed_tmp
 
 
 def set_last_supporter_update(last_supporter_update):

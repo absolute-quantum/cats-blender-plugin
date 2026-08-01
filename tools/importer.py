@@ -220,13 +220,17 @@ class ImportAnyModel(bpy.types.Operator, bpy_extras.io_utils.ImportHelper):
 
         # DAE
         elif file_ending == 'dae':
+            collada_import = getattr(bpy.ops.wm, 'collada_import', None)
+            if collada_import is None:
+                print('COLLADA import is unavailable. Install/enable the official Blender COLLADA extension.')
+                return
             try:
-                bpy.ops.wm.collada_import('EXEC_DEFAULT',
-                                          filepath=file_path,
-                                          fix_orientation=True,
-                                          auto_connect=True)
+                collada_import('EXEC_DEFAULT',
+                               filepath=file_path,
+                               fix_orientation=True,
+                               auto_connect=True)
             except (TypeError, ValueError):
-                bpy.ops.wm.collada_import('INVOKE_DEFAULT')
+                collada_import('INVOKE_DEFAULT')
 
         # ZIP
         elif file_ending == 'zip':

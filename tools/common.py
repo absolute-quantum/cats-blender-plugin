@@ -62,6 +62,42 @@ def version_2_79_or_older():
     return bpy.app.version < (2, 80)
 
 
+def set_bsdf_input(node, value, *names):
+    """Set a Principled BSDF input by trying version-dependent socket names.
+
+    Blender 4.0+ renamed several sockets (e.g. Specular -> Specular IOR Level,
+    Clearcoat Roughness -> Coat Roughness) and changed some from float to color.
+    """
+    for name in names:
+        sock = node.inputs.get(name)
+        if sock is None:
+            continue
+        try:
+            current = sock.default_value
+            # Color/vector sockets need a sequence; expand a scalar when needed
+            if hasattr(current, '__len__') and not isinstance(value, (list, tuple)):
+                length = len(current)
+                if length == 4:
+                    sock.default_value = (value, value, value, 1.0)
+                else:
+                    sock.default_value = tuple([value] * length)
+            else:
+                sock.default_value = value
+            return True
+        except (TypeError, ValueError, AttributeError):
+            continue
+    return False
+
+
+def configure_cats_principled(node):
+    """Apply CATS default Principled BSDF settings (low specular, flat look)."""
+    set_bsdf_input(node, 0, 'Specular', 'Specular IOR Level')
+    set_bsdf_input(node, 0, 'Roughness')
+    set_bsdf_input(node, 0, 'Sheen Tint')
+    set_bsdf_input(node, 0, 'Clearcoat Roughness', 'Coat Roughness')
+    set_bsdf_input(node, 0, 'IOR')
+
+
 def get_objects():
     return bpy.context.scene.objects if version_2_79_or_older() else bpy.context.view_layer.objects
 
@@ -1202,9 +1238,10 @@ def save_shapekey_order(mesh_name):
 
     # Get current custom data
     custom_data = armature.get('CUSTOM')
-    if not custom_data:
-        # print('NEW DATA!')
-        custom_data = {}
+    if custom_data is None:
+        # Store the group first, then keep Blender's live IDPropertyGroup proxy.
+        armature['CUSTOM'] = {}
+        custom_data = armature['CUSTOM']
 
     # Create shapekey order
     shape_key_order = []
@@ -1213,13 +1250,14 @@ def save_shapekey_order(mesh_name):
             shape_key_order.append(shapekey.name)
 
     # Check if there is already a shapekey order
-    if custom_data.get('shape_key_order'):
+    existing_shape_key_order = custom_data.get('shape_key_order')
+    if existing_shape_key_order:
         # print('SHAPEKEY ORDER ALREADY EXISTS!')
         # print(custom_data['shape_key_order'])
-        old_len = len(custom_data.get('shape_key_order'))
+        old_len = len(existing_shape_key_order)
 
-        if type(shape_key_order) is str:
-            old_len = len(shape_key_order.split(',,,'))
+        if isinstance(existing_shape_key_order, str):
+            old_len = len(existing_shape_key_order.split(',,,'))
 
         if len(shape_key_order) <= old_len:
             # print('ABORT')
@@ -1229,33 +1267,30 @@ def save_shapekey_order(mesh_name):
     # print('SAVE NEW ORDER')
     custom_data['shape_key_order'] = shape_key_order
 
-    # Save custom data in armature
-    armature['CUSTOM'] = custom_data
-
     # print(armature.get('CUSTOM').get('shape_key_order'))
 
 
 def repair_shapekey_order(mesh_name):
     # Get current custom data
     armature = get_armature()
+    if not armature:
+        return
+
     custom_data = armature.get('CUSTOM')
-    if not custom_data:
-        custom_data = {}
+    if custom_data is None:
+        # Store the group first, then keep Blender's live IDPropertyGroup proxy.
+        armature['CUSTOM'] = {}
+        custom_data = armature['CUSTOM']
 
     # Extract shape keys from string
     shape_key_order = custom_data.get('shape_key_order')
-    if not shape_key_order:
-        custom_data['shape_key_order'] = []
-        armature['CUSTOM'] = custom_data
+    if isinstance(shape_key_order, str):
+        shape_key_order = shape_key_order.split(',,,')
+    elif not shape_key_order:
+        shape_key_order = []
 
-    if type(shape_key_order) is str:
-        shape_key_order_temp = []
-        for shape_name in shape_key_order.split(',,,'):
-            shape_key_order_temp.append(shape_name)
-        custom_data['shape_key_order'] = shape_key_order_temp
-        armature['CUSTOM'] = custom_data
-
-    sort_shape_keys(mesh_name, custom_data['shape_key_order'])
+    custom_data['shape_key_order'] = shape_key_order
+    sort_shape_keys(mesh_name, shape_key_order)
 
 
 def update_shapekey_orders():
@@ -1270,11 +1305,8 @@ def update_shapekey_orders():
         if not order:
             continue
 
-        if type(order) is str:
-            shape_key_order_temp = order.split(',,,')
-            order = []
-            for shape_name in shape_key_order_temp:
-                order.append(shape_name)
+        if isinstance(order, str):
+            order = order.split(',,,')
 
         # Get shape keys and translate them
         for shape_name in order:
@@ -1282,7 +1314,6 @@ def update_shapekey_orders():
 
         # print(armature.name, shape_key_order_translated)
         custom_data['shape_key_order'] = shape_key_order_translated
-        armature['CUSTOM'] = custom_data
 
 
 def sort_shape_keys(mesh_name, shape_key_order=None):
@@ -1885,11 +1916,7 @@ def unify_materials():
                         node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
                         node_prinipled.location = 300, -220
                         node_prinipled.label = 'Cats Emission'
-                        node_prinipled.inputs['Specular'].default_value = 0
-                        node_prinipled.inputs['Roughness'].default_value = 0
-                        node_prinipled.inputs['Sheen Tint'].default_value = 0
-                        node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
-                        node_prinipled.inputs['IOR'].default_value = 0
+                        configure_cats_principled(node_prinipled)
 
                         # Create Transparency BSDF node
                         node_transparent = nodes.new(type='ShaderNodeBsdfTransparent')
@@ -1973,11 +2000,7 @@ def add_principled_shader(mesh):
             node_prinipled = nodes.new(type='ShaderNodeBsdfPrincipled')
             node_prinipled.label = 'Cats Export Shader'
             node_prinipled.location = principled_shader_pos
-            node_prinipled.inputs['Specular'].default_value = 0
-            node_prinipled.inputs['Roughness'].default_value = 0
-            node_prinipled.inputs['Sheen Tint'].default_value = 0
-            node_prinipled.inputs['Clearcoat Roughness'].default_value = 0
-            node_prinipled.inputs['IOR'].default_value = 0
+            configure_cats_principled(node_prinipled)
 
             # Create Output node for correct image exports
             node_output = nodes.new(type='ShaderNodeOutputMaterial')

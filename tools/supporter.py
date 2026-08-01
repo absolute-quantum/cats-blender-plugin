@@ -37,6 +37,7 @@ import urllib.error
 import urllib.request
 
 from threading import Thread
+from queue import Empty, SimpleQueue
 from datetime import datetime, timezone
 from bpy.utils import previews
 
@@ -54,6 +55,7 @@ reloading = False
 auto_updated = False
 button_list = []
 last_update = None
+_supporter_result_queue = SimpleQueue()
 
 main_dir = pathlib.Path(os.path.dirname(__file__)).parent.resolve()
 resources_dir = os.path.join(str(main_dir), "resources")
@@ -175,7 +177,7 @@ def download_file():
     except urllib.error.URLError:
         print("FILE COULD NOT BE DOWNLOADED")
         shutil.rmtree(downloads_dir)
-        finish_reloading()
+        _supporter_result_queue.put(False)
         return
     # print('DOWNLOAD FINISHED')
 
@@ -183,7 +185,7 @@ def download_file():
     if not os.path.isfile(supporter_zip_file):
         print("ZIP NOT FOUND!")
         shutil.rmtree(downloads_dir)
-        finish_reloading()
+        _supporter_result_queue.put(False)
         return
 
     # Extract the downloaded zip
@@ -196,7 +198,7 @@ def download_file():
     if not os.path.isdir(extracted_zip_dir):
         print("EXTRACTED ZIP FOLDER NOT FOUND!")
         shutil.rmtree(downloads_dir)
-        finish_reloading()
+        _supporter_result_queue.put(False)
         return
 
     # delete existing supporter list and icon folder
@@ -217,8 +219,9 @@ def download_file():
     # Save update time in settings
     Settings.set_last_supporter_update(last_update)
 
-    # Reload supporters
-    reload_supporters()
+    # Preview collections and dynamic Blender classes must be reloaded on the
+    # main thread.
+    _supporter_result_queue.put(True)
 
 
 def readJson():
@@ -369,8 +372,18 @@ def check_for_update_background(force_update=False):
 
     reloading = True
 
+    if not bpy.app.timers.is_registered(_process_supporter_result):
+        bpy.app.timers.register(_process_supporter_result, first_interval=0.1)
     thread = Thread(target=check_for_update, args=[force_update])
+    thread.daemon = True
     thread.start()
+
+
+def stop_update_timer():
+    global reloading
+    if bpy.app.timers.is_registered(_process_supporter_result):
+        bpy.app.timers.unregister(_process_supporter_result)
+    reloading = False
 
 
 def check_for_update(force_update):
@@ -381,7 +394,21 @@ def check_for_update(force_update):
         print('Updating supporter list..')
         download_file()
     else:
+        _supporter_result_queue.put(False)
+
+
+def _process_supporter_result():
+    """Finish supporter updates through Blender's main-thread timer."""
+    try:
+        should_reload = _supporter_result_queue.get_nowait()
+    except Empty:
+        return 0.1 if reloading else None
+
+    if should_reload:
+        reload_supporters()
+    else:
         finish_reloading()
+    return None
 
 
 def update_needed():

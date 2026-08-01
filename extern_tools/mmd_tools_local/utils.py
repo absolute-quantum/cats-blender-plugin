@@ -87,13 +87,19 @@ def mergeVertexGroup(meshObj, src_vertex_group_name, dest_vertex_group_name):
             pass
 
 def __getCustomNormalKeeper(mesh):
-    if hasattr(mesh, 'has_custom_normals') and mesh.use_auto_smooth:
+    has_custom_normals = getattr(mesh, 'has_custom_normals', False)
+    auto_smooth_enabled = getattr(mesh, 'use_auto_smooth', True)
+    if has_custom_normals and auto_smooth_enabled:
         import bpy
         class _CustomNormalKeeper:
             def __init__(self, mesh):
-                mesh.calc_normals_split()
+                if hasattr(mesh, 'calc_normals_split'):
+                    mesh.calc_normals_split()
+                else:
+                    mesh.calc_loop_triangles()
                 self.__normals = tuple(zip((l.normal.copy() for l in mesh.loops), (p.material_index for p in mesh.polygons for v in p.vertices)))
-                mesh.free_normals_split()
+                if hasattr(mesh, 'free_normals_split'):
+                    mesh.free_normals_split()
                 self.__material_map = {}
                 materials = mesh.materials
                 for i, m in enumerate(materials):
@@ -291,4 +297,3 @@ class ItemMoveOp:
         if index_new != index:
             items.move(index, index_new)
         return index_new
-

@@ -56,7 +56,8 @@ class MMDModelObjectDisplayPanel(_PanelBase, Panel):
             base = sum(b.bone.length for b in ik_map.keys())/len(ik_map)*0.8
             groups = {}
             for ik, (b, cnt, err) in ik_map.items():
-                if any(all(x) for x in zip(ik.bone.layers, armature.data.layers)):
+                if (not hasattr(ik.bone, 'layers')
+                        or any(all(x) for x in zip(ik.bone.layers, armature.data.layers))):
                     px, py, pz = -ik.bone.head_local/base
                     bx, by, bz = -b.head_local/base*0.15
                     groups.setdefault((int(pz), int(bz), int(px**2), -cnt), set()).add(((px, -py, bx), ik)) # (px, pz, -py, bx, bz, -by)

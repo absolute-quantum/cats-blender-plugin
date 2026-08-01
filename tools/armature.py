@@ -118,12 +118,12 @@ class FixArmature(bpy.types.Operator):
         # Count objects for loading bar
         steps = 0
         for key, value in temp_rename_bones.items():
-            if '\Left' in key or '\L' in key:
+            if '\\Left' in key or '\\L' in key:
                 steps += 2 * len(value)
             else:
                 steps += len(value)
         for key, value in temp_reweight_bones.items():
-            if '\Left' in key or '\L' in key:
+            if '\\Left' in key or '\\L' in key:
                 steps += 2 * len(value)
             else:
                 steps += len(value)
@@ -290,7 +290,7 @@ class FixArmature(bpy.types.Operator):
                     for i in get_current_layers:
                         if child2.layers[i]:
                             in_layer = True
-                    if not in_layer:
+                    if not in_layer and hasattr(bpy.context.scene, 'layers'):
                         Common.delete(child2)
 
                 if child.type != 'MESH':
@@ -464,9 +464,12 @@ class FixArmature(bpy.types.Operator):
         if bpy.ops.mesh.reveal.poll():
             bpy.ops.mesh.reveal()
 
-        # Remove Bone Groups
-        for group in armature.pose.bone_groups:
-            armature.pose.bone_groups.remove(group)
+        # Bone groups were removed in Blender 4.0. On older versions clear
+        # them as before; bone collections in newer Blender versions are not
+        # pose groups and must be preserved.
+        if hasattr(armature.pose, 'bone_groups'):
+            for group in list(armature.pose.bone_groups):
+                armature.pose.bone_groups.remove(group)
 
         # Bone constraints should be deleted
         # if context.scene.remove_constraints:
@@ -483,7 +486,9 @@ class FixArmature(bpy.types.Operator):
                     steps += 1
                 else:
                     steps -= 1
-            bone.layers[0] = True
+            # Bone layers were replaced by bone collections in Blender 4.0.
+            if hasattr(bone, 'layers'):
+                bone.layers[0] = True
 
         # Start loading bar
         current_step = 0
@@ -599,7 +604,7 @@ class FixArmature(bpy.types.Operator):
         # Add conflicting bone names to new list
         conflicting_bones = []
         for names in Bones.bone_list_conflicting_names:
-            if '\Left' not in names[1] and '\L' not in names[1]:
+            if '\\Left' not in names[1] and '\\L' not in names[1]:
                 conflicting_bones.append(names)
                 continue
 
@@ -607,19 +612,19 @@ class FixArmature(bpy.types.Operator):
             name1 = ''
             name2 = ''
             for name0 in names[0]:
-                names0.append(name0.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'))
-            if '\Left' in names[1] or '\L' in names[1]:
-                name1 = names[1].replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l')
-            if '\Left' in names[2] or '\L' in names[2]:
-                name2 = names[2].replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l')
+                names0.append(name0.replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l'))
+            if '\\Left' in names[1] or '\\L' in names[1]:
+                name1 = names[1].replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l')
+            if '\\Left' in names[2] or '\\L' in names[2]:
+                name2 = names[2].replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l')
             conflicting_bones.append((names0, name1, name2))
 
             for name0 in names[0]:
-                names0.append(name0.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'))
-            if '\Left' in names[1] or '\L' in names[1]:
-                name1 = names[1].replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')
-            if '\Left' in names[2] or '\L' in names[2]:
-                name2 = names[2].replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')
+                names0.append(name0.replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r'))
+            if '\\Left' in names[1] or '\\L' in names[1]:
+                name1 = names[1].replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r')
+            if '\\Left' in names[2] or '\\L' in names[2]:
+                name2 = names[2].replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r')
             conflicting_bones.append((names0, name1, name2))
 
         # Resolve conflicting bone names
@@ -660,15 +665,15 @@ class FixArmature(bpy.types.Operator):
         spines = []
         spine_parts = []
         for bone_new, bones_old in temp_rename_bones.items():
-            if '\Left' in bone_new or '\L' in bone_new:
-                bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
-                         [bone_new.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'), '']]
+            if '\\Left' in bone_new or '\\L' in bone_new:
+                bones = [[bone_new.replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l'), ''],
+                         [bone_new.replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r'), '']]
             else:
                 bones = [[bone_new, '']]
             for bone_old in bones_old:
-                if '\Left' in bone_new or '\L' in bone_new:
-                    bones[0][1] = bone_old.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l')
-                    bones[1][1] = bone_old.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')
+                if '\\Left' in bone_new or '\\L' in bone_new:
+                    bones[0][1] = bone_old.replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l')
+                    bones[1][1] = bone_old.replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r')
                 else:
                     bones[0][1] = bone_old
 
@@ -971,9 +976,9 @@ class FixArmature(bpy.types.Operator):
 
             # Add bones to parent reweight list
             for name in Bones.bone_reweigth_to_parent:
-                if '\Left' in name or '\L' in name:
-                    bones = [name.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'),
-                             name.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')]
+                if '\\Left' in name or '\\L' in name:
+                    bones = [name.replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l'),
+                             name.replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r')]
                 else:
                     bones = [name]
 
@@ -999,8 +1004,8 @@ class FixArmature(bpy.types.Operator):
                     while parent_in_list:
                         parent_in_list = False
                         for name_tmp in Bones.bone_reweigth_to_parent:
-                            if bone_parent.name == name_tmp.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l') \
-                                    or bone_parent.name == name_tmp.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'):
+                            if bone_parent.name == name_tmp.replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l') \
+                                    or bone_parent.name == name_tmp.replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r'):
                                 bone_parent = bone_parent.parent
                                 parent_in_list = True
                                 break
@@ -1032,15 +1037,15 @@ class FixArmature(bpy.types.Operator):
 
             # Merge weights
             for bone_new, bones_old in temp_reweight_bones.items():
-                if '\Left' in bone_new or '\L' in bone_new:
-                    bones = [[bone_new.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l'), ''],
-                             [bone_new.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r'), '']]
+                if '\\Left' in bone_new or '\\L' in bone_new:
+                    bones = [[bone_new.replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l'), ''],
+                             [bone_new.replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r'), '']]
                 else:
                     bones = [[bone_new, '']]
                 for bone_old in bones_old:
-                    if '\Left' in bone_new or '\L' in bone_new:
-                        bones[0][1] = bone_old.replace('\Left', 'Left').replace('\left', 'left').replace('\L', 'L').replace('\l', 'l')
-                        bones[1][1] = bone_old.replace('\Left', 'Right').replace('\left', 'right').replace('\L', 'R').replace('\l', 'r')
+                    if '\\Left' in bone_new or '\\L' in bone_new:
+                        bones[0][1] = bone_old.replace('\\Left', 'Left').replace('\\left', 'left').replace('\\L', 'L').replace('\\l', 'l')
+                        bones[1][1] = bone_old.replace('\\Left', 'Right').replace('\\left', 'right').replace('\\L', 'R').replace('\\l', 'r')
                     else:
                         bones[0][1] = bone_old
 
@@ -1299,11 +1304,19 @@ def check_hierarchy(check_parenting, correct_hierarchy_array):
 
 def set_material_shading():
     # Set shading to 3D view
+    # Blender 5.0+ removed Material Preview ('MATERIAL'); runtime only accepts
+    # WIREFRAME/SOLID/RENDERED. enum_items may still list MATERIAL, so use try/except.
     for area in bpy.context.screen.areas:  # iterate through areas in current screen
         if area.type == 'VIEW_3D':
             for space in area.spaces:  # iterate through spaces in current VIEW_3D area
                 if space.type == 'VIEW_3D':  # check if space is a 3D view
-                    space.shading.type = 'MATERIAL'  # set the viewport shading to rendered
-                    space.shading.studio_light = 'forest.exr'
-                    space.shading.studiolight_rotate_z = 0.0
-                    space.shading.studiolight_background_alpha = 0.0
+                    try:
+                        space.shading.type = 'MATERIAL'
+                    except TypeError:
+                        space.shading.type = 'RENDERED'
+                    try:
+                        space.shading.studio_light = 'forest.exr'
+                        space.shading.studiolight_rotate_z = 0.0
+                        space.shading.studiolight_background_alpha = 0.0
+                    except (AttributeError, TypeError):
+                        pass  # studio_light only applies to MATERIAL/SOLID in some versions

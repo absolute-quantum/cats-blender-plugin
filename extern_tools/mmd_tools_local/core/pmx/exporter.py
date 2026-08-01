@@ -366,7 +366,12 @@ class __PmxExporter:
 
                 pmx_bone.location = __to_pmx_location(p_bone.head)
                 pmx_bone.parent = bone.parent
-                pmx_bone.visible = not bone.hide and any((all(x) for x in zip(bone.layers, arm.data.layers)))
+                if hasattr(bone, 'layers') and hasattr(arm.data, 'layers'):
+                    pmx_bone.visible = not bone.hide and any((all(x) for x in zip(bone.layers, arm.data.layers)))
+                else:
+                    pmx_bone.visible = not bone.hide and any(
+                        collection.is_visible_effectively for collection in bone.collections
+                    )
                 pmx_bone.isControllable = mmd_bone.is_controllable
                 pmx_bone.isMovable = not all(p_bone.lock_location)
                 pmx_bone.isRotatable = not all(p_bone.lock_rotation)
@@ -945,6 +950,11 @@ class __PmxExporter:
 
     @staticmethod
     def __get_normals(mesh, matrix):
+        if not hasattr(mesh, 'calc_normals_split'):
+            # Loop normals are evaluated automatically in Blender 4.1+.
+            mesh.calc_loop_triangles()
+            return [matmul(matrix, loop.normal).normalized() for loop in mesh.loops]
+
         custom_normals = None
         if hasattr(mesh, 'has_custom_normals'):
             logging.debug(' - Calculating normals split...')

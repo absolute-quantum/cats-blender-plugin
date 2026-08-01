@@ -1,4 +1,16 @@
-# Cats Blender Plugin (0.19.0)
+# Cats Blender Plugin (0.20.0) — Blender 5.2 fork
+
+> **Community fork** of [absolute-quantum/cats-blender-plugin](https://github.com/absolute-quantum/cats-blender-plugin)  
+> Base: official **0.19.0** · This release: **0.20.0** with **Blender 4.x / 5.2** compatibility fixes by [051jeferson](https://github.com/051jeferson)
+
+The original CATS **0.19.0** does not run correctly on modern Blender (API removals: bone layers/groups, pose libraries, `use_auto_smooth`, updater threading, etc.).  
+This fork keeps CATS’ workflow and adds the fixes needed so the addon **loads and works on Blender 5.2**.
+
+| | |
+|---|---|
+| **This fork (download)** | [cats-blender-plugin master.zip](https://github.com/051jeferson/cats-blender-plugin/archive/refs/heads/master.zip) |
+| **Upstream / original** | [absolute-quantum/cats-blender-plugin](https://github.com/absolute-quantum/cats-blender-plugin) |
+| **Compatibility PR** | [#721](https://github.com/absolute-quantum/cats-blender-plugin/pull/721) |
 
 A tool designed to shorten steps needed to import and optimize models into VRChat.
 Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/Poser, Blender Rigify, Sims 2, Motion Builder, 3DS Max and potentially more
@@ -6,12 +18,12 @@ Compatible models are: MMD, XNALara, Mixamo, Source Engine, Unreal Engine, DAZ/P
 With Cats it takes only a few minutes to upload your model into VRChat.
 All the hours long processes of fixing your models are compressed into a few functions!
 
-So if you enjoy how this plugin saves you countless hours of work consider supporting us through Patreon.
+So if you enjoy how this plugin saves you countless hours of work consider supporting the original authors through Patreon.
 There are a lot of perks like having your name inside the plugin!
 
 [![](https://i.imgur.com/BFIald5.png)](https://www.patreon.com/catsblenderplugin)
 
-#### Download here: [Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)
+#### Download this Blender 5.2 build: [Cats Blender Plugin 0.20.0](https://github.com/051jeferson/cats-blender-plugin/archive/refs/heads/master.zip)
 
 ## Features
  - Optimizing model with one click!
@@ -34,15 +46,22 @@ Join our Discord to report errors, suggestions and make comments!
 **Discord: https://discord.gg/f8yZGnv**
 
 ## Requirements
- - Blender **2.79** or **2.80** or above (run as administrator is recommended)
-   - mmd_tools is **not required**! Cats comes pre-installed with it!
+ - **Recommended:** Blender **5.2** (this fork’s main target)
+ - Also intended for Blender **4.x**; older 2.80+ paths are kept where possible
+ - mmd_tools is **not required**! Cats comes pre-installed with it!
  - If you have custom Python installed which Blender might use, you need to have Numpy installed
 
+## What changed in 0.20.0 (vs official 0.19.0)
+ - Compatibility with Blender **4.0–5.2** APIs (bone collections, removed layers/groups/pose lib, normals, addon_support)
+ - Safer updater/settings/supporter work on the main thread (`bpy.app.timers`)
+ - Fixed invalid Python string escapes that break on modern Python
+ - Smoke/operator audit helpers for Blender 5.2
+
 ## Installation
- - Download the plugin: **[Cats Blender Plugin](https://github.com/michaeldegroot/cats-blender-plugin/archive/master.zip)**
+ - Download the plugin: **[Cats Blender Plugin 0.20.0 (this fork)](https://github.com/051jeferson/cats-blender-plugin/archive/refs/heads/master.zip)**
    - **Important: Do NOT extract the downloaded zip! You will need the zip file during installation!**
- - Install the addon in blender like so:
-   - *This shows Blender 2.79. In Blender 2.80+ go to Edit > Preferences > Add-ons. Also you don't need to save the user settings there.*
+ - Install the addon in Blender: **Edit → Preferences → Add-ons → Install…** and select the zip
+ - Enable **Cats Blender Plugin (5.2)** in the add-ons list
 
 ![](https://i.imgur.com/eZV1zrs.gif)
 
@@ -67,6 +86,7 @@ Skip the step where he installs "mmd_tools" in the video below, it's not needed 
  - Jordo
  - Ruubick
  - feilen
+ - 051jeferson (Blender 4.x / 5.2 compatibility fork 0.20.0)
 
 
 ## Model
@@ -289,9 +309,9 @@ This works by checking all bones and trying to figure out if they can be grouped
 
 ## Bake
 
-![](https://user-images.githubusercontent.com/1109288/97830517-147d1500-1c82-11eb-8b20-feba732ad672.png)<img src="https://cdn.discordapp.com/attachments/790488253764730920/791146826774216744/unknown.png" height="735" />
+![](https://user-images.githubusercontent.com/1109288/97830517-147d1500-1c82-11eb-8b20-feba732ad672.png)
 
-**This is a non-destructive way to instantly produce a optimized/Quest variant of (almost) any avatar!**
+**This is a non-destructive way to produce an optimized variant of (almost) any avatar!**
 
 For more information please visit the **[Bake Panel Wiki Page](https://github.com/GiveMeAllYourCats/cats-blender-plugin/wiki/Bake)**.
 

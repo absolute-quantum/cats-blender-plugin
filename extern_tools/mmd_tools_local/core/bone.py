@@ -376,7 +376,8 @@ class _AT_ShadowBoneCreate:
         dummy = edit_bones.get(dummy_bone_name, None)
         if dummy is None:
             dummy = edit_bones.new(name=dummy_bone_name)
-            dummy.layers = [x == 9 for x in range(len(dummy.layers))]
+            if hasattr(dummy, 'layers'):
+                dummy.layers = [x == 9 for x in range(len(dummy.layers))]
             dummy.use_deform = False
         dummy.parent = target_bone
         dummy.head = target_bone.head
@@ -387,7 +388,8 @@ class _AT_ShadowBoneCreate:
         shadow = edit_bones.get(shadow_bone_name, None)
         if shadow is None:
             shadow = edit_bones.new(name=shadow_bone_name)
-            shadow.layers = [x == 8 for x in range(len(shadow.layers))]
+            if hasattr(shadow, 'layers'):
+                shadow.layers = [x == 8 for x in range(len(shadow.layers))]
             shadow.use_deform = False
         shadow.parent = target_bone.parent
         shadow.head = dummy.head
@@ -416,4 +418,3 @@ class _AT_ShadowBoneCreate:
             c.owner_space = 'POSE'
 
         self.__update_constraints()
-

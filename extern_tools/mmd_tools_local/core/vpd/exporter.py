@@ -63,6 +63,9 @@ class VPDExporter:
     def __exportPoseLib(self, armObj, pose_type, filepath, use_pose_mode=False):
         if armObj is None:
             return None
+        if not hasattr(armObj, 'pose_library'):
+            logging.warning('Pose-library VPD export is unavailable in this Blender version; export the current pose instead.')
+            return None
         if armObj.pose_library is None:
             return None
 
@@ -134,4 +137,3 @@ class VPDExporter:
             self.__exportPoseLib(armature, pose_type, filepath, use_pose_mode)
         else:
             raise Exception('Unknown pose type "%s"', pose_type)
-

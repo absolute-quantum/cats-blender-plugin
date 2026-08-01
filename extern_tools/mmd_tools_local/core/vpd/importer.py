@@ -63,6 +63,11 @@ class VPDImporter:
             elif reset_transform:
                 bone.matrix_basis.identity()
 
+        # Legacy pose libraries were removed from Blender. The imported VPD
+        # pose is still applied to the armature; only the obsolete library
+        # marker creation is skipped on current versions.
+        if not hasattr(armObj, 'pose_library'):
+            return
         if armObj.pose_library is None:
             armObj.pose_library = bpy.data.actions.new(name='PoseLib')
 
@@ -100,4 +105,3 @@ class VPDImporter:
             self.__assignToMesh(obj)
         else:
             pass
-

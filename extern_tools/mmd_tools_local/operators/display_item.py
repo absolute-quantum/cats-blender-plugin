@@ -290,10 +290,16 @@ class DisplayItemQuickSetup(Operator):
 
     @staticmethod
     def load_bone_groups(mmd_root, armature):
-        bone_groups = OrderedDict((i.name, []) for i in armature.pose.bone_groups)
-        for b in armature.pose.bones:
-            if b.bone_group:
-                bone_groups[b.bone_group.name].append(b.name)
+        if hasattr(armature.pose, 'bone_groups'):
+            bone_groups = OrderedDict((i.name, []) for i in armature.pose.bone_groups)
+            for b in armature.pose.bones:
+                if b.bone_group:
+                    bone_groups[b.bone_group.name].append(b.name)
+        else:
+            bone_groups = OrderedDict(
+                (collection.name, [bone.name for bone in collection.bones])
+                for collection in armature.data.collections
+            )
 
         frames = mmd_root.display_item_frames
         used_index = set()
@@ -328,6 +334,31 @@ class DisplayItemQuickSetup(Operator):
 
     @staticmethod
     def apply_bone_groups(mmd_root, armature):
+        if not hasattr(armature.pose, 'bone_groups'):
+            arm_bone_groups = armature.data.collections
+            used_groups = set()
+            assigned_bones = set()
+
+            for frame in mmd_root.display_item_frames:
+                bone_names = [
+                    item.name for item in frame.data
+                    if item.type == 'BONE' and item.name in armature.data.bones
+                ]
+                if not bone_names:
+                    continue
+                used_groups.add(frame.name)
+                group = arm_bone_groups.get(frame.name)
+                if group is None:
+                    group = arm_bone_groups.new(frame.name)
+                for name in bone_names:
+                    group.assign(armature.data.bones[name])
+                    assigned_bones.add(name)
+
+            for group in list(arm_bone_groups):
+                if group.name not in used_groups:
+                    arm_bone_groups.remove(group)
+            return
+
         arm_bone_groups = armature.pose.bone_groups
         if not hasattr(arm_bone_groups, 'remove'): #bpy.app.version < (2, 72, 0):
             from mmd_tools_local import bpyutils
@@ -368,4 +399,3 @@ class DisplayItemQuickSetup(Operator):
         for group in arm_bone_groups.values():
             if group.name not in used_groups:
                 arm_bone_groups.remove(group)
-

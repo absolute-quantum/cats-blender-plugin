@@ -28,7 +28,7 @@ def register():
     Scene.keep_upper_chest = BoolProperty(
         name=t('Scene.keep_upper_chest.label'),
         description=t('Scene.keep_upper_chest.desc'),
-        default=True
+        default=False
     )
 
     Scene.combine_mats = BoolProperty(

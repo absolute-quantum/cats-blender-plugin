@@ -624,7 +624,9 @@ class Model:
                 if i.users < 1:
                     bpy.data.objects.remove(i)
         else:
-            bpy.ops.object.delete({'selected_objects':tuple(self.temporaryObjects()), 'active_object':self.rootObject()})
+            for obj in tuple(self.temporaryObjects()):
+                if obj and obj.name in bpy.data.objects:
+                    bpy.data.objects.remove(obj, do_unlink=True)
 
     def __removeChildrenOfTemporaryGroupObject(self):
         tmp_grp_obj = self.temporaryGroupObject()
@@ -976,4 +978,3 @@ class Model:
         arm = self.armature()
         if arm:
             FnBone.apply_additional_transformation(arm)
-

@@ -789,7 +789,9 @@ class PMXImporter:
         else:
             custom_normals = [(Vector(v.normal).xzy).normalized() for v in self.__model.vertices]
             mesh.normals_split_custom_set_from_vertices(custom_normals)
-        mesh.use_auto_smooth = True
+        # Blender 4.1+ evaluates split/custom normals without use_auto_smooth.
+        if hasattr(mesh, 'use_auto_smooth'):
+            mesh.use_auto_smooth = True
         logging.info('   - Done!!')
 
     def __renameLRBones(self, use_underscore):
@@ -1025,4 +1027,3 @@ class _PMXCleaner:
             counts = old_len - len(m.offsets)
             if counts:
                 logging.warning('   - removed %d (of %d) offsets of "%s"', counts, old_len, m.name)
-

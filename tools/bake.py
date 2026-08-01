@@ -32,6 +32,14 @@ from .register import register_wrap
 from .translations import t
 
 
+def get_principled_input(node, legacy_name, current_name=None):
+    """Return a Principled BSDF input across Blender shader API versions."""
+    socket = node.inputs.get(current_name or legacy_name)
+    if socket is None and current_name:
+        socket = node.inputs.get(legacy_name)
+    return socket
+
+
 @register_wrap
 class BakeTutorialButton(bpy.types.Operator):
     bl_idname = 'cats_bake.tutorial'
@@ -76,8 +84,10 @@ def autodetect_passes(self, context, tricount, is_desktop):
                                           or len(set([node.inputs["Roughness"].default_value for node in bsdf_nodes])) > 1)
 
     # Emit: similar to diffuse
-    context.scene.bake_pass_emit = (any([node.inputs["Emission"].is_linked for node in bsdf_nodes])
-                                    or len(set([node.inputs["Emission"].default_value[:] for node in bsdf_nodes])) > 1)
+    emission_inputs = [get_principled_input(node, "Emission", "Emission Color") for node in bsdf_nodes]
+    emission_inputs = [socket for socket in emission_inputs if socket is not None]
+    context.scene.bake_pass_emit = (any([socket.is_linked for socket in emission_inputs])
+                                    or len(set([socket.default_value[:] for socket in emission_inputs])) > 1)
 
     # Transparency: similar to diffuse
     context.scene.bake_pass_alpha = is_desktop and (any([node.inputs["Alpha"].is_linked for node in bsdf_nodes])
@@ -981,10 +991,13 @@ class BakeButton(bpy.types.Operator):
         # Always remove existing vertex colors here
         for obj in collection.all_objects:
             if obj.type == "MESH":
-                if obj.data.vertex_colors is not None and len(obj.data.vertex_colors) > 0:
-                    while len(obj.data.vertex_colors) > 0:
-                        context.view_layer.objects.active = obj
-                        bpy.ops.mesh.vertex_color_remove()
+                color_attributes = getattr(obj.data, "color_attributes", None)
+                if color_attributes is not None:
+                    for attribute in list(color_attributes):
+                        color_attributes.remove(attribute)
+                elif obj.data.vertex_colors is not None:
+                    for layer in list(obj.data.vertex_colors):
+                        obj.data.vertex_colors.remove(layer)
 
         # Update generated material to preview all of our passes
         if pass_normal:
@@ -1063,14 +1076,22 @@ class BakeButton(bpy.types.Operator):
             emittexnode.image = bpy.data.images["SCRIPT_emission.png"]
             emittexnode.location.x -= 800
             emittexnode.location.y -= 150
-            tree.links.new(bsdfnode.inputs["Emission"], emittexnode.outputs["Color"])
+            emission_input = get_principled_input(bsdfnode, "Emission", "Emission Color")
+            if emission_input is not None:
+                tree.links.new(emission_input, emittexnode.outputs["Color"])
 
         # Rebake diffuse to vertex colors: Incorperates AO
         if pass_diffuse and diffuse_vertex_colors:
             for obj in collection.all_objects:
                 if obj.type == "MESH":
-                    context.view_layer.objects.active = obj
-                    bpy.ops.mesh.vertex_color_add()
+                    color_attributes = getattr(obj.data, "color_attributes", None)
+                    if color_attributes is not None:
+                        attribute = color_attributes.get("Col")
+                        if attribute is None:
+                            attribute = color_attributes.new(name="Col", type='BYTE_COLOR', domain='CORNER')
+                        color_attributes.active_color = attribute
+                    elif obj.data.vertex_colors.get("Col") is None:
+                        obj.data.vertex_colors.new(name="Col")
 
             self.swap_links([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", "Anisotropic Rotation")
             self.set_values([obj for obj in collection.all_objects if obj.type == "MESH"], "Metallic", 0.0)
@@ -1115,11 +1136,8 @@ class BakeButton(bpy.types.Operator):
                 if mesh.type == 'MESH' and mesh.data.shape_keys is not None:
                     context.view_layer.objects.active = mesh
 
-                    # Ensure auto-smooth is enabled, set custom normals from faces
-                    if not mesh.data.use_auto_smooth:
-                        mesh.data.use_auto_smooth = True
-                        mesh.data.auto_smooth_angle = 3.1416
-
+                    # Blender 4.1+ always evaluates split normals; the removed
+                    # auto-smooth flag no longer needs to be enabled.
                     bpy.ops.object.mode_set(mode = 'EDIT')
                     bpy.ops.mesh.select_mode(type="VERT")
                     bpy.ops.mesh.select_all(action = 'DESELECT')

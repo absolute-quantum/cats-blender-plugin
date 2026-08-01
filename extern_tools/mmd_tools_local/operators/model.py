@@ -414,7 +414,10 @@ class TranslateMMDModel(Operator):
                 m.name = self.translate(m.name, m.name)
 
         if 'DISPLAY' in self.types:
-            for g in rig.armature().pose.bone_groups:
+            groups = (rig.armature().pose.bone_groups
+                      if hasattr(rig.armature().pose, 'bone_groups')
+                      else rig.armature().data.collections)
+            for g in groups:
                 g.name = self.translate(g.name, g.name)
 
         if 'PHYSICS' in self.types:
@@ -479,4 +482,3 @@ class TranslateMMDModel(Operator):
 
         for i in rig.joints():
             i.mmd_joint.name_e = self.translate(i.mmd_joint.name_j, i.mmd_joint.name_e)
-
